@@ -1,12 +1,14 @@
 from fastapi import Depends, FastAPI
 
+from dependencies import get_query_token, get_token_header
 from admin import admin
 from routers import holder, issuer, verifier, wallet
 
-app = FastAPI(dependencies=[Depends(get_query_token)])
+# app = FastAPI(dependencies=[Depends(get_query_token)])
+app = FastAPI()
 
 
-app.include_routers(wallet.router)
+app.include_router(wallet.router)
 app.include_router(
     admin.router,
     prefix="/admin",

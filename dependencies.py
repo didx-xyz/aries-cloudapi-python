@@ -8,4 +8,4 @@ async def get_token_header(x_token: str = Header(...)):
 
 async def get_query_token(token: str):
     if token != "the_very_valid_token":
-        raise HTTPException(status_code=400, detail="No Jessica token provided")
+        raise HTTPException(status_code=400, detail="No valid token provided")

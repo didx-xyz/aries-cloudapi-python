@@ -1,6 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
 
-ADD app /app
+COPY ./app /app
+# ADD app /app
 
 WORKDIR /app
 

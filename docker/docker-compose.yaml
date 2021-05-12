@@ -2,21 +2,28 @@ version: "3"
 services:
   fastapi-app:
     image: tiangolo/uvicorn-gunicorn-fastapi:python3.7
-    build: .
+    build: ../app
     volumes:
       - ../app:/app
     ports:
       - "8000:8000"
-  ngrok-external:
-    image: wernight/ngrok
-    command: ngrok http external-agent:${EXTERNAL_HTTP_PORT} --log stdout
+    command: >
+        bash -c "pip install -r requirements.txt
+        && uvicorn main:app --reload"
     networks:
       - indy_demo
-  ngrok-mediator:
-    image: wernight/ngrok
-    command: ngrok http mediator-agent:${MEDIATOR_HTTP_PORT} --log stdout
-    networks:
-      - indy_demo
+    # expose:
+    #     - 8000
+  # ngrok-external:
+  #   image: wernight/ngrok
+  #   command: ngrok http external-agent:${EXTERNAL_HTTP_PORT} --log stdout
+  #   networks:
+  #     - indy_demo
+  # ngrok-mediator:
+  #   image: wernight/ngrok
+  #   command: ngrok http mediator-agent:${MEDIATOR_HTTP_PORT} --log stdout
+  #   networks:
+  #     - indy_demo
   # mediator-agent:
   #   build:
   #     context: ../../
@@ -53,11 +60,11 @@ services:
   #   networks:
   #     - indy_demo
   #   tty: true
-  ngrok-multitenant:
-    image: wernight/ngrok
-    command: ngrok http multitenant-agent:${MULTITENANT_HTTP_PORT} --log stdout
-    networks:
-      - indy_demo
+  # ngrok-multitenant:
+  #   image: wernight/ngrok
+  #   command: ngrok http multitenant-agent:${MULTITENANT_HTTP_PORT} --log stdout
+  #   networks:
+  #     - indy_demo
   # multitenant-agent:
   #   build:
   #     context: .

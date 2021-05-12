@@ -62,8 +62,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-# DEFAULT_CONTAINERS="ngrok-external external-agent ngrok-multitenant multitenant-agent multitenant-notebook external-notebook ngrok-mediator mediator-agent mediator-notebook wallets-db"
-DEFAULT_CONTAINERS="wallets-db web "
+DEFAULT_CONTAINERS="wallets-db web ngrok-multitenant multitenant-agent"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------------------------------------------

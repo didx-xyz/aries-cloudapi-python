@@ -10,10 +10,11 @@ http_port = "1234"
 
 aries_agent_controller = aries_cloudcontroller.AriesAgentController(
     # TODO get these params from config or some other more graceful way
-    admin_url = f"http://localhost:{http_port}",
-    api_key = None,
-    is_multitenant = True,
+    admin_url=f"http://localhost:{http_port}",
+    api_key=None,
+    is_multitenant=True,
 )
+
 
 @router.get("/wallets", tags=["wallets"])
 async def wallets_root():
@@ -33,7 +34,7 @@ async def create_wallet(wallet_payload: dict = None):
     """
     try:
         if aries_agent_controller.is_multitenant:
-            # TODO replace with model for payload/wallet like 
+            # TODO replace with model for payload/wallet like
             # described https://fastapi.tiangolo.com/tutorial/body/
             if not wallet_payload:
                 payload = {
@@ -47,7 +48,9 @@ async def create_wallet(wallet_payload: dict = None):
                 }
             else:
                 payload = wallet_payload
-            wallet_response = await aries_agent_controller.multitenant.create_wallet(payload)
+            wallet_response = await aries_agent_controller.multitenant.create_wallet(
+                payload
+            )
         else:
             wallet_response = await aries_agent_controller.wallets.create_did()
         return wallet_response

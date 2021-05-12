@@ -9,15 +9,24 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
+    # networks:
+    #   - indy_demo
 
   web:
-    build: ./fastapi
+    build: 
+      context: .
+      dockerfile: ./docker/fastapi/Dockerfile
+    environment:
+      - FORWARDED_ALLOW_IPS="0.0.0.0, 127.0.0.1, localhost"
+    command: uvicorn main:app --reload
     volumes:
-      - ../app:/app
+      - ./app:/app
     ports:
       - "8000:8000"
     depends_on:
       - postgres
+    # networks:
+    #   - indy_demo
 # version: "3"
 # services:
 #   fastapi-app:
@@ -119,5 +128,5 @@ services:
   #   networks:
   #     - indy_demo
 
-networks:
-  indy_demo:
+# networks:
+#   indy_demo:

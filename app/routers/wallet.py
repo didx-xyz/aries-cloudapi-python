@@ -6,6 +6,7 @@ router = APIRouter()
 
 # TODO: Determine how we want to instantiate and access the ariescontroller really.
 # This is the very crude way MVP
+http_port = "1234"
 
 aries_agent_controller = aries_cloudcontroller.AriesAgentController(
     # TODO get these params from config or some other more graceful way

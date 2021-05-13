@@ -31,6 +31,7 @@ async def create_public_did():
     * Issuer verkey
     * Issuer Endpoint
     """
+    # TODO: make this url more dynamic for when this is not always sovrin
     url = "https://selfserve.sovrin.org/nym"
     # Adding empty header as parameters are being sent in payload
     generate_did_res = await aries_agent_controller.wallet.create_did()

@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+import requests
+import json
 
 import aries_cloudcontroller
 
@@ -6,7 +8,8 @@ router = APIRouter()
 
 # TODO: Determine how we want to instantiate and access the ariescontroller really.
 # This is the very crude way MVP
-http_port = "1234"
+http_port = "8021"
+webhook_port = "8022"
 
 aries_agent_controller = aries_cloudcontroller.AriesAgentController(
     # TODO get these params from config or some other more graceful way
@@ -14,6 +17,83 @@ aries_agent_controller = aries_cloudcontroller.AriesAgentController(
     api_key=None,
     is_multitenant=True,
 )
+
+
+@router.get("/wallets/create-pub-did", tags=["wallet", "did"])
+async def create_public_did():
+    """
+    Create a new public DID and
+    write it to the ledger and
+    receive its public info.
+    
+    Returns:
+    * DID
+    * Issuer verkey
+    * Issuer Endpoint
+    """
+    url = "https://selfserve.sovrin.org/nym"
+    # Adding empty header as parameters are being sent in payload
+    generate_did_res = await aries_agent_controller.wallet.create_did()
+    if not generate_did_res["result"]:
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
+        )
+    did_object = generate_did_res["result"]
+    payload = {
+        "network": "stagingnet",
+        "did": did_object["did"],
+        "verkey": did_object["verkey"],
+        "paymentaddr": "",
+    }
+    r = requests.post(url, data=json.dumps(payload), headers={})
+    if r.status_code != 200:
+        error_json = r.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not write to StagingNet.\n{error_json}",
+        )
+    tta_response = await aries_agent_controller.ledger.get_taa()
+    if tta_response.status_code != 200:
+        error_json = tta_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not get TTA.\n{error_json}",
+        )
+    TAA = tta_response["result"]["taa_record"]
+    TAA["mechanism"] = "service_agreement"
+    accept_tta_response = await aries_agent_controller.ledger.accept_taa(TAA)
+    if accept_tta_response.status_code != 200:
+        error_json = accept_tta_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not accept TTA.\n{error_json}",
+        )
+    assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
+        did_object["did"]
+    )
+    if assign_pub_did_response != 200:
+        error_json = assign_pub_did_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not assign DID.\n{error_json}",
+        )
+    get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
+    if get_pub_did_response.status_code != 200:
+        error_json = get_pub_did_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not obtain public DID.\n{error_json}",
+        )
+    issuer_nym = get_pub_did_response["result"]["did"]
+    issuer_verkey = await aries_agent_controller.ledger.get_did_verkey(issuer_nym)
+    issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(issuer_nym)
+    final_response = {
+        "did_object": did_object,
+        "issuer_verkey": issuer_verkey,
+        "issuer_endpoint": issuer_endpoint,
+    }
+    return final_response
 
 
 @router.get("/wallets", tags=["wallets"])

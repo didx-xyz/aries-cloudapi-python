@@ -31,7 +31,7 @@ services:
       - indy_demo
   multitenant-agent:
     build:
-      context: ../
+      context: .
       dockerfile: ./dockerfiles/agents/Dockerfile.ngrok
     env_file: 
       - resources/aca-py-agent.default.env

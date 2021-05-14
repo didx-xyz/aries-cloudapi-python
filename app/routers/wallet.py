@@ -11,8 +11,8 @@ router = APIRouter()
 
 aries_agent_controller = aries_cloudcontroller.AriesAgentController(
     # TODO get these params from config or some other more graceful way
-    admin_url=f"http://alice-agent:3021",
-    api_key=None,
+    admin_url=f"http://multitenant-agent:3021",
+    api_key="adminApiKey",
     is_multitenant=True,
 )
 

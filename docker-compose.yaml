@@ -26,7 +26,7 @@ services:
     image: wernight/ngrok
     env_file:
       - resources/aca-py-agent.default.env
-    command: ngrok http alice-agent:3020 --log stdout
+    command: ngrok http multitenant-agent:3020 --log stdout
     networks:
       - indy_demo
   multitenant-agent:
@@ -42,6 +42,6 @@ services:
       - wallets-db
     networks:
       - indy_demo
-      
+
 networks:
   indy_demo:

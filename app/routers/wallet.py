@@ -64,33 +64,38 @@ async def create_public_did():
     TAA["mechanism"] = "service_agreement"
     accept_taa_response = await aries_agent_controller.ledger.accept_taa(TAA)
     print("accept_taa_response:\n", accept_taa_response)
-    # if accept_taa_response.status_code != 200:
-    #     error_json = accept_taa_response.json()
-    #     raise HTTPException(
-    #         status_code=418,
-    #         detail=f"Something went wrong.\nCould not accept TAA.\n{error_json}",
-    #     )
+    if accept_taa_response != {}:
+        error_json = accept_taa_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not accept TAA.\n{error_json}",
+        )
     assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
         did_object["did"]
     )
     print("assign_pub_did_response:\n", assign_pub_did_response)
-    # if assign_pub_did_response != 200:
-    #     error_json = assign_pub_did_response.json()
-    #     raise HTTPException(
-    #         status_code=418,
-    #         detail=f"Something went wrong.\nCould not assign DID.\n{error_json}",
-    #     )
+    if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
+        error_json = assign_pub_did_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not assign DID.\n{error_json}",
+        )
     get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
     print("get_pub_did_response:\n ", get_pub_did_response)
-    # if get_pub_did_response.status_code != 200:
-    #     error_json = get_pub_did_response.json()
-    #     raise HTTPException(
-    #         status_code=418,
-    #         detail=f"Something went wrong.\nCould not obtain public DID.\n{error_json}",
-    #     )
+    if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
+        error_json = get_pub_did_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not obtain public DID.\n{error_json}",
+        )
     issuer_nym = get_pub_did_response["result"]["did"]
-    issuer_verkey = await aries_agent_controller.ledger.get_did_verkey(issuer_nym)
+    issuer_verkey = get_pub_did_response["result"]["verkey"]
     issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(issuer_nym)
+    if not issuer_endpoint:
+        raise HTTPException(
+            status_code=418,
+            detail="Something went wrong.\nCould not obtain issuer endpoint.",
+        )
     final_response = {
         "did_object": did_object,
         "issuer_verkey": issuer_verkey,

@@ -8,12 +8,10 @@ router = APIRouter()
 
 # TODO: Determine how we want to instantiate and access the ariescontroller really.
 # This is the very crude way MVP
-http_port = "8021"
-webhook_port = "8022"
 
 aries_agent_controller = aries_cloudcontroller.AriesAgentController(
     # TODO get these params from config or some other more graceful way
-    admin_url=f"http://localhost:{http_port}",
+    admin_url=f"http://alice-agent:3021",
     api_key=None,
     is_multitenant=True,
 )

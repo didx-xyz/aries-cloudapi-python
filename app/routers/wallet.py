@@ -52,38 +52,42 @@ async def create_public_did():
             status_code=418,
             detail=f"Something went wrong.\nCould not write to StagingNet.\n{error_json}",
         )
-    tta_response = await aries_agent_controller.ledger.get_taa()
-    if tta_response.status_code != 200:
-        error_json = tta_response.json()
+    taa_response = await aries_agent_controller.ledger.get_taa()
+    print("taa_response:\n", taa_response)
+    if not taa_response["result"]:
+        error_json = taa_response.json()
         raise HTTPException(
             status_code=418,
-            detail=f"Something went wrong.\nCould not get TTA.\n{error_json}",
+            detail=f"Something went wrong.\nCould not get TAA.\n{error_json}",
         )
-    TAA = tta_response["result"]["taa_record"]
+    TAA = taa_response["result"]["taa_record"]
     TAA["mechanism"] = "service_agreement"
-    accept_tta_response = await aries_agent_controller.ledger.accept_taa(TAA)
-    if accept_tta_response.status_code != 200:
-        error_json = accept_tta_response.json()
-        raise HTTPException(
-            status_code=418,
-            detail=f"Something went wrong.\nCould not accept TTA.\n{error_json}",
-        )
+    accept_taa_response = await aries_agent_controller.ledger.accept_taa(TAA)
+    print("accept_taa_response:\n", accept_taa_response)
+    # if accept_taa_response.status_code != 200:
+    #     error_json = accept_taa_response.json()
+    #     raise HTTPException(
+    #         status_code=418,
+    #         detail=f"Something went wrong.\nCould not accept TAA.\n{error_json}",
+    #     )
     assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
         did_object["did"]
     )
-    if assign_pub_did_response != 200:
-        error_json = assign_pub_did_response.json()
-        raise HTTPException(
-            status_code=418,
-            detail=f"Something went wrong.\nCould not assign DID.\n{error_json}",
-        )
+    print("assign_pub_did_response:\n", assign_pub_did_response)
+    # if assign_pub_did_response != 200:
+    #     error_json = assign_pub_did_response.json()
+    #     raise HTTPException(
+    #         status_code=418,
+    #         detail=f"Something went wrong.\nCould not assign DID.\n{error_json}",
+    #     )
     get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
-    if get_pub_did_response.status_code != 200:
-        error_json = get_pub_did_response.json()
-        raise HTTPException(
-            status_code=418,
-            detail=f"Something went wrong.\nCould not obtain public DID.\n{error_json}",
-        )
+    print("get_pub_did_response:\n ", get_pub_did_response)
+    # if get_pub_did_response.status_code != 200:
+    #     error_json = get_pub_did_response.json()
+    #     raise HTTPException(
+    #         status_code=418,
+    #         detail=f"Something went wrong.\nCould not obtain public DID.\n{error_json}",
+    #     )
     issuer_nym = get_pub_did_response["result"]["did"]
     issuer_verkey = await aries_agent_controller.ledger.get_did_verkey(issuer_nym)
     issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(issuer_nym)

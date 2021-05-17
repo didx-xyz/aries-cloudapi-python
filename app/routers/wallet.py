@@ -9,13 +9,6 @@ router = APIRouter()
 # TODO: Determine how we want to instantiate and access the ariescontroller really.
 # This is the very crude way MVP
 
-aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-    # TODO get these params from config or some other more graceful way
-    admin_url=f"http://multitenant-agent:3021",
-    api_key="adminApiKey",
-    is_multitenant=True,
-)
-
 
 @router.get("/wallets/create-pub-did", tags=["wallet", "did"])
 async def create_public_did():
@@ -29,6 +22,12 @@ async def create_public_did():
     * Issuer verkey
     * Issuer Endpoint
     """
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        # TODO get these params from config/env-file or some other more graceful way
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
     # TODO: make this url more dynamic for when this is not always sovrin
     url = "https://selfserve.sovrin.org/nym"
     # Adding empty header as parameters are being sent in payload
@@ -39,6 +38,7 @@ async def create_public_did():
             detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
         )
     did_object = generate_did_res["result"]
+    # TODO: Network and paymentaddr should be definable on the fly/via args
     payload = {
         "network": "stagingnet",
         "did": did_object["did"],

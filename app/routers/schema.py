@@ -32,11 +32,11 @@ async def write_credential_schema():  # schema_name: str, schema_version: str, s
 
     Parameters:
     ----------
-    schema_name: str
+    * schema_name: str
         The name of the schema to be defined
-    schema_version: str
+    * schema_version: str
         The version of the schema to be written
-    schema_attributes: list, optional
+    * schema_attributes: list, optional
         A list of attributes for the schema (default is None)
     """
 

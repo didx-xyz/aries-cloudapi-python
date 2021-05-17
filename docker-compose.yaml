@@ -7,6 +7,8 @@ services:
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - ./app:/app
     depends_on:
       - wallets-db
     networks:

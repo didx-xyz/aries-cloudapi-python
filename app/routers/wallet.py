@@ -23,7 +23,7 @@ async def create_public_did():
     Create a new public DID and
     write it to the ledger and
     receive its public info.
-    
+
     Returns:
     * DID
     * Issuer verkey

@@ -34,108 +34,98 @@ async def create_public_did():
     receive its public info.
 
     Returns:
-    * DID object (json)
-    * Issuer verkey (str)
-    * Issuer Endpoint (url)
+    * DID
+    * Issuer verkey
+    * Issuer Endpoint
     """
-    try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=f"{admin_api_key}",
-            is_multitenant=is_multitenant,
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        # TODO get these params from config/env-file or some other more graceful way
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
+    # TODO: make this url more dynamic for when this is not always sovrin
+    url = "https://selfserve.sovrin.org/nym"
+    # Adding empty header as parameters are being sent in payload
+    generate_did_res = await aries_agent_controller.wallet.create_did()
+    if not generate_did_res["result"]:
+        aries_agent_controller.terminate()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
         )
-        # TODO: Should this come from env var or from the client request?
-        url = ledger_url
-        # Adding empty header as parameters are being sent in payload
-        generate_did_res = await aries_agent_controller.wallet.create_did()
-        if not generate_did_res["result"]:
-            raise HTTPException(
-                # TODO: Should this return HTTPException, if so which status code?
-                # Check same for occurences below
-                status_code=418,
-                detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
-            )
-        did_object = generate_did_res["result"]
-        # TODO: Network and paymentaddr should be definable on the fly/via args/via request body
-        # TODO: Should this really be a schema or is using schema overkill here?
-        # If we leave it as schema like this I suppose it is at least usable elsewhere
-        payload = LedgerRequest(
-            network="stagingnet",
-            did=did_object["did"],
-            verkey=did_object["verkey"],
-            paymentaddr="",
-        ).dict()
-        r = requests.post(url, data=json.dumps(payload), headers={})
-        if r.status_code != 200:
-            error_json = r.json()
-            raise HTTPException(
-                status_code=418,
-                detail=f"Something went wrong.\nCould not write to StagingNet.\n{error_json}",
-            )
-        taa_response = await aries_agent_controller.ledger.get_taa()
-        logger.info(f"taa_response:\n{taa_response}")
-        if not taa_response["result"]:
-            error_json = taa_response.json()
-            raise HTTPException(
-                status_code=418,
-                detail=f"Something went wrong. Could not get TAA. {error_json}",
-            )
-        TAA = taa_response["result"]["taa_record"]
-        TAA["mechanism"] = "service_agreement"
-        accept_taa_response = await aries_agent_controller.ledger.accept_taa(TAA)
-        logger.info(f"accept_taa_response: {accept_taa_response}")
-        if accept_taa_response != {}:
-            error_json = accept_taa_response.json()
-            raise HTTPException(
-                status_code=418,
-                detail=f"Something went wrong. Could not accept TAA. {error_json}",
-            )
-        assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
-            did_object["did"]
+    did_object = generate_did_res["result"]
+    # TODO: Network and paymentaddr should be definable on the fly/via args
+    payload = {
+        "network": "stagingnet",
+        "did": did_object["did"],
+        "verkey": did_object["verkey"],
+        "paymentaddr": "",
+    }
+    r = requests.post(url, data=json.dumps(payload), headers={})
+    if r.status_code != 200:
+        aries_agent_controller.terminate()
+        error_json = r.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not write to StagingNet.\n{error_json}",
         )
-        logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
-        if (
-            not assign_pub_did_response["result"]
-            or assign_pub_did_response["result"] == {}
-        ):
-            error_json = assign_pub_did_response.json()
-            raise HTTPException(
-                status_code=418,
-                detail=f"Something went wrong.\nCould not assign DID. {error_json}",
-            )
-        get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
-        logger.info(f"get_pub_did_response:\n{get_pub_did_response}")
-        if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
-            error_json = get_pub_did_response.json()
-            raise HTTPException(
-                status_code=418,
-                detail=f"Something went wrong. Could not obtain public DID. {error_json}",
-            )
-        issuer_nym = get_pub_did_response["result"]["did"]
-        issuer_verkey = get_pub_did_response["result"]["verkey"]
-        issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(
-            issuer_nym
+    taa_response = await aries_agent_controller.ledger.get_taa()
+    print("taa_response:\n", taa_response)
+    if not taa_response["result"]:
+        aries_agent_controller.terminate()
+        error_json = taa_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not get TAA.\n{error_json}",
         )
-        if not issuer_endpoint:
-            raise HTTPException(
-                status_code=418,
-                detail="Something went wrong. Could not obtain issuer endpoint.",
-            )
-        issuer_endpoint_url = issuer_endpoint["endpoint"]
-        final_response = DidCreationResponse(
-            did_object=did_object,
-            issuer_verkey=issuer_verkey,
-            issuer_endpoint=issuer_endpoint_url,
+    TAA = taa_response["result"]["taa_record"]
+    TAA["mechanism"] = "service_agreement"
+    accept_taa_response = await aries_agent_controller.ledger.accept_taa(TAA)
+    print("accept_taa_response:\n", accept_taa_response)
+    if accept_taa_response != {}:
+        aries_agent_controller.terminate()
+        error_json = accept_taa_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not accept TAA.\n{error_json}",
         )
-        await aries_agent_controller.terminate()
-        return final_response
-    except Exception as e:
-        await aries_agent_controller.terminate()
-        logger.error(f"The following error occured:\n{e!r}")
+    assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
+        did_object["did"]
+    )
+    print("assign_pub_did_response:\n", assign_pub_did_response)
+    if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
+        aries_agent_controller.terminate()
+        error_json = assign_pub_did_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not assign DID.\n{error_json}",
+        )
+    get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
+    print("get_pub_did_response:\n ", get_pub_did_response)
+    if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
+        aries_agent_controller.terminate()
+        error_json = get_pub_did_response.json()
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not obtain public DID.\n{error_json}",
+        )
+    issuer_nym = get_pub_did_response["result"]["did"]
+    issuer_verkey = get_pub_did_response["result"]["verkey"]
+    issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(issuer_nym)
+    if not issuer_endpoint:
+        aries_agent_controller.terminate()
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",
         )
+    final_response = {
+        "did_object": did_object,
+        "issuer_verkey": issuer_verkey,
+        "issuer_endpoint": issuer_endpoint,
+    }
+    aries_agent_controller.terminate()
+    return final_response
 
 
 @router.get("/", tags=["wallets"])

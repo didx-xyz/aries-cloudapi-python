@@ -16,7 +16,9 @@ async def schema_define():
 @router.get(
     "/schema/write-schema-and-credential-definition", tags=["schema", "credential"]
 )
-async def write_credential_schema():
+async def write_credential_schema(
+    schema_name: str, schema_version: str, schema_attrs: list
+):
     """
     Create schema and credential definition and
     write it to the ledger.
@@ -45,21 +47,19 @@ async def write_credential_schema():
         is_multitenant=True,
     )
     # Defining schema and writing it to the ledger
-    schema_name = "yoma_test_schema"  # TODO Disallow code injection
-    schema_version = (
-        "0.01"  # TODO does this follow a pattern? if so validate that pattern
-    )
-    schema_attributes = ["name", "age", "skill", "DOB"]
+    schema_name = schema_name
+    schema_version = schema_version
+    schema_attributes = schema_attrs
 
-    schema = await aries_agent_controller.schema.write_schema(
+    write_schema_resp = await aries_agent_controller.schema.write_schema(
         schema_name, schema_attributes, schema_version
     )
-    if not schema:
+    if not write_schema_resp or write_schema_resp == {}:
         raise HTTPException(
             status_code=418,
-            detail=f"Something went wrong.\n Could not write schema to ledger",
+            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
         )
-    schema_id = schema["schema_id"]
+    schema_id = write_schema_resp["schema_id"]
 
     # Writing credential definition
     credential_definition = await aries_agent_controller.definitions.write_cred_def(
@@ -68,7 +68,7 @@ async def write_credential_schema():
     if not credential_definition:
         raise HTTPException(
             status_code=418,
-            detail=f"Something went wrong.\nCould not write credential definition to ledger",
+            detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
         )
     credential_definition_id = credential_definition["credential_definition_id"]
 

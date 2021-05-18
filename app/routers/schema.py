@@ -25,7 +25,7 @@ async def schema_define():
 @router.get(
     "/schema/write-schema-and-credential-definition", tags=["schema", "credential"]
 )
-async def write_credential_schema():  # schema_name: str, schema_version: str, schema_attributes: list = None):
+async def write_credential_schema():
     """
     Create schema and credential definition and
     write it to the ledger.

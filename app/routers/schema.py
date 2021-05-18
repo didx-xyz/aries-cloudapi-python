@@ -50,12 +50,22 @@ async def write_credential_schema():
     schema = await aries_agent_controller.schema.write_schema(
         schema_name, schema_attributes, schema_version
     )
+    if not schema:
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\n Could not write schema to ledger",
+        )
     schema_id = schema["schema_id"]
 
     # Writing credential definition
     credential_definition = await aries_agent_controller.definitions.write_cred_def(
         schema_id
     )
+    if not credential_definition:
+        raise HTTPException(
+            status_code=418,
+            detail=f"Something went wrong.\nCould not write credential definition to ledger",
+        )
     credential_definition_id = credential_definition["credential_definition_id"]
 
     final_response = {

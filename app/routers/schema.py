@@ -1,17 +1,8 @@
 from fastapi import APIRouter, HTTPException
-import requests
-import json
 
 import aries_cloudcontroller
 
 router = APIRouter()
-
-
-aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-    admin_url=f"http://multitenant-agent:3021",
-    api_key="adminApiKey",
-    is_multitenant=True,
-)
 
 
 @router.post("/schema/schema_definition", tags=["schema", "credential"])
@@ -47,6 +38,11 @@ async def write_credential_schema():
     * credential_id
     """
 
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
     # Defining schema and writing it to the ledger
     schema_name = "yoma_test_schema"  # TODO Disallow code injection
     schema_version = (

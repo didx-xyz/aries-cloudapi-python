@@ -27,35 +27,41 @@ async def schema_define():
 )
 async def write_credential_schema():
     """
-    Create Schema and credential definition and
+    Create schema and credential definition and
     write it to the ledger.
 
-    Returns
-    *Schema
-    *Schema ID
-    *Credential Definition
-    *Credential ID
+    Parameters:
+    ----------
+    * schema_name: str
+        The name of the schema to be defined
+    * schema_version: str
+        The version of the schema to be written
+    * schema_attributes: list, optional
+        A list of attributes for the schema (default is None)
     """
 
     # Defining schema and writing it to the ledger
-    schema_name = "yoma_test_schema"
-    schema_version = "0.01"
+    schema_name = "yoma_test_schema"  # TODO Disallow code injection
+    schema_version = (
+        "0.01"  # TODO does this follow a pattern? if so validate that pattern
+    )
     schema_attributes = ["name", "age", "skill", "DOB"]
 
-    schema_response = await aries_agent_controller.schema.write_schema(
+    schema = await aries_agent_controller.schema.write_schema(
         schema_name, schema_attributes, schema_version
     )
-    schema_id = schema_response["schema_id"]
+    schema_id = schema["schema_id"]
+
     # Writing credential definition
-    credential_definition_response = (
-        await aries_agent_controller.definitions.write_cred_def(schema_id)
+    credential_definition = await aries_agent_controller.definitions.write_cred_def(
+        schema_id
     )
-    credential_definition_id = credential_definition_response["credential_definition_id"]
+    credential_definition_id = credential_definition["credential_definition_id"]
 
     final_response = {
-        "schema": schema_response,
+        "schema": schema,
         "schema_id": schema_id,
-        "credential": credential_definition_response,
+        "credential": credential_definition,
         "credential_id": credential_definition_id,
     }
     return final_response

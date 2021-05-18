@@ -1,17 +1,8 @@
 from fastapi import APIRouter, HTTPException
-import requests
-import json
 
 import aries_cloudcontroller
 
 router = APIRouter()
-
-
-aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-    admin_url=f"http://multitenant-agent:3021",
-    api_key="adminApiKey",
-    is_multitenant=True,
-)
 
 
 @router.post("/schema/schema_definition", tags=["schema", "credential"])
@@ -43,12 +34,18 @@ async def write_credential_schema(
 
     Returns:
     --------
+    as json:
     * schema
     * schema_id
     * credential_definition
     * credential_id
     """
 
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
     # Defining schema and writing it to the ledger
     schema_name = schema_name
     schema_version = schema_version
@@ -58,6 +55,7 @@ async def write_credential_schema(
         schema_name, schema_attributes, schema_version
     )
     if not write_schema_resp or write_schema_resp == {}:
+        aries_agent_controller.terminate()
         raise HTTPException(
             status_code=418,
             detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
@@ -69,6 +67,7 @@ async def write_credential_schema(
         schema_id
     )
     if not credential_definition:
+        aries_agent_controller.terminate()
         raise HTTPException(
             status_code=418,
             detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
@@ -81,4 +80,29 @@ async def write_credential_schema(
         "credential": credential_definition,
         "credential_id": credential_definition_id,
     }
+    aries_agent_controller.terminate()
     return final_response
+
+
+@router.get("/schema/registry", tags=["schemas", "registry"])
+async def get_schema_registry():
+    """
+    A function to obtain all schemas written to the ledger by YOMA
+    and YOMA only.
+
+    Returns:
+    --------
+    schemas: [dict]
+        A list of schema definitions
+    """
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
+
+    schemas = {}
+    # schemas = aries_agent_controller.schema
+
+    aries_agent_controller.terminate()
+    return schemas

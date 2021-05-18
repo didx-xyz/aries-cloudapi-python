@@ -38,6 +38,13 @@ async def write_credential_schema():  # schema_name: str, schema_version: str, s
         The version of the schema to be written
     * schema_attributes: list, optional
         A list of attributes for the schema (default is None)
+
+    Returns:
+    --------
+    * schema
+    * schema_id
+    * credential_definition
+    * credential_id
     """
 
     # Defining schema and writing it to the ledger

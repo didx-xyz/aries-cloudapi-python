@@ -29,6 +29,12 @@ async def write_credential_schema():
     """
     Create Schema and credential definition and
     write it to the ledger.
+
+    Returns
+    *Schema
+    *Schema ID
+    *Credential Definition
+    *Credential ID
     """
 
     # Defining schema and writing it to the ledger
@@ -39,12 +45,12 @@ async def write_credential_schema():
     schema_response = await aries_agent_controller.schema.write_schema(
         schema_name, schema_attributes, schema_version
     )
-    schema_id = response["schema_id"]
+    schema_id = schema_response["schema_id"]
     # Writing credential definition
     credential_definition_response = (
         await aries_agent_controller.definitions.write_cred_def(schema_id)
     )
-    credential_definition_id = response["credential_definition_id"]
+    credential_definition_id = credential_definition_response["credential_definition_id"]
 
     final_response = {
         "schema": schema_response,

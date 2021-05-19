@@ -49,7 +49,7 @@ async def create_public_did():
     # Adding empty header as parameters are being sent in payload
     generate_did_res = await aries_agent_controller.wallet.create_did()
     if not generate_did_res["result"]:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         raise HTTPException(
             status_code=418,
             detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
@@ -64,7 +64,7 @@ async def create_public_did():
     }
     r = requests.post(url, data=json.dumps(payload), headers={})
     if r.status_code != 200:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         error_json = r.json()
         raise HTTPException(
             status_code=418,
@@ -73,7 +73,7 @@ async def create_public_did():
     taa_response = await aries_agent_controller.ledger.get_taa()
     print("taa_response:\n", taa_response)
     if not taa_response["result"]:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         error_json = taa_response.json()
         raise HTTPException(
             status_code=418,
@@ -84,7 +84,7 @@ async def create_public_did():
     accept_taa_response = await aries_agent_controller.ledger.accept_taa(TAA)
     print("accept_taa_response:\n", accept_taa_response)
     if accept_taa_response != {}:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         error_json = accept_taa_response.json()
         raise HTTPException(
             status_code=418,
@@ -95,7 +95,7 @@ async def create_public_did():
     )
     print("assign_pub_did_response:\n", assign_pub_did_response)
     if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         error_json = assign_pub_did_response.json()
         raise HTTPException(
             status_code=418,
@@ -104,7 +104,7 @@ async def create_public_did():
     get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
     print("get_pub_did_response:\n ", get_pub_did_response)
     if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         error_json = get_pub_did_response.json()
         raise HTTPException(
             status_code=418,
@@ -114,7 +114,7 @@ async def create_public_did():
     issuer_verkey = get_pub_did_response["result"]["verkey"]
     issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(issuer_nym)
     if not issuer_endpoint:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",
@@ -124,7 +124,7 @@ async def create_public_did():
         "issuer_verkey": issuer_verkey,
         "issuer_endpoint": issuer_endpoint,
     }
-    aries_agent_controller.terminate()
+    await aries_agent_controller.terminate()
     return final_response
 
 

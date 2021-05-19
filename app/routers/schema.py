@@ -27,6 +27,29 @@ async def schema_define():
     return created_schemas
 
 
+@router.get("/schema/{schema_id}", tags=["schema"])
+async def get_by_id(schema_id: str):
+    """
+    Get a valid schemas by ID and return it
+    """
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
+    try:
+        created_schemas = await aries_agent_controller.schema.get_by_id(schema_id)
+    except Exception as e:
+        await aries_agent_controller.terminate()
+        raise HTTPException(
+                    status_code=418,
+                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+                )
+    await aries_agent_controller.terminate()
+    return created_schemas
+
+
+
 @router.get("/schema/schema_definition", tags=["schema", "credential"])
 async def schema_define():
     """

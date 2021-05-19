@@ -13,6 +13,7 @@ async def schema_define():
     """
     return {"msg": "from schema define"}
 
+
 @router.get("/schema/schema_define_getter", tags=["schema", "credential"])
 async def schema_define_getter():
     """
@@ -67,7 +68,7 @@ async def write_credential_schema(
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
-    
+
     if not write_schema_resp or write_schema_resp == {}:
         await aries_agent_controller.terminate()
         raise HTTPException(

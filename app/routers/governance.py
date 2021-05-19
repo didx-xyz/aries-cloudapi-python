@@ -21,5 +21,5 @@ async def schema_define():
         is_multitenant=True,
     )
 
-    aries_agent_controller.terminate()
+    await aries_agent_controller.terminate()
     pass

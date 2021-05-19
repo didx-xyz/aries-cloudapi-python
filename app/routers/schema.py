@@ -1,23 +1,32 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from typing import List, Optional
 
 import aries_cloudcontroller
 
 router = APIRouter()
 
 
-@router.post("/schema/schema_definition", tags=["schema", "credential"])
+@router.get("/schema/schema_definition", tags=["schema", "credential"])
 async def schema_define():
     """
     Define Schema
     """
-    pass
+    return {"msg": "from schema define"}
+
+@router.get("/schema/schema_define_getter", tags=["schema", "credential"])
+async def schema_define_getter():
+    """
+    Define Schema
+    """
+    final = await schema_define()
+    return final
 
 
-@router.get(
+@router.post(
     "/schema/write-schema-and-credential-definition", tags=["schema", "credential"]
 )
 async def write_credential_schema(
-    schema_name: str, schema_version: str, schema_attrs: list
+    schema_name: str, schema_version: str, schema_attrs: List[str] = Query(None)
 ):
     """
     Create schema and credential definition and
@@ -28,7 +37,8 @@ async def write_credential_schema(
     * schema_name: str
         The name of the schema to be defined
     * schema_version: str
-        The version of the schema to be written
+        The version of the schema to be written\n
+        Should be of the form x.x.x where x is an integer
     * schema_attributes: list, optional
         A list of attributes for the schema (default is None)
 
@@ -50,12 +60,16 @@ async def write_credential_schema(
     schema_name = schema_name
     schema_version = schema_version
     schema_attributes = schema_attrs
-
-    write_schema_resp = await aries_agent_controller.schema.write_schema(
-        schema_name, schema_attributes, schema_version
-    )
+    try:
+        write_schema_resp = await aries_agent_controller.schema.write_schema(
+            schema_name, schema_attributes, schema_version
+        )
+    except Exception as e:
+        await aries_agent_controller.terminate()
+        raise e
+    
     if not write_schema_resp or write_schema_resp == {}:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         raise HTTPException(
             status_code=418,
             detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
@@ -67,7 +81,7 @@ async def write_credential_schema(
         schema_id
     )
     if not credential_definition:
-        aries_agent_controller.terminate()
+        await aries_agent_controller.terminate()
         raise HTTPException(
             status_code=418,
             detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
@@ -75,12 +89,12 @@ async def write_credential_schema(
     credential_definition_id = credential_definition["credential_definition_id"]
 
     final_response = {
-        "schema": schema,
+        "schema": write_schema_resp,
         "schema_id": schema_id,
         "credential": credential_definition,
         "credential_id": credential_definition_id,
     }
-    aries_agent_controller.terminate()
+    await aries_agent_controller.terminate()
     return final_response
 
 
@@ -104,5 +118,5 @@ async def get_schema_registry():
     schemas = {}
     # schemas = aries_agent_controller.schema
 
-    aries_agent_controller.terminate()
+    await aries_agent_controller.terminate()
     return schemas

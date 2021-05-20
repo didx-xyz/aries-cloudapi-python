@@ -12,7 +12,7 @@ import aries_cloudcontroller
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/wallets", tags=["wallets"])
 
 # TODO: Determine how we want to instantiate and access the ariescontroller really.
 # This is the very crude way MVP
@@ -24,7 +24,7 @@ is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get("/wallets/create-pub-did", tags=["wallet", "did"])
+@router.get("/create-pub-did", tags=["wallet", "did"])
 async def create_public_did():
     """
     Create a new public DID and
@@ -133,7 +133,7 @@ async def create_public_did():
         )
 
 
-@router.get("/wallets", tags=["wallets"])
+@router.get("/", tags=["wallets"])
 async def wallets_root():
     """
     The default endpoints for wallets
@@ -144,7 +144,7 @@ async def wallets_root():
     return {"message": "Hello from the wallets controller"}
 
 
-@router.post("/wallets", tags=["wallets"])
+@router.post("/", tags=["wallets"])
 async def create_wallet(wallet_payload: dict = None):
     """
     Create a new wallet
@@ -175,7 +175,7 @@ async def create_wallet(wallet_payload: dict = None):
         raise e(f"Could not complete request because the following error occured: {e}")
 
 
-@router.get("/wallets/{wallet_id}", tags=["wallets"])
+@router.get("/{wallet_id}", tags=["wallets"])
 async def create_wallet(wallet_id):
     """
     Get the wallet information by id
@@ -183,7 +183,7 @@ async def create_wallet(wallet_id):
     pass
 
 
-@router.get("/wallets/{wallet_id}/connections", tags=["wallets", "connections"])
+@router.get("/{wallet_id}/connections", tags=["wallets", "connections"])
 async def get_connections(wallet_id):
     """
     Get all connections for a wallet given the wallet's ID
@@ -192,7 +192,7 @@ async def get_connections(wallet_id):
 
 
 @router.get(
-    "/wallets/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
+    "/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
 )
 async def get_connection_by_id(wallet_id, connection_id):
     """
@@ -202,7 +202,7 @@ async def get_connection_by_id(wallet_id, connection_id):
     pass
 
 
-@router.post("/wallets/{wallet_id}/connections", tags=["wallets", "connections"])
+@router.post("/{wallet_id}/connections", tags=["wallets", "connections"])
 async def create_connection_by_id(wallet_id):
     """
     Create a connection for a wallet
@@ -211,7 +211,7 @@ async def create_connection_by_id(wallet_id):
 
 
 @router.put(
-    "/wallets/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
+    "/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
 )
 async def update_connection_by_id(wallet_id, connection_id):
     """
@@ -222,7 +222,7 @@ async def update_connection_by_id(wallet_id, connection_id):
 
 
 @router.delete(
-    "/wallets/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
+    "/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
 )
 async def delete_connection_by_id(wallet_id, connection_id):
     """
@@ -231,7 +231,7 @@ async def delete_connection_by_id(wallet_id, connection_id):
     pass
 
 
-@router.delete("/wallets/{wallet_id}", tags=["wallets", "connections"])
+@router.delete("/{wallet_id}", tags=["wallets", "connections"])
 async def delete_connection_by_id(wallet_id):
     """
     Delete a wallet (by ID)

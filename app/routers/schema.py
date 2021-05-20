@@ -16,6 +16,7 @@ async def schema_define():
         is_multitenant=True,
     )
     try:
+        # TODO which schemas is this actually getting???
         created_schemas = await aries_agent_controller.schema.get_created_schema()
     except Exception as e:
         await aries_agent_controller.terminate()

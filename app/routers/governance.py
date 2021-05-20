@@ -9,7 +9,7 @@ router = APIRouter()
 async def schema_define():
     """
     Get the ecosystems policies
-    
+
     Returns:
     --------
     ecosystem_policy: [dict]

@@ -87,9 +87,9 @@ async def get_schema_registry():
         api_key="adminApiKey",
         is_multitenant=True,
     )
-    
+
     schemas = {}
     # schemas = aries_agent_controller.schema
-    
+
     aries_agent_controller.terminate()
     return schemas

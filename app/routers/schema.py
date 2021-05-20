@@ -32,6 +32,7 @@ async def write_credential_schema():
 
     Returns:
     --------
+    as json:
     * schema
     * schema_id
     * credential_definition
@@ -68,3 +69,27 @@ async def write_credential_schema():
         "credential_id": credential_definition_id,
     }
     return final_response
+
+
+@router.get("/schema/registry", tags=["schemas", "registry"])
+async def get_schema_registry():
+    """
+    A function to obtain all schemas written to the ledger by YOMA
+    and YOMA only.
+
+    Returns:
+    --------
+    schemas: [dict]
+        A list of schema definitions
+    """
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
+    
+    schemas = {}
+    # schemas = aries_agent_controller.schema
+    
+    aries_agent_controller.terminate()
+    return schemas

@@ -101,6 +101,7 @@ async def create_public_did():
         "issuer_verkey": issuer_verkey,
         "issuer_endpoint": issuer_endpoint,
     }
+    aries_agent_controller.terminate()
     return final_response
 
 

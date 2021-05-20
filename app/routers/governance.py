@@ -20,4 +20,6 @@ async def schema_define():
         api_key="adminApiKey",
         is_multitenant=True,
     )
+
+    aries_agent_controller.terminate()
     pass

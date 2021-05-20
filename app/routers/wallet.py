@@ -5,7 +5,7 @@ import os
 import logging
 
 
-from schemas import LedgerRequest
+from schemas import LedgerRequest, DidCreationResponse
 
 import aries_cloudcontroller
 
@@ -24,7 +24,7 @@ is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get("/create-pub-did", tags=["wallet", "did"])
+@router.get("/create-pub-did", tags=["wallet", "did"], response_model=DidCreationResponse)
 async def create_public_did():
     """
     Create a new public DID and
@@ -32,9 +32,9 @@ async def create_public_did():
     receive its public info.
 
     Returns:
-    * DID
-    * Issuer verkey
-    * Issuer Endpoint
+    * DID object (json)
+    * Issuer verkey (str)
+    * Issuer Endpoint (url)
     """
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
@@ -117,11 +117,12 @@ async def create_public_did():
                 status_code=418,
                 detail="Something went wrong. Could not obtain issuer endpoint.",
             )
-        final_response = {
-            "did_object": did_object,
-            "issuer_verkey": issuer_verkey,
-            "issuer_endpoint": issuer_endpoint,
-        }
+        issuer_endpoint_url = issuer_endpoint["endpoint"]
+        final_response = DidCreationResponse(
+            did_object=did_object,
+            issuer_verkey=issuer_verkey,
+            issuer_endpoint= issuer_endpoint_url
+        )
         await aries_agent_controller.terminate()
         return final_response
     except Exception as e:

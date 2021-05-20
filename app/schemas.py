@@ -1,6 +1,7 @@
+import json
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl, Json
 
 
 # TODO what is a good name for this
@@ -10,3 +11,9 @@ class LedgerRequest(BaseModel):
     did: str = Field(None)
     verkey: str = Field(None)
     paymentaddr: str = Field(None)
+
+
+class DidCreationResponse(BaseModel):
+    did_object: dict
+    issuer_verkey: str
+    issuer_endpoint: str

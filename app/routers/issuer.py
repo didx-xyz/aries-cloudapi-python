@@ -22,8 +22,11 @@ async def issue_credential(
         is_multitenant=True,
     )
     try:
-        schema_resp = await schema.get_by_id(schema_id)
-        schema_attr = schema_resp["attrNames"]
+        # TODO check whether connection is in active state. 
+        # If not, return msg saying conneciton not active - should be active
+        schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
+        schema_attr = schema_resp["schema"]["attrNames"]
+        cred_def_id = schema_resp["schema"]["id"]
         credential_attributes = dict(zip(schema_attr, credential_attrs))
         record = await aries_agent_controller.issuer.send_credential(
             connection_id, schema_id, cred_def_id, credential_attributes, trace=False
@@ -33,7 +36,8 @@ async def issue_credential(
         return record
         # for item in schema_attr:
     except Exception as e:
-        pass
+        await aries_agent_controller.terminate()
+        raise e
 
 
 @router.get(

@@ -72,3 +72,19 @@ async def create_connection():
         return payload
     except Exception as e:
         pass
+
+# Testing/Playing around Need to decide where this should exist
+@router.get("/issuer/get_connection_id", tags=["connection"])
+async def get_connection():
+
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"http://multitenant-agent:3021",
+        api_key="adminApiKey",
+        is_multitenant=True,
+    )
+    try:
+        connection = await aries_agent_controller.connections.get_connections()
+    except Exception as e:
+        await aries_agent_controller.terminate()
+    await aries_agent_controller.terminate()
+    return connection

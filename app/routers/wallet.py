@@ -24,7 +24,9 @@ is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get("/create-pub-did", tags=["wallet", "did"], response_model=DidCreationResponse)
+@router.get(
+    "/create-pub-did", tags=["wallet", "did"], response_model=DidCreationResponse
+)
 async def create_public_did():
     """
     Create a new public DID and
@@ -48,6 +50,8 @@ async def create_public_did():
         generate_did_res = await aries_agent_controller.wallet.create_did()
         if not generate_did_res["result"]:
             raise HTTPException(
+                # TODO: Should this return HTTPException, is so which status code?
+                # Check same for occurences below
                 status_code=418,
                 detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
             )
@@ -121,7 +125,7 @@ async def create_public_did():
         final_response = DidCreationResponse(
             did_object=did_object,
             issuer_verkey=issuer_verkey,
-            issuer_endpoint= issuer_endpoint_url
+            issuer_endpoint=issuer_endpoint_url,
         )
         await aries_agent_controller.terminate()
         return final_response
@@ -130,7 +134,7 @@ async def create_public_did():
         logger.error(f"The following error occured:\n{e!r}")
         raise HTTPException(
             status_code=500,
-            detail=f"Something went wrong: {e}",
+            detail=f"Something went wrong: {e!r}",
         )
 
 
@@ -149,11 +153,29 @@ async def wallets_root():
 async def create_wallet(wallet_payload: dict = None):
     """
     Create a new wallet
+
+    Parameters:
+    -----------
+
+    wallet_payload: dict
+        A dict/JSON object with values for the wallet creation of the
+        form: {
+            "image_url": "https://aries.ca/images/sample.png",
+            "key_management_mode": "managed",
+            "label": "Alice",
+            "wallet_dispatch_type": "default",
+            "wallet_key": "MySecretKey1234",
+            "wallet_name": "AlicesWallet",
+            "wallet_type": "indy",
+        }
     """
     try:
         if aries_agent_controller.is_multitenant:
             # TODO replace with model for payload/wallet like
             # described https://fastapi.tiangolo.com/tutorial/body/
+            # TODO Remove this default wallet. This has to be provided
+            # At least unique values for eg label, The rest could be filled
+            # with default values like image_url could point to a defautl avatar img
             if not wallet_payload:
                 payload = {
                     "image_url": "https://aries.ca/images/sample.png",
@@ -173,7 +195,9 @@ async def create_wallet(wallet_payload: dict = None):
             wallet_response = await aries_agent_controller.wallets.create_did()
         return wallet_response
     except Exception as e:
-        raise e(f"Could not complete request because the following error occured: {e}")
+        raise e(
+            f"Could not complete request because the following error occured: {e!r}"
+        )
 
 
 @router.get("/{wallet_id}", tags=["wallets"])
@@ -192,9 +216,7 @@ async def get_connections(wallet_id):
     pass
 
 
-@router.get(
-    "/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
-)
+@router.get("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
 async def get_connection_by_id(wallet_id, connection_id):
     """
     Get the specific connections per wallet per connection
@@ -211,9 +233,7 @@ async def create_connection_by_id(wallet_id):
     pass
 
 
-@router.put(
-    "/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
-)
+@router.put("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
 async def update_connection_by_id(wallet_id, connection_id):
     """
     Update a specific connection (by ID) for a
@@ -222,9 +242,7 @@ async def update_connection_by_id(wallet_id, connection_id):
     pass
 
 
-@router.delete(
-    "/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"]
-)
+@router.delete("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
 async def delete_connection_by_id(wallet_id, connection_id):
     """
     Delete a connection (by ID) for a given wallet (by ID)

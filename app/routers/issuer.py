@@ -22,7 +22,7 @@ async def issue_credential(
         is_multitenant=True,
     )
     try:
-        # TODO check whether connection is in active state. 
+        # TODO check whether connection is in active state.
         # If not, return msg saying conneciton not active - should be active
         schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
         schema_attr = schema_resp["schema"]["attrNames"]
@@ -77,7 +77,8 @@ async def create_connection():
     except Exception as e:
         pass
 
-# Testing/Playing 
+
+# Testing/Playing
 # TODO Decide where this should exist if required
 @router.get("/issuer/get_connection_id", tags=["connection"])
 async def get_connection():

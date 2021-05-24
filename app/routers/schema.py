@@ -5,6 +5,7 @@ import aries_cloudcontroller
 
 router = APIRouter()
 
+
 @router.get("/schema/all_schemas", tags=["schema"])
 async def schema_define():
     """
@@ -20,9 +21,9 @@ async def schema_define():
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-                    status_code=418,
-                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-                )
+            status_code=418,
+            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+        )
     await aries_agent_controller.terminate()
     return created_schemas
 
@@ -42,12 +43,11 @@ async def get_by_id(schema_id: str):
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-                    status_code=418,
-                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-                )
+            status_code=418,
+            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+        )
     await aries_agent_controller.terminate()
     return created_schemas
-
 
 
 @router.get("/schema/schema_definition", tags=["schema", "credential"])
@@ -56,6 +56,7 @@ async def schema_define():
     Define Schema
     """
     return {"msg": "from schema define"}
+
 
 @router.get("/schema/schema_define_getter", tags=["schema", "credential"])
 async def schema_define_getter():
@@ -111,7 +112,7 @@ async def write_credential_schema(
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
-    
+
     if not write_schema_resp or write_schema_resp == {}:
         await aries_agent_controller.terminate()
         raise HTTPException(

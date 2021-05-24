@@ -77,7 +77,8 @@ async def create_connection():
     except Exception as e:
         pass
 
-# Testing/Playing around Need to decide where this should exist
+# Testing/Playing 
+# TODO Decide where this should exist if required
 @router.get("/issuer/get_connection_id", tags=["connection"])
 async def get_connection():
 

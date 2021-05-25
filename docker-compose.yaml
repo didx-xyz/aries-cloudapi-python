@@ -1,8 +1,8 @@
 version: "3"
 
 services:
-  web:
-    build: 
+  yoma-ga-web:
+    build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
@@ -10,42 +10,87 @@ services:
     volumes:
       - ./app:/app
     depends_on:
-      - wallets-db
+      - yoma-ga-wallets-db
     networks:
-      - indy_demo
-    env_file: 
-      - resources/fastapi.default.env
-  wallets-db:
+      - yoma-ga
+    env_file:
+      - environments/yoma-ga/fastapi.default.env
+  yoma-ga-wallets-db:
     image: postgres:11
-    container_name: wallets-db
+    container_name: yoma-ga-wallets-db
     command: postgres -c listen_addresses='*'
-    env_file: 
-      - resources/db.default.env
+    env_file:
+      - environments/yoma-ga/db.default.env
     volumes:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - indy_demo
+      - yoma-ga
     tty: true
-  ngrok-multitenant:
+  ngrok-yoma-ga:
     image: wernight/ngrok
     env_file:
-      - resources/aca-py-agent.default.env
-    command: ngrok http multitenant-agent:3020 --log stdout
+      - environments/yoma-ga/aca-py-agent.default.env
+    command: ngrok http yoma-ga-agent:3020 --log stdout
     networks:
-      - indy_demo
-  multitenant-agent:
+      - yoma-ga
+  yoma-ga-agent:
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.agent
     env_file:
-      - resources/aca-py-agent.default.env
+      - environments/yoma-ga/aca-py-agent.default.env
     ports:
       - 3020:3020
       - 3021:3021
     depends_on:
-      - wallets-db
+      - yoma-ga-wallets-db
     networks:
-      - indy_demo
-
+      - yoma-ga
+  yoma-multitenant-web:
+    build: 
+      context: .
+      dockerfile: ./dockerfiles/fastapi/Dockerfile
+    ports:
+      - "8100:8000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - yoma-multitenant-wallets-db
+    networks:
+      - yoma-multitenant
+    env_file: 
+      - environments/yoma-multitenant/fastapi.default.env
+  yoma-multitenant-wallets-db:
+    image: postgres:11
+    container_name: yoma-multitenant-wallets-db
+    command: postgres -c listen_addresses='*'
+    env_file: 
+      - environments/yoma-multitenant/db.default.env
+    volumes:
+      - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - yoma-multitenant
+    tty: true
+  ngrok-yoma-multitenant:
+    image: wernight/ngrok
+    env_file:
+      - environments/yoma-multitenant/aca-py-agent.default.env
+    command: ngrok http yoma-multitenant-agent:3020 --log stdout
+    networks:
+      - yoma-multitenant
+  yoma-multitenant-agent:
+    build:
+      context: .
+      dockerfile: dockerfiles/agents/Dockerfile.agent
+    env_file:
+      - environments/yoma-multitenant/aca-py-agent.default.env
+    ports:
+      - 4020:3020
+      - 4021:3021
+    depends_on:
+      - yoma-multitenant-wallets-db
+    networks:
+      - yoma-multitenant
 networks:
-  indy_demo:
+  yoma-multitenant:
+  yoma-ga:

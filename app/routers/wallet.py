@@ -255,7 +255,7 @@ async def create_connection_by_id(wallet_id: str):
 
 
 @router.put("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
-async def update_connection_by_id(wallet_id, connection_id):
+async def update_connection_by_id(wallet_id: str, connection_id: str):
     """
     Update a specific connection (by ID) for a
     given wallet (by ID)

@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import aries_cloudcontroller
 import os
-
 from schemas import SchemaLedgerRequest
 
 router = APIRouter()
@@ -91,7 +90,7 @@ async def write_credential_schema(
             await aries_agent_controller.terminate()
             raise HTTPException(
                 status_code=418,
-                detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+                detail=f"Something went wrong.\n Could not write schema to ledger.\n{write_schema_resp}",
             )
         schema_id = write_schema_resp["schema_id"]
 
@@ -110,6 +109,7 @@ async def write_credential_schema(
         final_response = {
             "schema": write_schema_resp,
             "schema_id": schema_id,
+            ## TODO do we need to return full cred def?
             "credential": credential_definition,
             "credential_id": credential_definition_id,
         }

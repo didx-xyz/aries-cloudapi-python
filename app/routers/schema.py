@@ -11,26 +11,28 @@ admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
+
 @router.get("/schema/all_schemas", tags=["schema"])
 async def schema_define():
     """
     Get all valid schemas from YOMA
     """
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+    try:
+        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
             admin_url=f"{admin_url}:{admin_port}",
             api_key=f"{admin_api_key}",
             is_multitenant=is_multitenant,
         )
-    try:
         created_schemas = await aries_agent_controller.schema.get_created_schema()
+        await aries_agent_controller.terminate()
+        return created_schemas
+
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-                    status_code=418,
-                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-                )
-    await aries_agent_controller.terminate()
-    return created_schemas
+            status_code=418,
+            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+        )
 
 
 @router.get("/schema/schema_definition", tags=["schema", "credential"])
@@ -39,6 +41,7 @@ async def schema_define():
     Define Schema
     """
     return {"msg": "from schema define"}
+
 
 @router.get("/schema/schema_define_getter", tags=["schema", "credential"])
 async def schema_define_getter():
@@ -94,11 +97,7 @@ async def write_credential_schema(
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 086b3b6cd67dabbe2e46600cc12a9cef1fae55b9
     if not write_schema_resp or write_schema_resp == {}:
         await aries_agent_controller.terminate()
         raise HTTPException(
@@ -129,7 +128,7 @@ async def write_credential_schema(
     return final_response
 
 
-@router.get("/schema/registry", tags=["schemas", "registry"])
+@router.get("/schema/registry", tags=["schema", "registry"])
 async def get_schema_registry():
     """
     A function to obtain all schemas written to the ledger by YOMA

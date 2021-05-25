@@ -25,7 +25,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get(
-    "/create-pub-did", tags=["wallet", "did"], response_model=DidCreationResponse
+    "/create-pub-did", tags=["wallets", "did"], response_model=DidCreationResponse
 )
 async def create_public_did():
     """
@@ -136,20 +136,6 @@ async def create_public_did():
             status_code=500,
             detail=f"Something went wrong: {e!r}",
         )
-<<<<<<< HEAD
-=======
-    final_response = {
-        "did_object": did_object,
-        "issuer_verkey": issuer_verkey,
-        "issuer_endpoint": issuer_endpoint,
-    }
-<<<<<<< HEAD
-    aries_agent_controller.terminate()
-=======
-    await aries_agent_controller.terminate()
->>>>>>> 086b3b6cd67dabbe2e46600cc12a9cef1fae55b9
-    return final_response
->>>>>>> Terminate aries controller before endpoint function terminates
 
 
 @router.get("/", tags=["wallets"])

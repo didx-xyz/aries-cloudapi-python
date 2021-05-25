@@ -1,8 +1,15 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import aries_cloudcontroller
+import os
 
 router = APIRouter()
+
+admin_url = os.getenv("ACAPY_ADMIN_URL")
+admin_port = os.getenv("ACAPY_ADMIN_PORT")
+admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
+is_multitenant = os.getenv("IS_MULTITENANT", True)
+ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 @router.get("/schema/all_schemas", tags=["schema"])
 async def schema_define():
@@ -10,10 +17,10 @@ async def schema_define():
     Get all valid schemas from YOMA
     """
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
-    )
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=f"{admin_api_key}",
+            is_multitenant=is_multitenant,
+        )
     try:
         created_schemas = await aries_agent_controller.schema.get_created_schema()
     except Exception as e:

@@ -143,7 +143,11 @@ async def create_public_did():
         "issuer_verkey": issuer_verkey,
         "issuer_endpoint": issuer_endpoint,
     }
+<<<<<<< HEAD
     aries_agent_controller.terminate()
+=======
+    await aries_agent_controller.terminate()
+>>>>>>> 086b3b6cd67dabbe2e46600cc12a9cef1fae55b9
     return final_response
 >>>>>>> Terminate aries controller before endpoint function terminates
 

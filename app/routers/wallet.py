@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/wallets", tags=["wallets"])
 
-# TODO: Determine how we want to instantiate and access the ariescontroller really.
-# This is the very crude way MVP
-
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
@@ -25,7 +22,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get(
-    "/create-pub-did", tags=["wallet", "did"], response_model=DidCreationResponse
+    "/create-pub-did", tags=["wallets", "did"], response_model=DidCreationResponse
 )
 async def create_public_did():
     """
@@ -41,10 +38,10 @@ async def create_public_did():
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
             admin_url=f"{admin_url}:{admin_port}",
-            api_key=f"{admin_api_key}",
+            api_key=admin_api_key,
             is_multitenant=is_multitenant,
         )
-        # TODO: Should thi scome from env var or from the client request?
+        # TODO: Should this come from env var or from the client request?
         url = ledger_url
         # Adding empty header as parameters are being sent in payload
         generate_did_res = await aries_agent_controller.wallet.create_did()
@@ -52,7 +49,7 @@ async def create_public_did():
             raise HTTPException(
                 # TODO: Should this return HTTPException, is so which status code?
                 # Check same for occurences below
-                status_code=418,
+                status_code=404,
                 detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
             )
         did_object = generate_did_res["result"]
@@ -69,7 +66,7 @@ async def create_public_did():
         if r.status_code != 200:
             error_json = r.json()
             raise HTTPException(
-                status_code=418,
+                status_code=r.status_code,
                 detail=f"Something went wrong.\nCould not write to StagingNet.\n{error_json}",
             )
         taa_response = await aries_agent_controller.ledger.get_taa()
@@ -77,7 +74,7 @@ async def create_public_did():
         if not taa_response["result"]:
             error_json = taa_response.json()
             raise HTTPException(
-                status_code=418,
+                status_code=404,
                 detail=f"Something went wrong. Could not get TAA. {error_json}",
             )
         TAA = taa_response["result"]["taa_record"]
@@ -87,7 +84,7 @@ async def create_public_did():
         if accept_taa_response != {}:
             error_json = accept_taa_response.json()
             raise HTTPException(
-                status_code=418,
+                status_code=404,
                 detail=f"Something went wrong. Could not accept TAA. {error_json}",
             )
         assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
@@ -100,7 +97,7 @@ async def create_public_did():
         ):
             error_json = assign_pub_did_response.json()
             raise HTTPException(
-                status_code=418,
+                status_code=500,
                 detail=f"Something went wrong.\nCould not assign DID. {error_json}",
             )
         get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
@@ -108,7 +105,7 @@ async def create_public_did():
         if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
             error_json = get_pub_did_response.json()
             raise HTTPException(
-                status_code=418,
+                status_code=404,
                 detail=f"Something went wrong. Could not obtain public DID. {error_json}",
             )
         issuer_nym = get_pub_did_response["result"]["did"]
@@ -118,7 +115,7 @@ async def create_public_did():
         )
         if not issuer_endpoint:
             raise HTTPException(
-                status_code=418,
+                status_code=404,
                 detail="Something went wrong. Could not obtain issuer endpoint.",
             )
         issuer_endpoint_url = issuer_endpoint["endpoint"]
@@ -146,9 +143,11 @@ async def wallets_root():
     TODO: Determine what this should return or
     whether this should return anything at all
     """
-    return {"message": "Hello from the wallets controller"}
+    return {
+        "message": "Wallets endpoint. Please, visit /docs to consult the Swagger docs."
+    }
 
-
+# TODO: This should be somehow retsricted?!
 @router.post("/", tags=["wallets"])
 async def create_wallet(wallet_payload: dict = None):
     """
@@ -170,6 +169,11 @@ async def create_wallet(wallet_payload: dict = None):
         }
     """
     try:
+        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=admin_api_key,
+            is_multitenant=is_multitenant,
+        )
         if aries_agent_controller.is_multitenant:
             # TODO replace with model for payload/wallet like
             # described https://fastapi.tiangolo.com/tutorial/body/
@@ -200,35 +204,52 @@ async def create_wallet(wallet_payload: dict = None):
         )
 
 
+# TODOs see endpoints below
 @router.get("/{wallet_id}", tags=["wallets"])
-async def create_wallet(wallet_id):
+async def get_wallet_info_by_id(wallet_id: str):
     """
     Get the wallet information by id
+    
+    Parameters:
+    -----------
+    wallet_id: str
     """
     pass
 
 
 @router.get("/{wallet_id}/connections", tags=["wallets", "connections"])
-async def get_connections(wallet_id):
+async def get_connections(wallet_id: str):
     """
     Get all connections for a wallet given the wallet's ID
+
+    Parameters:
+    -----------
+    wallet_id: str
     """
     pass
 
 
 @router.get("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
-async def get_connection_by_id(wallet_id, connection_id):
+async def get_connection_by_id(wallet_id: str, connection_id: str):
     """
     Get the specific connections per wallet per connection
     by respective IDs
+
+    Parameters:
+    -----------
+    wallet_id: str
     """
     pass
 
 
 @router.post("/{wallet_id}/connections", tags=["wallets", "connections"])
-async def create_connection_by_id(wallet_id):
+async def create_connection_by_id(wallet_id: str):
     """
     Create a connection for a wallet
+
+    Parameters:
+    -----------
+    wallet_id: str 
     """
     pass
 
@@ -238,23 +259,52 @@ async def update_connection_by_id(wallet_id, connection_id):
     """
     Update a specific connection (by ID) for a
     given wallet (by ID)
+
+    Parameters:
+    -----------
+    wallet_id: str
+    connection_id: str
     """
     pass
 
 
 @router.delete("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
-async def delete_connection_by_id(wallet_id, connection_id):
+async def delete_connection_by_id(wallet_id: str, connection_id: str):
     """
     Delete a connection (by ID) for a given wallet (by ID)
+
+    Parameters:
+    -----------
+    wallet_id: str
+    connection_id: str
     """
     pass
 
 
 @router.delete("/{wallet_id}", tags=["wallets", "connections"])
-async def delete_connection_by_id(wallet_id):
+async def delete_wallet_by_id(wallet_id: str):
     """
     Delete a wallet (by ID)
 
-    TODO: Should this be admin-only?
+    Parameters:
+    -----------
+    wallet_id: str
     """
+    # TODO: Should this be admin-only?
     pass
+
+
+@router.post("/{wallet_id}", tags=["wallets", "connections"])
+async def add_did_to_trusted_reg(wallet_id: str):
+    """
+    Delete a wallet (by ID)
+
+    Parameters:
+    -----------
+    wallet_id: str
+    """
+    # TODO: Should this be admin-only?
+    pass
+
+
+# TODO Add Security and key managements eg. create and exchange new key pairs

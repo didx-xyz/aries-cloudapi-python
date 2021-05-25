@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field, HttpUrl, Json
 
@@ -17,3 +17,9 @@ class DidCreationResponse(BaseModel):
     did_object: dict
     issuer_verkey: str
     issuer_endpoint: str
+
+
+class SchemaLedgerRequest(BaseModel):
+    schema_name: str
+    schema_version : str
+    schema_attrs: List[str]

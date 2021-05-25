@@ -32,7 +32,7 @@ async def get_schema():
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-            status_code=418,
+            status_code=500,
             detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
         )
 

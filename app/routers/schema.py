@@ -1,9 +1,15 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-
+import os
 import aries_cloudcontroller
 
 router = APIRouter()
+
+admin_url = os.getenv("ACAPY_ADMIN_URL")
+admin_port = os.getenv("ACAPY_ADMIN_PORT")
+admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
+is_multitenant = os.getenv("IS_MULTITENANT", True)
+ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get("/schema/schema_definition", tags=["schema", "credential"])
@@ -14,8 +20,8 @@ async def schema_define():
     return {"msg": "from schema define"}
 
 
-@router.get("/schema/schema_define_getter", tags=["schema", "credential"])
-async def schema_define_getter():
+@router.get("/schema/schema_define_retriever", tags=["schema", "credential"])
+async def schema_define_retriever():
     """
     Define Schema
     """

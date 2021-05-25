@@ -44,13 +44,13 @@ async def create_public_did():
             api_key=f"{admin_api_key}",
             is_multitenant=is_multitenant,
         )
-        # TODO: Should thi scome from env var or from the client request?
+        # TODO: Should this come from env var or from the client request?
         url = ledger_url
         # Adding empty header as parameters are being sent in payload
         generate_did_res = await aries_agent_controller.wallet.create_did()
         if not generate_did_res["result"]:
             raise HTTPException(
-                # TODO: Should this return HTTPException, is so which status code?
+                # TODO: Should this return HTTPException, if so which status code?
                 # Check same for occurences below
                 status_code=418,
                 detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",

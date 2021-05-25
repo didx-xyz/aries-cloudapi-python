@@ -10,6 +10,7 @@ app = FastAPI()
 
 app.include_router(wallet.router)
 app.include_router(schema.router)
+app.include_router(governance.router)
 app.include_router(
     admin.router,
     prefix="/admin",

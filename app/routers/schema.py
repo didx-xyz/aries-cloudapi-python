@@ -1,31 +1,40 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-
 import aries_cloudcontroller
+import os
+
+from schemas import SchemaDefinitionRequest
 
 router = APIRouter()
 
+admin_url = os.getenv("ACAPY_ADMIN_URL")
+admin_port = os.getenv("ACAPY_ADMIN_PORT")
+admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
+is_multitenant = os.getenv("IS_MULTITENANT", True)
+ledger_url = os.getenv("LEDGER_NETWORK_URL")
+
+
 @router.get("/schema/all_schemas", tags=["schema"])
-async def schema_define():
+async def get_schema():
     """
     Get all valid schemas from YOMA
     """
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
-    )
     try:
-        # TODO which schemas is this actually getting???
+        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=f"{admin_api_key}",
+            is_multitenant=is_multitenant,
+        )
         created_schemas = await aries_agent_controller.schema.get_created_schema()
+        await aries_agent_controller.terminate()
+        return created_schemas
+
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-                    status_code=418,
-                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-                )
-    await aries_agent_controller.terminate()
-    return created_schemas
+            status_code=418,
+            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+        )
 
 
 @router.get("/schema/schema_definition", tags=["schema", "credential"])
@@ -34,6 +43,7 @@ async def schema_define():
     Define Schema
     """
     return {"msg": "from schema define"}
+
 
 @router.get("/schema/schema_define_getter", tags=["schema", "credential"])
 async def schema_define_getter():
@@ -74,22 +84,26 @@ async def write_credential_schema(
     """
 
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
+        admin_url=f"{admin_url}:{admin_port}",
+        api_key=f"{admin_api_key}",
+        is_multitenant=is_multitenant,
     )
+
     # Defining schema and writing it to the ledger
-    schema_name = schema_name
-    schema_version = schema_version
-    schema_attributes = schema_attrs
+    # TODO Rename 'sch' to something that makes more sense
+    sch = SchemaDefinitionRequest(
+        schema_name=schema_name,
+        schema_version=schema_version,
+        schema_attributes=schema_attrs,
+    ).dict()
     try:
         write_schema_resp = await aries_agent_controller.schema.write_schema(
-            schema_name, schema_attributes, schema_version
+            sch.schema_name, sch.schema_attributes, sch.schema_version
         )
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
-    
+
     if not write_schema_resp or write_schema_resp == {}:
         await aries_agent_controller.terminate()
         raise HTTPException(
@@ -120,7 +134,7 @@ async def write_credential_schema(
     return final_response
 
 
-@router.get("/schema/registry", tags=["schemas", "registry"])
+@router.get("/schema/registry", tags=["schema", "registry"])
 async def get_schema_registry():
     """
     A function to obtain all schemas written to the ledger by YOMA
@@ -132,9 +146,9 @@ async def get_schema_registry():
         A list of schema definitions
     """
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
+        admin_url=f"{admin_url}:{admin_port}",
+        api_key=f"{admin_api_key}",
+        is_multitenant=is_multitenant,
     )
 
     schemas = {}

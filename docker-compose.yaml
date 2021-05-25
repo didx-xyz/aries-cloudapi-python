@@ -13,6 +13,8 @@ services:
       - wallets-db
     networks:
       - indy_demo
+    env_file: 
+      - resources/fastapi.default.env
   wallets-db:
     image: postgres:11
     container_name: wallets-db

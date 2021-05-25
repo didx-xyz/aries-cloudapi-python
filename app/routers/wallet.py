@@ -133,7 +133,7 @@ async def create_public_did():
         await aries_agent_controller.terminate()
         logger.error(f"The following error occured:\n{e!r}")
         raise HTTPException(
-            status_code=500,
+            status_code=500
             detail=f"Something went wrong: {e!r}",
         )
 

@@ -82,56 +82,61 @@ async def write_credential_schema(
     * credential_definition
     * credential_id
     """
-
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"{admin_url}:{admin_port}",
-        api_key=f"{admin_api_key}",
-        is_multitenant=is_multitenant,
-    )
-
-    # Defining schema and writing it to the ledger
-    # TODO Rename 'sch' to something that makes more sense
-    sch = SchemaDefinitionRequest(
-        schema_name=schema_name,
-        schema_version=schema_version,
-        schema_attributes=schema_attrs,
-    ).dict()
     try:
-        write_schema_resp = await aries_agent_controller.schema.write_schema(
-            sch.schema_name, sch.schema_attributes, sch.schema_version
+        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=f"{admin_api_key}",
+            is_multitenant=is_multitenant,
         )
+
+        # Defining schema and writing it to the ledger
+
+        schema_definition_request = SchemaDefinitionRequest(
+            schema_name=schema_name,
+            schema_version=schema_version,
+            schema_attributes=schema_attrs,
+        ).dict()
+
+        write_schema_resp = await aries_agent_controller.schema.write_schema(
+            schema_definition_request.schema_name,
+            schema_definition_request.schema_attributes,
+            schema_definition_request.schema_version,
+        )
+
+        if not write_schema_resp or write_schema_resp == {}:
+            await aries_agent_controller.terminate()
+            raise HTTPException(
+                status_code=418,
+                detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+            )
+        schema_id = write_schema_resp["schema_id"]
+
+        # Writing credential definition
+        credential_definition = await aries_agent_controller.definitions.write_cred_def(
+            schema_id
+        )
+        if not credential_definition:
+            await aries_agent_controller.terminate()
+            raise HTTPException(
+                status_code=418,
+                detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
+            )
+        credential_definition_id = credential_definition["credential_definition_id"]
+
+        final_response = {
+            "schema": write_schema_resp,
+            "schema_id": schema_id,
+            "credential": credential_definition,
+            "credential_id": credential_definition_id,
+        }
+        await aries_agent_controller.terminate()
+        return final_response
     except Exception as e:
         await aries_agent_controller.terminate()
-        raise e
-
-    if not write_schema_resp or write_schema_resp == {}:
-        await aries_agent_controller.terminate()
         raise HTTPException(
-            status_code=418,
-            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+            status_code=500,
+            detail=f"Something went wrong: {e!r}",
         )
-    schema_id = write_schema_resp["schema_id"]
-
-    # Writing credential definition
-    credential_definition = await aries_agent_controller.definitions.write_cred_def(
-        schema_id
-    )
-    if not credential_definition:
-        await aries_agent_controller.terminate()
-        raise HTTPException(
-            status_code=418,
-            detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
-        )
-    credential_definition_id = credential_definition["credential_definition_id"]
-
-    final_response = {
-        "schema": write_schema_resp,
-        "schema_id": schema_id,
-        "credential": credential_definition,
-        "credential_id": credential_definition_id,
-    }
-    await aries_agent_controller.terminate()
-    return final_response
 
 
 @router.get("/schema/registry", tags=["schema", "registry"])

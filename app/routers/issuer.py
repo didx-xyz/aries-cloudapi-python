@@ -54,6 +54,7 @@ async def create_connection():
     """
     Creates invitation for the holder to scan
     """
+    # TODO obtain controller vars from env vars - see wallets PR
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
         admin_url=f"http://multitenant-agent:3021",
         api_key="adminApiKey",
@@ -75,20 +76,24 @@ async def create_connection():
         payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
         return payload
     except Exception as e:
-        pass
+        await aries_agent_controller.terminate()
+        raise e
 
 # Testing/Playing around Need to decide where this should exist
-@router.get("/issuer/get_connection_id", tags=["connection"])
+@router.get("/issuer/get_connection_id", tags=["connections"])
 async def get_connection():
-
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
-    )
+    """
+    Get the connection id
+    """
     try:
+        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+            admin_url=f"http://multitenant-agent:3021",
+            api_key="adminApiKey",
+            is_multitenant=True,
+        )
         connection = await aries_agent_controller.connections.get_connections()
+        await aries_agent_controller.terminate()
+        return connection
     except Exception as e:
         await aries_agent_controller.terminate()
-    await aries_agent_controller.terminate()
-    return connection
+        raise e

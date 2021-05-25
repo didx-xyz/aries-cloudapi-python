@@ -47,7 +47,7 @@ async def create_public_did():
         generate_did_res = await aries_agent_controller.wallet.create_did()
         if not generate_did_res["result"]:
             raise HTTPException(
-                # TODO: Should this return HTTPException, is so which status code?
+                # TODO: Should this return HTTPException, if so which status code?
                 # Check same for occurences below
                 status_code=404,
                 detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",

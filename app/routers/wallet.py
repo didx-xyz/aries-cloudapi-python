@@ -5,7 +5,7 @@ import os
 import logging
 
 
-from schemas import LedgerRequest, DidCreationResponse
+from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
 
 import aries_cloudcontroller
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/wallets", tags=["wallets"])
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-is_multitenant = os.getenv("IS_MULTITENANT", True)
+is_multitenant = os.getenv("IS_MULTITENANT", False)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
@@ -153,24 +153,13 @@ async def wallets_root():
 
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
-async def create_wallet(wallet_payload: dict = None):
+async def create_wallet(wallet_payload: InitWalletRequest):
     """
     Create a new wallet
 
     Parameters:
     -----------
-
     wallet_payload: dict
-        A dict/JSON object with values for the wallet creation of the
-        form: {
-            "image_url": "https://aries.ca/images/sample.png",
-            "key_management_mode": "managed",
-            "label": "Alice",
-            "wallet_dispatch_type": "default",
-            "wallet_key": "MySecretKey1234",
-            "wallet_name": "AlicesWallet",
-            "wallet_type": "indy",
-        }
     """
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
@@ -196,15 +185,19 @@ async def create_wallet(wallet_payload: dict = None):
                 }
             else:
                 payload = wallet_payload
-            wallet_response = await aries_agent_controller.multitenant.create_wallet(
+            wallet_response = await aries_agent_controller.multitenant.create_subwallet(
                 payload
             )
         else:
-            wallet_response = await aries_agent_controller.wallets.create_did()
+            # TODO: Implement wallet_response as schema if that is useful
+            wallet_response = await aries_agent_controller.wallet.create_did()
+        await aries_agent_controller.terminate()
         return wallet_response
     except Exception as e:
-        raise e(
-            f"Could not complete request because the following error occured: {e!r}"
+        await aries_agent_controller.terminate()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Something went wrong: {e!r}",
         )
 
 

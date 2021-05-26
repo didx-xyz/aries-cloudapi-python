@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from typing import List
-import base64
 import io
 import qrcode
 import aries_cloudcontroller
@@ -75,6 +74,15 @@ async def create_connection():
         buffer_img = io.BytesIO()
         img.save(buffer_img, format="PNG")
         await aries_agent_controller.terminate()
+        # Alternatively, one can also return the QR code as a
+        # base64 encoded string if that is prefered:
+        # 
+        # img_64 = base64.b64encode(buffer_img.getvalue())
+        # await aries_agent_controller.terminate()
+        # payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
+        # return payload
+        #  
+        # ! Make sure you have imported base64
         return StreamingResponse(
             io.BytesIO(buffer_img.getvalue()), media_type="image/png"
         )

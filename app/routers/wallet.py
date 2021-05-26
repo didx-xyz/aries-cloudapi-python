@@ -35,6 +35,9 @@ async def create_public_did():
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
+    # TODO Can we break down this endpoint into smaller functions?
+    # Because this really is too complex/too much happening at once.
+    # This way not really testible/robust
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
             admin_url=f"{admin_url}:{admin_port}",
@@ -147,6 +150,7 @@ async def wallets_root():
         "message": "Wallets endpoint. Please, visit /docs to consult the Swagger docs."
     }
 
+
 # TODO: This should be somehow retsricted?!
 @router.post("/", tags=["wallets"])
 async def create_wallet(wallet_payload: dict = None):
@@ -209,7 +213,7 @@ async def create_wallet(wallet_payload: dict = None):
 async def get_wallet_info_by_id(wallet_id: str):
     """
     Get the wallet information by id
-    
+
     Parameters:
     -----------
     wallet_id: str
@@ -249,7 +253,7 @@ async def create_connection_by_id(wallet_id: str):
 
     Parameters:
     -----------
-    wallet_id: str 
+    wallet_id: str
     """
     pass
 

@@ -21,11 +21,12 @@ class DidCreationResponse(BaseModel):
 
 class SchemaLedgerRequest(BaseModel):
     schema_name: str
-    schema_version : str
+    schema_version: str
     schema_attrs: List[str]
+
 
 class SchemaResponse(BaseModel):
     schema_resp: str
-    schema_id : str
-    credential_definition : str
-    credential_id : str
+    schema_id: str
+    credential_definition: str
+    credential_id: str

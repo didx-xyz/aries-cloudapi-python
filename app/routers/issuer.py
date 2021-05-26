@@ -76,16 +76,15 @@ async def create_connection():
         await aries_agent_controller.terminate()
         # Alternatively, one can also return the QR code as a
         # base64 encoded string if that is prefered:
-        # 
+        #
         # img_64 = base64.b64encode(buffer_img.getvalue())
         # await aries_agent_controller.terminate()
         # payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
         # return payload
-        #  
+        #
         # ! Make sure you have imported base64
-        return StreamingResponse(
-            io.BytesIO(buffer_img.getvalue()), media_type="image/png"
-        )
+        resp_img = io.BytesIO(buffer_img.getvalue())
+        return StreamingResponse(resp_img, media_type="image/png")
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e

@@ -2,7 +2,8 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import aries_cloudcontroller
 import os
-from schemas import SchemaLedgerRequest
+
+from schemas import SchemaLedgerRequest, SchemaResponse
 
 router = APIRouter()
 
@@ -38,7 +39,7 @@ async def get_schema():
 
 
 @router.post(
-    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"]
+    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"],response_model = SchemaResponse
 )
 async def write_credential_schema(
     schema_name: str, schema_version: str, schema_attrs: List[str] = Query(None)
@@ -89,8 +90,8 @@ async def write_credential_schema(
         if not write_schema_resp or write_schema_resp == {}:
             await aries_agent_controller.terminate()
             raise HTTPException(
-                status_code=418,
-                detail=f"Something went wrong.\n Could not write schema to ledger.\n{write_schema_resp}",
+                status_code=404,
+                detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
             )
         schema_id = write_schema_resp["schema_id"]
 
@@ -101,18 +102,17 @@ async def write_credential_schema(
         if not credential_definition:
             await aries_agent_controller.terminate()
             raise HTTPException(
-                status_code=418,
+                status_code=404,
                 detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
             )
         credential_definition_id = credential_definition["credential_definition_id"]
 
-        final_response = {
-            "schema": write_schema_resp,
-            "schema_id": schema_id,
-            ## TODO do we need to return full cred def?
-            "credential": credential_definition,
-            "credential_id": credential_definition_id,
-        }
+        final_response = SchemaResponse(
+            schema_resp = write_schema_resp,
+            schema_id = schema_id,
+            credential_definition = credential_definition,
+            credential_id = credential_definition_id,
+        )
         await aries_agent_controller.terminate()
         return final_response
     except Exception as e:
@@ -136,7 +136,7 @@ async def get_schema_registry():
     """
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
         admin_url=f"{admin_url}:{admin_port}",
-        api_key=f"{admin_api_key}",
+        api_key=admin_api_key,
         is_multitenant=is_multitenant,
     )
 

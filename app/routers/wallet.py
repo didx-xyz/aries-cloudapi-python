@@ -22,7 +22,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get(
-    "/create-pub-did", tags=["wallets", "did"], response_model=DidCreationResponse
+    "/create-pub-did", tags=["did"], response_model=DidCreationResponse
 )
 async def create_public_did():
     """
@@ -138,7 +138,7 @@ async def create_public_did():
         )
 
 
-@router.get("/", tags=["wallets"])
+@router.get("/")
 async def wallets_root():
     """
     The default endpoints for wallets
@@ -152,7 +152,7 @@ async def wallets_root():
 
 
 # TODO: This should be somehow retsricted?!
-@router.post("/create-wallet", tags=["wallets"])
+@router.post("/create-wallet")
 async def create_wallet(wallet_payload: dict = None):
     """
     Create a new wallet
@@ -209,7 +209,7 @@ async def create_wallet(wallet_payload: dict = None):
 
 
 # TODOs see endpoints below
-@router.get("/{wallet_id}", tags=["wallets"])
+@router.get("/{wallet_id}")
 async def get_wallet_info_by_id(wallet_id: str):
     """
     Get the wallet information by id
@@ -221,7 +221,7 @@ async def get_wallet_info_by_id(wallet_id: str):
     pass
 
 
-@router.get("/{wallet_id}/connections", tags=["wallets", "connections"])
+@router.get("/{wallet_id}/connections", tags=["connections"])
 async def get_connections(wallet_id: str):
     """
     Get all connections for a wallet given the wallet's ID
@@ -233,7 +233,7 @@ async def get_connections(wallet_id: str):
     pass
 
 
-@router.get("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
+@router.get("/{wallet_id}/connections/{conn_id}", tags=["connections"])
 async def get_connection_by_id(wallet_id: str, connection_id: str):
     """
     Get the specific connections per wallet per connection
@@ -246,7 +246,7 @@ async def get_connection_by_id(wallet_id: str, connection_id: str):
     pass
 
 
-@router.post("/{wallet_id}/connections", tags=["wallets", "connections"])
+@router.post("/{wallet_id}/connections", tags=["connections"])
 async def create_connection_by_id(wallet_id: str):
     """
     Create a connection for a wallet
@@ -258,7 +258,7 @@ async def create_connection_by_id(wallet_id: str):
     pass
 
 
-@router.put("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
+@router.put("/{wallet_id}/connections/{conn_id}", tags=["connections"])
 async def update_connection_by_id(wallet_id: str, connection_id: str):
     """
     Update a specific connection (by ID) for a
@@ -272,7 +272,7 @@ async def update_connection_by_id(wallet_id: str, connection_id: str):
     pass
 
 
-@router.delete("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
+@router.delete("/{wallet_id}/connections/{conn_id}", tags=["connections"])
 async def delete_connection_by_id(wallet_id: str, connection_id: str):
     """
     Delete a connection (by ID) for a given wallet (by ID)
@@ -285,7 +285,7 @@ async def delete_connection_by_id(wallet_id: str, connection_id: str):
     pass
 
 
-@router.delete("/{wallet_id}", tags=["wallets", "connections"])
+@router.delete("/{wallet_id}", tags=["connections"])
 async def delete_wallet_by_id(wallet_id: str):
     """
     Delete a wallet (by ID)
@@ -298,7 +298,7 @@ async def delete_wallet_by_id(wallet_id: str):
     pass
 
 
-@router.post("/{wallet_id}", tags=["wallets", "connections"])
+@router.post("/{wallet_id}", tags=["connections"])
 async def add_did_to_trusted_reg(wallet_id: str):
     """
     Delete a wallet (by ID)

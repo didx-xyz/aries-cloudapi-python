@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from typing import List
 import base64
 import io
-from . import schema
 import qrcode
 import aries_cloudcontroller
 
@@ -22,7 +22,7 @@ async def issue_credential(
         is_multitenant=True,
     )
     try:
-        # TODO check whether connection is in active state. 
+        # TODO check whether connection is in active state.
         # If not, return msg saying conneciton not active - should be active
         schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
         schema_attr = schema_resp["schema"]["attrNames"]
@@ -53,6 +53,9 @@ async def issue_credential(
 async def create_connection():
     """
     Creates invitation for the holder to scan
+
+    Returns:
+        QRCode PNG file from StreamingResponse
     """
     # TODO obtain controller vars from env vars - see wallets PR
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
@@ -70,14 +73,15 @@ async def create_connection():
         qr.make(fit=True)
         img = qr.make_image(fill="black", back_color="white")
         buffer_img = io.BytesIO()
-        img.save(buffer_img, format="JPEG")
-        img_64 = base64.b64encode(buffer_img.getvalue())
+        img.save(buffer_img, format="PNG")
         await aries_agent_controller.terminate()
-        payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
-        return payload
+        return StreamingResponse(
+            io.BytesIO(buffer_img.getvalue()), media_type="image/png"
+        )
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
+
 
 # Testing/Playing around Need to decide where this should exist
 @router.get("/issuer/get_connection_id", tags=["connections"])

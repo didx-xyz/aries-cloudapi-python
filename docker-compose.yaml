@@ -1,0 +1,96 @@
+version: "3"
+
+services:
+  yoma-ga-web:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/fastapi/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - yoma-ga-wallets-db
+    networks:
+      - yoma-ga
+    env_file:
+      - environments/yoma-ga/fastapi.default.env
+  yoma-ga-wallets-db:
+    image: postgres:11
+    container_name: yoma-ga-wallets-db
+    command: postgres -c listen_addresses='*'
+    env_file:
+      - environments/yoma-ga/db.default.env
+    volumes:
+      - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - yoma-ga
+    tty: true
+  ngrok-yoma-ga:
+    image: wernight/ngrok
+    env_file:
+      - environments/yoma-ga/aca-py-agent.default.env
+    command: ngrok http yoma-ga-agent:3020 --log stdout
+    networks:
+      - yoma-ga
+  yoma-ga-agent:
+    build:
+      context: .
+      dockerfile: dockerfiles/agents/Dockerfile.agent
+    env_file:
+      - environments/yoma-ga/aca-py-agent.default.env
+    ports:
+      - 3020:3020
+      - 3021:3021
+    depends_on:
+      - yoma-ga-wallets-db
+    networks:
+      - yoma-ga
+  yoma-multitenant-web:
+    build: 
+      context: .
+      dockerfile: ./dockerfiles/fastapi/Dockerfile
+    ports:
+      - "8100:8000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      - yoma-multitenant-wallets-db
+    networks:
+      - yoma-multitenant
+    env_file: 
+      - environments/yoma-multitenant/fastapi.default.env
+  yoma-multitenant-wallets-db:
+    image: postgres:11
+    container_name: yoma-multitenant-wallets-db
+    command: postgres -c listen_addresses='*'
+    env_file: 
+      - environments/yoma-multitenant/db.default.env
+    volumes:
+      - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - yoma-multitenant
+    tty: true
+  ngrok-yoma-multitenant:
+    image: wernight/ngrok
+    env_file:
+      - environments/yoma-multitenant/aca-py-agent.default.env
+    command: ngrok http yoma-multitenant-agent:3020 --log stdout
+    networks:
+      - yoma-multitenant
+  yoma-multitenant-agent:
+    build:
+      context: .
+      dockerfile: dockerfiles/agents/Dockerfile.agent
+    env_file:
+      - environments/yoma-multitenant/aca-py-agent.default.env
+    ports:
+      - 4020:3020
+      - 4021:3021
+    depends_on:
+      - yoma-multitenant-wallets-db
+    networks:
+      - yoma-multitenant
+networks:
+  yoma-multitenant:
+  yoma-ga:

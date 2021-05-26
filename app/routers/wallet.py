@@ -152,7 +152,7 @@ async def wallets_root():
 
 
 # TODO: This should be somehow retsricted?!
-@router.post("/", tags=["wallets"])
+@router.post("/create-wallet", tags=["wallets"])
 async def create_wallet(wallet_payload: dict = None):
     """
     Create a new wallet

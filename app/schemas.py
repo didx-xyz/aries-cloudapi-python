@@ -23,3 +23,9 @@ class SchemaLedgerRequest(BaseModel):
     schema_name: str
     schema_version : str
     schema_attrs: List[str]
+
+class SchemaResponse(BaseModel):
+    schema: str
+    schema_id : str
+    credential_definition : str
+    credential_id : str

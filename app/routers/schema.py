@@ -3,7 +3,7 @@ from typing import List, Optional
 import aries_cloudcontroller
 import os
 
-from schemas import SchemaLedgerRequest
+from schemas import SchemaLedgerRequest, SchemaResponse
 
 router = APIRouter()
 
@@ -39,7 +39,7 @@ async def get_schema():
 
 
 @router.post(
-    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"]
+    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"],response_model = SchemaResponse
 )
 async def write_credential_schema(
     schema_name: str, schema_version: str, schema_attrs: List[str] = Query(None)
@@ -107,10 +107,10 @@ async def write_credential_schema(
             )
         credential_definition_id = credential_definition["credential_definition_id"]
 
-        final_response = {
+        final_response = SchemaResponse{
             "schema": write_schema_resp,
             "schema_id": schema_id,
-            "credential": credential_definition,
+            "credential_definition": credential_definition,
             "credential_id": credential_definition_id,
         }
         await aries_agent_controller.terminate()

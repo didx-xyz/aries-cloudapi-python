@@ -62,7 +62,8 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="wallets-db web ngrok-multitenant multitenant-agent"
+DEFAULT_CONTAINERS="yoma-multitenant-wallets-db yoma-multitenant-web ngrok-yoma-multitenant yoma-multitenant-agent
+                    yoma-ga-wallets-db yoma-ga-web ngrok-yoma-ga yoma-ga-agent"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------------------------------------------

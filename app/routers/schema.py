@@ -107,12 +107,12 @@ async def write_credential_schema(
             )
         credential_definition_id = credential_definition["credential_definition_id"]
 
-        final_response = SchemaResponse{
-            "schema": write_schema_resp,
-            "schema_id": schema_id,
-            "credential_definition": credential_definition,
-            "credential_id": credential_definition_id,
-        }
+        final_response = SchemaResponse(
+            schema_resp = write_schema_resp,
+            schema_id = schema_id,
+            credential_definition = credential_definition,
+            credential_id = credential_definition_id,
+        )
         await aries_agent_controller.terminate()
         return final_response
     except Exception as e:
@@ -136,7 +136,7 @@ async def get_schema_registry():
     """
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
         admin_url=f"{admin_url}:{admin_port}",
-        api_key=f"{admin_api_key}",
+        api_key=admin_api_key,
         is_multitenant=is_multitenant,
     )
 

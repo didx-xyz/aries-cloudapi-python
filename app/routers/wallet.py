@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 import requests
 import json
 import os
 import logging
+from typing import Optional
 
 
 from schemas import LedgerRequest, DidCreationResponse
@@ -16,6 +17,8 @@ router = APIRouter(prefix="/wallets", tags=["wallets"])
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
+# TODO Should the admin_api_key be a dummy variable so the controller doesn't function w/o providing it?
+# This all smells really - this has to be done in a better manner
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
@@ -24,7 +27,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 @router.get(
     "/create-pub-did", tags=["wallets", "did"], response_model=DidCreationResponse
 )
-async def create_public_did():
+async def create_public_did(req_header: Optional[str] = Header(None)):
     """
     Create a new public DID and
     write it to the ledger and
@@ -41,6 +44,20 @@ async def create_public_did():
             api_key=admin_api_key,
             is_multitenant=is_multitenant,
         )
+        if req_header["api_key"]:
+            admin_api_key = req_header["api_key"]
+            aries_agent_controller.update_api_key(admin_api_key)
+            # TODO how to decide whether or how to change the is_multitenant flag for admin tasks?
+            # Like should this be pre-defined from env? Where does this come from and/or is
+            # this piece of information even changeable?
+
+        # TODO if the JWT is provided this really should be a tenant_controller, but always?
+        if req_header["tenant_jwt"]:
+            jwt_token = req_header["tenant_jwt"]
+            if aries_agent_controller.is_multitenant:
+                aries_agent_controller.update_tenant_jwt(jwt_token)
+                aries_agent_controller.is_multitenant = True
+
         # TODO: Should this come from env var or from the client request?
         url = ledger_url
         # Adding empty header as parameters are being sent in payload
@@ -147,6 +164,7 @@ async def wallets_root():
         "message": "Wallets endpoint. Please, visit /docs to consult the Swagger docs."
     }
 
+
 # TODO: This should be somehow retsricted?!
 @router.post("/", tags=["wallets"])
 async def create_wallet(wallet_payload: dict = None):
@@ -209,7 +227,7 @@ async def create_wallet(wallet_payload: dict = None):
 async def get_wallet_info_by_id(wallet_id: str):
     """
     Get the wallet information by id
-    
+
     Parameters:
     -----------
     wallet_id: str
@@ -249,7 +267,7 @@ async def create_connection_by_id(wallet_id: str):
 
     Parameters:
     -----------
-    wallet_id: str 
+    wallet_id: str
     """
     pass
 

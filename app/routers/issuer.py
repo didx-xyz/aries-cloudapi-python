@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from typing import List
-import base64
 import io
-from . import schema
 import qrcode
 import aries_cloudcontroller
 
@@ -53,7 +52,11 @@ async def issue_credential(
 async def create_connection():
     """
     Creates invitation for the holder to scan
+
+    Returns:
+        QRCode PNG file from StreamingResponse
     """
+    # TODO obtain controller vars from env vars - see wallets PR
     aries_agent_controller = aries_cloudcontroller.AriesAgentController(
         admin_url=f"http://multitenant-agent:3021",
         api_key="adminApiKey",
@@ -69,28 +72,33 @@ async def create_connection():
         qr.make(fit=True)
         img = qr.make_image(fill="black", back_color="white")
         buffer_img = io.BytesIO()
-        img.save(buffer_img, format="JPEG")
-        img_64 = base64.b64encode(buffer_img.getvalue())
+        img.save(buffer_img, format="PNG")
         await aries_agent_controller.terminate()
-        payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
-        return payload
+        # Alternatively, one can also return the QR code as a
+        # base64 encoded string if that is prefered:
+        # 
+        # img_64 = base64.b64encode(buffer_img.getvalue())
+        # await aries_agent_controller.terminate()
+        # payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
+        # return payload
+        #  
+        # ! Make sure you have imported base64
+        return StreamingResponse(
+            io.BytesIO(buffer_img.getvalue()), media_type="image/png"
+        )
     except Exception as e:
-        pass
+        await aries_agent_controller.terminate()
+        raise e
 
 
-# Testing/Playing
-# TODO Decide where this should exist if required
-@router.get("/issuer/get_connection_id", tags=["connection"])
-async def get_connection():
-
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
-    )
     try:
+        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+            api_key="adminApiKey",
+            is_multitenant=True,
+        )
         connection = await aries_agent_controller.connections.get_connections()
+        await aries_agent_controller.terminate()
+        return connection
     except Exception as e:
         await aries_agent_controller.terminate()
-    await aries_agent_controller.terminate()
-    return connection
+        raise e

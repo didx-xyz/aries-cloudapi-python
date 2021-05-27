@@ -6,7 +6,7 @@ import logging
 from typing import Optional
 
 
-from schemas import LedgerRequest, DidCreationResponse
+from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
 
 import aries_cloudcontroller
 
@@ -20,12 +20,12 @@ admin_port = os.getenv("ACAPY_ADMIN_PORT")
 # TODO Should the admin_api_key be a dummy variable so the controller doesn't function w/o providing it?
 # This all smells really - this has to be done in a better manner
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-is_multitenant = os.getenv("IS_MULTITENANT", True)
+is_multitenant = os.getenv("IS_MULTITENANT", False)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get(
-    "/create-pub-did", tags=["wallets", "did"], response_model=DidCreationResponse
+    "/create-pub-did", tags=["did"], response_model=DidCreationResponse
 )
 async def create_public_did(req_header: Optional[str] = Header(None)):
     """
@@ -38,6 +38,9 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
+    # TODO Can we break down this endpoint into smaller functions?
+    # Because this really is too complex/too much happening at once.
+    # This way not really testible/robust
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
             admin_url=f"{admin_url}:{admin_port}",
@@ -152,7 +155,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
         )
 
 
-@router.get("/", tags=["wallets"])
+@router.get("/")
 async def wallets_root():
     """
     The default endpoints for wallets
@@ -166,25 +169,14 @@ async def wallets_root():
 
 
 # TODO: This should be somehow retsricted?!
-@router.post("/", tags=["wallets"])
-async def create_wallet(wallet_payload: dict = None):
+@router.post("/create-wallet")
+async def create_wallet(wallet_payload: InitWalletRequest):
     """
     Create a new wallet
 
     Parameters:
     -----------
-
     wallet_payload: dict
-        A dict/JSON object with values for the wallet creation of the
-        form: {
-            "image_url": "https://aries.ca/images/sample.png",
-            "key_management_mode": "managed",
-            "label": "Alice",
-            "wallet_dispatch_type": "default",
-            "wallet_key": "MySecretKey1234",
-            "wallet_name": "AlicesWallet",
-            "wallet_type": "indy",
-        }
     """
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
@@ -210,20 +202,24 @@ async def create_wallet(wallet_payload: dict = None):
                 }
             else:
                 payload = wallet_payload
-            wallet_response = await aries_agent_controller.multitenant.create_wallet(
+            wallet_response = await aries_agent_controller.multitenant.create_subwallet(
                 payload
             )
         else:
-            wallet_response = await aries_agent_controller.wallets.create_did()
+            # TODO: Implement wallet_response as schema if that is useful
+            wallet_response = await aries_agent_controller.wallet.create_did()
+        await aries_agent_controller.terminate()
         return wallet_response
     except Exception as e:
-        raise e(
-            f"Could not complete request because the following error occured: {e!r}"
+        await aries_agent_controller.terminate()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Something went wrong: {e!r}",
         )
 
 
 # TODOs see endpoints below
-@router.get("/{wallet_id}", tags=["wallets"])
+@router.get("/{wallet_id}")
 async def get_wallet_info_by_id(wallet_id: str):
     """
     Get the wallet information by id
@@ -235,7 +231,7 @@ async def get_wallet_info_by_id(wallet_id: str):
     pass
 
 
-@router.get("/{wallet_id}/connections", tags=["wallets", "connections"])
+@router.get("/{wallet_id}/connections", tags=["connections"])
 async def get_connections(wallet_id: str):
     """
     Get all connections for a wallet given the wallet's ID
@@ -247,7 +243,7 @@ async def get_connections(wallet_id: str):
     pass
 
 
-@router.get("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
+@router.get("/{wallet_id}/connections/{conn_id}", tags=["connections"])
 async def get_connection_by_id(wallet_id: str, connection_id: str):
     """
     Get the specific connections per wallet per connection
@@ -260,7 +256,7 @@ async def get_connection_by_id(wallet_id: str, connection_id: str):
     pass
 
 
-@router.post("/{wallet_id}/connections", tags=["wallets", "connections"])
+@router.post("/{wallet_id}/connections", tags=["connections"])
 async def create_connection_by_id(wallet_id: str):
     """
     Create a connection for a wallet
@@ -272,7 +268,7 @@ async def create_connection_by_id(wallet_id: str):
     pass
 
 
-@router.put("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
+@router.put("/{wallet_id}/connections/{conn_id}", tags=["connections"])
 async def update_connection_by_id(wallet_id: str, connection_id: str):
     """
     Update a specific connection (by ID) for a
@@ -286,7 +282,7 @@ async def update_connection_by_id(wallet_id: str, connection_id: str):
     pass
 
 
-@router.delete("/{wallet_id}/connections/{conn_id}", tags=["wallets", "connections"])
+@router.delete("/{wallet_id}/connections/{conn_id}", tags=["connections"])
 async def delete_connection_by_id(wallet_id: str, connection_id: str):
     """
     Delete a connection (by ID) for a given wallet (by ID)
@@ -299,7 +295,7 @@ async def delete_connection_by_id(wallet_id: str, connection_id: str):
     pass
 
 
-@router.delete("/{wallet_id}", tags=["wallets", "connections"])
+@router.delete("/{wallet_id}", tags=["connections"])
 async def delete_wallet_by_id(wallet_id: str):
     """
     Delete a wallet (by ID)
@@ -312,7 +308,7 @@ async def delete_wallet_by_id(wallet_id: str):
     pass
 
 
-@router.post("/{wallet_id}", tags=["wallets", "connections"])
+@router.post("/{wallet_id}", tags=["connections"])
 async def add_did_to_trusted_reg(wallet_id: str):
     """
     Delete a wallet (by ID)

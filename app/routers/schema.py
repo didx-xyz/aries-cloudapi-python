@@ -5,7 +5,7 @@ import os
 
 from schemas import SchemaLedgerRequest, SchemaResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/schemas",tags=["schemas"])
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -14,7 +14,7 @@ is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get("/schema/all_schemas", tags=["schemas"])
+@router.get("/all_schemas")
 async def get_schema():
     """
     Get all valid schemas from YOMA
@@ -38,8 +38,8 @@ async def get_schema():
 
 
 @router.post(
-    "/schema/write-schema-and-credential-definition",
-    tags=["schemas", "credentials"],
+    "/write-schema-and-credential-definition",
+    tags=["credentials"],
     response_model=SchemaResponse,
 )
 async def write_credential_schema(
@@ -123,7 +123,7 @@ async def write_credential_schema(
         )
 
 
-@router.get("/schema/registry", tags=["schemas", "registry"])
+@router.get("/registry", tags=["registry"])
 async def get_schema_registry():
     """
     A function to obtain all schemas written to the ledger by YOMA

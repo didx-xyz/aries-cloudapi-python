@@ -37,9 +37,10 @@ async def get_schema():
         )
 
 
-
 @router.post(
-    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"],response_model = SchemaResponse
+    "/schema/write-schema-and-credential-definition",
+    tags=["schemas", "credentials"],
+    response_model=SchemaResponse,
 )
 async def write_credential_schema(
     schema_name: str, schema_version: str, schema_attrs: List[str] = Query(None)
@@ -108,10 +109,10 @@ async def write_credential_schema(
         credential_definition_id = credential_definition["credential_definition_id"]
 
         final_response = SchemaResponse(
-            schema_resp = write_schema_resp,
-            schema_id = schema_id,
-            credential_definition = credential_definition,
-            credential_id = credential_definition_id,
+            schema_resp=write_schema_resp,
+            schema_id=schema_id,
+            credential_definition=credential_definition,
+            credential_id=credential_definition_id,
         )
         await aries_agent_controller.terminate()
         return final_response

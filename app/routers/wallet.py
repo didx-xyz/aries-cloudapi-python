@@ -5,10 +5,10 @@ import os
 import logging
 from typing import Optional
 
+from ..schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
+from ..utils import create_controller
 
-from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
-
-import aries_cloudcontroller
+from aries_cloudcontroller import AriesAgentController, AriesTenantController
 
 
 logger = logging.getLogger(__name__)
@@ -24,9 +24,7 @@ is_multitenant = os.getenv("IS_MULTITENANT", False)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get(
-    "/create-pub-did", tags=["did"], response_model=DidCreationResponse
-)
+@router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(req_header: Optional[str] = Header(None)):
     """
     Create a new public DID and
@@ -40,31 +38,36 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     """
     # TODO Can we break down this endpoint into smaller functions?
     # Because this really is too complex/too much happening at once.
-    # This way not really testible/robust
+    # This way not really be testible/robust
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
-        if req_header["api_key"]:
-            admin_api_key = req_header["api_key"]
-            aries_agent_controller.update_api_key(admin_api_key)
-            # TODO how to decide whether or how to change the is_multitenant flag for admin tasks?
-            # Like should this be pre-defined from env? Where does this come from and/or is
-            # this piece of information even changeable?
 
-        # TODO if the JWT is provided this really should be a tenant_controller, but always?
-        if req_header["tenant_jwt"]:
-            jwt_token = req_header["tenant_jwt"]
-            if aries_agent_controller.is_multitenant:
-                aries_agent_controller.update_tenant_jwt(jwt_token)
-                aries_agent_controller.is_multitenant = True
+        # aries_agent_controller = AriesAgentController(
+        #     admin_url=f"{admin_url}:{admin_port}",
+        #     api_key=None,
+        #     is_multitenant=is_multitenant,
+        # )
+        # if req_header["api_key"]:
+        #     admin_api_key = req_header["api_key"]
+        #     aries_agent_controller.update_api_key(admin_api_key)
+        #     # TODO how to decide whether or how to change the is_multitenant flag for admin tasks?
+        #     # Like should this be pre-defined from env? Where does this come from and/or is
+        #     # this piece of information even changeable?
+
+        # # TODO if the JWT is provided this really should be a tenant_controller, but always?
+        # if req_header["tenant_jwt"]:
+        #     jwt_token = req_header["tenant_jwt"]
+        #     if aries_agent_controller.is_multitenant:
+        #         aries_agent_controller.update_tenant_jwt(jwt_token)
+        #         aries_agent_controller.is_multitenant = True
+        controller = create_controller(req_header)
 
         # TODO: Should this come from env var or from the client request?
-        url = ledger_url
+        if req_header["ledger_url"]:
+            url = req_header["ledger_url"]
+        else:
+            url = ledger_url
         # Adding empty header as parameters are being sent in payload
-        generate_did_res = await aries_agent_controller.wallet.create_did()
+        generate_did_res = await controller.wallet.create_did()
         if not generate_did_res["result"]:
             raise HTTPException(
                 # TODO: Should this return HTTPException, if so which status code?
@@ -89,7 +92,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
                 status_code=r.status_code,
                 detail=f"Something went wrong.\nCould not write to StagingNet.\n{error_json}",
             )
-        taa_response = await aries_agent_controller.ledger.get_taa()
+        taa_response = await controller.ledger.get_taa()
         logger.info(f"taa_response:\n{taa_response}")
         if not taa_response["result"]:
             error_json = taa_response.json()
@@ -99,7 +102,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
             )
         TAA = taa_response["result"]["taa_record"]
         TAA["mechanism"] = "service_agreement"
-        accept_taa_response = await aries_agent_controller.ledger.accept_taa(TAA)
+        accept_taa_response = await controller.ledger.accept_taa(TAA)
         logger.info(f"accept_taa_response: {accept_taa_response}")
         if accept_taa_response != {}:
             error_json = accept_taa_response.json()
@@ -107,7 +110,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
                 status_code=404,
                 detail=f"Something went wrong. Could not accept TAA. {error_json}",
             )
-        assign_pub_did_response = await aries_agent_controller.wallet.assign_public_did(
+        assign_pub_did_response = await controller.wallet.assign_public_did(
             did_object["did"]
         )
         logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
@@ -120,7 +123,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
                 status_code=500,
                 detail=f"Something went wrong.\nCould not assign DID. {error_json}",
             )
-        get_pub_did_response = await aries_agent_controller.wallet.get_public_did()
+        get_pub_did_response = await controller.wallet.get_public_did()
         logger.info(f"get_pub_did_response:\n{get_pub_did_response}")
         if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
             error_json = get_pub_did_response.json()
@@ -130,9 +133,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
             )
         issuer_nym = get_pub_did_response["result"]["did"]
         issuer_verkey = get_pub_did_response["result"]["verkey"]
-        issuer_endpoint = await aries_agent_controller.ledger.get_did_endpoint(
-            issuer_nym
-        )
+        issuer_endpoint = await controller.ledger.get_did_endpoint(issuer_nym)
         if not issuer_endpoint:
             raise HTTPException(
                 status_code=404,
@@ -144,10 +145,10 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
             issuer_verkey=issuer_verkey,
             issuer_endpoint=issuer_endpoint_url,
         )
-        await aries_agent_controller.terminate()
+        await controller.terminate()
         return final_response
     except Exception as e:
-        await aries_agent_controller.terminate()
+        await controller.terminate()
         logger.error(f"The following error occured:\n{e!r}")
         raise HTTPException(
             status_code=500,
@@ -179,7 +180,7 @@ async def create_wallet(wallet_payload: InitWalletRequest):
     wallet_payload: dict
     """
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        aries_agent_controller = AriesAgentController(
             admin_url=f"{admin_url}:{admin_port}",
             api_key=admin_api_key,
             is_multitenant=is_multitenant,

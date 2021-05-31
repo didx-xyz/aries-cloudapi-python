@@ -1,9 +1,12 @@
+import logging
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import aries_cloudcontroller
 import os
 
 from schemas import SchemaLedgerRequest, SchemaResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -79,12 +82,12 @@ async def write_credential_schema(
         schema_definition_request = SchemaLedgerRequest(
             schema_name=schema_name,
             schema_version=schema_version,
-            schema_attributes=schema_attrs,
-        ).dict()
+            schema_attrs=schema_attrs,
+        )
 
         write_schema_resp = await aries_agent_controller.schema.write_schema(
             schema_definition_request.schema_name,
-            schema_definition_request.schema_attributes,
+            schema_definition_request.schema_attrs,
             schema_definition_request.schema_version,
         )
 
@@ -118,6 +121,7 @@ async def write_credential_schema(
         return final_response
     except Exception as e:
         await aries_agent_controller.terminate()
+        logger.error(f"{e!r}")
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",

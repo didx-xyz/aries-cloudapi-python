@@ -5,8 +5,8 @@ import os
 import logging
 from typing import Optional
 
-from ..schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
-from ..utils import create_controller
+from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
+from utils import create_controller
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 

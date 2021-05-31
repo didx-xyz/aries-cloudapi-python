@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 import aries_cloudcontroller
@@ -6,6 +7,8 @@ import os
 from schemas import SchemaLedgerRequest, SchemaResponse
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -32,11 +35,9 @@ async def get_schema():
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-                    status_code=418,
-                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-                )
-    await aries_agent_controller.terminate()
-    return created_schemas
+            status_code=418,
+            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+        )
 
 
 @router.get("/schema/{schema_id}", tags=["schema"])
@@ -54,12 +55,11 @@ async def get_by_id(schema_id: str):
     except Exception as e:
         await aries_agent_controller.terminate()
         raise HTTPException(
-                    status_code=418,
-                    detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-                )
+            status_code=418,
+            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
+        )
     await aries_agent_controller.terminate()
     return created_schemas
-
 
 
 @router.get("/schema/schema_definition", tags=["schema", "credential"])
@@ -70,9 +70,10 @@ async def schema_define():
     return {"msg": "from schema define"}
 
 
-
 @router.post(
-    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"],response_model = SchemaResponse
+    "/schema/write-schema-and-credential-definition",
+    tags=["schemas", "credentials"],
+    response_model=SchemaResponse,
 )
 async def write_credential_schema(
     schema_name: str, schema_version: str, schema_attrs: List[str] = Query(None)
@@ -111,12 +112,12 @@ async def write_credential_schema(
         schema_definition_request = SchemaLedgerRequest(
             schema_name=schema_name,
             schema_version=schema_version,
-            schema_attributes=schema_attrs,
-        ).dict()
+            schema_attrs=schema_attrs,
+        )
 
         write_schema_resp = await aries_agent_controller.schema.write_schema(
             schema_definition_request.schema_name,
-            schema_definition_request.schema_attributes,
+            schema_definition_request.schema_attrs,
             schema_definition_request.schema_version,
         )
 
@@ -141,15 +142,16 @@ async def write_credential_schema(
         credential_definition_id = credential_definition["credential_definition_id"]
 
         final_response = SchemaResponse(
-            schema_resp = write_schema_resp,
-            schema_id = schema_id,
-            credential_definition = credential_definition,
-            credential_id = credential_definition_id,
+            schema_resp=write_schema_resp,
+            schema_id=schema_id,
+            credential_definition=credential_definition,
+            credential_id=credential_definition_id,
         )
         await aries_agent_controller.terminate()
         return final_response
     except Exception as e:
         await aries_agent_controller.terminate()
+        logger.error(f"{e!r}")
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",

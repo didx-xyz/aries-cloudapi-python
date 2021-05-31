@@ -62,7 +62,8 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="wallets-db web ngrok-multitenant multitenant-agent"
+DEFAULT_CONTAINERS="yoma-multitenant-wallets-db yoma-multitenant-web ngrok-yoma-multitenant yoma-multitenant-agent
+                    yoma-ga-wallets-db yoma-ga-web ngrok-yoma-ga yoma-ga-agent"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------------------------------------------
@@ -224,8 +225,6 @@ shift || COMMAND=usage
 
 case "${COMMAND}" in
 start | up)
-  export MULTITENANT_TUTORIAL="MULTITENANT_TUTORIAL"
-  echo $MULTITENANT_TUTORIAL
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
@@ -248,12 +247,10 @@ logs)
   docker-compose logs -f
   ;;
 stop)
-  unset MULTITENANT_TUTORIAL
   configureEnvironment
   docker-compose stop
   ;;
 rm | down)
-  unset MULTITENANT_TUTORIAL
   configureEnvironment
   docker-compose \
   --log-level ERROR down \

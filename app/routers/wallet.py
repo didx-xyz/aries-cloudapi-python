@@ -40,27 +40,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     # Because this really is too complex/too much happening at once.
     # This way not really be testible/robust
     try:
-
-        # aries_agent_controller = AriesAgentController(
-        #     admin_url=f"{admin_url}:{admin_port}",
-        #     api_key=None,
-        #     is_multitenant=is_multitenant,
-        # )
-        # if req_header["api_key"]:
-        #     admin_api_key = req_header["api_key"]
-        #     aries_agent_controller.update_api_key(admin_api_key)
-        #     # TODO how to decide whether or how to change the is_multitenant flag for admin tasks?
-        #     # Like should this be pre-defined from env? Where does this come from and/or is
-        #     # this piece of information even changeable?
-
-        # # TODO if the JWT is provided this really should be a tenant_controller, but always?
-        # if req_header["tenant_jwt"]:
-        #     jwt_token = req_header["tenant_jwt"]
-        #     if aries_agent_controller.is_multitenant:
-        #         aries_agent_controller.update_tenant_jwt(jwt_token)
-        #         aries_agent_controller.is_multitenant = True
         controller = create_controller(req_header)
-
         # TODO: Should this come from env var or from the client request?
         if req_header["ledger_url"]:
             url = req_header["ledger_url"]

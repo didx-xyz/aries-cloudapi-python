@@ -1,5 +1,5 @@
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import Header
+from fastapi import Header, HttpException
 
 import os
 from typing import Optional
@@ -15,13 +15,17 @@ async def create_controller(req_header: Optional[str] = Header(None)):
             controller = AriesTenantController(
                 req_header["wallet_id"], req_header["tenant_jwt"]
             )
-        if req_header["api_key"]:
+        elif req_header["api_key"]:
             controller = AriesAgentController(
                 admin_url=f"{admin_url}:{admin_port}",
                 api_key=req_header["api_key"],
                 is_multitenant=is_multitenant,
             )
+        else:
+            raise HttpException(
+                status_code=400,
+                detail="Bad headers. Either provide and api_key or both wallet_id and tenant_jwt",
+            )
         return controller
     except Exception as e:
-        controller.terminate()
         raise e

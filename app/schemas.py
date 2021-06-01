@@ -29,7 +29,7 @@ class SchemaResponse(BaseModel):
     schema_resp: dict
     schema_id: str
     credential_definition: dict
-    credential_id: str
+    credential_definition_id: str
 
 
 class InitWalletRequest(BaseModel):

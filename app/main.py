@@ -18,6 +18,7 @@ app.include_router(wallet.router)
 #     responses={418: {"description": "I'm a teapot"}},
 # )
 
+app.include_router(issuer.router)
 
 @app.get("/")
 async def root():

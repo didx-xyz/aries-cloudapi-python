@@ -123,7 +123,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     * Issuer Endpoint (url)
     """
     try:
-        controller = await create_controller(req_header)
+        controller = create_controller(req_header)
         # TODO: Should this come from env var or from the client request?
         if "ledger_url" in req_header:
             url = req_header["ledger_url"]
@@ -162,13 +162,9 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
         await controller.terminate()
         return final_response
     except Exception as e:
-        await controller.terminate()
         err_trace = traceback.print_exc()
         logger.error(f"The following error occured:\n{e!r}\n{err_trace}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Something went wrong: {e!r}",
-        )
+        raise e
 
 
 @router.get("/")

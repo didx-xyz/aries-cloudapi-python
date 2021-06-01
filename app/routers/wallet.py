@@ -28,6 +28,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 async def __create_did(controller):
     generate_did_res = await controller.wallet.create_did()
     if not generate_did_res["result"]:
+        controller.terminate()
         raise HTTPException(
             # TODO: Should this return HTTPException, if so which status code?
             # Check same for occurences below
@@ -52,6 +53,7 @@ async def __get_taa(controller):
     taa_response = await controller.ledger.get_taa()
     logger.info(f"taa_response:\n{taa_response}")
     if not taa_response["result"]:
+        controller.terminate()
         error_json = taa_response.json()
         raise HTTPException(
             status_code=404,
@@ -66,6 +68,7 @@ async def __accept_taa(controller, TAA):
     accept_taa_response = await controller.ledger.accept_taa(TAA)
     logger.info(f"accept_taa_response: {accept_taa_response}")
     if accept_taa_response != {}:
+        controller.terminate()
         error_json = accept_taa_response.json()
         raise HTTPException(
             status_code=404,
@@ -80,6 +83,7 @@ async def __assign_pub_did(controller, did_object):
     )
     logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
     if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
+        controller.terminate()
         error_json = assign_pub_did_response.json()
         raise HTTPException(
             status_code=500,
@@ -92,6 +96,7 @@ async def __get_pub_did(controller):
     get_pub_did_response = await controller.wallet.get_public_did()
     logger.info(f"get_pub_did_response:\n{get_pub_did_response}")
     if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
+        controller.terminate()
         error_json = get_pub_did_response.json()
         raise HTTPException(
             status_code=404,
@@ -103,6 +108,7 @@ async def __get_pub_did(controller):
 async def __get_did_endpoint(controller, issuer_nym):
     issuer_endpoint = await controller.ledger.get_did_endpoint(issuer_nym)
     if not issuer_endpoint:
+        controller.terminate()
         raise HTTPException(
             status_code=404,
             detail="Something went wrong. Could not obtain issuer endpoint.",

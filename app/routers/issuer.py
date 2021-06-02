@@ -33,14 +33,29 @@ async def issue_credential(
         # TODO check whether connection is in active state.
         # If not, return msg saying conneciton not active - should be active
         schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
-        print (schema_resp)
+        if schema_resp is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Could not find schema from provided ID",
+            )
+        print("schema_resp: ", schema_resp)
         schema_attr = schema_resp["schema"]["attrNames"]
+        print("schema_attr: ", schema_attr)
+        response = await aries_agent_controller.definitions.write_cred_def(schema_id)
 
-        cred_def_id = schema_resp["schema"]["id"]  # I think this is wrong
+        cred_def_id = response["credential_definition_id"]
+        print(cred_def_id)
+        # cred_def_id = schema_resp["schema"]["id"]  # I think this is wrong
         # cred_def_id = "Vq5u2ZsYr2cfLxPfA8rYRA:3:CL:217905:default"
-        credential_attributes = list(dict(zip(schema_attr, credential_attrs)))
-        credential_attributes = json.dumps(credential_attributes)
-        print(credential_attributes)
+        # this seems to really rather be fo the form 'attrNames': ['fullname', 'skill', 'age']
+        # credential_attributes = list(dict(zip(schema_attr, credential_attrs)))
+        # credential_attributes = json.dumps(credential_attributes)
+        credential_attributes = [
+            {"name": "fullname", "value": "Jon"},
+            {"name": "skill", "value": "PyDentity SSI Ninja"},
+            {"name": "age", "value": "12"}
+        ]
+        print("credential_attributes: ", credential_attributes)
         record = await aries_agent_controller.issuer.send_credential(
             connection_id, schema_id, cred_def_id, credential_attributes, trace=False
         )
@@ -76,7 +91,7 @@ async def create_connection():
                 api_key=admin_api_key,
                 is_multitenant=is_multitenant,
         )
- 
+
         invite = await aries_agent_controller.connections.create_invitation()
         # connection_id = invite["connection_id"]
         inviteURL = invite["invitation_url"]

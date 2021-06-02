@@ -5,7 +5,7 @@ import io
 import qrcode
 import aries_cloudcontroller
 import os
-import json
+
 router = APIRouter(prefix="/issuer")
 
 
@@ -23,13 +23,13 @@ async def issue_credential(
     """
     Issues a credential
     """
-    try:   
+    try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-                admin_url=f"{admin_url}:{admin_port}",
-                api_key=admin_api_key,
-                is_multitenant=is_multitenant,
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=admin_api_key,
+            is_multitenant=is_multitenant,
         )
-        
+
         # TODO check whether connection is in active state.
         # If not, return msg saying conneciton not active - should be active
         schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
@@ -38,31 +38,24 @@ async def issue_credential(
                 status_code=404,
                 detail="Could not find schema from provided ID",
             )
-        print("schema_resp: ", schema_resp)
         schema_attr = schema_resp["schema"]["attrNames"]
-        print("schema_attr: ", schema_attr)
-        response = await aries_agent_controller.definitions.write_cred_def(schema_id)
+        # TODO The below call works but smells fishy. What should we really be doing here?
+        # Should/Can't we just obtain the dredential definition id from somehwere?
+        write_cred_response = await aries_agent_controller.definitions.write_cred_def(
+            schema_id
+        )
 
-        cred_def_id = response["credential_definition_id"]
-        print(cred_def_id)
-        # cred_def_id = schema_resp["schema"]["id"]  # I think this is wrong
-        # cred_def_id = "Vq5u2ZsYr2cfLxPfA8rYRA:3:CL:217905:default"
-        # this seems to really rather be fo the form 'attrNames': ['fullname', 'skill', 'age']
-        # credential_attributes = list(dict(zip(schema_attr, credential_attrs)))
-        # credential_attributes = json.dumps(credential_attributes)
+        # TODO Do we want to obtain cred_def_id from somewhere else
+        cred_def_id = write_cred_response["credential_definition_id"]
         credential_attributes = [
-            {"name": "fullname", "value": "Jon"},
-            {"name": "skill", "value": "PyDentity SSI Ninja"},
-            {"name": "age", "value": "12"}
+            {"name": k, "value": v} for k, v in list(zip(schema_attr, credential_attrs))
         ]
-        print("credential_attributes: ", credential_attributes)
         record = await aries_agent_controller.issuer.send_credential(
             connection_id, schema_id, cred_def_id, credential_attributes, trace=False
         )
         await aries_agent_controller.terminate()
         # TODO Do we want to return the record or just success?
         return record
-        # for item in schema_attr:
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
@@ -85,11 +78,11 @@ async def create_connection():
     Returns:
         QRCode PNG file from StreamingResponse
     """
-    try:    
+    try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-                admin_url=f"{admin_url}:{admin_port}",
-                api_key=admin_api_key,
-                is_multitenant=is_multitenant,
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=admin_api_key,
+            is_multitenant=is_multitenant,
         )
 
         invite = await aries_agent_controller.connections.create_invitation()
@@ -118,16 +111,17 @@ async def create_connection():
         await aries_agent_controller.terminate()
         raise e
 
-#TODO Decide where this endpoint to lie
+
+# TODO Decide where this endpoint to lie
+
 
 @router.get("/get-connection-id", tags=["connection"])
-
 async def get_connection_id():
     try:
         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-                admin_url=f"{admin_url}:{admin_port}",
-                api_key=admin_api_key,
-                is_multitenant=True,
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=admin_api_key,
+            is_multitenant=True,
         )
         connection = await aries_agent_controller.connections.get_connections()
         await aries_agent_controller.terminate()
@@ -136,18 +130,19 @@ async def get_connection_id():
         await aries_agent_controller.terminate()
         raise e
 
-#TODO THis endpoint will definely be used in numerous place maybe make this as a util or something
-#Currently using this endpoint solely for ease of testing
+
+# TODO THis endpoint will definely be used in numerous place maybe make this as a util or something
+# Currently using this endpoint solely for ease of testing
 # @router.get("/check-active-conenction", tags=["connection"])
 # async def check_active_connection(connection_id : str):
-    
+
 #     try:
 #         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
 #                 admin_url=f"{admin_url}:{admin_port}",
 #                 api_key=admin_api_key,
 #                 is_multitenant=is_multitenant,
 #         )
-    
+
 #         response = await agent_controller.connections.get_connections()
 #         results = response['results']
 #         print("Results : ", results)

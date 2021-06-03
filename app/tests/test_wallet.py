@@ -1,3 +1,4 @@
+import routers.governance
 
 def test_foo():
     pass

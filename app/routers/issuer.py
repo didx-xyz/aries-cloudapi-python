@@ -40,7 +40,9 @@ async def issue_credential(
             )
         schema_attr = schema_resp["schema"]["attrNames"]
         # TODO The below call works but smells fishy. What should we really be doing here?
-        # Should/Can't we just obtain the dredential definition id from somehwere?
+        # Should/Can't we just obtain the dredential definition id from somewhere?
+        # This should be written to the ledger already. Shouldn't this fail on trying
+        # to write this again? However, this just returns the wanted cred_def_id.
         write_cred_response = await aries_agent_controller.definitions.write_cred_def(
             schema_id
         )

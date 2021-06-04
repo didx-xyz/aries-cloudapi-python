@@ -1,19 +1,23 @@
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
 from contextlib import asynccontextmanager
-
+import json
+import requests
 import os
+import logging
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 is_multitenant = os.getenv("IS_MULTITENANT", False)
 
 
+logger = logging.getLogger(__name__)
+
+
 @asynccontextmanager
 async def create_controller(req_header: Header):
     is_valid_header = req_header and (
-        ("wallet_id" in req_header)
-        and ("tenant_jwt" in req_header)
+        (("wallet_id" in req_header) and ("tenant_jwt" in req_header))
         or "api_key" in req_header
     )
     if is_valid_header:
@@ -26,7 +30,9 @@ async def create_controller(req_header: Header):
             )
         else:
             controller = AriesTenantController(
-                req_header["wallet_id"], req_header["tenant_jwt"]
+                admin_url=f"{admin_url}:{admin_port}",
+                wallet_id=req_header["wallet_id"],
+                tenant_jwt=req_header["tenant_jwt"],
             )
     else:
         raise HTTPException(
@@ -36,6 +42,98 @@ async def create_controller(req_header: Header):
     try:
         yield controller
     except Exception as e:
-        raise e
+        logger.error(f"{e!r}")
+        if e.status:
+            raise HTTPException(
+                status_code=e.status,
+                detail=e.message,
+            ) from e
+        else:
+            raise e
     finally:
         await controller.terminate()
+
+
+async def create_did(controller):
+    generate_did_res = await controller.wallet.create_did()
+    if not generate_did_res["result"]:
+        raise HTTPException(
+            # TODO: Should this return HTTPException, if so which status code?
+            # Check same for occurences below
+            status_code=404,
+            detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
+        )
+    return generate_did_res
+
+
+async def post_to_ledger(url, payload):
+    r = requests.post(url, data=json.dumps(payload), headers={})
+    if r.status_code != 200:
+        error_json = r.json()
+        raise HTTPException(
+            status_code=r.status_code,
+            detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
+        )
+    return r
+
+
+async def get_taa(controller):
+    taa_response = await controller.ledger.get_taa()
+    logger.info(f"taa_response:\n{taa_response}")
+    if not taa_response["result"]:
+        error_json = taa_response.json()
+        raise HTTPException(
+            status_code=404,
+            detail=f"Something went wrong. Could not get TAA. {error_json}",
+        )
+    TAA = taa_response["result"]["taa_record"]
+    TAA["mechanism"] = "service_agreement"
+    return TAA
+
+
+async def accept_taa(controller, TAA):
+    accept_taa_response = await controller.ledger.accept_taa(TAA)
+    logger.info(f"accept_taa_response: {accept_taa_response}")
+    if accept_taa_response != {}:
+        error_json = accept_taa_response.json()
+        raise HTTPException(
+            status_code=404,
+            detail=f"Something went wrong. Could not accept TAA. {error_json}",
+        )
+    return accept_taa_response
+
+
+async def assign_pub_did(controller, did_object):
+    assign_pub_did_response = await controller.wallet.assign_public_did(
+        did_object["did"]
+    )
+    logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
+    if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
+        error_json = assign_pub_did_response.json()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Something went wrong.\nCould not assign DID. {error_json}",
+        )
+    return assign_pub_did_response
+
+
+async def get_pub_did(controller):
+    get_pub_did_response = await controller.wallet.get_public_did()
+    logger.info(f"get_pub_did_response:\n{get_pub_did_response}")
+    if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
+        error_json = get_pub_did_response.json()
+        raise HTTPException(
+            status_code=404,
+            detail=f"Something went wrong. Could not obtain public DID. {error_json}",
+        )
+    return get_pub_did_response
+
+
+async def get_did_endpoint(controller, issuer_nym):
+    issuer_endpoint = await controller.ledger.get_did_endpoint(issuer_nym)
+    if not issuer_endpoint:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Could not obtain issuer endpoint.",
+        )
+    return issuer_endpoint

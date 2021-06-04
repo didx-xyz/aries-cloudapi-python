@@ -28,7 +28,6 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 async def __create_did(controller):
     generate_did_res = await controller.wallet.create_did()
     if not generate_did_res["result"]:
-        controller.terminate()
         raise HTTPException(
             # TODO: Should this return HTTPException, if so which status code?
             # Check same for occurences below
@@ -53,7 +52,6 @@ async def __get_taa(controller):
     taa_response = await controller.ledger.get_taa()
     logger.info(f"taa_response:\n{taa_response}")
     if not taa_response["result"]:
-        controller.terminate()
         error_json = taa_response.json()
         raise HTTPException(
             status_code=404,
@@ -68,7 +66,6 @@ async def __accept_taa(controller, TAA):
     accept_taa_response = await controller.ledger.accept_taa(TAA)
     logger.info(f"accept_taa_response: {accept_taa_response}")
     if accept_taa_response != {}:
-        controller.terminate()
         error_json = accept_taa_response.json()
         raise HTTPException(
             status_code=404,
@@ -83,7 +80,6 @@ async def __assign_pub_did(controller, did_object):
     )
     logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
     if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
-        controller.terminate()
         error_json = assign_pub_did_response.json()
         raise HTTPException(
             status_code=500,
@@ -96,7 +92,6 @@ async def __get_pub_did(controller):
     get_pub_did_response = await controller.wallet.get_public_did()
     logger.info(f"get_pub_did_response:\n{get_pub_did_response}")
     if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
-        controller.terminate()
         error_json = get_pub_did_response.json()
         raise HTTPException(
             status_code=404,
@@ -108,7 +103,6 @@ async def __get_pub_did(controller):
 async def __get_did_endpoint(controller, issuer_nym):
     issuer_endpoint = await controller.ledger.get_did_endpoint(issuer_nym)
     if not issuer_endpoint:
-        controller.terminate()
         raise HTTPException(
             status_code=404,
             detail="Something went wrong. Could not obtain issuer endpoint.",
@@ -129,44 +123,44 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     * Issuer Endpoint (url)
     """
     try:
-        controller = create_controller(req_header)
-        # TODO: Should this come from env var or from the client request?
-        if "ledger_url" in req_header:
-            url = req_header["ledger_url"]
-        else:
-            url = ledger_url
-        # Adding empty header as parameters are being sent in payload
-        generate_did_res = await __create_did(controller)
-        did_object = generate_did_res["result"]
-        # TODO: Network and paymentaddr should be definable on the fly/via args/via request body
-        # TODO: Should this really be a schema or is using schema overkill here?
-        # If we leave it as schema like this I suppose it is at least usable elsewhere
-        payload = LedgerRequest(
-            network="stagingnet",
-            did=did_object["did"],
-            verkey=did_object["verkey"],
-            paymentaddr="",
-        ).dict()
-        await __post_to_ledger(url, payload)
+        async with create_controller(req_header) as controller:
+            # TODO: Should this come from env var or from the client request?
+            if "ledger_url" in req_header:
+                url = req_header["ledger_url"]
+            else:
+                url = ledger_url
+            # Adding empty header as parameters are being sent in payload
+            generate_did_res = await __create_did(controller)
+            did_object = generate_did_res["result"]
+            # TODO: Network and paymentaddr should be definable on the fly/via args/via request body
+            # TODO: Should this really be a schema or is using schema overkill here?
+            # If we leave it as schema like this I suppose it is at least usable elsewhere
+            payload = LedgerRequest(
+                network="stagingnet",
+                did=did_object["did"],
+                verkey=did_object["verkey"],
+                paymentaddr="",
+            ).dict()
 
-        TAA = await __get_taa(controller)
+            await __post_to_ledger(url, payload)
 
-        await __accept_taa(controller, TAA)
+            TAA = await __get_taa(controller)
 
-        await __assign_pub_did(controller, did_object)
+            await __accept_taa(controller, TAA)
 
-        get_pub_did_response = await __get_pub_did(controller)
-        issuer_nym = get_pub_did_response["result"]["did"]
-        issuer_verkey = get_pub_did_response["result"]["verkey"]
-        issuer_endpoint = await __get_did_endpoint(controller, issuer_nym)
-        issuer_endpoint_url = issuer_endpoint["endpoint"]
-        final_response = DidCreationResponse(
-            did_object=did_object,
-            issuer_verkey=issuer_verkey,
-            issuer_endpoint=issuer_endpoint_url,
-        )
-        await controller.terminate()
-        return final_response
+            await __assign_pub_did(controller, did_object)
+
+            get_pub_did_response = await __get_pub_did(controller)
+            issuer_nym = get_pub_did_response["result"]["did"]
+            issuer_verkey = get_pub_did_response["result"]["verkey"]
+            issuer_endpoint = await __get_did_endpoint(controller, issuer_nym)
+            issuer_endpoint_url = issuer_endpoint["endpoint"]
+            final_response = DidCreationResponse(
+                did_object=did_object,
+                issuer_verkey=issuer_verkey,
+                issuer_endpoint=issuer_endpoint_url,
+            )
+            return final_response
     except Exception as e:
         err_trace = traceback.print_exc()
         logger.error(f"The following error occured:\n{e!r}\n{err_trace}")
@@ -188,7 +182,7 @@ async def wallets_root():
 
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
-async def create_wallet(wallet_payload: InitWalletRequest):
+async def create_wallet(wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)):
     """
     Create a new wallet
 
@@ -197,146 +191,34 @@ async def create_wallet(wallet_payload: InitWalletRequest):
     wallet_payload: dict
     """
     try:
-        aries_agent_controller = AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
-        if aries_agent_controller.is_multitenant:
-            # TODO replace with model for payload/wallet like
-            # described https://fastapi.tiangolo.com/tutorial/body/
-            # TODO Remove this default wallet. This has to be provided
-            # At least unique values for eg label, The rest could be filled
-            # with default values like image_url could point to a defautl avatar img
-            if not wallet_payload:
-                payload = {
-                    "image_url": "https://aries.ca/images/sample.png",
-                    "key_management_mode": "managed",
-                    "label": "Alice",
-                    "wallet_dispatch_type": "default",
-                    "wallet_key": "MySecretKey1234",
-                    "wallet_name": "AlicesWallet",
-                    "wallet_type": "indy",
-                }
+        async with create_controller(req_header) as controller:
+            if controller.is_multitenant:
+                # TODO replace with model for payload/wallet like
+                # described https://fastapi.tiangolo.com/tutorial/body/
+                # TODO Remove this default wallet. This has to be provided
+                # At least unique values for eg label, The rest could be filled
+                # with default values like image_url could point to a defautl avatar img
+                if not wallet_payload:
+                    payload = {
+                        "image_url": "https://aries.ca/images/sample.png",
+                        "key_management_mode": "managed",
+                        "label": "Alice",
+                        "wallet_dispatch_type": "default",
+                        "wallet_key": "MySecretKey1234",
+                        "wallet_name": "AlicesWallet",
+                        "wallet_type": "indy",
+                    }
+                else:
+                    payload = wallet_payload
+                wallet_response = await controller.multitenant.create_subwallet(
+                    payload
+                )
             else:
-                payload = wallet_payload
-            wallet_response = await aries_agent_controller.multitenant.create_subwallet(
-                payload
-            )
-        else:
-            # TODO: Implement wallet_response as schema if that is useful
-            wallet_response = await aries_agent_controller.wallet.create_did()
-        await aries_agent_controller.terminate()
-        return wallet_response
+                # TODO: Implement wallet_response as schema if that is useful
+                wallet_response = await controller.wallet.create_did()
+            return wallet_response
     except Exception as e:
-        await aries_agent_controller.terminate()
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",
         )
-
-
-# TODOs see endpoints below
-@router.get("/{wallet_id}")
-async def get_wallet_info_by_id(wallet_id: str):
-    """
-    Get the wallet information by id
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.get("/{wallet_id}/connections", tags=["connections"])
-async def get_connections(wallet_id: str):
-    """
-    Get all connections for a wallet given the wallet's ID
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.get("/{wallet_id}/connections/{conn_id}", tags=["connections"])
-async def get_connection_by_id(wallet_id: str, connection_id: str):
-    """
-    Get the specific connections per wallet per connection
-    by respective IDs
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.post("/{wallet_id}/connections", tags=["connections"])
-async def create_connection_by_id(wallet_id: str):
-    """
-    Create a connection for a wallet
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.put("/{wallet_id}/connections/{conn_id}", tags=["connections"])
-async def update_connection_by_id(wallet_id: str, connection_id: str):
-    """
-    Update a specific connection (by ID) for a
-    given wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    connection_id: str
-    """
-    pass
-
-
-@router.delete("/{wallet_id}/connections/{conn_id}", tags=["connections"])
-async def delete_connection_by_id(wallet_id: str, connection_id: str):
-    """
-    Delete a connection (by ID) for a given wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    connection_id: str
-    """
-    pass
-
-
-@router.delete("/{wallet_id}", tags=["connections"])
-async def delete_wallet_by_id(wallet_id: str):
-    """
-    Delete a wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    # TODO: Should this be admin-only?
-    pass
-
-
-@router.post("/{wallet_id}", tags=["connections"])
-async def add_did_to_trusted_reg(wallet_id: str):
-    """
-    Delete a wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    # TODO: Should this be admin-only?
-    pass
-
-
-# TODO Add Security and key managements eg. create and exchange new key pairs

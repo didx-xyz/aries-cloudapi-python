@@ -182,7 +182,9 @@ async def wallets_root():
 
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
-async def create_wallet(wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)):
+async def create_wallet(
+    wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
+):
     """
     Create a new wallet
 
@@ -210,9 +212,7 @@ async def create_wallet(wallet_payload: InitWalletRequest, req_header: Optional[
                     }
                 else:
                     payload = wallet_payload
-                wallet_response = await controller.multitenant.create_subwallet(
-                    payload
-                )
+                wallet_response = await controller.multitenant.create_subwallet(payload)
             else:
                 # TODO: Implement wallet_response as schema if that is useful
                 wallet_response = await controller.wallet.create_did()

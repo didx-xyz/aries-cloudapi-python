@@ -6,6 +6,8 @@ import os
 
 from schemas import SchemaLedgerRequest, SchemaResponse
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
@@ -38,36 +40,6 @@ async def get_schema():
             status_code=418,
             detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
         )
-
-
-@router.get("/schema/{schema_id}", tags=["schema"])
-async def get_by_id(schema_id: str):
-    """
-    Get a valid schemas by ID and return it
-    """
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"http://multitenant-agent:3021",
-        api_key="adminApiKey",
-        is_multitenant=True,
-    )
-    try:
-        created_schemas = await aries_agent_controller.schema.get_by_id(schema_id)
-    except Exception as e:
-        await aries_agent_controller.terminate()
-        raise HTTPException(
-            status_code=418,
-            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-        )
-    await aries_agent_controller.terminate()
-    return created_schemas
-
-
-@router.get("/schema/schema_definition", tags=["schema", "credential"])
-async def schema_define():
-    """
-    Define Schema
-    """
-    return {"msg": "from schema define"}
 
 
 @router.post(
@@ -145,7 +117,11 @@ async def write_credential_schema(
             schema_resp=write_schema_resp,
             schema_id=schema_id,
             credential_definition=credential_definition,
+<<<<<<< HEAD
             credential_definition_id=credential_definition_id,
+=======
+            credential_id=credential_definition_id,
+>>>>>>> feature/auth
         )
         await aries_agent_controller.terminate()
         return final_response

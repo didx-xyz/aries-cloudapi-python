@@ -34,7 +34,7 @@ jobs:
     - name: Test with pytest
       run: |
         cd app
-        pytest --cov --suppress-tests-failed-exit-code
+        pytest --cov || true
         echo done
     - name: Run Pylint
       run: |
@@ -42,7 +42,7 @@ jobs:
         pylint admin routers oicd tests --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
     - name: Tear down test harnless
       run: |
-       ./manage down
+       ./manage down || true
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:

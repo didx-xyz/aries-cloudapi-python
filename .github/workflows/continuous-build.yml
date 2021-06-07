@@ -27,12 +27,13 @@ jobs:
         ./manage up
     - name: Install test dependencies.
       run: |
-        cp app/* . -R
+        cd app
         python -m pip install --upgrade pip
         pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
+        cd app
         pytest --cov
     - name: Run Pylint
       run: |
@@ -54,3 +55,5 @@ jobs:
          -Dsonar.python.xunit.reportPath=junit.xml
          -Dsonar.python.coverage.reportPaths=coverage.xml
          -Dsonar.python.pylint.reportPath=pylintreport.txt
+         -Dsonar.projectBaseDir=./app
+

@@ -5,7 +5,7 @@ from typing import Optional
 import traceback
 
 from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
-from utils import (
+from facade import (
     create_controller,
     create_did,
     post_to_ledger,
@@ -78,8 +78,10 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
             get_pub_did_response = await get_pub_did(controller)
             issuer_nym = get_pub_did_response["result"]["did"]
             issuer_verkey = get_pub_did_response["result"]["verkey"]
+
             issuer_endpoint = await get_did_endpoint(controller, issuer_nym)
             issuer_endpoint_url = issuer_endpoint["endpoint"]
+
             final_response = DidCreationResponse(
                 did_object=did_object,
                 issuer_verkey=issuer_verkey,

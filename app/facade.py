@@ -31,10 +31,9 @@ async def create_controller(req_header: Header):
         A generator of AriesAgentController or TenantController object
         (for use in contextmanager)
     """
-    is_valid_header = req_header and (
-        (("wallet_id" in req_header) and ("tenant_jwt" in req_header))
-        or "api_key" in req_header
-    )
+    is_valid_tenant_header = "wallet_id" in req_header and "tenant_jwt" in req_header
+    is_valid_admin_header = "api_key" in req_header
+    is_valid_header = req_header and (is_valid_tenant_header or is_valid_admin_header)
     if is_valid_header:
         req_header = eval(req_header)
         if "api_key" in req_header:
@@ -103,7 +102,8 @@ async def post_to_ledger(url, payload):
         The url of the ledger to post to
     payload: dict
         The payload to be posted of the form:
-        {"network": "stagingnet",
+        {
+            "network": "stagingnet",
             "did": did_object["did"],
             "verkey": did_object["verkey"],
             "paymentaddr": "somestring",

@@ -109,6 +109,6 @@ async def create_public_did():
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",
-        )
+        ) from e
 
 

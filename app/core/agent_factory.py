@@ -8,7 +8,6 @@ admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "False"))
-ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 def create_aries_agentcontroller():

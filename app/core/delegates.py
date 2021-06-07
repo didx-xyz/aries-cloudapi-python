@@ -18,7 +18,7 @@ class LedgerDelegate:
         # TODO: Network and paymentaddr should be definable on the fly/via args/via request body
         # TODO: Should this really be a schema or is using schema overkill here?
         # If we leave it as schema like this I suppose it is at least usable elsewhere
-        if not did_object:
+        if did_object:
             did = did_object["did"]
             verkey = did_object["verkey"]
         payload = LedgerRequest(

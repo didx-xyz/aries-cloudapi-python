@@ -25,6 +25,7 @@ jobs:
       run: |
        chmod u+x manage
         ./manage up
+       docker ps
     - name: Install test dependencies.
       run: |
         cd app

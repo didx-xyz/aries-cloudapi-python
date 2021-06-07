@@ -234,7 +234,7 @@ start | up)
   -d ${_startupParams}
   docker-compose \
   --log-level ERROR logs \
-  -f
+  -f -d
   ;;
 restart)
   _startupParams=$(getStartupParams $@)

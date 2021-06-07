@@ -16,6 +16,21 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def create_controller(req_header: Header):
+    """
+    Instantiate an AriesAgentController or a TenantController
+    based on header attributes
+
+    Parameters:
+    -----------
+    req_header: Header
+        The header object containing (wallet_id, jwt_token) or api_key
+
+    Returns:
+    --------
+    controller: aries_cloudcontroller instance
+        A generator of AriesAgentController or TenantController object
+        (for use in contextmanager)
+    """
     is_valid_header = req_header and (
         (("wallet_id" in req_header) and ("tenant_jwt" in req_header))
         or "api_key" in req_header
@@ -55,11 +70,23 @@ async def create_controller(req_header: Header):
 
 
 async def create_did(controller):
+    """
+    Creates a DID against the ledger using an AriesController
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    Returns:
+    --------
+    generate_did_response: dict
+        The response object from generating a DID on the ledger
+    """
     generate_did_res = await controller.wallet.create_did()
     if not generate_did_res["result"]:
+        logger.error(f"Failed to create DID:\n{generate_did_res}")
         raise HTTPException(
-            # TODO: Should this return HTTPException, if so which status code?
-            # Check same for occurences below
             status_code=404,
             detail=f"Something went wrong.\nCould not generate DID.\n{generate_did_res}",
         )
@@ -67,35 +94,86 @@ async def create_did(controller):
 
 
 async def post_to_ledger(url, payload):
-    r = requests.post(url, data=json.dumps(payload), headers={})
-    if r.status_code != 200:
-        error_json = r.json()
+    """
+    Post the did payload to the ledger
+
+    Parameters:
+    -----------
+    url: str
+        The url of the ledger to post to
+    payload: dict
+        The payload to be posted of the form:
+        {"network": "stagingnet",
+            "did": did_object["did"],
+            "verkey": did_object["verkey"],
+            "paymentaddr": "somestring",
+        }
+
+    Returns:
+    --------
+    post_to_ledger_resp: dict
+        The response object of the post request
+    """
+    post_to_ledger_resp = requests.post(url, data=json.dumps(payload), headers={})
+    if post_to_ledger_resp.status_code != 200:
+        error_json = post_to_ledger_resp.json()
+        logger.error(f"Failed to write to ledger:\n{error_json}")
         raise HTTPException(
-            status_code=r.status_code,
+            status_code=post_to_ledger_resp.status_code,
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
         )
-    return r
+    return post_to_ledger_resp
 
 
 async def get_taa(controller):
+    """
+    Obtains the TAA from the ledger
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    Returns:
+    --------
+    taa: dict
+        The TAA object
+    """
     taa_response = await controller.ledger.get_taa()
     logger.info(f"taa_response:\n{taa_response}")
     if not taa_response["result"]:
         error_json = taa_response.json()
+        logger.error("Failed to get TAA:\n{error_json}")
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not get TAA. {error_json}",
         )
-    TAA = taa_response["result"]["taa_record"]
-    TAA["mechanism"] = "service_agreement"
-    return TAA
+    taa = taa_response["result"]["taa_record"]
+    taa["mechanism"] = "service_agreement"
+    return taa
 
 
 async def accept_taa(controller, TAA):
+    """
+    Accept the TAA
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+    TAA:
+        The TAA object we want to agree to
+
+    Returns:
+    --------
+    accept_taa_response: {}
+        The response from letting the ledger know we accepted the response
+    """
     accept_taa_response = await controller.ledger.accept_taa(TAA)
     logger.info(f"accept_taa_response: {accept_taa_response}")
     if accept_taa_response != {}:
         error_json = accept_taa_response.json()
+        logger.error(f"Failed to accept TAA.\n{error_json}")
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not accept TAA. {error_json}",
@@ -104,12 +182,28 @@ async def accept_taa(controller, TAA):
 
 
 async def assign_pub_did(controller, did_object):
+    """
+    Assigns a publich did
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+    did_object:
+        The DID response object from creating a did
+
+    Returns:
+    --------
+    assign_pub_did_response: dict
+        The response obejct from assigning a a public did
+    """
     assign_pub_did_response = await controller.wallet.assign_public_did(
         did_object["did"]
     )
     logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
     if not assign_pub_did_response["result"] or assign_pub_did_response["result"] == {}:
         error_json = assign_pub_did_response.json()
+        logger.error(f"Failed to assign public DID:\n{error_json}")
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong.\nCould not assign DID. {error_json}",
@@ -118,10 +212,24 @@ async def assign_pub_did(controller, did_object):
 
 
 async def get_pub_did(controller):
+    """
+    Obtains the public DID
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    Returns:
+    --------
+    get_pub_did_response: dict
+        The response from getting the public DID from the ledger
+    """
     get_pub_did_response = await controller.wallet.get_public_did()
     logger.info(f"get_pub_did_response:\n{get_pub_did_response}")
     if not get_pub_did_response["result"] or get_pub_did_response["result"] == {}:
         error_json = get_pub_did_response.json()
+        logger.error(f"Failed to get public DID:\n{error_json}")
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not obtain public DID. {error_json}",
@@ -130,10 +238,27 @@ async def get_pub_did(controller):
 
 
 async def get_did_endpoint(controller, issuer_nym):
-    issuer_endpoint = await controller.ledger.get_did_endpoint(issuer_nym)
-    if not issuer_endpoint:
+    """
+    Obtains the public DID endpoint
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+    issuer_nym: str
+        The issuer's Verinym
+
+    Returns:
+    --------
+    issuer_endpoint_response: dict
+        The response from getting the public endpoint associated with
+        the issuer's Verinym from the ledger
+    """
+    issuer_endpoint_response = await controller.ledger.get_did_endpoint(issuer_nym)
+    if not issuer_endpoint_response:
+        logger.error(f"Failed to get DID endpoint:\n{issuer_endpoint_response}")
         raise HTTPException(
             status_code=404,
-            detail="Something went wrong. Could not obtain issuer endpoint.",
+            detail=f"Something went wrong. Could not obtain issuer endpoint.{issuer_endpoint_response}",
         )
-    return issuer_endpoint
+    return issuer_endpoint_response

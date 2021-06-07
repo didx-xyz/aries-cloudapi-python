@@ -37,6 +37,11 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     write it to the ledger and
     receive its public info.
 
+    Parameters:
+    -----------
+    req_header: Header
+        The request header object with (tenant_jwt, wallet_id) or api_key
+
     Returns:
     * DID object (json)
     * Issuer verkey (str)
@@ -83,7 +88,9 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
             return final_response
     except Exception as e:
         err_trace = traceback.print_exc()
-        logger.error(f"The following error occured:\n{e!r}\n{err_trace}")
+        logger.error(
+            f"Failed to create public DID. The following error occured:\n{e!r}\n{err_trace}"
+        )
         raise e
 
 
@@ -91,10 +98,9 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
 async def wallets_root():
     """
     The default endpoints for wallets
-
-    TODO: Determine what this should return or
-    whether this should return anything at all
     """
+    # TODO: Determine what this should return or
+    # whether this should return anything at all
     return {
         "message": "Wallets endpoint. Please, visit /docs to consult the Swagger docs."
     }
@@ -111,6 +117,13 @@ async def create_wallet(
     Parameters:
     -----------
     wallet_payload: dict
+        The payload for creating the wallet
+    req_header: Header
+        The request header object with (tenant_jwt, wallet_id) or api_key
+
+    Returns:
+    --------
+    The response object from creating a wallet on the ledger
     """
     try:
         async with create_controller(req_header) as controller:
@@ -138,6 +151,7 @@ async def create_wallet(
                 wallet_response = await controller.wallet.create_did()
             return wallet_response
     except Exception as e:
+        logger.error(f"Failed to create wallet:\n{e!r}")
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",

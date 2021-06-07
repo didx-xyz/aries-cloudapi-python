@@ -1,8 +1,10 @@
 import logging
-from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
-import aries_cloudcontroller
+from distutils.util import strtobool
+from typing import List
 import os
+
+from fastapi import APIRouter, HTTPException, Query
+import aries_cloudcontroller
 
 from schemas import SchemaLedgerRequest, SchemaResponse
 
@@ -13,7 +15,8 @@ router = APIRouter()
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-is_multitenant = os.getenv("IS_MULTITENANT", True)
+is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "True"))
+
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
@@ -37,7 +40,7 @@ async def get_schema():
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-        )
+        ) from e
 
 
 @router.post(
@@ -125,7 +128,7 @@ async def write_credential_schema(
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",
-        )
+        ) from e
 
 
 @router.get("/schema/registry", tags=["schemas", "registry"])

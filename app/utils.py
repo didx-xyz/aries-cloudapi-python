@@ -137,3 +137,62 @@ async def get_did_endpoint(controller, issuer_nym):
             detail="Something went wrong. Could not obtain issuer endpoint.",
         )
     return issuer_endpoint
+
+
+async def get_schema_attributes(schema_id):
+    schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
+    if not schema_resp:
+        raise HTTPException(
+            status_code=404,
+            detail="Could not find schema from provided ID",
+        )
+    schema_attr = schema_resp["schema"]["attrNames"]
+    return schema_attr
+
+
+async def write_credential_def(schema_id):
+    write_cred_response = await aries_agent_controller.definitions.write_cred_def(
+        schema_id
+    )
+    if not write_cred_response:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Could not write credential definition to the ledger",
+        )
+    return write_cred_response
+
+
+async def get_cred_def_id(credential_def):
+    cred_def_id = credential_def["credential_definition_id"]
+    if not cred_def_id:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Could not find credential definition id from the provided credential definition",
+        )
+    return cred_def_id
+
+
+async def issue_credential(
+    connection_id, schema_id, cred_def_id, credential_attributes
+):
+    record = await aries_agent_controller.issuer.send_credential(
+        connection_id, schema_id, cred_def_id, credential_attributes, trace=False
+    )
+    if not record:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Unable to issue credential.",
+        )
+    # TODO DO we want to return the credential or just SUCCESS ?
+    return record
+
+
+async def get_connection_id():
+    connection = await aries_agent_controller.connections.get_connections()
+    if not connection:
+        raise HTTPException(
+            status_code=404,
+             detail="Something went wrong. Could not obtain connections",
+        )
+    # TODO Return only the active connection id??
+    return connection

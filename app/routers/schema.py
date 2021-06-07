@@ -6,9 +6,7 @@ import os
 
 from schemas import SchemaLedgerRequest, SchemaResponse
 
-logger = logging.getLogger(__name__)
-
-router = APIRouter()
+router = APIRouter(prefix="/schemas",tags=["schemas"])
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +17,7 @@ is_multitenant = os.getenv("IS_MULTITENANT", True)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get("/schema/all_schemas", tags=["schemas"])
+@router.get("/all_schemas")
 async def get_schema():
     """
     Get all valid schemas from YOMA
@@ -43,8 +41,8 @@ async def get_schema():
 
 
 @router.post(
-    "/schema/write-schema-and-credential-definition",
-    tags=["schemas", "credentials"],
+    "/write-schema-and-credential-definition",
+    tags=["credentials"],
     response_model=SchemaResponse,
 )
 async def write_credential_schema(
@@ -125,12 +123,11 @@ async def write_credential_schema(
         await aries_agent_controller.terminate()
         logger.error(f"{e!r}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Something went wrong: {e!r}",
+            status_code=500, detail=f"Something went wrong: {e!r}",
         )
 
 
-@router.get("/schema/registry", tags=["schemas", "registry"])
+@router.get("/registry", tags=["registry"])
 async def get_schema_registry():
     """
     A function to obtain all schemas written to the ledger by YOMA

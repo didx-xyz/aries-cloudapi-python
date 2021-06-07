@@ -21,17 +21,17 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-    - name: Install dependencies.
+    - name: Start Test Harness
+      run: |
+       chmod u+x manage
+        ./manage up
+    - name: Install test dependencies.
       run: |
         cp app/* . -R
         rm -rf app
         python -m pip install --upgrade pip
         pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Start Test Harness
-      run: |
-       chmod u+x manage
-        ./manage up
     - name: Test with pytest
       run: |
         pytest --cov

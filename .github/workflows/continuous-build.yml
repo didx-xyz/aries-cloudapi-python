@@ -40,7 +40,7 @@ jobs:
         pylint admin routers oicd tests --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
     - name: Tear down test harnless
       run: |
-       manage down
+       ./manage down
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:

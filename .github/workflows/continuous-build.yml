@@ -30,7 +30,8 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Start Test Harness
       run: |
-        manage up
+       chmod u+x manage
+        ./manage up
     - name: Test with pytest
       run: |
         pytest --cov

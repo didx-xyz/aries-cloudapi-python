@@ -52,7 +52,7 @@ jobs:
         args: >
          -Dsonar.organization=didx-xyz
          -Dsonar.projectKey=didx-xyz_aries-cloudapi-python
-         -Dsonar.verbose=false
+         -Dsonar.verbose=true
          -Dsonar.python.xunit.reportPath=junit.xml
          -Dsonar.python.coverage.reportPaths=coverage.xml
          -Dsonar.python.pylint.reportPath=pylintreport.txt

@@ -28,6 +28,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Start Test Harness
+      run: |
+        manage up
     - name: Test with pytest
       run: |
         pytest --cov
@@ -35,6 +38,9 @@ jobs:
       run: |
         pip install pylint
         pylint admin routers oicd tests --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+    - name: Tear down test harnless
+      run: |
+       manage down
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:

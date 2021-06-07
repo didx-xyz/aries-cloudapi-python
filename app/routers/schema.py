@@ -117,11 +117,7 @@ async def write_credential_schema(
             schema_resp=write_schema_resp,
             schema_id=schema_id,
             credential_definition=credential_definition,
-<<<<<<< HEAD
-            credential_definition_id=credential_definition_id,
-=======
             credential_id=credential_definition_id,
->>>>>>> feature/auth
         )
         await aries_agent_controller.terminate()
         return final_response

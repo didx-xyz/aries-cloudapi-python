@@ -5,6 +5,12 @@ import io
 import qrcode
 import aries_cloudcontroller
 import os
+from utils import (
+    get_schema_attributes,
+    write_credential_def,
+    get_cred_def_id,
+    issue_credential,
+)
 
 router = APIRouter(prefix="/issuer")
 
@@ -32,28 +38,27 @@ async def issue_credential(
 
         # TODO check whether connection is in active state.
         # If not, return msg saying conneciton not active - should be active
-        schema_resp = await aries_agent_controller.schema.get_by_id(schema_id)
-        if schema_resp is None:
+        connection = await aries_agent_controller.get_connction(connection_id)
+        if connection["state"] is not "active":
             raise HTTPException(
                 status_code=404,
-                detail="Could not find schema from provided ID",
+                detail="Connection not active",
             )
-        schema_attr = schema_resp["schema"]["attrNames"]
+
+        schema_attr = await get_schema_attributes(schema_id)
         # TODO The below call works but smells fishy. What should we really be doing here?
         # Should/Can't we just obtain the dredential definition id from somewhere?
         # This should be written to the ledger already. Shouldn't this fail on trying
         # to write this again? However, this just returns the wanted cred_def_id.
-        write_cred_response = await aries_agent_controller.definitions.write_cred_def(
-            schema_id
-        )
+        await write_credential_def(schema_id)
 
         # TODO Do we want to obtain cred_def_id from somewhere else
-        cred_def_id = write_cred_response["credential_definition_id"]
+        cred_def_id = await get_cred_def_id(credential_def)
         credential_attributes = [
             {"name": k, "value": v} for k, v in list(zip(schema_attr, credential_attrs))
         ]
-        record = await aries_agent_controller.issuer.send_credential(
-            connection_id, schema_id, cred_def_id, credential_attributes, trace=False
+        record = await issue_credential(
+            connection_id, schema_id, cred_def_id, credential_attributes
         )
         await aries_agent_controller.terminate()
         # TODO Do we want to return the record or just success?
@@ -125,35 +130,9 @@ async def get_connection_id():
             api_key=admin_api_key,
             is_multitenant=True,
         )
-        connection = await aries_agent_controller.connections.get_connections()
+        connection = await get_connection_id()
         await aries_agent_controller.terminate()
         return connection
     except Exception as e:
         await aries_agent_controller.terminate()
         raise e
-
-
-# TODO THis endpoint will definely be used in numerous place maybe make this as a util or something
-# Currently using this endpoint solely for ease of testing
-# @router.get("/check-active-conenction", tags=["connection"])
-# async def check_active_connection(connection_id : str):
-
-#     try:
-#         aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-#                 admin_url=f"{admin_url}:{admin_port}",
-#                 api_key=admin_api_key,
-#                 is_multitenant=is_multitenant,
-#         )
-
-#         response = await agent_controller.connections.get_connections()
-#         results = response['results']
-#         print("Results : ", results)
-#         print('\n')
-#         if len(results) > 0:
-#             connection = response['results'][0]
-#             print("Connection :", connection)
-#             if connection['state'] == 'active':
-#                 connection_id = connection["connection_id"]
-#                 print("\nActive Connection ID : ", connection_id)
-#             else:
-#                 print("\nNo active connection found - wait a bit and execute again")

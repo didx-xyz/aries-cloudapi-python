@@ -1,18 +1,22 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header
 from fastapi.responses import StreamingResponse
-from typing import List
+from typing import List, Optional
 import io
 import qrcode
 import aries_cloudcontroller
 import os
-from utils import (
+from facade import (
     get_schema_attributes,
     write_credential_def,
     get_cred_def_id,
     issue_credential,
     get_connection_id,
+    create_controller,
 )
+import logging
+import traceback
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")
 
 
@@ -25,44 +29,48 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 @router.get("/issue-credential", tags=["issue", "credential"])
 async def issue_credential(
-    schema_id: str, connection_id: str, credential_attrs: List[str] = Query(None)
+    schema_id: str,
+    connection_id: str,
+    credential_attrs: List[str] = Query(None),
+    req_header: Optional[str] = Header(None),
 ):
     """
     Issues a credential
     """
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
+        async with create_controller(req_header) as controller:
+            if "ledger_url" in req_header:
+                url = req_header["ledger_url"]
+            else:
+                url = ledger_url
+        # Check if connection is active
         connection = await aries_agent_controller.get_connction(connection_id)
         if connection["state"] is not "active":
-            raise HTTPException(
-                status_code=404,
-                detail="Connection not active",
-            )
+            raise HTTPException(status_code=404, detail="Connection not active")
 
-        schema_attr = await get_schema_attributes(schema_id)
+        schema_attr = await get_schema_attributes(controller, schema_id)
         # TODO The below call works but smells fishy. What should we really be doing here?
-        # Should/Can't we just obtain the dredential definition id from somewhere?
+        # Should/Can't we just obtain the credential definition id from somewhere?
         # This should be written to the ledger already. Shouldn't this fail on trying
         # to write this again? However, this just returns the wanted cred_def_id.
-        await write_credential_def(schema_id)
+        await write_credential_def(controller, schema_id)
 
         # TODO Do we want to obtain cred_def_id from somewhere else
-        cred_def_id = await get_cred_def_id(credential_def)
+        cred_def_id = await get_cred_def_id(controller, credential_def)
         credential_attributes = [
             {"name": k, "value": v} for k, v in list(zip(schema_attr, credential_attrs))
         ]
         record = await issue_credential(
-            connection_id, schema_id, cred_def_id, credential_attributes
+            controller, connection_id, schema_id, cred_def_id, credential_attributes
         )
-        await aries_agent_controller.terminate()
+
         # TODO Do we want to return the record or just success?
         return record
     except Exception as e:
-        await aries_agent_controller.terminate()
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Failed to issue credential.The following error occured:\n{e!r}\n{err_trace}"
+        )
         raise e
 
 
@@ -121,16 +129,19 @@ async def create_connection():
 
 
 @router.get("/get-connection-id", tags=["connection"])
-async def get_connection_ids():
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"{admin_url}:{admin_port}",
-        api_key=admin_api_key,
-        is_multitenant=True,
-    )
+async def get_connection_ids(req_header: Optional[str] = Header(None)):
     try:
-        connection = await get_connection_id(aries_agent_controller)
-        await aries_agent_controller.terminate()
+        async with create_controller(req_header) as controller:
+            # TODO: Should this come from env var or from the client request?
+            if "ledger_url" in req_header:
+                url = req_header["ledger_url"]
+            else:
+                url = ledger_url
+        connection = await get_connection_id(controller)
         return connection
     except Exception as e:
-        await aries_agent_controller.terminate()
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Failed to get connection ids.The following error occured:\n{e!r}\n{err_trace}"
+        )
         raise e

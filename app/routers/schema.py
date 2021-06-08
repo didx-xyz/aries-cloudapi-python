@@ -8,7 +8,7 @@ import aries_cloudcontroller
 
 from schemas import SchemaLedgerRequest, SchemaResponse
 
-router = APIRouter(prefix="/schemas",tags=["schemas"])
+router = APIRouter(prefix="/schemas", tags=["schemas"])
 
 logger = logging.getLogger(__name__)
 
@@ -126,8 +126,7 @@ async def write_credential_schema(
         await aries_agent_controller.terminate()
         logger.error(f"{e!r}")
         raise HTTPException(
-            status_code=500,
-            detail=f"Something went wrong: {e!r}",
+            status_code=500, detail=f"Something went wrong: {e!r}"
         ) from e
 
 

@@ -56,14 +56,9 @@ async def create_controller(req_header: Header):
     try:
         yield controller
     except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error(f"{e!r}")
-        if e.status:
-            raise HTTPException(
-                status_code=e.status,
-                detail=e.message,
-            ) from e
-        else:
-            raise e
     finally:
         await controller.terminate()
 

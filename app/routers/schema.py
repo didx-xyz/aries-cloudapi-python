@@ -2,8 +2,8 @@ import logging
 from distutils.util import strtobool
 from typing import List
 import os
-
-from fastapi import APIRouter, HTTPException, Query
+import traceback
+from fastapi import APIRouter, HTTPException, Query, Header
 import aries_cloudcontroller
 
 from schemas import SchemaLedgerRequest, SchemaResponse
@@ -16,7 +16,6 @@ admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "True"))
-
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 

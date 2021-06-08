@@ -287,7 +287,7 @@ async def get_cred_def_id(controller, credential_def):
     return cred_def_id
 
 
-async def issue_credential(
+async def issue_credentials(
     controller, connection_id, schema_id, cred_def_id, credential_attributes
 ):
     record = await controller.issuer.send_credential(

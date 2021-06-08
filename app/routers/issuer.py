@@ -9,7 +9,7 @@ from facade import (
     get_schema_attributes,
     write_credential_def,
     get_cred_def_id,
-    issue_credential,
+    issue_credentials,
     get_connection_id,
     create_controller,
 )
@@ -61,7 +61,7 @@ async def issue_credential(
                 {"name": k, "value": v}
                 for k, v in list(zip(schema_attr, credential_attrs))
             ]
-            record = await issue_credential(
+            record = await issue_credentials(
                 controller, connection_id, schema_id, cred_def_id, credential_attributes
             )
 
@@ -85,7 +85,7 @@ async def issue_credential(
         }
     },
 )
-async def create_connection():
+async def create_connection(req_header: Optional[str] = Header(None)):
     """
     Creates invitation for the holder to scan
 
@@ -93,36 +93,31 @@ async def create_connection():
         QRCode PNG file from StreamingResponse
     """
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
+        async with create_controller(req_header) as controller:
+            # TODO: Should this come from env var or from the client request?
+            if "ledger_url" in req_header:
+                url = req_header["ledger_url"]
+            else:
+                url = ledger_url
 
-        invite = await aries_agent_controller.connections.create_invitation()
-        # connection_id = invite["connection_id"]
-        inviteURL = invite["invitation_url"]
+            invite = await controller.connections.create_invitation()
+            # connection_id = invite["connection_id"]
+            inviteURL = invite["invitation_url"]
 
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(inviteURL)
-        qr.make(fit=True)
-        img = qr.make_image(fill="black", back_color="white")
-        buffer_img = io.BytesIO()
-        img.save(buffer_img, format="PNG")
-        await aries_agent_controller.terminate()
-        # Alternatively, one can also return the QR code as a
-        # base64 encoded string if that is prefered:
-        #
-        # img_64 = base64.b64encode(buffer_img.getvalue())
-        # await aries_agent_controller.terminate()
-        # payload = {"mime": "image/png", "image": img_64, "some_other_data": None}
-        # return payload
-        #
-        # ! Make sure you have imported base64
-        resp_img = io.BytesIO(buffer_img.getvalue())
-        return StreamingResponse(resp_img, media_type="image/png")
+            qr = qrcode.QRCode(version=1, box_size=10, border=5)
+            qr.add_data(inviteURL)
+            qr.make(fit=True)
+            img = qr.make_image(fill="black", back_color="white")
+            buffer_img = io.BytesIO()
+            img.save(buffer_img, format="PNG")
+            await controller.terminate()
+            resp_img = io.BytesIO(buffer_img.getvalue())
+            return StreamingResponse(resp_img, media_type="image/png")
     except Exception as e:
-        await aries_agent_controller.terminate()
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Failed to create qrcode. The following error occured:\n{e!r}\n{err_trace}"
+        )
         raise e
 
 

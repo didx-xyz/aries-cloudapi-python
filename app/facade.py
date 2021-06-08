@@ -57,10 +57,6 @@ async def create_controller(req_header: Header):
         yield controller
     except Exception as e:
         logger.error(f"{e!r}")
-        if e.status:
-            raise HTTPException(status_code=e.status, detail=e.message) from e
-        else:
-            raise e
     finally:
         await controller.terminate()
 

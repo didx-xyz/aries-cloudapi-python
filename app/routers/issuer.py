@@ -44,16 +44,16 @@ async def issue_credential(
             else:
                 url = ledger_url
             # Check if connection is active
-            connection = await controller.get_connction(connection_id)
-            if connection["state"] is not "active":
-                raise HTTPException(status_code=404, detail="Connection not active")
+            # connection = await controller.get_connection(connection_id)
+            # if connection["state"] is not "active":
+            #     raise HTTPException(status_code=404, detail="Connection not active")
 
             schema_attr = await get_schema_attributes(controller, schema_id)
             # TODO The below call works but smells fishy. What should we really be doing here?
             # Should/Can't we just obtain the credential definition id from somewhere?
             # This should be written to the ledger already. Shouldn't this fail on trying
             # to write this again? However, this just returns the wanted cred_def_id.
-            await write_credential_def(controller, schema_id)
+            credential_def = await write_credential_def(controller, schema_id)
 
             # TODO Do we want to obtain cred_def_id from somewhere else
             cred_def_id = await get_cred_def_id(controller, credential_def)

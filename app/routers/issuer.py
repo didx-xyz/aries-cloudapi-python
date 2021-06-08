@@ -10,6 +10,7 @@ from utils import (
     write_credential_def,
     get_cred_def_id,
     issue_credential,
+    get_connection_id,
 )
 
 router = APIRouter(prefix="/issuer")
@@ -35,9 +36,6 @@ async def issue_credential(
             api_key=admin_api_key,
             is_multitenant=is_multitenant,
         )
-
-        # TODO check whether connection is in active state.
-        # If not, return msg saying conneciton not active - should be active
         connection = await aries_agent_controller.get_connction(connection_id)
         if connection["state"] is not "active":
             raise HTTPException(
@@ -123,14 +121,14 @@ async def create_connection():
 
 
 @router.get("/get-connection-id", tags=["connection"])
-async def get_connection_id():
+async def get_connection_ids():
+    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
+        admin_url=f"{admin_url}:{admin_port}",
+        api_key=admin_api_key,
+        is_multitenant=True,
+    )
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=True,
-        )
-        connection = await get_connection_id()
+        connection = await get_connection_id(aries_agent_controller)
         await aries_agent_controller.terminate()
         return connection
     except Exception as e:

@@ -187,7 +187,7 @@ async def issue_credential(
     return record
 
 
-async def get_connection_id():
+async def get_connection_id(aries_agent_controller):
     connection = await aries_agent_controller.connections.get_connections()
     if not connection:
         raise HTTPException(

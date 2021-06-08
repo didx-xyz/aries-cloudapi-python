@@ -25,8 +25,9 @@ jobs:
       run: |
        chmod u+x manage
         ./manage up
+       echo waiting for dockers to startup, sleeping for 60 seconds
        sleep 60
-       docker ps
+       echo wait over, continuing
     - name: Install test dependencies.
       run: |
         cd app

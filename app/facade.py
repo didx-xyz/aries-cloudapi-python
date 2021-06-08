@@ -258,6 +258,19 @@ async def get_did_endpoint(controller, issuer_nym):
 
 
 async def get_schema_attributes(controller, schema_id):
+    """
+    Obtains Schema Attributes
+
+    Parameters:
+    ----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    Returns
+    -------
+    schema attributes
+    """
+
     schema_resp = await controller.schema.get_by_id(schema_id)
     if not schema_resp:
         raise HTTPException(
@@ -268,6 +281,21 @@ async def get_schema_attributes(controller, schema_id):
 
 
 async def write_credential_def(controller, schema_id):
+    """
+    Writes Credential Definition to the ledger
+
+    Parameters:
+    ----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    Schema id
+
+    Returns:
+    -------
+    Credential Definition
+    """
+
     write_cred_response = await controller.definitions.write_cred_def(schema_id)
     if not write_cred_response:
         raise HTTPException(
@@ -302,6 +330,19 @@ async def issue_credentials(
 
 
 async def get_connection_id(controller):
+    """
+    Obtains list existing connection ids
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+    
+    Returns:
+    -------
+    connection: dict
+        List of existing connections
+    """
     connection = await controller.connections.get_connections()
     if not connection:
         raise HTTPException(
@@ -309,3 +350,29 @@ async def get_connection_id(controller):
         )
     # TODO Return only the active connection id??
     return connection
+
+
+async def get_schema_list(controller):
+    created_schemas = await controller.schema.get_created_schema()
+    if not created_schemas:
+        raise HTTPException(
+            status_code=404, detail="Something went wrong. Could not obtain schema list"
+        )
+    return created_schemas
+
+
+async def write_schema_definition(controller, schema_definition_request):
+
+    write_schema_resp = await controller.schema.write_schema(
+        schema_definition_request.schema_name,
+        schema_definition_request.schema_attrs,
+        schema_definition_request.schema_version,
+    )
+
+    if not write_schema_resp or write_schema_resp == {}:
+        await controller.terminate()
+        raise HTTPException(
+            status_code=404,
+            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+        )
+    return write_schema_resp

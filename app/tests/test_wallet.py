@@ -1,5 +1,6 @@
 import docker
 import pytest
+from assertpy import assert_that
 
 import routers.governance
 from core import wallet, agent_factory, delegates
@@ -13,30 +14,17 @@ def test_foo():
 async def test_create_public_did():
     setup_env()
 
-    delegates.ledger_url = "https://selfserve.sovrin.org/nym"
     result = await wallet.create_public_did()
-    # print(result)
+
+    # TODO: validate in a more robust manner
+    assert_that(result.did_object).is_not_empty()
+    assert_that(result.issuer_verkey).is_not_empty()
+    assert_that(result.issuer_endpoint).is_not_empty()
 
 
 def setup_env():
-    client = docker.from_env()
-    containers_list = client.containers.list()
-    print(containers_list)
-
-    container = next(iter(c for c in containers_list if 'aries-cloudapi-python_yoma-ga-agent:latest' in c.image.tags),
-                     None)
-
-    # if container:
-    #     network = next(iter(container.attrs['NetworkSettings']['Networks'].values()), None)
-    #     ip_address = network['IPAddress']
-    #     print('ip address = ' + ip_address)
-    #     agent_factory.admin_url = 'http://' + ip_address
-    # else:
-    #     agent_factory.admin_url = 'http://localhost'
     agent_factory.admin_url = 'http://localhost'
-    print(f'admin url  = {agent_factory.admin_url}')
-
-
     agent_factory.admin_port = '3021'
     agent_factory.admin_api_key = 'adminApiKey'
     agent_factory.is_multitenant = False
+    delegates.ledger_url = "https://selfserve.sovrin.org/nym"

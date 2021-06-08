@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "False"))
 
 
-async def create_public_did():
+async def create_public_did() -> DidCreationResponse:
     """
     Create a new public DID and
     write it to the ledger and

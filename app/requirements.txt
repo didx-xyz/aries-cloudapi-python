@@ -57,3 +57,4 @@ uvicorn==0.13.4
 wcwidth==0.2.5
 webencodings==0.5.1
 yarl==1.6.3
+pytest-cov==2.12.1

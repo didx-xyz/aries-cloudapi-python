@@ -1,7 +1,7 @@
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 
 
 # TODO what is a good name for this
@@ -17,6 +17,12 @@ class DidCreationResponse(BaseModel):
     did_object: dict
     issuer_verkey: str
     issuer_endpoint: str
+
+
+class PostLedgerResponse(BaseModel):
+    status_code: int
+    headers: dict
+    body: Json
 
 
 class SchemaLedgerRequest(BaseModel):

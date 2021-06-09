@@ -1,8 +1,7 @@
-from fastapi import Depends, FastAPI
-
-from dependencies import get_query_token, get_token_header
 from admin import admin
-from routers import holder, issuer, verifier, wallet, schema, governance
+from dependencies import get_query_token, get_token_header
+from fastapi import Depends, FastAPI
+from routers import governance, holder, issuer, schema, verifier, wallet
 
 # app = FastAPI(dependencies=[Depends(get_query_token)])
 app = FastAPI()
@@ -17,6 +16,8 @@ app.include_router(wallet.router)
 #     dependencies=[Depends(get_token_header)],
 #     responses={418: {"description": "I'm a teapot"}},
 # )
+
+app.include_router(issuer.router)
 
 
 @app.get("/")

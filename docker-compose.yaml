@@ -47,7 +47,7 @@ services:
     networks:
       - yoma-ga
   yoma-multitenant-web:
-    build: 
+    build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
@@ -58,13 +58,13 @@ services:
       - yoma-multitenant-wallets-db
     networks:
       - yoma-multitenant
-    env_file: 
+    env_file:
       - environments/yoma-multitenant/fastapi.default.env
   yoma-multitenant-wallets-db:
     image: postgres:11
     container_name: yoma-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
-    env_file: 
+    env_file:
       - environments/yoma-multitenant/db.default.env
     volumes:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql

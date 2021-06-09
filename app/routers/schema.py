@@ -1,52 +1,56 @@
-from distutils.util import strtobool
-
-from typing import List
+import logging
 import os
+import traceback
+from distutils.util import strtobool
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
 import aries_cloudcontroller
-
+from facade import (create_controller, get_schema_list, write_credential_def,
+                    write_schema_definition)
+from fastapi import APIRouter, Header, HTTPException, Query
 from schemas import SchemaLedgerRequest, SchemaResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/schemas", tags=["schemas"])
+
+logger = logging.getLogger(__name__)
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "True"))
-
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
-@router.get("/schema/all_schemas", tags=["schemas"])
-async def get_schema():
+@router.get("/all_schemas")
+async def get_schema(req_header: Optional[str] = Header(None)):
     """
     Get all valid schemas from YOMA
     """
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
-        created_schemas = await aries_agent_controller.schema.get_created_schema()
-        await aries_agent_controller.terminate()
-        return created_schemas
+        async with create_controller(req_header) as controller:
+            # TODO: Should this come from env var or from the client request?
+            created_schemas = await get_schema_list(controller)
+
+            return created_schemas
 
     except Exception as e:
-        await aries_agent_controller.terminate()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Something went wrong.\n Could not get schema from ledger.\n{e}.",
-        ) from e
-
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Failed to retrieve schema list.The following error occured:\n{e!r}\n{err_trace}"
+        )
+        raise e
 
 
 @router.post(
-    "/schema/write-schema-and-credential-definition", tags=["schemas", "credentials"],response_model = SchemaResponse
+    "/write-schema-and-credential-definition",
+    tags=["credentials"],
+    response_model=SchemaResponse,
 )
 async def write_credential_schema(
-    schema_name: str, schema_version: str, schema_attrs: List[str] = Query(None)
+    schema_name: str,
+    schema_version: str,
+    schema_attrs: List[str] = Query(None),
+    req_header: Optional[str] = Header(None),
 ):
     """
     Create schema and credential definition and
@@ -71,64 +75,43 @@ async def write_credential_schema(
     * credential_id
     """
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
+        async with create_controller(req_header) as controller:
+            # TODO: Should this come from env var or from the client request?
 
-        # Defining schema and writing it to the ledger
-
-        schema_definition_request = SchemaLedgerRequest(
-            schema_name=schema_name,
-            schema_version=schema_version,
-            schema_attributes=schema_attrs,
-        ).dict()
-
-        write_schema_resp = await aries_agent_controller.schema.write_schema(
-            schema_definition_request.schema_name,
-            schema_definition_request.schema_attributes,
-            schema_definition_request.schema_version,
-        )
-
-        if not write_schema_resp or write_schema_resp == {}:
-            await aries_agent_controller.terminate()
-            raise HTTPException(
-                status_code=404,
-                detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+            # Defining schema and writing it to the ledger
+            schema_definition_request = SchemaLedgerRequest(
+                schema_name=schema_name,
+                schema_version=schema_version,
+                schema_attrs=schema_attrs,
             )
-        schema_id = write_schema_resp["schema_id"]
 
-        # Writing credential definition
-        credential_definition = await aries_agent_controller.definitions.write_cred_def(
-            schema_id
-        )
-        if not credential_definition:
-            await aries_agent_controller.terminate()
-            raise HTTPException(
-                status_code=404,
-                detail=f"Something went wrong.\nCould not write credential definition to ledger.\n{credential_definition}",
+            write_schema_resp = await write_schema_definition(
+                controller, schema_definition_request
             )
-        credential_definition_id = credential_definition["credential_definition_id"]
+            schema_id = write_schema_resp["schema_id"]
 
-        final_response = SchemaResponse(
-            schema_resp = write_schema_resp,
-            schema_id = schema_id,
-            credential_definition = credential_definition,
-            credential_id = credential_definition_id,
-        )
-        await aries_agent_controller.terminate()
-        return final_response
+            # Writing credential definition
+            credential_definition = await write_credential_def(controller, schema_id)
+
+            credential_definition_id = credential_definition["credential_definition_id"]
+
+            final_response = SchemaResponse(
+                schema_resp=write_schema_resp,
+                schema_id=schema_id,
+                credential_definition=credential_definition,
+                credential_definition_id=credential_definition_id,
+            )
+            return final_response
     except Exception as e:
-        await aries_agent_controller.terminate()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Something went wrong: {e!r}",
-        ) from e
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Something went wrong, the following error occured:{e!r}\n{err_trace}"
+        )
+        raise e
 
 
-@router.get("/schema/registry", tags=["schemas", "registry"])
-async def get_schema_registry():
+@router.get("/registry", tags=["registry"])
+async def get_schema_registry(req_header: Optional[str] = Header(None)):
     """
     A function to obtain all schemas written to the ledger by YOMA
     and YOMA only.
@@ -138,14 +121,17 @@ async def get_schema_registry():
     schemas: [dict]
         A list of schema definitions
     """
-    aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-        admin_url=f"{admin_url}:{admin_port}",
-        api_key=admin_api_key,
-        is_multitenant=is_multitenant,
-    )
+    try:
+        async with create_controller(req_header) as controller:
+            # TODO: Should this come from env var or from the client request?l
 
-    schemas = {}
-    # schemas = aries_agent_controller.schema
+            schemas = {}
+            # schemas = controller.schema
 
-    await aries_agent_controller.terminate()
-    return schemas
+            return schemas
+    except Exception as e:
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Something went wrong, the following error occured:{e!r}\n{err_trace}"
+        )
+        raise e

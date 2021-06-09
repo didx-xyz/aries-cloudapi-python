@@ -5,6 +5,10 @@ import json
 import requests
 import os
 import logging
+from utils import controller_factory
+from typing import Generic, TypeVar
+
+T_co = TypeVar("T_co", contravariant=True)
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -15,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def create_controller(req_header: Header):
+async def create_controller(req_header: Header = None) -> Generic[T_co]:
     """
     Instantiate an AriesAgentController or a TenantController
     based on header attributes
@@ -27,32 +31,10 @@ async def create_controller(req_header: Header):
 
     Returns:
     --------
-    controller: aries_cloudcontroller instance
-        A generator of AriesAgentController or TenantController object
-        (for use in contextmanager)
+    controller: Generic type of aries_cloudcontroller instance
+        The AsyncContextMananger instance of the cloudcontroller
     """
-    is_valid_tenant_header = "wallet_id" in req_header and "tenant_jwt" in req_header
-    is_valid_admin_header = "api_key" in req_header
-    is_valid_header = req_header and (is_valid_tenant_header or is_valid_admin_header)
-    if is_valid_header:
-        req_header = eval(req_header)
-        if "api_key" in req_header:
-            controller = AriesAgentController(
-                admin_url=f"{admin_url}:{admin_port}",
-                api_key=req_header["api_key"],
-                is_multitenant=is_multitenant,
-            )
-        else:
-            controller = AriesTenantController(
-                admin_url=f"{admin_url}:{admin_port}",
-                wallet_id=req_header["wallet_id"],
-                tenant_jwt=req_header["tenant_jwt"],
-            )
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
-        )
+    controller = controller_factory(req_header)
     try:
         yield controller
     except Exception as e:
@@ -63,7 +45,7 @@ async def create_controller(req_header: Header):
         await controller.terminate()
 
 
-async def create_did(controller):
+async def create_did(controller: Generic[T_co]):
     """
     Creates a DID against the ledger using an AriesController
 

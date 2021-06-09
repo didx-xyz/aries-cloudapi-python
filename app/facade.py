@@ -1,10 +1,11 @@
+import json
+import logging
+import os
+from contextlib import asynccontextmanager
+
+import requests
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
-from contextlib import asynccontextmanager
-import json
-import requests
-import os
-import logging
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -268,7 +269,7 @@ async def get_schema_attributes(controller, schema_id):
 
     Returns
     -------
-    schema attributes
+    schema_attr :dict
     """
 
     schema_resp = await controller.schema.get_by_id(schema_id)
@@ -293,7 +294,7 @@ async def write_credential_def(controller, schema_id):
 
     Returns:
     -------
-    Credential Definition
+    write_cred_response :dict
     """
 
     write_cred_response = await controller.definitions.write_cred_def(schema_id)
@@ -306,6 +307,21 @@ async def write_credential_def(controller, schema_id):
 
 
 async def get_cred_def_id(controller, credential_def):
+    """
+    Obtains the credential definition id
+
+    Parameters:
+    ----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    credential_def : The credential definition whose id we wish to obtain
+
+    Returns:
+    -------
+    cred_def_id : dict
+        The credential definition id
+    """
     cred_def_id = credential_def["credential_definition_id"]
     if not cred_def_id:
         raise HTTPException(
@@ -337,7 +353,7 @@ async def get_connection_id(controller):
     -----------
     controller: AriesController
         The aries_cloudcontroller object
-    
+
     Returns:
     -------
     connection: dict
@@ -353,6 +369,19 @@ async def get_connection_id(controller):
 
 
 async def get_schema_list(controller):
+    """
+    Obtains list of existing schemas
+
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    Returns
+    -------
+    created_schemas : dict
+        List of schemas
+    """
     created_schemas = await controller.schema.get_created_schema()
     if not created_schemas:
         raise HTTPException(
@@ -362,7 +391,20 @@ async def get_schema_list(controller):
 
 
 async def write_schema_definition(controller, schema_definition_request):
+    """
+    Writes schema definition to the ledger
 
+    Parameters:
+    -----------
+    controller: AriesController
+        The aries_cloudcontroller object
+
+    schema_definition_request : Contains the schema name,schema version, schema attributes
+
+    Returns
+    write_schema_resp : dict
+
+    """
     write_schema_resp = await controller.schema.write_schema(
         schema_definition_request.schema_name,
         schema_definition_request.schema_attrs,

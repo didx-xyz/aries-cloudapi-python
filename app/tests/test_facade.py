@@ -1,7 +1,7 @@
 import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
-from app import facade
+import facade
 
 
 testheaders = [

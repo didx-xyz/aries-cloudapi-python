@@ -412,7 +412,6 @@ async def write_schema_definition(controller, schema_definition_request):
     )
 
     if not write_schema_resp or write_schema_resp == {}:
-        await controller.terminate()
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",

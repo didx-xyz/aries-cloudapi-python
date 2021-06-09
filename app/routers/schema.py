@@ -1,18 +1,14 @@
 import logging
-from distutils.util import strtobool
-from typing import List, Optional
 import os
 import traceback
-from fastapi import APIRouter, HTTPException, Query, Header
-import aries_cloudcontroller
+from distutils.util import strtobool
+from typing import List, Optional
 
+import aries_cloudcontroller
+from facade import (create_controller, get_schema_list, write_credential_def,
+                    write_schema_definition)
+from fastapi import APIRouter, Header, HTTPException, Query
 from schemas import SchemaLedgerRequest, SchemaResponse
-from facade import (
-    create_controller,
-    write_schema_definition,
-    get_schema_list,
-    write_credential_def,
-)
 
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 
@@ -33,10 +29,6 @@ async def get_schema(req_header: Optional[str] = Header(None)):
     try:
         async with create_controller(req_header) as controller:
             # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
             created_schemas = await get_schema_list(controller)
 
             return created_schemas
@@ -85,10 +77,6 @@ async def write_credential_schema(
     try:
         async with create_controller(req_header) as controller:
             # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
 
             # Defining schema and writing it to the ledger
 
@@ -136,11 +124,7 @@ async def get_schema_registry(req_header: Optional[str] = Header(None)):
     """
     try:
         async with create_controller(req_header) as controller:
-            # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
+            # TODO: Should this come from env var or from the client request?l
 
             schemas = {}
             # schemas = controller.schema

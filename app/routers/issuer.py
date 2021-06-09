@@ -1,20 +1,16 @@
-from fastapi import APIRouter, HTTPException, Query, Header
-from fastapi.responses import StreamingResponse
-from typing import List, Optional
 import io
-import qrcode
-import aries_cloudcontroller
-import os
-from facade import (
-    get_schema_attributes,
-    write_credential_def,
-    get_cred_def_id,
-    issue_credentials,
-    get_connection_id,
-    create_controller,
-)
 import logging
+import os
 import traceback
+from typing import List, Optional
+
+import aries_cloudcontroller
+import qrcode
+from facade import (create_controller, get_connection_id, get_cred_def_id,
+                    get_schema_attributes, issue_credentials,
+                    write_credential_def)
+from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")
@@ -39,10 +35,7 @@ async def issue_credential(
     """
     try:
         async with create_controller(req_header) as controller:
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
+
             # Check if connection is active
             # connection = await controller.get_connection(connection_id)
             # if connection["state"] is not "active":
@@ -89,17 +82,17 @@ async def create_connection(req_header: Optional[str] = Header(None)):
     """
     Creates invitation for the holder to scan
 
+    Parameters:
+    ----------
+        req_header: Header
+            The header object containing (wallet_id, jwt_token) or api_key
+
     Returns:
         QRCode PNG file from StreamingResponse
     """
     try:
         async with create_controller(req_header) as controller:
             # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
-
             invite = await controller.connections.create_invitation()
             # connection_id = invite["connection_id"]
             inviteURL = invite["invitation_url"]
@@ -110,7 +103,6 @@ async def create_connection(req_header: Optional[str] = Header(None)):
             img = qr.make_image(fill="black", back_color="white")
             buffer_img = io.BytesIO()
             img.save(buffer_img, format="PNG")
-            await controller.terminate()
             resp_img = io.BytesIO(buffer_img.getvalue())
             return StreamingResponse(resp_img, media_type="image/png")
     except Exception as e:
@@ -129,10 +121,6 @@ async def get_connection_ids(req_header: Optional[str] = Header(None)):
     try:
         async with create_controller(req_header) as controller:
             # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
             connection = await get_connection_id(controller)
             return connection
     except Exception as e:

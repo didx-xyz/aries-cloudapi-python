@@ -1,5 +1,5 @@
 import json
-from typing import Optional, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -26,10 +26,10 @@ class SchemaLedgerRequest(BaseModel):
 
 
 class SchemaResponse(BaseModel):
-    schema_resp: str
+    schema_resp: dict
     schema_id: str
-    credential_definition: str
-    credential_id: str
+    credential_definition: dict
+    credential_definition_id: str
 
 
 class InitWalletRequest(BaseModel):

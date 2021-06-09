@@ -67,7 +67,9 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
                 paymentaddr="",
             ).dict()
 
-            await post_to_ledger(url, payload)
+            ledger_res = await post_to_ledger(url, payload)
+            
+            logger.error(str(ledger_res.content))
 
             TAA = await get_taa(controller)
 

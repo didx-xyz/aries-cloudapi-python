@@ -1,4 +1,5 @@
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from schemas import LedgerRequest
 from fastapi import Header, HTTPException
 from contextlib import asynccontextmanager
 import json
@@ -87,7 +88,7 @@ async def create_did(controller):
     return generate_did_res
 
 
-async def post_to_ledger(url, payload):
+async def post_to_ledger(url: str, payload: LedgerRequest):
     """
     Post the did payload to the ledger
 

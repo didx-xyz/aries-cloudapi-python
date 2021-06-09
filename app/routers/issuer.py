@@ -4,11 +4,15 @@ import os
 import traceback
 from typing import List, Optional
 
-import aries_cloudcontroller
 import qrcode
-from facade import (create_controller, get_connection_id, get_cred_def_id,
-                    get_schema_attributes, issue_credentials,
-                    write_credential_def)
+from facade import (
+    create_controller,
+    get_connection_id,
+    get_cred_def_id,
+    get_schema_attributes,
+    issue_credentials,
+    write_credential_def,
+)
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
@@ -84,10 +88,10 @@ async def create_connection(req_header: Optional[str] = Header(None)):
 
     Parameters:
     ----------
-        req_header: Header
-            The header object containing (wallet_id, jwt_token) or api_key
+    req_header: Header
+        The header object containing (wallet_id, jwt_token) or api_key
 
-    Returns:
+    Returns: StreamingResponse
         QRCode PNG file from StreamingResponse
     """
     try:
@@ -114,10 +118,22 @@ async def create_connection(req_header: Optional[str] = Header(None)):
 
 
 # TODO Decide where this endpoint to lie
-
-
 @router.get("/get-connection-id", tags=["connection"])
 async def get_connection_ids(req_header: Optional[str] = Header(None)):
+    """
+    Creates invitation for the holder to scan
+
+    Parameters:
+    ----------
+    req_header: Header
+        The header object containing (wallet_id, jwt_token) or api_key
+
+    Returns:
+    --------
+    connection_id: JSON
+        The request response from the ledger with all current connections
+        The 'results' key holds a [dict].
+    """
     try:
         async with create_controller(req_header) as controller:
             # TODO: Should this come from env var or from the client request?

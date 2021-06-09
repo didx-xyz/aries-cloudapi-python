@@ -79,7 +79,6 @@ async def write_credential_schema(
             # TODO: Should this come from env var or from the client request?
 
             # Defining schema and writing it to the ledger
-
             schema_definition_request = SchemaLedgerRequest(
                 schema_name=schema_name,
                 schema_version=schema_version,

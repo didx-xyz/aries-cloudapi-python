@@ -356,16 +356,16 @@ async def get_connection_id(controller):
 
     Returns:
     -------
-    connection: dict
-        List of existing connections
+    connections: dict
+        List of existing connections in 
     """
-    connection = await controller.connections.get_connections()
-    if not connection:
+    connections = await controller.connections.get_connections()
+    if not connections:
         raise HTTPException(
             status_code=404, detail="Something went wrong. Could not obtain connections"
         )
     # TODO Return only the active connection id??
-    return connection
+    return connections
 
 
 async def get_schema_list(controller):

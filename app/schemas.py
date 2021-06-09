@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, HttpUrl, Json
+from pydantic import BaseModel, Field
 
 
 # TODO what is a good name for this

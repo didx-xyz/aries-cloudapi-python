@@ -5,14 +5,9 @@ import traceback
 from typing import List, Optional
 
 import qrcode
-from facade import (
-    create_controller,
-    get_connection_id,
-    get_cred_def_id,
-    get_schema_attributes,
-    issue_credentials,
-    write_credential_def,
-)
+from facade import (create_controller, get_connection_id, get_cred_def_id,
+                    get_schema_attributes, issue_credentials,
+                    write_credential_def)
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
@@ -45,6 +40,8 @@ async def issue_credential(
             # if connection["state"] is not "active":
             #     raise HTTPException(status_code=404, detail="Connection not active")
 
+            # TODO How do we want to handle this for input? This now assumes that the client knows
+            # the schema attributes or is able to obtain them if it does not.
             schema_attr = await get_schema_attributes(controller, schema_id)
             # TODO The below call works but smells fishy. What should we really be doing here?
             # Should/Can't we just obtain the credential definition id from somewhere?
@@ -54,6 +51,8 @@ async def issue_credential(
 
             # TODO Do we want to obtain cred_def_id from somewhere else
             cred_def_id = await get_cred_def_id(controller, credential_def)
+            # TODO Should this validate the provided schame attrs from the client against the from the schema?
+            # As in should we validate at this point that the sets of attributes match
             credential_attributes = [
                 {"name": k, "value": v}
                 for k, v in list(zip(schema_attr, credential_attrs))

@@ -429,3 +429,4 @@ async def write_schema_definition(controller, schema_definition_request):
             detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
         )
     return write_schema_resp
+

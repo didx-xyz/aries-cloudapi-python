@@ -1,12 +1,22 @@
-import logging
 import os
-import traceback
+import logging
 from typing import Optional
+import traceback
 
-from facade import (accept_taa, assign_pub_did, create_controller, create_did,
-                    get_did_endpoint, get_pub_did, get_taa, post_to_ledger)
-from fastapi import APIRouter, Header, HTTPException
-from schemas import DidCreationResponse, InitWalletRequest, LedgerRequest
+from fastapi import APIRouter, HTTPException, Header
+
+from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
+from facade import (
+    create_controller,
+    create_did,
+    post_to_ledger,
+    get_taa,
+    accept_taa,
+    assign_pub_did,
+    get_pub_did,
+    get_did_endpoint,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +66,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
                 did=did_object["did"],
                 verkey=did_object["verkey"],
                 paymentaddr="",
-            ).dict()
+            )
 
             await post_to_ledger(url, payload)
 

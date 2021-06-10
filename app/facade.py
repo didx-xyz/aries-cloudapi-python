@@ -1,10 +1,10 @@
-import json
-import logging
-import os
 from contextlib import asynccontextmanager
-
 import requests
+import os
+import logging
+
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from schemas import LedgerRequest, PostLedgerResponse
 from fastapi import Header, HTTPException
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
@@ -57,6 +57,8 @@ async def create_controller(req_header: Header):
     try:
         yield controller
     except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error(f"{e!r}")
     finally:
         await controller.terminate()
@@ -86,7 +88,7 @@ async def create_did(controller):
     return generate_did_res
 
 
-async def post_to_ledger(url, payload):
+async def post_to_ledger(url: str, payload: LedgerRequest):
     """
     Post the did payload to the ledger
 
@@ -108,7 +110,9 @@ async def post_to_ledger(url, payload):
     post_to_ledger_resp: dict
         The response object of the post request
     """
-    post_to_ledger_resp = requests.post(url, data=json.dumps(payload), headers={})
+    post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
+    dict_res = post_to_ledger_resp.json()
+
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()
         logger.error(f"Failed to write to ledger:\n{error_json}")
@@ -116,7 +120,13 @@ async def post_to_ledger(url, payload):
             status_code=post_to_ledger_resp.status_code,
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
         )
-    return post_to_ledger_resp
+
+    ledger_post_res = PostLedgerResponse(
+        status_code=post_to_ledger_resp.status_code,
+        headers=post_to_ledger_resp.headers,
+        res_obj=dict_res,
+    )
+    return ledger_post_res
 
 
 async def get_taa(controller):
@@ -322,6 +332,8 @@ async def get_cred_def_id(controller, credential_def):
     cred_def_id : dict
         The credential definition id
     """
+
+    # TODO Determine what is funky here?!
     cred_def_id = credential_def["credential_definition_id"]
     if not cred_def_id:
         raise HTTPException(
@@ -357,7 +369,7 @@ async def get_connection_id(controller):
     Returns:
     -------
     connections: dict
-        List of existing connections in 
+        List of existing connections in
     """
     connections = await controller.connections.get_connections()
     if not connections:

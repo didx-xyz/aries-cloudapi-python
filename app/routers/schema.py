@@ -1,13 +1,19 @@
 import logging
+from distutils.util import strtobool
+from typing import List
 import os
 import traceback
 from distutils.util import strtobool
 from typing import List, Optional
 
-import aries_cloudcontroller
-from facade import (create_controller, get_schema_list, write_credential_def,
-                    write_schema_definition)
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Header, Query
+
+from facade import (
+    create_controller,
+    get_schema_list,
+    write_credential_def,
+    write_schema_definition,
+)
 from schemas import SchemaLedgerRequest, SchemaResponse
 
 router = APIRouter(prefix="/schemas", tags=["schemas"])

@@ -1,12 +1,12 @@
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import Header, HTTPException
 from contextlib import asynccontextmanager
-import json
 import requests
 import os
 import logging
-from utils import controller_factory
 from typing import Generic, TypeVar
+
+from utils import controller_factory
+from schemas import LedgerRequest, PostLedgerResponse
+from fastapi import Header, HTTPException
 
 T_co = TypeVar("T_co", contravariant=True)
 
@@ -69,7 +69,7 @@ async def create_did(controller: Generic[T_co]):
     return generate_did_res
 
 
-async def post_to_ledger(url, payload):
+async def post_to_ledger(url: str, payload: LedgerRequest):
     """
     Post the did payload to the ledger
 
@@ -91,7 +91,9 @@ async def post_to_ledger(url, payload):
     post_to_ledger_resp: dict
         The response object of the post request
     """
-    post_to_ledger_resp = requests.post(url, data=json.dumps(payload), headers={})
+    post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
+    dict_res = post_to_ledger_resp.json()
+
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()
         logger.error(f"Failed to write to ledger:\n{error_json}")
@@ -99,7 +101,13 @@ async def post_to_ledger(url, payload):
             status_code=post_to_ledger_resp.status_code,
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
         )
-    return post_to_ledger_resp
+
+    ledger_post_res = PostLedgerResponse(
+        status_code=post_to_ledger_resp.status_code,
+        headers=post_to_ledger_resp.headers,
+        res_obj=dict_res,
+    )
+    return ledger_post_res
 
 
 async def get_taa(controller):
@@ -305,6 +313,8 @@ async def get_cred_def_id(controller, credential_def):
     cred_def_id : dict
         The credential definition id
     """
+
+    # TODO Determine what is funky here?!
     cred_def_id = credential_def["credential_definition_id"]
     if not cred_def_id:
         raise HTTPException(
@@ -340,7 +350,7 @@ async def get_connection_id(controller):
     Returns:
     -------
     connections: dict
-        List of existing connections in 
+        List of existing connections in
     """
     connections = await controller.connections.get_connections()
     if not connections:

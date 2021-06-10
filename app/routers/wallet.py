@@ -1,22 +1,12 @@
-import os
 import logging
-from typing import Optional
+import os
 import traceback
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Header
-
-from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
-from facade import (
-    create_controller,
-    create_did,
-    post_to_ledger,
-    get_taa,
-    accept_taa,
-    assign_pub_did,
-    get_pub_did,
-    get_did_endpoint,
-)
-
+from facade import (accept_taa, assign_pub_did, create_controller, create_did,
+                    get_did_endpoint, get_pub_did, get_taa, post_to_ledger)
+from fastapi import APIRouter, Header, HTTPException
+from schemas import DidCreationResponse, InitWalletRequest, LedgerRequest
 
 logger = logging.getLogger(__name__)
 
@@ -140,10 +130,10 @@ async def create_wallet(
                     payload = {
                         "image_url": "https://aries.ca/images/sample.png",
                         "key_management_mode": "managed",
-                        "label": "Alice",
+                        "label": "YOMA",
                         "wallet_dispatch_type": "default",
                         "wallet_key": "MySecretKey1234",
-                        "wallet_name": "AlicesWallet",
+                        "wallet_name": "YOMAsWallet",
                         "wallet_type": "indy",
                     }
                 else:

@@ -1,11 +1,11 @@
-from contextlib import asynccontextmanager
-import requests
-import os
 import logging
+import os
+from contextlib import asynccontextmanager
 
+import requests
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from schemas import LedgerRequest, PostLedgerResponse
 from fastapi import Header, HTTPException
+from schemas import LedgerRequest, PostLedgerResponse
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -413,7 +413,8 @@ async def write_schema_definition(controller, schema_definition_request):
 
     schema_definition_request : Contains the schema name,schema version, schema attributes
 
-    Returns
+    Returns:
+    --------
     write_schema_resp : dict
 
     """

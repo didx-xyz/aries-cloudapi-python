@@ -43,36 +43,44 @@ async def wallets_root():
 
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
-async def create_wallet(wallet_payload: InitWalletRequest):
+async def create_wallet(
+    wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
+):
     """
     Create a new wallet
 
     Parameters:
     -----------
     wallet_payload: dict
+        The payload for creating the wallet
+    req_header: Header
+        The request header object with (tenant_jwt, wallet_id) or api_key
+
+    Returns:
+    --------
+    The response object from creating a wallet on the ledger
     """
     try:
-        aries_agent_controller = aries_cloudcontroller.AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=admin_api_key,
-            is_multitenant=is_multitenant,
-        )
-        if aries_agent_controller.is_multitenant:
-            # TODO replace with model for payload/wallet like
-            # described https://fastapi.tiangolo.com/tutorial/body/
-            # TODO Remove this default wallet. This has to be provided
-            # At least unique values for eg label, The rest could be filled
-            # with default values like image_url could point to a defautl avatar img
-            if not wallet_payload:
-                payload = {
-                    "image_url": "https://aries.ca/images/sample.png",
-                    "key_management_mode": "managed",
-                    "label": "Alice",
-                    "wallet_dispatch_type": "default",
-                    "wallet_key": "MySecretKey1234",
-                    "wallet_name": "AlicesWallet",
-                    "wallet_type": "indy",
-                }
+        async with create_controller(req_header) as controller:
+            if controller.is_multitenant:
+                # TODO replace with model for payload/wallet like
+                # described https://fastapi.tiangolo.com/tutorial/body/
+                # TODO Remove this default wallet. This has to be provided
+                # At least unique values for eg label, The rest could be filled
+                # with default values like image_url could point to a defautl avatar img
+                if not wallet_payload:
+                    payload = {
+                        "image_url": "https://aries.ca/images/sample.png",
+                        "key_management_mode": "managed",
+                        "label": "YOMA",
+                        "wallet_dispatch_type": "default",
+                        "wallet_key": "MySecretKey1234",
+                        "wallet_name": "YOMAsWallet",
+                        "wallet_type": "indy",
+                    }
+                else:
+                    payload = wallet_payload
+                wallet_response = await controller.multitenant.create_subwallet(payload)
             else:
                 payload = wallet_payload
             wallet_response = await aries_agent_controller.multitenant.create_subwallet(

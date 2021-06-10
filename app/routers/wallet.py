@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Header
 import os
 import logging
 from typing import Optional
 import traceback
+
+from fastapi import APIRouter, HTTPException, Header
 
 from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
 from facade import (
@@ -67,7 +68,7 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
                 paymentaddr="",
             )
 
-            ledger_res = await post_to_ledger(url, payload)
+            await post_to_ledger(url, payload)
 
             TAA = await get_taa(controller)
 

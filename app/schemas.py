@@ -1,16 +1,15 @@
-import json
-from typing import Dict, List, Optional, Any
+from typing import List, Optional
 
-from pydantic import BaseModel, Json
+from pydantic import BaseModel, Field, Json
 
 
 # TODO what is a good name for this
 # TODO should this really be a schema
 class LedgerRequest(BaseModel):
-    network: str = None
-    did: str = None
-    verkey: str = None
-    paymentaddr: str = None
+    network: str = Field(None)
+    did: str = Field(None)
+    verkey: str = Field(None)
+    paymentaddr: str = Field(None)
 
 
 class DidCreationResponse(BaseModel):

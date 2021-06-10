@@ -1,11 +1,11 @@
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from schemas import LedgerRequest, PostLedgerResponse
-from fastapi import Header, HTTPException
 from contextlib import asynccontextmanager
-import json
 import requests
 import os
 import logging
+
+from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from schemas import LedgerRequest, PostLedgerResponse
+from fastapi import Header, HTTPException
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -113,11 +113,6 @@ async def post_to_ledger(url: str, payload: LedgerRequest):
     post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
     dict_res = post_to_ledger_resp.json()
 
-    ledger_post_res = PostLedgerResponse(
-        status_code=post_to_ledger_resp.status_code,
-        headers=post_to_ledger_resp.headers,
-        res_obj=dict_res,
-    )
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()
         logger.error(f"Failed to write to ledger:\n{error_json}")
@@ -125,6 +120,12 @@ async def post_to_ledger(url: str, payload: LedgerRequest):
             status_code=post_to_ledger_resp.status_code,
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
         )
+
+    ledger_post_res = PostLedgerResponse(
+        status_code=post_to_ledger_resp.status_code,
+        headers=post_to_ledger_resp.headers,
+        res_obj=dict_res,
+    )
     return ledger_post_res
 
 

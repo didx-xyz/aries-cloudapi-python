@@ -228,13 +228,14 @@ start | up)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
-  docker-compose\
-  --log-level ERROR up \
-  --build --remove-orphans \
-  -d ${_startupParams}
-  docker-compose \
-  --log-level ERROR logs \
-  -f -d
+  docker-compose --log-level ERROR up --build --remove-orphans -d ${_startupParams}
+  ;;
+up_and_log)
+  echoYellow "Starting up... This can take a couple of minutes."
+  _startupParams=$(getStartupParams $@)
+  configureEnvironment "$@"
+  docker-compose --log-level ERROR up --build --remove-orphans -d ${_startupParams}
+  docker-compose logs -f
   ;;
 restart)
   _startupParams=$(getStartupParams $@)
@@ -252,10 +253,7 @@ stop)
   ;;
 rm | down)
   configureEnvironment
-  docker-compose \
-  --log-level ERROR down \
-  -v
-  usage
+  docker-compose --log-level ERROR down -v
   ;;
 esac
 

@@ -1,10 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Header
 import requests
 import json
 import os
 import logging
 
 from core import wallet
+from facade import create_controller
 from schemas import LedgerRequest, DidCreationResponse, InitWalletRequest
 
 import aries_cloudcontroller
@@ -24,8 +27,8 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 @router.get(
     "/create-pub-did", tags=["did"], response_model=DidCreationResponse
 )
-async def create_public_did():
-    return wallet.create_public_did()
+async def create_public_did(req_header: Optional[str] = Header(None)):
+    return wallet.create_public_did(req_header)
 
 
 @router.get("/")
@@ -82,124 +85,12 @@ async def create_wallet(
                     payload = wallet_payload
                 wallet_response = await controller.multitenant.create_subwallet(payload)
             else:
-                payload = wallet_payload
-            wallet_response = await aries_agent_controller.multitenant.create_subwallet(
-                payload
-            )
-        else:
-            # TODO: Implement wallet_response as schema if that is useful
-            wallet_response = await aries_agent_controller.wallet.create_did()
-        await aries_agent_controller.terminate()
-        return wallet_response
+                # TODO: Implement wallet_response as schema if that is useful
+                wallet_response = await controller.wallet.create_did()
+            return wallet_response
     except Exception as e:
-        await aries_agent_controller.terminate()
+        logger.error(f"Failed to create wallet:\n{e!r}")
         raise HTTPException(
             status_code=500,
             detail=f"Something went wrong: {e!r}",
         )
-
-
-# TODOs see endpoints below
-@router.get("/{wallet_id}")
-async def get_wallet_info_by_id(wallet_id: str):
-    """
-    Get the wallet information by id
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.get("/{wallet_id}/connections", tags=["connections"])
-async def get_connections(wallet_id: str):
-    """
-    Get all connections for a wallet given the wallet's ID
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.get("/{wallet_id}/connections/{conn_id}", tags=["connections"])
-async def get_connection_by_id(wallet_id: str, connection_id: str):
-    """
-    Get the specific connections per wallet per connection
-    by respective IDs
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.post("/{wallet_id}/connections", tags=["connections"])
-async def create_connection_by_id(wallet_id: str):
-    """
-    Create a connection for a wallet
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    pass
-
-
-@router.put("/{wallet_id}/connections/{conn_id}", tags=["connections"])
-async def update_connection_by_id(wallet_id: str, connection_id: str):
-    """
-    Update a specific connection (by ID) for a
-    given wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    connection_id: str
-    """
-    pass
-
-
-@router.delete("/{wallet_id}/connections/{conn_id}", tags=["connections"])
-async def delete_connection_by_id(wallet_id: str, connection_id: str):
-    """
-    Delete a connection (by ID) for a given wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    connection_id: str
-    """
-    pass
-
-
-@router.delete("/{wallet_id}", tags=["connections"])
-async def delete_wallet_by_id(wallet_id: str):
-    """
-    Delete a wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    # TODO: Should this be admin-only?
-    pass
-
-
-@router.post("/{wallet_id}", tags=["connections"])
-async def add_did_to_trusted_reg(wallet_id: str):
-    """
-    Delete a wallet (by ID)
-
-    Parameters:
-    -----------
-    wallet_id: str
-    """
-    # TODO: Should this be admin-only?
-    pass
-
-
-# TODO Add Security and key managements eg. create and exchange new key pairs

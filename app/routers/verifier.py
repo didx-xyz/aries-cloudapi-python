@@ -3,7 +3,7 @@ import traceback
 import time
 from typing import List, Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Header, HTTPException, Query
 
 from facade import (
     create_controller,
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/verifier")
 async def get_proof_request(
     connection_id: str,
     schema_id: str,
-    requested_attrs: str = None,  # Should be a list
+    requested_attrs: List[str] = Query(None),  # Should be a list
     self_attested: str = None,  # What should this be? is this user input or does is come with the schema?
     # zero_knowledge: dict,
     revocation: int = None,
@@ -45,7 +45,7 @@ async def get_proof_request(
             # Check if the required
             # check attributes from get are set or superset of requested attrs
             # TODO Obviously make this non-hardcoded
-            requested_attrs = ["age"]  # Let's just make this true for now
+            # requested_attrs = ["age"]  # Let's just make this true for now
             is_attrs_match = all(x in schema_resp for x in requested_attrs)
             ## if schame attrs and requested attrs mismatch return error
             if not is_attrs_match:
@@ -122,6 +122,19 @@ async def get_proof_request(
             # get the presentaiton exchange id
             presentation_exchange_id = response["presentation_exchange_id"]
 
+            return presentation_exchange_id
+    except Exception as e:
+        logger.error(f"Failed to request proof: \n {e}")
+        raise e
+
+
+@router.get("/verify-proof-request", tags=["verifier", "proof"])
+async def verify_proof_request(
+    presentation_exchange_id: str, req_header: Optional[str] = Header(None)
+):
+
+    try:
+        async with create_controller(req_header) as controller:
             #  verify using the presentaiton exchange id
             verify = await controller.proofs.verify_presentation(
                 presentation_exchange_id
@@ -136,8 +149,11 @@ async def get_proof_request(
                     status_code=400,
                     detail="Presentation state not verified!",
                 )
-            # return revealed attributes
+                # return revealed attributes
             return verify
     except Exception as e:
-        logger.error(f"Failed to request proof: \n {e}")
+        err_trace = traceback.print_exc()
+        logger.error(
+            f"Failed to verify proof request. THe following error occured:\n{e!r}\n{err_trace}"
+        )
         raise e

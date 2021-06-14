@@ -23,7 +23,7 @@ async def get_proof_request(
     schema_id: str,
     requested_attrs: List[str] = Query(None),  # Should be a list
     self_attested: str = None,  # What should this be? is this user input or does is come with the schema?
-    # zero_knowledge: dict,
+    zero_knowledge_proof: dict = None,
     revocation: int = None,
     exchange_tracing: bool = False,
     req_header: Optional[str] = Header(None),
@@ -88,10 +88,22 @@ async def get_proof_request(
             #         "name": "age",
             #         "p_type": ">=",
             #         "p_value": 21,
-            #         "restrictions": [{"schema_id": schema_id}],
-            #     }
+            #         "restrictions": [{"schema_id": 1234}],
+            #     },
             # ]
             req_preds = []
+            if zero_knowledge_proof:
+                [
+                    req_preds.append(
+                        {
+                            "name": k["name"],
+                            "p_type": k["p_type"],
+                            "p_value": k["p_value"],
+                            "restrictions": [{"schema_id": schema_id}],
+                        }
+                    )
+                    for k in zero_knowledge_proof
+                ]
 
             # Construct indy_proof_request
             indy_proof_request = {

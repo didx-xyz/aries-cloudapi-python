@@ -33,7 +33,7 @@ async def get_taa(controller: AriesAgentControllerBase):
     return taa
 
 
-async def accept_taa(controller: AriesAgentControllerBase, TAA):
+async def accept_taa(controller: AriesAgentControllerBase, taa):
     """
     Accept the TAA
 
@@ -49,7 +49,7 @@ async def accept_taa(controller: AriesAgentControllerBase, TAA):
     accept_taa_response: {}
         The response from letting the ledger know we accepted the response
     """
-    accept_taa_response = await controller.ledger.accept_taa(TAA)
+    accept_taa_response = await controller.ledger.accept_taa(taa)
     logger.info(f"accept_taa_response: {accept_taa_response}")
     if accept_taa_response != {}:
         error_json = accept_taa_response.json()

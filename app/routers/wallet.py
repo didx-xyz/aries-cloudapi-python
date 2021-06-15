@@ -27,12 +27,12 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 @router.get(
     "/create-pub-did", tags=["did"], response_model=DidCreationResponse
 )
-async def create_public_did(req_header: Optional[str] = Header(None)):
+async def create_public_did(req_header: Optional[str] = Header(None)): # pragma: no cover
     return wallet.create_public_did(req_header)
 
 
 @router.get("/")
-async def wallets_root():
+async def wallets_root(): # pragma: no cover
     """
     The default endpoints for wallets
 
@@ -46,7 +46,7 @@ async def wallets_root():
 
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
-async def create_wallet(
+async def create_wallet( # pragma: no cover
     wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
 ):
     """

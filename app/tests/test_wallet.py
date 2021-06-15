@@ -1,6 +1,7 @@
 
 import pytest
 from assertpy import assert_that
+from fastapi import HTTPException
 
 import facade
 import ledger_facade
@@ -17,6 +18,16 @@ async def test_create_public_did():
     assert_that(result.did_object).is_not_empty()
     assert_that(result.issuer_verkey).is_not_empty()
     assert_that(result.issuer_endpoint).is_not_empty()
+
+
+@pytest.mark.asyncio
+async def test_create_public_did_no_api_key():
+    setup_env()
+
+    async def wrap():
+        return await wallet.create_public_did("")
+    assert_that(wrap).raises(HTTPException)
+
 
 
 def setup_env():

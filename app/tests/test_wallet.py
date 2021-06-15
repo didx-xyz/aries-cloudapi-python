@@ -7,15 +7,11 @@ import ledger_facade
 from core import wallet
 
 
-def test_foo():
-    pass
-
-
 @pytest.mark.asyncio
 async def test_create_public_did():
     setup_env()
 
-    result = await wallet.create_public_did("")
+    result = await wallet.create_public_did("{'api_key':'adminApiKey'}")
 
     # TODO: validate in a more robust manner
     assert_that(result.did_object).is_not_empty()
@@ -26,6 +22,5 @@ async def test_create_public_did():
 def setup_env():
     facade.admin_url = 'http://localhost'
     facade.admin_port = '3021'
-    facade.admin_api_key = 'adminApiKey'
     facade.is_multitenant = False
     ledger_facade.ledger_url = "https://selfserve.sovrin.org/nym"

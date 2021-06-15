@@ -1,15 +1,10 @@
-from typing import Optional
-
-import json
-
 import logging
-from aries_cloudcontroller.controllers import ledger
 
 from distutils.util import strtobool
 import os
 
 import acapy_ledger_facade
-import facade
+from facade import create_controller
 import acapy_wallet_facade as wallet_facade
 from schemas import DidCreationResponse
 import ledger_facade
@@ -33,7 +28,7 @@ async def create_public_did(req_header: str) -> DidCreationResponse:
     # TODO Can we break down this endpoint into smaller functions?
     # Because this really is too complex/too much happening at once.
     # This way not really testible/robust
-    async with facade.create_controller(req_header) as aries_agent_controller:
+    async with create_controller(req_header) as aries_agent_controller:
         # TODO: Should this come from env var or from the client request?
         # Adding empty header as parameters are being sent in payload
         generate_did_res = await wallet_facade.create_did(aries_agent_controller)
@@ -42,8 +37,8 @@ async def create_public_did(req_header: str) -> DidCreationResponse:
 
         taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
 
-        accept_taa_response = await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
-        assign_pub_did_response = await wallet_facade.assign_public_did(aries_agent_controller, did_object['did'])
+        await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
+        await wallet_facade.assign_public_did(aries_agent_controller, did_object['did'])
         get_pub_did_response = await wallet_facade.get_public_did(aries_agent_controller)
         issuer_nym = get_pub_did_response["result"]["did"]
         issuer_verkey = get_pub_did_response["result"]["verkey"]

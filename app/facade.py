@@ -11,14 +11,12 @@ admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 is_multitenant = os.getenv("IS_MULTITENANT", False)
 
-admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-
 logger = logging.getLogger(__name__)
 
 
 # TODO: address the way the controller is created
 @asynccontextmanager
-async def create_controller(place_holder) -> AriesAgentControllerBase:
+async def create_controller(req_header: Header) -> AriesAgentControllerBase:
     """
     Instantiate an AriesAgentController or a TenantController
     based on header attributes
@@ -35,12 +33,11 @@ async def create_controller(place_holder) -> AriesAgentControllerBase:
         (for use in contextmanager)
     """
     # TODO: need to resolve how to create the relevant aries agent controller
-    req_header = {'api_key':admin_api_key}
     is_valid_tenant_header = "wallet_id" in req_header and "tenant_jwt" in req_header
     is_valid_admin_header = "api_key" in req_header
     is_valid_header = req_header and (is_valid_tenant_header or is_valid_admin_header)
     if is_valid_header:
-        # req_header = eval(req_header)
+        req_header = eval(req_header)
         if "api_key" in req_header:
             controller = AriesAgentController(
                 admin_url=f"{admin_url}:{admin_port}",
@@ -69,47 +66,6 @@ async def create_controller(place_holder) -> AriesAgentControllerBase:
         raise e
     finally:
         await controller.terminate()
-
-
-async def post_to_ledger(url: str, payload: LedgerRequest):
-    """
-    Post the did payload to the ledger
-
-    Parameters:
-    -----------
-    url: str
-        The url of the ledger to post to
-    payload: dict
-        The payload to be posted of the form:
-        {
-            "network": "stagingnet",
-            "did": did_object["did"],
-            "verkey": did_object["verkey"],
-            "paymentaddr": "somestring",
-        }
-
-    Returns:
-    --------
-    post_to_ledger_resp: dict
-        The response object of the post request
-    """
-    post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
-    dict_res = post_to_ledger_resp.json()
-
-    if post_to_ledger_resp.status_code != 200:
-        error_json = post_to_ledger_resp.json()
-        logger.error(f"Failed to write to ledger:\n{error_json}")
-        raise HTTPException(
-            status_code=post_to_ledger_resp.status_code,
-            detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
-        )
-
-    ledger_post_res = PostLedgerResponse(
-        status_code=post_to_ledger_resp.status_code,
-        headers=post_to_ledger_resp.headers,
-        res_obj=dict_res,
-    )
-    return ledger_post_res
 
 
 async def get_schema_attributes(controller, schema_id):

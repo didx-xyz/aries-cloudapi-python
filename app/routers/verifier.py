@@ -17,7 +17,7 @@ router = APIRouter(prefix="/verifier")
 
 # TODO verify that active connection exists
 # Better tag?
-@router.post("/request-proof-for-schema", tags=["proof", "verifier"])
+@router.get("/request-proof-for-schema", tags=["proof", "verifier"])
 async def get_proof_request(
     connection_id: str,
     schema_id: str,

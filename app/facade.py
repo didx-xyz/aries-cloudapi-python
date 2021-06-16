@@ -1,11 +1,13 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from typing import Generic, TypeVar
 
 import requests
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
-from schemas import LedgerRequest, PostLedgerResponse
+from utils import controller_factory
+
+T_co = TypeVar("T_co", contravariant=True)
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def create_controller(req_header: Header):
+async def create_controller(req_header: Header) -> Generic[T_co]:
     """
     Instantiate an AriesAgentController or a TenantController
     based on header attributes
@@ -28,32 +30,10 @@ async def create_controller(req_header: Header):
 
     Returns:
     --------
-    controller: aries_cloudcontroller instance
-        A generator of AriesAgentController or TenantController object
-        (for use in contextmanager)
+    controller: Generic type of aries_cloudcontroller instance
+        The AsyncContextMananger instance of the cloudcontroller
     """
-    is_valid_tenant_header = "wallet_id" in req_header and "tenant_jwt" in req_header
-    is_valid_admin_header = "api_key" in req_header
-    is_valid_header = req_header and (is_valid_tenant_header or is_valid_admin_header)
-    if is_valid_header:
-        req_header = eval(req_header)
-        if "api_key" in req_header:
-            controller = AriesAgentController(
-                admin_url=f"{admin_url}:{admin_port}",
-                api_key=req_header["api_key"],
-                is_multitenant=is_multitenant,
-            )
-        else:
-            controller = AriesTenantController(
-                admin_url=f"{admin_url}:{admin_port}",
-                wallet_id=req_header["wallet_id"],
-                tenant_jwt=req_header["tenant_jwt"],
-            )
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
-        )
+    controller = controller_factory(req_header)
     try:
         yield controller
     except Exception as e:
@@ -64,7 +44,7 @@ async def create_controller(req_header: Header):
         await controller.terminate()
 
 
-async def create_did(controller):
+async def create_did(controller: Generic[T_co]):
     """
     Creates a DID against the ledger using an AriesController
 
@@ -88,7 +68,7 @@ async def create_did(controller):
     return generate_did_res
 
 
-async def post_to_ledger(url: str, payload: LedgerRequest):
+async def post_to_ledger(url: str, payload):
     """
     Post the did payload to the ledger
 
@@ -111,7 +91,6 @@ async def post_to_ledger(url: str, payload: LedgerRequest):
         The response object of the post request
     """
     post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
-    dict_res = post_to_ledger_resp.json()
 
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()
@@ -121,11 +100,11 @@ async def post_to_ledger(url: str, payload: LedgerRequest):
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
         )
 
-    ledger_post_res = PostLedgerResponse(
-        status_code=post_to_ledger_resp.status_code,
-        headers=post_to_ledger_resp.headers,
-        res_obj=dict_res,
-    )
+    ledger_post_res = {
+        "status_code": post_to_ledger_resp.status_code,
+        "headers": post_to_ledger_resp.headers,
+        "res_obj": post_to_ledger_resp.json(),
+    }
     return ledger_post_res
 
 

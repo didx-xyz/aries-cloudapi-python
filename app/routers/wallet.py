@@ -6,7 +6,8 @@ from typing import Optional
 from facade import (accept_taa, assign_pub_did, create_controller, create_did,
                     get_did_endpoint, get_pub_did, get_taa, post_to_ledger)
 from fastapi import APIRouter, Header, HTTPException
-from schemas import DidCreationResponse, InitWalletRequest, LedgerRequest
+from schemas import (DidCreationResponse, InitWalletRequest,
+                     LedgerRequestSovrin, LedgerRequestVon)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = os.getenv("IS_MULTITENANT", False)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
+LEDGER_TYPE = "von"
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
@@ -51,12 +53,24 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
             # TODO: Network and paymentaddr should be definable on the fly/via args/via request body
             # TODO: Should this really be a schema or is using schema overkill here?
             # If we leave it as schema like this I suppose it is at least usable elsewhere
-            payload = LedgerRequest(
-                network="stagingnet",
-                did=did_object["did"],
-                verkey=did_object["verkey"],
-                paymentaddr="",
-            )
+            if LEDGER_TYPE == "sovrin":
+                payload = LedgerRequestSovrin(
+                    network="stagingnet",
+                    did=did_object["did"],
+                    verkey=did_object["verkey"],
+                    paymentaddr="",
+                )
+            elif LEDGER_TYPE == "von":
+                payload = LedgerRequestVon(
+                    did=did_object["did"],
+                    seed="null",
+                    verkey=did_object["verkey"],
+                )
+            else:
+                raise HTTPException(
+                    status_code=501,
+                    detail="Cannot resolve ledger type. Should be either von or sovrin",
+                )
 
             await post_to_ledger(url, payload)
 

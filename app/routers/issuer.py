@@ -36,9 +36,9 @@ async def issue_credential(
         async with create_controller(req_header) as controller:
 
             # Check if connection is active
-            # connection = await controller.get_connection(connection_id)
-            # if connection["state"] is not "active":
-            #     raise HTTPException(status_code=404, detail="Connection not active")
+            connection = await controller.get_connection(connection_id)
+            if connection["state"] is not "active":
+                raise HTTPException(status_code=404, detail="Connection not active")
 
             # TODO How do we want to handle this for input? This now assumes that the client knows
             # the schema attributes or is able to obtain them if it does not.

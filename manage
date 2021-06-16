@@ -234,7 +234,16 @@ start | up)
   -d ${_startupParams}
   docker-compose \
   --log-level ERROR logs \
-  -f -d
+  -f
+  ;;
+ up-as-daemon)
+  echoYellow "Starting up... This can take a couple of minutes."
+  _startupParams=$(getStartupParams $@)
+  configureEnvironment "$@"
+    docker-compose\
+  --log-level ERROR up \
+  --build --remove-orphans \
+  -d ${_startupParams}
   ;;
 restart)
   _startupParams=$(getStartupParams $@)
@@ -258,5 +267,4 @@ rm | down)
   usage
   ;;
 esac
-
 popd >/dev/null

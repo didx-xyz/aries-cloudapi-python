@@ -24,7 +24,7 @@ jobs:
     - name: Start Test Harness
       run: |
        chmod u+x manage
-        ./manage up
+        ./manage up-as-daemon
        echo waiting for dockers to startup, sleeping for 60 seconds
        sleep 60
        echo wait over, continuing

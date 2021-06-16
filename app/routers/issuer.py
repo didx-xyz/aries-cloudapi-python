@@ -41,10 +41,15 @@ async def issue_credential(
         async with create_controller(req_header) as controller:
 
             # Check if connection is active
-            # connection = await controller.get_connection(connection_id)
+            connection = await controller.get_connection(connection_id)
+            # TODO we should somehow enble the check below. Yet we want to provide some time window/a chance
+            # to establish an active connection eg via sending a basic message or trust ping
+            # in case the connection is not auto-accepting/setting itself to active
             # if connection["state"] is not "active":
-            #     raise HTTPException(status_code=404, detail="Connection not active")
+            #     raise HTTPException(status_code=403, detail="Connection not active")
 
+            # TODO How do we want to handle this for input? This now assumes that the client knows
+            # the schema attributes or is able to obtain them if it does not.
             schema_attr = await get_schema_attributes(controller, schema_id)
             # TODO The below call works but smells fishy. What should we really be doing here?
             # Should/Can't we just obtain the credential definition id from somewhere?
@@ -54,6 +59,8 @@ async def issue_credential(
 
             # TODO Do we want to obtain cred_def_id from somewhere else
             cred_def_id = await get_cred_def_id(controller, credential_def)
+            # TODO Should this validate the provided schame attrs from the client against the from the schema?
+            # As in should we validate at this point that the sets of attributes match
             credential_attributes = [
                 {"name": k, "value": v}
                 for k, v in list(zip(schema_attr, credential_attrs))

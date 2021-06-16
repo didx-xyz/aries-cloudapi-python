@@ -1,12 +1,8 @@
 import logging
-from distutils.util import strtobool
-from typing import List
 import os
 import traceback
 from distutils.util import strtobool
 from typing import List, Optional
-
-from fastapi import APIRouter, Header, Query
 
 from facade import (
     create_controller,
@@ -14,6 +10,7 @@ from facade import (
     write_credential_def,
     write_schema_definition,
 )
+from fastapi import APIRouter, Header, Query
 from schemas import SchemaLedgerRequest, SchemaResponse
 
 router = APIRouter(prefix="/schemas", tags=["schemas"])

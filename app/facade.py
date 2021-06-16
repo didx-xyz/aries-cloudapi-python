@@ -1,12 +1,11 @@
-from contextlib import asynccontextmanager
-import requests
-import os
 import logging
+import os
+from contextlib import asynccontextmanager
 from typing import Generic, TypeVar
 
-from utils import controller_factory
-from schemas import LedgerRequest, PostLedgerResponse
+import requests
 from fastapi import Header, HTTPException
+from utils import controller_factory
 
 T_co = TypeVar("T_co", contravariant=True)
 
@@ -69,7 +68,7 @@ async def create_did(controller: Generic[T_co]):
     return generate_did_res
 
 
-async def post_to_ledger(url: str, payload: LedgerRequest):
+async def post_to_ledger(url: str, payload):
     """
     Post the did payload to the ledger
 
@@ -92,7 +91,6 @@ async def post_to_ledger(url: str, payload: LedgerRequest):
         The response object of the post request
     """
     post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
-    dict_res = post_to_ledger_resp.json()
 
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()
@@ -102,11 +100,11 @@ async def post_to_ledger(url: str, payload: LedgerRequest):
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",
         )
 
-    ledger_post_res = PostLedgerResponse(
-        status_code=post_to_ledger_resp.status_code,
-        headers=post_to_ledger_resp.headers,
-        res_obj=dict_res,
-    )
+    ledger_post_res = {
+        "status_code": post_to_ledger_resp.status_code,
+        "headers": post_to_ledger_resp.headers,
+        "res_obj": post_to_ledger_resp.json(),
+    }
     return ledger_post_res
 
 
@@ -394,7 +392,8 @@ async def write_schema_definition(controller, schema_definition_request):
 
     schema_definition_request : Contains the schema name,schema version, schema attributes
 
-    Returns
+    Returns:
+    --------
     write_schema_resp : dict
 
     """

@@ -5,11 +5,17 @@ from pydantic import BaseModel, Field, Json
 
 # TODO what is a good name for this
 # TODO should this really be a schema
-class LedgerRequest(BaseModel):
+class LedgerRequestSovrin(BaseModel):
     network: str = Field(None)
     did: str = Field(None)
     verkey: str = Field(None)
     paymentaddr: str = Field(None)
+
+
+class LedgerRequestVon(BaseModel):
+    did: str = Field(None)
+    seed: str = "null"
+    verkey: str = Field(None)
 
 
 class DidCreationResponse(BaseModel):

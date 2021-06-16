@@ -5,14 +5,9 @@ import traceback
 from typing import List, Optional
 
 import qrcode
-from facade import (
-    create_controller,
-    get_connection_id,
-    get_cred_def_id,
-    get_schema_attributes,
-    issue_credentials,
-    write_credential_def,
-)
+from facade import (create_controller, get_connection_id, get_cred_def_id,
+                    get_schema_attributes, issue_credentials,
+                    write_credential_def)
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
@@ -41,7 +36,7 @@ async def issue_credential(
         async with create_controller(req_header) as controller:
 
             # Check if connection is active
-            connection = await controller.get_connection(connection_id)
+            # connection = await controller.get_connection(connection_id)
             # TODO we should somehow enble the check below. Yet we want to provide some time window/a chance
             # to establish an active connection eg via sending a basic message or trust ping
             # in case the connection is not auto-accepting/setting itself to active

@@ -91,6 +91,7 @@ async def write_credential_schema(
             write_schema_resp = await write_schema_definition(
                 controller, schema_definition_request
             )
+
             schema_id = write_schema_resp["schema_id"]
 
             # Writing credential definition

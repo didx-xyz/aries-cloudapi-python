@@ -3,11 +3,23 @@ import os
 import traceback
 from typing import Optional
 
-from facade import (accept_taa, assign_pub_did, create_controller, create_did,
-                    get_did_endpoint, get_pub_did, get_taa, post_to_ledger)
+from facade import (
+    accept_taa,
+    assign_pub_did,
+    create_controller,
+    create_did,
+    get_did_endpoint,
+    get_pub_did,
+    get_taa,
+    post_to_ledger,
+)
 from fastapi import APIRouter, Header, HTTPException
-from schemas import (DidCreationResponse, InitWalletRequest,
-                     LedgerRequestSovrin, LedgerRequestVon)
+from schemas import (
+    DidCreationResponse,
+    InitWalletRequest,
+    LedgerRequestSovrin,
+    LedgerRequestVon,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +32,7 @@ admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = os.getenv("IS_MULTITENANT", False)
 ledger_url = os.getenv("LEDGER_NETWORK_URL")
-LEDGER_TYPE = "von"
+LEDGER_TYPE = os.getenv("LEDGER_TYPE")
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)

@@ -21,12 +21,11 @@ async def get_taa(controller: AriesAgentControllerBase):
     """
     taa_response = await controller.ledger.get_taa()
     logger.info(f"taa_response:\n{taa_response}")
-    if not taa_response["result"]:
-        error_json = taa_response.json()
-        logger.error("Failed to get TAA:\n{error_json}")
+    if 'result' not in taa_response or not taa_response["result"]:
+        logger.error("Failed to get TAA:\n{taa_response}")
         raise HTTPException(
             status_code=404,
-            detail=f"Something went wrong. Could not get TAA. {error_json}",
+            detail=f"Something went wrong. Could not get TAA. {taa_response}",
         )
     taa = taa_response["result"]["taa_record"]
     taa["mechanism"] = "service_agreement"
@@ -52,11 +51,10 @@ async def accept_taa(controller: AriesAgentControllerBase, taa):
     accept_taa_response = await controller.ledger.accept_taa(taa)
     logger.info(f"accept_taa_response: {accept_taa_response}")
     if accept_taa_response != {}:
-        error_json = accept_taa_response.json()
-        logger.error(f"Failed to accept TAA.\n{error_json}")
+        logger.error(f"Failed to accept TAA.\n{accept_taa_response}")
         raise HTTPException(
             status_code=404,
-            detail=f"Something went wrong. Could not accept TAA. {error_json}",
+            detail=f"Something went wrong. Could not accept TAA. {accept_taa_response}",
         )
     return accept_taa_response
 
@@ -83,6 +81,6 @@ async def get_did_endpoint(controller: AriesAgentControllerBase, issuer_nym):
         logger.error(f"Failed to get DID endpoint:\n{issuer_endpoint_response}")
         raise HTTPException(
             status_code=404,
-            detail=f"Something went wrong. Could not obtain issuer endpoint.{issuer_endpoint_response}",
+            detail=f"Something went wrong. Could not obtain issuer endpoint.",
         )
     return issuer_endpoint_response

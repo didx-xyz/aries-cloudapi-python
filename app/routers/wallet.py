@@ -6,17 +6,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException
 
-from acapy_ledger_facade import get_taa, accept_taa, get_did_endpoint
-from acapy_wallet_facade import create_did, assign_pub_did, get_pub_did
 from core.wallet import create_pub_did
 from facade import create_controller
-from ledger_facade import post_to_ledger
 
 from schemas import (
     DidCreationResponse,
     InitWalletRequest,
-    LedgerRequestSovrin,
-    LedgerRequestVon,
 )
 
 logger = logging.getLogger(__name__)

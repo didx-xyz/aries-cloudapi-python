@@ -57,3 +57,4 @@ webencodings==0.5.1
 yarl==1.6.3
 pytest-cov==2.12.1
 httpx==0.18.1
+mockito==1.2.2

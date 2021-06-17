@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 from facade import (create_controller, get_schema_attributes,
                     send_proof_request, verify_proof_req)
 from fastapi import APIRouter, Header, HTTPException, Query
-from utils import construct_zkp
+from utils import construct_indy_proof_request, construct_zkp
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +19,12 @@ router = APIRouter(prefix="/verifier")
 async def get_proof_request(
     connection_id: str,
     schema_id: str,
-    zero_knowledge_proof: Dict[str] = None,
+    name_proof_request: str,
+    zero_knowledge_proof: Dict = None,
     requested_attrs: List[str] = Query(None),  # Should be a list
-    self_attested: List[str] = None,  # What should this be? is this user input or does is come with the schema?
+    self_attested: List[
+        str
+    ] = None,  # What should this be? is this user input or does is come with the schema?
     revocation: int = None,
     exchange_tracing: bool = False,
     req_header: Optional[str] = Header(None),
@@ -35,12 +38,6 @@ async def get_proof_request(
         # get attributes for schema using schema id
         async with create_controller(req_header) as controller:
             schema_resp = await get_schema_attributes(controller, schema_id)
-            if type(schema_resp) is not list:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Failed to get schema. Got the following: {schema_resp!r}",
-                )
-            # Check if the required
             # check attributes from get are set or superset of requested attrs
             # TODO Obviously make this non-hardcoded
             # requested_attrs = ["age"]  # Let's just make this true for now
@@ -56,7 +53,7 @@ async def get_proof_request(
                 {"name": k, "restrictions": [{"schema_id": schema_id}]}
                 for k in requested_attrs
             ]
-            logger.error(f"{is_attrs_match}")
+            # logger.error(f"{is_attrs_match}")
             # if revocation not None: Add revocation
             # TODO What actually provided here? The attrubutes of revocation? The duration? And where do they come from?
             revocation_attributes = []
@@ -89,16 +86,9 @@ async def get_proof_request(
                 req_preds = construct_zkp(zero_knowledge_proof, schema_id)
 
             # Construct indy_proof_request
-            indy_proof_request = {
-                "name": "Proof of Completion of PyDentity SSI Tutorial",
-                "version": schema_id.split(":")[-1],
-                "requested_attributes": {
-                    f"0_{req_attr['name']}_uuid": req_attr for req_attr in attr_req
-                },
-                "requested_predicates": {
-                    f"0_{req_pred['name']}_GE_uuid": req_pred for req_pred in req_preds
-                },
-            }
+            indy_proof_request = construct_indy_proof_request(
+                name_proof_request, schema_id, attr_req, req_preds
+            )
             ## if revocation: add that to indy_proof-request
             if revocation:
                 indy_proof_request["non_revoked"] = {"to": int(time.time())}

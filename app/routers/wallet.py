@@ -36,7 +36,11 @@ LEDGER_TYPE = os.getenv("LEDGER_TYPE")
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
-async def create_public_did(req_header: Optional[str] = Header(None)):
+async def create_public_did(
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
+):
     """
     Create a new public DID and
     write it to the ledger and
@@ -44,21 +48,27 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
 
     Parameters:
     -----------
-    req_header: Header
-        The request header object with (tenant_jwt, wallet_id) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     * DID object (json)
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
+            url = ledger_url
             # Adding empty header as parameters are being sent in payload
             generate_did_res = await create_did(controller)
             did_object = generate_did_res["result"]
@@ -128,7 +138,10 @@ async def wallets_root():
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
 async def create_wallet(
-    wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
+    wallet_payload: InitWalletRequest,
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
 ):
     """
     Create a new wallet
@@ -137,15 +150,24 @@ async def create_wallet(
     -----------
     wallet_payload: dict
         The payload for creating the wallet
-    req_header: Header
-        The request header object with (tenant_jwt, wallet_id) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------
     The response object from creating a wallet on the ledger
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             if controller.is_multitenant:
                 # TODO replace with model for payload/wallet like
                 # described https://fastapi.tiangolo.com/tutorial/body/

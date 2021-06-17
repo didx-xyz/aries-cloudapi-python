@@ -112,7 +112,10 @@ async def get_proof_request(
 
 @router.get("/verify-proof-request", tags=["verifier", "proof"])
 async def verify_proof_request(
-    presentation_exchange_id: str, req_header: Optional[str] = Header(None)
+    presentation_exchange_id: str,
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
 ):
     """
     Verify a proof request against the ledger
@@ -120,15 +123,25 @@ async def verify_proof_request(
     Parameters:
     -----------
     presentation_exchange_id: str
-    req_header: Optional[str] = Header(None)
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------
     verify: dict
         The json representation of the verify request
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             verify = await verify_proof_req(controller, presentation_exchange_id)
 
             if not verify["state"] == "verified":

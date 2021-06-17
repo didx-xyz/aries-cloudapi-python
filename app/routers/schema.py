@@ -25,12 +25,35 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get("/all_schemas")
-async def get_schema(req_header: Optional[str] = Header(None)):
+async def get_schema(
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
+):
     """
     Get all valid schemas from YOMA
+
+    Parameters:
+    -----------
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
+
+    Returns:
+    --------
+    created_schema: dict
+        The created schema response in JSON
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
             created_schemas = await get_schema_list(controller)
 
@@ -53,7 +76,9 @@ async def write_credential_schema(
     schema_name: str,
     schema_version: str,
     schema_attrs: List[str] = Query(None),
-    req_header: Optional[str] = Header(None),
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
 ):
     """
     Create schema and credential definition and
@@ -68,6 +93,12 @@ async def write_credential_schema(
         Should be of the form x.x.x where x is an integer
     * schema_attributes: list, optional
         A list of attributes for the schema (default is None)
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------
@@ -77,8 +108,13 @@ async def write_credential_schema(
     * credential_definition
     * credential_id
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
 
             # Defining schema and writing it to the ledger
@@ -115,18 +151,36 @@ async def write_credential_schema(
 
 
 @router.get("/registry", tags=["registry"])
-async def get_schema_registry(req_header: Optional[str] = Header(None)):
+async def get_schema_registry(
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
+):
     """
     A function to obtain all schemas written to the ledger by YOMA
     and YOMA only.
+
+    Parameters:
+    -----------
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------
     schemas: [dict]
         A list of schema definitions
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?l
 
             schemas = {}

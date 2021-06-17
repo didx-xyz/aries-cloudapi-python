@@ -6,20 +6,20 @@ import utils
 import json
 
 testheaders = [
-    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, True),
-    ({"tenant_jwt": "123456", "wallet_id": "12345"}, True),
-    ({"api_key": "AdminApiKey"}, True),
-    ({"kjnc": "AdminApiKey"}, False),
-    ({"tenant_jwt": "123456", "api_key": "12345"}, True),
-    ({"tenant_jwt": "123456"}, False),
-    ({"wallet_id": "123456"}, False),
+    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
+    ({"tenant_jwt": "123456", "wallet_id": "12345"}, "tenant"),
+    ({"api_key": "AdminApiKey"}, "admin"),
+    ({"kjnc": "AdminApiKey"}, None),
+    ({"tenant_jwt": "123456", "api_key": "12345"}, "admin"),
+    ({"tenant_jwt": "123456"}, None),
+    ({"wallet_id": "123456"}, None),
 ]
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("fake_header,expected", testheaders)
-async def test_validate_auth_header(fake_header, expected):
-    assert utils.validate_auth_header(fake_header) == expected
+async def test_get_controller_type(fake_header, expected):
+    assert utils.get_controller_type(fake_header) == expected
 
 
 controller_factorytest_headers = [

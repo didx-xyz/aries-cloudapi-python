@@ -32,13 +32,33 @@ async def issue_credential(
     schema_id: str,
     connection_id: str,
     credential_attrs: List[str] = Query(None),
-    req_header: Optional[str] = Header(None),
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
 ):
     """
     Issues a credential
+
+    Parameters:
+    -----------
+    schema_id: str
+    connection_id: str
+    credential_attrs: List[str]
+        A list of requested credential attributes
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
 
             # Check if connection is active
             # connection = await controller.get_connection(connection_id)
@@ -89,20 +109,33 @@ async def issue_credential(
         }
     },
 )
-async def create_connection(req_header: Optional[str] = Header(None)):
+async def create_connection(
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
+):
     """
     Creates invitation for the holder to scan
 
     Parameters:
     ----------
-    req_header: Header
-        The header object containing (wallet_id, jwt_token) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns: StreamingResponse
         QRCode PNG file from StreamingResponse
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
             invite = await controller.connections.create_invitation()
             # connection_id = invite["connection_id"]
@@ -126,14 +159,22 @@ async def create_connection(req_header: Optional[str] = Header(None)):
 
 # TODO Decide where this endpoint to lie
 @router.get("/get-connection-id", tags=["connection"])
-async def get_connection_ids(req_header: Optional[str] = Header(None)):
+async def get_connection_ids(
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
+):
     """
     Creates invitation for the holder to scan
 
     Parameters:
     ----------
-    req_header: Header
-        The header object containing (wallet_id, jwt_token) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------
@@ -141,8 +182,13 @@ async def get_connection_ids(req_header: Optional[str] = Header(None)):
         The request response from the ledger with all current connections
         The 'results' key holds a [dict].
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
             connection = await get_connection_id(controller)
             return connection

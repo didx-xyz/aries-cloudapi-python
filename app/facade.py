@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Generic, TypeVar
 
 import requests
-from fastapi import Header, HTTPException
+from fastapi import HTTPException
 from utils import controller_factory
 
 T_co = TypeVar("T_co", contravariant=True)
@@ -18,22 +18,22 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def create_controller(req_header: Header) -> Generic[T_co]:
+async def create_controller(auth_headers) -> Generic[T_co]:
     """
     Instantiate an AriesAgentController or a TenantController
     based on header attributes
 
     Parameters:
     -----------
-    req_header: Header
-        The header object containing (wallet_id, jwt_token) or api_key
+    auth_header: dict
+        The header object containing wallet_id and jwt_token, or api_key
 
     Returns:
     --------
     controller: Generic type of aries_cloudcontroller instance
         The AsyncContextMananger instance of the cloudcontroller
     """
-    controller = controller_factory(req_header)
+    controller = controller_factory(auth_headers)
     try:
         yield controller
     except Exception as e:

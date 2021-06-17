@@ -28,7 +28,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
     "/create-pub-did", tags=["did"], response_model=DidCreationResponse
 )
 async def create_public_did(req_header: Optional[str] = Header(None)):
-    return wallet.create_public_did(req_header)
+    return await wallet.create_public_did(req_header)
 
 
 @router.get("/")

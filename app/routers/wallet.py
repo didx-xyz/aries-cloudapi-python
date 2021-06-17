@@ -36,7 +36,7 @@ LEDGER_TYPE = os.getenv("LEDGER_TYPE")
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
-async def create_public_did(req_header: Optional[str] = Header(None)):
+async def create_public_did(api_key: Optional[str] = Header(None)):
     """
     Create a new public DID and
     write it to the ledger and
@@ -53,10 +53,11 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     * Issuer Endpoint (url)
     """
     try:
-        async with create_controller(req_header) as controller:
+        logger.error(f"api_key in wallet {api_key}")
+        async with create_controller(api_key) as controller:
             # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
+            if "ledger_url" in api_key:
+                url = api_key["ledger_url"]
             else:
                 url = ledger_url
             # Adding empty header as parameters are being sent in payload

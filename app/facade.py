@@ -33,6 +33,7 @@ async def create_controller(req_header: Header) -> Generic[T_co]:
     controller: Generic type of aries_cloudcontroller instance
         The AsyncContextMananger instance of the cloudcontroller
     """
+    logger.error(f"facade req_header {req_header}")
     controller = controller_factory(req_header)
     try:
         yield controller

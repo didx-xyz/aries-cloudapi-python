@@ -1,7 +1,9 @@
+# from app.utils import construct_zkp
 import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
 import utils
+import json
 
 testheaders = [
     ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
@@ -49,3 +51,44 @@ async def test_controller_factory(fake_header, expected):
     else:
         controller = utils.controller_factory(fake_header)
         assert isinstance(type(controller), expected)
+
+
+def test_construct_zkp():
+    given = [[{"name": "name", "p_type": ">=", "p_value": "21"}], "abcde:test:0.0.1"]
+    expected = [
+        {
+            "name": "name",
+            "p_type": ">=",
+            "p_value": "21",
+            "restrictions": [{"schema_id": "abcde:test:0.0.1"}],
+        }
+    ]
+
+    result = utils.construct_zkp(*given)
+
+    assert result == expected
+
+
+def test_construct_indy_proof_request():
+    given = [
+        "abcde",
+        "abcde:test:0.0.1",
+        [{"name": "name"}, {"name": "age"}],
+        [{"name": "name", "p_type": ">=", "p_value": "21"}],
+    ]
+
+    expected = {
+        "name": "abcde",
+        "requested_attributes": {
+            "0_age_uuid": {"name": "age"},
+            "0_name_uuid": {"name": "name"},
+        },
+        "requested_predicates": {
+            "0_name_GE_uuid": {"name": "name", "p_type": ">=", "p_value": "21"}
+        },
+        "version": "0.0.1",
+    }
+
+    result = utils.construct_indy_proof_request(*given)
+
+    assert result == expected

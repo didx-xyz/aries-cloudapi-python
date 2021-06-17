@@ -1,19 +1,17 @@
+import json
 import logging
 import os
 import traceback
 from typing import Optional
 
-from facade import (
-    accept_taa,
-    assign_pub_did,
-    create_controller,
-    create_did,
-    get_did_endpoint,
-    get_pub_did,
-    get_taa,
-    post_to_ledger,
-)
 from fastapi import APIRouter, Header, HTTPException
+
+from acapy_ledger_facade import get_taa, accept_taa, get_did_endpoint
+from acapy_wallet_facade import create_did, assign_pub_did, get_pub_did
+from core.wallet import create_pub_did
+from facade import create_controller
+from ledger_facade import post_to_ledger
+
 from schemas import (
     DidCreationResponse,
     InitWalletRequest,
@@ -31,8 +29,6 @@ admin_port = os.getenv("ACAPY_ADMIN_PORT")
 # This all smells really - this has to be done in a better manner
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = os.getenv("IS_MULTITENANT", False)
-ledger_url = os.getenv("LEDGER_NETWORK_URL")
-LEDGER_TYPE = os.getenv("LEDGER_TYPE")
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
@@ -52,59 +48,9 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
+    req_dict = json.loads(req_header) if req_header else {}
     try:
-        async with create_controller(req_header) as controller:
-            # TODO: Should this come from env var or from the client request?
-            if "ledger_url" in req_header:
-                url = req_header["ledger_url"]
-            else:
-                url = ledger_url
-            # Adding empty header as parameters are being sent in payload
-            generate_did_res = await create_did(controller)
-            did_object = generate_did_res["result"]
-            # TODO: Network and paymentaddr should be definable on the fly/via args/via request body
-            # TODO: Should this really be a schema or is using schema overkill here?
-            # If we leave it as schema like this I suppose it is at least usable elsewhere
-            if LEDGER_TYPE == "sovrin":
-                payload = LedgerRequestSovrin(
-                    network="stagingnet",
-                    did=did_object["did"],
-                    verkey=did_object["verkey"],
-                    paymentaddr="",
-                )
-            elif LEDGER_TYPE == "von":
-                payload = LedgerRequestVon(
-                    did=did_object["did"],
-                    seed="null",
-                    verkey=did_object["verkey"],
-                )
-            else:
-                raise HTTPException(
-                    status_code=501,
-                    detail="Cannot resolve ledger type. Should be either von or sovrin",
-                )
-
-            await post_to_ledger(url, payload)
-
-            TAA = await get_taa(controller)
-
-            await accept_taa(controller, TAA)
-
-            await assign_pub_did(controller, did_object)
-
-            get_pub_did_response = await get_pub_did(controller)
-            issuer_nym = get_pub_did_response["result"]["did"]
-            issuer_verkey = get_pub_did_response["result"]["verkey"]
-
-            issuer_endpoint = await get_did_endpoint(controller, issuer_nym)
-            issuer_endpoint_url = issuer_endpoint["endpoint"]
-
-            final_response = DidCreationResponse(
-                did_object=did_object,
-                issuer_verkey=issuer_verkey,
-                issuer_endpoint=issuer_endpoint_url,
-            )
-            return final_response
+        return await create_pub_did(req_dict)
     except Exception as e:
         err_trace = traceback.print_exc()
         logger.error(
@@ -128,7 +74,7 @@ async def wallets_root():
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
 async def create_wallet(
-    wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
+        wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
 ):
     """
     Create a new wallet

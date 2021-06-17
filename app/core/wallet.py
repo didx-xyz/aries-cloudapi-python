@@ -1,8 +1,8 @@
-
 import logging
 
 from distutils.util import strtobool
 import os
+from typing import Dict
 
 import acapy_ledger_facade
 from facade import create_controller
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "False"))
 
 
-async def create_public_did(req_header: str) -> DidCreationResponse:
+async def create_pub_did(req_header: Dict[str, str]) -> DidCreationResponse:
     """
     Create a new public DID and
     write it to the ledger and
@@ -34,13 +34,13 @@ async def create_public_did(req_header: str) -> DidCreationResponse:
         # Adding empty header as parameters are being sent in payload
         generate_did_res = await wallet_facade.create_did(aries_agent_controller)
         did_object = generate_did_res["result"]
-        await ledger_facade.get_nym(did_object)
+        await ledger_facade.post_to_ledger(did_object=did_object, ledger_url=req_header.get('ledger_url', None))
 
         taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
 
         await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
-        await wallet_facade.assign_public_did(aries_agent_controller, did_object['did'])
-        get_pub_did_response = await wallet_facade.get_public_did(aries_agent_controller)
+        await wallet_facade.assign_pub_did(aries_agent_controller, did_object['did'])
+        get_pub_did_response = await wallet_facade.get_pub_did(aries_agent_controller)
         issuer_nym = get_pub_did_response["result"]["did"]
         issuer_verkey = get_pub_did_response["result"]["verkey"]
         issuer_endpoint = await acapy_ledger_facade.get_did_endpoint(aries_agent_controller,

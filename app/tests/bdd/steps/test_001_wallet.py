@@ -1,11 +1,16 @@
 import json
 import time
+import os
 
 import pytest
 import requests
 from pytest_bdd import given, scenario, then, when
 
-FASTAPI_URL = "http://localhost:8000"
+DOCKERHOST = os.getenv("DOCKERHOST")
+if not DOCKERHOST:
+    FASTAPI_URL = "http://0.0.0.0:8000"
+else:
+    FASTAPI_URL = DOCKERHOST + ":8000"
 
 
 @scenario("001_wallet.feature", "Getting a public DID")

@@ -9,7 +9,7 @@ from pytest_bdd import given, scenario, then, when
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
 
-FASTAPI_URL = "http://" + ip_address + ":8000"
+FASTAPI_URL = "http://127.0.0.1:8000"
 
 
 @scenario("001_wallet.feature", "Getting a public DID")
@@ -41,6 +41,7 @@ def test_gen_pub_did():
     endpoint = target_did_enpoint()
     url = FASTAPI_URL + endpoint
 
+    time.sleep(10)
     result = requests.get(url, headers=header)
     time.sleep(10)
     res_dict = json.loads(result.content)
@@ -55,6 +56,7 @@ def test_gen_pub_did_no_key():
     endpoint = target_did_enpoint()
     url = FASTAPI_URL + endpoint
 
+    time.sleep(10)
     result = requests.get(url, headers=header)
     time.sleep(5)
     res_dict = json.loads(result.content)

@@ -47,7 +47,7 @@ async def create_public_did(req_header: str) -> DidCreationResponse:
                                                                      )
         issuer_endpoint_url = issuer_endpoint["endpoint"]
         final_response = DidCreationResponse(
-            did_object=did_object,
+            did_object=get_pub_did_response['result'],
             issuer_verkey=issuer_verkey,
             issuer_endpoint=issuer_endpoint_url,
         )

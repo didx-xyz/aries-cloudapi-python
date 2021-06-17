@@ -1,7 +1,8 @@
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import Header, HTTPException
 import os
 from typing import Type, Union
+
+from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from fastapi import Header, HTTPException
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -67,3 +68,19 @@ def controller_factory(
             status_code=400,
             detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
         )
+
+
+def construct_zkp(zero_knowledge_proof: dict, schema_id: str):
+    req_preds = []
+    zkp = [
+        req_preds.append(
+            {
+                "name": item["name"],
+                "p_type": item["p_type"],
+                "p_value": item["p_value"],
+                "restrictions": [{"schema_id": schema_id}],
+            }
+        )
+        for item in zero_knowledge_proof
+    ]
+    return zkp

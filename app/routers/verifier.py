@@ -1,14 +1,12 @@
 import logging
-import traceback
 import time
-from typing import List, Optional
+import traceback
+from typing import Dict, List, Optional
 
+from facade import (create_controller, get_schema_attributes,
+                    send_proof_request, verify_proof_req)
 from fastapi import APIRouter, Header, HTTPException, Query
-
-from facade import (
-    create_controller,
-    get_schema_attributes,
-)
+from utils import construct_zkp
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +15,13 @@ router = APIRouter(prefix="/verifier")
 
 # TODO verify that active connection exists
 # Better tag?
-@router.get("/request-proof-for-schema", tags=["proof", "verifier"])
+@router.post("/request-proof-for-schema", tags=["proof", "verifier"])
 async def get_proof_request(
     connection_id: str,
     schema_id: str,
+    zero_knowledge_proof: Dict[str] = None,
     requested_attrs: List[str] = Query(None),  # Should be a list
     self_attested: str = None,  # What should this be? is this user input or does is come with the schema?
-    zero_knowledge_proof: dict = None,
     revocation: int = None,
     exchange_tracing: bool = False,
     req_header: Optional[str] = Header(None),
@@ -92,18 +90,8 @@ async def get_proof_request(
             #     },
             # ]
             req_preds = []
-            if zero_knowledge_proof:
-                [
-                    req_preds.append(
-                        {
-                            "name": k["name"],
-                            "p_type": k["p_type"],
-                            "p_value": k["p_value"],
-                            "restrictions": [{"schema_id": schema_id}],
-                        }
-                    )
-                    for k in zero_knowledge_proof
-                ]
+            if zero_knowledge_proof is not None:
+                req_preds = construct_zkp(zero_knowledge_proof, schema_id)
 
             # Construct indy_proof_request
             indy_proof_request = {
@@ -130,7 +118,7 @@ async def get_proof_request(
             }
 
             # Send the proof request
-            response = await controller.proofs.send_request(proof_request_web_request)
+            response = await send_proof_request(controller, proof_request_web_request)
             # get the presentaiton exchange id
             presentation_exchange_id = response["presentation_exchange_id"]
 
@@ -148,9 +136,7 @@ async def verify_proof_request(
     try:
         async with create_controller(req_header) as controller:
             #  verify using the presentaiton exchange id
-            verify = await controller.proofs.verify_presentation(
-                presentation_exchange_id
-            )
+            verify = await verify_proof_req(controller, presentation_exchange_id)
 
             # check state is 'verified'
             ## if no, error? retry?

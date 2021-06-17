@@ -410,3 +410,26 @@ async def write_schema_definition(controller, schema_definition_request):
         )
     return write_schema_resp
 
+
+# Need to rename this?
+async def verify_proof_req(controller, presentation_exchange_id):
+
+    verify = await controller.proofs.verify_presentation(presentation_exchange_id)
+
+    if not verify:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Could not verify proof request",
+        )
+
+    return verify
+
+
+async def send_proof_request(controller, proof_request_web_request):
+
+    response = await controller.proofs.send_request(proof_request_web_request)
+
+    if not response:
+        raise HTTPException(
+            status_code=404, detail="Something went wrong. Could not send proof request"
+        )

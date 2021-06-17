@@ -1,9 +1,9 @@
-from logging import Logger
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import Header, HTTPException
+import logging
 import os
 from typing import Type, Union
-import logging
+
+from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from fastapi import Header, HTTPException
 
 admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
@@ -11,7 +11,8 @@ is_multitenant = os.getenv("IS_MULTITENANT", False)
 
 logger = logging.getLogger(__name__)
 
-def validate_auth_header(req_header: Header) -> bool:
+
+def validate_auth_header(auth_headers) -> Union[str, None]:
     """
     Validates the passed in request header to verify is has correct attributes
     api_key or (tenant_jwt and wallet_id)
@@ -26,19 +27,19 @@ def validate_auth_header(req_header: Header) -> bool:
     is_valid_auth_header: bool
         True if either of the assumptions about request header are met
     """
-    # req_header = dict(req_header)
-    # is_valid_tenant_header = "wallet_id" in req_header and "tenant_jwt" in req_header
-    logger.error(f"api_key: {req_header}")
-    is_valid_admin_header = "api_key" == req_header
-    is_valid_auth_header = req_header and (
-        # is_valid_tenant_header or 
-        is_valid_admin_header
-    )
-    return True
+    if auth_headers["api_key"]:
+        return "admin"
+    elif auth_headers["wallet_id"] and auth_headers["tenant_jwt"]:
+        return "tenant"
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
+        )
 
 
 def controller_factory(
-    req_header: Header,
+    auth_headers,
 ) -> Type[Union[AriesAgentController, AriesTenantController]]:
     """
     Aries Controller factory returning an
@@ -46,31 +47,24 @@ def controller_factory(
 
     Parameters:
     -----------
-    req_header: dict
-        The dict representation of the request JSON Header
+    auth_header: dict
+        The dict representation of the request JSON Header auth attributes
+        api_key or both wallet_id and tenant_jwt
 
     Returns:
     --------
     controller: AriesCloudController (object)
     """
-    if validate_auth_header(req_header):
-        # req_header = req_header if type(req_header) is dict else eval(req_header)
-        logger.error(f"utils req {req_header}")
-        if "api_key" == "api_key": #req_header:
-            controller = AriesAgentController(
-                admin_url=f"{admin_url}:{admin_port}",
-                api_key=req_header,
-                is_multitenant=is_multitenant,
-            )
-        else:
-            controller = AriesTenantController(
-                admin_url=f"{admin_url}:{admin_port}",
-                wallet_id=req_header["wallet_id"],
-                tenant_jwt=req_header["tenant_jwt"],
-            )
-        return controller
+    controller_type = validate_auth_header(auth_headers)
+    if controller_type == "admin":
+        return AriesAgentController(
+            admin_url=f"{admin_url}:{admin_port}",
+            api_key=auth_headers["api_key"],
+            is_multitenant=is_multitenant,
+        )
     else:
-        raise HTTPException(
-            status_code=400,
-            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
+        return AriesTenantController(
+            admin_url=f"{admin_url}:{admin_port}",
+            wallet_id=auth_headers["wallet_id"],
+            tenant_jwt=auth_headers["tenant_jwt"],
         )

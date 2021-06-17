@@ -57,10 +57,10 @@ class InitWalletRequest(BaseModel):
             "example": {
                 "image_url": "https://aries.ca/images/sample.png",
                 "key_management_mode": "managed",
-                "label": "Alice",
+                "label": "Yoma",
                 "wallet_dispatch_type": "default",
                 "wallet_key": "MySecretKey1234",
-                "wallet_name": "AlicesWallet",
+                "wallet_name": "YomasWallet",
                 "wallet_type": "indy",
             }
         }

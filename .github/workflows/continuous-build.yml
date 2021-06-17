@@ -60,4 +60,5 @@ jobs:
          -Dsonar.python.coverage.reportPaths=coverage.xml
          -Dsonar.python.pylint.reportPath=pylintreport.txt
          -Dsonar.projectBaseDir=./app
+         -Dsonar.coverage.exclusions=tests/**/*
 

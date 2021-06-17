@@ -72,7 +72,7 @@ def controller_factory(
 
 def construct_zkp(zero_knowledge_proof: dict, schema_id: str):
     req_preds = []
-    zkp = [
+    [
         req_preds.append(
             {
                 "name": item["name"],
@@ -83,4 +83,4 @@ def construct_zkp(zero_knowledge_proof: dict, schema_id: str):
         )
         for item in zero_knowledge_proof
     ]
-    return zkp
+    return req_preds

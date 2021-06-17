@@ -21,7 +21,7 @@ async def get_proof_request(
     schema_id: str,
     zero_knowledge_proof: Dict[str] = None,
     requested_attrs: List[str] = Query(None),  # Should be a list
-    self_attested: str = None,  # What should this be? is this user input or does is come with the schema?
+    self_attested: List[str] = None,  # What should this be? is this user input or does is come with the schema?
     revocation: int = None,
     exchange_tracing: bool = False,
     req_header: Optional[str] = Header(None),
@@ -58,12 +58,7 @@ async def get_proof_request(
             ]
             logger.error(f"{is_attrs_match}")
             # if revocation not None: Add revocation
-            if self_attested:
-                [
-                    attr_req.append({"name": att}) for att in self_attested
-                ]  # append the self attested attrs
             # TODO What actually provided here? The attrubutes of revocation? The duration? And where do they come from?
-            #
             revocation_attributes = []
             if revocation and len(revocation_attributes) > 0:
                 [
@@ -108,8 +103,6 @@ async def get_proof_request(
             if revocation:
                 indy_proof_request["non_revoked"] = {"to": int(time.time())}
 
-            # TODO Add exchange tracing True/False
-            exchange_tracing = False
             # Create web version of the request:
             proof_request_web_request = {
                 "connection_id": connection_id,

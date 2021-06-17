@@ -5,9 +5,14 @@ import traceback
 from typing import List, Optional
 
 import qrcode
-from facade import (create_controller, get_connection_id, get_cred_def_id,
-                    get_schema_attributes, issue_credentials,
-                    write_credential_def)
+from facade import (
+    create_controller,
+    get_connection_id,
+    get_cred_def_id,
+    get_schema_attributes,
+    issue_credentials,
+    write_credential_def,
+)
 from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 

@@ -3,8 +3,12 @@ import time
 import traceback
 from typing import Dict, List, Optional
 
-from facade import (create_controller, get_schema_attributes,
-                    send_proof_request, verify_proof_req)
+from facade import (
+    create_controller,
+    get_schema_attributes,
+    send_proof_request,
+    verify_proof_req,
+)
 from fastapi import APIRouter, Header, HTTPException, Query
 from utils import construct_indy_proof_request, construct_zkp
 
@@ -20,11 +24,9 @@ async def get_proof_request(
     connection_id: str,
     schema_id: str,
     name_proof_request: str,
-    zero_knowledge_proof: Dict = None,
-    requested_attrs: List[str] = Query(None),  # Should be a list
-    self_attested: List[
-        str
-    ] = None,  # What should this be? is this user input or does is come with the schema?
+    zero_knowledge_proof: List[dict] = None,
+    requested_attrs: List[str] = Query(None),
+    self_attested: List[str] = None,
     revocation: int = None,
     exchange_tracing: bool = False,
     req_header: Optional[str] = Header(None),
@@ -33,29 +35,39 @@ async def get_proof_request(
     Request proof of a (sub) set of attributes against a schema by ID.
     This may contain zero-knowledge attributes.
     This may contain revocation of the proof.
+
+    Parameters:
+    -----------
+    connection_id: str
+    schema_id: str
+    name_proof_request: str
+    zero_knowledge_proof: Dict = None
+    requested_attrs: List[str] = Query(None)
+    self_attested: List[
+        str
+    ] = None,
+    revocation: int = None,
+    exchange_tracing: bool = False,
+    req_header: Optional[str] = Header(None),
+
+    Returns:
+    --------
+    presentation_exchange_id: json
+        The presentation exchange ID JSON object
     """
     try:
-        # get attributes for schema using schema id
         async with create_controller(req_header) as controller:
             schema_resp = await get_schema_attributes(controller, schema_id)
-            # check attributes from get are set or superset of requested attrs
-            # TODO Obviously make this non-hardcoded
-            # requested_attrs = ["age"]  # Let's just make this true for now
             is_attrs_match = all(x in schema_resp for x in requested_attrs)
-            ## if schame attrs and requested attrs mismatch return error
             if not is_attrs_match:
                 raise HTTPException(
                     status_code=400,
                     detail="Requested attributes not a (sub) set of schema attributes.",
                 )
-            # TODO Figure out what this is for behind the scenes
             attr_req = [
                 {"name": k, "restrictions": [{"schema_id": schema_id}]}
                 for k in requested_attrs
             ]
-            # logger.error(f"{is_attrs_match}")
-            # if revocation not None: Add revocation
-            # TODO What actually provided here? The attrubutes of revocation? The duration? And where do they come from?
             revocation_attributes = []
             if revocation and len(revocation_attributes) > 0:
                 [
@@ -68,41 +80,28 @@ async def get_proof_request(
                     )
                     for rev_attr in revocation_attributes
                 ]
-            # TODO What exactly do we do with self-attested?
+
             if self_attested:
                 [attr_req.append({"name": att}) for att in self_attested]
-            # Set predicates for zero-knowledge proof
-            # The come in this form:  # Do they come from client input?
-            # req_preds = [
-            #     {
-            #         "name": "age",
-            #         "p_type": ">=",
-            #         "p_value": 21,
-            #         "restrictions": [{"schema_id": 1234}],
-            #     },
-            # ]
+
             req_preds = []
             if zero_knowledge_proof is not None:
                 req_preds = construct_zkp(zero_knowledge_proof, schema_id)
 
-            # Construct indy_proof_request
             indy_proof_request = construct_indy_proof_request(
                 name_proof_request, schema_id, attr_req, req_preds
             )
-            ## if revocation: add that to indy_proof-request
             if revocation:
                 indy_proof_request["non_revoked"] = {"to": int(time.time())}
 
-            # Create web version of the request:
             proof_request_web_request = {
                 "connection_id": connection_id,
                 "proof_request": indy_proof_request,
                 "trace": exchange_tracing,
             }
 
-            # Send the proof request
             response = await send_proof_request(controller, proof_request_web_request)
-            # get the presentaiton exchange id
+
             presentation_exchange_id = response["presentation_exchange_id"]
 
             return presentation_exchange_id
@@ -115,22 +114,28 @@ async def get_proof_request(
 async def verify_proof_request(
     presentation_exchange_id: str, req_header: Optional[str] = Header(None)
 ):
+    """
+    Verify a proof request against the ledger
 
+    Parameters:
+    -----------
+    presentation_exchange_id: str
+    req_header: Optional[str] = Header(None)
+
+    Returns:
+    --------
+    verify: dict
+        The json representation of the verify request
+    """
     try:
         async with create_controller(req_header) as controller:
-            #  verify using the presentaiton exchange id
             verify = await verify_proof_req(controller, presentation_exchange_id)
 
-            # check state is 'verified'
-            ## if no, error? retry?
-            ## if yes, continue
-            # Should we really raise here or rather inform or wait?
             if not verify["state"] == "verified":
                 raise HTTPException(
                     status_code=400,
                     detail="Presentation state not verified!",
                 )
-                # return revealed attributes
             return verify
     except Exception as e:
         err_trace = traceback.print_exc()

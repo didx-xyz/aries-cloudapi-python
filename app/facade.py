@@ -433,5 +433,5 @@ async def send_proof_request(controller, proof_request_web_request):
         raise HTTPException(
             status_code=404, detail="Something went wrong. Could not send proof request"
         )
-    
+
     return response

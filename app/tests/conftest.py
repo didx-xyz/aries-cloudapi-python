@@ -1,12 +1,13 @@
 import pytest
 
-import facade
 import ledger_facade
+import utils
 
 
 @pytest.fixture
 def setup_env():
-    facade.admin_url = "http://localhost"
-    facade.admin_port = "3021"
-    facade.is_multitenant = False
-    ledger_facade.ledger_url = "https://selfserve.sovrin.org/nym"
+    utils.admin_url = "http://localhost"
+    utils.admin_port = "3021"
+    utils.is_multitenant = False
+    ledger_facade.LEDGER_URL = "http://testnet.didx.xyz/register"
+    ledger_facade.LEDGER_TYPE = 'von'

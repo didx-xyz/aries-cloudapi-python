@@ -41,6 +41,7 @@ jobs:
         echo done
     - name: Run Pylint
       run: |
+        cd app
         pip install pylint
         pylint admin routers oicd tests --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
     - name: Tear down test harnless
@@ -58,7 +59,8 @@ jobs:
          -Dsonar.verbose=false
          -Dsonar.python.xunit.reportPath=junit.xml
          -Dsonar.python.coverage.reportPaths=coverage.xml
-         -Dsonar.python.pylint.reportPath=pylintreport.txt
+         -Dsonar.python.pylint.reportPaths=pylintreport.txt
          -Dsonar.projectBaseDir=./app
          -Dsonar.coverage.exclusions=tests/**/*
+
 

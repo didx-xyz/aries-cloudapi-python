@@ -32,12 +32,12 @@ jobs:
       run: |
         cd app
         python -m pip install --upgrade pip
-        pip install pytest pytest-custom_exit_code
+        pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
         cd app
-        pytest --cov || true
+        pytest --cov
         echo done
     - name: Run Pylint
       run: |

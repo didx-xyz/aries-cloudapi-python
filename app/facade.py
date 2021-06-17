@@ -25,8 +25,8 @@ async def create_controller(auth_headers) -> Generic[T_co]:
 
     Parameters:
     -----------
-    req_header: Header
-        The header object containing (wallet_id, jwt_token) or api_key
+    auth_header: dict
+        The header object containing wallet_id and jwt_token, or api_key
 
     Returns:
     --------

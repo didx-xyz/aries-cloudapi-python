@@ -12,30 +12,26 @@ is_multitenant = os.getenv("IS_MULTITENANT", False)
 logger = logging.getLogger(__name__)
 
 
-def validate_auth_header(auth_headers) -> Union[str, None]:
+def get_controller_type(auth_headers) -> Union[str, None]:
     """
     Validates the passed in request header to verify is has correct attributes
     api_key or (tenant_jwt and wallet_id)
 
     Parameters:
     -----------
-    req_header: dict
-        The dict representation of the request JSON Header
+    auth_headers: dict
+        The header object containing wallet_id and jwt_token, or api_key
 
     Returns:
     --------
-    is_valid_auth_header: bool
-        True if either of the assumptions about request header are met
+    "admin", "tenant", or None: Union[str, None]
+        (One of) the appropriate type(s) for the controller based on the headers provided
     """
-    if auth_headers["api_key"]:
+    if "api_key" in auth_headers:
         return "admin"
-    elif auth_headers["wallet_id"] and auth_headers["tenant_jwt"]:
+    elif "wallet_id" in auth_headers and "tenant_jwt" in auth_headers:
         return "tenant"
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
-        )
+    return None
 
 
 def controller_factory(
@@ -47,15 +43,19 @@ def controller_factory(
 
     Parameters:
     -----------
-    auth_header: dict
-        The dict representation of the request JSON Header auth attributes
-        api_key or both wallet_id and tenant_jwt
+    auth_headers: dict
+        The header object containing wallet_id and jwt_token, or api_key
 
     Returns:
     --------
     controller: AriesCloudController (object)
     """
-    controller_type = validate_auth_header(auth_headers)
+    controller_type = get_controller_type(auth_headers)
+    if not controller_type:
+        raise HTTPException(
+            status_code=400,
+            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
+        )
     if controller_type == "admin":
         return AriesAgentController(
             admin_url=f"{admin_url}:{admin_port}",

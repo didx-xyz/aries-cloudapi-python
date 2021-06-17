@@ -3,11 +3,23 @@ import os
 import traceback
 from typing import Optional
 
-from facade import (accept_taa, assign_pub_did, create_controller, create_did,
-                    get_did_endpoint, get_pub_did, get_taa, post_to_ledger)
+from facade import (
+    accept_taa,
+    assign_pub_did,
+    create_controller,
+    create_did,
+    get_did_endpoint,
+    get_pub_did,
+    get_taa,
+    post_to_ledger,
+)
 from fastapi import APIRouter, Header, HTTPException
-from schemas import (DidCreationResponse, InitWalletRequest,
-                     LedgerRequestSovrin, LedgerRequestVon)
+from schemas import (
+    DidCreationResponse,
+    InitWalletRequest,
+    LedgerRequestSovrin,
+    LedgerRequestVon,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +48,12 @@ async def create_public_did(
 
     Parameters:
     -----------
-    req_header: Header
-        The request header object with (tenant_jwt, wallet_id) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     * DID object (json)
@@ -134,8 +150,12 @@ async def create_wallet(
     -----------
     wallet_payload: dict
         The payload for creating the wallet
-    req_header: Header
-        The request header object with (tenant_jwt, wallet_id) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------

@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Type, Union
+from typing import Type, Union, List
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
@@ -70,7 +70,9 @@ def controller_factory(
         )
 
 
-def construct_zkp(zero_knowledge_proof: dict, schema_id: str):
+def construct_zkp(zero_knowledge_proof: List[dict], schema_id: str) -> list:
+    if zero_knowledge_proof == [{}]:
+        return []
     req_preds = []
     [
         req_preds.append(

@@ -76,6 +76,15 @@ def test_construct_zkp():
     assert result == expected
 
 
+def test_construct_zkp_empty():
+    given = [{}]
+    expect = []
+
+    result = utils.construct_zkp(given, "1234")
+
+    assert result == expect
+
+
 def test_construct_indy_proof_request():
     given = [
         "abcde",

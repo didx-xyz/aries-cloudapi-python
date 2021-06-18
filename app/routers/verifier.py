@@ -1,7 +1,7 @@
 import logging
 import time
 import traceback
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from facade import (
     create_controller,
@@ -92,7 +92,7 @@ async def get_proof_request(
                 [attr_req.append({"name": att}) for att in self_attested]
 
             req_preds = []
-            if zero_knowledge_proof is not None:
+            if zero_knowledge_proof != [{}]:
                 req_preds = construct_zkp(zero_knowledge_proof, schema_id)
 
             indy_proof_request = construct_indy_proof_request(

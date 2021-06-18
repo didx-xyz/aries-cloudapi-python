@@ -29,7 +29,9 @@ async def get_proof_request(
     self_attested: List[str] = None,
     revocation: int = None,
     exchange_tracing: bool = False,
-    req_header: Optional[str] = Header(None),
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
 ):
     """
     Request proof of a (sub) set of attributes against a schema by ID.
@@ -55,8 +57,13 @@ async def get_proof_request(
     presentation_exchange_id: json
         The presentation exchange ID JSON object
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             schema_resp = await get_schema_attributes(controller, schema_id)
             is_attrs_match = all(x in schema_resp for x in requested_attrs)
             if not is_attrs_match:

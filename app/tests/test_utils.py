@@ -7,12 +7,11 @@ import json
 
 testheaders = [
     ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
-    ({"tenant_jwt": "123456", "wallet_id": "12345"}, "tenant"),
-    ({"api_key": "AdminApiKey"}, "admin"),
-    ({"kjnc": "AdminApiKey"}, None),
-    ({"tenant_jwt": "123456", "api_key": "12345"}, "admin"),
-    ({"tenant_jwt": "123456"}, None),
-    ({"wallet_id": "123456"}, None),
+    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": "12345"}, "tenant"),
+    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
+    ({"tenant_jwt": "123456", "wallet_id": "12345", "api_key": "12345"}, "admin"),
+    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": None}, None),
+    ({"api_key": None, "tenant_jwt": None, "wallet_id": "1234"}, None),
 ]
 
 
@@ -27,12 +26,20 @@ controller_factorytest_headers = [
         {"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"},
         type(AriesAgentController),
     ),
-    ({"tenant_jwt": "123456", "wallet_id": "12345"}, type(AriesTenantController)),
-    ({"api_key": "AdminApiKey"}, type(AriesAgentController)),
-    ({"kjnc": "AdminApiKey"}, False),
-    ({"tenant_jwt": "123456", "api_key": "12345"}, type(AriesAgentController)),
-    ({"tenant_jwt": "123456"}, False),
-    ({"wallet_id": "123456"}, False),
+    (
+        {"api_key": None, "tenant_jwt": "123456", "wallet_id": "12345"},
+        type(AriesTenantController),
+    ),
+    (
+        {"api_key": "AdminApiKey", "tenant_jwt": None, "wallet_id": None},
+        type(AriesAgentController),
+    ),
+    (
+        {"tenant_jwt": "123456", "api_key": "12345", "wallet_id": None},
+        type(AriesAgentController),
+    ),
+    ({"api_key": None, "tenant_jwt": "1234", "wallet_id": None}, False),
+    ({"api_key": None, "tenant_jwt": None, "wallet_id": "1234"}, False),
 ]
 
 

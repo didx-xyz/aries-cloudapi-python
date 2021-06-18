@@ -27,9 +27,9 @@ def get_controller_type(auth_headers) -> Union[str, None]:
     "admin", "tenant", or None: Union[str, None]
         (One of) the appropriate type(s) for the controller based on the headers provided
     """
-    if "api_key" in auth_headers:
+    if auth_headers["api_key"]:
         return "admin"
-    elif "wallet_id" in auth_headers and "tenant_jwt" in auth_headers:
+    elif auth_headers["wallet_id"] and auth_headers["tenant_jwt"]:
         return "tenant"
     return None
 

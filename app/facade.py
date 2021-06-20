@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Generic, TypeVar
 
 import requests
-from fastapi import Header, HTTPException
+from fastapi import HTTPException
 from utils import controller_factory
 
 T_co = TypeVar("T_co", contravariant=True)
@@ -14,22 +14,22 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def create_controller(req_header: Header) -> Generic[T_co]:
+async def create_controller(auth_headers) -> Generic[T_co]:
     """
     Instantiate an AriesAgentController or a TenantController
     based on header attributes
 
     Parameters:
     -----------
-    req_header: Header
-        The header object containing (wallet_id, jwt_token) or api_key
+    auth_header: dict
+        The header object containing wallet_id and jwt_token, or api_key
 
     Returns:
     --------
     controller: Generic type of aries_cloudcontroller instance
         The AsyncContextMananger instance of the cloudcontroller
     """
-    controller = controller_factory(req_header)
+    controller = controller_factory(auth_headers)
     try:
         yield controller
     except Exception as e:
@@ -205,3 +205,29 @@ async def write_schema_definition(controller, schema_definition_request):
             detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
         )
     return write_schema_resp
+
+
+# Need to rename this?
+async def verify_proof_req(controller, presentation_exchange_id):
+
+    verify = await controller.proofs.verify_presentation(presentation_exchange_id)
+
+    if not verify:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Could not verify proof request",
+        )
+
+    return verify
+
+
+async def send_proof_request(controller, proof_request_web_request):
+
+    response = await controller.proofs.send_request(proof_request_web_request)
+
+    if not response:
+        raise HTTPException(
+            status_code=404, detail="Something went wrong. Could not send proof request"
+        )
+
+    return response

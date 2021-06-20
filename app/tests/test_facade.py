@@ -5,13 +5,12 @@ import facade
 
 
 testheaders = [
-    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, True),
-    ({"tenant_jwt": "123456", "wallet_id": "12345"}, True),
-    ({"api_key": "AdminApiKey"}, True),
-    ({"kjnc": "AdminApiKey"}, False),
-    ({"tenant_jwt": "123456", "api_key": "12345"}, True),
-    ({"tenant_jwt": "123456"}, False),
-    ({"wallet_id": "123456"}, False),
+    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
+    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": "12345"}, "tenant"),
+    ({"api_key": "AdminApiKey", "tenant_jwt": None, "wallet_id": None}, "admin"),
+    ({"api_key": "abcde", "tenant_jwt": "abcde", "wallet_id": None}, "admin"),
+    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": None}, False),
+    ({"api_key": None, "tenant_jwt": None, "wallet_id": "12345"}, False),
 ]
 
 
@@ -21,7 +20,7 @@ async def test_create_controller(fake_header, expected):
     if expected:
         async with facade.create_controller(fake_header) as controller:
             pass
-        if "api_key" in fake_header:
+        if fake_header["api_key"]:
             assert type(controller) is AriesAgentController
         else:
             assert type(controller) is AriesTenantController

@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import traceback
@@ -18,16 +17,16 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/wallets", tags=["wallets"])
 
-admin_url = os.getenv("ACAPY_ADMIN_URL")
-admin_port = os.getenv("ACAPY_ADMIN_PORT")
 # TODO Should the admin_api_key be a dummy variable so the controller doesn't function w/o providing it?
 # This all smells really - this has to be done in a better manner
-admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-is_multitenant = os.getenv("IS_MULTITENANT", False)
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
-async def create_public_did(req_header: Optional[str] = Header(None)):
+async def create_public_did(
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
+):
     """
     Create a new public DID and
     write it to the ledger and
@@ -35,17 +34,25 @@ async def create_public_did(req_header: Optional[str] = Header(None)):
 
     Parameters:
     -----------
-    req_header: Header
-        The request header object with (tenant_jwt, wallet_id) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     * DID object (json)
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
-    req_dict = json.loads(req_header) if req_header else {}
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        return await create_pub_did(req_dict)
+        return await create_pub_did(auth_headers)
     except Exception as e:
         err_trace = traceback.print_exc()
         logger.error(
@@ -69,7 +76,10 @@ async def wallets_root():
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
 async def create_wallet(
-        wallet_payload: InitWalletRequest, req_header: Optional[str] = Header(None)
+    wallet_payload: InitWalletRequest,
+    api_key: Optional[str] = Header(None),
+    wallet_id: Optional[str] = Header(None),
+    tenant_jwt: Optional[str] = Header(None),
 ):
     """
     Create a new wallet
@@ -78,15 +88,24 @@ async def create_wallet(
     -----------
     wallet_payload: dict
         The payload for creating the wallet
-    req_header: Header
-        The request header object with (tenant_jwt, wallet_id) or api_key
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
 
     Returns:
     --------
     The response object from creating a wallet on the ledger
     """
+    auth_headers = {
+        "api_key": api_key,
+        "wallet_id": wallet_id,
+        "tenant_jwt": tenant_jwt,
+    }
     try:
-        async with create_controller(req_header) as controller:
+        async with create_controller(auth_headers) as controller:
             if controller.is_multitenant:
                 # TODO replace with model for payload/wallet like
                 # described https://fastapi.tiangolo.com/tutorial/body/

@@ -4,13 +4,19 @@ from contextlib import asynccontextmanager
 from typing import Generic, TypeVar
 
 import requests
-from fastapi import HTTPException
+from fastapi import HTTPException, Header
 from utils import controller_factory
 
 T_co = TypeVar("T_co", contravariant=True)
 
-
 logger = logging.getLogger(__name__)
+
+
+async def create_controller_dependency(
+    x_api_key: str = Header(None), authorization: str = None
+):
+    async with create_controller({"api_key": x_api_key}) as c:
+        yield c
 
 
 @asynccontextmanager
@@ -35,9 +41,7 @@ async def create_controller(auth_headers) -> Generic[T_co]:
     except Exception as e:
         # We can only log this here and not raise an HTTPExeption as
         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        # yes but we are _not_ providing this context managed resource via a fast api dependency so there's no reason
-        # not to raise the exception
-        logger.error(f"{e!r}")
+        logger.error("%s", e, exc_info=e)
         raise e
     finally:
         await controller.terminate()
@@ -209,7 +213,6 @@ async def write_schema_definition(controller, schema_definition_request):
 
 # Need to rename this?
 async def verify_proof_req(controller, presentation_exchange_id):
-
     verify = await controller.proofs.verify_presentation(presentation_exchange_id)
 
     if not verify:
@@ -222,7 +225,6 @@ async def verify_proof_req(controller, presentation_exchange_id):
 
 
 async def send_proof_request(controller, proof_request_web_request):
-
     response = await controller.proofs.send_request(proof_request_web_request)
 
     if not response:

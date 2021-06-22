@@ -24,8 +24,8 @@ def requests_retry_session(
         status_forcelist=status_forcelist,
     )
     adapter = HTTPAdapter(max_retries=retry)
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
     return session
 
 
@@ -64,7 +64,6 @@ def test_gen_pub_did():
     endpoint = target_did_enpoint()
     url = FASTAPI_URL + endpoint
 
-    time.sleep(90)
     s = requests.Session()
     s.headers.update(header)
     result = requests_retry_session().get(url)
@@ -82,11 +81,9 @@ def test_gen_pub_did_no_key():
     endpoint = target_did_enpoint()
     url = FASTAPI_URL + endpoint
 
-    time.sleep(10)
     s = requests.Session()
     s.headers.update(header)
     result = requests_retry_session().get(url)
-    time.sleep(5)
     res_dict = json.loads(result.content)
     assert result.status_code == 400
     assert (

@@ -27,9 +27,9 @@ def get_controller_type(auth_headers) -> Union[str, None]:
     "admin", "tenant", or None: Union[str, None]
         (One of) the appropriate type(s) for the controller based on the headers provided
     """
-    if auth_headers["api_key"]:
+    if auth_headers.get("api_key", None):
         return "admin"
-    elif auth_headers["wallet_id"] and auth_headers["tenant_jwt"]:
+    elif auth_headers.get("wallet_id", None) and auth_headers.get("tenant_jwt", None):
         return "tenant"
     return None
 
@@ -70,7 +70,9 @@ def controller_factory(
         )
 
 
-def construct_zkp(zero_knowledge_proof: List[dict], schema_id: str):
+def construct_zkp(zero_knowledge_proof: List[dict], schema_id: str) -> list:
+    if zero_knowledge_proof == [{}]:
+        return []
     req_preds = []
     [
         req_preds.append(

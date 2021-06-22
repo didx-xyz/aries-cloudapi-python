@@ -1,6 +1,5 @@
 import io
 import logging
-import os
 import traceback
 from typing import List, Optional
 
@@ -13,18 +12,11 @@ from facade import (
     issue_credentials,
     write_credential_def,
 )
-from fastapi import APIRouter, Header, HTTPException, Query
+from fastapi import APIRouter, Header, Query
 from fastapi.responses import StreamingResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")
-
-
-admin_url = os.getenv("ACAPY_ADMIN_URL")
-admin_port = os.getenv("ACAPY_ADMIN_PORT")
-admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-is_multitenant = os.getenv("IS_MULTITENANT", False)
-ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 
 @router.get("/issue-credential", tags=["issue", "credential"])
@@ -92,9 +84,10 @@ async def issue_credential(
             # TODO Do we want to return the record or just success?
             return record
     except Exception as e:
-        err_trace = traceback.print_exc()
         logger.error(
-            f"Failed to issue credential.The following error occured:\n{e!r}\n{err_trace}"
+            f"Failed to issue credential.The following error occured:\n%s",
+            e,
+            exc_info=e,
         )
         raise e
 

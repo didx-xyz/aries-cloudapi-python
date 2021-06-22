@@ -91,9 +91,7 @@ async def get_proof_request(
             if self_attested:
                 [attr_req.append({"name": att}) for att in self_attested]
 
-            req_preds = []
-            if zero_knowledge_proof != [{}]:
-                req_preds = construct_zkp(zero_knowledge_proof, schema_id)
+            req_preds = construct_zkp(zero_knowledge_proof, schema_id)
 
             indy_proof_request = construct_indy_proof_request(
                 name_proof_request, schema_id, attr_req, req_preds

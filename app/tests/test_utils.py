@@ -77,7 +77,7 @@ def test_construct_zkp():
 
 
 def test_construct_zkp_empty():
-    given = []
+    given = [{}]
     expect = []
 
     result = utils.construct_zkp(given, "1234")

@@ -28,23 +28,18 @@ async def test_error_on_get_pub_did(mock_agent_controller):
     with pytest.raises(HTTPException) as exc:
         await get_pub_did(mock_agent_controller)
     assert exc.value.status_code == 404
-    assert (
-            exc.value.detail
-            == "Something went wrong. Could not obtain public DID. {}"
-    )
+    assert exc.value.detail == "Something went wrong. Could not obtain public DID. {}"
 
 
 @pytest.mark.asyncio
 async def test_error_on_assign_pub_did(mock_agent_controller):
-    when(mock_agent_controller.wallet).assign_public_did('did').thenReturn(get())
+    when(mock_agent_controller.wallet).assign_public_did("did").thenReturn(get())
 
     with pytest.raises(HTTPException) as exc:
-        await assign_pub_did(mock_agent_controller, 'did')
+        await assign_pub_did(mock_agent_controller, "did")
     assert exc.value.status_code == 500
-    assert (
-            exc.value.detail
-            == "Something went wrong.\nCould not assign DID. {}"
-    )
+    assert exc.value.detail == "Something went wrong.\nCould not assign DID. {}"
+
 
 @pytest.mark.asyncio
 async def test_error_on_create_pub_did(mock_agent_controller):
@@ -53,7 +48,4 @@ async def test_error_on_create_pub_did(mock_agent_controller):
     with pytest.raises(HTTPException) as exc:
         await create_did(mock_agent_controller)
     assert exc.value.status_code == 404
-    assert (
-            exc.value.detail
-            == "Something went wrong.\nCould not generate DID.\n{}"
-    )
+    assert exc.value.detail == "Something went wrong.\nCould not generate DID.\n{}"

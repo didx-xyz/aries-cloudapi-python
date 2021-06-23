@@ -21,7 +21,7 @@ async def create_did(controller: AriesAgentControllerBase):
         The response object from generating a DID on the ledger
     """
     generate_did_res = await controller.wallet.create_did()
-    if 'result' not in generate_did_res or not generate_did_res["result"]:
+    if "result" not in generate_did_res or not generate_did_res["result"]:
         logger.error(f"Failed to create DID:\n{generate_did_res}")
         raise HTTPException(
             status_code=404,
@@ -48,7 +48,7 @@ async def assign_pub_did(controller: AriesAgentControllerBase, did: str):
     """
     assign_pub_did_response = await controller.wallet.assign_public_did(did)
     logger.info(f"assign_pub_did_response:\n{assign_pub_did_response}")
-    if 'result' not in assign_pub_did_response or not assign_pub_did_response["result"]:
+    if "result" not in assign_pub_did_response or not assign_pub_did_response["result"]:
         logger.error(f"Failed to assign public DID:\n{assign_pub_did_response}")
         raise HTTPException(
             status_code=500,
@@ -72,7 +72,7 @@ async def get_pub_did(controller: AriesAgentControllerBase):
         The response from getting the public DID from the ledger
     """
     get_pub_did_response = await controller.wallet.get_public_did()
-    if 'result' not in get_pub_did_response or not get_pub_did_response["result"]:
+    if "result" not in get_pub_did_response or not get_pub_did_response["result"]:
         logger.error(f"Failed to get public DID:\n{get_pub_did_response}")
         raise HTTPException(
             status_code=404,

@@ -21,7 +21,7 @@ async def get_taa(controller: AriesAgentControllerBase):
     """
     taa_response = await controller.ledger.get_taa()
     logger.info(f"taa_response:\n{taa_response}")
-    if 'result' not in taa_response or not taa_response["result"]:
+    if "result" not in taa_response or not taa_response["result"]:
         logger.error("Failed to get TAA:\n{taa_response}")
         raise HTTPException(
             status_code=404,

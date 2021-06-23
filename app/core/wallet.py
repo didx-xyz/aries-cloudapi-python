@@ -34,21 +34,23 @@ async def create_pub_did(req_header: Dict[str, str]) -> DidCreationResponse:
         # Adding empty header as parameters are being sent in payload
         generate_did_res = await wallet_facade.create_did(aries_agent_controller)
         did_object = generate_did_res["result"]
-        await ledger_facade.post_to_ledger(did_object=did_object, ledger_url=req_header.get('ledger_url', None))
+        await ledger_facade.post_to_ledger(
+            did_object=did_object, ledger_url=req_header.get("ledger_url", None)
+        )
 
         taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
 
         await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
-        await wallet_facade.assign_pub_did(aries_agent_controller, did_object['did'])
+        await wallet_facade.assign_pub_did(aries_agent_controller, did_object["did"])
         get_pub_did_response = await wallet_facade.get_pub_did(aries_agent_controller)
         issuer_nym = get_pub_did_response["result"]["did"]
         issuer_verkey = get_pub_did_response["result"]["verkey"]
-        issuer_endpoint = await acapy_ledger_facade.get_did_endpoint(aries_agent_controller,
-                                                                     issuer_nym
-                                                                     )
+        issuer_endpoint = await acapy_ledger_facade.get_did_endpoint(
+            aries_agent_controller, issuer_nym
+        )
         issuer_endpoint_url = issuer_endpoint["endpoint"]
         final_response = DidCreationResponse(
-            did_object=get_pub_did_response['result'],
+            did_object=get_pub_did_response["result"],
             issuer_verkey=issuer_verkey,
             issuer_endpoint=issuer_endpoint_url,
         )

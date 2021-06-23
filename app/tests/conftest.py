@@ -14,7 +14,8 @@ def setup_env():
     utils.admin_port = "3021"
     utils.is_multitenant = False
     ledger_facade.LEDGER_URL = "http://testnet.didx.xyz/register"
-    ledger_facade.LEDGER_TYPE = 'von'
+    ledger_facade.LEDGER_TYPE = "von"
+
 
 @pytest.fixture
 def mock_agent_controller():

@@ -131,7 +131,6 @@ async def create_connection(
         async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
             invite = await controller.connections.create_invitation()
-            # connection_id = invite["connection_id"]
             inviteURL = invite["invitation_url"]
 
             qr = qrcode.QRCode(version=1, box_size=10, border=5)

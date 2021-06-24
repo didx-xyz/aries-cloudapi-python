@@ -11,6 +11,7 @@ from facade import (
 )
 from fastapi import APIRouter, Header, HTTPException, Query
 from utils import construct_indy_proof_request, construct_zkp
+from schemas import RequestProofResponse
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,9 @@ async def get_proof_request(
 
             presentation_exchange_id = response["presentation_exchange_id"]
 
-            return presentation_exchange_id
+            response = RequestProofResponse(presentation_id=presentation_exchange_id)
+
+            return response
     except Exception as e:
         logger.error(f"Failed to request proof: \n {e}")
         raise e

@@ -14,12 +14,17 @@ from facade import (
 )
 from fastapi import APIRouter, Header, Query
 from fastapi.responses import StreamingResponse
+from schemas import ConnectionIdResponse, IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")
 
 
-@router.get("/issue-credential", tags=["issue", "credential"])
+@router.get(
+    "/issue-credential",
+    tags=["issue", "credential"],
+    response_model=IssueCredentialResponse,
+)
 async def issue_credential(
     schema_id: str,
     connection_id: str,
@@ -57,8 +62,6 @@ async def issue_credential(
             # TODO we should somehow enble the check below. Yet we want to provide some time window/a chance
             # to establish an active connection eg via sending a basic message or trust ping
             # in case the connection is not auto-accepting/setting itself to active
-            # if connection["state"] is not "active":
-            #     raise HTTPException(status_code=403, detail="Connection not active")
 
             # TODO How do we want to handle this for input? This now assumes that the client knows
             # the schema attributes or is able to obtain them if it does not.
@@ -80,9 +83,9 @@ async def issue_credential(
             record = await issue_credentials(
                 controller, connection_id, schema_id, cred_def_id, credential_attributes
             )
-
+            response = IssueCredentialResponse(credential=record)
             # TODO Do we want to return the record or just success?
-            return record
+            return response
     except Exception as e:
         logger.error(
             f"Failed to issue credential.The following error occured:\n%s",
@@ -131,7 +134,6 @@ async def create_connection(
         async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
             invite = await controller.connections.create_invitation()
-            # connection_id = invite["connection_id"]
             inviteURL = invite["invitation_url"]
 
             qr = qrcode.QRCode(version=1, box_size=10, border=5)
@@ -151,7 +153,11 @@ async def create_connection(
 
 
 # TODO Decide where this endpoint to lie
-@router.get("/get-connection-id", tags=["connection"])
+@router.get(
+    "/get-connection-id",
+    tags=["connection"],
+    response_model=ConnectionIdResponse,
+)
 async def get_connection_ids(
     api_key: Optional[str] = Header(None),
     wallet_id: Optional[str] = Header(None),
@@ -184,7 +190,8 @@ async def get_connection_ids(
         async with create_controller(auth_headers) as controller:
             # TODO: Should this come from env var or from the client request?
             connection = await get_connection_id(controller)
-            return connection
+            response = ConnectionIdResponse(connection_ids=connection)
+            return response
     except Exception as e:
         err_trace = traceback.print_exc()
         logger.error(

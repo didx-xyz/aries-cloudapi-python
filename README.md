@@ -16,6 +16,8 @@ As this is under heavy deveopment still, we will soon provide more detailed inst
 ## How to run it
 Running it is pretty straight forward - it's all containers. Simply run `./manage up` from the root of the project. This should spin up and provision all you need. You can visit [localhost:8000/api/doc](localhost:8000/api/doc) for the swagger docs and start palying about.
 
+If you are familiar with Make you can also have a look in the Makefile to find some handy methods for running the project.
+
 ### Requirements (though)
 There are some requirements for running the project, namely Docker and docker-compose as well as being able to run a POSIX shell (e.g. sh or bash).
 

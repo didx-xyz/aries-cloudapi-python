@@ -5,9 +5,9 @@ from typing import Type, Union, List
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
 
-admin_url = os.getenv("ACAPY_ADMIN_URL")
-admin_port = os.getenv("ACAPY_ADMIN_PORT")
-is_multitenant = os.getenv("IS_MULTITENANT", False)
+ADMIN_URL = os.getenv("ACAPY_ADMIN_URL")
+ADMIN_PORT = os.getenv("ACAPY_ADMIN_PORT")
+IS_MULTITENANT = os.getenv("IS_MULTITENANT", False)
 
 logger = logging.getLogger(__name__)
 
@@ -58,13 +58,13 @@ def controller_factory(
         )
     if controller_type == "admin":
         return AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
+            admin_url=f"{ADMIN_URL}:{ADMIN_PORT}",
             api_key=auth_headers["api_key"],
-            is_multitenant=is_multitenant,
+            is_multitenant=IS_MULTITENANT,
         )
     else:
         return AriesTenantController(
-            admin_url=f"{admin_url}:{admin_port}",
+            admin_url=f"{ADMIN_URL}:{ADMIN_PORT}",
             wallet_id=auth_headers["wallet_id"],
             tenant_jwt=auth_headers["tenant_jwt"],
         )

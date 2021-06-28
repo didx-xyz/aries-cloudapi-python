@@ -3,14 +3,13 @@ import os
 from contextlib import asynccontextmanager
 from typing import Generic, TypeVar
 
-import requests
 from fastapi import HTTPException
 from utils import controller_factory
 
 T_co = TypeVar("T_co", contravariant=True)
-
-
 logger = logging.getLogger(__name__)
+
+LEDGER_URL = os.getenv("LEDGER_NETWORK_URL")
 
 
 @asynccontextmanager

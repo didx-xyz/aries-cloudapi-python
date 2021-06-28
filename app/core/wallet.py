@@ -12,7 +12,7 @@ import ledger_facade
 
 logger = logging.getLogger(__name__)
 
-is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "False"))
+LEDGER_URL = os.getenv("LEDGER_NETWORK_URL")
 
 
 async def create_pub_did(req_header: Dict[str, str]) -> DidCreationResponse:
@@ -34,9 +34,7 @@ async def create_pub_did(req_header: Dict[str, str]) -> DidCreationResponse:
         # Adding empty header as parameters are being sent in payload
         generate_did_res = await wallet_facade.create_did(aries_agent_controller)
         did_object = generate_did_res["result"]
-        await ledger_facade.post_to_ledger(
-            did_object=did_object, ledger_url=req_header.get("ledger_url", None)
-        )
+        await ledger_facade.post_to_ledger(did_object=did_object, ledger_url=LEDGER_URL)
 
         taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
 

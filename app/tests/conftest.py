@@ -10,9 +10,9 @@ import utils
 
 @pytest.fixture
 def setup_env():
-    utils.admin_url = "http://localhost"
-    utils.admin_port = "3021"
-    utils.is_multitenant = False
+    utils.ADMIN_URL = "http://localhost"
+    utils.ADMIN_PORT = "3021"
+    utils.IS_MULTITENANT = False
     ledger_facade.LEDGER_URL = "http://testnet.didx.xyz/register"
     ledger_facade.LEDGER_TYPE = "von"
 

@@ -17,12 +17,6 @@ router = APIRouter(prefix="/schemas", tags=["schemas"])
 
 logger = logging.getLogger(__name__)
 
-admin_url = os.getenv("ACAPY_ADMIN_URL")
-admin_port = os.getenv("ACAPY_ADMIN_PORT")
-admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
-is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "True"))
-ledger_url = os.getenv("LEDGER_NETWORK_URL")
-
 
 @router.get("/all_schemas")
 async def get_schema(

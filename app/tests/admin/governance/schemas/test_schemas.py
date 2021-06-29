@@ -25,6 +25,12 @@ get_yoma_agent = asynccontextmanager(create_yoma_controller)
 
 
 @pytest.fixture
+async def yoma_agent():
+    async with get_yoma_agent(x_api_key="adminApiKey") as c:
+        yield c
+
+
+@pytest.fixture
 def setup_local_env():
     utils.is_multitenant = False
     utils.yoma_agent_url = "http://localhost:3021"
@@ -32,67 +38,69 @@ def setup_local_env():
 
 
 @pytest.mark.asyncio
-async def test_create_schema_via_web(setup_local_env, async_client):
-    definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
-
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
-
-        response = await async_client.post(
-            "/admin/governance/schemas",
-            data=json.dumps(definition.dict()),
-            headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
-        )
-        assert response.status_code == 200
-        result = response.json()
-
-        response = await get_schemas(
-            schema_id=result["schema_id"], aries_controller=controller
-        )
-        assert_that(response["schema_ids"]).is_length(1)
+async def test_create_schema_and_credential_definition(setup_local_env):
+    pass
 
 
 @pytest.mark.asyncio
-async def test_get_schemas_via_web(setup_local_env, async_client):
+async def test_create_schema_via_web(setup_local_env, async_client, yoma_agent):
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
-        response = await async_client.post(
-            "/admin/governance/schemas",
-            data=json.dumps(definition.dict()),
-            headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
-        )
-        assert response.status_code == 200
-        result = response.json()
+    public_did = await create_public_did(yoma_agent)
 
-        response = await async_client.get(
-            "/admin/governance/schemas",
-            params={"schema_id": result["schema_id"]},
-            headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
-        )
-        assert_that(response.json()["schema_ids"]).is_length(1)
+    response = await async_client.post(
+        "/admin/governance/schemas",
+        data=json.dumps(definition.dict()),
+        headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
+    )
+    assert response.status_code == 200
+    result = response.json()
+
+    response = await get_schemas(
+        schema_id=result["schema_id"], aries_controller=yoma_agent
+    )
+    assert_that(response["schema_ids"]).is_length(1)
 
 
 @pytest.mark.asyncio
-async def test_get_schema_via_web(setup_local_env, async_client):
+async def test_get_schemas_via_web(setup_local_env, async_client, yoma_agent):
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
-        response = await async_client.post(
-            "/admin/governance/schemas",
-            data=json.dumps(definition.dict()),
-            headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
-        )
-        assert response.status_code == 200
-        result = response.json()
+    public_did = await create_public_did(yoma_agent)
+    response = await async_client.post(
+        "/admin/governance/schemas",
+        data=json.dumps(definition.dict()),
+        headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
+    )
+    assert response.status_code == 200
+    result = response.json()
 
-        response = await async_client.get(
-            f"/admin/governance/schemas/{result['schema_id']}",
-            headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
-        )
-        assert_that(response.json()["schema"]["attrNames"]).contains_only("average")
+    response = await async_client.get(
+        "/admin/governance/schemas",
+        params={"schema_id": result["schema_id"]},
+        headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
+    )
+    assert_that(response.json()["schema_ids"]).is_length(1)
+
+
+@pytest.mark.asyncio
+async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent):
+    definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
+
+    public_did = await create_public_did(yoma_agent)
+    response = await async_client.post(
+        "/admin/governance/schemas",
+        data=json.dumps(definition.dict()),
+        headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
+    )
+    assert response.status_code == 200
+    result = response.json()
+
+    response = await async_client.get(
+        f"/admin/governance/schemas/{result['schema_id']}",
+        headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
+    )
+    assert_that(response.json()["schema"]["attrNames"]).contains_only("average")
 
 
 async def create_public_did(aries_agent_controller):
@@ -109,26 +117,23 @@ async def create_public_did(aries_agent_controller):
 
 
 @pytest.mark.asyncio
-async def test_create_one_schema(setup_local_env):
+async def test_create_one_schema(setup_local_env, yoma_agent):
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
-        print(f" created did:{public_did}")
-        schema_definition_result = await create_schema(definition, controller)
-        print(schema_definition_result)
+    public_did = await create_public_did(yoma_agent)
+    print(f" created did:{public_did}")
+    schema_definition_result = await create_schema(definition, yoma_agent)
+    print(schema_definition_result)
 
-        response = await controller.schema.get_created_schema(
-            schema_issuer_did=public_did["did"]
-        )
+    response = await yoma_agent.schema.get_created_schema(
+        schema_issuer_did=public_did["did"]
+    )
 
-        assert_that(response["schema_ids"]).contains(
-            schema_definition_result["schema_id"]
-        )
+    assert_that(response["schema_ids"]).contains(schema_definition_result["schema_id"])
 
 
 @pytest.mark.asyncio
-async def test_update_schema(setup_local_env):
+async def test_update_schema(setup_local_env, yoma_agent):
     definition1 = SchemaDefinition(name="xya", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(
         name="xya", version="0.2", attributes=["average", "bitrate"]
@@ -137,13 +142,13 @@ async def test_update_schema(setup_local_env):
     # definition.version = '1'
     # definition.attributes = ['name']
 
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
+    async with get_yoma_agent(x_api_key="adminApiKey") as yoma_agent:
+        public_did = await create_public_did(yoma_agent)
         print(f" created did:{public_did}")
-        schema_definition_result_1 = await create_schema(definition1, controller)
-        schema_definition_result_2 = await create_schema(definition2, controller)
+        schema_definition_result_1 = await create_schema(definition1, yoma_agent)
+        schema_definition_result_2 = await create_schema(definition2, yoma_agent)
 
-        response = await controller.schema.get_created_schema(
+        response = await yoma_agent.schema.get_created_schema(
             schema_issuer_did=public_did["did"]
         )
 
@@ -154,24 +159,23 @@ async def test_update_schema(setup_local_env):
 
 
 @pytest.mark.asyncio
-async def test_create_two_schemas(setup_local_env):
+async def test_create_two_schemas(setup_local_env, yoma_agent):
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
-        print(f" created did:{public_did}")
-        schema_definition_result_1 = await create_schema(definition1, controller)
-        schema_definition_result_2 = await create_schema(definition2, controller)
+    public_did = await create_public_did(yoma_agent)
+    print(f" created did:{public_did}")
+    schema_definition_result_1 = await create_schema(definition1, yoma_agent)
+    schema_definition_result_2 = await create_schema(definition2, yoma_agent)
 
-        response = await controller.schema.get_created_schema(
-            schema_issuer_did=public_did["did"]
-        )
+    response = await yoma_agent.schema.get_created_schema(
+        schema_issuer_did=public_did["did"]
+    )
 
-        assert_that(response["schema_ids"]).contains_only(
-            schema_definition_result_1["schema_id"],
-            schema_definition_result_2["schema_id"],
-        )
+    assert_that(response["schema_ids"]).contains_only(
+        schema_definition_result_1["schema_id"],
+        schema_definition_result_2["schema_id"],
+    )
 
 
 def get_random_name():
@@ -180,7 +184,7 @@ def get_random_name():
 
 
 @pytest.mark.asyncio
-async def test_get_schemas(setup_local_env):
+async def test_get_schemas(setup_local_env, yoma_agent):
     name = get_random_name()
     definition1 = SchemaDefinition(name=name, version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(
@@ -190,28 +194,27 @@ async def test_get_schemas(setup_local_env):
     # definition.version = '1'
     # definition.attributes = ['name']
 
-    async with get_yoma_agent(x_api_key="adminApiKey") as controller:
-        public_did = await create_public_did(controller)
-        print(f" created did:{public_did}")
-        schema_definition_result_1 = await create_schema(definition1, controller)
-        schema_definition_result_2 = await create_schema(definition2, controller)
+    public_did = await create_public_did(yoma_agent)
+    print(f" created did:{public_did}")
+    schema_definition_result_1 = await create_schema(definition1, yoma_agent)
+    schema_definition_result_2 = await create_schema(definition2, yoma_agent)
 
-        response = await get_schemas(
-            schema_issuer_did=public_did["did"], aries_controller=controller
-        )
-        assert_that(response["schema_ids"]).contains_only(
-            schema_definition_result_1["schema_id"],
-            schema_definition_result_2["schema_id"],
-        )
-        response = await get_schemas(schema_name=name, aries_controller=controller)
-        assert_that(response["schema_ids"]).contains_only(
-            schema_definition_result_1["schema_id"],
-            schema_definition_result_2["schema_id"],
-        )
+    response = await get_schemas(
+        schema_issuer_did=public_did["did"], aries_controller=yoma_agent
+    )
+    assert_that(response["schema_ids"]).contains_only(
+        schema_definition_result_1["schema_id"],
+        schema_definition_result_2["schema_id"],
+    )
+    response = await get_schemas(schema_name=name, aries_controller=yoma_agent)
+    assert_that(response["schema_ids"]).contains_only(
+        schema_definition_result_1["schema_id"],
+        schema_definition_result_2["schema_id"],
+    )
 
-        response = await get_schemas(
-            schema_name=name, schema_version="0.2", aries_controller=controller
-        )
-        assert_that(response["schema_ids"]).contains_only(
-            schema_definition_result_2["schema_id"],
-        )
+    response = await get_schemas(
+        schema_name=name, schema_version="0.2", aries_controller=yoma_agent
+    )
+    assert_that(response["schema_ids"]).contains_only(
+        schema_definition_result_2["schema_id"],
+    )

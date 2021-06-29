@@ -1,7 +1,7 @@
 import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
-import facade
+import utils
 
 
 testheaders = [
@@ -18,7 +18,7 @@ testheaders = [
 @pytest.mark.parametrize("fake_header, expected", testheaders)
 async def test_create_controller(fake_header, expected):
     if expected:
-        async with facade.create_controller(fake_header) as controller:
+        async with utils.create_controller(fake_header) as controller:
             pass
         if fake_header["api_key"]:
             assert type(controller) is AriesAgentController
@@ -26,7 +26,7 @@ async def test_create_controller(fake_header, expected):
             assert type(controller) is AriesTenantController
     else:
         with pytest.raises(HTTPException) as e:
-            async with facade.create_controller(fake_header) as controller:
+            async with utils.create_controller(fake_header) as controller:
                 pass
         assert pytest.raises(HTTPException)
         assert e.type == HTTPException

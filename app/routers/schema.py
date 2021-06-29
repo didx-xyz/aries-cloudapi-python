@@ -5,13 +5,13 @@ from distutils.util import strtobool
 from typing import List, Optional
 
 from facade import (
-    create_controller,
     get_schema_list,
     write_credential_def,
     write_schema_definition,
 )
 from fastapi import APIRouter, Header, Query
 from schemas import SchemaLedgerRequest, SchemaResponse
+from utils import create_controller
 
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 

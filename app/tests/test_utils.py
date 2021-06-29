@@ -3,7 +3,6 @@ import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
 import utils
-import json
 
 testheaders = [
     ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),

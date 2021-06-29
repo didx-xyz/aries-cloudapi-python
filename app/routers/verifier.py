@@ -4,7 +4,6 @@ import traceback
 from typing import List, Optional
 
 from facade import (
-    create_controller,
     get_schema_attributes,
     send_proof_request,
     verify_proof_req,
@@ -12,6 +11,7 @@ from facade import (
 from fastapi import APIRouter, Header, HTTPException, Query
 from utils import construct_indy_proof_request, construct_zkp
 from schemas import RequestProofResponse
+from utils import create_controller
 
 logger = logging.getLogger(__name__)
 

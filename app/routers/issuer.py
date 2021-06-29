@@ -5,7 +5,6 @@ from typing import List, Optional
 
 import qrcode
 from facade import (
-    create_controller,
     get_connection_id,
     get_cred_def_id,
     get_schema_attributes,
@@ -15,6 +14,7 @@ from facade import (
 from fastapi import APIRouter, Header, Query
 from fastapi.responses import StreamingResponse
 from schemas import ConnectionIdResponse, IssueCredentialResponse
+from utils import create_controller
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")

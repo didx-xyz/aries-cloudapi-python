@@ -1,9 +1,12 @@
 import logging
+import os
 
 from fastapi import HTTPException
 
 
 logger = logging.getLogger(__name__)
+
+LEDGER_URL = os.getenv("LEDGER_NETWORK_URL")
 
 
 async def get_schema_attributes(controller, schema_id):

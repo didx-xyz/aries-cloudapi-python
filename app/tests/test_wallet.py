@@ -16,7 +16,7 @@ async def test_create_public_did(setup_env):
     assert result.issuer_verkey and result.issuer_verkey != {}
     assert result.issuer_endpoint and result.issuer_endpoint != {}
 
-    url = f"{utils.admin_url}:{utils.admin_port}/wallet/did"
+    url = f"{utils.ADMIN_URL}:{utils.ADMIN_PORT}/wallet/did"
     response = requests.get(url, headers={"x-api-key": "adminApiKey"})
     found = [
         r for r in response.json()["results"] if r["did"] == result.did_object["did"]

@@ -5,8 +5,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Header, HTTPException
 
-from core.wallet import create_pub_did
-from facade import create_controller
+from utils import create_pub_did, create_controller
 
 from schemas import (
     DidCreationResponse,

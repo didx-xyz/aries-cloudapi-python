@@ -3,14 +3,13 @@ import requests
 import pytest
 
 import utils
-from core import wallet
 from fastapi import HTTPException
 
 
 @pytest.mark.asyncio
 async def test_create_public_did(setup_env):
     req_header = {"api_key": "adminApiKey"}
-    result = await wallet.create_pub_did(req_header)
+    result = await utils.create_pub_did(req_header)
 
     assert result.did_object and result.did_object != {}
     assert result.did_object["posture"] == "public"
@@ -31,7 +30,7 @@ async def test_create_public_did(setup_env):
 @pytest.mark.asyncio
 async def test_create_public_did_no_api_key(setup_env):
     with pytest.raises(HTTPException) as exc:
-        await wallet.create_pub_did({})
+        await utils.create_pub_did({})
     assert exc.value.status_code == 400
     assert (
         exc.value.detail

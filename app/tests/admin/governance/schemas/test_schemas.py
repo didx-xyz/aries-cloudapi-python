@@ -4,6 +4,8 @@ import json
 
 import pytest
 from assertpy import assert_that
+
+import acapy_ledger_facade
 import acapy_wallet_facade
 import ledger_facade
 import utils
@@ -96,8 +98,8 @@ async def create_public_did(aries_agent_controller):
     did_object = generate_did_res["result"]
     await ledger_facade.post_to_ledger(did_object=did_object)
     # my local von network I was using did not requried the TAA
-    # taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
-    # await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
+    taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
+    await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
     await acapy_wallet_facade.assign_pub_did(aries_agent_controller, did_object["did"])
     return did_object
 

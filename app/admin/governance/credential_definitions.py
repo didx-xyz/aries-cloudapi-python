@@ -4,7 +4,7 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import Depends, APIRouter
 from pydantic import BaseModel
 
-from facade import create_yoma_controller
+from facade import yoma_agent
 
 router = APIRouter(
     prefix="/admin/governance/credential-definitions", tags=["CredentialDefinitions"]
@@ -20,7 +20,7 @@ class CredentialDefinition(BaseModel):
 @router.post("/")
 async def create_credential_definition(
     credential_definition: CredentialDefinition,
-    aries_controller: AriesAgentControllerBase = Depends(create_yoma_controller),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     credential_definition_result = await aries_controller.definitions.write_cred_def(
         **credential_definition.dict()
@@ -36,7 +36,7 @@ async def get_created_credential_definitions(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    aries_controller: AriesAgentControllerBase = Depends(create_yoma_controller),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     return await aries_controller.definitions.search_created(
         issuer_did=issuer_did,
@@ -51,6 +51,6 @@ async def get_created_credential_definitions(
 @router.get("/{cred_def_id}")
 async def get_credential_definition(
     cred_def_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(create_yoma_controller),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     return await aries_controller.definitions.get_by_id(cred_def_id)

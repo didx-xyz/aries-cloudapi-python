@@ -8,7 +8,6 @@ import acapy_wallet_facade
 import ledger_facade
 import utils
 from admin.governance.schemas import SchemaDefinition, create_schema, get_schemas
-from facade import create_yoma_controller
 
 # want to wrap an existing method with a decorator
 # the method is normally used by fast api and then fast api manages the tear down
@@ -17,19 +16,10 @@ from tests.utils_test import get_random_string
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/admin/governance/schemas"
 
-get_yoma_agent = asynccontextmanager(create_yoma_controller)
-
-
-@pytest.fixture
-async def yoma_agent():
-    async with get_yoma_agent(x_api_key="adminApiKey") as c:
-        yield c
-
 
 @pytest.fixture
 def setup_local_env():
     utils.is_multitenant = False
-    utils.yoma_agent_url = "http://localhost:3021"
     ledger_facade.LEDGER_TYPE = "von"
 
 
@@ -104,9 +94,7 @@ async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent):
 async def create_public_did(aries_agent_controller):
     generate_did_res = await acapy_wallet_facade.create_did(aries_agent_controller)
     did_object = generate_did_res["result"]
-    await ledger_facade.post_to_ledger(
-        did_object=did_object, ledger_url="http://localhost:9000/register"
-    )
+    await ledger_facade.post_to_ledger(did_object=did_object)
     # my local von network I was using did not requried the TAA
     # taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
     # await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)

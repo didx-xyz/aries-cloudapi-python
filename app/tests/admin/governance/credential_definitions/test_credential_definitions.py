@@ -12,7 +12,6 @@ from admin.governance.credential_definitions import (
 from admin.governance.schemas import SchemaDefinition, create_schema
 from tests.admin.governance.schemas.test_schemas import (
     create_public_did,
-    get_yoma_agent,
 )
 from tests.utils_test import get_random_string
 
@@ -24,12 +23,6 @@ def setup_local_env():
     utils.is_multitenant = False
     utils.yoma_agent_url = "http://localhost:3021"
     ledger_facade.LEDGER_TYPE = "von"
-
-
-@pytest.fixture
-async def yoma_agent():
-    async with get_yoma_agent(x_api_key="adminApiKey") as c:
-        yield c
 
 
 @pytest.mark.asyncio

@@ -1,20 +1,108 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Callable
 
 import requests
-from fastapi import HTTPException
-from utils import controller_factory
+from fastapi import HTTPException, Header
+from utils import controller_factory, ControllerType
 
 T_co = TypeVar("T_co", contravariant=True)
 
-
 logger = logging.getLogger(__name__)
+
+EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", None)
+
+
+def agent_fun_creator(controller_type: ControllerType):
+    def _yoma_factory(x_api_key: str = Header(None), authorization: str = None):
+        return controller_factory(
+            controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
+        )
+
+    def _member_factory(x_api_key: str = Header(None), authorization: str = None):
+        return controller_factory(
+            ControllerType.MEMBER_AGENT,
+            x_api_key=EMBEDDED_API_KEY,
+            authorization_header=authorization,
+        )
+
+    def _ecosystem_factory(x_api_key: str = Header(None), authorization: str = None):
+        return controller_factory(
+            controller_type=ControllerType.ECOSYSTEM_AGENT,
+            x_api_key=EMBEDDED_API_KEY,
+            authorization_header=authorization,
+        )
+
+    agent_creators = {
+        ControllerType.MEMBER_AGENT: _member_factory,
+        ControllerType.YOMA_AGENT: _yoma_factory,
+        ControllerType.ECOSYSTEM_AGENT: _member_factory,
+    }
+
+    async def create(x_api_key: str = Header(None), authorization: str = None):
+        controller = None
+        try:
+            agent_creator = agent_creators[controller_type]
+            controller = agent_creator(x_api_key, authorization)
+            yield controller
+        except Exception as e:
+            # We can only log this here and not raise an HTTPExeption as
+            # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+            logger.error("%s", e, exc_info=e)
+            raise e
+        finally:
+            if controller:
+                await controller.terminate()
+
+    return create
+
+
+yoma_agent = agent_fun_creator(ControllerType.YOMA_AGENT)
+ecosystem_agent = agent_fun_creator(ControllerType.ECOSYSTEM_AGENT)
+member_agent = agent_fun_creator(ControllerType.MEMBER_AGENT)
+ecosystem_or_member_agent = None
+
+
+async def agent_creator(
+    controller_type: ControllerType,
+    x_api_key: str = Header(None),
+    authorization: str = None,
+):
+    try:
+        if controller_type == ControllerType.MEMBER_AGENT:
+            controller = controller_factory(
+                controller_type=ControllerType.MEMBER_AGENT,
+                x_api_key=EMBEDDED_API_KEY,
+                authorization_header=authorization,
+            )
+        elif controller_type == ControllerType.ECOSYSTEM_AGENT:
+            controller = controller_factory(
+                controller_type=ControllerType.ECOSYSTEM_AGENT,
+                x_api_key=EMBEDDED_API_KEY,
+                authorization_header=authorization,
+            )
+        elif controller_type == ControllerType.YOMA_AGENT:
+            controller = controller_factory(
+                controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
+            )
+        else:
+            raise Exception(f"Unknown controller type {controller_type}")
+        yield controller
+    except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        logger.error("%s", e, exc_info=e)
+        raise e
+    finally:
+        if controller:
+            await controller.terminate()
 
 
 @asynccontextmanager
-async def create_controller(auth_headers) -> Generic[T_co]:
+async def create_controller(
+    controller_type: ControllerType, x_api_key=None, jwt_token=None
+) -> Generic[T_co]:
     """
     Instantiate an AriesAgentController or a TenantController
     based on header attributes
@@ -29,15 +117,15 @@ async def create_controller(auth_headers) -> Generic[T_co]:
     controller: Generic type of aries_cloudcontroller instance
         The AsyncContextMananger instance of the cloudcontroller
     """
-    controller = controller_factory(auth_headers)
+    controller = controller_factory(
+        controller_type=controller_type, x_api_key=x_api_key
+    )
     try:
         yield controller
     except Exception as e:
         # We can only log this here and not raise an HTTPExeption as
         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        # yes but we are _not_ providing this context managed resource via a fast api dependency so there's no reason
-        # not to raise the exception
-        logger.error(f"{e!r}")
+        logger.error("%s", e, exc_info=e)
         raise e
     finally:
         await controller.terminate()
@@ -209,7 +297,6 @@ async def write_schema_definition(controller, schema_definition_request):
 
 # Need to rename this?
 async def verify_proof_req(controller, presentation_exchange_id):
-
     verify = await controller.proofs.verify_presentation(presentation_exchange_id)
 
     if not verify:
@@ -222,7 +309,6 @@ async def verify_proof_req(controller, presentation_exchange_id):
 
 
 async def send_proof_request(controller, proof_request_web_request):
-
     response = await controller.proofs.send_request(proof_request_web_request)
 
     if not response:

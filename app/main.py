@@ -3,7 +3,6 @@ from dependencies import get_query_token, get_token_header
 from fastapi import Depends, FastAPI
 from routers import governance, holder, issuer, schema, verifier, wallet
 
-# app = FastAPI(dependencies=[Depends(get_query_token)])
 app = FastAPI()
 
 

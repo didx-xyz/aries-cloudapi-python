@@ -64,3 +64,15 @@ class InitWalletRequest(BaseModel):
                 "wallet_type": "indy",
             }
         }
+
+
+class ConnectionIdResponse(BaseModel):
+    connection_ids: dict
+
+
+class IssueCredentialResponse(BaseModel):
+    credential: dict
+
+
+class RequestProofResponse(BaseModel):
+    presentation_id: str

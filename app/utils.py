@@ -1,41 +1,44 @@
+from enum import Enum
+
 import logging
 import os
+import re
 from typing import Type, Union, List
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
 
-admin_url = os.getenv("ACAPY_ADMIN_URL")
-admin_port = os.getenv("ACAPY_ADMIN_PORT")
-is_multitenant = os.getenv("IS_MULTITENANT", False)
+EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
 
+yoma_agent_url = os.getenv("ACAPY_YOMA_AGENT_URL", "http://localhost:3021")
+ecosystem_agent_url = os.getenv("ACAPY_ECOSYSTEM_AGENT_URL", "http://localhost:4021")
+member_agent_url = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
+
+embedded_api_key = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 logger = logging.getLogger(__name__)
 
 
-def get_controller_type(auth_headers) -> Union[str, None]:
-    """
-    Validates the passed in request header to verify is has correct attributes
-    api_key or (tenant_jwt and wallet_id)
+class ControllerType(Enum):
+    YOMA_AGENT = "yoma_agent"
+    MEMBER_AGENT = "member_agent"
+    ECOSYSTEM_AGENT = "ecosystem_agent"
 
-    Parameters:
-    -----------
-    auth_headers: dict
-        The header object containing wallet_id and jwt_token, or api_key
 
-    Returns:
-    --------
-    "admin", "tenant", or None: Union[str, None]
-        (One of) the appropriate type(s) for the controller based on the headers provided
-    """
-    if auth_headers.get("api_key", None):
-        return "admin"
-    elif auth_headers.get("wallet_id", None) and auth_headers.get("tenant_jwt", None):
-        return "tenant"
-    return None
+def _extract_jwt_token_from_security_header(jwt_token):
+    if not jwt_token:
+        raise Exception("no token provided")
+    x = re.search(EXTRACT_TOKEN_FROM_BEARER, jwt_token)
+    if x is not None:
+        return x.group(1)
+    else:
+        raise Exception(f"Invalid Security Token {jwt_token}")
 
 
 def controller_factory(
-    auth_headers,
+    controller_type: ControllerType,
+    x_api_key=None,
+    authorization_header=None,
+    x_wallet_id=None,
 ) -> Type[Union[AriesAgentController, AriesTenantController]]:
     """
     Aries Controller factory returning an
@@ -50,23 +53,36 @@ def controller_factory(
     --------
     controller: AriesCloudController (object)
     """
-    controller_type = get_controller_type(auth_headers)
     if not controller_type:
         raise HTTPException(
             status_code=400,
             detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
         )
-    if controller_type == "admin":
+    if controller_type == ControllerType.YOMA_AGENT:
+        if not x_api_key:
+            raise HTTPException(401)
         return AriesAgentController(
-            admin_url=f"{admin_url}:{admin_port}",
-            api_key=auth_headers["api_key"],
-            is_multitenant=is_multitenant,
+            admin_url=yoma_agent_url,
+            api_key=x_api_key,
+            is_multitenant=False,
         )
-    else:
+    elif controller_type == ControllerType.MEMBER_AGENT:
+        if not authorization_header:
+            raise HTTPException(401)
         return AriesTenantController(
-            admin_url=f"{admin_url}:{admin_port}",
-            wallet_id=auth_headers["wallet_id"],
-            tenant_jwt=auth_headers["tenant_jwt"],
+            admin_url=member_agent_url,
+            api_key=embedded_api_key,
+            tenant_jwt=_extract_jwt_token_from_security_header(authorization_header),
+            wallet_id=x_wallet_id,
+        )
+    elif controller_type == ControllerType.ECOSYSTEM_AGENT:
+        if not authorization_header:
+            raise HTTPException(401)
+        return AriesTenantController(
+            admin_url=ecosystem_agent_url,
+            api_key=embedded_api_key,
+            tenant_jwt=_extract_jwt_token_from_security_header(authorization_header),
+            wallet_id=x_wallet_id,
         )
 
 

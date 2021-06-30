@@ -1,63 +1,62 @@
 # from app.utils import construct_zkp
 import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from assertpy import assert_that
 from fastapi import HTTPException
 import utils
 import json
 
-testheaders = [
-    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
-    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": "12345"}, "tenant"),
-    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
-    ({"tenant_jwt": "123456", "wallet_id": "12345", "api_key": "12345"}, "admin"),
-    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": None}, None),
-    ({"api_key": None, "tenant_jwt": None, "wallet_id": "1234"}, None),
-]
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("fake_header,expected", testheaders)
-async def test_get_controller_type(fake_header, expected):
-    assert utils.get_controller_type(fake_header) == expected
-
-
 controller_factorytest_headers = [
     (
-        {"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"},
-        type(AriesAgentController),
+        utils.ControllerType.YOMA_AGENT,
+        {"x_api_key": "AdminApiKey", "x_wallet_id": "12345"},
+        AriesAgentController,
     ),
     (
-        {"api_key": None, "tenant_jwt": "123456", "wallet_id": "12345"},
-        type(AriesTenantController),
+        utils.ControllerType.ECOSYSTEM_AGENT,
+        {
+            "x_api_key": None,
+            "authorization_header": "Bearer 123456",
+            "x_wallet_id": "12345",
+        },
+        AriesTenantController,
     ),
     (
-        {"api_key": "AdminApiKey", "tenant_jwt": None, "wallet_id": None},
-        type(AriesAgentController),
+        utils.ControllerType.YOMA_AGENT,
+        {"x_api_key": "AdminApiKey", "x_wallet_id": None},
+        AriesAgentController,
     ),
     (
-        {"tenant_jwt": "123456", "api_key": "12345", "wallet_id": None},
-        type(AriesAgentController),
+        utils.ControllerType.YOMA_AGENT,
+        {"authorization_header": "123456", "x_api_key": "12345", "x_wallet_id": None},
+        AriesAgentController,
     ),
-    ({"api_key": None, "tenant_jwt": "1234", "wallet_id": None}, False),
-    ({"api_key": None, "tenant_jwt": None, "wallet_id": "1234"}, False),
+    (
+        utils.ControllerType.YOMA_AGENT,
+        {"x_api_key": None, "authorization_header": "Bearer 1234"},
+        False,
+    ),
+    (
+        utils.ControllerType.ECOSYSTEM_AGENT,
+        {"authorization_header": None, "x_wallet_id": "1234"},
+        False,
+    ),
 ]
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("fake_header, expected", controller_factorytest_headers)
-async def test_controller_factory(fake_header, expected):
+@pytest.mark.parametrize(
+    "controller_type, fake_header, expected", controller_factorytest_headers
+)
+async def test_controller_factory(controller_type, fake_header, expected):
     if expected is False:
         with pytest.raises(HTTPException) as e:
-            utils.controller_factory(fake_header)
+            utils.controller_factory(controller_type, **fake_header)
         assert e.type == HTTPException
-        assert e.value.status_code == 400
-        assert (
-            "Bad headers. Either provide an api_key or both wallet_id and tenant_jwt"
-            in e.value.detail
-        )
+        assert e.value.status_code == 401
     else:
-        controller = utils.controller_factory(fake_header)
-        assert isinstance(type(controller), expected)
+        controller = utils.controller_factory(controller_type, **fake_header)
+        assert isinstance(controller, expected)
 
 
 def test_construct_zkp():
@@ -108,3 +107,16 @@ def test_construct_indy_proof_request():
     result = utils.construct_indy_proof_request(*given)
 
     assert result == expected
+
+
+def test_extract_token_from_bearer(yoma_agent):
+    assert_that(yoma_agent).is_not_none()
+    assert_that(yoma_agent).is_type_of(AriesAgentController)
+    assert_that(
+        utils._extract_jwt_token_from_security_header("Bearer TOKEN")
+    ).is_equal_to("TOKEN")
+
+
+def test_yoma_agent_fixture(yoma_agent):
+    assert_that(yoma_agent).is_not_none()
+    assert_that(yoma_agent).is_type_of(AriesAgentController)

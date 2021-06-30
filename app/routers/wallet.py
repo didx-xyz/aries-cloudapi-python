@@ -7,7 +7,7 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Header, HTTPException, Depends
 
 from core.wallet import create_pub_did
-from facade import create_controller, create_controller_dependency
+from facade import create_controller, yoma_agent, member_agent
 
 from schemas import (
     DidCreationResponse,
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/wallets", tags=["wallets"])
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
-    aries_controller: AriesAgentControllerBase = Depends(create_controller_dependency),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Create a new public DID and

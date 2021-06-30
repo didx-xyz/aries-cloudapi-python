@@ -7,12 +7,12 @@ from core import wallet
 from fastapi import HTTPException
 import routers
 
-from facade import create_controller, create_controller_dependency
+from facade import create_controller
 
 
 @pytest.mark.asyncio
-async def test_create_public_did(setup_env, agent_controller):
-    result = await wallet.create_pub_did(agent_controller)
+async def test_create_public_did(setup_env, yoma_agent):
+    result = await wallet.create_pub_did(yoma_agent)
 
     assert result.did_object and result.did_object != {}
     assert result.did_object["posture"] == "public"

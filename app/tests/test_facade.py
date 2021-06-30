@@ -2,36 +2,41 @@ import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
 import facade
-
+from utils import controller_factory, ControllerType
 
 testheaders = [
-    ({"api_key": "AdminApiKey", "tenant_jwt": "123456", "wallet_id": "12345"}, "admin"),
-    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": "12345"}, "tenant"),
-    ({"api_key": "AdminApiKey", "tenant_jwt": None, "wallet_id": None}, "admin"),
-    ({"api_key": "abcde", "tenant_jwt": "abcde", "wallet_id": None}, "admin"),
-    ({"api_key": None, "tenant_jwt": "123456", "wallet_id": None}, False),
-    ({"api_key": None, "tenant_jwt": None, "wallet_id": "12345"}, False),
+    (facade.yoma_agent, {"x_api_key": "AdminApiKey"}, "123456", AriesAgentController),
+    (
+        facade.ecosystem_agent,
+        {"authorization": "Bearer 344352dfsg"},
+        "344352dfsg",
+        AriesTenantController,
+    ),
+    (
+        facade.member_agent,
+        {"x_api_key": "AdminApiKey", "authorization": "Bearer kjalsdkfjasi3l"},
+        "kjalsdkfjasi3l",
+        AriesTenantController,
+    ),
 ]
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize("fake_header, expected", testheaders)
-async def test_create_controller(fake_header, expected):
-    if expected:
-        async with facade.create_controller(fake_header) as controller:
-            pass
-        if fake_header["api_key"]:
-            assert type(controller) is AriesAgentController
-        else:
-            assert type(controller) is AriesTenantController
+async def async_next(param):
+    async for item in param:
+        return item
     else:
-        with pytest.raises(HTTPException) as e:
-            async with facade.create_controller(fake_header) as controller:
-                pass
-        assert pytest.raises(HTTPException)
-        assert e.type == HTTPException
-        assert e.value.status_code == 400
-        assert (
-            "Bad headers. Either provide an api_key or both wallet_id and tenant_jwt"
-            in e.value.detail
-        )
+        return None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "factory, fake_header, expected_token, expected_type", testheaders
+)
+async def test_create_controller(factory, fake_header, expected_token, expected_type):
+    if expected_type:
+        controller = await async_next(factory(**fake_header))
+        assert type(controller) is expected_type
+        if type(controller) is AriesTenantController:
+            assert controller.tenant_jwt == expected_token
+        elif type(controller) is AriesAgentController:
+            assert controller.api_key == fake_header["x_api_key"]

@@ -5,12 +5,14 @@ import pytest
 import utils
 from core import wallet
 from fastapi import HTTPException
+import routers
+
+from facade import create_controller
 
 
 @pytest.mark.asyncio
-async def test_create_public_did(setup_env):
-    req_header = {"api_key": "adminApiKey"}
-    result = await wallet.create_pub_did(req_header)
+async def test_create_public_did(setup_env, yoma_agent):
+    result = await wallet.create_pub_did(yoma_agent)
 
     assert result.did_object and result.did_object != {}
     assert result.did_object["posture"] == "public"
@@ -26,14 +28,3 @@ async def test_create_public_did(setup_env):
     assert len(found) == 1
     assert found[0]["verkey"] == result.did_object["verkey"]
     assert found[0]["posture"] == "public"
-
-
-@pytest.mark.asyncio
-async def test_create_public_did_no_api_key(setup_env):
-    with pytest.raises(HTTPException) as exc:
-        await wallet.create_pub_did({})
-    assert exc.value.status_code == 400
-    assert (
-        exc.value.detail
-        == "Bad headers. Either provide an api_key or both wallet_id and tenant_jwt"
-    )

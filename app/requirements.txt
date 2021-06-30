@@ -14,7 +14,7 @@ colorama==0.4.3
 contextlib2==0.6.0
 distlib==0.3.0
 distro==1.4.0
-fastapi==0.65.1
+fastapi==0.65.2
 h11==0.12.0
 html5lib==1.0.1
 idna==2.8
@@ -59,3 +59,4 @@ pytest-cov==2.12.1
 httpx==0.18.1
 mockito==1.2.2
 pytest-bdd
+assertpy==1.1

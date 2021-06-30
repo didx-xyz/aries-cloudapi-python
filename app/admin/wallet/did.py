@@ -12,10 +12,10 @@ from schemas import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/governance/dids", tags=["admin", "governance"])
+router = APIRouter(prefix="/admin/wallet", tags=["admin", "wallet"])
 
 
-@router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
+@router.get("/assign-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
     api_key: Optional[str] = Header(None),
 ):

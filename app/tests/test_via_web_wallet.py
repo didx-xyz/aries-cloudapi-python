@@ -10,7 +10,7 @@ from main import app
 async def test_get_pub_did_via_web(setup_env):
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         response = await ac.get(
-            "/wallets/create-pub-did", headers={"api-key": "adminApiKey"}
+            "/admin/wallet/assign-pub-did", headers={"api-key": "adminApiKey"}
         )
     assert response.status_code == 200
     result = response.json()

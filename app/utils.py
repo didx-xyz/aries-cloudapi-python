@@ -6,7 +6,7 @@ import re
 from typing import Type, Union, List
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import Header, HTTPException
+from fastapi import HTTPException
 
 EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
 
@@ -26,12 +26,12 @@ class ControllerType(Enum):
 
 def _extract_jwt_token_from_security_header(jwt_token):
     if not jwt_token:
-        raise Exception("no token provided")
+        raise HTTPException(401)
     x = re.search(EXTRACT_TOKEN_FROM_BEARER, jwt_token)
     if x is not None:
         return x.group(1)
     else:
-        raise Exception(f"Invalid Security Token {jwt_token}")
+        raise HTTPException(401)
 
 
 def controller_factory(

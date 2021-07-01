@@ -14,32 +14,31 @@ logger = logging.getLogger(__name__)
 EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", None)
 
 
+def _yoma_factory(x_api_key: str = Header(None), authorization: str = None):
+    # these two args are _required_ - this method is a factory method
+    return controller_factory(
+        controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
+    )
+
+
+def _member_factory(x_api_key: str = Header(None), authorization: str = None):
+    # these two args are _required_ - this method is a factory method
+    return controller_factory(
+        ControllerType.MEMBER_AGENT,
+        x_api_key=EMBEDDED_API_KEY,
+        authorization_header=authorization,
+    )
+
+
+agent_creators = {
+    ControllerType.MEMBER_AGENT: _member_factory,
+    ControllerType.YOMA_AGENT: _yoma_factory,
+    ControllerType.ECOSYSTEM_AGENT: _member_factory,
+}
+
+
 def agent_fun_creator(controller_type: ControllerType):
-    def _yoma_factory(x_api_key: str = Header(None), authorization: str = None):
-        return controller_factory(
-            controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
-        )
-
-    def _member_factory(x_api_key: str = Header(None), authorization: str = None):
-        return controller_factory(
-            ControllerType.MEMBER_AGENT,
-            x_api_key=EMBEDDED_API_KEY,
-            authorization_header=authorization,
-        )
-
-    def _ecosystem_factory(x_api_key: str = Header(None), authorization: str = None):
-        return controller_factory(
-            controller_type=ControllerType.ECOSYSTEM_AGENT,
-            x_api_key=EMBEDDED_API_KEY,
-            authorization_header=authorization,
-        )
-
-    agent_creators = {
-        ControllerType.MEMBER_AGENT: _member_factory,
-        ControllerType.YOMA_AGENT: _yoma_factory,
-        ControllerType.ECOSYSTEM_AGENT: _member_factory,
-    }
-
+    # slightly unorthodox I know - the alternative is to have code duplication...
     async def create(x_api_key: str = Header(None), authorization: str = None):
         controller = None
         try:
@@ -87,7 +86,8 @@ async def agent_creator(
                 controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
             )
         else:
-            raise Exception(f"Unknown controller type {controller_type}")
+            logger.error("unknown controller type")
+            raise HTTPException(500, f"Unknown controller type {controller_type}")
         yield controller
     except Exception as e:
         # We can only log this here and not raise an HTTPExeption as

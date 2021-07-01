@@ -126,7 +126,6 @@ async def create_controller(
         # We can only log this here and not raise an HTTPExeption as
         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error("%s", e, exc_info=e)
-        raise e
     finally:
         await controller.terminate()
 
@@ -290,7 +289,7 @@ async def write_schema_definition(controller, schema_definition_request):
     if not write_schema_resp or write_schema_resp == {}:
         raise HTTPException(
             status_code=404,
-            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema_definition_request}",
         )
     return write_schema_resp
 

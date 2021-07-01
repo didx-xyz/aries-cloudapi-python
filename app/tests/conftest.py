@@ -12,6 +12,7 @@ import ledger_facade
 import utils
 from facade import create_controller
 from main import app
+from facade import create_controller
 
 
 @pytest.fixture

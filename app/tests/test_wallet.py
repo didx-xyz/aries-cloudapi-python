@@ -6,7 +6,8 @@ import utils
 from core import wallet
 from fastapi import HTTPException, Depends
 import routers
-import agent_factory
+from dependencies import yoma_agent
+# import agent_factory
 # from facade import create_controller
 
 

@@ -3,7 +3,7 @@ import os
 import traceback
 from distutils.util import strtobool
 from typing import List, Optional
-from agent_factory import *
+from dependencies import *
 from facade import (
     # create_controller,
     get_schema_list,

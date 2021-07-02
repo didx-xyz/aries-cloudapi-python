@@ -5,14 +5,13 @@ from typing import List, Optional
 
 import qrcode
 from facade import (
-    # create_controller,
     get_connection_id,
     get_cred_def_id,
     get_schema_attributes,
     issue_credentials,
     write_credential_def,
 )
-from agent_factory import *
+from dependencies import *
 from fastapi import APIRouter, Header, Query, Depends
 from fastapi.responses import StreamingResponse
 from schemas import ConnectionIdResponse, IssueCredentialResponse

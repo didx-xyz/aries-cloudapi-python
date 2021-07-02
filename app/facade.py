@@ -2,51 +2,13 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-# from deprecated import deprecated
-
 from typing import Generic, TypeVar, Callable
 
 import requests
 from fastapi import HTTPException, Header
-# from utils import controller_factory, ControllerType
 
 T_co = TypeVar("T_co", contravariant=True)
 logger = logging.getLogger(__name__)
-
-
-# @deprecated(
-#     "moved to agent_factory - kept here because it is still in use - need to migrate"
-# )
-# @asynccontextmanager
-# async def create_controller(
-#     controller_type: ControllerType, x_api_key=None, jwt_token=None
-# ) -> Generic[T_co]:
-#     """
-#     Instantiate an AriesAgentController or a TenantController
-#     based on header attributes
-
-#     Parameters:
-#     -----------
-#     auth_header: dict
-#         The header object containing wallet_id and jwt_token, or api_key
-
-#     Returns:
-#     --------
-#     controller: Generic type of aries_cloudcontroller instance
-#         The AsyncContextMananger instance of the cloudcontroller
-#     """
-#     controller = controller_factory(
-#         controller_type=controller_type, x_api_key=x_api_key
-#     )
-#     try:
-#         yield controller
-#     except Exception as e:
-#         # We can only log this here and not raise an HTTPExeption as
-#         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-#         logger.error("%s", e, exc_info=e)
-#         raise e
-#     finally:
-#         await controller.terminate()
 
 
 async def get_schema_attributes(controller, schema_id):

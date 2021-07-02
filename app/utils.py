@@ -1,16 +1,11 @@
-from enum import Enum
-
 import logging
 import os
 import re
 
-# from deprecated import deprecated
-from typing import Type, Union, List
+from typing import List
 
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
 
-# from agent_factory import ControllerType
 
 EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
 

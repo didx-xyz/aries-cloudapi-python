@@ -1,7 +1,5 @@
 from fastapi import Header
 
-from enum import Enum
-
 import logging
 import os
 import re
@@ -20,7 +18,7 @@ MEMBER_AGENT_URL = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
 EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 
 
-async def yoma_agent(x_api_key: str = Header(None), authorization: str = Header(None)):
+async def yoma_agent(x_api_key: str = Header(None)):
     agent = None
     try:
         if not x_api_key:
@@ -76,7 +74,6 @@ async def ecosystem_agent(
 
 
 async def member_agent(
-    x_api_key: str = Header(None),
     authorization: str = Header(None),
     x_wallet_id=Header(None),
 ):
@@ -104,8 +101,6 @@ async def member_agent(
 
 async def member_admin_agent(
     x_api_key: str = Header(None),
-    authorization: str = Header(None),
-    x_wallet_id=Header(None),
 ):
     agent = None
     try:
@@ -127,8 +122,6 @@ async def member_admin_agent(
 
 async def ecosystem_admin_agent(
     x_api_key: str = Header(None),
-    authorization: str = Header(None),
-    x_wallet_id=Header(None),
 ):
     agent = None
     try:

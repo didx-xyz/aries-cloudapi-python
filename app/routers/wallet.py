@@ -1,13 +1,11 @@
 import logging
-import os
 import traceback
-from typing import Optional
 
 from aries_cloudcontroller import AriesAgentControllerBase
-from fastapi import APIRouter, Header, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 
-from core.wallet import create_pub_did
-from dependencies import yoma_agent, member_agent
+from acapy_ledger_facade import create_pub_did
+from dependencies import yoma_agent
 
 from schemas import (
     DidCreationResponse,
@@ -59,9 +57,6 @@ async def wallets_root():
 @router.post("/create-wallet")
 async def create_wallet(
     wallet_payload: InitWalletRequest,
-    api_key: Optional[str] = Header(None),
-    wallet_id: Optional[str] = Header(None),
-    tenant_jwt: Optional[str] = Header(None),
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
@@ -82,11 +77,6 @@ async def create_wallet(
     --------
     The response object from creating a wallet on the ledger
     """
-    auth_headers = {
-        "api_key": api_key,
-        "wallet_id": wallet_id,
-        "tenant_jwt": tenant_jwt,
-    }
     try:
         # async with create_controller(auth_headers) as controller:
         async with aries_controller as controller:

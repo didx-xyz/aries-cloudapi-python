@@ -27,8 +27,8 @@ router = APIRouter(prefix="/wallets", tags=["wallets"])
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
-    aries_controller : AriesAgentControllerBase= Depends(yoma_agent)
-)-> DidCreationResponse:
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+) -> DidCreationResponse:
     """
     Create a new public DID and
     write it to the ledger and
@@ -49,12 +49,9 @@ async def create_public_did(
     * Issuer Endpoint (url)
     """
 
-    
     generate_did_res = await acapy_wallet_facade.create_did(aries_controller)
     did_object = generate_did_res["result"]
-    await ledger_facade.post_to_ledger(
-        did_object=did_object
-    )
+    await ledger_facade.post_to_ledger(did_object=did_object)
 
     taa_response = await acapy_ledger_facade.get_taa(aries_controller)
 
@@ -90,8 +87,7 @@ async def wallets_root():
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
 async def create_wallet(
-    
-    aries_controller: AriesAgentControllerBase= Depends(member_admin_agent)
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
     """
     Create a new wallet
@@ -100,7 +96,7 @@ async def create_wallet(
     -----------
     wallet_payload: dict
         The payload for creating the wallet
-    
+
 
     Returns:
     --------
@@ -117,9 +113,7 @@ async def create_wallet(
             "wallet_type": "indy",
         }
     """
-    
-    # TODO replace with model for payload/wallet like
-    # described https://fastapi.tiangolo.com/tutorial/body/
+
     # TODO Remove this default wallet. This has to be provided
     # At least unique values for eg label, The rest could be filled
     # with default values like image_url could point to a defautl avatar img
@@ -135,7 +129,7 @@ async def create_wallet(
     }
     # else:
     # payload = wallet_payload
-        
+
     wallet_response = await aries_controller.multitenant.create_subwallet(payload)
 
     return wallet_response
@@ -147,57 +141,54 @@ async def create_wallet(
 
 @router.get("/remove-wallet")
 async def remove_wallet_by_id(
-    wallet_id: str,
-    aries_controller: AriesAgentControllerBase= Depends(yoma_agent)
+    wallet_id: str, aries_controller: AriesAgentControllerBase = Depends(yoma_agent)
 ):
 
     response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
-    #Should this be success or the response??
+    # Should this be success or the response??
     if response:
         return print("Success")
 
 
 @router.get("/get-subwallet-auth-token")
 async def get_subwallet_auth_token(
-    wallet_id: str,
-    aries_controller: AriesAgentControllerBase= Depends(yoma_agent)
+    wallet_id: str, aries_controller: AriesAgentControllerBase = Depends(yoma_agent)
 ):
 
     return await aries_controller.multitenant.get_subwallet_authtoken_by_id(wallet_id)
-    
+
 
 @router.post("/update-subwallet")
 async def update_subwallet(
-    payload : dict,
+    payload: dict,
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase= Depends(yoma_agent)
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
-    
-        #Should we return "Success" and nothing else?
-    return await aries_controller.multitenant.update_subwallet_by_id(payload,wallet_id)
 
-    
+    # Should we return "Success" and nothing else?
+    return await aries_controller.multitenant.update_subwallet_by_id(payload, wallet_id)
+
+
 @router.get("/get-wallet-by-id")
 async def get_subwallet(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase= Depends(yoma_agent),
-): 
-    
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+):
 
-    return  await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)
-    
+    return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)
+
     # except Exception as e:
     #     err_trace = traceback.print_exc()
     #     logger.error(
     #         f"Failed to get subwallet. The following error occured:\n{e!r}\n{err_trace}"
     #     )
-    #     raise e 
+    #     raise e
 
 
 @router.get("query-subwallet")
 async def query_subwallet(
-    wallet_name: str, 
-    aries_controller: AriesAgentControllerBase= Depends(yoma_agent),
+    wallet_name: str,
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
 
     return await aries_controller.multitenant.query_subwallets(wallet_name)
@@ -207,7 +198,4 @@ async def query_subwallet(
     #     logger.error(
     #         f"Failed to get subwallet. The following error occured:\n{e!r}\n{err_trace}"
     #     )
-    #     raise e 
-
-
-    
+    #     raise e

@@ -63,7 +63,7 @@ def agent_fun_creator(controller_type: ControllerType):
 yoma_agent = agent_fun_creator(ControllerType.YOMA_AGENT)
 ecosystem_agent = agent_fun_creator(ControllerType.ECOSYSTEM_AGENT)
 member_agent = agent_fun_creator(ControllerType.MEMBER_AGENT)
-ecosystem_admin_agent=agent_fun_creator(ControllerType.ECOSYSTEM_ADMIN_AGENT)
+ecosystem_admin_agent = agent_fun_creator(ControllerType.ECOSYSTEM_ADMIN_AGENT)
 member_admin_agent = agent_fun_creator(ControllerType.MEMBER_ADMIN_AGENT)
 ecosystem_or_member_agent = None
 
@@ -88,16 +88,19 @@ async def agent_creator(
             )
         elif controller_type == ControllerType.YOMA_AGENT:
             controller = controller_factory(
-                controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key,
+                controller_type=ControllerType.YOMA_AGENT,
+                x_api_key=x_api_key,
             )
         elif controller_type == ControllerType.ECOSYSTEM_ADMIN_AGENT:
-            controller= controller_factory(
-                controller_type=ControllerType.ECOSYSTEM_ADMIN_AGENT, x_api_key=x_api_key,
+            controller = controller_factory(
+                controller_type=ControllerType.ECOSYSTEM_ADMIN_AGENT,
+                x_api_key=x_api_key,
             )
         elif controller_type == ControllerType.MEMBER_ADMIN_AGENT:
-            controller= controller_factory(
-                controller_type=ControllerType.MEMBER_ADMIN_AGENT, x_api_key=x_api_key,
-            ) 
+            controller = controller_factory(
+                controller_type=ControllerType.MEMBER_ADMIN_AGENT,
+                x_api_key=x_api_key,
+            )
         else:
             logger.error("unknown controller type")
             raise HTTPException(500, f"Unknown controller type {controller_type}")
@@ -111,11 +114,13 @@ async def agent_creator(
         if controller:
             await controller.terminate()
 
+
 @asynccontextmanager
 async def create_controller(
-    controller_type: ControllerType, x_api_key=None, jwt_token=None,
+    controller_type: ControllerType,
+    x_api_key=None,
+    jwt_token=None,
 ) -> Generic[T_co]:
-
 
     """
     Instantiate an AriesAgentController or a TenantController
@@ -139,7 +144,6 @@ async def create_controller(
         raise e
     finally:
         await controller.terminate()
-
 
 
 async def get_schema_attributes(controller, schema_id):
@@ -331,8 +335,9 @@ async def send_proof_request(controller, proof_request_web_request):
 
     return response
 
+
 async def remove_wallet(controller, wallet_id):
-        
+
     response = await controller.multitenant.remove_subwallet_by_id(wallet_id)
 
     if not response:
@@ -343,13 +348,13 @@ async def remove_wallet(controller, wallet_id):
 
 
 async def get_auth_token_by_id(controller, wallet_id):
-    
+
     response = await controller.multitenant.get_subwallet_authtoken_by_id(wallet_id)
 
     if not response:
-            raise HTTPException(
-                status_code=404, detail="Something went wrong. Could not get auth_token."
-            )
+        raise HTTPException(
+            status_code=404, detail="Something went wrong. Could not get auth_token."
+        )
     return response
 
 
@@ -363,6 +368,7 @@ async def update_subwallet_via_id(controller, wallet_id, payload):
         )
     return update
 
+
 async def get_subwallet_by_id(controller, wallet_id):
 
     subwallet = await controller.multitenant.get_single_subwallet_by_id(wallet_id)
@@ -371,10 +377,11 @@ async def get_subwallet_by_id(controller, wallet_id):
         raise HTTPException(
             status_code=404, detail="Something went wrong. Could not obtain subwallet. "
         )
-    
+
     return subwallet
 
-async def query_subwallet_ids(controller, wallet_name ):
+
+async def query_subwallet_ids(controller, wallet_name):
 
     query = await controller.multitenant.query_subwallets(wallet_name)
 
@@ -382,5 +389,5 @@ async def query_subwallet_ids(controller, wallet_name ):
         raise HTTPException(
             status_code=404, detail="Something went wrong. Could not query subwallets."
         )
-    
+
     return query

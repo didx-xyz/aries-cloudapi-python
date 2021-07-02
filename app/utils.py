@@ -14,7 +14,6 @@ from enum import Enum
 import re
 
 
-
 EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
 
 yoma_agent_url = os.getenv("ACAPY_YOMA_AGENT_URL", "http://localhost:3021")
@@ -34,6 +33,7 @@ class ControllerType(Enum):
     ECOSYSTEM_ADMIN_AGENT = "ecosystem_admin_agent"
     MEMBER_ADMIN_AGENT = "member_admin_agent"
 
+
 def _extract_jwt_token_from_security_header(jwt_token):
     if not jwt_token:
         raise Exception("no token provided")
@@ -42,6 +42,7 @@ def _extract_jwt_token_from_security_header(jwt_token):
         return x.group(1)
     else:
         raise Exception(f"Invalid Security Token {jwt_token}")
+
 
 def controller_factory(
     controller_type: ControllerType,
@@ -62,7 +63,7 @@ def controller_factory(
     --------
     controller: AriesCloudController (object)
     """
-    
+
     if not controller_type:
         raise HTTPException(
             status_code=400,
@@ -86,13 +87,13 @@ def controller_factory(
             wallet_id=x_wallet_id,
         )
     elif controller_type == ControllerType.MEMBER_ADMIN_AGENT:
-            if not x_api_key:
-                raise HTTPException(401)
-            return AriesAgentController(
-                admin_url=member_agent_url,
-                api_key=x_api_key,
-                is_multitenant=True,
-            )
+        if not x_api_key:
+            raise HTTPException(401)
+        return AriesAgentController(
+            admin_url=member_agent_url,
+            api_key=x_api_key,
+            is_multitenant=True,
+        )
     elif controller_type == ControllerType.ECOSYSTEM_AGENT:
         if not authorization_header:
             raise HTTPException(401)
@@ -103,13 +104,13 @@ def controller_factory(
             wallet_id=x_wallet_id,
         )
     elif controller_type == ControllerType.ECOSYSTEM_ADMIN_AGENT:
-            if not x_api_key:
-                raise HTTPException(401)
-            return AriesAgentController(
-                admin_url=ecosystem_agent_url,
-                api_key=x_api_key,
-                is_multitenant=True,
-            )
+        if not x_api_key:
+            raise HTTPException(401)
+        return AriesAgentController(
+            admin_url=ecosystem_agent_url,
+            api_key=x_api_key,
+            is_multitenant=True,
+        )
 
 
 def construct_zkp(zero_knowledge_proof: List[dict], schema_id: str) -> list:
@@ -144,6 +145,3 @@ def construct_indy_proof_request(
         },
     }
     return indy_proof_request
-
-
-

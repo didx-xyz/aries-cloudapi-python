@@ -6,10 +6,9 @@ from aries_cloudcontroller.controllers.ledger import LedgerController
 from aries_cloudcontroller.controllers.wallet import WalletController
 from mockito import mock
 
-import facade
+import agent_factory
 import ledger_facade
 import utils
-from facade import create_controller
 
 
 @pytest.fixture
@@ -36,5 +35,7 @@ async def yoma_agent():
     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
     # flexibility - thus we have to.
     # this is doing what using decorators does for you
-    async with asynccontextmanager(facade.yoma_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(agent_factory.yoma_agent)(
+        x_api_key="adminApiKey"
+    ) as c:
         yield c

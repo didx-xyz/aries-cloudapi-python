@@ -1,15 +1,21 @@
+import logging
+import os
+from typing import Generic, TypeVar, Callable
+
+from fastapi import HTTPException, Header
+
+
 from enum import Enum
 
 import logging
 import os
 import re
-from deprecated import deprecated
 from typing import Type, Union, List
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
 
-from agent_factory import ControllerType
+logger = logging.getLogger(__name__)
 
 EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
 
@@ -18,7 +24,69 @@ ecosystem_agent_url = os.getenv("ACAPY_ECOSYSTEM_AGENT_URL", "http://localhost:4
 member_agent_url = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
 
 embedded_api_key = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
-logger = logging.getLogger(__name__)
+
+
+class ControllerType(Enum):
+    YOMA_AGENT = "yoma_agent"
+    MEMBER_AGENT = "member_agent"
+    ECOSYSTEM_AGENT = "ecosystem_agent"
+
+
+# apologies for the duplication here - removing this duplication introduces _way_ more complexity than it's worth
+# I hope sonar does not bleat!
+
+
+async def yoma_agent(x_api_key: str = Header(None), authorization: str = Header(None)):
+    agent = None
+    try:
+        agent = _controller_factory(ControllerType.YOMA_AGENT, x_api_key, authorization)
+        yield agent
+    except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        logger.error("%s", e, exc_info=e)
+        raise e
+    finally:
+        if agent:
+            await agent.terminate()
+
+
+async def ecosystem_agent(
+    x_api_key: str = Header(None), authorization: str = Header(None)
+):
+    agent = None
+    try:
+        agent = _controller_factory(
+            ControllerType.ECOSYSTEM_AGENT, x_api_key, authorization
+        )
+        yield agent
+    except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        logger.error("%s", e, exc_info=e)
+        raise e
+    finally:
+        if agent:
+            await agent.terminate()
+
+
+async def member_agent(
+    x_api_key: str = Header(None), authorization: str = Header(None)
+):
+    agent = None
+    try:
+        agent = _controller_factory(
+            ControllerType.MEMBER_AGENT, x_api_key, authorization
+        )
+        yield agent
+    except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        logger.error("%s", e, exc_info=e)
+        raise e
+    finally:
+        if agent:
+            await agent.terminate()
 
 
 def _extract_jwt_token_from_security_header(jwt_token):
@@ -31,10 +99,7 @@ def _extract_jwt_token_from_security_header(jwt_token):
         raise HTTPException(401)
 
 
-@deprecated(
-    "logic moved to agent_factory - kept here because facade.create_controller still uses it"
-)
-def controller_factory(
+def _controller_factory(
     controller_type: ControllerType,
     x_api_key=None,
     authorization_header=None,
@@ -84,37 +149,3 @@ def controller_factory(
             tenant_jwt=_extract_jwt_token_from_security_header(authorization_header),
             wallet_id=x_wallet_id,
         )
-
-
-def construct_zkp(zero_knowledge_proof: List[dict], schema_id: str) -> list:
-    if zero_knowledge_proof == [{}]:
-        return []
-    req_preds = []
-    [
-        req_preds.append(
-            {
-                "name": item["name"],
-                "p_type": item["p_type"],
-                "p_value": item["p_value"],
-                "restrictions": [{"schema_id": schema_id}],
-            }
-        )
-        for item in zero_knowledge_proof
-    ]
-    return req_preds
-
-
-def construct_indy_proof_request(
-    name_proof_request: str, schema_id: str, attr_req, req_preds
-):
-    indy_proof_request = {
-        "name": name_proof_request,
-        "version": schema_id.split(":")[-1],
-        "requested_attributes": {
-            f"0_{req_attr['name']}_uuid": req_attr for req_attr in attr_req
-        },
-        "requested_predicates": {
-            f"0_{req_pred['name']}_GE_uuid": req_pred for req_pred in req_preds
-        },
-    }
-    return indy_proof_request

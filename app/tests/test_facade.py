@@ -1,19 +1,24 @@
 import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
-import facade
-from utils import controller_factory, ControllerType
+
+import agent_factory
 
 testheaders = [
-    (facade.yoma_agent, {"x_api_key": "AdminApiKey"}, "123456", AriesAgentController),
     (
-        facade.ecosystem_agent,
+        agent_factory.yoma_agent,
+        {"x_api_key": "AdminApiKey"},
+        "123456",
+        AriesAgentController,
+    ),
+    (
+        agent_factory.ecosystem_agent,
         {"authorization": "Bearer 344352dfsg"},
         "344352dfsg",
         AriesTenantController,
     ),
     (
-        facade.member_agent,
+        agent_factory.member_agent,
         {"x_api_key": "AdminApiKey", "authorization": "Bearer kjalsdkfjasi3l"},
         "kjalsdkfjasi3l",
         AriesTenantController,
@@ -24,7 +29,7 @@ testheaders = [
 async def async_next(param):
     async for item in param:
         return item
-    else:
+    else:  # NOSONAR
         return None
 
 

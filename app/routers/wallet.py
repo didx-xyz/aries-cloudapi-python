@@ -7,7 +7,8 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Header, HTTPException, Depends
 
 from core.wallet import create_pub_did
-from facade import create_controller, yoma_agent, member_agent
+from facade import create_controller
+from agent_factory import yoma_agent, member_agent
 
 from schemas import (
     DidCreationResponse,

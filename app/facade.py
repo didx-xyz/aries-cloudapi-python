@@ -1,6 +1,8 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from deprecated import deprecated
+
 from typing import Generic, TypeVar, Callable
 
 import requests
@@ -8,97 +10,12 @@ from fastapi import HTTPException, Header
 from utils import controller_factory, ControllerType
 
 T_co = TypeVar("T_co", contravariant=True)
-
 logger = logging.getLogger(__name__)
 
-EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", None)
 
-
-def _yoma_factory(x_api_key: str = Header(None), authorization: str = None):
-    # these two args are _required_ - this method is a factory method
-    return controller_factory(
-        controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
-    )
-
-
-def _member_factory(x_api_key: str = Header(None), authorization: str = None):
-    # these two args are _required_ - this method is a factory method
-    return controller_factory(
-        ControllerType.MEMBER_AGENT,
-        x_api_key=EMBEDDED_API_KEY,
-        authorization_header=authorization,
-    )
-
-
-agent_creators = {
-    ControllerType.MEMBER_AGENT: _member_factory,
-    ControllerType.YOMA_AGENT: _yoma_factory,
-    ControllerType.ECOSYSTEM_AGENT: _member_factory,
-}
-
-
-def agent_fun_creator(controller_type: ControllerType):
-    # slightly unorthodox I know - the alternative is to have code duplication...
-    async def create(x_api_key: str = Header(None), authorization: str = None):
-        controller = None
-        try:
-            agent_creator = agent_creators[controller_type]
-            controller = agent_creator(x_api_key, authorization)
-            yield controller
-        except Exception as e:
-            # We can only log this here and not raise an HTTPExeption as
-            # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-            logger.error("%s", e, exc_info=e)
-            raise e
-        finally:
-            if controller:
-                await controller.terminate()
-
-    return create
-
-
-yoma_agent = agent_fun_creator(ControllerType.YOMA_AGENT)
-ecosystem_agent = agent_fun_creator(ControllerType.ECOSYSTEM_AGENT)
-member_agent = agent_fun_creator(ControllerType.MEMBER_AGENT)
-ecosystem_or_member_agent = None
-
-
-async def agent_creator(
-    controller_type: ControllerType,
-    x_api_key: str = Header(None),
-    authorization: str = None,
-):
-    try:
-        if controller_type == ControllerType.MEMBER_AGENT:
-            controller = controller_factory(
-                controller_type=ControllerType.MEMBER_AGENT,
-                x_api_key=EMBEDDED_API_KEY,
-                authorization_header=authorization,
-            )
-        elif controller_type == ControllerType.ECOSYSTEM_AGENT:
-            controller = controller_factory(
-                controller_type=ControllerType.ECOSYSTEM_AGENT,
-                x_api_key=EMBEDDED_API_KEY,
-                authorization_header=authorization,
-            )
-        elif controller_type == ControllerType.YOMA_AGENT:
-            controller = controller_factory(
-                controller_type=ControllerType.YOMA_AGENT, x_api_key=x_api_key
-            )
-        else:
-            logger.error("unknown controller type")
-            raise HTTPException(500, f"Unknown controller type {controller_type}")
-        yield controller
-    except Exception as e:
-        # We can only log this here and not raise an HTTPExeption as
-        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        logger.error("%s", e, exc_info=e)
-        raise e
-    finally:
-        if controller:
-            await controller.terminate()
-
-
+@deprecated(
+    "moved to agent_factory - kept here because it is still in use - need to migrate"
+)
 @asynccontextmanager
 async def create_controller(
     controller_type: ControllerType, x_api_key=None, jwt_token=None

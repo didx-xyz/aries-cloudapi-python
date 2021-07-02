@@ -1,19 +1,20 @@
-# from app.utils import construct_zkp
 import pytest
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from assertpy import assert_that
 from fastapi import HTTPException
+
+from agent_factory import ControllerType
+import agent_factory
 import utils
-import json
 
 controller_factorytest_headers = [
     (
-        utils.ControllerType.YOMA_AGENT,
+        ControllerType.YOMA_AGENT,
         {"x_api_key": "AdminApiKey", "x_wallet_id": "12345"},
         AriesAgentController,
     ),
     (
-        utils.ControllerType.ECOSYSTEM_AGENT,
+        ControllerType.ECOSYSTEM_AGENT,
         {
             "x_api_key": None,
             "authorization_header": "Bearer 123456",
@@ -22,22 +23,22 @@ controller_factorytest_headers = [
         AriesTenantController,
     ),
     (
-        utils.ControllerType.YOMA_AGENT,
+        agent_factory.ControllerType.YOMA_AGENT,
         {"x_api_key": "AdminApiKey", "x_wallet_id": None},
         AriesAgentController,
     ),
     (
-        utils.ControllerType.YOMA_AGENT,
+        ControllerType.YOMA_AGENT,
         {"authorization_header": "123456", "x_api_key": "12345", "x_wallet_id": None},
         AriesAgentController,
     ),
     (
-        utils.ControllerType.YOMA_AGENT,
+        ControllerType.YOMA_AGENT,
         {"x_api_key": None, "authorization_header": "Bearer 1234"},
         False,
     ),
     (
-        utils.ControllerType.ECOSYSTEM_AGENT,
+        ControllerType.ECOSYSTEM_AGENT,
         {"authorization_header": None, "x_wallet_id": "1234"},
         False,
     ),
@@ -51,7 +52,7 @@ controller_factorytest_headers = [
 async def test_controller_factory(controller_type, fake_header, expected):
     if expected is False:
         with pytest.raises(HTTPException) as e:
-            utils.controller_factory(controller_type, **fake_header)
+            agent_factory._controller_factory(controller_type, **fake_header)
         assert e.type == HTTPException
         assert e.value.status_code == 401
     else:

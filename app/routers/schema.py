@@ -13,6 +13,7 @@ from facade import (
 from fastapi import APIRouter, Header, Query, Depends
 from schemas import SchemaLedgerRequest, SchemaResponse
 from aries_cloudcontroller import AriesAgentControllerBase
+
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 
 logger = logging.getLogger(__name__)

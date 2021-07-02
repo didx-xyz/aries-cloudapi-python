@@ -3,7 +3,6 @@ from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from assertpy import assert_that
 from fastapi import HTTPException
 
-# import agent_factory
 import utils
 
 ID_CONSTANT = "abcde:test:0.0.1"
@@ -44,6 +43,21 @@ ID_CONSTANT = "abcde:test:0.0.1"
 #         False,
 #     ),
 # ]
+
+
+# @pytest.mark.asyncio
+# @pytest.mark.parametrize(
+#     "controller_type, fake_header, expected", controller_factorytest_headers
+# )
+# async def test_controller_factory(controller_type, fake_header, expected):
+#     if expected is False:
+#         with pytest.raises(HTTPException) as e:
+#             utils.controller_factory(controller_type, **fake_header)
+#         assert e.type == HTTPException
+#         assert e.value.status_code == 401
+#     else:
+#         controller = utils.controller_factory(controller_type, **fake_header)
+#         assert isinstance(controller, expected)
 
 
 # @pytest.mark.asyncio

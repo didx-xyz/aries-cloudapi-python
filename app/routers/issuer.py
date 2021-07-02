@@ -16,6 +16,7 @@ from fastapi import APIRouter, Header, Query, Depends
 from fastapi.responses import StreamingResponse
 from schemas import ConnectionIdResponse, IssueCredentialResponse
 from aries_cloudcontroller import AriesAgentControllerBase
+
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")
 

@@ -1,17 +1,10 @@
-import logging
-import os
-
-# from typing import Generic, TypeVar, Callable
-
-from fastapi import HTTPException, Header
-
+from fastapi import Header
 
 from enum import Enum
 
 import logging
 import os
 import re
-from typing import Type, Union, List
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
@@ -44,7 +37,6 @@ class ControllerType(Enum):
 async def yoma_agent(x_api_key: str = Header(None), authorization: str = Header(None)):
     agent = None
     try:
-        # agent = _controller_factory(ControllerType.YOMA_AGENT, x_api_key, authorization)
         if not x_api_key:
             raise HTTPException(401)
         agent = AriesAgentController(
@@ -70,10 +62,6 @@ async def ecosystem_agent(
 ):
     agent = None
     try:
-        # agent = _controller_factory(
-        #     ControllerType.ECOSYSTEM_AGENT, x_api_key, authorization
-        # )
-        # yield agent
         # TODO extract wallet_id instead of passing it?!
 
         # check the header is present
@@ -108,11 +96,6 @@ async def member_agent(
 ):
     agent = None
     try:
-        # agent = _controller_factory(
-        #     ControllerType.MEMBER_AGENT, x_api_key, authorization
-        # )
-        # yield agent
-        # TODO extract wallet_id instead of passing it?!
         if not authorization:
             raise HTTPException(401)
         tenant_jwt = _extract_jwt_token_from_security_header(authorization)
@@ -133,6 +116,52 @@ async def member_agent(
             await agent.terminate()
 
 
+async def member_admin_agent(
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
+):
+    agent = None
+    try:
+        if not x_api_key:
+            raise HTTPException(401)
+        agent = AriesAgentController(
+            admin_url=member_agent_url, api_key=x_api_key, is_multitenant=True
+        )
+        yield agent
+    except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        logger.error("%s", e, exc_info=e)
+        raise e
+    finally:
+        if agent:
+            await agent.terminate()
+
+
+async def ecosystem_admin_agent(
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
+):
+    agent = None
+    try:
+        if not x_api_key:
+            raise HTTPException(401)
+        agent = AriesAgentController(
+            admin_url=ecosystem_agent_url, api_key=x_api_key, is_multitenant=True
+        )
+        yield agent
+    except Exception as e:
+        # We can only log this here and not raise an HTTPExeption as
+        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        logger.error("%s", e, exc_info=e)
+        raise e
+    finally:
+        if agent:
+            await agent.terminate()
+
+
 def _extract_jwt_token_from_security_header(jwt_token):
     if not jwt_token:
         raise HTTPException(401)
@@ -141,55 +170,3 @@ def _extract_jwt_token_from_security_header(jwt_token):
         return x.group(1)
     else:
         raise HTTPException(401)
-
-
-def _controller_factory(
-    controller_type: ControllerType,
-    x_api_key=None,
-    authorization_header=None,
-    x_wallet_id=None,
-) -> Type[Union[AriesAgentController, AriesTenantController]]:
-    """
-    Aries Controller factory returning an
-    AriesController object based on a request header
-
-    Parameters:
-    -----------
-    auth_headers: dict
-        The header object containing wallet_id and jwt_token, or api_key
-
-    Returns:
-    --------
-    controller: AriesCloudController (object)
-    """
-    if not controller_type:
-        raise HTTPException(
-            status_code=400,
-            detail="Bad headers. Either provide an api_key or both wallet_id and tenant_jwt",
-        )
-    if controller_type == ControllerType.YOMA_AGENT:
-        if not x_api_key:
-            raise HTTPException(401)
-        return AriesAgentController(
-            admin_url=yoma_agent_url,
-            api_key=x_api_key,
-            is_multitenant=False,
-        )
-    elif controller_type == ControllerType.MEMBER_AGENT:
-        if not authorization_header:
-            raise HTTPException(401)
-        return AriesTenantController(
-            admin_url=member_agent_url,
-            api_key=embedded_api_key,
-            tenant_jwt=_extract_jwt_token_from_security_header(authorization_header),
-            wallet_id=x_wallet_id,
-        )
-    elif controller_type == ControllerType.ECOSYSTEM_AGENT:
-        if not authorization_header:
-            raise HTTPException(401)
-        return AriesTenantController(
-            admin_url=ecosystem_agent_url,
-            api_key=embedded_api_key,
-            tenant_jwt=_extract_jwt_token_from_security_header(authorization_header),
-            wallet_id=x_wallet_id,
-        )

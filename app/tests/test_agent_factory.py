@@ -23,6 +23,18 @@ testheaders = [
         "kjalsdkfjasi3l",
         AriesTenantController,
     ),
+    (
+        agent_factory.member_admin_agent,
+        {"x_api_key": "AdminApiKey"},
+        "kjalsdkfjasi3l",
+        AriesAgentController,
+    ),
+    (
+        agent_factory.ecosystem_admin_agent,
+        {"x_api_key": "AdminApiKey"},
+        "kjalsdkfjasi3l",
+        AriesAgentController,
+    ),
 ]
 
 
@@ -45,3 +57,8 @@ async def test_create_controller(factory, fake_header, expected_token, expected_
             assert controller.tenant_jwt == expected_token
         elif type(controller) is AriesAgentController:
             assert controller.api_key == fake_header["x_api_key"]
+        if (
+            factory == agent_factory.member_admin_agent
+            or factory == agent_factory.ecosystem_admin_agent
+        ):
+            assert controller.multitenant is not None

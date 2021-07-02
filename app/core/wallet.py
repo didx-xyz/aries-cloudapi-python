@@ -7,7 +7,7 @@ from typing import Dict
 from aries_cloudcontroller import AriesAgentControllerBase
 
 import acapy_ledger_facade
-from facade import create_controller
+# from facade import create_controller
 import acapy_wallet_facade as wallet_facade
 from schemas import DidCreationResponse
 import ledger_facade

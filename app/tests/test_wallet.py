@@ -4,10 +4,10 @@ import pytest
 
 import utils
 from core import wallet
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 import routers
-
-from facade import create_controller
+import agent_factory
+# from facade import create_controller
 
 
 @pytest.mark.asyncio

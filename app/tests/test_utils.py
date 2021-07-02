@@ -3,71 +3,73 @@ from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from assertpy import assert_that
 from fastapi import HTTPException
 
-from agent_factory import ControllerType
+# from agent_factory import ControllerType
 import agent_factory
 import utils
 
-controller_factorytest_headers = [
-    (
-        ControllerType.YOMA_AGENT,
-        {"x_api_key": "AdminApiKey", "x_wallet_id": "12345"},
-        AriesAgentController,
-    ),
-    (
-        ControllerType.ECOSYSTEM_AGENT,
-        {
-            "x_api_key": None,
-            "authorization_header": "Bearer 123456",
-            "x_wallet_id": "12345",
-        },
-        AriesTenantController,
-    ),
-    (
-        agent_factory.ControllerType.YOMA_AGENT,
-        {"x_api_key": "AdminApiKey", "x_wallet_id": None},
-        AriesAgentController,
-    ),
-    (
-        ControllerType.YOMA_AGENT,
-        {"authorization_header": "123456", "x_api_key": "12345", "x_wallet_id": None},
-        AriesAgentController,
-    ),
-    (
-        ControllerType.YOMA_AGENT,
-        {"x_api_key": None, "authorization_header": "Bearer 1234"},
-        False,
-    ),
-    (
-        ControllerType.ECOSYSTEM_AGENT,
-        {"authorization_header": None, "x_wallet_id": "1234"},
-        False,
-    ),
-]
+ID_CONSTANT = "abcde:test:0.0.1"
+
+# controller_factorytest_headers = [
+#     (
+#         ControllerType.YOMA_AGENT,
+#         {"x_api_key": "AdminApiKey", "x_wallet_id": "12345"},
+#         AriesAgentController,
+#     ),
+#     (
+#         ControllerType.ECOSYSTEM_AGENT,
+#         {
+#             "x_api_key": None,
+#             "authorization_header": "Bearer 123456",
+#             "x_wallet_id": "12345",
+#         },
+#         AriesTenantController,
+#     ),
+#     (
+#         agent_factory.ControllerType.YOMA_AGENT,
+#         {"x_api_key": "AdminApiKey", "x_wallet_id": None},
+#         AriesAgentController,
+#     ),
+#     (
+#         ControllerType.YOMA_AGENT,
+#         {"authorization_header": "123456", "x_api_key": "12345", "x_wallet_id": None},
+#         AriesAgentController,
+#     ),
+#     (
+#         ControllerType.YOMA_AGENT,
+#         {"x_api_key": None, "authorization_header": "Bearer 1234"},
+#         False,
+#     ),
+#     (
+#         ControllerType.ECOSYSTEM_AGENT,
+#         {"authorization_header": None, "x_wallet_id": "1234"},
+#         False,
+#     ),
+# ]
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "controller_type, fake_header, expected", controller_factorytest_headers
-)
-async def test_controller_factory(controller_type, fake_header, expected):
-    if expected is False:
-        with pytest.raises(HTTPException) as e:
-            agent_factory._controller_factory(controller_type, **fake_header)
-        assert e.type == HTTPException
-        assert e.value.status_code == 401
-    else:
-        controller = utils.controller_factory(controller_type, **fake_header)
-        assert isinstance(controller, expected)
+# @pytest.mark.asyncio
+# @pytest.mark.parametrize(
+#     "controller_type, fake_header, expected", controller_factorytest_headers
+# )
+# async def test_controller_factory(controller_type, fake_header, expected):
+#     if expected is False:
+#         with pytest.raises(HTTPException) as e:
+#             utils.controller_factory(controller_type, **fake_header)
+#         assert e.type == HTTPException
+#         assert e.value.status_code == 401
+#     else:
+#         controller = utils.controller_factory(controller_type, **fake_header)
+#         assert isinstance(controller, expected)
 
 
 def test_construct_zkp():
-    given = [[{"name": "name", "p_type": ">=", "p_value": "21"}], "abcde:test:0.0.1"]
+    given = [[{"name": "name", "p_type": ">=", "p_value": "21"}], ID_CONSTANT]
     expected = [
         {
             "name": "name",
             "p_type": ">=",
             "p_value": "21",
-            "restrictions": [{"schema_id": "abcde:test:0.0.1"}],
+            "restrictions": [{"schema_id": ID_CONSTANT}],
         }
     ]
 
@@ -88,7 +90,7 @@ def test_construct_zkp_empty():
 def test_construct_indy_proof_request():
     given = [
         "abcde",
-        "abcde:test:0.0.1",
+        ID_CONSTANT,
         [{"name": "name"}, {"name": "age"}],
         [{"name": "name", "p_type": ">=", "p_value": "21"}],
     ]

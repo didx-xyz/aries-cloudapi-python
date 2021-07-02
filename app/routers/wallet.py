@@ -7,7 +7,7 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Header, HTTPException, Depends
 
 from core.wallet import create_pub_did
-from facade import create_controller
+# from facade import create_controller
 from agent_factory import yoma_agent, member_agent
 
 from schemas import (
@@ -63,6 +63,7 @@ async def create_wallet(
     api_key: Optional[str] = Header(None),
     wallet_id: Optional[str] = Header(None),
     tenant_jwt: Optional[str] = Header(None),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Create a new wallet
@@ -88,7 +89,8 @@ async def create_wallet(
         "tenant_jwt": tenant_jwt,
     }
     try:
-        async with create_controller(auth_headers) as controller:
+        # async with create_controller(auth_headers) as controller:
+        async with aries_controller as controller:
             if controller.is_multitenant:
                 # TODO replace with model for payload/wallet like
                 # described https://fastapi.tiangolo.com/tutorial/body/

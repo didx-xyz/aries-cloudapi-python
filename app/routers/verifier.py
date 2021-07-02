@@ -2,14 +2,15 @@ import logging
 import time
 import traceback
 from typing import List, Optional
-
+from agent_factory import *
 from facade import (
-    create_controller,
+    # create_controller,
     get_schema_attributes,
     send_proof_request,
     verify_proof_req,
 )
-from fastapi import APIRouter, Header, HTTPException, Query
+from aries_cloudcontroller import AriesAgentControllerBase
+from fastapi import APIRouter, Header, HTTPException, Query, Depends
 from utils import construct_indy_proof_request, construct_zkp
 from schemas import RequestProofResponse
 
@@ -33,6 +34,7 @@ async def get_proof_request(
     api_key: Optional[str] = Header(None),
     wallet_id: Optional[str] = Header(None),
     tenant_jwt: Optional[str] = Header(None),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Request proof of a (sub) set of attributes against a schema by ID.
@@ -64,7 +66,8 @@ async def get_proof_request(
         "tenant_jwt": tenant_jwt,
     }
     try:
-        async with create_controller(auth_headers) as controller:
+        # async with create_controller(auth_headers) as controller:
+        async with aries_controller as controller:
             schema_resp = await get_schema_attributes(controller, schema_id)
             is_attrs_match = all(x in schema_resp for x in requested_attrs)
             if not is_attrs_match:

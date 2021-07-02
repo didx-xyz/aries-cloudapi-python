@@ -3,16 +3,16 @@ import os
 import traceback
 from distutils.util import strtobool
 from typing import List, Optional
-
+from agent_factory import *
 from facade import (
-    create_controller,
+    # create_controller,
     get_schema_list,
     write_credential_def,
     write_schema_definition,
 )
-from fastapi import APIRouter, Header, Query
+from fastapi import APIRouter, Header, Query, Depends
 from schemas import SchemaLedgerRequest, SchemaResponse
-
+from aries_cloudcontroller import AriesAgentControllerBase
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 
 logger = logging.getLogger(__name__)
@@ -29,6 +29,7 @@ async def get_schema(
     api_key: Optional[str] = Header(None),
     wallet_id: Optional[str] = Header(None),
     tenant_jwt: Optional[str] = Header(None),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Get all valid schemas from YOMA
@@ -53,7 +54,8 @@ async def get_schema(
         "tenant_jwt": tenant_jwt,
     }
     try:
-        async with create_controller(auth_headers) as controller:
+        # async with create_controller(auth_headers) as controller:
+        async with aries_controller as controller:
             # TODO: Should this come from env var or from the client request?
             created_schemas = await get_schema_list(controller)
 

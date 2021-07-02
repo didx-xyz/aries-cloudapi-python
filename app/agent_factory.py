@@ -13,17 +13,17 @@ logger = logging.getLogger(__name__)
 
 EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
 
-yoma_agent_url = os.getenv("ACAPY_YOMA_AGENT_URL", "http://localhost:3021")
-ecosystem_agent_url = os.getenv("ACAPY_ECOSYSTEM_AGENT_URL", "http://localhost:4021")
-member_agent_url = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
+YOMA_AGENT_URL = os.getenv("ACAPY_YOMA_AGENT_URL", "http://localhost:3021")
+ECOSYSTEM_AGENT_URL = os.getenv("ACAPY_ECOSYSTEM_AGENT_URL", "http://localhost:4021")
+MEMBER_AGENT_URL = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
 
 embedded_api_key = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 
 
-class ControllerType(Enum):
-    YOMA_AGENT = "yoma_agent"
-    MEMBER_AGENT = "member_agent"
-    ECOSYSTEM_AGENT = "ecosystem_agent"
+# class ControllerType(Enum):
+#     YOMA_AGENT = "yoma_agent"
+#     MEMBER_AGENT = "member_agent"
+#     ECOSYSTEM_AGENT = "ecosystem_agent"
 
 
 # apologies for the duplication here - removing this duplication introduces _way_ more complexity than it's worth
@@ -40,7 +40,7 @@ async def yoma_agent(x_api_key: str = Header(None), authorization: str = Header(
         if not x_api_key:
             raise HTTPException(401)
         agent = AriesAgentController(
-            admin_url=yoma_agent_url,
+            admin_url=YOMA_AGENT_URL,
             api_key=x_api_key,
             is_multitenant=False,
         )
@@ -73,7 +73,7 @@ async def ecosystem_agent(
 
         # yield the controller
         agent = AriesTenantController(
-            admin_url=ecosystem_agent_url,
+            admin_url=ECOSYSTEM_AGENT_URL,
             api_key=x_api_key,
             tenant_jwt=tenant_jwt,
             wallet_id=x_wallet_id,
@@ -100,7 +100,7 @@ async def member_agent(
             raise HTTPException(401)
         tenant_jwt = _extract_jwt_token_from_security_header(authorization)
         agent = AriesTenantController(
-            admin_url=member_agent_url,
+            admin_url=MEMBER_AGENT_URL,
             api_key=embedded_api_key,
             tenant_jwt=tenant_jwt,
             wallet_id=x_wallet_id,
@@ -126,7 +126,7 @@ async def member_admin_agent(
         if not x_api_key:
             raise HTTPException(401)
         agent = AriesAgentController(
-            admin_url=member_agent_url, api_key=x_api_key, is_multitenant=True
+            admin_url=MEMBER_AGENT_URL, api_key=x_api_key, is_multitenant=True
         )
         yield agent
     except Exception as e:
@@ -149,7 +149,7 @@ async def ecosystem_admin_agent(
         if not x_api_key:
             raise HTTPException(401)
         agent = AriesAgentController(
-            admin_url=ecosystem_agent_url, api_key=x_api_key, is_multitenant=True
+            admin_url=ECOSYSTEM_AGENT_URL, api_key=x_api_key, is_multitenant=True
         )
         yield agent
     except Exception as e:

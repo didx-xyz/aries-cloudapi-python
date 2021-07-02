@@ -35,7 +35,7 @@ def _admin_member_factory(x_api_key: str = Header(None), authorization: str = No
     # these two args are _required_ - this method is a factory method
     return controller_factory(
         ControllerType.MEMBER_ADMIN_AGENT,
-        x_api_key=EMBEDDED_API_KEY,
+        x_api_key=x_api_key,
         authorization_header=authorization,
     )
 

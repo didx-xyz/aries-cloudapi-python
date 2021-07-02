@@ -1,8 +1,8 @@
 from admin import admin
 from dependencies import get_query_token, get_token_header
 from fastapi import Depends, FastAPI
-from routers import governance, holder, issuer, schema, verifier, wallet
-
+from routers import governance, holder, issuer, schema, verifier
+from admin.governance import wallet
 app = FastAPI()
 
 

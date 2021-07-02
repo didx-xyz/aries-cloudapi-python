@@ -11,7 +11,7 @@ from facade import (
 )
 from fastapi import APIRouter, Header, Query
 from schemas import SchemaLedgerRequest, SchemaResponse
-from utils import create_controller
+
 
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 

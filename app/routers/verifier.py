@@ -11,7 +11,6 @@ from facade import (
 from fastapi import APIRouter, Header, HTTPException, Query
 from utils import construct_indy_proof_request, construct_zkp
 from schemas import RequestProofResponse
-from utils import create_controller
 
 logger = logging.getLogger(__name__)
 

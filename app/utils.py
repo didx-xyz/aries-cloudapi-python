@@ -1,35 +1,9 @@
-from enum import Enum
-
 import logging
 import os
-import re
 
-# from deprecated import deprecated
-from typing import Type, Union, List
+from typing import List
 
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import HTTPException
-
-# from agent_factory import ControllerType
-
-EXTRACT_TOKEN_FROM_BEARER = r"Bearer (.*)"
-
-yoma_agent_url = os.getenv("ACAPY_YOMA_AGENT_URL", "http://localhost:3021")
-ecosystem_agent_url = os.getenv("ACAPY_ECOSYSTEM_AGENT_URL", "http://localhost:4021")
-member_agent_url = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
-
-embedded_api_key = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 logger = logging.getLogger(__name__)
-
-
-def _extract_jwt_token_from_security_header(jwt_token):
-    if not jwt_token:
-        raise HTTPException(401)
-    x = re.search(EXTRACT_TOKEN_FROM_BEARER, jwt_token)
-    if x is not None:
-        return x.group(1)
-    else:
-        raise HTTPException(401)
 
 
 def construct_zkp(zero_knowledge_proof: List[dict], schema_id: str) -> list:

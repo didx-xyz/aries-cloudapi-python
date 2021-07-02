@@ -1,11 +1,8 @@
 import logging
-import os
-from contextlib import asynccontextmanager
 
-from typing import Generic, TypeVar, Callable
+from typing import TypeVar
 
-import requests
-from fastapi import HTTPException, Header
+from fastapi import HTTPException
 
 T_co = TypeVar("T_co", contravariant=True)
 logger = logging.getLogger(__name__)

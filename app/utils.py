@@ -3,7 +3,8 @@ from enum import Enum
 import logging
 import os
 import re
-from deprecated import deprecated
+
+# from deprecated import deprecated
 from typing import Type, Union, List
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
@@ -31,9 +32,9 @@ def _extract_jwt_token_from_security_header(jwt_token):
         raise HTTPException(401)
 
 
-@deprecated(
-    "logic moved to agent_factory - kept here because facade.create_controller still uses it"
-)
+# @deprecated(
+#     "logic moved to agent_factory - kept here because facade.create_controller still uses it"
+# )
 def controller_factory(
     controller_type: ControllerType,
     x_api_key=None,

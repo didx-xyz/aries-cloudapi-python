@@ -1,7 +1,8 @@
 import logging
 import os
 from contextlib import asynccontextmanager
-from deprecated import deprecated
+
+# from deprecated import deprecated
 
 from typing import Generic, TypeVar, Callable
 
@@ -13,9 +14,9 @@ T_co = TypeVar("T_co", contravariant=True)
 logger = logging.getLogger(__name__)
 
 
-@deprecated(
-    "moved to agent_factory - kept here because it is still in use - need to migrate"
-)
+# @deprecated(
+#     "moved to agent_factory - kept here because it is still in use - need to migrate"
+# )
 @asynccontextmanager
 async def create_controller(
     controller_type: ControllerType, x_api_key=None, jwt_token=None

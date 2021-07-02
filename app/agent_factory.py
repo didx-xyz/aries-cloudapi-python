@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Generic, TypeVar, Callable
+
+# from typing import Generic, TypeVar, Callable
 
 from fastapi import HTTPException, Header
 
@@ -35,11 +36,22 @@ class ControllerType(Enum):
 # apologies for the duplication here - removing this duplication introduces _way_ more complexity than it's worth
 # I hope sonar does not bleat!
 
+# NOTE begin
+# NOTE Why not put all these into dependencies.py???
+# NOTE end
+
 
 async def yoma_agent(x_api_key: str = Header(None), authorization: str = Header(None)):
     agent = None
     try:
-        agent = _controller_factory(ControllerType.YOMA_AGENT, x_api_key, authorization)
+        # agent = _controller_factory(ControllerType.YOMA_AGENT, x_api_key, authorization)
+        if not x_api_key:
+            raise HTTPException(401)
+        agent = AriesAgentController(
+            admin_url=yoma_agent_url,
+            api_key=x_api_key,
+            is_multitenant=False,
+        )
         yield agent
     except Exception as e:
         # We can only log this here and not raise an HTTPExeption as
@@ -52,12 +64,31 @@ async def yoma_agent(x_api_key: str = Header(None), authorization: str = Header(
 
 
 async def ecosystem_agent(
-    x_api_key: str = Header(None), authorization: str = Header(None)
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
 ):
     agent = None
     try:
-        agent = _controller_factory(
-            ControllerType.ECOSYSTEM_AGENT, x_api_key, authorization
+        # agent = _controller_factory(
+        #     ControllerType.ECOSYSTEM_AGENT, x_api_key, authorization
+        # )
+        # yield agent
+        # TODO extract wallet_id instead of passing it?!
+
+        # check the header is present
+        if not authorization:
+            raise HTTPException(401)
+
+        # extract the JWT
+        tenant_jwt = _extract_jwt_token_from_security_header(authorization)
+
+        # yield the controller
+        agent = AriesTenantController(
+            admin_url=ecosystem_agent_url,
+            api_key=x_api_key,
+            tenant_jwt=tenant_jwt,
+            wallet_id=x_wallet_id,
         )
         yield agent
     except Exception as e:
@@ -71,12 +102,25 @@ async def ecosystem_agent(
 
 
 async def member_agent(
-    x_api_key: str = Header(None), authorization: str = Header(None)
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
 ):
     agent = None
     try:
-        agent = _controller_factory(
-            ControllerType.MEMBER_AGENT, x_api_key, authorization
+        # agent = _controller_factory(
+        #     ControllerType.MEMBER_AGENT, x_api_key, authorization
+        # )
+        # yield agent
+        # TODO extract wallet_id instead of passing it?!
+        if not authorization:
+            raise HTTPException(401)
+        tenant_jwt = _extract_jwt_token_from_security_header(authorization)
+        agent = AriesTenantController(
+            admin_url=member_agent_url,
+            api_key=embedded_api_key,
+            tenant_jwt=tenant_jwt,
+            wallet_id=x_wallet_id,
         )
         yield agent
     except Exception as e:

@@ -31,12 +31,21 @@ def _member_factory(x_api_key: str = Header(None), authorization: str = None):
     )
 
 
+def _admin_member_factory(x_api_key: str = Header(None), authorization: str = None):
+    # these two args are _required_ - this method is a factory method
+    return controller_factory(
+        ControllerType.MEMBER_ADMIN_AGENT,
+        x_api_key=EMBEDDED_API_KEY,
+        authorization_header=authorization,
+    )
+
+
 agent_creators = {
     ControllerType.MEMBER_AGENT: _member_factory,
     ControllerType.YOMA_AGENT: _yoma_factory,
     ControllerType.ECOSYSTEM_AGENT: _member_factory,
-    ControllerType.MEMBER_ADMIN_AGENT: _yoma_factory,
-    ControllerType.ECOSYSTEM_ADMIN_AGENT: _yoma_factory,
+    ControllerType.MEMBER_ADMIN_AGENT: _admin_member_factory,
+    ControllerType.ECOSYSTEM_ADMIN_AGENT: _admin_member_factory,
 }
 
 

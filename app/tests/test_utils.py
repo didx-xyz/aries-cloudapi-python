@@ -7,6 +7,8 @@ from agent_factory import ControllerType
 import agent_factory
 import utils
 
+ID_CONSTANT = "abcde:test:0.0.1"
+
 controller_factorytest_headers = [
     (
         ControllerType.YOMA_AGENT,
@@ -52,7 +54,7 @@ controller_factorytest_headers = [
 async def test_controller_factory(controller_type, fake_header, expected):
     if expected is False:
         with pytest.raises(HTTPException) as e:
-            agent_factory._controller_factory(controller_type, **fake_header)
+            utils.controller_factory(controller_type, **fake_header)
         assert e.type == HTTPException
         assert e.value.status_code == 401
     else:
@@ -61,13 +63,13 @@ async def test_controller_factory(controller_type, fake_header, expected):
 
 
 def test_construct_zkp():
-    given = [[{"name": "name", "p_type": ">=", "p_value": "21"}], "abcde:test:0.0.1"]
+    given = [[{"name": "name", "p_type": ">=", "p_value": "21"}], ID_CONSTANT]
     expected = [
         {
             "name": "name",
             "p_type": ">=",
             "p_value": "21",
-            "restrictions": [{"schema_id": "abcde:test:0.0.1"}],
+            "restrictions": [{"schema_id": ID_CONSTANT}],
         }
     ]
 
@@ -88,7 +90,7 @@ def test_construct_zkp_empty():
 def test_construct_indy_proof_request():
     given = [
         "abcde",
-        "abcde:test:0.0.1",
+        ID_CONSTANT,
         [{"name": "name"}, {"name": "age"}],
         [{"name": "name", "p_type": ">=", "p_value": "21"}],
     ]

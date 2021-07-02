@@ -36,7 +36,8 @@ FASTAPI_URL = "http://localhost:8000"
 
 
 @scenario("001_wallet.feature", "Getting a public DID")
-def test_GetPublicDid():
+def test_get_public_did():
+    # bdd test
     pass
 
 
@@ -66,7 +67,7 @@ def test_gen_pub_did():
 
     s = requests.Session()
     s.headers.update(header)
-    result = requests_retry_session().get(url)
+    requests_retry_session().get(url)
     result = requests.get(url, headers=header)
     time.sleep(10)
     res_dict = json.loads(result.content)

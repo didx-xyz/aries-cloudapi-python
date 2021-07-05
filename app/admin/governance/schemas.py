@@ -4,7 +4,7 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from facade import yoma_agent
+from dependencies import yoma_agent
 
 router = APIRouter(prefix="/admin/governance/schemas", tags=["Schemas"])
 

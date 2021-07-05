@@ -1,21 +1,16 @@
-import logging
-import json
-import os
-import traceback
-from typing import Optional
+import logging, json
 
-from fastapi import APIRouter, Header, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
 
-import ledger_facade
 from schemas import (
     DidCreationResponse,
     InitWalletRequest,
 )
 from aries_cloudcontroller import AriesAgentControllerBase
-from facade import yoma_agent, member_admin_agent
+import traceback
 
-import acapy_ledger_facade
-import acapy_wallet_facade
+from acapy_ledger_facade import create_pub_did
+from dependencies import *
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +22,8 @@ router = APIRouter(prefix="/wallets", tags=["wallets"])
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
-) -> DidCreationResponse:
+    aries_controller: AriesAgentControllerBase,
+):
     """
     Create a new public DID and
     write it to the ledger and
@@ -48,45 +43,13 @@ async def create_public_did(
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
-
-    generate_did_res = await acapy_wallet_facade.create_did(aries_controller)
-    did_object = generate_did_res["result"]
-    await ledger_facade.post_to_ledger(did_object=did_object)
-
-    taa_response = await acapy_ledger_facade.get_taa(aries_controller)
-
-    await acapy_ledger_facade.accept_taa(aries_controller, taa_response)
-    await acapy_wallet_facade.assign_pub_did(aries_controller, did_object["did"])
-    get_pub_did_response = await acapy_wallet_facade.get_pub_did(aries_controller)
-    issuer_nym = get_pub_did_response["result"]["did"]
-    issuer_verkey = get_pub_did_response["result"]["verkey"]
-    issuer_endpoint = await acapy_ledger_facade.get_did_endpoint(
-        aries_controller, issuer_nym
-    )
-    issuer_endpoint_url = issuer_endpoint["endpoint"]
-    final_response = DidCreationResponse(
-        did_object=get_pub_did_response["result"],
-        issuer_verkey=issuer_verkey,
-        issuer_endpoint=issuer_endpoint_url,
-    )
-    return final_response
-
-
-@router.get("/")
-async def wallets_root():
-    """
-    The default endpoints for wallets
-    """
-    # TODO: Determine what this should return or
-    # whether this should return anything at all
-    return {
-        "message": "Wallets endpoint. Please, visit /docs to consult the Swagger docs."
-    }
+    return await create_pub_did(aries_controller)
 
 
 # TODO: This should be somehow retsricted?!
 @router.post("/create-wallet")
 async def create_wallet(
+    wallet_payload: dict = None,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
     """
@@ -117,22 +80,11 @@ async def create_wallet(
     # TODO Remove this default wallet. This has to be provided
     # At least unique values for eg label, The rest could be filled
     # with default values like image_url could point to a defautl avatar img
-    # if not wallet_payload:
-    payload = {
-        "image_url": "https://aries.ca/images/sample.png",
-        "key_management_mode": "managed",
-        "label": "YOMA",
-        "wallet_dispatch_type": "default",
-        "wallet_key": "MySecretKey1234",
-        "wallet_name": "YOMAsWallet",
-        "wallet_type": "indy",
-    }
-    # else:
-    # payload = wallet_payload
+    # wallet_payload= json.dumps(wallet_payload)
 
-    wallet_response = await aries_controller.multitenant.create_subwallet(payload)
+    # wallet_response = await aries_controller.multitenant.create_subwallet(wallet_payload)
 
-    return wallet_response
+    return print(type(wallet_payload))
     # else:
     #     # TODO: Implement wallet_response as schema if that is useful
     #     wallet_response = await controller.wallet.create_did()
@@ -141,18 +93,24 @@ async def create_wallet(
 
 @router.get("/remove-wallet")
 async def remove_wallet_by_id(
-    wallet_id: str, aries_controller: AriesAgentControllerBase = Depends(yoma_agent)
+    wallet_id: str,
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
     response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
     # Should this be success or the response??
-    if response:
-        return print("Success")
+    if response == {}:
+        final_respnse = "Success"
+    else:
+        final_respnse = "Unable to delete subwallet"
+
+    return final_respnse
 
 
 @router.get("/get-subwallet-auth-token")
 async def get_subwallet_auth_token(
-    wallet_id: str, aries_controller: AriesAgentControllerBase = Depends(yoma_agent)
+    wallet_id: str,
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
     return await aries_controller.multitenant.get_subwallet_authtoken_by_id(wallet_id)
@@ -162,7 +120,7 @@ async def get_subwallet_auth_token(
 async def update_subwallet(
     payload: dict,
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
     # Should we return "Success" and nothing else?
@@ -172,7 +130,7 @@ async def update_subwallet(
 @router.get("/get-wallet-by-id")
 async def get_subwallet(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
     return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)
@@ -185,10 +143,10 @@ async def get_subwallet(
     #     raise e
 
 
-@router.get("query-subwallet")
+@router.get("/query-subwallet")
 async def query_subwallet(
-    wallet_name: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    wallet_name: str = None,
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
     return await aries_controller.multitenant.query_subwallets(wallet_name)

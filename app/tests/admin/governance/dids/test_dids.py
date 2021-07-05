@@ -1,6 +1,7 @@
 import pytest
 
 from admin.governance.dids import get_trusted_registry, get_trusted_partner
+from acapy_ledger_facade import create_pub_did
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/admin/governance/dids"

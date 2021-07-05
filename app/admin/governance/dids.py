@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AriesAgentControllerBase
 
-from facade import yoma_agent
+from dependencies import yoma_agent
 
 
 logger = logging.getLogger(__name__)

@@ -67,7 +67,6 @@ def test_gen_pub_did():
 
     s = requests.Session()
     s.headers.update(header)
-    requests_retry_session().get(url)
     result = requests.get(url, headers=header)
     time.sleep(10)
     res_dict = json.loads(result.content)

@@ -1,6 +1,6 @@
 import logging, json
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 
 from schemas import (
     DidCreationResponse,
@@ -73,22 +73,22 @@ async def create_wallet(
             "wallet_dispatch_type": "default",
             "wallet_key": "MySecretKey1234",
             "wallet_name": "YOMAsWallet",
-            "wallet_type": "indy",
+            "wallet_type": "indy"
         }
     """
 
     # TODO Remove this default wallet. This has to be provided
     # At least unique values for eg label, The rest could be filled
     # with default values like image_url could point to a defautl avatar img
-    # wallet_payload= json.dumps(wallet_payload)
+    if wallet_payload:
+        wallet_response = await aries_controller.multitenant.create_subwallet(
+            wallet_payload
+        )
 
-    # wallet_response = await aries_controller.multitenant.create_subwallet(wallet_payload)
-
-    return print(type(wallet_payload))
-    # else:
-    #     # TODO: Implement wallet_response as schema if that is useful
-    #     wallet_response = await controller.wallet.create_did()
-    # return wallet_response
+    else:
+        # TODO: Implement wallet_response as schema if that is useful
+        wallet_response = await aries_controller.wallet.create_did()
+    return wallet_response
 
 
 @router.get("/remove-wallet")

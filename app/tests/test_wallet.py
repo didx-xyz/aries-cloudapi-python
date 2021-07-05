@@ -3,16 +3,12 @@ import requests
 import pytest
 
 import utils
-from core import wallet
-from fastapi import HTTPException
-import routers
-
-from facade import create_controller
+import acapy_ledger_facade
 
 
 @pytest.mark.asyncio
 async def test_create_public_did(setup_env, yoma_agent):
-    result = await wallet.create_pub_did(yoma_agent)
+    result = await acapy_ledger_facade.create_pub_did(yoma_agent)
 
     assert result.did_object and result.did_object != {}
     assert result.did_object["posture"] == "public"

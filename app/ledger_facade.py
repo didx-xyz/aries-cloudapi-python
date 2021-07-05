@@ -1,8 +1,6 @@
 import logging
 import os
 
-import json
-
 import requests
 from fastapi import HTTPException
 

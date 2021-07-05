@@ -1,14 +1,8 @@
-import asyncio
-
 import pytest
-from aries_cloudcontroller import AriesAgentControllerBase
-from aries_cloudcontroller.controllers.ledger import LedgerController
-from aries_cloudcontroller.controllers.wallet import WalletController
 from fastapi import HTTPException
-from mockito import mock, when
+from mockito import when
 
 from acapy_ledger_facade import get_taa, accept_taa, get_did_endpoint
-from acapy_wallet_facade import get_pub_did, assign_pub_did, create_did
 
 
 # need this to handle the async with the mock

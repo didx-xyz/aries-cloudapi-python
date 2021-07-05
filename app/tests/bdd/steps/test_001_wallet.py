@@ -37,8 +37,7 @@ FASTAPI_URL = "http://localhost:8000"
 
 @scenario("001_wallet.feature", "Getting a public DID")
 def test_get_public_did():
-    # not entirely sure why this is blank, something
-    # do do with its participation in a bdd test
+    # bdd test
     pass
 
 

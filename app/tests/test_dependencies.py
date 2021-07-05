@@ -1,4 +1,6 @@
 import pytest
+from fastapi import HTTPException
+from contextlib import asynccontextmanager
 
 import dependencies
 
@@ -13,70 +15,75 @@ def test_extract_token_from_bearer(yoma_agent):
     ).is_equal_to("TOKEN")
 
 
+@pytest.mark.asyncio
+async def test_yoma_agent():
+    async with asynccontextmanager(dependencies.yoma_agent)(
+        x_api_key="adminApiKey"
+    ) as c:
+        assert c is not None
+        assert c.api_key == "adminApiKey"
+        pass
 
-# controller_factorytest_headers = [
-#     (
-#         ControllerType.YOMA_AGENT,
-#         {"x_api_key": "AdminApiKey", "x_wallet_id": "12345"},
-#         AriesAgentController,
-#     ),
-#     (
-#         ControllerType.ECOSYSTEM_AGENT,
-#         {
-#             "x_api_key": None,
-#             "authorization_header": "Bearer 123456",
-#             "x_wallet_id": "12345",
-#         },
-#         AriesTenantController,
-#     ),
-#     (
-#         agent_factory.ControllerType.YOMA_AGENT,
-#         {"x_api_key": "AdminApiKey", "x_wallet_id": None},
-#         AriesAgentController,
-#     ),
-#     (
-#         ControllerType.YOMA_AGENT,
-#         {"authorization_header": "123456", "x_api_key": "12345", "x_wallet_id": None},
-#         AriesAgentController,
-#     ),
-#     (
-#         ControllerType.YOMA_AGENT,
-#         {"x_api_key": None, "authorization_header": "Bearer 1234"},
-#         False,
-#     ),
-#     (
-#         ControllerType.ECOSYSTEM_AGENT,
-#         {"authorization_header": None, "x_wallet_id": "1234"},
-#         False,
-#     ),
-# ]
+    with pytest.raises(HTTPException):
+        async with asynccontextmanager(dependencies.yoma_agent)() as c:
+            c
+        assert c is None
 
 
-# @pytest.mark.asyncio
-# @pytest.mark.parametrize(
-#     "controller_type, fake_header, expected", controller_factorytest_headers
-# )
-# async def test_controller_factory(controller_type, fake_header, expected):
-#     if expected is False:
-#         with pytest.raises(HTTPException) as e:
-#             utils.controller_factory(controller_type, **fake_header)
-#         assert e.type == HTTPException
-#         assert e.value.status_code == 401
-#     else:
-#         controller = utils.controller_factory(controller_type, **fake_header)
-#         assert isinstance(controller, expected)
+@pytest.mark.asyncio
+async def test_ecosystem_agent():
+    async with asynccontextmanager(dependencies.ecosystem_agent)(
+        x_api_key="adminApiKey", authorization="Bearer 12345", x_wallet_id="12345"
+    ) as c:
+        assert c is not None
+        assert c.tenant_jwt == "12345"
+        pass
+
+    with pytest.raises(HTTPException):
+        async with asynccontextmanager(dependencies.ecosystem_agent)() as c:
+            c
+        assert c is None
 
 
-# @pytest.mark.asyncio
-# @pytest.mark.parametrize(
-#     "controller_type, fake_header, expected", controller_factorytest_headers
-# )
-# async def test_controller_factory(controller_type, fake_header, expected):
-#     if expected is False:
-#         with pytest.raises(HTTPException) as e:
-#             utils.controller_factory(controller_type, **fake_header)
-#         assert e.type == HTTPException
-#         assert e.value.status_code == 401
-#     else:
-#         controller = utils.controller_factory(controller_type, **fake_header)
-#         assert isinstance(controller, expected)
+@pytest.mark.asyncio
+async def test_member_agent():
+    async with asynccontextmanager(dependencies.member_agent)(
+        authorization="Bearer 12345", x_wallet_id="12345"
+    ) as c:
+        assert c is not None
+        assert c.tenant_jwt == "12345"
+        pass
+
+    with pytest.raises(HTTPException):
+        async with asynccontextmanager(dependencies.member_agent)() as c:
+            c
+        assert c is None
+
+
+@pytest.mark.asyncio
+async def test_member_admin_agent():
+    async with asynccontextmanager(dependencies.member_admin_agent)(
+        x_api_key="adminApiKey"
+    ) as c:
+        assert c is not None
+        assert c.api_key == "adminApiKey"
+
+    with pytest.raises(HTTPException):
+        async with asynccontextmanager(dependencies.member_admin_agent)() as c:
+            c
+        assert c is None
+
+
+@pytest.mark.asyncio
+async def test_ecosystem_admin_agent():
+    async with asynccontextmanager(dependencies.ecosystem_admin_agent)(
+        x_api_key="adminApiKey"
+    ) as c:
+        assert c is not None
+        assert c.api_key == "adminApiKey"
+        pass
+
+    with pytest.raises(HTTPException):
+        async with asynccontextmanager(dependencies.ecosystem_admin_agent)() as c:
+            c
+        assert c is None

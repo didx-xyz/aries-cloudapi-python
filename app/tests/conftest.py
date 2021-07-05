@@ -37,3 +37,14 @@ async def yoma_agent():
     # this is doing what using decorators does for you
     async with asynccontextmanager(agent)(x_api_key="adminApiKey") as c:
         yield c
+
+
+# @pytest.fixture
+# async def member_agent():
+#     # fast api auto wraps the generator functions use for dependencies as context managers - thus why the
+#     # async context manager decorator is not required.
+#     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
+#     # flexibility - thus we have to.
+#     # this is doing what using decorators does for you
+#     async with asynccontextmanager(agent)(x_api_key="adminApiKey") as c:
+#         yield c

@@ -58,55 +58,54 @@ async def get_proof_request(
     """
     try:
         # We can refactor this - it's already context managed
-        async with aries_controller as controller:
-            schema_resp = await get_schema_attributes(controller, schema_id)
-            is_attrs_match = all(x in schema_resp for x in requested_attrs)
-            if not is_attrs_match:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Requested attributes not a (sub) set of schema attributes.",
-                )
-            attr_req = [
-                {"name": k, "restrictions": [{"schema_id": schema_id}]}
-                for k in requested_attrs
-            ]
-            revocation_attributes = []
-            if revocation and len(revocation_attributes) > 0:
-                [
-                    attr_req.append(
-                        {
-                            "name": rev_attr,
-                            "restrictions": [{"schema_id": schema_id}],
-                            "non_revoked": {"to": int(time.time() - 1)},
-                        }
-                    )
-                    for rev_attr in revocation_attributes
-                ]
-
-            if self_attested:
-                [attr_req.append({"name": att}) for att in self_attested]
-
-            req_preds = construct_zkp(zero_knowledge_proof, schema_id)
-
-            indy_proof_request = construct_indy_proof_request(
-                name_proof_request, schema_id, attr_req, req_preds
+        schema_resp = await get_schema_attributes(aries_controller, schema_id)
+        is_attrs_match = all(x in schema_resp for x in requested_attrs)
+        if not is_attrs_match:
+            raise HTTPException(
+                status_code=400,
+                detail="Requested attributes not a (sub) set of schema attributes.",
             )
-            if revocation:
-                indy_proof_request["non_revoked"] = {"to": int(time.time())}
+        attr_req = [
+            {"name": k, "restrictions": [{"schema_id": schema_id}]}
+            for k in requested_attrs
+        ]
+        revocation_attributes = []
+        if revocation and len(revocation_attributes) > 0:
+            [
+                attr_req.append(
+                    {
+                        "name": rev_attr,
+                        "restrictions": [{"schema_id": schema_id}],
+                        "non_revoked": {"to": int(time.time() - 1)},
+                    }
+                )
+                for rev_attr in revocation_attributes
+            ]
 
-            proof_request_web_request = {
-                "connection_id": connection_id,
-                "proof_request": indy_proof_request,
-                "trace": exchange_tracing,
-            }
+        if self_attested:
+            [attr_req.append({"name": att}) for att in self_attested]
 
-            response = await send_proof_request(controller, proof_request_web_request)
+        req_preds = construct_zkp(zero_knowledge_proof, schema_id)
 
-            presentation_exchange_id = response["presentation_exchange_id"]
+        indy_proof_request = construct_indy_proof_request(
+            name_proof_request, schema_id, attr_req, req_preds
+        )
+        if revocation:
+            indy_proof_request["non_revoked"] = {"to": int(time.time())}
 
-            response = RequestProofResponse(presentation_id=presentation_exchange_id)
+        proof_request_web_request = {
+            "connection_id": connection_id,
+            "proof_request": indy_proof_request,
+            "trace": exchange_tracing,
+        }
 
-            return response
+        response = await send_proof_request(aries_controller, proof_request_web_request)
+
+        presentation_exchange_id = response["presentation_exchange_id"]
+
+        response = RequestProofResponse(presentation_id=presentation_exchange_id)
+
+        return response
     except Exception as e:
         logger.error(f"Failed to request proof: \n {e}")
         raise e
@@ -136,15 +135,14 @@ async def verify_proof_request(
         The json representation of the verify request
     """
     try:
-        async with aries_controller as controller:
-            verify = await verify_proof_req(controller, presentation_exchange_id)
+        verify = await verify_proof_req(aries_controller, presentation_exchange_id)
 
-            if not verify["state"] == "verified":
-                raise HTTPException(
-                    status_code=400,
-                    detail="Presentation state not verified!",
-                )
-            return verify
+        if not verify["state"] == "verified":
+            raise HTTPException(
+                status_code=400,
+                detail="Presentation state not verified!",
+            )
+        return verify
     except Exception as e:
         err_trace = traceback.print_exc()
         logger.error(

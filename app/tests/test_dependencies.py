@@ -22,12 +22,10 @@ async def test_yoma_agent():
     ) as c:
         assert c is not None
         assert c.api_key == "adminApiKey"
-        pass
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.yoma_agent)() as c:
-            c
-        assert c is None
+            assert c is None
 
 
 @pytest.mark.asyncio
@@ -37,12 +35,10 @@ async def test_ecosystem_agent():
     ) as c:
         assert c is not None
         assert c.tenant_jwt == "12345"
-        pass
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.ecosystem_agent)() as c:
-            c
-        assert c is None
+            assert c is None
 
 
 @pytest.mark.asyncio
@@ -52,12 +48,10 @@ async def test_member_agent():
     ) as c:
         assert c is not None
         assert c.tenant_jwt == "12345"
-        pass
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.member_agent)() as c:
-            c
-        assert c is None
+            assert c is None
 
 
 @pytest.mark.asyncio
@@ -70,8 +64,7 @@ async def test_member_admin_agent():
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.member_admin_agent)() as c:
-            c
-        assert c is None
+            assert c is None
 
 
 @pytest.mark.asyncio
@@ -81,9 +74,7 @@ async def test_ecosystem_admin_agent():
     ) as c:
         assert c is not None
         assert c.api_key == "adminApiKey"
-        pass
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.ecosystem_admin_agent)() as c:
-            c
-        assert c is None
+            assert c is None

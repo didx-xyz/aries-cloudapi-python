@@ -79,30 +79,31 @@ async def create_wallet(
     """
     try:
         # async with create_controller(auth_headers) as controller:
-        async with aries_controller as controller:
-            if controller.is_multitenant:
-                # TODO replace with model for payload/wallet like
-                # described https://fastapi.tiangolo.com/tutorial/body/
-                # TODO Remove this default wallet. This has to be provided
-                # At least unique values for eg label, The rest could be filled
-                # with default values like image_url could point to a defautl avatar img
-                if not wallet_payload:
-                    payload = {
-                        "image_url": "https://aries.ca/images/sample.png",
-                        "key_management_mode": "managed",
-                        "label": "YOMA",
-                        "wallet_dispatch_type": "default",
-                        "wallet_key": "MySecretKey1234",
-                        "wallet_name": "YOMAsWallet",
-                        "wallet_type": "indy",
-                    }
-                else:
-                    payload = wallet_payload
-                wallet_response = await controller.multitenant.create_subwallet(payload)
+        if aries_controller.is_multitenant:
+            # TODO replace with model for payload/wallet like
+            # described https://fastapi.tiangolo.com/tutorial/body/
+            # TODO Remove this default wallet. This has to be provided
+            # At least unique values for eg label, The rest could be filled
+            # with default values like image_url could point to a defautl avatar img
+            if not wallet_payload:
+                payload = {
+                    "image_url": "https://aries.ca/images/sample.png",
+                    "key_management_mode": "managed",
+                    "label": "YOMA",
+                    "wallet_dispatch_type": "default",
+                    "wallet_key": "MySecretKey1234",
+                    "wallet_name": "YOMAsWallet",
+                    "wallet_type": "indy",
+                }
             else:
-                # TODO: Implement wallet_response as schema if that is useful
-                wallet_response = await controller.wallet.create_did()
-            return wallet_response
+                payload = wallet_payload
+            wallet_response = await aries_controller.multitenant.create_subwallet(
+                payload
+            )
+        else:
+            # TODO: Implement wallet_response as schema if that is useful
+            wallet_response = await aries_controller.wallet.create_did()
+        return wallet_response
     except Exception as e:
         logger.error(f"Failed to create wallet:\n{e!r}")
         raise HTTPException(

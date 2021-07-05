@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from fastapi import HTTPException
 from mockito import when

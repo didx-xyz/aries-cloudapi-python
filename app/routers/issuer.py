@@ -2,7 +2,8 @@ import io
 import logging
 import traceback
 from typing import List, Optional
-
+from fastapi import APIRouter, Header, Query, Depends
+from aries_cloudcontroller import AriesAgentControllerBase
 import qrcode
 from facade import (
     get_connection_id,
@@ -11,9 +12,9 @@ from facade import (
     issue_credentials,
     write_credential_def,
 )
-from fastapi import APIRouter, Header, Query
 from fastapi.responses import StreamingResponse
 from schemas import ConnectionIdResponse, IssueCredentialResponse
+from dependencies import *
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer")
@@ -31,6 +32,7 @@ async def issue_credential(
     api_key: Optional[str] = Header(None),
     wallet_id: Optional[str] = Header(None),
     tenant_jwt: Optional[str] = Header(None),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Issues a credential
@@ -54,7 +56,7 @@ async def issue_credential(
         "tenant_jwt": tenant_jwt,
     }
     try:
-        async with create_controller(auth_headers) as controller:
+        async with aries_controller as controller:
 
             # Check if connection is active
             # connection = await controller.get_connection(connection_id)

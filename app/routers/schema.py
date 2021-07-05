@@ -2,16 +2,17 @@ import logging
 import os
 import traceback
 from distutils.util import strtobool
-from typing import List, Optional
+from typing import List
 
 from facade import (
     get_schema_list,
     write_credential_def,
     write_schema_definition,
 )
-from fastapi import APIRouter, Header, Query
+from dependencies import *
+from fastapi import APIRouter, Header, Query, Depends
 from schemas import SchemaLedgerRequest, SchemaResponse
-
+from aries_cloudcontroller import AriesAgentControllerBase
 
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 
@@ -26,9 +27,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 @router.get("/all_schemas")
 async def get_schema(
-    api_key: Optional[str] = Header(None),
-    wallet_id: Optional[str] = Header(None),
-    tenant_jwt: Optional[str] = Header(None),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Get all valid schemas from YOMA
@@ -47,13 +46,8 @@ async def get_schema(
     created_schema: dict
         The created schema response in JSON
     """
-    auth_headers = {
-        "api_key": api_key,
-        "wallet_id": wallet_id,
-        "tenant_jwt": tenant_jwt,
-    }
     try:
-        async with create_controller(auth_headers) as controller:
+        async with aries_controller as controller:
             # TODO: Should this come from env var or from the client request?
             created_schemas = await get_schema_list(controller)
 
@@ -76,9 +70,7 @@ async def write_credential_schema(
     schema_name: str,
     schema_version: str,
     schema_attrs: List[str] = Query(None),
-    api_key: Optional[str] = Header(None),
-    wallet_id: Optional[str] = Header(None),
-    tenant_jwt: Optional[str] = Header(None),
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Create schema and credential definition and
@@ -108,13 +100,8 @@ async def write_credential_schema(
     * credential_definition
     * credential_id
     """
-    auth_headers = {
-        "api_key": api_key,
-        "wallet_id": wallet_id,
-        "tenant_jwt": tenant_jwt,
-    }
     try:
-        async with create_controller(auth_headers) as controller:
+        async with aries_controller as controller:
             # TODO: Should this come from env var or from the client request?
 
             # Defining schema and writing it to the ledger

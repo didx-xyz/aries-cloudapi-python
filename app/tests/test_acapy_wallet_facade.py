@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 from aries_cloudcontroller import AriesAgentControllerBase
 from aries_cloudcontroller.controllers.wallet import WalletController

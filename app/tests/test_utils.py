@@ -1,7 +1,4 @@
-import pytest
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from assertpy import assert_that
-from fastapi import HTTPException
 
 import utils
 

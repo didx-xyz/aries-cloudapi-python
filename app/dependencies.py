@@ -1,6 +1,4 @@
-from typing import AsyncContextManager
 from fastapi import Header
-from contextlib import asynccontextmanager
 
 import logging
 import os
@@ -20,7 +18,6 @@ MEMBER_AGENT_URL = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
 EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 
 
-# @AsyncContextManager
 async def yoma_agent(x_api_key: str = Header(None)):
     agent = None
     try:

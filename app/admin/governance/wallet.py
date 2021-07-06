@@ -87,7 +87,7 @@ async def create_wallet(
     return wallet_response
 
 
-@router.get("/remove-wallet")
+@router.get("/remove-wallet/{wallet_id}")
 async def remove_wallet_by_id(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
@@ -95,8 +95,8 @@ async def remove_wallet_by_id(
 
     response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
     # Should this be success or the response??
-    print(response)
-    if response == {} and response.status_code == 200:
+    logger.error(response)
+    if response == {}:
         final_respnse = "Successfully removed wallet"
     else:
         final_respnse = "Unable to delete subwallet"
@@ -104,13 +104,15 @@ async def remove_wallet_by_id(
     return final_respnse
 
 
-@router.get("/get-subwallet-auth-token")
+@router.get("/get-subwallet-auth-token/{wallet_id}")
 async def get_subwallet_auth_token(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
-
-    return await aries_controller.multitenant.get_subwallet_authtoken_by_id(wallet_id)
+    token_res = await aries_controller.multitenant.get_subwallet_authtoken_by_id(
+        wallet_id=wallet_id
+    )
+    return token_res
 
 
 @router.post("/update-subwallet")

@@ -43,7 +43,7 @@ async def test_get_subwallet_auth_token(async_client, member_admin_agent_mock):
                 "label": "YOMA",
                 "wallet_dispatch_type": "default",
                 "wallet_key": "MySecretKey1234",
-                "wallet_name": "YOMAsWallet123456789101",
+                "wallet_name": "YOMAsWallet123456789159",
                 "wallet_type": "indy",
             }
         ),
@@ -53,28 +53,28 @@ async def test_get_subwallet_auth_token(async_client, member_admin_agent_mock):
     wallet_id = wallet_response["wallet_id"]
 
     response = await async_client.get(
-        "/wallets/get-subwallet-auth-token",
+        f"/wallets/get-subwallet-auth-token/{wallet_id}",
         headers={
             "x-api-key": "adminApiKey",
-            "wallet_id": wallet_id,
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
 
     response = response.json()
-    assert response == ""
-    # assert response["token"] and response["token"] != {}
+    assert response["token"] and type(response["token"]) == str
+    assert response["token"] != ""
+
     res_method = await get_subwallet_auth_token(
         wallet_id, aries_controller=member_admin_agent_mock
     )
     assert res_method == response
 
     remove_response = await async_client.get(
-        "/wallets/remove-wallet",
-        headers={"x-api-key": "adminApiKey", "wallet_id": wallet_id},
+        f"/wallets/remove-wallet/{wallet_id}",
+        headers={"x-api-key": "adminApiKey"},
     )
     assert remove_response.status_code == 200
-    assert remove_response.json() == {}
+    assert remove_response.json() == "Successfully removed wallet"
 
 
 # @pytest.mark.asyncio

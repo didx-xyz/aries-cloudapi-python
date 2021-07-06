@@ -77,9 +77,28 @@ BASE_PATH = "/admin/governance/wallet"
 #     assert remove_response.json() == "Successfully removed wallet"
 
 
+# @pytest.mark.asyncio
+# async def test_get_subwallet(async_client, member_admin_agent_mock):
+
+#     response = response.json()
+#     assert response["token"] and type(response["token"]) == str
+# #     assert response["token"] != ""
+
+#     res_method = await get_subwallet_auth_token(
+#         wallet_id, aries_controller=member_admin_agent_mock
+#     )
+#     assert res_method == response
+
+#     remove_response = await async_client.get(
+#         f"/wallets/remove-wallet/{wallet_id}",
+#         headers={"x-api-key": "adminApiKey"},
+#     )
+#     assert remove_response.status_code == 200
+#     assert remove_response.json() == "Successfully removed wallet"
+
+
 @pytest.mark.asyncio
 async def test_get_subwallet(async_client, member_admin_agent_mock):
-
     wallet_response = await async_client.post(
         "/wallets/create-wallet",
         headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
@@ -98,7 +117,6 @@ async def test_get_subwallet(async_client, member_admin_agent_mock):
     wallet_response = wallet_response.json()
 
     wallet_id = wallet_response["wallet_id"]
-
     response = await async_client.get(
         f"/wallets/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
@@ -121,7 +139,7 @@ async def test_get_subwallet(async_client, member_admin_agent_mock):
 
 # @pytest.mark.asyncio
 # async def test_create_wallet(
-#     async_client, member_admin_agent
+#     async_client, member_admin_agent_mock
 # ):
 
 #     response = await async_client.get(
@@ -134,12 +152,12 @@ async def test_get_subwallet(async_client, member_admin_agent_mock):
 #     assert response.key_management_mode
 #     assert response.settings
 #     assert response.token
-#     res_method =await create_wallet(aries_controller=member_admin_agent)
+#     res_method =await create_wallet(aries_controller=member_admin_agent_mock)
 #     assert res_method == response
 
 # @pytest.mark.asyncio
 # async def test_remove_by_id(
-#     async_client, member_admin_agent
+#     async_client, member_admin_agent_mock
 # ):
 
 #     wallet_response = await async_client.get(

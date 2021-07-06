@@ -115,7 +115,7 @@ async def get_subwallet_auth_token(
     return token_res
 
 
-@router.post("/update-subwallet")
+@router.post("/update-subwallet/{wallet_id}")
 async def update_subwallet(
     payload: dict,
     wallet_id: str,

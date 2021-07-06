@@ -15,25 +15,31 @@ router = APIRouter(prefix="/generic/connections", tags=["connections"])
 async def create_connection(
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
-    pass
+    invite = await aries_controller.connections.create_invitation()
+    return invite
 
 
 @router.post("/accept-invite", tags=["connections", "accept"])
-async def create_connection(
+async def accept_invite(
+    invite: dict,
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
-    pass
+    accept_invite_res = await aries_controller.connections.accept_connection(invite)
+    return accept_invite_res
 
 
 @router.get("/connections", tags=["connections"])
 async def get_connections(
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
-    pass
+    connections = await aries_controller.connections.get_connection()
+    return connections
 
 
 @router.get("/connections/{conn_id}", tags=["connections"])
 async def get_connection_by_id(
+    conn_id: str,
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
-    pass
+    connection = await aries_controller.connections.get_connection(conn_id)
+    return connection

@@ -43,3 +43,11 @@ async def get_connection_by_id(
 ):
     connection = await aries_controller.connections.get_connection(conn_id)
     return connection
+
+
+@router.post("/connections/{conn_id}", tags=["connections"])
+async def delete_connection_by_id(
+    conn_id: str, aries_controller: AriesAgentControllerBase = Depends(yoma_agent)
+):
+    remove_res = await aries_controller.connections.remove_connection(conn_id)
+    return remove_res

@@ -115,7 +115,7 @@ async def get_subwallet_auth_token(
     return token_res
 
 
-@router.post("/update-subwallet")
+@router.post("/update-subwallet/{wallet_id}")
 async def update_subwallet(
     payload: dict,
     wallet_id: str,
@@ -126,14 +126,14 @@ async def update_subwallet(
     return await aries_controller.multitenant.update_subwallet_by_id(payload, wallet_id)
 
 
-@router.get("/get-wallet-by-id")
+@router.get("/get-wallet-by-id/{wallet_id}")
 async def get_subwallet(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
-    return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)
-
+    response = await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)
+    return response
     # except Exception as e:
     #     err_trace = traceback.print_exc()
     #     logger.error(

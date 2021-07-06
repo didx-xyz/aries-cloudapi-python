@@ -22,7 +22,7 @@ router = APIRouter(prefix="/wallets", tags=["wallets"])
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
-    aries_controller: AriesAgentControllerBase,
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
     Create a new public DID and
@@ -46,7 +46,7 @@ async def create_public_did(
     return await create_pub_did(aries_controller)
 
 
-# TODO: This should be somehow retsricted?!
+# TODO: This should be somehow restricted?!
 @router.post("/create-wallet")
 async def create_wallet(
     wallet_payload: dict = None,
@@ -84,10 +84,6 @@ async def create_wallet(
         wallet_response = await aries_controller.multitenant.create_subwallet(
             wallet_payload
         )
-
-    else:
-        # TODO: Implement wallet_response as schema if that is useful
-        wallet_response = await aries_controller.wallet.create_did()
     return wallet_response
 
 
@@ -99,8 +95,9 @@ async def remove_wallet_by_id(
 
     response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
     # Should this be success or the response??
-    if response == {}:
-        final_respnse = "Success"
+    print(response)
+    if response == {} and response.status_code == 200:
+        final_respnse = "Successfully removed wallet"
     else:
         final_respnse = "Unable to delete subwallet"
 

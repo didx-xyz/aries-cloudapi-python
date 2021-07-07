@@ -1,1 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="3.619" timestamp="2021-07-06T15:18:21.274464" hostname="localhost"><testcase classname="tests.admin.governance.wallet.test_wallet" name="test_get_subwallet" time="3.551" /></testsuite></testsuites>

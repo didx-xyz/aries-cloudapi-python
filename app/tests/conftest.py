@@ -10,7 +10,8 @@ from httpx import AsyncClient
 from main import app
 import ledger_facade
 import utils
-from dependencies import yoma_agent as agent
+from dependencies import yoma_agent, member_admin_agent
+from httpx import AsyncClient
 
 
 @pytest.fixture
@@ -31,13 +32,13 @@ def mock_agent_controller():
 
 
 @pytest.fixture
-async def yoma_agent():
+async def yoma_agent_mock():
     # fast api auto wraps the generator functions use for dependencies as context managers - thus why the
     # async context manager decorator is not required.
     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
     # flexibility - thus we have to.
     # this is doing what using decorators does for you
-    async with asynccontextmanager(agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
         yield c
 
 
@@ -45,3 +46,9 @@ async def yoma_agent():
 async def async_client():
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         yield ac
+
+
+@pytest.fixture
+async def member_admin_agent_mock():
+    async with asynccontextmanager(member_admin_agent)(x_api_key="adminApiKey") as c:
+        yield c

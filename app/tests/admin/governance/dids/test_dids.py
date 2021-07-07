@@ -8,7 +8,7 @@ BASE_PATH = "/admin/governance/dids"
 
 
 @pytest.mark.asyncio
-async def test_get_trusted_registry(async_client, yoma_agent):
+async def test_get_trusted_registry(async_client, yoma_agent_mock):
 
     response = await async_client.get(
         BASE_PATH + "/trusted-registry",
@@ -20,12 +20,12 @@ async def test_get_trusted_registry(async_client, yoma_agent):
     assert [list(res.keys()) == expected_keys for res in result]
     assert len(result) == 1
 
-    res_method = await get_trusted_registry(aries_controller=yoma_agent)
+    res_method = await get_trusted_registry(aries_controller=yoma_agent_mock)
     assert res_method == result
 
 
 @pytest.mark.asyncio
-async def test_get_trusted_partner(async_client, yoma_agent):
+async def test_get_trusted_partner(async_client, yoma_agent_mock):
 
     # Create a public did
     did_response = await async_client.get(
@@ -50,6 +50,6 @@ async def test_get_trusted_partner(async_client, yoma_agent):
     assert result["did"] == did_created
 
     res_method = await get_trusted_partner(
-        partner_did=f"{did_created}", aries_controller=yoma_agent
+        partner_did=f"{did_created}", aries_controller=yoma_agent_mock
     )
     assert res_method == result

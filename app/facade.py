@@ -1,7 +1,6 @@
 import logging
 
 from typing import TypeVar
-
 from fastapi import HTTPException
 
 T_co = TypeVar("T_co", contravariant=True)

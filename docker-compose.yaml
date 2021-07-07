@@ -46,6 +46,8 @@ services:
       - yoma-ga-wallets-db
     networks:
       - yoma-ga
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   yoma-multitenant-web:
     build:
       context: .
@@ -91,6 +93,7 @@ services:
       - yoma-multitenant-wallets-db
     networks:
       - yoma-multitenant
+      - yoma-ga
 ##### UNCOMMENT FOR A TAILS SERVER ######
 # Note - for revocation to work you will have to make additional changes to the env files
 #  tails-server:

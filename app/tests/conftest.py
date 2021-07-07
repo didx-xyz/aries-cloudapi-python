@@ -4,6 +4,7 @@ import pytest
 from aries_cloudcontroller import AriesAgentControllerBase
 from aries_cloudcontroller.controllers.ledger import LedgerController
 from aries_cloudcontroller.controllers.wallet import WalletController
+from httpx import AsyncClient
 from mockito import mock
 from httpx import AsyncClient
 

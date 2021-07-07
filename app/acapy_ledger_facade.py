@@ -1,9 +1,7 @@
 import logging
-
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
 from schemas import DidCreationResponse
-
 from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import HTTPException
 
@@ -98,16 +96,11 @@ async def create_pub_did(
     Create a new public DID and
     write it to the ledger and
     receive its public info.
-
     Returns:
     * DID object (json)
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
-    # TODO Can we break down this endpoint into smaller functions?
-    # # Because this really is too complex/too much happening at once.
-    # # This way not really testible/robust
-
     generate_did_res = await wallet_facade.create_did(aries_controller)
     did_object = generate_did_res["result"]
     await ledger_facade.post_to_ledger(did_object=did_object)

@@ -3,6 +3,7 @@ from fastapi import Header
 import logging
 import os
 import re
+
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import HTTPException
 
@@ -20,7 +21,7 @@ EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 async def yoma_agent(x_api_key: str = Header(None)):
     agent = None
     try:
-        if not x_api_key:
+        if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AriesAgentController(
             admin_url=YOMA_AGENT_URL,
@@ -48,7 +49,7 @@ async def ecosystem_agent(
         # TODO extract wallet_id instead of passing it?!
 
         # check the header is present
-        if not authorization:
+        if str(authorization) == "extra={}":
             raise HTTPException(401)
 
         # extract the JWT
@@ -78,7 +79,7 @@ async def member_agent(
 ):
     agent = None
     try:
-        if not authorization:
+        if str(authorization) == "extra={}":
             raise HTTPException(401)
         tenant_jwt = _extract_jwt_token_from_security_header(authorization)
         agent = AriesTenantController(
@@ -103,7 +104,7 @@ async def member_admin_agent(
 ):
     agent = None
     try:
-        if not x_api_key:
+        if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AriesAgentController(
             admin_url=MEMBER_AGENT_URL, api_key=x_api_key, is_multitenant=True
@@ -124,7 +125,7 @@ async def ecosystem_admin_agent(
 ):
     agent = None
     try:
-        if not x_api_key:
+        if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AriesAgentController(
             admin_url=ECOSYSTEM_AGENT_URL, api_key=x_api_key, is_multitenant=True

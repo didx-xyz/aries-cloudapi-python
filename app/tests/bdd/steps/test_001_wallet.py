@@ -36,13 +36,14 @@ FASTAPI_URL = "http://localhost:8000"
 
 
 @scenario("001_wallet.feature", "Getting a public DID")
-def test_GetPublicDid():
+def test_get_public_did():
+    # bdd test
     pass
 
 
 @given("I have an admin API key")
 def admin_header():
-    admin_headers = {"api-key": "adminApiKey"}
+    admin_headers = {"x-api-key": "adminApiKey"}
     return admin_headers
 
 
@@ -66,7 +67,7 @@ def test_gen_pub_did():
 
     s = requests.Session()
     s.headers.update(header)
-    result = requests_retry_session().get(url)
+    requests_retry_session().get(url)
     result = requests.get(url, headers=header)
     time.sleep(10)
     res_dict = json.loads(result.content)
@@ -85,11 +86,7 @@ def test_gen_pub_did_no_key():
     s.headers.update(header)
     result = requests_retry_session().get(url)
     res_dict = json.loads(result.content)
-    assert result.status_code == 400
-    assert (
-        "Bad headers. Either provide an api_key or both wallet_id and tenant_jwt"
-        in res_dict["detail"]
-    )
+    assert result.status_code == 401
     assert "did_object" not in res_dict
     assert "issuer_verkey" not in res_dict
     assert "issuer_endpoint" not in res_dict

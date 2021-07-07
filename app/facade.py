@@ -173,7 +173,6 @@ async def write_schema_definition(controller, schema_definition_request):
 
 # Need to rename this?
 async def verify_proof_req(controller, presentation_exchange_id):
-
     verify = await controller.proofs.verify_presentation(presentation_exchange_id)
 
     if not verify:
@@ -186,7 +185,6 @@ async def verify_proof_req(controller, presentation_exchange_id):
 
 
 async def send_proof_request(controller, proof_request_web_request):
-
     response = await controller.proofs.send_request(proof_request_web_request)
 
     if not response:
@@ -195,60 +193,3 @@ async def send_proof_request(controller, proof_request_web_request):
         )
 
     return response
-
-
-async def remove_wallet(controller, wallet_id):
-
-    response = await controller.multitenant.remove_subwallet_by_id(wallet_id)
-
-    if not response:
-        raise HTTPException(
-            status_code=404, detail="Something went wrong. Could not remove wallet."
-        )
-    return response
-
-
-async def get_auth_token_by_id(controller, wallet_id):
-
-    response = await controller.multitenant.get_subwallet_authtoken_by_id(wallet_id)
-
-    if not response:
-        raise HTTPException(
-            status_code=404, detail="Something went wrong. Could not get auth_token."
-        )
-    return response
-
-
-async def update_subwallet_via_id(controller, wallet_id, payload):
-
-    update = await controller.multitenant.update_subwallet_by_id(payload, wallet_id)
-
-    if not update:
-        raise HTTPException(
-            status_code=404, detail="Something went wrong. Could not update subwallet."
-        )
-    return update
-
-
-async def get_subwallet_by_id(controller, wallet_id):
-
-    subwallet = await controller.multitenant.get_single_subwallet_by_id(wallet_id)
-
-    if not subwallet:
-        raise HTTPException(
-            status_code=404, detail="Something went wrong. Could not obtain subwallet. "
-        )
-
-    return subwallet
-
-
-async def query_subwallet_ids(controller, wallet_name):
-
-    query = await controller.multitenant.query_subwallets(wallet_name)
-
-    if not query:
-        raise HTTPException(
-            status_code=404, detail="Something went wrong. Could not query subwallets."
-        )
-
-    return query

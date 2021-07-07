@@ -4,13 +4,13 @@ import traceback
 from distutils.util import strtobool
 from typing import List
 
+from dependencies import *
 from facade import (
     get_schema_list,
     write_credential_def,
     write_schema_definition,
 )
-from dependencies import *
-from fastapi import APIRouter, Header, Query, Depends
+from fastapi import APIRouter, Query, Depends
 from schemas import SchemaLedgerRequest, SchemaResponse
 from aries_cloudcontroller import AriesAgentControllerBase
 
@@ -47,11 +47,11 @@ async def get_schema(
         The created schema response in JSON
     """
     try:
-        async with aries_controller as controller:
-            # TODO: Should this come from env var or from the client request?
-            created_schemas = await get_schema_list(controller)
+        # async with create_controller(auth_headers) as controller:
+        # TODO: Should this come from env var or from the client request?
+        created_schemas = await get_schema_list(aries_controller)
 
-            return created_schemas
+        return created_schemas
 
     except Exception as e:
         err_trace = traceback.print_exc()
@@ -101,34 +101,33 @@ async def write_credential_schema(
     * credential_id
     """
     try:
-        async with aries_controller as controller:
-            # TODO: Should this come from env var or from the client request?
+        # TODO: Should this come from env var or from the client request?
 
-            # Defining schema and writing it to the ledger
-            schema_definition_request = SchemaLedgerRequest(
-                schema_name=schema_name,
-                schema_version=schema_version,
-                schema_attrs=schema_attrs,
-            )
+        # Defining schema and writing it to the ledger
+        schema_definition_request = SchemaLedgerRequest(
+            schema_name=schema_name,
+            schema_version=schema_version,
+            schema_attrs=schema_attrs,
+        )
 
-            write_schema_resp = await write_schema_definition(
-                controller, schema_definition_request
-            )
+        write_schema_resp = await write_schema_definition(
+            aries_controller, schema_definition_request
+        )
 
-            schema_id = write_schema_resp["schema_id"]
+        schema_id = write_schema_resp["schema_id"]
 
-            # Writing credential definition
-            credential_definition = await write_credential_def(controller, schema_id)
+        # Writing credential definition
+        credential_definition = await write_credential_def(aries_controller, schema_id)
 
-            credential_definition_id = credential_definition["credential_definition_id"]
+        credential_definition_id = credential_definition["credential_definition_id"]
 
-            final_response = SchemaResponse(
-                schema_resp=write_schema_resp,
-                schema_id=schema_id,
-                credential_definition=credential_definition,
-                credential_definition_id=credential_definition_id,
-            )
-            return final_response
+        final_response = SchemaResponse(
+            schema_resp=write_schema_resp,
+            schema_id=schema_id,
+            credential_definition=credential_definition,
+            credential_definition_id=credential_definition_id,
+        )
+        return final_response
     except Exception as e:
         err_trace = traceback.print_exc()
         logger.error(

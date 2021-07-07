@@ -26,13 +26,13 @@ def setup_local_env():
 
 
 @pytest.mark.asyncio
-async def test_create_credential_definition(setup_local_env, yoma_agent):
+async def test_create_credential_definition(setup_local_env, yoma_agent_mock):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent)
+    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
-    schema_definition_result = await create_schema(definition, yoma_agent)
+    schema_definition_result = await create_schema(definition, yoma_agent_mock)
     print(schema_definition_result)
 
     credential_definition = CredentialDefinition(
@@ -42,11 +42,11 @@ async def test_create_credential_definition(setup_local_env, yoma_agent):
     )
 
     # when
-    result = await create_credential_definition(credential_definition, yoma_agent)
+    result = await create_credential_definition(credential_definition, yoma_agent_mock)
 
     # then
     written = await get_credential_definition(
-        result["credential_definition_id"], yoma_agent
+        result["credential_definition_id"], yoma_agent_mock
     )
     assert_that(written).is_not_empty().contains_key("credential_definition")
     assert_that(written["credential_definition"]["tag"]).is_equal_to(
@@ -56,14 +56,14 @@ async def test_create_credential_definition(setup_local_env, yoma_agent):
 
 @pytest.mark.asyncio
 async def test_create_credential_definition_via_web(
-    setup_local_env, yoma_agent, async_client
+    setup_local_env, yoma_agent_mock, async_client
 ):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent)
+    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
-    schema_definition_result = await create_schema(definition, yoma_agent)
+    schema_definition_result = await create_schema(definition, yoma_agent_mock)
     print(schema_definition_result)
 
     credential_definition = CredentialDefinition(
@@ -83,7 +83,7 @@ async def test_create_credential_definition_via_web(
 
     # then
     written = await get_credential_definition(
-        result["credential_definition_id"], yoma_agent
+        result["credential_definition_id"], yoma_agent_mock
     )
     assert_that(written).is_not_empty().contains_key("credential_definition")
     assert_that(written["credential_definition"]["tag"]).is_equal_to(
@@ -92,15 +92,15 @@ async def test_create_credential_definition_via_web(
 
 
 @pytest.mark.asyncio
-async def test_get_credential_definitions(setup_local_env, yoma_agent):
+async def test_get_credential_definitions(setup_local_env, yoma_agent_mock):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent)
+    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent)
-    schema_definition_result_2 = await create_schema(definition2, yoma_agent)
+    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
+    schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
 
     credential_definition_1 = CredentialDefinition(
         schema_id=schema_definition_result_1["schema_id"],
@@ -113,14 +113,15 @@ async def test_get_credential_definitions(setup_local_env, yoma_agent):
         support_revocation=False,
     )
 
-    await create_credential_definition(credential_definition_1, yoma_agent)
+    await create_credential_definition(credential_definition_1, yoma_agent_mock)
     credential_definition_result_2 = await create_credential_definition(
-        credential_definition_2, yoma_agent
+        credential_definition_2, yoma_agent_mock
     )
 
     # when
     credential_definition = await get_created_credential_definitions(
-        schema_id=schema_definition_result_2["schema_id"], aries_controller=yoma_agent
+        schema_id=schema_definition_result_2["schema_id"],
+        aries_controller=yoma_agent_mock,
     )
 
     # then
@@ -131,14 +132,14 @@ async def test_get_credential_definitions(setup_local_env, yoma_agent):
 
 @pytest.mark.asyncio
 async def test_get_credential_definitions_via_web(
-    setup_local_env, yoma_agent, async_client
+    setup_local_env, yoma_agent_mock, async_client
 ):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent)
+    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
-    schema_definition_result = await create_schema(definition, yoma_agent)
+    schema_definition_result = await create_schema(definition, yoma_agent_mock)
 
     credential_definition = CredentialDefinition(
         schema_id=schema_definition_result["schema_id"],
@@ -147,7 +148,7 @@ async def test_get_credential_definitions_via_web(
     )
 
     credential_definition_result = await create_credential_definition(
-        credential_definition, yoma_agent
+        credential_definition, yoma_agent_mock
     )
 
     # when
@@ -166,12 +167,12 @@ async def test_get_credential_definitions_via_web(
 
 
 @pytest.mark.asyncio
-async def test_get_credential_definition(setup_local_env, yoma_agent):
+async def test_get_credential_definition(setup_local_env, yoma_agent_mock):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    await create_public_did(yoma_agent)
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent)
+    await create_public_did(yoma_agent_mock)
+    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
 
     credential_definition_1 = CredentialDefinition(
         schema_id=schema_definition_result_1["schema_id"],
@@ -180,12 +181,12 @@ async def test_get_credential_definition(setup_local_env, yoma_agent):
     )
 
     credential_definition_result = await create_credential_definition(
-        credential_definition_1, yoma_agent
+        credential_definition_1, yoma_agent_mock
     )
 
     # when
     result = await get_credential_definition(
-        credential_definition_result["credential_definition_id"], yoma_agent
+        credential_definition_result["credential_definition_id"], yoma_agent_mock
     )
 
     # then
@@ -198,19 +199,19 @@ async def test_get_credential_definition(setup_local_env, yoma_agent):
 
 @pytest.mark.asyncio
 async def test_get_credential_definition_via_web(
-    setup_local_env, yoma_agent, async_client
+    setup_local_env, yoma_agent_mock, async_client
 ):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
-    await create_public_did(yoma_agent)
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent)
+    await create_public_did(yoma_agent_mock)
+    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
     credential_definition_1 = CredentialDefinition(
         schema_id=schema_definition_result_1["schema_id"],
         tag=get_random_string(5),
         support_revocation=False,
     )
     credential_definition_result = await create_credential_definition(
-        credential_definition_1, yoma_agent
+        credential_definition_1, yoma_agent_mock
     )
     # when
     result_json = (

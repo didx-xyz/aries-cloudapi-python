@@ -173,7 +173,6 @@ async def write_schema_definition(controller, schema_definition_request):
 
 # Need to rename this?
 async def verify_proof_req(controller, presentation_exchange_id):
-
     verify = await controller.proofs.verify_presentation(presentation_exchange_id)
 
     if not verify:
@@ -186,7 +185,6 @@ async def verify_proof_req(controller, presentation_exchange_id):
 
 
 async def send_proof_request(controller, proof_request_web_request):
-
     response = await controller.proofs.send_request(proof_request_web_request)
 
     if not response:

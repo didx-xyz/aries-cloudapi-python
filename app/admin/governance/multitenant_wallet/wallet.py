@@ -1,13 +1,11 @@
-import logging, json
+import logging
 
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, Depends
 
 from schemas import (
     DidCreationResponse,
-    InitWalletRequest,
 )
 from aries_cloudcontroller import AriesAgentControllerBase
-import traceback
 
 from acapy_ledger_facade import create_pub_did
 from dependencies import *

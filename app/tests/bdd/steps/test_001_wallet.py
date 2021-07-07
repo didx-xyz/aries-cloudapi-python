@@ -67,7 +67,6 @@ def test_gen_pub_did():
 
     s = requests.Session()
     s.headers.update(header)
-    requests_retry_session().get(url)
     result = requests.get(url, headers=header)
     time.sleep(10)
     res_dict = json.loads(result.content)
@@ -87,6 +86,7 @@ def test_gen_pub_did_no_key():
     result = requests_retry_session().get(url)
     res_dict = json.loads(result.content)
     assert result.status_code == 401
+    assert "Unauthorized" in res_dict["detail"]
     assert "did_object" not in res_dict
     assert "issuer_verkey" not in res_dict
     assert "issuer_endpoint" not in res_dict

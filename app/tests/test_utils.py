@@ -53,7 +53,3 @@ def test_construct_indy_proof_request():
     result = utils.construct_indy_proof_request(*given)
 
     assert result == expected
-
-
-def test_yoma_agent_fixture(yoma_agent):
-    assert_that(yoma_agent).is_not_none()

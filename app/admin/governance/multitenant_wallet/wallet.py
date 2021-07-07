@@ -126,32 +126,17 @@ async def update_subwallet(
     return await aries_controller.multitenant.update_subwallet_by_id(payload, wallet_id)
 
 
+@router.get("/query-subwallet")
+async def query_subwallet(
+    wallet_name: str = None,
+    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+):
+    return await aries_controller.multitenant.query_subwallets(wallet_name=wallet_name)
+
+
 @router.get("/{wallet_id}")
 async def get_subwallet(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
     return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)
-
-    # except Exception as e:
-    #     err_trace = traceback.print_exc()
-    #     logger.error(
-    #         f"Failed to get subwallet. The following error occured:\n{e!r}\n{err_trace}"
-    #     )
-    #     raise e
-
-
-@router.get("/query-subwallet")
-async def query_subwallet(
-    wallet_name: str = None,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
-):
-
-    return await aries_controller.multitenant.query_subwallets(wallet_name)
-
-    # except Exception as e:
-    #     err_trace = traceback.print_exc()
-    #     logger.error(
-    #         f"Failed to get subwallet. The following error occured:\n{e!r}\n{err_trace}"
-    #     )
-    #     raise e

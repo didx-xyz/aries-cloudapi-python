@@ -1,7 +1,7 @@
 from admin import admin
 from fastapi import Depends, FastAPI
 from routers import governance, holder, issuer, schema, verifier
-from admin.governance import wallet
+from admin.governance.multitenant_wallet import wallet
 
 app = FastAPI()
 

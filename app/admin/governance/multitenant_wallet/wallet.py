@@ -16,9 +16,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/wallets", tags=["wallets"])
 
-# TODO Should the admin_api_key be a dummy variable so the controller doesn't function w/o providing it?
-# This all smells really - this has to be done in a better manner
-
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
@@ -76,10 +73,6 @@ async def create_wallet(
             "wallet_type": "indy"
         }
     """
-
-    # TODO Remove this default wallet. This has to be provided
-    # At least unique values for eg label, The rest could be filled
-    # with default values like image_url could point to a defautl avatar img
     if wallet_payload:
         wallet_response = await aries_controller.multitenant.create_subwallet(
             wallet_payload
@@ -87,42 +80,35 @@ async def create_wallet(
     return wallet_response
 
 
-@router.get("/remove-wallet/{wallet_id}")
+@router.delete("/{wallet_id}")
 async def remove_wallet_by_id(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
 
     response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
-    # Should this be success or the response??
-    logger.error(response)
     if response == {}:
-        final_respnse = "Successfully removed wallet"
+        return "Successfully removed wallet"
     else:
-        final_respnse = "Unable to delete subwallet"
-
-    return final_respnse
+        return "Unable to delete subwallet"
 
 
-@router.get("/get-subwallet-auth-token/{wallet_id}")
+@router.get("/{wallet_id}/auth-token")
 async def get_subwallet_auth_token(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
-    token_res = await aries_controller.multitenant.get_subwallet_authtoken_by_id(
+    return await aries_controller.multitenant.get_subwallet_authtoken_by_id(
         wallet_id=wallet_id
     )
-    return token_res
 
 
-@router.post("/update-subwallet/{wallet_id}")
+@router.post("/{wallet_id}")
 async def update_subwallet(
     payload: dict,
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ):
-
-    # Should we return "Success" and nothing else?
     return await aries_controller.multitenant.update_subwallet_by_id(payload, wallet_id)
 
 

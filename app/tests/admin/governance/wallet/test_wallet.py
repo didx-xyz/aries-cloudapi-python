@@ -35,8 +35,8 @@ async def fixture_create_wallet_mock(async_client):
     wallet_response = wallet_response.json()
     wallet_id = wallet_response["wallet_id"]
     yield wallet_response
-    remove_response = await async_client.get(
-        f"/wallets/remove-wallet/{wallet_id}",
+    remove_response = await async_client.delete(
+        f"/wallets/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
     )
     assert remove_response.status_code == 200
@@ -52,7 +52,6 @@ async def test_create_pub_did(async_client, yoma_agent_mock):
 
     assert response.status_code == 200
     response = response.json()
-    # assert response == ''
     assert response["did_object"] and response["did_object"] != {}
     assert response["issuer_verkey"] and response["issuer_verkey"] != {}
     assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}
@@ -70,7 +69,7 @@ async def test_get_subwallet_auth_token(
     wallet_id = wallet_response["wallet_id"]
 
     response = await async_client.get(
-        f"/wallets/get-subwallet-auth-token/{wallet_id}",
+        f"/wallets/{wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
             **APPLICATION_JSON_CONTENT_TYPE,
@@ -108,12 +107,11 @@ async def test_get_subwallet(async_client, member_admin_agent_mock, create_walle
 
 @pytest.mark.asyncio
 async def test_update_wallet(async_client, member_admin_agent_mock, create_wallet_mock):
-
     wallet_response = create_wallet_mock
     wallet_id = wallet_response["wallet_id"]
     payload = {"image_url": "update"}
     update_response = await async_client.post(
-        f"/wallets/update-subwallet/{wallet_id}",
+        f"/wallets/{wallet_id}",
         headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
         data=json.dumps({"image_url": "update"}),
     )
@@ -128,7 +126,6 @@ async def test_update_wallet(async_client, member_admin_agent_mock, create_walle
 
 @pytest.mark.asyncio
 async def test_query_subwallet(async_client, member_admin_agent_mock):
-
     query_response = await async_client.get(
         f"/wallets/query-subwallet",
         headers={"x-api-key": "adminApiKey"},
@@ -141,7 +138,6 @@ async def test_query_subwallet(async_client, member_admin_agent_mock):
 
 @pytest.mark.asyncio
 async def test_create_wallet(async_client):
-
     wallet_response = await async_client.post(
         "/wallets/create-wallet",
         headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
@@ -167,15 +163,16 @@ async def test_create_wallet(async_client):
     response = response.json()
     assert wallet_response["settings"] == response["settings"]
 
-    remove_response = await async_client.get(
-        f"/wallets/remove-wallet/{wallet_id}",
+    remove_response = await async_client.delete(
+        f"/wallets/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
     )
+    assert remove_response.status_code == 200
+    assert remove_response.json() == "Successfully removed wallet"
 
 
 @pytest.mark.asyncio
 async def test_remove_by_id(async_client):
-
     wallet_response = await async_client.post(
         "/wallets/create-wallet",
         headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
@@ -194,8 +191,8 @@ async def test_remove_by_id(async_client):
     wallet_response = wallet_response.json()
     wallet_id = wallet_response["wallet_id"]
 
-    response = await async_client.get(
-        f"/wallets/remove-wallet/{wallet_id}",
+    response = await async_client.delete(
+        f"/wallets/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
     )
     assert response.status_code == 200

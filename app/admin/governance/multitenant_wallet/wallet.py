@@ -8,7 +8,7 @@ from schemas import (
 from aries_cloudcontroller import AriesAgentControllerBase
 
 from acapy_ledger_facade import create_pub_did
-from dependencies import *
+from dependencies import yoma_agent, member_admin_agent
 
 logger = logging.getLogger(__name__)
 

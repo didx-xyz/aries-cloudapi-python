@@ -2,6 +2,8 @@ import pytest
 import json
 from contextlib import asynccontextmanager
 from aiohttp import ClientResponseError
+import random
+import string
 
 from admin.governance.multitenant_wallet.wallet import query_subwallet
 from generic.connections import (
@@ -51,43 +53,37 @@ async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
 @pytest.fixture(name="create_wallets_mock")
 async def fixture_create_wallets_mock(async_client, member_admin_agent_mock):
     # Create two wallets
-    yoda_wallet_id = ""
-    han_wallet_id = ""
-    try:
-        yoda_wallet_response = await async_client.post(
-            "/wallets/create-wallet",
-            headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
-            data=json.dumps(CREATE_WALLET_PAYLOAD_YODA),
-        )
-        yoda_wallet_response = yoda_wallet_response.json()
-        yoda_wallet_id = yoda_wallet_response["wallet_id"]
-        han_wallet_response = await async_client.post(
-            "/wallets/create-wallet",
-            headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
-            data=json.dumps(CREATE_WALLET_PAYLOAD_HAN),
-        )
-        han_wallet_response = han_wallet_response.json()
-        han_wallet_id = han_wallet_response["wallet_id"]
-        yield yoda_wallet_response, han_wallet_response
-    except ClientResponseError:
-        yoda_wallet_response = await query_subwallet(
-            wallet_name="YodaJediPokerFunds", aries_controller=member_admin_agent_mock
-        )
-        han_wallet_response = await query_subwallet(
-            wallet_name="HanSolosCocktailFunds",
-            aries_controller=member_admin_agent_mock,
-        )
-        yoda_wallet_id = yoda_wallet_response["wallet_id"]
-        han_wallet_id = han_wallet_response["wallet_id"]
-        yield yoda_wallet_response, han_wallet_response
-    finally:
-        yoda_response, han_response = await remove_wallets(
-            yoda_wallet_id, han_wallet_id, async_client
-        )
-        assert yoda_response.status_code == 200
-        assert yoda_response.json() == "Successfully removed wallet"
-        assert han_response.status_code == 200
-        assert han_response.json() == "Successfully removed wallet"
+    N = 20
+    CREATE_WALLET_PAYLOAD_HAN["wallet_name"] = "".join(
+        random.choice(string.ascii_uppercase + string.digits) for _ in range(N)
+    )
+    CREATE_WALLET_PAYLOAD_YODA["wallet_name"] = "".join(
+        random.choice(string.ascii_uppercase + string.digits) for _ in range(N)
+    )
+
+    yoda_wallet_response = await async_client.post(
+        "/wallets/create-wallet",
+        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        data=json.dumps(CREATE_WALLET_PAYLOAD_YODA),
+    )
+    yoda_wallet_response = yoda_wallet_response.json()
+    yoda_wallet_id = yoda_wallet_response["wallet_id"]
+    han_wallet_response = await async_client.post(
+        "/wallets/create-wallet",
+        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        data=json.dumps(CREATE_WALLET_PAYLOAD_HAN),
+    )
+    han_wallet_response = han_wallet_response.json()
+    han_wallet_id = han_wallet_response["wallet_id"]
+    yield yoda_wallet_response, han_wallet_response
+
+    yoda_response, han_response = await remove_wallets(
+        yoda_wallet_id, han_wallet_id, async_client
+    )
+    assert yoda_response.status_code == 200
+    assert yoda_response.json() == "Successfully removed wallet"
+    assert han_response.status_code == 200
+    assert han_response.json() == "Successfully removed wallet"
 
 
 @pytest.mark.asyncio
@@ -172,7 +168,6 @@ async def test_accept_invite(async_client, create_wallets_mock):
         accept_invite_response = await accept_invite(
             invite=invite, aries_controller=member_agent
         )
-
     assert (
         accept_invite_response["accept"] and accept_invite_response["accept"] == "auto"
     )
@@ -300,7 +295,6 @@ async def test_get_connection_by_id(async_client, create_wallets_mock):
         connection_from_method = await get_connection_by_id(
             connection_id=connection_id, aries_controller=member_agent
         )
-
     assert connection["results"][0] == connection_from_method
 
 
@@ -354,5 +348,4 @@ async def test_delete_connection(async_client, create_wallets_mock):
             connection_id=connection_id, aries_controller=member_agent
         )
         connection = await get_connections(aries_controller=member_agent)
-
     assert connection["results"] == []

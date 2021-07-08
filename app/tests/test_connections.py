@@ -1,7 +1,6 @@
 import pytest
 import json
 from contextlib import asynccontextmanager
-from aiohttp import ClientResponseError
 import random
 import string
 
@@ -55,10 +54,12 @@ async def fixture_create_wallets_mock(async_client, member_admin_agent_mock):
     # Create two wallets
     N = 20
     CREATE_WALLET_PAYLOAD_HAN["wallet_name"] = "".join(
-        random.choice(string.ascii_uppercase + string.digits) for _ in range(N)
+        random.choice(string.ascii_uppercase + string.digits)
+        for _ in range(N)  # NOSONAR
     )
     CREATE_WALLET_PAYLOAD_YODA["wallet_name"] = "".join(
-        random.choice(string.ascii_uppercase + string.digits) for _ in range(N)
+        random.choice(string.ascii_uppercase + string.digits)
+        for _ in range(N)  # NOSONAR
     )
 
     yoda_wallet_response = await async_client.post(
@@ -91,7 +92,6 @@ async def test_create_invite(async_client, create_wallets_mock):
     yoda, han = create_wallets_mock
 
     yoda_wallet_id = yoda["wallet_id"]
-    han_wallet_id = han["wallet_id"]
 
     yoda_token_response = await async_client.get(
         f"/wallets/{yoda_wallet_id}/auth-token",

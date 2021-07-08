@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 import random
 import string
 
-from admin.governance.multitenant_wallet.wallet import query_subwallet
 from generic.connections import (
     create_invite,
     accept_invite,
@@ -49,16 +48,54 @@ async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
     return yoda_response, han_response
 
 
+async def invite_creation(async_client, token, wallet_id):
+    invite_creation_response = await async_client.get(
+        f"/generic/connections/create-invite",
+        headers={
+            "authorization": f"Bearer {token}",
+            "x-wallet-id": wallet_id,
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
+    )
+    return invite_creation_response.json()["invitation"]
+
+
+async def token_responses(async_client, create_wallets_mock):
+    yoda, han = create_wallets_mock
+
+    yoda_wallet_id = yoda["wallet_id"]
+    han_wallet_id = han["wallet_id"]
+
+    yoda_token_response = await async_client.get(
+        f"/wallets/{yoda_wallet_id}/auth-token",
+        headers={
+            "x-api-key": "adminApiKey",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
+    )
+
+    han_token_response = await async_client.get(
+        f"/wallets/{han_wallet_id}/auth-token",
+        headers={
+            "x-api-key": "adminApiKey",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
+    )
+    yoda_token = yoda_token_response.json()["token"]
+    han_token = han_token_response.json()["token"]
+    return yoda_token, yoda_wallet_id, han_token, han_wallet_id
+
+
 @pytest.fixture(name="create_wallets_mock")
-async def fixture_create_wallets_mock(async_client, member_admin_agent_mock):
+async def fixture_create_wallets_mock(async_client):
     # Create two wallets
-    N = 20
+    N = 42
     CREATE_WALLET_PAYLOAD_HAN["wallet_name"] = "".join(
-        random.choice(string.ascii_uppercase + string.digits)
+        random.choice(string.ascii_uppercase + string.digits)  # NOSONAR
         for _ in range(N)  # NOSONAR
     )
     CREATE_WALLET_PAYLOAD_YODA["wallet_name"] = "".join(
-        random.choice(string.ascii_uppercase + string.digits)
+        random.choice(string.ascii_uppercase + string.digits)  # NOSONAR
         for _ in range(N)  # NOSONAR
     )
 
@@ -101,8 +138,7 @@ async def test_create_invite(async_client, create_wallets_mock):
         },
     )
 
-    yoda_token_response = yoda_token_response.json()
-    yoda_token = yoda_token_response["token"]
+    yoda_token = yoda_token_response.json()["token"]
 
     async with asynccontextmanager(dependencies.member_agent)(
         authorization=f"Bearer {yoda_token}", x_wallet_id=yoda_wallet_id
@@ -124,43 +160,11 @@ async def test_create_invite(async_client, create_wallets_mock):
 
 @pytest.mark.asyncio
 async def test_accept_invite(async_client, create_wallets_mock):
-    yoda, han = create_wallets_mock
-
-    yoda_wallet_id = yoda["wallet_id"]
-    han_wallet_id = han["wallet_id"]
-
-    yoda_token_response = await async_client.get(
-        f"/wallets/{yoda_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
     )
 
-    han_token_response = await async_client.get(
-        f"/wallets/{han_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    yoda_token_response = yoda_token_response.json()
-    yoda_token = yoda_token_response["token"]
-    han_token_response = han_token_response.json()
-    han_token = han_token_response["token"]
-
-    invite_creation_response = await async_client.get(
-        f"/generic/connections/create-invite",
-        headers={
-            "authorization": f"Bearer {yoda_token}",
-            "x-wallet-id": yoda_wallet_id,
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    invite_creation_response = invite_creation_response.json()
-    invite = invite_creation_response["invitation"]
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
         authorization=f"Bearer {han_token}", x_wallet_id=han_wallet_id
@@ -183,43 +187,11 @@ async def test_accept_invite(async_client, create_wallets_mock):
 
 @pytest.mark.asyncio
 async def test_get_connections(async_client, create_wallets_mock):
-    yoda, han = create_wallets_mock
-
-    yoda_wallet_id = yoda["wallet_id"]
-    han_wallet_id = han["wallet_id"]
-
-    yoda_token_response = await async_client.get(
-        f"/wallets/{yoda_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
     )
 
-    han_token_response = await async_client.get(
-        f"/wallets/{han_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    yoda_token_response = yoda_token_response.json()
-    yoda_token = yoda_token_response["token"]
-    han_token_response = han_token_response.json()
-    han_token = han_token_response["token"]
-
-    invite_creation_response = await async_client.get(
-        f"/generic/connections/create-invite",
-        headers={
-            "authorization": f"Bearer {yoda_token}",
-            "x-wallet-id": yoda_wallet_id,
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    invite_creation_response = invite_creation_response.json()
-    invite = invite_creation_response["invitation"]
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
         authorization=f"Bearer {han_token}", x_wallet_id=han_wallet_id
@@ -248,43 +220,11 @@ async def test_get_connections(async_client, create_wallets_mock):
 
 @pytest.mark.asyncio
 async def test_get_connection_by_id(async_client, create_wallets_mock):
-    yoda, han = create_wallets_mock
-
-    yoda_wallet_id = yoda["wallet_id"]
-    han_wallet_id = han["wallet_id"]
-
-    yoda_token_response = await async_client.get(
-        f"/wallets/{yoda_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
     )
 
-    han_token_response = await async_client.get(
-        f"/wallets/{han_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    yoda_token_response = yoda_token_response.json()
-    yoda_token = yoda_token_response["token"]
-    han_token_response = han_token_response.json()
-    han_token = han_token_response["token"]
-
-    invite_creation_response = await async_client.get(
-        f"/generic/connections/create-invite",
-        headers={
-            "authorization": f"Bearer {yoda_token}",
-            "x-wallet-id": yoda_wallet_id,
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    invite_creation_response = invite_creation_response.json()
-    invite = invite_creation_response["invitation"]
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
         authorization=f"Bearer {han_token}", x_wallet_id=han_wallet_id
@@ -300,43 +240,11 @@ async def test_get_connection_by_id(async_client, create_wallets_mock):
 
 @pytest.mark.asyncio
 async def test_delete_connection(async_client, create_wallets_mock):
-    yoda, han = create_wallets_mock
-
-    yoda_wallet_id = yoda["wallet_id"]
-    han_wallet_id = han["wallet_id"]
-
-    yoda_token_response = await async_client.get(
-        f"/wallets/{yoda_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
     )
 
-    han_token_response = await async_client.get(
-        f"/wallets/{han_wallet_id}/auth-token",
-        headers={
-            "x-api-key": "adminApiKey",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    yoda_token_response = yoda_token_response.json()
-    yoda_token = yoda_token_response["token"]
-    han_token_response = han_token_response.json()
-    han_token = han_token_response["token"]
-
-    invite_creation_response = await async_client.get(
-        f"/generic/connections/create-invite",
-        headers={
-            "authorization": f"Bearer {yoda_token}",
-            "x-wallet-id": yoda_wallet_id,
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
-
-    invite_creation_response = invite_creation_response.json()
-    invite = invite_creation_response["invitation"]
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
         authorization=f"Bearer {han_token}", x_wallet_id=han_wallet_id

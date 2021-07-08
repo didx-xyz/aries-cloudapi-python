@@ -1,13 +1,14 @@
-from admin import admin
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from routers import issuer, schema, verifier
 from admin.governance import schemas, credential_definitions
 from admin.governance.multitenant_wallet import wallet
 from admin.governance import dids
+from generic import connections
 
 app = FastAPI()
 
 
+app.include_router(connections.router)
 app.include_router(dids.router)
 app.include_router(schema.router)
 app.include_router(schemas.router)

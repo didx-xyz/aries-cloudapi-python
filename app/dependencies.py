@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import Header
 
 import logging
@@ -37,6 +39,24 @@ async def yoma_agent(x_api_key: str = Header(None)):
     finally:
         if agent:
             await agent.terminate()
+
+
+async def ecosystem_or_member_agent(
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
+    x_role=Header(...),
+):
+    if x_role == "member":
+        async with asynccontextmanager(member_agent)(authorization, x_wallet_id) as x:
+            yield x
+    elif x_role == "eco-system" or x_role == "ecosystem":
+        async with asynccontextmanager(ecosystem_agent)(
+            x_api_key, authorization, x_wallet_id
+        ) as x:
+            yield x
+    else:
+        raise HTTPException(400, "invalid role")
 
 
 async def ecosystem_agent(

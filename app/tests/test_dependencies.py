@@ -7,6 +7,8 @@ import dependencies
 
 from assertpy import assert_that
 
+TEST_BEARER_HEADER = "Bearer x"
+
 
 def test_extract_token_from_bearer():
     # assert_that(yoma_agent).is_type_of(AriesAgentController)
@@ -84,7 +86,7 @@ async def test_member_or_ecosystem_agent():
     with pytest.raises(HTTPException) as e:
         await async_next(
             dependencies.ecosystem_or_member_agent(
-                x_api_key="apikey", authorization="Bearer x"
+                x_api_key="apikey", authorization=TEST_BEARER_HEADER
             )
         )
     assert e.value.status_code == 400
@@ -96,7 +98,7 @@ async def test_member_or_ecosystem_agent():
 
     c = await async_next(
         dependencies.ecosystem_or_member_agent(
-            x_api_key="apikey", authorization="Bearer x", x_role="ecosystem"
+            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="ecosystem"
         )
     )
     assert type(c) == AriesTenantController
@@ -104,11 +106,14 @@ async def test_member_or_ecosystem_agent():
 
     c = await async_next(
         dependencies.ecosystem_or_member_agent(
-            x_api_key="apikey", authorization="Bearer x", x_role="member"
+            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="member"
         )
     )
     assert type(c) == AriesTenantController
     assert c.admin_url == "member-agent-url"
+
+    dependencies.ECOSYSTEM_AGENT_URL = ecosystem_agent_url
+    dependencies.MEMBER_AGENT_URL = member_agent_url
 
 
 @pytest.mark.asyncio

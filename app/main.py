@@ -1,5 +1,4 @@
-from admin import admin
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from routers import issuer, schema, verifier
 from admin.governance import schemas, credential_definitions
 from admin.governance.multitenant_wallet import wallet

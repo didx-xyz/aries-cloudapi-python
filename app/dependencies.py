@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import Header
 
 import logging
@@ -39,6 +41,48 @@ async def yoma_agent(x_api_key: str = Header(None)):
             await agent.terminate()
 
 
+async def agent_selector(
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
+    x_role=Header(...),
+):
+    if x_role == "member":
+        async with asynccontextmanager(member_agent)(authorization, x_wallet_id) as x:
+            yield x
+    elif (
+        x_role == "eco-system" or x_role == "ecosystem"
+    ):  # cannot use in as it's not a string
+        async with asynccontextmanager(ecosystem_agent)(
+            x_api_key, authorization, x_wallet_id
+        ) as x:
+            yield x
+    elif x_role == "yoma":
+        async with asynccontextmanager(yoma_agent)(x_api_key) as x:
+            yield x
+    else:
+        raise HTTPException(400, "invalid role")
+
+
+async def admin_agent_selector(
+    x_api_key: str = Header(None),
+    authorization: str = Header(None),
+    x_wallet_id=Header(None),
+    x_role=Header(...),
+):
+    if x_role == "member":
+        async with asynccontextmanager(member_admin_agent)(x_api_key) as x:
+            yield x
+    elif x_role == "eco-system" or x_role == "ecosystem":
+        async with asynccontextmanager(ecosystem_admin_agent)(x_api_key) as x:
+            yield x
+    elif x_role == "yoma":
+        async with asynccontextmanager(yoma_agent)(x_api_key) as x:
+            yield x
+    else:
+        raise HTTPException(400, "invalid role")
+
+
 async def ecosystem_agent(
     x_api_key: str = Header(None),
     authorization: str = Header(None),
@@ -58,7 +102,7 @@ async def ecosystem_agent(
         # yield the controller
         agent = AriesTenantController(
             admin_url=ECOSYSTEM_AGENT_URL,
-            api_key=x_api_key,
+            api_key=EMBEDDED_API_KEY,
             tenant_jwt=tenant_jwt,
             wallet_id=x_wallet_id,
         )

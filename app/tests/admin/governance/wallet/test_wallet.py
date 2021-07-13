@@ -1,10 +1,11 @@
-import pytest
 import json
+
+import pytest
 from admin.governance.multitenant_wallet.wallet import (
-    get_subwallet_auth_token,
-    update_subwallet,
     get_subwallet,
+    get_subwallet_auth_token,
     query_subwallet,
+    update_subwallet,
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}

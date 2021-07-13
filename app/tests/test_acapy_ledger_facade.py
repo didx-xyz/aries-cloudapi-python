@@ -1,8 +1,7 @@
 import pytest
+from acapy_ledger_facade import accept_taa, get_did_endpoint, get_taa
 from fastapi import HTTPException
 from mockito import when
-
-from acapy_ledger_facade import get_taa, accept_taa, get_did_endpoint
 
 
 # need this to handle the async with the mock

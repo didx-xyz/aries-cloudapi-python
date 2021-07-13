@@ -1,6 +1,6 @@
 import json
-import time
 import socket
+import time
 
 import pytest
 import requests

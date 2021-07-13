@@ -1,6 +1,6 @@
 import logging
-from aries_cloudcontroller import AriesAgentControllerBase
 
+from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)

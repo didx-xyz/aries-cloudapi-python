@@ -3,7 +3,6 @@ import os
 
 import requests
 from fastapi import HTTPException
-
 from schemas import LedgerRequestSovrin, LedgerRequestVon
 
 LEDGER_URL = os.getenv("LEDGER_NETWORK_URL", "http://testnet.didx.xyz/register")

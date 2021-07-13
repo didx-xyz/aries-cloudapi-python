@@ -1,37 +1,24 @@
 _id: spc_682992b0411b42378592ec418619bf29
 type: ApiSpec
 parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626167388581
+modified: 1626174047753
 created: 1626164860892
 fileName: CloudApi.yaml
-contents: >
-  ---
-
+contents: >-
   openapi: 3.0.2
 
   info:
     title: FastAPI
     version: 0.1.0
   paths:
-    "/admin/governance/dids/trusted-registry":
+    /admin/governance/dids/trusted-registry:
       get:
         tags:
-        - admin
-        - governance
-        - did
+        - 'Admin: Public Dids'
         summary: Get Trusted Registry
-        description: |-
-          Retrieve Trusted partner list from Trust Registry
-
-          Parameters:
-          -----------
-          api_key: Header(None)
-              The admin API key
-
-          Returns:
-          --------
-          trusted_partners: [dict/JSON]
-              List of unique trusted partners
+        description: "Retrieve Trusted partner list from Trust Registry\n\nParameters:\n\
+          -----------\napi_key: Header(None)\n    The admin API key\n\nReturns:\n--------\n\
+          trusted_partners: [dict/JSON]\n    List of unique trusted partners"
         operationId: get_trusted_registry_admin_governance_dids_trusted_registry_get
         parameters:
         - required: false
@@ -51,26 +38,15 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/admin/governance/dids/trusted-registry/{partner_did}":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /admin/governance/dids/trusted-registry/{partner_did}:
       get:
         tags:
-        - admin
-        - governance
-        - did
+        - 'Admin: Public Dids'
         summary: Get Trusted Partner
-        description: |-
-          Retrieve Trusted partner from Trust Registry
-
-          Parameters:
-          -----------
-          api_key: Header(None)
-              The admin API key
-
-          Returns:
-          --------
-          trusted_partner: dict/JSON
-              Unique trusted partner endpoint and DID
+        description: "Retrieve Trusted partner from Trust Registry\n\nParameters:\n\
+          -----------\napi_key: Header(None)\n    The admin API key\n\nReturns:\n--------\n\
+          trusted_partner: dict/JSON\n    Unique trusted partner endpoint and DID"
         operationId: get_trusted_partner_admin_governance_dids_trusted_registry__partner_did__get
         parameters:
         - required: true
@@ -96,127 +72,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/schemas/all_schemas":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /admin/governance/schemas/{schema_id}:
       get:
         tags:
-        - schemas
-        summary: Get Schema
-        description: |-
-          Get all valid schemas from YOMA
-
-          Parameters:
-          -----------
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
-
-          Returns:
-          --------
-          created_schema: dict
-              The created schema response in JSON
-        operationId: get_schema_schemas_all_schemas_get
-        parameters:
-        - required: false
-          schema:
-            title: X-Api-Key
-            type: string
-          name: x-api-key
-          in: header
-        responses:
-          '200':
-            description: Successful Response
-            content:
-              application/json:
-                schema: {}
-          '422':
-            description: Validation Error
-            content:
-              application/json:
-                schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/schemas/write-schema-and-credential-definition":
-      post:
-        tags:
-        - schemas
-        - credentials
-        summary: Write Credential Schema
-        description: |-
-          Create schema and credential definition and
-          write it to the ledger.
-
-          Parameters:
-          ----------
-          * schema_name: str
-              The name of the schema to be defined
-          * schema_version: str
-              The version of the schema to be written
-
-              Should be of the form x.x.x where x is an integer
-          * schema_attributes: list, optional
-              A list of attributes for the schema (default is None)
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
-
-          Returns:
-          --------
-          as json:
-          * schema
-          * schema_id
-          * credential_definition
-          * credential_id
-        operationId: write_credential_schema_schemas_write_schema_and_credential_definition_post
-        parameters:
-        - required: true
-          schema:
-            title: Schema Name
-            type: string
-          name: schema_name
-          in: query
-        - required: true
-          schema:
-            title: Schema Version
-            type: string
-          name: schema_version
-          in: query
-        - required: false
-          schema:
-            title: Schema Attrs
-            type: array
-            items:
-              type: string
-          name: schema_attrs
-          in: query
-        - required: false
-          schema:
-            title: X-Api-Key
-            type: string
-          name: x-api-key
-          in: header
-        responses:
-          '200':
-            description: Successful Response
-            content:
-              application/json:
-                schema:
-                  "$ref": "#/components/schemas/SchemaResponse"
-          '422':
-            description: Validation Error
-            content:
-              application/json:
-                schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/admin/governance/schemas/{schema_id}":
-      get:
-        tags:
-        - Schemas
+        - 'Admin: Schemas'
         summary: Get Schema
         operationId: get_schema_admin_governance_schemas__schema_id__get
         parameters:
@@ -243,11 +103,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/admin/governance/schemas/":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /admin/governance/schemas/:
       get:
         tags:
-        - Schemas
+        - 'Admin: Schemas'
         summary: Get Schemas
         operationId: get_schemas_admin_governance_schemas__get
         parameters:
@@ -292,10 +152,10 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  $ref: '#/components/schemas/HTTPValidationError'
       post:
         tags:
-        - Schemas
+        - 'Admin: Schemas'
         summary: Create Schema
         operationId: create_schema_admin_governance_schemas__post
         parameters:
@@ -309,7 +169,7 @@ contents: >
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/SchemaDefinition"
+                $ref: '#/components/schemas/SchemaDefinition'
           required: true
         responses:
           '200':
@@ -322,11 +182,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/admin/governance/credential-definitions/":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /admin/governance/credential-definitions/:
       post:
         tags:
-        - CredentialDefinitions
+        - 'Admin: CredentialDefinitions'
         summary: Create Credential Definition
         operationId: create_credential_definition_admin_governance_credential_definitions__post
         parameters:
@@ -340,7 +200,7 @@ contents: >
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/CredentialDefinition"
+                $ref: '#/components/schemas/CredentialDefinition'
           required: true
         responses:
           '200':
@@ -353,11 +213,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/admin/governance/credential-definitions/created":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /admin/governance/credential-definitions/created:
       get:
         tags:
-        - CredentialDefinitions
+        - 'Admin: CredentialDefinitions'
         summary: Get Created Credential Definitions
         operationId: get_created_credential_definitions_admin_governance_credential_definitions_created_get
         parameters:
@@ -414,11 +274,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/admin/governance/credential-definitions/{cred_def_id}":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /admin/governance/credential-definitions/{cred_def_id}:
       get:
         tags:
-        - CredentialDefinitions
+        - 'Admin: CredentialDefinitions'
         summary: Get Credential Definition
         operationId: get_credential_definition_admin_governance_credential_definitions__cred_def_id__get
         parameters:
@@ -445,31 +305,18 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/wallets/create-pub-did":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallets/create-pub-did:
       get:
         tags:
-        - wallets
-        - did
+        - 'Admin: Wallets'
         summary: Create Public Did
-        description: |-
-          Create a new public DID and
-          write it to the ledger and
-          receive its public info.
-
-          Parameters:
-          -----------
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
-
-          Returns:
-          * DID object (json)
-          * Issuer verkey (str)
-          * Issuer Endpoint (url)
+        description: "Create a new public DID and\nwrite it to the ledger and\nreceive\
+          \ its public info.\n\nParameters:\n-----------\napi_key: Header(None)\n  \
+          \  The request header object api_key\nwallet_id: Header(None)\n    The request\
+          \ header object wallet_id\ntenant_jwt: Header(None)\n    The request header\
+          \ object tenant_jwt\n\nReturns:\n* DID object (json)\n* Issuer verkey (str)\n\
+          * Issuer Endpoint (url)"
         operationId: create_public_did_wallets_create_pub_did_get
         parameters:
         - required: false
@@ -484,41 +331,26 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/DidCreationResponse"
+                  $ref: '#/components/schemas/DidCreationResponse'
           '422':
             description: Validation Error
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/wallets/create-wallet":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallets/create-wallet:
       post:
         tags:
-        - wallets
+        - 'Admin: Wallets'
         summary: Create Wallet
-        description: |-
-          Create a new wallet
-
-          Parameters:
-          -----------
-          wallet_payload: dict
-              The payload for creating the wallet
-
-
-          Returns:
-          --------
-          The response object from creating a wallet on the ledger
-
-          Example Request Body:
-          {
-                  "image_url": "https://aries.ca/images/sample.png",
-                  "key_management_mode": "managed",
-                  "label": "YOMA",
-                  "wallet_dispatch_type": "default",
-                  "wallet_key": "MySecretKey1234",
-                  "wallet_name": "YOMAsWallet",
-                  "wallet_type": "indy"
-              }
+        description: "Create a new wallet\n\nParameters:\n-----------\nwallet_payload:\
+          \ dict\n    The payload for creating the wallet\n\n\nReturns:\n--------\n\
+          The response object from creating a wallet on the ledger\n\nExample Request\
+          \ Body:\n{\n        \"image_url\": \"https://aries.ca/images/sample.png\"\
+          ,\n        \"key_management_mode\": \"managed\",\n        \"label\": \"YOMA\"\
+          ,\n        \"wallet_dispatch_type\": \"default\",\n        \"wallet_key\"\
+          : \"MySecretKey1234\",\n        \"wallet_name\": \"YOMAsWallet\",\n      \
+          \  \"wallet_type\": \"indy\"\n    }"
         operationId: create_wallet_wallets_create_wallet_post
         parameters:
         - required: false
@@ -544,11 +376,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/wallets/{wallet_id}":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallets/{wallet_id}:
       get:
         tags:
-        - wallets
+        - 'Admin: Wallets'
         summary: Get Subwallet
         operationId: get_subwallet_wallets__wallet_id__get
         parameters:
@@ -575,10 +407,10 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  $ref: '#/components/schemas/HTTPValidationError'
       post:
         tags:
-        - wallets
+        - 'Admin: Wallets'
         summary: Update Subwallet
         operationId: update_subwallet_wallets__wallet_id__post
         parameters:
@@ -612,10 +444,10 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  $ref: '#/components/schemas/HTTPValidationError'
       delete:
         tags:
-        - wallets
+        - 'Admin: Wallets'
         summary: Remove Wallet By Id
         operationId: remove_wallet_by_id_wallets__wallet_id__delete
         parameters:
@@ -642,11 +474,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/wallets/{wallet_id}/auth-token":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallets/{wallet_id}/auth-token:
       get:
         tags:
-        - wallets
+        - 'Admin: Wallets'
         summary: Get Subwallet Auth Token
         operationId: get_subwallet_auth_token_wallets__wallet_id__auth_token_get
         parameters:
@@ -673,11 +505,11 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/wallets/query-subwallet":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallets/query-subwallet:
       get:
         tags:
-        - wallets
+        - 'Admin: Wallets'
         summary: Query Subwallet
         operationId: query_subwallet_wallets_query_subwallet_get
         parameters:
@@ -704,36 +536,20 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/verifier/request-proof-for-schema":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /verifier/request-proof-for-schema:
       post:
         tags:
-        - proof
-        - verifier
+        - 'Legacy: Verifier'
         summary: Get Proof Request
-        description: |-
-          Request proof of a (sub) set of attributes against a schema by ID.
-          This may contain zero-knowledge attributes.
-          This may contain revocation of the proof.
-
-          Parameters:
-          -----------
-          connection_id: str
-          schema_id: str
-          name_proof_request: str
-          zero_knowledge_proof: Dict = None
-          requested_attrs: List[str] = Query(None)
-          self_attested: List[
-              str
-          ] = None,
-          revocation: int = None,
-          exchange_tracing: bool = False,
-          req_header: Optional[str] = Header(None),
-
-          Returns:
-          --------
-          presentation_exchange_id: json
-              The presentation exchange ID JSON object
+        description: "Request proof of a (sub) set of attributes against a schema by\
+          \ ID.\nThis may contain zero-knowledge attributes.\nThis may contain revocation\
+          \ of the proof.\n\nParameters:\n-----------\nconnection_id: str\nschema_id:\
+          \ str\nname_proof_request: str\nzero_knowledge_proof: Dict = None\nrequested_attrs:\
+          \ List[str] = Query(None)\nself_attested: List[\n    str\n] = None,\nrevocation:\
+          \ int = None,\nexchange_tracing: bool = False,\nreq_header: Optional[str]\
+          \ = Header(None),\n\nReturns:\n--------\npresentation_exchange_id: json\n\
+          \    The presentation exchange ID JSON object"
         operationId: get_proof_request_verifier_request_proof_for_schema_post
         parameters:
         - required: true
@@ -785,7 +601,7 @@ contents: >
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/Body_get_proof_request_verifier_request_proof_for_schema_post"
+                $ref: '#/components/schemas/Body_get_proof_request_verifier_request_proof_for_schema_post'
         responses:
           '200':
             description: Successful Response
@@ -797,30 +613,17 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/verifier/verify-proof-request":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /verifier/verify-proof-request:
       get:
         tags:
-        - verifier
-        - proof
+        - 'Legacy: Verifier'
         summary: Verify Proof Request
-        description: |-
-          Verify a proof request against the ledger
-
-          Parameters:
-          -----------
-          presentation_exchange_id: str
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
-
-          Returns:
-          --------
-          verify: dict
-              The json representation of the verify request
+        description: "Verify a proof request against the ledger\n\nParameters:\n-----------\n\
+          presentation_exchange_id: str\napi_key: Header(None)\n    The request header\
+          \ object api_key\nwallet_id: Header(None)\n    The request header object wallet_id\n\
+          tenant_jwt: Header(None)\n    The request header object tenant_jwt\n\nReturns:\n\
+          --------\nverify: dict\n    The json representation of the verify request"
         operationId: verify_proof_request_verifier_verify_proof_request_get
         parameters:
         - required: true
@@ -851,28 +654,17 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/issuer/issue-credential":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /issuer/issue-credential:
       get:
         tags:
-        - issue
-        - credential
+        - 'Legacy: Issuer'
         summary: Issue Credential
-        description: |-
-          Issues a credential
-
-          Parameters:
-          -----------
-          schema_id: str
-          connection_id: str
-          credential_attrs: List[str]
-              A list of requested credential attributes
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
+        description: "Issues a credential\n\nParameters:\n-----------\nschema_id: str\n\
+          connection_id: str\ncredential_attrs: List[str]\n    A list of requested credential\
+          \ attributes\napi_key: Header(None)\n    The request header object api_key\n\
+          wallet_id: Header(None)\n    The request header object wallet_id\ntenant_jwt:\
+          \ Header(None)\n    The request header object tenant_jwt"
         operationId: issue_credential_issuer_issue_credential_get
         parameters:
         - required: true
@@ -907,33 +699,23 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/IssueCredentialResponse"
+                  $ref: '#/components/schemas/IssueCredentialResponse'
           '422':
             description: Validation Error
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/issuer/connection":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /issuer/connection:
       get:
         tags:
-        - connection
-        - wallets
+        - 'Legacy: Issuer'
         summary: Create Connection
-        description: |-
-          Creates invitation for the holder to scan
-
-          Parameters:
-          ----------
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
-
-          Returns: StreamingResponse
-              QRCode PNG file from StreamingResponse
+        description: "Creates invitation for the holder to scan\n\nParameters:\n----------\n\
+          api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
+          \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
+          \ request header object tenant_jwt\n\nReturns: StreamingResponse\n    QRCode\
+          \ PNG file from StreamingResponse"
         operationId: create_connection_issuer_connection_get
         parameters:
         - required: false
@@ -954,29 +736,18 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/issuer/get-connection-id":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /issuer/get-connection-id:
       get:
         tags:
-        - connection
+        - 'Legacy: Issuer'
         summary: Get Connection Ids
-        description: |-
-          Creates invitation for the holder to scan
-
-          Parameters:
-          ----------
-          api_key: Header(None)
-              The request header object api_key
-          wallet_id: Header(None)
-              The request header object wallet_id
-          tenant_jwt: Header(None)
-              The request header object tenant_jwt
-
-          Returns:
-          --------
-          connection_id: JSON
-              The request response from the ledger with all current connections
-              The 'results' key holds a [dict].
+        description: "Creates invitation for the holder to scan\n\nParameters:\n----------\n\
+          api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
+          \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
+          \ request header object tenant_jwt\n\nReturns:\n--------\nconnection_id: JSON\n\
+          \    The request response from the ledger with all current connections\n \
+          \   The 'results' key holds a [dict]."
         operationId: get_connection_ids_issuer_get_connection_id_get
         parameters:
         - required: false
@@ -991,15 +762,102 @@ contents: >
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/ConnectionIdResponse"
+                  $ref: '#/components/schemas/ConnectionIdResponse'
           '422':
             description: Validation Error
             content:
               application/json:
                 schema:
-                  "$ref": "#/components/schemas/HTTPValidationError"
-    "/":
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /schemas/all_schemas:
       get:
+        tags:
+        - 'Legacy: Schemas'
+        summary: Get Schema
+        description: "Get all valid schemas from YOMA\n\nParameters:\n-----------\n\
+          api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
+          \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
+          \ request header object tenant_jwt\n\nReturns:\n--------\ncreated_schema:\
+          \ dict\n    The created schema response in JSON"
+        operationId: get_schema_schemas_all_schemas_get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /schemas/write-schema-and-credential-definition:
+      post:
+        tags:
+        - 'Legacy: Schemas'
+        summary: Write Credential Schema
+        description: "Create schema and credential definition and\nwrite it to the ledger.\n\
+          \nParameters:\n----------\n* schema_name: str\n    The name of the schema\
+          \ to be defined\n* schema_version: str\n    The version of the schema to be\
+          \ written\n\n    Should be of the form x.x.x where x is an integer\n* schema_attributes:\
+          \ list, optional\n    A list of attributes for the schema (default is None)\n\
+          api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
+          \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
+          \ request header object tenant_jwt\n\nReturns:\n--------\nas json:\n* schema\n\
+          * schema_id\n* credential_definition\n* credential_id"
+        operationId: write_credential_schema_schemas_write_schema_and_credential_definition_post
+        parameters:
+        - required: true
+          schema:
+            title: Schema Name
+            type: string
+          name: schema_name
+          in: query
+        - required: true
+          schema:
+            title: Schema Version
+            type: string
+          name: schema_version
+          in: query
+        - required: false
+          schema:
+            title: Schema Attrs
+            type: array
+            items:
+              type: string
+          name: schema_attrs
+          in: query
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/SchemaResponse'
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /:
+      get:
+        tags:
+        - Root
         summary: Root
         operationId: root__get
         responses:
@@ -1074,7 +932,7 @@ contents: >
             title: Detail
             type: array
             items:
-              "$ref": "#/components/schemas/ValidationError"
+              $ref: '#/components/schemas/ValidationError'
       IssueCredentialResponse:
         title: IssueCredentialResponse
         required:

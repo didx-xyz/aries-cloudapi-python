@@ -1,0 +1,24 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c657ee4c46c
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140286
+created: 1626167140286
+url: "{{ base_url }}/wallets/{{ wallet_id }}/auth-token"
+name: Get Subwallet Auth Token
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626167140286
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

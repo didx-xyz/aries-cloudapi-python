@@ -1,0 +1,24 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65c9f569fa
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140320
+created: 1626167140320
+url: "{{ base_url }}/admin/governance/dids/trusted-registry/{{ partner_did }}"
+name: Get Trusted Partner
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626167140320
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

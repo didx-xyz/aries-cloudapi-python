@@ -12,7 +12,7 @@ from dependencies import yoma_agent, member_admin_agent
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/wallets", tags=["wallets"])
+router = APIRouter(prefix="/admin/wallet-multitenant", tags=["wallets"])
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)

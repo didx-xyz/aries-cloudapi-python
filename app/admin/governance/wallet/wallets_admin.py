@@ -7,12 +7,12 @@ from dependencies import *
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/wallets", tags=["wallets"])
+router = APIRouter(prefix="/admin/wallet-admin", tags=["wallets"])
 
 
 @router.get("/create-local-did")
 async def create_local_did(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
     Create Local DID
@@ -22,14 +22,16 @@ async def create_local_did(
 
 
 @router.get("/list-dids")
-async def list_dids(aries_controller: AriesAgentControllerBase = Depends(yoma_agent)):
+async def list_dids(
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+):
 
     return await aries_controller.wallet.get_dids()
 
 
 @router.get("/fetch-current-did")
 async def fetch_current_did(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
     Fetch the current public DID
@@ -40,16 +42,16 @@ async def fetch_current_did(
 @router.patch("/rotate-keypair")
 async def rotate_keypair(
     did: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
 
     return await aries_controller.wallet.rotate_pub_key_pair(did)
 
 
-@router.get("/get-did-endpoint")
+@router.get("/get-did-endpoint/{did}")
 async def get_did_endpoint(
     did: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
 
     return await aries_controller.wallet.get_did_endpoint(did)
@@ -58,7 +60,7 @@ async def get_did_endpoint(
 @router.post("/assign-pub-did")
 async def assign_pub_did(
     did: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
     Assign the current public DID
@@ -71,7 +73,7 @@ async def set_did_endpoint(
     did: str,
     endpoint,
     endpoint_type,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
     Update Endpoint in wallet and on ledger if posted to it

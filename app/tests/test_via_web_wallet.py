@@ -1,10 +1,11 @@
 import pytest
 import requests
+
+from main import app
+import utils
+
 from aiohttp import ClientResponseError
 from httpx import AsyncClient
-
-import utils
-from main import app
 
 
 @pytest.mark.asyncio

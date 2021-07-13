@@ -1,14 +1,10 @@
 import logging
 
-from fastapi import APIRouter, Depends
-
-from schemas import (
-    DidCreationResponse,
-)
-from aries_cloudcontroller import AriesAgentControllerBase
-
 from acapy_ledger_facade import create_pub_did
-from dependencies import yoma_agent, member_admin_agent
+from aries_cloudcontroller import AriesAgentControllerBase
+from dependencies import member_admin_agent, yoma_agent
+from fastapi import APIRouter, Depends
+from schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 

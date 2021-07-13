@@ -1,13 +1,10 @@
-from contextlib import asynccontextmanager
-
-from fastapi import Header
-
 import logging
 import os
 import re
+from contextlib import asynccontextmanager
 
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
-from fastapi import HTTPException
+from fastapi import Header, HTTPException
 
 logger = logging.getLogger(__name__)
 

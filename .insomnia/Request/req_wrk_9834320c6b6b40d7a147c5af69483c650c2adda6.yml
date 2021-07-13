@@ -1,0 +1,42 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c650c2adda6
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140304
+created: 1626167140304
+url: "{{ base_url }}/admin/governance/credential-definitions/created"
+name: Get Created Credential Definitions
+description: ""
+method: GET
+body: {}
+parameters:
+  - name: issuer_did
+    disabled: true
+    value: string
+  - name: cred_def_id
+    disabled: true
+    value: string
+  - name: schema_id
+    disabled: true
+    value: string
+  - name: schema_issuer_did
+    disabled: true
+    value: string
+  - name: schema_name
+    disabled: true
+    value: string
+  - name: schema_version
+    disabled: true
+    value: string
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626167140304
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

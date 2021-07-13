@@ -1,0 +1,24 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c655843dd73
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140303
+created: 1626167140303
+url: "{{ base_url }}/admin/governance/credential-definitions/{{ cred_def_id }}"
+name: Get Credential Definition
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626167140303
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

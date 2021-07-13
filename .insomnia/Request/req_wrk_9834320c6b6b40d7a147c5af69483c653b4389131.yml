@@ -1,0 +1,54 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c653b4389131
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140282
+created: 1626167140282
+url: "{{ base_url }}/verifier/request-proof-for-schema"
+name: Get Proof Request
+description: ""
+method: POST
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "zero_knowledge_proof": [
+        {}
+      ],
+      "self_attested": [
+        "string"
+      ]
+    }
+parameters:
+  - name: connection_id
+    disabled: false
+    value: string
+  - name: schema_id
+    disabled: false
+    value: string
+  - name: name_proof_request
+    disabled: false
+    value: string
+  - name: requested_attrs
+    disabled: true
+    value: string
+  - name: revocation
+    disabled: true
+    value: "0"
+  - name: exchange_tracing
+    disabled: true
+    value: "true"
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1626167140282
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

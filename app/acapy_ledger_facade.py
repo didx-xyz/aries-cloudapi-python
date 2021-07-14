@@ -1,9 +1,10 @@
 import logging
+
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
-from schemas import DidCreationResponse
 from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import HTTPException
+from schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 

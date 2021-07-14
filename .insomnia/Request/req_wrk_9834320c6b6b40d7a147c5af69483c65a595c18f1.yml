@@ -1,0 +1,33 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65a595c18f1
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140314
+created: 1626167140314
+url: "{{ base_url }}/schemas/write-schema-and-credential-definition"
+name: Write Credential Schema
+description: ""
+method: POST
+body: {}
+parameters:
+  - name: schema_name
+    disabled: false
+    value: string
+  - name: schema_version
+    disabled: false
+    value: string
+  - name: schema_attrs
+    disabled: true
+    value: string
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626167140314
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

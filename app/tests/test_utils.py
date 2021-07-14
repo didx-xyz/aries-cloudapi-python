@@ -1,6 +1,5 @@
-from assertpy import assert_that
-
 import utils
+from assertpy import assert_that
 
 ID_CONSTANT = "abcde:test:0.0.1"
 

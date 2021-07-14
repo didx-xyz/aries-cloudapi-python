@@ -1,0 +1,33 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c659a5281381
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626167140271
+created: 1626167140271
+url: "{{ base_url }}/issuer/issue-credential"
+name: Issue Credential
+description: ""
+method: GET
+body: {}
+parameters:
+  - name: schema_id
+    disabled: false
+    value: string
+  - name: connection_id
+    disabled: false
+    value: string
+  - name: credential_attrs
+    disabled: true
+    value: string
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626167140271
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

@@ -1,6 +1,4 @@
-from typing import Dict
-
-from datetime import datetime
+from typing import Dict, Union
 
 import json
 
@@ -13,9 +11,6 @@ from admin.governance.multitenant_wallet.wallet_admin import (
     UpdateWalletRequest,
     get_subwallet,
     query_subwallet,
-    update_subwallet,
-    create_subwallet,
-    remove_subwallet_by_id,
 )
 from tests.utils_test import get_random_string
 
@@ -49,7 +44,7 @@ async def fixture_create_wallet(async_client, member_admin_agent_mock):
         wallet_name=None, aries_controller=member_admin_agent_mock
     )
     for w in wallets["results"]:
-        response = await async_client.delete(
+        await async_client.delete(
             f"{WALLET_PATH}/{w['wallet_id']}",
             headers=WALLET_HEADERS,
         )
@@ -66,20 +61,6 @@ async def write_wallet(async_client, wallet_name=None):
     )
     wallet_response = wallet_response.json()
     return wallet_response
-
-
-@pytest.mark.asyncio
-async def create_pub_did(async_client):
-    response = await async_client.get(
-        WALLET_PATH + "/create-pub-did",
-        headers={"x-api-key": "adminApiKey", **WALLET_HEADERS},
-    )
-    assert response.status_code == 200
-    response = response.json()
-    assert response["did_object"] and response["did_object"] != {}
-    assert response["issuer_verkey"] and response["issuer_verkey"] != {}
-    assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}
-    assert response["did_object"]["posture"] == "public"
 
 
 @pytest.mark.asyncio
@@ -103,7 +84,7 @@ async def test_get_subwallet_auth_token(
 
 
 @pytest.mark.asyncio
-async def test_get_subwallet(async_client, member_admin_agent_mock, create_wallet):
+async def test_get_subwallet(async_client, create_wallet):
     wallet_id = create_wallet["wallet_id"]
     response = await async_client.get(
         f"{WALLET_PATH}/{wallet_id}",
@@ -115,12 +96,11 @@ async def test_get_subwallet(async_client, member_admin_agent_mock, create_walle
 
 
 @pytest.mark.asyncio
-async def test_update_wallet(async_client, member_admin_agent_mock, create_wallet):
+async def test_update_wallet(async_client, create_wallet, member_admin_agent_mock):
     wallet_id = create_wallet["wallet_id"]
     assert create_wallet["settings"]["image_url"] != "update"
-    payload = {"image_url": "update"}
     request = UpdateWalletRequest(image_url="update")
-    update_response = await async_client.post(
+    await async_client.post(
         f"{WALLET_PATH}/{wallet_id}",
         headers=WALLET_HEADERS,
         data=request.json(),
@@ -143,27 +123,14 @@ async def test_query_subwallet(async_client, member_admin_agent_mock, create_wal
     assert len(res_method["results"]) == len(query_response["results"])
 
 
-@pytest.mark.asyncio
-async def test_query_subwallet(async_client, member_admin_agent_mock, create_wallet):
-    query_response = await async_client.get(
-        f"{WALLET_PATH}/query-subwallet",
-        headers=WALLET_HEADERS,
-    )
-    query_response = query_response.json()
-    res_method = await query_subwallet(aries_controller=member_admin_agent_mock)
-    assert len(res_method["results"]) == len(query_response["results"])
-
-
 # @pytest.mark.skip(reason="until wallet_name is honoured by cloudcontroller")
 @pytest.mark.asyncio
-async def test_query_subwallet_with_name(
-    async_client, member_admin_agent_mock, create_wallet
-):
+async def test_query_subwallet_with_name(async_client, create_wallet):
     wallet_1 = await write_wallet(async_client)
     wallet_2 = await write_wallet(async_client)
     wallet_3 = await write_wallet(async_client)
 
-    async def validate_wallet(wallet: Dict):
+    async def validate_wallet(wallet: Union[Dict, None]):
         if not wallet:
             params = {}
         else:
@@ -214,7 +181,7 @@ async def test_remove_by_id(async_client, member_admin_agent_mock):
     assert response.json() == {"status": "Successfully removed wallet"}
 
     with pytest.raises(ClientResponseError) as e:
-        wallet = await get_subwallet(
+        await get_subwallet(
             aries_controller=member_admin_agent_mock, wallet_id=wallet_id
         )
     assert e.value.status == 404

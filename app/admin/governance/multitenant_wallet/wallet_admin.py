@@ -9,11 +9,9 @@ from typing import Optional, Dict, List
 import logging
 from pydantic import BaseModel
 
-from acapy_ledger_facade import create_pub_did
 from aries_cloudcontroller import AriesAgentControllerBase
-from dependencies import member_admin_agent, yoma_agent, admin_agent_selector
+from dependencies import member_admin_agent, admin_agent_selector
 from fastapi import APIRouter, Depends, HTTPException
-from schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 
@@ -325,7 +323,6 @@ async def create_subwallet(
         }
     """
     # set wallet statics:
-    d = wallet_payload.dict()
     if wallet_payload:
         wallet_response = await aries_controller.multitenant.create_subwallet(
             json.loads(wallet_payload.json())

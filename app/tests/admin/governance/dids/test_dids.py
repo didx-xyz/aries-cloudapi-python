@@ -28,8 +28,12 @@ async def test_get_trusted_partner(async_client, yoma_agent_mock):
 
     # Create a public did
     did_response = await async_client.get(
-        "/wallets/create-pub-did",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        "/wallet/create-pub-did",
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     res_json = did_response.json()
     did_created = res_json["did_object"]["did"]

@@ -37,11 +37,11 @@ CREATE_WALLET_PAYLOAD_HAN = {
 
 async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
     yoda_response = await async_client.delete(
-        f"/wallets/{yoda_wallet_id}",
+        f"/admin/wallet-multitenant/{yoda_wallet_id}",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     han_response = await async_client.delete(
-        f"/wallets/{han_wallet_id}",
+        f"/admin/wallet-multitenant/{han_wallet_id}",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     return yoda_response, han_response
@@ -67,7 +67,7 @@ async def token_responses(async_client, create_wallets_mock):
     han_wallet_id = han["wallet_id"]
 
     yoda_token_response = await async_client.get(
-        f"/wallets/{yoda_wallet_id}/auth-token",
+        f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",
@@ -76,7 +76,7 @@ async def token_responses(async_client, create_wallets_mock):
     )
 
     han_token_response = await async_client.get(
-        f"/wallets/{han_wallet_id}/auth-token",
+        f"/admin/wallet-multitenant/{han_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",
@@ -102,7 +102,7 @@ async def fixture_create_wallets_mock(async_client):
     )
 
     yoda_wallet_response = await async_client.post(
-        "/wallets/create-wallet",
+        "/admin/wallet-multitenant/create-wallet",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",
@@ -113,7 +113,7 @@ async def fixture_create_wallets_mock(async_client):
     yoda_wallet_response = yoda_wallet_response.json()
     yoda_wallet_id = yoda_wallet_response["wallet_id"]
     han_wallet_response = await async_client.post(
-        "/wallets/create-wallet",
+        "/admin/wallet-multitenant/create-wallet",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",
@@ -141,7 +141,7 @@ async def test_create_invite(async_client, create_wallets_mock):
     yoda_wallet_id = yoda["wallet_id"]
 
     yoda_token_response = await async_client.get(
-        f"/wallets/{yoda_wallet_id}/auth-token",
+        f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",

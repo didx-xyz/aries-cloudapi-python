@@ -7,6 +7,7 @@ from admin.governance.multitenant_wallet.wallet_admin import (
     query_subwallet,
     update_subwallet,
 )
+import pytest
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/admin/wallet-multitenant"

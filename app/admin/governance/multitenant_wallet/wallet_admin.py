@@ -17,33 +17,7 @@ from schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/subwallets", tags=["Admin: Wallets"])
-
-
-@router.get("/create-pub-did", response_model=DidCreationResponse)
-async def create_public_did(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
-):
-    """
-    Create a new public DID and
-    write it to the ledger and
-    receive its public info.
-
-    Parameters:
-    -----------
-    api_key: Header(None)
-        The request header object api_key
-    wallet_id: Header(None)
-        The request header object wallet_id
-    tenant_jwt: Header(None)
-        The request header object tenant_jwt
-
-    Returns:
-    * DID object (json)
-    * Issuer verkey (str)
-    * Issuer Endpoint (url)
-    """
-    return await create_pub_did(aries_controller)
+router = APIRouter(prefix="/admin/wallet-multitenant", tags=["Admin: Wallets"])
 
 
 class KeyManagementMode(Enum):
@@ -400,7 +374,7 @@ async def update_subwallet(
     )
 
 
-@router.get("/query", response_model=WalletList)
+@router.get("/query-subwallet", response_model=WalletList)
 async def query_subwallet(
     wallet_name: str = None,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),

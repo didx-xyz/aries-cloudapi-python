@@ -2,7 +2,6 @@ from admin.governance import credential_definitions, dids, schemas
 from fastapi import FastAPI
 from generic import connections
 from routers import issuer, schema, verifier
-from admin.governance import schemas, credential_definitions
 from admin.governance.multitenant_wallet import wallet_admin
 from admin.governance.wallet import wallets
 

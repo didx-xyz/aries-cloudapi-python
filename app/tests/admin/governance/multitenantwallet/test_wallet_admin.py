@@ -3,7 +3,6 @@ from admin.governance.multitenant_wallet.wallet_admin import (
     get_subwallet_auth_token,
     update_subwallet,
     get_subwallet,
-    get_subwallet_auth_token,
     query_subwallet,
     update_subwallet,
 )
@@ -108,7 +107,7 @@ async def test_update_wallet(async_client, member_admin_agent_mock, create_walle
 @pytest.mark.asyncio
 async def test_query_subwallet(async_client, member_admin_agent_mock):
     query_response = await async_client.get(
-        f"/admin/wallet-multitenant/query-subwallet",
+        "/admin/wallet-multitenant/query-subwallet",
         headers={"x-api-key": "adminApiKey"},
     )
     query_response = query_response.json()

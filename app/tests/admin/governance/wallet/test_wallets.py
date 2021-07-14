@@ -1,5 +1,4 @@
 import pytest
-import json
 from admin.governance.wallet.wallets import (
     create_local_did,
     list_dids,
@@ -89,7 +88,7 @@ async def test_get_did_endpoint(async_client, yoma_agent_mock, create_did_mock):
 
 
 @pytest.mark.asyncio
-async def test_assign_pub_did(async_client, yoma_agent_mock, create_did_mock):
+async def test_assign_pub_did(async_client, yoma_agent_mock):
     generate_did_res = await wallet_facade.create_did(yoma_agent_mock)
     did_object = generate_did_res["result"]
     await ledger_facade.post_to_ledger(did_object=did_object)
@@ -122,7 +121,9 @@ async def test_set_did_endpoint(async_client, yoma_agent_mock):
 
     did = response["did_object"]["did"]
     endpoint_type = "Endpoint"
-    res_method = await set_did_endpoint(did, endpoint, aries_controller=yoma_agent_mock)
+    res_method = await set_did_endpoint(
+        did, endpoint, endpoint_type, aries_controller=yoma_agent_mock
+    )
     assert res_method == {}
 
 

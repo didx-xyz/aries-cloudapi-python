@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AriesAgentControllerBase
 
 
-from dependencies import yoma_agent, member_admin_agent
+from dependencies import member_admin_agent
 
 logger = logging.getLogger(__name__)
 

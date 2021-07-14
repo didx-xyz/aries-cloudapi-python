@@ -1,17 +1,15 @@
-import pytest
-from aries_cloudcontroller import (
-    AriesTenantController,
-    AriesAgentController,
-    AriesAgentControllerBase,
-)
-from fastapi import HTTPException, APIRouter, Depends
 from contextlib import asynccontextmanager
-from httpx import AsyncClient
 
 import dependencies
-
+import pytest
+from aries_cloudcontroller import (
+    AriesAgentController,
+    AriesAgentControllerBase,
+    AriesTenantController,
+)
 from assertpy import assert_that
-
+from fastapi import APIRouter, Depends, HTTPException
+from httpx import AsyncClient
 from main import app
 
 TEST_BEARER_HEADER = "Bearer x"

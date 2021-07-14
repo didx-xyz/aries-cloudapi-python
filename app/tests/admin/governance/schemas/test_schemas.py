@@ -1,15 +1,13 @@
-from contextlib import asynccontextmanager
-
 import json
-
-import pytest
-from assertpy import assert_that
+from contextlib import asynccontextmanager
 
 import acapy_ledger_facade
 import acapy_wallet_facade
 import ledger_facade
+import pytest
 import utils
 from admin.governance.schemas import SchemaDefinition, create_schema, get_schemas
+from assertpy import assert_that
 
 # want to wrap an existing method with a decorator
 # the method is normally used by fast api and then fast api manages the tear down

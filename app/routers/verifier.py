@@ -15,12 +15,12 @@ from schemas import RequestProofResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/verifier")
+router = APIRouter(prefix="/verifier", tags=["Legacy: Verifier"])
 
 
 # TODO verify that active connection exists
 # Better tag?
-@router.post("/request-proof-for-schema", tags=["proof", "verifier"])
+@router.post("/request-proof-for-schema")
 async def get_proof_request(
     connection_id: str,
     schema_id: str,
@@ -111,7 +111,7 @@ async def get_proof_request(
         raise e
 
 
-@router.get("/verify-proof-request", tags=["verifier", "proof"])
+@router.get("/verify-proof-request")
 async def verify_proof_request(
     presentation_exchange_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_agent),

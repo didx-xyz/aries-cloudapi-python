@@ -7,7 +7,8 @@ from pydantic import BaseModel
 from dependencies import yoma_agent
 
 router = APIRouter(
-    prefix="/admin/governance/credential-definitions", tags=["CredentialDefinitions"]
+    prefix="/admin/governance/credential-definitions",
+    tags=["Admin: CredentialDefinitions"],
 )
 
 

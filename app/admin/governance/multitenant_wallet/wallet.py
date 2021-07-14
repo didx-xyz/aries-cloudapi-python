@@ -12,10 +12,10 @@ from dependencies import yoma_agent, member_admin_agent
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/wallets", tags=["wallets"])
+router = APIRouter(prefix="/wallets", tags=["Admin: Wallets"])
 
 
-@router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
+@router.get("/create-pub-did", response_model=DidCreationResponse)
 async def create_public_did(
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):

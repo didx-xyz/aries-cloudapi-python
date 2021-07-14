@@ -14,7 +14,7 @@ from fastapi import APIRouter, Query, Depends
 from schemas import SchemaLedgerRequest, SchemaResponse
 from aries_cloudcontroller import AriesAgentControllerBase
 
-router = APIRouter(prefix="/schemas", tags=["schemas"])
+router = APIRouter(prefix="/schemas", tags=["Legacy: Schemas"])
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,6 @@ async def get_schema(
 
 @router.post(
     "/write-schema-and-credential-definition",
-    tags=["credentials"],
     response_model=SchemaResponse,
 )
 async def write_credential_schema(

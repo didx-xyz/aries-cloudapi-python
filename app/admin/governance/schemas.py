@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from dependencies import yoma_agent
 
-router = APIRouter(prefix="/admin/governance/schemas", tags=["Schemas"])
+router = APIRouter(prefix="/admin/governance/schemas", tags=["Admin: Schemas"])
 
 
 class SchemaDefinition(BaseModel):

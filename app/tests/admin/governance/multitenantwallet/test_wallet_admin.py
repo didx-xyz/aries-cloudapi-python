@@ -1,5 +1,6 @@
 import json
 from admin.governance.multitenant_wallet.wallet_admin import (
+    get_subwallet_auth_token,
     update_subwallet,
     get_subwallet,
     query_subwallet,

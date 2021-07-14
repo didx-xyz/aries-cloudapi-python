@@ -6,7 +6,7 @@ from schemas import (
     DidCreationResponse,
 )
 from acapy_ledger_facade import create_pub_did
-from dependencies import *
+from dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
 

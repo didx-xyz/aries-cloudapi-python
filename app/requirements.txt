@@ -1,6 +1,6 @@
 aiohttp==3.7.4.post0
 appdirs==1.4.3
-aries-cloudcontroller==0.2.8
+aries-cloudcontroller==0.2.7
 async-timeout==3.0.1
 asyncio==3.4.3
 attrs==21.2.0

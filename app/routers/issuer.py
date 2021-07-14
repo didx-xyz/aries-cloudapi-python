@@ -4,6 +4,8 @@ import traceback
 from typing import List
 
 import qrcode
+from aries_cloudcontroller import AriesAgentControllerBase
+from dependencies import *
 from facade import (
     get_connection_id,
     get_cred_def_id,
@@ -11,11 +13,9 @@ from facade import (
     issue_credentials,
     write_credential_def,
 )
-from dependencies import *
-from fastapi import APIRouter, Header, Query, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from schemas import ConnectionIdResponse, IssueCredentialResponse
-from aries_cloudcontroller import AriesAgentControllerBase
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issuer", tags=["Legacy: Issuer"])

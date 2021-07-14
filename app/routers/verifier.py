@@ -2,16 +2,13 @@ import logging
 import time
 import traceback
 from typing import List
-from dependencies import *
-from facade import (
-    get_schema_attributes,
-    send_proof_request,
-    verify_proof_req,
-)
+
 from aries_cloudcontroller import AriesAgentControllerBase
-from fastapi import APIRouter, HTTPException, Query, Depends
-from utils import construct_indy_proof_request, construct_zkp
+from dependencies import *
+from facade import get_schema_attributes, send_proof_request, verify_proof_req
+from fastapi import APIRouter, Depends, HTTPException, Query
 from schemas import RequestProofResponse
+from utils import construct_indy_proof_request, construct_zkp
 
 logger = logging.getLogger(__name__)
 

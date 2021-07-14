@@ -1,10 +1,9 @@
 from typing import Optional
 
 from aries_cloudcontroller import AriesAgentControllerBase
-from fastapi import Depends, APIRouter
-from pydantic import BaseModel
-
 from dependencies import yoma_agent
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/admin/governance/credential-definitions",

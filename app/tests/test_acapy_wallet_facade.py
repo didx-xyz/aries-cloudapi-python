@@ -1,10 +1,9 @@
 import pytest
+from acapy_wallet_facade import assign_pub_did, create_did, get_pub_did
 from aries_cloudcontroller import AriesAgentControllerBase
 from aries_cloudcontroller.controllers.wallet import WalletController
 from fastapi import HTTPException
 from mockito import mock, when
-
-from acapy_wallet_facade import get_pub_did, assign_pub_did, create_did
 
 
 # need this to handle the async with the mock

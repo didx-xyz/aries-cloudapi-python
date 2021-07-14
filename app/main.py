@@ -10,10 +10,12 @@ from routers import issuer, schema, verifier
 from admin.governance import schemas, credential_definitions
 from admin.governance.multitenant_wallet import wallet
 from admin.governance import dids
+from generic import connections
 
 prod = strtobool(os.environ.get("prod", "False"))
 app = FastAPI(debug=not prod)
 
+app.include_router(connections.router)
 app.include_router(dids.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)

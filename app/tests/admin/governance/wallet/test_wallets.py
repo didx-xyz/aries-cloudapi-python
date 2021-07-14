@@ -1,6 +1,5 @@
 import pytest
 from admin.governance.wallet.wallets import (
-    create_local_did,
     list_dids,
     fetch_current_did,
     rotate_keypair,
@@ -74,7 +73,7 @@ async def test_fetch_current_did(async_client, yoma_agent_mock):
 
 
 @pytest.mark.asyncio
-async def test_get_did_endpoint(async_client, yoma_agent_mock, create_did_mock):
+async def test_get_did_endpoint(async_client, create_did_mock):
 
     did = create_did_mock
     response = await async_client.get(

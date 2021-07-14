@@ -6,14 +6,10 @@ from fastapi import FastAPI, Response
 import yaml
 
 
-from routers import issuer, schema, verifier
-from admin.governance import schemas, credential_definitions
-from admin.governance.multitenant_wallet import wallet
-from admin.governance import dids
 from admin.governance import credential_definitions, dids, schemas
 from fastapi import FastAPI
 from generic import connections
-from routers import issuer, schema, verifier
+from routers import issuer, verifier
 from admin.governance.multitenant_wallet import wallet_admin
 from admin.governance.wallet import wallets
 

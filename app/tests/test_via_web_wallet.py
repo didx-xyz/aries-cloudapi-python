@@ -12,7 +12,8 @@ from httpx import AsyncClient
 async def test_get_pub_did_via_web(setup_env):
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         response = await ac.get(
-            "/wallets/create-pub-did", headers={"x-api-key": "adminApiKey"}
+            "/wallet/create-pub-did",
+            headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
         )
     assert response.status_code == 200
     result = response.json()
@@ -34,7 +35,7 @@ async def test_get_pub_did_via_web(setup_env):
 async def test_get_pub_did_via_web_no_header(setup_env):
     async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
         try:
-            await ac.get("/wallets/create-pub-did", headers={})
+            await ac.get("/wallet/create-pub-did", headers={})
         except ClientResponseError as error:
             assert error.status == 401
             assert error.message == "Unauthorized"

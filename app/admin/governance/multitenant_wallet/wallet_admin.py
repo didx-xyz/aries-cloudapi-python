@@ -1,40 +1,16 @@
 import logging
 
-from acapy_ledger_facade import create_pub_did
-from aries_cloudcontroller import AriesAgentControllerBase
-from dependencies import member_admin_agent, yoma_agent
 from fastapi import APIRouter, Depends
-from schemas import DidCreationResponse
+
+
+from aries_cloudcontroller import AriesAgentControllerBase
+
+
+from dependencies import member_admin_agent
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/wallets", tags=["Admin: Wallets"])
-
-
-@router.get("/create-pub-did", response_model=DidCreationResponse)
-async def create_public_did(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
-):
-    """
-    Create a new public DID and
-    write it to the ledger and
-    receive its public info.
-
-    Parameters:
-    -----------
-    api_key: Header(None)
-        The request header object api_key
-    wallet_id: Header(None)
-        The request header object wallet_id
-    tenant_jwt: Header(None)
-        The request header object tenant_jwt
-
-    Returns:
-    * DID object (json)
-    * Issuer verkey (str)
-    * Issuer Endpoint (url)
-    """
-    return await create_pub_did(aries_controller)
+router = APIRouter(prefix="/admin/wallet-multitenant", tags=["Admin: wallets"])
 
 
 # TODO: This should be somehow restricted?!

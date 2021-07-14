@@ -1,18 +1,22 @@
+from datetime import datetime
+
 import json
 
 import pytest
 from aiohttp import ClientResponseError
+from assertpy import assert_that
 
-from admin.governance.multitenant_wallet.wallet import (
+from admin.wallet import (
     get_subwallet,
     get_subwallet_auth_token,
-    query_subwallet,
     update_subwallet,
+    query_subwallet,
+    UpdateWalletRequest,
 )
 from tests.utils_test import get_random_string
 
 WALLET_HEADERS = {"content-type": "application/json", "x-role": "member"}
-WALLET_PATH = "/admin/wallets"
+WALLET_PATH = "/admin/subwallets"
 CREATE_WALLET_PAYLOAD = {
     "image_url": "https://aries.ca/images/sample.png",
     "label": "YOMA",
@@ -31,7 +35,7 @@ async def fixture_create_wallet(async_client):
         headers={"x-api-key": "adminApiKey"},
     )
     assert response.status_code == 200
-    assert response.json() == "Successfully removed wallet"
+    assert response.json() == {"status": "Successfully removed wallet"}
 
 
 async def create_wallet(async_client):
@@ -87,38 +91,32 @@ async def test_get_subwallet_auth_token(
 
 @pytest.mark.asyncio
 async def test_get_subwallet(async_client, member_admin_agent_mock, create_wallet):
-
     wallet_id = create_wallet["wallet_id"]
     response = await async_client.get(
         f"{WALLET_PATH}/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
     )
     response = response.json()
-    assert response["wallet_id"]
-    assert response["key_management_mode"]
-    assert response["settings"]
-    res_method = await get_subwallet(
-        aries_controller=member_admin_agent_mock, wallet_id=wallet_id
-    )
-    assert res_method == response
+    create_wallet.pop("token")
+    assert response == create_wallet
 
 
 @pytest.mark.asyncio
 async def test_update_wallet(async_client, member_admin_agent_mock, create_wallet):
     wallet_id = create_wallet["wallet_id"]
+    assert create_wallet["settings"]["image_url"] != "update"
     payload = {"image_url": "update"}
+    request = UpdateWalletRequest(image_url="update")
     update_response = await async_client.post(
         f"{WALLET_PATH}/{wallet_id}",
         headers={"x-api-key": "adminApiKey", **WALLET_HEADERS},
-        data=json.dumps({"image_url": "update"}),
+        data=request.json(),
     )
-    update_response = update_response.json()
-    assert update_response["settings"]["image_url"] == "update"
 
-    res_method = await update_subwallet(
-        aries_controller=member_admin_agent_mock, payload=payload, wallet_id=wallet_id
+    res_method = await get_subwallet(
+        wallet_id=wallet_id, aries_controller=member_admin_agent_mock
     )
-    assert res_method["settings"] == update_response["settings"]
+    assert_that(res_method["settings"]["image_url"]).is_equal_to("update")
 
 
 @pytest.mark.asyncio
@@ -155,7 +153,7 @@ async def test_remove_by_id(async_client, member_admin_agent_mock):
         headers={"x-api-key": "adminApiKey"},
     )
     assert response.status_code == 200
-    assert response.json() == "Successfully removed wallet"
+    assert response.json() == {"status": "Successfully removed wallet"}
 
     with pytest.raises(ClientResponseError) as e:
         wallet = await get_subwallet(

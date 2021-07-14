@@ -1,6 +1,6 @@
 import pytest
 import json
-from admin.governance.multitenant_wallet.wallet import (
+from admin.governance.multitenant_wallet.wallet_admin import (
     get_subwallet_auth_token,
     update_subwallet,
     get_subwallet,
@@ -8,14 +8,14 @@ from admin.governance.multitenant_wallet.wallet import (
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
-BASE_PATH = "/admin/governance/wallet"
+BASE_PATH = "/admin/wallet-multitenant"
 CREATE_WALLET_PAYLOAD = {
     "image_url": "https://aries.ca/images/sample.png",
     "key_management_mode": "managed",
     "label": "YOMA",
     "wallet_dispatch_type": "default",
     "wallet_key": "MySecretKey1234",
-    "wallet_name": "DarthVadersHolidayFunds",
+    "wallet_name": "DarthVadersHolidayFunds69",
     "wallet_type": "indy",
 }
 
@@ -31,25 +31,11 @@ async def fixture_create_wallet_mock(async_client):
     wallet_id = wallet_response["wallet_id"]
     yield wallet_response
     response = await async_client.delete(
-        f"/wallets/{wallet_id}",
+        f"/admin/wallet-multitenant/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
     )
     assert response.status_code == 200
     assert response.json() == "Successfully removed wallet"
-
-
-@pytest.mark.asyncio
-async def test_create_pub_did(async_client):
-    response = await async_client.get(
-        "/admin/wallet-multitenant/create-pub-did",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
-    )
-    assert response.status_code == 200
-    response = response.json()
-    assert response["did_object"] and response["did_object"] != {}
-    assert response["issuer_verkey"] and response["issuer_verkey"] != {}
-    assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}
-    assert response["did_object"]["posture"] == "public"
 
 
 @pytest.mark.asyncio
@@ -153,7 +139,7 @@ async def test_remove_by_id(async_client):
     wallet_id = wallet_response["wallet_id"]
 
     response = await async_client.delete(
-        f"/wallets/{wallet_id}",
+        f"/admin/wallet-multitenant/{wallet_id}",
         headers={"x-api-key": "adminApiKey"},
     )
     assert response.status_code == 200

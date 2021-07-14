@@ -1,13 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="1.071" timestamp="2021-07-13T15:04:20.327906" hostname="vineeth-G3-3579"><testcase classname="tests.admin.governance.wallet.test_wallets_admin" name="test_list_dids" time="0.036" /><testcase classname="tests.admin.governance.wallet.test_wallets_admin" name="test_create_local_did" time="0.582" /><testcase classname="tests.admin.governance.wallet.test_wallets_admin" name="test_fetch_current_did" time="0.059" /><testcase classname="tests.admin.governance.wallet.test_wallets_admin" name="test_assign_pub_did" time="0.292"><failure message="AssertionError: assert 'RoR6Eaz4JWwJG54dcGQWBY' == ''&#10;  + RoR6Eaz4JWwJG54dcGQWBY">async_client = &lt;httpx.AsyncClient object at 0x7fcf713f73a0&gt;
-yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_key='adminApiKey', is_multitenant=False), create_did_mock = 'RoR6Eaz4JWwJG54dcGQWBY'
-
-    @pytest.mark.asyncio
-    async def test_assign_pub_did(
-        async_client, yoma_agent_mock, create_did_mock
-    ):
-        did = create_did_mock
-&gt;       assert did == ''
-E       AssertionError: assert 'RoR6Eaz4JWwJG54dcGQWBY' == ''
-E         + RoR6Eaz4JWwJG54dcGQWBY
-
-app/tests/admin/governance/wallet/test_wallets_admin.py:89: AssertionError</failure></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="6" time="6.371" timestamp="2021-07-14T13:52:03.989795" hostname="vineeth-G3-3579"><testcase classname="tests.admin.governance.multitenantwallet.test_wallet_admin" name="test_get_subwallet_auth_token" time="1.162" /><testcase classname="tests.admin.governance.multitenantwallet.test_wallet_admin" name="test_get_subwallet" time="1.281" /><testcase classname="tests.admin.governance.multitenantwallet.test_wallet_admin" name="test_update_wallet" time="1.378" /><testcase classname="tests.admin.governance.multitenantwallet.test_wallet_admin" name="test_query_subwallet" time="0.019" /><testcase classname="tests.admin.governance.multitenantwallet.test_wallet_admin" name="test_create_wallet" time="1.269" /><testcase classname="tests.admin.governance.multitenantwallet.test_wallet_admin" name="test_remove_by_id" time="1.221" /></testsuite></testsuites>

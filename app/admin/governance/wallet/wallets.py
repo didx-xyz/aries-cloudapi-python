@@ -2,12 +2,41 @@ import logging
 
 from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AriesAgentControllerBase
-
+from schemas import (
+    DidCreationResponse,
+)
+from acapy_ledger_facade import create_pub_did
 from dependencies import *
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/wallet-admin", tags=["wallets"])
+router = APIRouter(prefix="/wallet", tags=["wallets"])
+
+
+@router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
+async def create_public_did(
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+):
+    """
+    Create a new public DID and
+    write it to the ledger and
+    receive its public info.
+
+    Parameters:
+    -----------
+    api_key: Header(None)
+        The request header object api_key
+    wallet_id: Header(None)
+        The request header object wallet_id
+    tenant_jwt: Header(None)
+        The request header object tenant_jwt
+
+    Returns:
+    * DID object (json)
+    * Issuer verkey (str)
+    * Issuer Endpoint (url)
+    """
+    return await create_pub_did(aries_controller)
 
 
 @router.get("/create-local-did")
@@ -57,7 +86,7 @@ async def get_did_endpoint(
     return await aries_controller.wallet.get_did_endpoint(did)
 
 
-@router.post("/assign-pub-did")
+@router.get("/assign-pub-did")
 async def assign_pub_did(
     did: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -71,8 +100,8 @@ async def assign_pub_did(
 @router.post("/set-did-endpoint")
 async def set_did_endpoint(
     did: str,
-    endpoint,
-    endpoint_type,
+    endpoint: str,
+    endpoint_type="Endpoint",
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """

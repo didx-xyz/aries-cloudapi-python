@@ -11,7 +11,11 @@ async def test_get_trusted_registry(async_client, yoma_agent_mock):
 
     response = await async_client.get(
         BASE_PATH + "/trusted-registry",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     assert response.status_code == 200
     result = response.json()
@@ -41,7 +45,11 @@ async def test_get_trusted_partner(async_client, yoma_agent_mock):
     # try retrieve the created did from the ledger
     response = await async_client.get(
         BASE_PATH + f"/trusted-registry/{did_created}",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
 
     # check the did is public and on the ledger

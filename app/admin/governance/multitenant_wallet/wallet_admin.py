@@ -334,7 +334,7 @@ async def create_subwallet(
 @router.delete("/{wallet_id}")
 async def remove_subwallet_by_id(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     try:
         response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
@@ -350,7 +350,7 @@ async def remove_subwallet_by_id(
 @router.get("/{wallet_id}/auth-token", response_model=CreateWalletTokenResponse)
 async def get_subwallet_auth_token(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     return await aries_controller.multitenant.get_subwallet_authtoken_by_id(
         wallet_id=wallet_id

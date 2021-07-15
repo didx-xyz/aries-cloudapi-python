@@ -2,9 +2,6 @@ import pytest
 from admin.governance.wallet.wallets import (
     list_dids,
     fetch_current_did,
-    rotate_keypair,
-    get_did_endpoint,
-    assign_pub_did,
     set_did_endpoint,
 )
 import acapy_wallet_facade as wallet_facade

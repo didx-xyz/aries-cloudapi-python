@@ -38,11 +38,11 @@ CREATE_WALLET_PAYLOAD_HAN = {
 async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
     yoda_response = await async_client.delete(
         f"/admin/wallet-multitenant/{yoda_wallet_id}",
-        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
+        headers={"x-api-key": "adminApiKey", "x-role": "member"},
     )
     han_response = await async_client.delete(
         f"/admin/wallet-multitenant/{han_wallet_id}",
-        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
+        headers={"x-api-key": "adminApiKey", "x-role": "member"},
     )
     return yoda_response, han_response
 
@@ -70,7 +70,7 @@ async def token_responses(async_client, create_wallets_mock):
         f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -79,7 +79,7 @@ async def token_responses(async_client, create_wallets_mock):
         f"/admin/wallet-multitenant/{han_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -105,7 +105,7 @@ async def fixture_create_wallets_mock(async_client):
         "/admin/wallet-multitenant/create-wallet",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
         data=json.dumps(CREATE_WALLET_PAYLOAD_YODA),
@@ -116,7 +116,7 @@ async def fixture_create_wallets_mock(async_client):
         "/admin/wallet-multitenant/create-wallet",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
         data=json.dumps(CREATE_WALLET_PAYLOAD_HAN),
@@ -129,9 +129,9 @@ async def fixture_create_wallets_mock(async_client):
         yoda_wallet_id, han_wallet_id, async_client
     )
     assert yoda_response.status_code == 200
-    assert yoda_response.json() == "Successfully removed wallet"
+    assert yoda_response.json() == {"status": "Successfully removed wallet"}
     assert han_response.status_code == 200
-    assert han_response.json() == "Successfully removed wallet"
+    assert han_response.json() == {"status": "Successfully removed wallet"}
 
 
 @pytest.mark.asyncio
@@ -144,7 +144,7 @@ async def test_create_invite(async_client, create_wallets_mock):
         f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )

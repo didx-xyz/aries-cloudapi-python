@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 router = APIRouter(
-    prefix="/admin/governance/credential-definitions", tags=["CredentialDefinitions"]
+    prefix="/admin/governance/credential-definitions",
+    tags=["Admin: CredentialDefinitions"],
 )
 
 

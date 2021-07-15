@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/governance/dids", tags=["admin", "governance"])
+router = APIRouter(prefix="/admin/governance/dids", tags=["Admin: Public Dids"])
 
 
-@router.get("/trusted-registry", tags=["did"])
+@router.get("/trusted-registry")
 async def get_trusted_registry(
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
@@ -35,7 +35,7 @@ async def get_trusted_registry(
     return public_dids
 
 
-@router.get("/trusted-registry/{partner_did}", tags=["did"])
+@router.get("/trusted-registry/{partner_did}")
 async def get_trusted_partner(
     partner_did: str,
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),

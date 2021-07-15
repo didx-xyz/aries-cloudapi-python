@@ -3,7 +3,7 @@ type: Request
 parentId: wrk_9834320c6b6b40d7a147c5af69483c65
 modified: 1626168369737
 created: 1626167140311
-url: "{{ base_url }}/admin/governance/schemas"
+url: "{{ base_url }}/admin/governance/schemas/"
 name: Get Schemas
 description: ""
 method: GET

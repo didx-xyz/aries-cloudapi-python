@@ -1,7 +1,7 @@
 import logging
 
 from aries_cloudcontroller import AriesAgentControllerBase
-from dependencies import yoma_agent
+from dependencies import agent_selector
 from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/admin/governance/dids", tags=["admin", "governance"]
 
 @router.get("/trusted-registry", tags=["did"])
 async def get_trusted_registry(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
     Retrieve Trusted partner list from Trust Registry
@@ -38,7 +38,7 @@ async def get_trusted_registry(
 @router.get("/trusted-registry/{partner_did}", tags=["did"])
 async def get_trusted_partner(
     partner_did: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
     Retrieve Trusted partner from Trust Registry

@@ -47,7 +47,7 @@ async def test_get_trusted_partner(async_client, yoma_agent_mock):
         BASE_PATH + f"/trusted-registry/{did_created}",
         headers={
             "x-api-key": "adminApiKey",
-            "role": "yoma",
+            "x-role": "yoma",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )

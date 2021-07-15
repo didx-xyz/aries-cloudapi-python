@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AriesAgentControllerBase
 
 
-from dependencies import member_admin_agent
+from dependencies import admin_agent_selector
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ router = APIRouter(prefix="/admin/wallet-multitenant", tags=["Admin: wallets"])
 @router.post("/create-wallet")
 async def create_wallet(
     wallet_payload: dict = None,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     """
     Create a new wallet
@@ -53,7 +53,7 @@ async def create_wallet(
 @router.delete("/{wallet_id}")
 async def remove_wallet_by_id(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
 
     response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
@@ -66,7 +66,7 @@ async def remove_wallet_by_id(
 @router.get("/{wallet_id}/auth-token")
 async def get_subwallet_auth_token(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     return await aries_controller.multitenant.get_subwallet_authtoken_by_id(
         wallet_id=wallet_id
@@ -77,7 +77,7 @@ async def get_subwallet_auth_token(
 async def update_subwallet(
     payload: dict,
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     return await aries_controller.multitenant.update_subwallet_by_id(payload, wallet_id)
 
@@ -85,7 +85,7 @@ async def update_subwallet(
 @router.get("/query-subwallet")
 async def query_subwallet(
     wallet_name: str = None,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     return await aries_controller.multitenant.query_subwallets(wallet_name=wallet_name)
 
@@ -93,6 +93,6 @@ async def query_subwallet(
 @router.get("/{wallet_id}")
 async def get_subwallet(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
     return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)

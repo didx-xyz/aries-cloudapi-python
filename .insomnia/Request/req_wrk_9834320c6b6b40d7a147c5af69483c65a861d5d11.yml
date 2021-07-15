@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65a861d5d11
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428228
+parentId: fld_9aff81a0e434488c8aaec7854bb9595b
+modified: 1626346541176
 created: 1626344428228
 url: "{{ base_url }}/generic/connections/"
 name: Get Connections
@@ -13,17 +13,21 @@ headers:
   - name: x-api-key
     disabled: true
     value: string
+    id: pair_d2b110226d2942bdb442236c2bcadda4
   - name: authorization
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{auth_token}}"
+    id: pair_9fea766074514e1684b068a763947a3a
   - name: x-wallet-id
     disabled: true
     value: "null"
+    id: pair_495bc67cf8e54e2b94e6c5d115cd68e1
   - name: x-role
     disabled: false
-    value: "null"
+    value: member
+    id: pair_f5c97a23894b47b88c863d563dbb2788
 authentication: {}
-metaSortKey: -1626344428228
+metaSortKey: -1626344428134
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

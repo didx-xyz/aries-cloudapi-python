@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65f5ba8677
 type: Request
-parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
-modified: 1626344929882
+parentId: fld_c65f9f4cc4b146718df46e7265ad39f4
+modified: 1626346253549
 created: 1626344428187
 url: "{{ base_url }}/wallet/assign-pub-did"
 name: Assign Pub Did
@@ -16,11 +16,11 @@ parameters:
 headers:
   - name: x-api-key
     disabled: true
-    value: string
+    value: "{{api_key}}"
     id: pair_67728855fe244a4294b3a32b508e5a57
   - name: authorization
     disabled: true
-    value: string
+    value: "{{auth_token}}"
     id: pair_5aa6e86b84de48e5b13d6d97e0af0c97
   - name: x-wallet-id
     disabled: true
@@ -28,10 +28,10 @@ headers:
     id: pair_6ca0f5c38b914cd69ebbed43793d2575
   - name: x-role
     disabled: false
-    value: "null"
+    value: member
     id: pair_fd8ac800019348d3abc990f0f1c1a24c
 authentication: {}
-metaSortKey: -1626344428093
+metaSortKey: -1626344499671
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65825e35ab
 type: Request
-parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
-modified: 1626344848774
+parentId: fld_c65f9f4cc4b146718df46e7265ad39f4
+modified: 1626346171509
 created: 1626344428192
 url: "{{ base_url }}/wallet/list-dids"
 name: List Dids
@@ -17,7 +17,7 @@ headers:
   - name: authorization
     disabled: false
     value: Bearer
-      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJmY2MyNGZmYi02YzYxLTRlYzYtYjc2Yy0wZjFmMjM2NTgzNzkifQ.IzG3rqN1J_ESqi9pQbo3xZoSzf9prOvacJMMsJHGmNA
+      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJjM2EyYzVjMC1mMjQ5LTQ2NDgtYmZiZS0xMTU4MzA5ODlkNTcifQ.RipgZ6eXXvgAeaNcbVt2L9fy-oIminuFgpdCcysylTU
     id: pair_7d85fe8061e94cd18839cce6a8d15a1e
   - name: x-wallet-id
     disabled: true
@@ -28,7 +28,7 @@ headers:
     value: member
     id: pair_4b06ad79172b4272a5237a79e9f3269a
 authentication: {}
-metaSortKey: -1626344464032
+metaSortKey: -1626344499821
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

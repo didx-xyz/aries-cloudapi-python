@@ -1,33 +1,48 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6573dad88a2
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428229
+parentId: fld_9aff81a0e434488c8aaec7854bb9595b
+modified: 1626346516720
 created: 1626344428229
 url: "{{ base_url }}/generic/connections/accept-invite"
 name: Accept Invite
 description: ""
-method: GET
+method: POST
 body:
   mimeType: application/json
-  text: "{}"
+  text: >-
+    {
+        "@type": "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/connections/1.0/invitation",
+        "@id": "5084bda1-b211-43ac-9e2e-0852edd65bf0",
+        "serviceEndpoint": "https://a7fc99c65eb6.ngrok.io",
+        "recipientKeys": [
+          "Bmboh1GqgDZGhp8krdFWcRhbVEVe8E5ppFMV5BjaJYVs"
+        ],
+        "label": "bob2",
+        "imageUrl": "http://example.com/here.png"
+      }
 parameters: []
 headers:
   - name: x-api-key
     disabled: true
     value: string
+    id: pair_675c8e82a9b44516b1ccfcd61590c506
   - name: authorization
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{auth_token}}"
+    id: pair_15bf99e292484bd4a2d220e30085064a
   - name: x-wallet-id
     disabled: true
     value: "null"
+    id: pair_6b44432bd44d4fc1aa98aab3abbb7f09
   - name: x-role
     disabled: false
-    value: "null"
+    value: member
+    id: pair_6b1b83d142d84e3f83f02e9f547df179
   - name: Content-Type
     value: application/json
+    id: pair_13225dffca3747abb57daf7753a0ba35
 authentication: {}
-metaSortKey: -1626344428229
+metaSortKey: -1626344428184
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

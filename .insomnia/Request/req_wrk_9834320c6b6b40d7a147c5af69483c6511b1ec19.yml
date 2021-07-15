@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6511b1ec19
 type: Request
-parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
-modified: 1626344809984
+parentId: fld_c65f9f4cc4b146718df46e7265ad39f4
+modified: 1626346205026
 created: 1626344428193
 url: "{{ base_url }}/wallet/create-local-did"
 name: Create Local Did
@@ -16,8 +16,7 @@ headers:
     id: pair_4529597616ad4b9bbddf9bd46ac4c787
   - name: authorization
     disabled: false
-    value: Bearer
-      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJmY2MyNGZmYi02YzYxLTRlYzYtYjc2Yy0wZjFmMjM2NTgzNzkifQ.IzG3rqN1J_ESqi9pQbo3xZoSzf9prOvacJMMsJHGmNA
+    value: "{{auth_token}}"
     id: pair_199ab83781524979a9fc7e1d5f10d216
   - name: x-wallet-id
     disabled: true
@@ -28,7 +27,7 @@ headers:
     value: member
     id: pair_789726ab3c1f437685a916abddd5d082
 authentication: {}
-metaSortKey: -1626344428193
+metaSortKey: -1626344499771
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

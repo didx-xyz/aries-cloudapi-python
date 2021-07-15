@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65fbeed848
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428234
+parentId: fld_9aff81a0e434488c8aaec7854bb9595b
+modified: 1626346271567
 created: 1626344428234
 url: "{{ base_url }}/generic/connections/create-invite"
 name: Create Invite
@@ -12,16 +12,20 @@ parameters: []
 headers:
   - name: x-api-key
     disabled: true
-    value: string
+    value: "{{api_key}}"
+    id: pair_0a84b8d5af3b4472a5e2eae06a0402b6
   - name: authorization
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{auth_token}}"
+    id: pair_60dfebee9f0743bc9c78f4917e732bff
   - name: x-wallet-id
     disabled: true
     value: "null"
+    id: pair_2d862971f47e4f12a7065c2187c1bf11
   - name: x-role
     disabled: false
-    value: "null"
+    value: member
+    id: pair_d78a076f3aea4b59b9dbc7879fc29fff
 authentication: {}
 metaSortKey: -1626344428234
 isPrivate: false

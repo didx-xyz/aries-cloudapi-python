@@ -1,7 +1,7 @@
 _id: req_a013900a28ee4258bc778d5741691b63
 type: Request
 parentId: fld_db97117ebea041849eec0bb29cb56c47
-modified: 1626337317625
+modified: 1626338461906
 created: 1626337198283
 url: "{{ base_url }}/admin/governance/schemas/"
 name: Get Schemas
@@ -14,6 +14,7 @@ headers:
     value: "{{api_key}}"
     description: ""
     id: pair_c1a8572e06ab4f1da6ad4700cc783c21
+    disabled: true
 authentication: {}
 metaSortKey: -1626337198283
 isPrivate: false

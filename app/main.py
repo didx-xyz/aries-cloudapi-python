@@ -47,8 +47,7 @@ def read_openapi_yaml() -> Response:
 async def client_response_error_exception_handler(
     request: Request, exc: ClientResponseError
 ):
-    """
-    This is the handler for handling the ClientResponseError
+    """This is the handler for handling the ClientResponseError
 
     that is the error fired by the aries cloud controller.
     It converts this erro into a nice json response which indicates the status and the

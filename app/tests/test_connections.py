@@ -129,9 +129,9 @@ async def fixture_create_wallets_mock(async_client):
         yoda_wallet_id, han_wallet_id, async_client
     )
     assert yoda_response.status_code == 200
-    assert yoda_response.json() == "Successfully removed wallet"
+    assert yoda_response.json() == {"status": "Successfully removed wallet"}
     assert han_response.status_code == 200
-    assert han_response.json() == "Successfully removed wallet"
+    assert han_response.json() == {"status": "Successfully removed wallet"}
 
 
 @pytest.mark.asyncio

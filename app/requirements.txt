@@ -61,3 +61,4 @@ mockito==1.2.2
 pytest-bdd
 assertpy==1.1
 Deprecated==1.2.12
+PyYAML==5.4.1

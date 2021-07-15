@@ -1,0 +1,10 @@
+_id: fld_fac4344aa730493d9fdafcb6a5b58a67
+type: RequestGroup
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344473273
+created: 1626344464397
+name: Member Wallet
+description: ""
+environment: {}
+environmentPropertyOrder: null
+metaSortKey: -1626344428259

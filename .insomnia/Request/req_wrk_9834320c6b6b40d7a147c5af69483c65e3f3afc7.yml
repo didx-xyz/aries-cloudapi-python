@@ -1,0 +1,47 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65e3f3afc7
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344428210
+created: 1626344428210
+url: "{{ base_url }}/admin/wallet-multitenant/create-wallet"
+name: Create Subwallet
+description: ""
+method: POST
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "image_url": "string",
+      "label": "string",
+      "wallet_key": "string",
+      "wallet_name": "string",
+      "key_management_mode": "managed",
+      "wallet_dispatch_type": "default",
+      "wallet_type": "indy",
+      "wallet_webhook_urls": []
+    }
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: authorization
+    disabled: true
+    value: string
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+  - name: x-role
+    disabled: false
+    value: "null"
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1626344428210
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

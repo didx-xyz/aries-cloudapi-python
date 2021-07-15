@@ -1,0 +1,37 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c6573dad88a1
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344428230
+created: 1626344428230
+url: "{{ base_url }}/generic/connections/accept-invite"
+name: Accept Invite
+description: ""
+method: GET
+body:
+  mimeType: application/json
+  text: "{}"
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: authorization
+    disabled: true
+    value: string
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+  - name: x-role
+    disabled: false
+    value: "null"
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1626344428230
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

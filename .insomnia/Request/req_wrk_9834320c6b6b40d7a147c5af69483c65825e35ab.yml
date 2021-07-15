@@ -1,0 +1,38 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65825e35ab
+type: Request
+parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
+modified: 1626344848774
+created: 1626344428192
+url: "{{ base_url }}/wallet/list-dids"
+name: List Dids
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: "{{api_key}}"
+    id: pair_0853da026b0f4f48a4a277c7a7355785
+  - name: authorization
+    disabled: false
+    value: Bearer
+      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJmY2MyNGZmYi02YzYxLTRlYzYtYjc2Yy0wZjFmMjM2NTgzNzkifQ.IzG3rqN1J_ESqi9pQbo3xZoSzf9prOvacJMMsJHGmNA
+    id: pair_7d85fe8061e94cd18839cce6a8d15a1e
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+    id: pair_0e88c448b2a24a3482bc2dee597cc945
+  - name: x-role
+    disabled: false
+    value: member
+    id: pair_4b06ad79172b4272a5237a79e9f3269a
+authentication: {}
+metaSortKey: -1626344464032
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

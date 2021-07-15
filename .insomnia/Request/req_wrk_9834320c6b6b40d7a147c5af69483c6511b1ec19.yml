@@ -1,0 +1,38 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c6511b1ec19
+type: Request
+parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
+modified: 1626344809984
+created: 1626344428193
+url: "{{ base_url }}/wallet/create-local-did"
+name: Create Local Did
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_4529597616ad4b9bbddf9bd46ac4c787
+  - name: authorization
+    disabled: false
+    value: Bearer
+      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJmY2MyNGZmYi02YzYxLTRlYzYtYjc2Yy0wZjFmMjM2NTgzNzkifQ.IzG3rqN1J_ESqi9pQbo3xZoSzf9prOvacJMMsJHGmNA
+    id: pair_199ab83781524979a9fc7e1d5f10d216
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+    id: pair_b85c806da1224a8aa00d697bb6ab0490
+  - name: x-role
+    disabled: false
+    value: member
+    id: pair_789726ab3c1f437685a916abddd5d082
+authentication: {}
+metaSortKey: -1626344428193
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

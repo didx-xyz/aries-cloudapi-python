@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6584da83d1
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626167140328
+parentId: fld_db97117ebea041849eec0bb29cb56c47
+modified: 1626344309890
 created: 1626167140328
 url: "{{ base_url }}/admin/governance/dids/trusted-registry"
 name: Get Trusted Registry
@@ -11,10 +11,11 @@ body: {}
 parameters: []
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_d8b0d9f7c6114802b90ff7d245ad7a36
 authentication: {}
-metaSortKey: -1626167140328
+metaSortKey: -1626252169092
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

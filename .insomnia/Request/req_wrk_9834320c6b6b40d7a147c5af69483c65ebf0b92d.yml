@@ -1,0 +1,36 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65ebf0b92d
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344333347
+created: 1626344333347
+url: "{{ base_url }}/admin/governance/schemas/"
+name: Get Schemas
+description: ""
+method: GET
+body: {}
+parameters:
+  - name: schema_id
+    disabled: true
+    value: string
+  - name: schema_issuer_did
+    disabled: true
+    value: string
+  - name: schema_name
+    disabled: true
+    value: string
+  - name: schema_version
+    disabled: true
+    value: string
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+authentication: {}
+metaSortKey: -1626344333347
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

@@ -1,0 +1,33 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65fbeed8481
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344428233
+created: 1626344428233
+url: "{{ base_url }}/generic/connections/create-invite"
+name: Create Invite
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: authorization
+    disabled: true
+    value: string
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+  - name: x-role
+    disabled: false
+    value: "null"
+authentication: {}
+metaSortKey: -1626344428233
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

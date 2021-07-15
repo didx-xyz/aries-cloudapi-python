@@ -1,0 +1,38 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c6587fc3b00
+type: Request
+parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
+modified: 1626344890377
+created: 1626344428195
+url: "{{ base_url }}/wallet/create-pub-did"
+name: Create Public Did
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_1d415a02d3f749919c5bd039ef77043a
+  - name: authorization
+    disabled: false
+    value: Bearer
+      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJmY2MyNGZmYi02YzYxLTRlYzYtYjc2Yy0wZjFmMjM2NTgzNzkifQ.IzG3rqN1J_ESqi9pQbo3xZoSzf9prOvacJMMsJHGmNA
+    id: pair_e89745daf82d417ba383f9fdb5a53ce6
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+    id: pair_f0d35cbdb8b243acb862f1ada5278289
+  - name: x-role
+    disabled: false
+    value: member
+    id: pair_51321fed106c4f7abd8249fc65db3d37
+authentication: {}
+metaSortKey: -1626344428143
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

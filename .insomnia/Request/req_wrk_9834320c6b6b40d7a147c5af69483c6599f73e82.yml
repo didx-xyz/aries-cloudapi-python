@@ -1,0 +1,42 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c6599f73e82
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344428185
+created: 1626344428185
+url: "{{ base_url }}/wallet/set-did-endpoint"
+name: Set Did Endpoint
+description: ""
+method: POST
+body: {}
+parameters:
+  - name: did
+    disabled: false
+    value: string
+  - name: endpoint
+    disabled: false
+    value: string
+  - name: endpoint_type
+    disabled: true
+    value: Endpoint
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: authorization
+    disabled: true
+    value: string
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+  - name: x-role
+    disabled: false
+    value: "null"
+authentication: {}
+metaSortKey: -1626344428185
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

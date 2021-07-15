@@ -1,0 +1,33 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c6587fc3b001
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344428194
+created: 1626344428194
+url: "{{ base_url }}/wallet/create-pub-did"
+name: Create Public Did
+description: ""
+method: GET
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: authorization
+    disabled: true
+    value: string
+  - name: x-wallet-id
+    disabled: true
+    value: "null"
+  - name: x-role
+    disabled: false
+    value: "null"
+authentication: {}
+metaSortKey: -1626344428194
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

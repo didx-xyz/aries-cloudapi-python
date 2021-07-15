@@ -1,7 +1,7 @@
 _id: spc_682992b0411b42378592ec418619bf29
 type: ApiSpec
 parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626174047753
+modified: 1626344617916
 created: 1626164860892
 fileName: CloudApi.yaml
 contents: >-
@@ -11,6 +11,236 @@ contents: >-
     title: FastAPI
     version: 0.1.0
   paths:
+    /generic/connections/create-invite:
+      get:
+        tags:
+        - connections
+        - connections
+        - create
+        summary: Create Invite
+        operationId: create_invite_generic_connections_create_invite_get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /generic/connections/accept-invite:
+      get:
+        tags:
+        - connections
+        - connections
+        - accept
+        summary: Accept Invite
+        operationId: accept_invite_generic_connections_accept_invite_get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        requestBody:
+          content:
+            application/json:
+              schema:
+                title: Invite
+                type: object
+          required: true
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /generic/connections/:
+      get:
+        tags:
+        - connections
+        - connections
+        summary: Get Connections
+        operationId: get_connections_generic_connections__get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /generic/connections/{conn_id}:
+      get:
+        tags:
+        - connections
+        - connections
+        summary: Get Connection By Id
+        operationId: get_connection_by_id_generic_connections__conn_id__get
+        parameters:
+        - required: true
+          schema:
+            title: Connection Id
+            type: string
+          name: connection_id
+          in: query
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+      delete:
+        tags:
+        - connections
+        - connections
+        summary: Delete Connection By Id
+        operationId: delete_connection_by_id_generic_connections__conn_id__delete
+        parameters:
+        - required: true
+          schema:
+            title: Connection Id
+            type: string
+          name: connection_id
+          in: query
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
     /admin/governance/dids/trusted-registry:
       get:
         tags:
@@ -306,18 +536,20 @@ contents: >-
               application/json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
-    /wallets/create-pub-did:
-      get:
+    /admin/wallet-multitenant/create-wallet:
+      post:
         tags:
         - 'Admin: Wallets'
-        summary: Create Public Did
-        description: "Create a new public DID and\nwrite it to the ledger and\nreceive\
-          \ its public info.\n\nParameters:\n-----------\napi_key: Header(None)\n  \
-          \  The request header object api_key\nwallet_id: Header(None)\n    The request\
-          \ header object wallet_id\ntenant_jwt: Header(None)\n    The request header\
-          \ object tenant_jwt\n\nReturns:\n* DID object (json)\n* Issuer verkey (str)\n\
-          * Issuer Endpoint (url)"
-        operationId: create_public_did_wallets_create_pub_did_get
+        summary: Create Subwallet
+        description: "Create a new wallet\n\nParameters:\n-----------\nwallet_payload:\
+          \ CreateWalletRequest\n    The payload for creating the wallet\n\n\nReturns:\n\
+          --------\nThe response object from creating a wallet on the ledger\n\nExample\
+          \ Request Body:\n{\n        \"image_url\": \"https://aries.ca/images/sample.png\"\
+          ,\n        \"key_management_mode\": \"managed\",\n        \"label\": \"YOMA\"\
+          ,\n        \"wallet_dispatch_type\": \"default\",\n        \"wallet_key\"\
+          : \"MySecretKey1234\",\n        \"wallet_name\": \"YOMAsWallet\",\n      \
+          \  \"wallet_type\": \"indy\"\n    }"
+        operationId: create_subwallet_admin_wallet_multitenant_create_wallet_post
         parameters:
         - required: false
           schema:
@@ -325,64 +557,47 @@ contents: >-
             type: string
           name: x-api-key
           in: header
-        responses:
-          '200':
-            description: Successful Response
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/DidCreationResponse'
-          '422':
-            description: Validation Error
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/HTTPValidationError'
-    /wallets/create-wallet:
-      post:
-        tags:
-        - 'Admin: Wallets'
-        summary: Create Wallet
-        description: "Create a new wallet\n\nParameters:\n-----------\nwallet_payload:\
-          \ dict\n    The payload for creating the wallet\n\n\nReturns:\n--------\n\
-          The response object from creating a wallet on the ledger\n\nExample Request\
-          \ Body:\n{\n        \"image_url\": \"https://aries.ca/images/sample.png\"\
-          ,\n        \"key_management_mode\": \"managed\",\n        \"label\": \"YOMA\"\
-          ,\n        \"wallet_dispatch_type\": \"default\",\n        \"wallet_key\"\
-          : \"MySecretKey1234\",\n        \"wallet_name\": \"YOMAsWallet\",\n      \
-          \  \"wallet_type\": \"indy\"\n    }"
-        operationId: create_wallet_wallets_create_wallet_post
-        parameters:
         - required: false
           schema:
-            title: X-Api-Key
+            title: Authorization
             type: string
-          name: x-api-key
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
           in: header
         requestBody:
           content:
             application/json:
               schema:
-                title: Wallet Payload
-                type: object
+                $ref: '#/components/schemas/CreateWalletRequest'
+          required: true
         responses:
           '200':
             description: Successful Response
             content:
               application/json:
-                schema: {}
+                schema:
+                  $ref: '#/components/schemas/CreateWalletResponse'
           '422':
             description: Validation Error
             content:
               application/json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
-    /wallets/{wallet_id}:
+    /admin/wallet-multitenant/{wallet_id}:
       get:
         tags:
         - 'Admin: Wallets'
         summary: Get Subwallet
-        operationId: get_subwallet_wallets__wallet_id__get
+        operationId: get_subwallet_admin_wallet_multitenant__wallet_id__get
         parameters:
         - required: true
           schema:
@@ -401,7 +616,8 @@ contents: >-
             description: Successful Response
             content:
               application/json:
-                schema: {}
+                schema:
+                  $ref: '#/components/schemas/WalletRecord'
           '422':
             description: Validation Error
             content:
@@ -412,7 +628,7 @@ contents: >-
         tags:
         - 'Admin: Wallets'
         summary: Update Subwallet
-        operationId: update_subwallet_wallets__wallet_id__post
+        operationId: update_subwallet_admin_wallet_multitenant__wallet_id__post
         parameters:
         - required: true
           schema:
@@ -430,15 +646,15 @@ contents: >-
           content:
             application/json:
               schema:
-                title: Payload
-                type: object
+                $ref: '#/components/schemas/UpdateWalletRequest'
           required: true
         responses:
           '200':
             description: Successful Response
             content:
               application/json:
-                schema: {}
+                schema:
+                  $ref: '#/components/schemas/WalletRecord'
           '422':
             description: Validation Error
             content:
@@ -448,8 +664,8 @@ contents: >-
       delete:
         tags:
         - 'Admin: Wallets'
-        summary: Remove Wallet By Id
-        operationId: remove_wallet_by_id_wallets__wallet_id__delete
+        summary: Remove Subwallet By Id
+        operationId: remove_subwallet_by_id_admin_wallet_multitenant__wallet_id__delete
         parameters:
         - required: true
           schema:
@@ -475,12 +691,12 @@ contents: >-
               application/json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
-    /wallets/{wallet_id}/auth-token:
+    /admin/wallet-multitenant/{wallet_id}/auth-token:
       get:
         tags:
         - 'Admin: Wallets'
         summary: Get Subwallet Auth Token
-        operationId: get_subwallet_auth_token_wallets__wallet_id__auth_token_get
+        operationId: get_subwallet_auth_token_admin_wallet_multitenant__wallet_id__auth_token_get
         parameters:
         - required: true
           schema:
@@ -499,19 +715,20 @@ contents: >-
             description: Successful Response
             content:
               application/json:
-                schema: {}
+                schema:
+                  $ref: '#/components/schemas/CreateWalletTokenResponse'
           '422':
             description: Validation Error
             content:
               application/json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
-    /wallets/query-subwallet:
+    /admin/wallet-multitenant/query-subwallet:
       get:
         tags:
         - 'Admin: Wallets'
         summary: Query Subwallet
-        operationId: query_subwallet_wallets_query_subwallet_get
+        operationId: query_subwallet_admin_wallet_multitenant_query_subwallet_get
         parameters:
         - required: false
           schema:
@@ -530,7 +747,8 @@ contents: >-
             description: Successful Response
             content:
               application/json:
-                schema: {}
+                schema:
+                  $ref: '#/components/schemas/WalletList'
           '422':
             description: Validation Error
             content:
@@ -769,23 +987,84 @@ contents: >-
               application/json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
-    /schemas/all_schemas:
+    /wallet/create-pub-did:
       get:
         tags:
-        - 'Legacy: Schemas'
-        summary: Get Schema
-        description: "Get all valid schemas from YOMA\n\nParameters:\n-----------\n\
-          api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
-          \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
-          \ request header object tenant_jwt\n\nReturns:\n--------\ncreated_schema:\
-          \ dict\n    The created schema response in JSON"
-        operationId: get_schema_schemas_all_schemas_get
+        - wallets
+        - did
+        summary: Create Public Did
+        description: "Create a new public DID and\nwrite it to the ledger and\nreceive\
+          \ its public info.\n\nParameters:\n-----------\napi_key: Header(None)\n  \
+          \  The request header object api_key\nwallet_id: Header(None)\n    The request\
+          \ header object wallet_id\ntenant_jwt: Header(None)\n    The request header\
+          \ object tenant_jwt\n\nReturns:\n* DID object (json)\n* Issuer verkey (str)\n\
+          * Issuer Endpoint (url)"
+        operationId: create_public_did_wallet_create_pub_did_get
         parameters:
         - required: false
           schema:
             title: X-Api-Key
             type: string
           name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/DidCreationResponse'
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallet/create-local-did:
+      get:
+        tags:
+        - wallets
+        summary: Create Local Did
+        description: Create Local DID
+        operationId: create_local_did_wallet_create_local_did_get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
           in: header
         responses:
           '200':
@@ -799,41 +1078,101 @@ contents: >-
               application/json:
                 schema:
                   $ref: '#/components/schemas/HTTPValidationError'
-    /schemas/write-schema-and-credential-definition:
-      post:
+    /wallet/list-dids:
+      get:
         tags:
-        - 'Legacy: Schemas'
-        summary: Write Credential Schema
-        description: "Create schema and credential definition and\nwrite it to the ledger.\n\
-          \nParameters:\n----------\n* schema_name: str\n    The name of the schema\
-          \ to be defined\n* schema_version: str\n    The version of the schema to be\
-          \ written\n\n    Should be of the form x.x.x where x is an integer\n* schema_attributes:\
-          \ list, optional\n    A list of attributes for the schema (default is None)\n\
-          api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
-          \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
-          \ request header object tenant_jwt\n\nReturns:\n--------\nas json:\n* schema\n\
-          * schema_id\n* credential_definition\n* credential_id"
-        operationId: write_credential_schema_schemas_write_schema_and_credential_definition_post
+        - wallets
+        summary: List Dids
+        operationId: list_dids_wallet_list_dids_get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallet/fetch-current-did:
+      get:
+        tags:
+        - wallets
+        summary: Fetch Current Did
+        description: Fetch the current public DID
+        operationId: fetch_current_did_wallet_fetch_current_did_get
+        parameters:
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallet/rotate-keypair:
+      patch:
+        tags:
+        - wallets
+        summary: Rotate Keypair
+        operationId: rotate_keypair_wallet_rotate_keypair_patch
         parameters:
         - required: true
           schema:
-            title: Schema Name
+            title: Did
             type: string
-          name: schema_name
-          in: query
-        - required: true
-          schema:
-            title: Schema Version
-            type: string
-          name: schema_version
-          in: query
-        - required: false
-          schema:
-            title: Schema Attrs
-            type: array
-            items:
-              type: string
-          name: schema_attrs
+          name: did
           in: query
         - required: false
           schema:
@@ -841,13 +1180,183 @@ contents: >-
             type: string
           name: x-api-key
           in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
         responses:
           '200':
             description: Successful Response
             content:
               application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
                 schema:
-                  $ref: '#/components/schemas/SchemaResponse'
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallet/get-did-endpoint/{did}:
+      get:
+        tags:
+        - wallets
+        summary: Get Did Endpoint
+        operationId: get_did_endpoint_wallet_get_did_endpoint__did__get
+        parameters:
+        - required: true
+          schema:
+            title: Did
+            type: string
+          name: did
+          in: path
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallet/assign-pub-did:
+      get:
+        tags:
+        - wallets
+        summary: Assign Pub Did
+        description: Assign the current public DID
+        operationId: assign_pub_did_wallet_assign_pub_did_get
+        parameters:
+        - required: true
+          schema:
+            title: Did
+            type: string
+          name: did
+          in: query
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
+          '422':
+            description: Validation Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/HTTPValidationError'
+    /wallet/set-did-endpoint:
+      post:
+        tags:
+        - wallets
+        summary: Set Did Endpoint
+        description: Update Endpoint in wallet and on ledger if posted to it
+        operationId: set_did_endpoint_wallet_set_did_endpoint_post
+        parameters:
+        - required: true
+          schema:
+            title: Did
+            type: string
+          name: did
+          in: query
+        - required: true
+          schema:
+            title: Endpoint
+            type: string
+          name: endpoint
+          in: query
+        - required: false
+          schema:
+            title: Endpoint Type
+            default: Endpoint
+          name: endpoint_type
+          in: query
+        - required: false
+          schema:
+            title: X-Api-Key
+            type: string
+          name: x-api-key
+          in: header
+        - required: false
+          schema:
+            title: Authorization
+            type: string
+          name: authorization
+          in: header
+        - required: false
+          schema:
+            title: X-Wallet-Id
+          name: x-wallet-id
+          in: header
+        - required: true
+          schema:
+            title: X-Role
+          name: x-role
+          in: header
+        responses:
+          '200':
+            description: Successful Response
+            content:
+              application/json:
+                schema: {}
           '422':
             description: Validation Error
             content:
@@ -891,6 +1400,82 @@ contents: >-
           connection_ids:
             title: Connection Ids
             type: object
+      CreateWalletRequest:
+        title: CreateWalletRequest
+        required:
+        - label
+        - wallet_key
+        - wallet_name
+        type: object
+        properties:
+          image_url:
+            title: Image Url
+            type: string
+          label:
+            title: Label
+            type: string
+          wallet_key:
+            title: Wallet Key
+            type: string
+          wallet_name:
+            title: Wallet Name
+            type: string
+          key_management_mode:
+            allOf:
+            - $ref: '#/components/schemas/KeyManagementMode'
+            default: managed
+          wallet_dispatch_type:
+            allOf:
+            - $ref: '#/components/schemas/WalletDispatchType'
+            default: default
+          wallet_type:
+            allOf:
+            - $ref: '#/components/schemas/WalletType'
+            default: indy
+          wallet_webhook_urls:
+            title: Wallet Webhook Urls
+            type: array
+            items:
+              type: string
+            default: []
+      CreateWalletResponse:
+        title: CreateWalletResponse
+        required:
+        - key_management_mode
+        - wallet_id
+        type: object
+        properties:
+          created_at:
+            title: Created At
+            type: string
+            format: date-time
+          key_management_mode:
+            $ref: '#/components/schemas/KeyManagementMode'
+          settings:
+            title: Settings
+            type: object
+          token:
+            title: Token
+            type: string
+          updated_at:
+            title: Updated At
+            type: string
+            format: date-time
+          wallet_id:
+            title: Wallet Id
+            type: string
+          state:
+            title: State
+            type: string
+      CreateWalletTokenResponse:
+        title: CreateWalletTokenResponse
+        required:
+        - token
+        type: object
+        properties:
+          token:
+            title: Token
+            type: string
       CredentialDefinition:
         title: CredentialDefinition
         required:
@@ -942,6 +1527,12 @@ contents: >-
           credential:
             title: Credential
             type: object
+      KeyManagementMode:
+        title: KeyManagementMode
+        enum:
+        - managed
+        - unmanaged
+        description: An enumeration.
       SchemaDefinition:
         title: SchemaDefinition
         required:
@@ -961,27 +1552,25 @@ contents: >-
             type: array
             items:
               type: string
-      SchemaResponse:
-        title: SchemaResponse
-        required:
-        - schema_resp
-        - schema_id
-        - credential_definition
-        - credential_definition_id
+      UpdateWalletRequest:
+        title: UpdateWalletRequest
         type: object
         properties:
-          schema_resp:
-            title: Schema Resp
-            type: object
-          schema_id:
-            title: Schema Id
+          image_url:
+            title: Image Url
             type: string
-          credential_definition:
-            title: Credential Definition
-            type: object
-          credential_definition_id:
-            title: Credential Definition Id
+          label:
+            title: Label
             type: string
+          wallet_dispatch_type:
+            allOf:
+            - $ref: '#/components/schemas/WalletDispatchType'
+            default: default
+          wallet_webhook_urls:
+            title: Wallet Webhook Urls
+            type: array
+            items:
+              type: string
       ValidationError:
         title: ValidationError
         required:
@@ -1001,4 +1590,55 @@ contents: >-
           type:
             title: Error Type
             type: string
+      WalletDispatchType:
+        title: WalletDispatchType
+        enum:
+        - default
+        - both
+        - base
+        description: An enumeration.
+      WalletList:
+        title: WalletList
+        required:
+        - results
+        type: object
+        properties:
+          results:
+            title: Results
+            type: array
+            items:
+              $ref: '#/components/schemas/WalletRecord'
+      WalletRecord:
+        title: WalletRecord
+        required:
+        - key_management_mode
+        - wallet_id
+        type: object
+        properties:
+          created_at:
+            title: Created At
+            type: string
+            format: date-time
+          key_management_mode:
+            $ref: '#/components/schemas/KeyManagementMode'
+          settings:
+            title: Settings
+            type: object
+          updated_at:
+            title: Updated At
+            type: string
+            format: date-time
+          wallet_id:
+            title: Wallet Id
+            type: string
+          state:
+            title: State
+            type: string
+      WalletType:
+        title: WalletType
+        enum:
+        - askar
+        - in_memory
+        - indy
+        description: An enumeration.
 contentType: yaml

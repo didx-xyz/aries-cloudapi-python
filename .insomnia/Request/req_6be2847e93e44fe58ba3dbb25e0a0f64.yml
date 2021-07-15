@@ -1,0 +1,43 @@
+_id: req_6be2847e93e44fe58ba3dbb25e0a0f64
+type: Request
+parentId: fld_fac4344aa730493d9fdafcb6a5b58a67
+modified: 1626344666025
+created: 1626344499871
+url: "{{base_url}}/admin/wallet-multitenant/create-wallet"
+name: Create Member Wallet
+description: ""
+method: POST
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "image_url": "http://example.com/here.png",
+      "label": "bob1",
+      "wallet_key": "walletkey",
+      "wallet_name": "bob1",
+      "wallet_webhook_urls": [
+        "string"
+      ]
+    }
+parameters: []
+headers:
+  - name: Content-Type
+    value: application/json
+    id: pair_423349c5b36a4e28b549f52d2cf7bb82
+  - name: x-api-key
+    value: "{{api_key}}"
+    description: ""
+    id: pair_c9f91c03a8a44a7aaba03fe3d162188f
+  - name: x-role
+    value: member
+    description: ""
+    id: pair_2498812ad5d44f71a90ef8a6c2f2bf40
+authentication: {}
+metaSortKey: -1626344499871
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

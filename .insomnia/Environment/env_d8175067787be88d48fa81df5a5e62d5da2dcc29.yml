@@ -5,11 +5,11 @@ modified: 1626336792109
 created: 1626164861119
 name: Base Environment
 data:
+  base_url: "{{ scheme }}://{{ host }}{{ base_path }}"
   scheme: http
   base_path: ""
   host: localhost:8000
   api_key: adminApiKey
-  base_url: "{{ scheme }}://{{ host }}{{ base_path }}"
 dataPropertyOrder:
   "&":
     - scheme

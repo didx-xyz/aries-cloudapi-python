@@ -1,0 +1,36 @@
+_id: req_wrk_9834320c6b6b40d7a147c5af69483c65de647623
+type: Request
+parentId: wrk_9834320c6b6b40d7a147c5af69483c65
+modified: 1626344428208
+created: 1626344428208
+url: "{{ base_url }}/admin/wallet-multitenant/{{ wallet_id }}"
+name: Update Subwallet
+description: ""
+method: POST
+body:
+  mimeType: application/json
+  text: |-
+    {
+      "image_url": "string",
+      "label": "string",
+      "wallet_dispatch_type": "default",
+      "wallet_webhook_urls": [
+        "string"
+      ]
+    }
+parameters: []
+headers:
+  - name: x-api-key
+    disabled: true
+    value: string
+  - name: Content-Type
+    value: application/json
+authentication: {}
+metaSortKey: -1626344428208
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

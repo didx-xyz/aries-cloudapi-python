@@ -1,21 +1,17 @@
-_id: req_wrk_9834320c6b6b40d7a147c5af69483c65b18f2794
+_id: req_dc52893e10cc4faaa6465e90a975c340
 type: Request
 parentId: fld_db97117ebea041849eec0bb29cb56c47
-modified: 1626337548700
-created: 1626167140317
-url: "{{ base_url }}/schemas/all_schemas"
-name: Get Schema
+modified: 1626344357635
+created: 1626344353527
+url: ""
+name: Register Partner Id
 description: ""
 method: GET
 body: {}
 parameters: []
-headers:
-  - name: x-api-key
-    disabled: false
-    value: "{{api_key}}"
-    id: pair_7b5927d82be24fc7be1b9aad7bf29b61
+headers: []
 authentication: {}
-metaSortKey: -1626252169192
+metaSortKey: -1626252169042
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

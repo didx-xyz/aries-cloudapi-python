@@ -25,7 +25,11 @@ CREATE_WALLET_PAYLOAD = {
 async def fixture_create_wallet_mock(async_client):
     wallet_response = await async_client.post(
         "/admin/wallet-multitenant/create-wallet",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
         data=json.dumps(CREATE_WALLET_PAYLOAD),
     )
     wallet_response = wallet_response.json()
@@ -33,7 +37,7 @@ async def fixture_create_wallet_mock(async_client):
     yield wallet_response
     response = await async_client.delete(
         f"/admin/wallet-multitenant/{wallet_id}",
-        headers={"x-api-key": "adminApiKey"},
+        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     assert response.status_code == 200
     assert response.json() == "Successfully removed wallet"
@@ -52,6 +56,7 @@ async def test_get_subwallet_auth_token(
         f"/admin/wallet-multitenant/{wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
+            "x-role": "yoma",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -73,7 +78,7 @@ async def test_get_subwallet(async_client, member_admin_agent_mock, create_walle
     wallet_id = wallet_response["wallet_id"]
     response = await async_client.get(
         f"/admin/wallet-multitenant/{wallet_id}",
-        headers={"x-api-key": "adminApiKey"},
+        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     response = response.json()
     assert response["wallet_id"]
@@ -92,7 +97,11 @@ async def test_update_wallet(async_client, member_admin_agent_mock, create_walle
     payload = {"image_url": "update"}
     update_response = await async_client.post(
         f"/admin/wallet-multitenant/{wallet_id}",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
         data=json.dumps({"image_url": "update"}),
     )
     update_response = update_response.json()
@@ -108,7 +117,7 @@ async def test_update_wallet(async_client, member_admin_agent_mock, create_walle
 async def test_query_subwallet(async_client, member_admin_agent_mock):
     query_response = await async_client.get(
         "/admin/wallet-multitenant/query-subwallet",
-        headers={"x-api-key": "adminApiKey"},
+        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     query_response = query_response.json()
 
@@ -123,7 +132,7 @@ async def test_create_wallet(async_client, create_wallet_mock):
     wallet_id = wallet_response["wallet_id"]
     response = await async_client.get(
         f"/admin/wallet-multitenant/{wallet_id}",
-        headers={"x-api-key": "adminApiKey"},
+        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     response = response.json()
     assert wallet_response["settings"] == response["settings"]
@@ -133,7 +142,11 @@ async def test_create_wallet(async_client, create_wallet_mock):
 async def test_remove_by_id(async_client):
     wallet_response = await async_client.post(
         "/admin/wallet-multitenant/create-wallet",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
         data=json.dumps(CREATE_WALLET_PAYLOAD),
     )
     wallet_response = wallet_response.json()
@@ -141,7 +154,7 @@ async def test_remove_by_id(async_client):
 
     response = await async_client.delete(
         f"/admin/wallet-multitenant/{wallet_id}",
-        headers={"x-api-key": "adminApiKey"},
+        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     assert response.status_code == 200
     assert response.json() == "Successfully removed wallet"

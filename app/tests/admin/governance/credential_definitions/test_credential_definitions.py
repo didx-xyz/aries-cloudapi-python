@@ -74,7 +74,11 @@ async def test_create_credential_definition_via_web(
         await async_client.post(
             f"{base_path}",
             data=(credential_definition.json()),
-            headers={"x-api-key": "adminApiKey", "content-type": "application/json"},
+            headers={
+                "x-api-key": "adminApiKey",
+                "x-role": "yoma",
+                "content-type": "application/json",
+            },
         )
     ).json()
 
@@ -153,7 +157,7 @@ async def test_get_credential_definitions_via_web(
         await async_client.get(
             f"{base_path}/created",
             params={"schema_id": schema_definition_result["schema_id"]},
-            headers={"x-api-key": "adminApiKey"},
+            headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
         )
     ).json()
 
@@ -214,7 +218,7 @@ async def test_get_credential_definition_via_web(
     result_json = (
         await async_client.get(
             f"{base_path}/{credential_definition_result['credential_definition_id']}",
-            headers={"x-api-key": "adminApiKey"},
+            headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
         )
     ).json()
     # then

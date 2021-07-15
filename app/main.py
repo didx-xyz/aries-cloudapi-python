@@ -1,8 +1,10 @@
+from aiohttp import ClientResponseError
 from distutils.util import strtobool
 import os
 import io
 
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Request
+from fastapi.responses import JSONResponse
 
 from admin.governance import credential_definitions, dids, schemas
 from fastapi import FastAPI
@@ -13,7 +15,7 @@ from admin.governance.wallet import wallets
 
 import yaml
 
-prod = strtobool(os.environ.get("prod", "False"))
+prod = strtobool(os.environ.get("prod", "True"))
 app = FastAPI(debug=not prod)
 
 app.include_router(connections.router)
@@ -39,3 +41,24 @@ def read_openapi_yaml() -> Response:
     yaml_s = io.StringIO()
     yaml.dump(openapi_json, yaml_s, allow_unicode=True, sort_keys=False)
     return Response(content=yaml_s.getvalue(), media_type="text/yaml")
+
+
+@app.exception_handler(ClientResponseError)
+async def unicorn_exception_handler(request: Request, exc: ClientResponseError):
+    """
+    This is the handler for handling the ClientResponseError
+
+    that is the error fired by the aries cloud controller.
+    It converts this erro into a nice json response which indicates the status and the
+    message
+    """
+    if exc.status == 401:
+        return JSONResponse(
+            status_code=exc.status,
+            content={"error_message": "401 Unauthorized"},
+        )
+    else:
+        return JSONResponse(
+            status_code=exc.status,
+            content={"error_message": exc.message},
+        )

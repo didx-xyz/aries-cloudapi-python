@@ -18,7 +18,7 @@ async def create_invite(
     return invite
 
 
-@router.get("/accept-invite", tags=["connections", "accept"])
+@router.post("/accept-invite", tags=["connections", "accept"])
 async def accept_invite(
     invite: dict,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),

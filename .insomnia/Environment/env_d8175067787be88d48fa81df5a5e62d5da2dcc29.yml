@@ -1,12 +1,22 @@
 _id: env_d8175067787be88d48fa81df5a5e62d5da2dcc29
 type: Environment
 parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626164861119
+modified: 1626336792109
 created: 1626164861119
 name: Base Environment
 data:
+  scheme: http
+  base_path: ""
+  host: localhost:8000
+  api_key: adminApiKey
   base_url: "{{ scheme }}://{{ host }}{{ base_path }}"
-dataPropertyOrder: null
+dataPropertyOrder:
+  "&":
+    - scheme
+    - base_path
+    - host
+    - api_key
+    - base_url
 color: null
 isPrivate: false
 metaSortKey: 1626164861119

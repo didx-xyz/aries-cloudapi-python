@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c650c2adda6
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626167140304
+parentId: fld_db97117ebea041849eec0bb29cb56c47
+modified: 1626337563235
 created: 1626167140304
 url: "{{ base_url }}/admin/governance/credential-definitions/created"
 name: Get Created Credential Definitions
@@ -12,27 +12,34 @@ parameters:
   - name: issuer_did
     disabled: true
     value: string
+    id: pair_6d3c8936fbfc460fb836ba6b140c2406
   - name: cred_def_id
     disabled: true
     value: string
+    id: pair_8dbebdac63aa4c3dbc7b99c1b69120f7
   - name: schema_id
     disabled: true
     value: string
+    id: pair_ce2efd328ee94b03ad28a95942530c5d
   - name: schema_issuer_did
     disabled: true
     value: string
+    id: pair_9739fe4f0329498599b99d30b844ab4d
   - name: schema_name
     disabled: true
     value: string
+    id: pair_4a750689e13247f784250699a9a3bf43
   - name: schema_version
     disabled: true
     value: string
+    id: pair_925799e988954c1dad460e88f6ad311f
 headers:
   - name: x-api-key
     disabled: true
     value: string
+    id: pair_f5064932e29a493ba0076eceef0d8826
 authentication: {}
-metaSortKey: -1626167140304
+metaSortKey: -1626252169142
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

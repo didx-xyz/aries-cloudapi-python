@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6505789bf3
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626167140310
+parentId: fld_db97117ebea041849eec0bb29cb56c47
+modified: 1626337355769
 created: 1626167140310
 url: "{{ base_url }}/admin/governance/schemas/"
 name: Create Schema
@@ -11,21 +11,24 @@ body:
   mimeType: application/json
   text: |-
     {
-      "name": "string",
-      "version": "string",
+      "name": "MyFirstSchema",
+      "version": "0.1",
       "attributes": [
-        "string"
+        "name",
+    		"surname"
       ]
     }
 parameters: []
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_6deb576d77c54b1e85f733d71d44d155
   - name: Content-Type
     value: application/json
+    id: pair_cc3a14a790304a049d3dec46a712e36b
 authentication: {}
-metaSortKey: -1626167140310
+metaSortKey: -1626252169292
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

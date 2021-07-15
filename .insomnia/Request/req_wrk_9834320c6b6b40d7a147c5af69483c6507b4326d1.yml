@@ -1,20 +1,25 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6507b4326d1
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626167140301
+parentId: fld_db97117ebea041849eec0bb29cb56c47
+modified: 1626337252038
 created: 1626167140301
-url: "{{ base_url }}/wallets/create-pub-did"
-name: Create Public Did
+url: "{{ base_url }}/wallet/create-pub-did"
+name: Create Public Did For Yoma
 description: ""
 method: GET
 body: {}
 parameters: []
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: adminApiKey
+    id: pair_9e19f49ced8b4361bbf458ff16b87061
+  - name: x-role
+    value: yoma
+    description: ""
+    id: pair_709769ac0b9a431985a95c4be2bda409
 authentication: {}
-metaSortKey: -1626167140301
+metaSortKey: -1626337198333
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

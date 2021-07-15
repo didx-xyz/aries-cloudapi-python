@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6546e92cb8
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626167140308
+parentId: fld_db97117ebea041849eec0bb29cb56c47
+modified: 1626337423078
 created: 1626167140308
 url: "{{ base_url }}/admin/governance/credential-definitions/"
 name: Create Credential Definition
@@ -11,19 +11,21 @@ body:
   mimeType: application/json
   text: |-
     {
-      "support_revocation": true,
-      "tag": "string",
-      "schema_id": "string"
+      "support_revocation": false,
+      "tag": "default",
+      "schema_id": "W6fTzUjb4q5YuRbBRGrTQ9:2:MyFirstSchema:0.1"
     }
 parameters: []
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_621c6388ed2f4251b30a7adeb82e25e1
   - name: Content-Type
     value: application/json
+    id: pair_aff3f8132f9d42bba3ffc9cba5dd9dce
 authentication: {}
-metaSortKey: -1626167140308
+metaSortKey: -1626252169242
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

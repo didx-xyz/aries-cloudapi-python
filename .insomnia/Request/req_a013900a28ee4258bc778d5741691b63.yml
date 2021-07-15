@@ -1,22 +1,21 @@
-_id: req_wrk_9834320c6b6b40d7a147c5af69483c65b18f2794
+_id: req_a013900a28ee4258bc778d5741691b63
 type: Request
 parentId: fld_db97117ebea041849eec0bb29cb56c47
-modified: 1626337548700
-created: 1626167140317
-url: "{{ base_url
-  }}/admin/governance/schemas/W6fTzUjb4q5YuRbBRGrTQ9:2:MyFirstSchema:0.1"
-name: Get Schema
+modified: 1626337317625
+created: 1626337198283
+url: "{{ base_url }}/admin/governance/schemas/"
+name: Get Schemas
 description: ""
 method: GET
 body: {}
 parameters: []
 headers:
   - name: x-api-key
-    disabled: false
     value: "{{api_key}}"
-    id: pair_7b5927d82be24fc7be1b9aad7bf29b61
+    description: ""
+    id: pair_c1a8572e06ab4f1da6ad4700cc783c21
 authentication: {}
-metaSortKey: -1626252169192
+metaSortKey: -1626337198283
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

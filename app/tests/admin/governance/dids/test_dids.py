@@ -1,5 +1,4 @@
 import pytest
-from acapy_ledger_facade import create_pub_did
 from admin.governance.dids import get_trusted_partner, get_trusted_registry
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
@@ -13,7 +12,6 @@ async def test_get_trusted_registry(async_client, yoma_agent_mock):
         BASE_PATH + "/trusted-registry",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -47,7 +45,6 @@ async def test_get_trusted_partner(async_client, yoma_agent_mock):
         BASE_PATH + f"/trusted-registry/{did_created}",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )

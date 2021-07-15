@@ -44,7 +44,9 @@ def read_openapi_yaml() -> Response:
 
 
 @app.exception_handler(ClientResponseError)
-async def unicorn_exception_handler(request: Request, exc: ClientResponseError):
+async def client_response_error_exception_handler(
+    request: Request, exc: ClientResponseError
+):
     """
     This is the handler for handling the ClientResponseError
 

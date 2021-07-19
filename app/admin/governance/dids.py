@@ -30,7 +30,9 @@ async def get_trusted_registry(
     public_dids = []
     if len(all_dids_on_ledger["results"]) >= 1:
         public_dids = [
-            r for r in all_dids_on_ledger["results"] if r["posture"] == "public"
+            r
+            for r in all_dids_on_ledger["results"]
+            if r["posture"] in ("public", "posted")
         ]
     return public_dids
 

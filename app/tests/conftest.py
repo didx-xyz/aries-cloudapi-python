@@ -74,6 +74,17 @@ class AgentEntity:
 
 
 @pytest.fixture
+async def async_client_yoma(async_client):
+    headers = DEFAULT_HEADERS.copy()
+    headers["x-role"] = "yoma"
+    async with AsyncClient(
+        app=app, base_url="http://localhost:8000", headers=headers
+    ) as ac:
+        yield ac
+    clear_connections(async_client)
+
+
+@pytest.fixture
 async def async_client_bob(async_client):
     async with agent_client(async_client, "bob") as client:
         yield client
@@ -138,11 +149,15 @@ async def create_wallet(async_client, key):
         verkey=local_did["result"]["verkey"],
         token=wallet["token"],
     )
+    wallet_id = wallet["wallet_id"]
+    await clear_connections(async_client)
+    await async_client.delete(
+        f"/admin/wallet-multitenant/{wallet_id}",
+        headers=DEFAULT_HEADERS,
+    )
+
+
+async def clear_connections(async_client):
     connections = (await async_client.get("/generic/connections")).json()
     for c in connections["result"]:
         await async_client.delete(f"/generic/connections/{c['connection_id']}")
-
-    await async_client.delete(
-        f"/admin/wallet-multitenant/{wallet['wallet_id']}",
-        headers=DEFAULT_HEADERS,
-    )

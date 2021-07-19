@@ -9,22 +9,17 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_get_pub_did_via_web(setup_env):
-    async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
-        response = await ac.get(
-            "/wallet/create-pub-did",
-            headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
-        )
+async def test_get_pub_did_via_web(setup_env, async_client_bob):
+    async_client = async_client_bob
+    response = await async_client.get("/wallet/create-pub-did")
     assert response.status_code == 200
     result = response.json()
 
     assert result["did_object"]["posture"] == "public"
 
-    url = f"{utils.admin_url}:{utils.admin_port}/wallet/did"
-    response = requests.get(url, headers={"x-api-key": "adminApiKey", "x-role": "yoma"})
-    found = [
-        r for r in response.json()["results"] if r["did"] == result["did_object"]["did"]
-    ]
+    response = (await async_client.get("/wallet/list-dids")).json()
+
+    found = [r for r in response["results"] if r["did"] == result["did_object"]["did"]]
 
     assert len(found) == 1
     assert found[0]["verkey"] == result["did_object"]["verkey"]

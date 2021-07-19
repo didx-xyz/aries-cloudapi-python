@@ -6,9 +6,10 @@ BASE_PATH = "/admin/governance/dids"
 
 
 @pytest.mark.asyncio
-async def test_get_trusted_registry(async_client, yoma_agent_mock):
+async def test_get_trusted_registry(async_client_yoma):
 
-    response = await async_client.get(
+    await async_client_yoma.get("/wallet/create-local-did")
+    response = await async_client_yoma.get(
         BASE_PATH + "/trusted-registry",
         headers={
             "x-api-key": "adminApiKey",
@@ -19,10 +20,7 @@ async def test_get_trusted_registry(async_client, yoma_agent_mock):
     result = response.json()
     expected_keys = ["did", "posture", "verkey"]
     assert [list(res.keys()) == expected_keys for res in result]
-    assert len(result) == 1
-
-    res_method = await get_trusted_registry(aries_controller=yoma_agent_mock)
-    assert res_method == result
+    assert len(result) > 0
 
 
 @pytest.mark.asyncio

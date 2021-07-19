@@ -1,4 +1,6 @@
 import pytest
+from assertpy import assert_that
+
 from admin.governance.wallet.wallets import (
     list_dids,
     fetch_current_did,
@@ -124,19 +126,16 @@ async def test_set_did_endpoint(async_client, yoma_agent_mock):
 
 
 @pytest.mark.asyncio
-async def test_create_pub_did(async_client):
-    response = await async_client.get(
-        "/wallet/create-pub-did",
-        headers={
-            "x-api-key": "adminApiKey",
-            "x-role": "yoma",
-            **APPLICATION_JSON_CONTENT_TYPE,
-        },
-    )
+async def test_create_pub_did(async_client_alice):
+    response = await async_client_alice.get("/wallet/create-pub-did")
 
     assert response.status_code == 200
     response = response.json()
     assert response["did_object"] and response["did_object"] != {}
     assert response["issuer_verkey"] and response["issuer_verkey"] != {}
     assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}
-    assert response["did_object"]["posture"] == "public"
+    assert_that(response["did_object"]["posture"]).is_in("posted", "public")
+    assert_that(response["did_object"]["posture"]).is_equal_to("public")
+
+    dids = (await async_client_alice.get("/wallet/list-dids")).json()
+    print(dids)

@@ -278,6 +278,7 @@ async def test_delete_connection(async_client, create_wallets_mock):
 @pytest.mark.asyncio
 async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
     """this test validates that bob and alice connect successfully...
+
     NB: it assumes you have all the "auto connection" settings flagged as on.
 
     ACAPY_AUTO_ACCEPT_INVITES=true

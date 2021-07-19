@@ -1,1 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="2" time="12.848" timestamp="2021-07-15T10:06:17.482276" hostname="localhost"><testcase classname="tests.admin.governance.dids.test_dids" name="test_get_trusted_registry" time="0.161" /><testcase classname="tests.admin.governance.dids.test_dids" name="test_get_trusted_partner" time="12.638" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="25.123" timestamp="2021-07-19T10:12:59.105655" hostname="localhost"><testcase classname="tests.test_issuer_v1" name="test_get_credential" time="24.991"><failure message="AssertionError: assert '941ZBzvEa3Xa...L:11222:TBXHI' == ''&#10;  + 941ZBzvEa3XaWfYhebV2bv:3:CL:11222:TBXHI">yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_key='adminApiKey', is_multitenant=False)
+
+    @pytest.mark.asyncio
+    async def test_get_credential(yoma_agent_mock):
+        credential_res = await create_credential(yoma_agent_mock)
+        # assert credential_res == ""
+        cred_id = credential_res['credential_definition']['id']
+&gt;       assert cred_id == ''
+E       AssertionError: assert '941ZBzvEa3Xa...L:11222:TBXHI' == ''
+E         + 941ZBzvEa3XaWfYhebV2bv:3:CL:11222:TBXHI
+
+app/tests/test_issuer_v1.py:186: AssertionError</failure></testcase></testsuite></testsuites>

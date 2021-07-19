@@ -40,15 +40,15 @@ async def send_credential(
     return await aries_controller.issuer.send_credential(**Credential.dict())
 
 
-@router.get("/x-controls", tags=["issuer", "credential"])
-async def controls(
+@router.get("/records", tags=["issuer", "credential"])
+async def get_records(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    pass
+    return await aries_controller.issuer.get_records()
 
 
 @router.get("/credential", tags=["issuer", "credential"])
-async def get_credential(
+async def get_x_record(
     credential_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
@@ -83,7 +83,7 @@ async def send_offer(
 
 
 @router.post("/credential/request", tags=["issuer", "credential"])
-async def credential_request(
+async def send_credential_request(
     credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):

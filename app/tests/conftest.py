@@ -135,6 +135,10 @@ async def create_wallet(async_client, key):
         did=local_did["result"]["did"],
         verkey=local_did["result"]["verkey"],
     )
+    connections = (await async_client.get("/generic/connections")).json()
+    for c in connections["result"]:
+        await async_client.delete(f"/generic/connections/{c['connection_id']}")
+
     await async_client.delete(
         f"/admin/wallet-multitenant/{wallet['wallet_id']}",
         headers=DEFAULT_HEADERS,

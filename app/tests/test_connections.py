@@ -327,3 +327,12 @@ async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
         if c["connection_id"] == alice_connection_id
     ][0]
     assert_that(alice_connection).has_state("active")
+
+
+@pytest.mark.asyncio
+async def test_bob_has_agent(async_client_bob):
+    assert_that(hasattr(async_client_bob, "agent")).is_true()
+    assert_that(hasattr(async_client_bob.agent, "did")).is_true()
+    assert_that(async_client_bob.agent.did).is_not_none()
+    assert_that(async_client_bob.agent.headers).is_not_empty()
+    assert_that(async_client_bob.agent.token).is_not_none()

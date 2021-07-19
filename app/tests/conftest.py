@@ -70,6 +70,7 @@ class AgentEntity:
     wallet_id: str
     did: str
     verkey: str
+    token: str
 
 
 @pytest.fixture
@@ -90,6 +91,7 @@ async def agent_client(async_client, name):
     async with AsyncClient(
         app=app, base_url="http://localhost:8000", headers=agent.headers
     ) as ac:
+        ac.agent = agent
         yield ac
 
 
@@ -134,6 +136,7 @@ async def create_wallet(async_client, key):
         wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
         verkey=local_did["result"]["verkey"],
+        token=wallet["token"],
     )
     connections = (await async_client.get("/generic/connections")).json()
     for c in connections["result"]:

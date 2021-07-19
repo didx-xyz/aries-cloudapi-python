@@ -21,6 +21,7 @@ async def test_get_pub_did_via_web(setup_env, async_client_bob):
 
     found = [r for r in response["results"] if r["did"] == result["did_object"]["did"]]
 
+    print(str(found))
     assert len(found) == 1
     assert found[0]["verkey"] == result["did_object"]["verkey"]
     assert found[0]["posture"] == "public"

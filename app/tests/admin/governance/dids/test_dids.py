@@ -19,6 +19,7 @@ async def test_get_trusted_registry(async_client_yoma):
     assert response.status_code == 200
     result = response.json()
     expected_keys = ["did", "posture", "verkey"]
+    print(str(result))
     assert [list(res.keys()) == expected_keys for res in result]
     assert len(result) > 0
 

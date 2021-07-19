@@ -131,6 +131,8 @@ async def test_create_pub_did(async_client_alice):
 
     assert response.status_code == 200
     response = response.json()
+
+    print(str(response))
     assert response["did_object"] and response["did_object"] != {}
     assert response["issuer_verkey"] and response["issuer_verkey"] != {}
     assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}

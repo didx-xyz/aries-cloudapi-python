@@ -1,6 +1,7 @@
+# from generic.issuers_v1 import send_credential
 import json
-import random
-import string
+import time
+from assertpy import assert_that
 from contextlib import asynccontextmanager
 
 from admin.governance.credential_definitions import (
@@ -9,6 +10,7 @@ from admin.governance.credential_definitions import (
     get_created_credential_definitions,
     get_credential_definition,
 )
+from acapy_ledger_facade import create_pub_did
 from admin.governance.schemas import SchemaDefinition, create_schema
 from assertpy import assert_that
 from tests.admin.governance.schemas.test_schemas import create_public_did
@@ -19,49 +21,80 @@ import pytest
 from generic.issuers_v1 import (
     get_records,
     get_x_record,
+    send_credential,
     remove_credential,
     problem_report,
     send_offer,
     send_credential_request,
     store_credential,
     send_credential_proposal,
+    CredentialHelper,
+    CredentialOffer,
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
-BASE_PATH = "/generic/connections"
-CREATE_WALLET_PAYLOAD_YODA = {
-    "image_url": "https://aries.ca/images/sample.png",
-    "key_management_mode": "managed",
-    "label": "YOMA",
-    "wallet_dispatch_type": "default",
-    "wallet_key": "MySecretKey1234",
-    "wallet_name": "YodaJediPokerFunds",
-    "wallet_type": "indy",
-}
-CREATE_WALLET_PAYLOAD_HAN = {
-    "image_url": "https://aries.ca/images/sample.png",
-    "key_management_mode": "managed",
-    "label": "YOMA",
-    "wallet_dispatch_type": "default",
-    "wallet_key": "MySecretKey1234",
-    "wallet_name": "HanSolosCocktailFunds",
-    "wallet_type": "indy",
-}
+BASE_PATH = "/generic/issuers/v1"
+BASE_PATH_CON = "/generic/connections"
 
 
-# async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
-#     yoda_response = await async_client.delete(
-#         f"/admin/wallet-multitenant/{yoda_wallet_id}",
-#         headers={"x-api-key": "adminApiKey", "x-role": "member"},
-#     )
-#     han_response = await async_client.delete(
-#         f"/admin/wallet-multitenant/{han_wallet_id}",
-#         headers={"x-api-key": "adminApiKey", "x-role": "member"},
-#     )
-#     return yoda_response, han_response
+@pytest.fixture
+@pytest.mark.asyncio
+async def create_bob_and_alice_connect(async_client_bob, async_client_alice):
+    """this test validates that bob and alice connect successfully...
+
+    NB: it assumes you have all the "auto connection" settings flagged as on.
+
+    ACAPY_AUTO_ACCEPT_INVITES=true
+    ACAPY_AUTO_ACCEPT_REQUESTS=true
+    ACAPY_AUTO_PING_CONNECTION=true
+
+    """
+    # creaet invitation on bob side
+    invitation = (await async_client_bob.get(BASE_PATH_CON + "/create-invite")).json()
+    bob_connection_id = invitation["connection_id"]
+    connections = (await async_client_bob.get(BASE_PATH_CON)).json()
+    assert_that(connections["results"]).extracting("connection_id").contains_only(
+        bob_connection_id
+    )
+
+    # accept invitation on alice side
+    invite_response = (
+        await async_client_alice.post(
+            BASE_PATH_CON + "/accept-invite", data=json.dumps(invitation["invitation"])
+        )
+    ).json()
+    time.sleep(10)
+    alice_connection_id = invite_response["connection_id"]
+    # fetch and validate
+    # both connections should be active - we have waited long enough for events to be exchanged
+    # and we are running in "auto connect" mode.
+    bob_connections = (await async_client_bob.get(BASE_PATH_CON)).json()
+    alice_connections = (await async_client_alice.get(BASE_PATH_CON)).json()
+
+    assert_that(bob_connections["results"]).extracting("connection_id").contains(
+        bob_connection_id
+    )
+    bob_connection = [
+        c for c in bob_connections["results"] if c["connection_id"] == bob_connection_id
+    ][0]
+    assert_that(bob_connection).has_state("active")
+
+    assert_that(alice_connections["results"]).extracting("connection_id").contains(
+        alice_connection_id
+    )
+    alice_connection = [
+        c
+        for c in alice_connections["results"]
+        if c["connection_id"] == alice_connection_id
+    ][0]
+    assert_that(alice_connection).has_state("active")
+
+    return alice_connection_id, bob_connection_id
 
 
-async def create_credential(yoma_agent_mock):
+@pytest.fixture
+@pytest.mark.asyncio
+async def create_credential_def(yoma_agent_mock):
     definition = SchemaDefinition(
         name="test_schema", version="0.3", attributes=["average"]
     )
@@ -84,22 +117,52 @@ async def create_credential(yoma_agent_mock):
     written = await get_credential_definition(
         result["credential_definition_id"], yoma_agent_mock
     )
+    #     print(written)
+    return credential_definition
 
-    return written
+
+async def send_credential_helper(
+    async_client_bob,
+    async_client_alice,
+    create_bob_and_alice_connect,
+    member_alice,
+    create_credential_def,
+):
+    ida, _ = create_bob_and_alice_connect
+    cred_def = create_credential_def
+    cred_alice = CredentialHelper(
+        connection_id=ida,
+        schema_id=cred_def.schema_id,
+        credential_attrs=["some_avg"],
+    )
+    return (
+        await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice.json())
+    ).json()
 
 
-# async def invite_creation(async_client, token, wallet_id):
-#     invite_creation_response = await async_client.get(
-#         "/generic/connections/create-invite",
-#         headers={
-#             "authorization": f"Bearer {token}",
-#             "x-wallet-id": wallet_id,
-#             "x-role": "member",
-#             **APPLICATION_JSON_CONTENT_TYPE,
-#         },
-#     )
-#     return invite_creation_response.json()["invitation"]
+@pytest.mark.asyncio
+async def test_send_credential(
+    async_client_alice, create_bob_and_alice_connect, create_credential_def
+):
+    ida, _ = create_bob_and_alice_connect
+    cred_def = create_credential_def
+    cred_alice = CredentialHelper(
+        connection_id=ida,
+        schema_id=cred_def.schema_id,
+        credential_attrs=["some_avg"],
+    )
+    cred_send_res = (
+        await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice.json())
+    ).json()
+    assert cred_send_res == ""
 
+
+#     async with asynccontextmanager(dependencies.member_agent)(
+#         authorization=f"Bearer {member_alice.token}", x_wallet_id=member_alice.wallet_id
+#     ) as member_agent:
+#     pub_did_res = await create_pub_did(authorization=f"Bearer {member_alice.token}", x_wallet_id=member_alice.wallet_id)
+#     send_cred_res = await send_credential(cred_alice, authorization=f"Bearer {member_alice.token}", x_wallet_id=member_alice.wallet_id)
+#     assert send_cred_res
 
 # async def token_responses(async_client, create_wallets_mock):
 #     yoda, han = create_wallets_mock
@@ -180,33 +243,33 @@ async def create_credential(yoma_agent_mock):
 #     pass
 
 
-@pytest.mark.asyncio
-async def test_send_offer(yoma_agent_mock):
-    cred_res = await create_credential(yoma_agent_mock)
+# @pytest.mark.asyncio
+# async def test_send_offer(yoma_agent_mock):
+#     cred_res = await create_credential(yoma_agent_mock)
+#     # {'schema_id': '941ZBzvEa3XaWfYhebV2bv:2:test_schema:0.3', 'schema': {'ver': '1.0', 'id': '941ZBzvEa3XaWfYhebV2bv:2:test_schema:0.3', 'name': 'test_schema', 'version': '0.3', 'attrNames': ['average'], 'seqNo': 11222}}
+#     cred_res
 
-
-@pytest.mark.asyncio
-async def test_get_credential(yoma_agent_mock):
-    credential_res = await create_credential(yoma_agent_mock)
-    # assert credential_res == ""
-    cred_id = credential_res["credential_definition"]["id"]
-    assert cred_id == ""
-
-
+# @pytest.mark.asyncio
+# async def test_get_credential(yoma_agent_mock):
+#     credential_res = await create_credential(yoma_agent_mock)
+#     # assert credential_res == ""
+#     cred_id = credential_res['credential_definition']['id']
+#     assert cred_id == ''
 #     got_credential = await get_credential(cred_id, yoma_agent_mock)
 #     assert got_credential == ''
 
 
-# @pytest.mark.asyncio
-# async def test_get_records(yoma_agent_mock):
-#     # credential = await create_credential(yoma_agent_mock)
-#     records = await get_records(yoma_agent_mock)
-#     assert type(records) == dict
-#     assert "results" in records.keys()
-#     assert type(records["results"]) is list
+@pytest.mark.asyncio
+async def test_get_records(yoma_agent_mock):
+    # credential = await create_credential(yoma_agent_mock)
+    records = await get_records(yoma_agent_mock)
+    assert type(records) == dict
+    assert "results" in records.keys()
+    assert type(records["results"]) is list
+
 
 # @pytest.mark.asyncio
-# async def test_send_credential(async_client, create_wallets_mock):
+# async def test_send_credential(async_client, create_wallets_mock, cre):
 #     yoda, han = create_wallets_mock
 
 #     yoda_wallet_id = yoda["wallet_id"]

@@ -9,7 +9,7 @@ import utils
 from aries_cloudcontroller import AriesAgentControllerBase
 from aries_cloudcontroller.controllers.ledger import LedgerController
 from aries_cloudcontroller.controllers.wallet import WalletController
-from dependencies import member_admin_agent, yoma_agent
+from dependencies import member_admin_agent, yoma_agent, member_agent
 from httpx import AsyncClient
 from main import app
 from mockito import mock
@@ -69,6 +69,7 @@ class AgentEntity:
     headers: Dict[str, str]
     wallet_id: str
     did: str
+    pub_did: str
     verkey: str
     token: str
 
@@ -130,11 +131,18 @@ async def create_wallet(async_client, key):
             headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
         )
     ).json()
+    public_did = (
+        await async_client.get(
+            "/wallet/create-pub-did",
+            headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+        )
+    ).json()
 
     yield AgentEntity(
         headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
         wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
+        pub_did=public_did["did_object"]["did"],
         verkey=local_did["result"]["verkey"],
         token=wallet["token"],
     )

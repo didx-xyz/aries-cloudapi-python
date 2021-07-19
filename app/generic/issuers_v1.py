@@ -6,26 +6,32 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List
+from facade import (
+    get_connection_id,
+    get_cred_def_id,
+    get_schema_attributes,
+    issue_credentials,
+    write_credential_def,
+)
+from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
+from schemas import ConnectionIdResponse, IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/generic/issuers/v1", tags=["issuer"])
 
 
-class Credential(BaseModel):
-    connection_id: str
+class CredentialHelper(BaseModel):
     schema_id: str
-    cred_def_id: str
-    attributes: List[str]
-    comment: str = ""
-    auto_remove: bool = False
-    trace: bool = False
+    connection_id: str
+    credential_attrs: List[str] = Query(None)
 
 
 class CredentialOffer(BaseModel):
     connection_id: str
-    cred_def_id: str
     attributes: List[str]
+    cred_def_id: str = None
     comment: str = ""
     auto_issue: bool = True
     auto_remove: bool = True
@@ -34,10 +40,31 @@ class CredentialOffer(BaseModel):
 
 @router.post("/credential", tags=["issuer", "credential"])
 async def send_credential(
-    Credential,
+    CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    return await aries_controller.issuer.send_credential(**Credential.dict())
+    schema_attr = await get_schema_attributes(
+        aries_controller, CredentialHelper.schema_id
+    )
+    credential_def = await write_credential_def(
+        aries_controller, CredentialHelper.schema_id
+    )
+
+    cred_def_id = await get_cred_def_id(aries_controller, credential_def)
+    credential_attributes = [
+        {"name": k, "value": v}
+        for k, v in list(zip(schema_attr, CredentialHelper.credential_attrs))
+    ]
+    record = await issue_credentials(
+        aries_controller,
+        CredentialHelper.connection_id,
+        CredentialHelper.schema_id,
+        cred_def_id,
+        credential_attributes,
+    )
+    response = IssueCredentialResponse(credential=record)
+    return response
+    # return await aries_controller.issuer.send_credential(**Credential.dict())
 
 
 @router.get("/records", tags=["issuer", "credential"])

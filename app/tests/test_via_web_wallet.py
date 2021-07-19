@@ -25,7 +25,7 @@ async def test_get_pub_did_via_web_x(setup_env, async_client_bob):
     print(str(found))
     assert len(found) == 1
     assert found[0]["verkey"] == result["did_object"]["verkey"]
-    assert found[0]["posture"] == "public"
+    assert found[0]["posture"] in ("public", "posted")
     print(str(found))
 
 

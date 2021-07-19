@@ -22,6 +22,7 @@ async def test_get_trusted_registry(async_client_yoma):
     print(str(result))
     assert [list(res.keys()) == expected_keys for res in result]
     assert len(result) > 0
+    assert 1 == 0
 
 
 @pytest.mark.asyncio

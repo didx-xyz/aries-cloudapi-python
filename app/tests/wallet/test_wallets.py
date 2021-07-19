@@ -137,7 +137,7 @@ async def test_create_pub_did(async_client_alice):
     assert response["issuer_verkey"] and response["issuer_verkey"] != {}
     assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}
     assert_that(response["did_object"]["posture"]).is_in("posted", "public")
-    assert_that(response["did_object"]["posture"]).is_equal_to("public")
+    # assert_that(response["did_object"]["posture"]).is_equal_to("public")
 
     dids = (await async_client_alice.get("/wallet/list-dids")).json()
     print(dids)

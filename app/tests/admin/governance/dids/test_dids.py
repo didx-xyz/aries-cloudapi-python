@@ -6,6 +6,7 @@ BASE_PATH = "/admin/governance/dids"
 
 
 @pytest.mark.asyncio
+@pytest.mark.failing
 async def test_get_trusted_registry(async_client_yoma):
 
     public_did = await async_client_yoma.get("/wallet/create-pub-did")

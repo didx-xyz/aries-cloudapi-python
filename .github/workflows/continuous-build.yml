@@ -37,7 +37,7 @@ jobs:
     - name: Test with pytest
       run: |
         cd app
-        pytest --cov --ignore=tests/bdd
+        pytest --cov --ignore=tests/bdd -m failing -v
         echo done
     - name: Run Pylint
       run: |

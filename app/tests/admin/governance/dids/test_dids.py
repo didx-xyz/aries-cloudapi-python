@@ -8,7 +8,8 @@ BASE_PATH = "/admin/governance/dids"
 @pytest.mark.asyncio
 async def test_get_trusted_registry(async_client_yoma):
 
-    await async_client_yoma.get("/wallet/create-pub-did")
+    public_did = await async_client_yoma.get("/wallet/create-pub-did")
+    print(str(public_did))
     response = await async_client_yoma.get(
         BASE_PATH + "/trusted-registry",
         headers={

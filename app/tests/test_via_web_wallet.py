@@ -9,7 +9,7 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_get_pub_did_via_web_x(setup_env, async_client_bob):
+async def test_get_pub_did_via_web(setup_env, async_client_bob):
     async_client = async_client_bob
     response = await async_client.get("/wallet/create-pub-did")
     assert response.status_code == 200

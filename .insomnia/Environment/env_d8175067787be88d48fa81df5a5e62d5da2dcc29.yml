@@ -1,17 +1,18 @@
 _id: env_d8175067787be88d48fa81df5a5e62d5da2dcc29
 type: Environment
 parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626346223307
+modified: 1626441663974
 created: 1626164861119
 name: Base Environment
 data:
   scheme: http
   base_path: ""
-  host: localhost:8000
+  host: localhost:8082
   api_key: adminApiKey
   base_url: "{{ scheme }}://{{ host }}{{ base_path }}"
-  auth_token: Bearer
-    eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJjM2EyYzVjMC1mMjQ5LTQ2NDgtYmZiZS0xMTU4MzA5ODlkNTcifQ.RipgZ6eXXvgAeaNcbVt2L9fy-oIminuFgpdCcysylTU
+  auth_token: Bearer {{token}}
+  multitenant-agent: http://localhost:4021
+  yoma-agent: http://localhost:3021
 dataPropertyOrder:
   "&":
     - scheme
@@ -20,6 +21,8 @@ dataPropertyOrder:
     - api_key
     - base_url
     - auth_token
+    - multitenant-agent
+    - yoma-agent
 color: null
 isPrivate: false
 metaSortKey: 1626164861119

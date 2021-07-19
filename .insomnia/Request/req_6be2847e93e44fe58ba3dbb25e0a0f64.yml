@@ -1,7 +1,7 @@
 _id: req_6be2847e93e44fe58ba3dbb25e0a0f64
 type: Request
 parentId: fld_c65f9f4cc4b146718df46e7265ad39f4
-modified: 1626346169665
+modified: 1626426424225
 created: 1626344499871
 url: "{{base_url}}/admin/wallet-multitenant/create-wallet"
 name: Create Member Wallet
@@ -12,12 +12,9 @@ body:
   text: |-
     {
       "image_url": "http://example.com/here.png",
-      "label": "bob2",
-      "wallet_key": "walletkey2",
-      "wallet_name": "bob2",
-      "wallet_webhook_urls": [
-        "string"
-      ]
+      "label": "{{wallet_label}}",
+      "wallet_key": "{{wallet_key}}",
+      "wallet_name": "{{wallet_name}}"
     }
 parameters: []
 headers:

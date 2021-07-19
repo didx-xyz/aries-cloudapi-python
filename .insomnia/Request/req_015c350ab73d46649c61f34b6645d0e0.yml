@@ -1,0 +1,29 @@
+_id: req_015c350ab73d46649c61f34b6645d0e0
+type: Request
+parentId: fld_9aff81a0e434488c8aaec7854bb9595b
+modified: 1626442616874
+created: 1626427419107
+url: http://localhost:4021/connections/79077556-4a8b-42e2-96d2-39672269b7cd/accept-request
+name: "ACAPY: Accept Connection"
+description: ""
+method: POST
+body: {}
+parameters: []
+headers:
+  - name: x-api-key
+    value: "{{api_key}}"
+    description: ""
+    id: pair_efa386dcf02d46e0ab617f63431ad422
+  - name: Authorization
+    value: "{{auth_token}}"
+    description: ""
+    id: pair_b5b186116f4c48e38a2595ff3ad6d4d0
+authentication: {}
+metaSortKey: -1626427419154
+isPrivate: false
+settingStoreCookies: true
+settingSendCookies: true
+settingDisableRenderRequestBody: false
+settingEncodeUrl: true
+settingRebuildPath: true
+settingFollowRedirects: global

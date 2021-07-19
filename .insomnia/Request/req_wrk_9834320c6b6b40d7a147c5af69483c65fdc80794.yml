@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65fdc80794
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428209
+parentId: fld_4968cca732574a3bafd70c5dc80c9439
+modified: 1626426737240
 created: 1626344428209
 url: "{{ base_url }}/admin/wallet-multitenant/{{ wallet_id }}"
 name: Get Subwallet
@@ -14,7 +14,7 @@ headers:
     disabled: true
     value: string
 authentication: {}
-metaSortKey: -1626344428209
+metaSortKey: -1626344428310
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

@@ -1,9 +1,9 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65ed27c219
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428206
+parentId: fld_4968cca732574a3bafd70c5dc80c9439
+modified: 1626443262461
 created: 1626344428206
-url: "{{ base_url }}/admin/wallet-multitenant/{{ wallet_id }}"
+url: "{{ base_url }}/admin/wallet-multitenant/f45a4436-158f-4241-9bd6-18f97cdc3251"
 name: Remove Subwallet By Id
 description: ""
 method: DELETE
@@ -11,10 +11,15 @@ body: {}
 parameters: []
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_f0469beec4ed422684800bb26652a51e
+  - name: x-role
+    value: member
+    description: ""
+    id: pair_429c879953cf4b70b69f9d4d4355ea17
 authentication: {}
-metaSortKey: -1626344428206
+metaSortKey: -1626344428260
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

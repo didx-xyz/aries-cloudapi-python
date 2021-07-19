@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c650c2adda6
 type: Request
 parentId: fld_db97117ebea041849eec0bb29cb56c47
-modified: 1626337563235
+modified: 1626437940310
 created: 1626167140304
 url: "{{ base_url }}/admin/governance/credential-definitions/created"
 name: Get Created Credential Definitions
@@ -35,9 +35,13 @@ parameters:
     id: pair_925799e988954c1dad460e88f6ad311f
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
     id: pair_f5064932e29a493ba0076eceef0d8826
+  - name: x-role
+    value: yoma
+    description: ""
+    id: pair_9fbf47eab96041f888b25075f5b430be
 authentication: {}
 metaSortKey: -1626252169142
 isPrivate: false

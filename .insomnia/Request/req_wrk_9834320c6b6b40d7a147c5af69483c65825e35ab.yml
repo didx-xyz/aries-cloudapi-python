@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65825e35ab
 type: Request
 parentId: fld_c65f9f4cc4b146718df46e7265ad39f4
-modified: 1626346171509
+modified: 1626426479726
 created: 1626344428192
 url: "{{ base_url }}/wallet/list-dids"
 name: List Dids
@@ -16,8 +16,7 @@ headers:
     id: pair_0853da026b0f4f48a4a277c7a7355785
   - name: authorization
     disabled: false
-    value: Bearer
-      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJjM2EyYzVjMC1mMjQ5LTQ2NDgtYmZiZS0xMTU4MzA5ODlkNTcifQ.RipgZ6eXXvgAeaNcbVt2L9fy-oIminuFgpdCcysylTU
+    value: "{{auth_token}}"
     id: pair_7d85fe8061e94cd18839cce6a8d15a1e
   - name: x-wallet-id
     disabled: true

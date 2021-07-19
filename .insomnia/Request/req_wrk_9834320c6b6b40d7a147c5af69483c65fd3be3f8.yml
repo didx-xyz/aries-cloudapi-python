@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65fd3be3f8
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428204
+parentId: fld_4968cca732574a3bafd70c5dc80c9439
+modified: 1626438509248
 created: 1626344428204
 url: "{{ base_url }}/admin/wallet-multitenant/query-subwallet"
 name: Query Subwallet
@@ -12,12 +12,19 @@ parameters:
   - name: wallet_name
     disabled: true
     value: string
+    id: pair_98023ed07a904645b5d2c1b63f1bd36f
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_499b3596cebc4bf7aaa6fa6f674c99b9
+  - name: x-role
+    value: member
+    description: ""
+    id: pair_d0b2fea1038d4fbda2a2d393e984a6ad
+    disabled: false
 authentication: {}
-metaSortKey: -1626344428204
+metaSortKey: -1626344428360
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6546e92cb8
 type: Request
 parentId: fld_db97117ebea041849eec0bb29cb56c47
-modified: 1626337423078
+modified: 1626438000373
 created: 1626167140308
 url: "{{ base_url }}/admin/governance/credential-definitions/"
 name: Create Credential Definition
@@ -13,7 +13,7 @@ body:
     {
       "support_revocation": false,
       "tag": "default",
-      "schema_id": "W6fTzUjb4q5YuRbBRGrTQ9:2:MyFirstSchema:0.1"
+      "schema_id": "CRF5E1hoSsXfNswL4VmYYQ:2:MyFirstSchema:0.1"
     }
 parameters: []
 headers:
@@ -24,6 +24,10 @@ headers:
   - name: Content-Type
     value: application/json
     id: pair_aff3f8132f9d42bba3ffc9cba5dd9dce
+  - name: x-role
+    value: yoma
+    description: ""
+    id: pair_6c513d2f848347c38904c278c1ade025
 authentication: {}
 metaSortKey: -1626252169242
 isPrivate: false

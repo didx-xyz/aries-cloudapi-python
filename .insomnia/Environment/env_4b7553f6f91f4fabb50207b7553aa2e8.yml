@@ -1,0 +1,24 @@
+_id: env_4b7553f6f91f4fabb50207b7553aa2e8
+type: Environment
+parentId: env_d8175067787be88d48fa81df5a5e62d5da2dcc29
+modified: 1626429554544
+created: 1626420969125
+name: Bob
+data:
+  name: Bob
+  wallet_key: walley_key_{{name}}
+  wallet_name: wallet_name_{{name}}
+  wallet_label: wallet_label_{{name}}
+  token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiI4MDlmMGViMy04YzE1LTRjODctYjEyZS1hNjhjOTc3MjczMjkifQ.9n6vVBsVapu-ScMVBhHK9CtnCFOkeYRnXp9ZlGx8hS4
+  role: member
+dataPropertyOrder:
+  "&":
+    - name
+    - wallet_key
+    - wallet_name
+    - wallet_label
+    - token
+    - role
+color: null
+isPrivate: false
+metaSortKey: 1626420969125

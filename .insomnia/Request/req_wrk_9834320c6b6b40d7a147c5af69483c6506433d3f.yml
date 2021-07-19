@@ -1,9 +1,10 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6506433d3f
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428205
+parentId: fld_4968cca732574a3bafd70c5dc80c9439
+modified: 1626442958685
 created: 1626344428205
-url: "{{ base_url }}/admin/wallet-multitenant/{{ wallet_id }}/auth-token"
+url: "{{ base_url
+  }}/admin/wallet-multitenant/f45a4436-158f-4241-9bd6-18f97cdc3251/auth-token"
 name: Get Subwallet Auth Token
 description: ""
 method: GET
@@ -11,10 +12,15 @@ body: {}
 parameters: []
 headers:
   - name: x-api-key
-    disabled: true
-    value: string
+    disabled: false
+    value: "{{api_key}}"
+    id: pair_c65b8b0425c14e94aabe537c9e83598a
+  - name: x-role
+    value: "{{role}}"
+    description: ""
+    id: pair_6ee3668d94364acd97c4d53b76c05c12
 authentication: {}
-metaSortKey: -1626344428205
+metaSortKey: -1626344428410
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65a861d5d11
 type: Request
 parentId: fld_9aff81a0e434488c8aaec7854bb9595b
-modified: 1626346541176
+modified: 1626429441037
 created: 1626344428228
 url: "{{ base_url }}/generic/connections/"
 name: Get Connections
@@ -24,7 +24,7 @@ headers:
     id: pair_495bc67cf8e54e2b94e6c5d115cd68e1
   - name: x-role
     disabled: false
-    value: member
+    value: "{{role}}"
     id: pair_f5c97a23894b47b88c863d563dbb2788
 authentication: {}
 metaSortKey: -1626344428134

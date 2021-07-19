@@ -1,9 +1,10 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c65b18f2794
 type: Request
 parentId: fld_db97117ebea041849eec0bb29cb56c47
-modified: 1626337548700
+modified: 1626437883060
 created: 1626167140317
-url: "{{ base_url }}/schemas/all_schemas"
+url: "{{ base_url
+  }}/admin/governance/schemas/CRF5E1hoSsXfNswL4VmYYQ:2:MyFirstSchema:0.1"
 name: Get Schema
 description: ""
 method: GET

@@ -1,0 +1,22 @@
+_id: env_3b7a1f1e8e334884a906c2eb0fd6e65a
+type: Environment
+parentId: env_d8175067787be88d48fa81df5a5e62d5da2dcc29
+modified: 1626429417181
+created: 1626429373211
+name: Yoma
+data:
+  name: Yoma
+  wallet_key: walley_key_{{name}}
+  wallet_name: wallet_name_{{name}}
+  wallet_label: wallet_label_{{name}}
+  role: yoma
+dataPropertyOrder:
+  "&":
+    - name
+    - wallet_key
+    - wallet_name
+    - wallet_label
+    - role
+color: null
+isPrivate: false
+metaSortKey: 1626429373211

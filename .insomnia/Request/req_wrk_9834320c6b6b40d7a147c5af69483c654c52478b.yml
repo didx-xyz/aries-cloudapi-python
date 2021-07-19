@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c654c52478b
 type: Request
-parentId: wrk_9834320c6b6b40d7a147c5af69483c65
-modified: 1626344428189
+parentId: fld_c65f9f4cc4b146718df46e7265ad39f4
+modified: 1626426756172
 created: 1626344428189
 url: "{{ base_url }}/wallet/rotate-keypair"
 name: Rotate Keypair
@@ -12,21 +12,26 @@ parameters:
   - name: did
     disabled: false
     value: string
+    id: pair_9c69c1661bf1499e9247a73d84bd24f7
 headers:
   - name: x-api-key
     disabled: true
     value: string
+    id: pair_e3e328f4a87f4c9ca3d161872d6bc23c
   - name: authorization
     disabled: true
     value: string
+    id: pair_f968472f07b24c80b17aaa7a51e01aeb
   - name: x-wallet-id
     disabled: true
     value: "null"
+    id: pair_72ec16cd14aa4c5686babe1f2009735e
   - name: x-role
     disabled: false
     value: "null"
+    id: pair_c8314227c854483b8125a8fdad562d91
 authentication: {}
-metaSortKey: -1626344428189
+metaSortKey: -1626344499621
 isPrivate: false
 settingStoreCookies: true
 settingSendCookies: true

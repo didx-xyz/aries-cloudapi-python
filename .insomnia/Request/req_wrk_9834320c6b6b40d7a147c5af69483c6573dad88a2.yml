@@ -1,7 +1,7 @@
 _id: req_wrk_9834320c6b6b40d7a147c5af69483c6573dad88a2
 type: Request
 parentId: fld_9aff81a0e434488c8aaec7854bb9595b
-modified: 1626346516720
+modified: 1626443530010
 created: 1626344428229
 url: "{{ base_url }}/generic/connections/accept-invite"
 name: Accept Invite
@@ -12,13 +12,13 @@ body:
   text: >-
     {
         "@type": "did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/connections/1.0/invitation",
-        "@id": "5084bda1-b211-43ac-9e2e-0852edd65bf0",
-        "serviceEndpoint": "https://a7fc99c65eb6.ngrok.io",
+        "@id": "d254bed0-d423-43cd-a1f9-04e554f4efdb",
+        "imageUrl": "http://example.com/here.png",
+        "serviceEndpoint": "http://2f0f7e766cfe.ngrok.io",
+        "label": "wallet_label_Alice",
         "recipientKeys": [
-          "Bmboh1GqgDZGhp8krdFWcRhbVEVe8E5ppFMV5BjaJYVs"
-        ],
-        "label": "bob2",
-        "imageUrl": "http://example.com/here.png"
+          "5E9EGmCyFML7cYVtBmiyfEwvCJcAGf7ZwuaPvSwKXu6u"
+        ]
       }
 parameters: []
 headers:
@@ -36,7 +36,7 @@ headers:
     id: pair_6b44432bd44d4fc1aa98aab3abbb7f09
   - name: x-role
     disabled: false
-    value: member
+    value: "{{role}}"
     id: pair_6b1b83d142d84e3f83f02e9f547df179
   - name: Content-Type
     value: application/json

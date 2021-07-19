@@ -16,9 +16,10 @@ async def test_get_pub_did_via_web(setup_env, async_client_bob):
     result = response.json()
 
     assert result["did_object"]["posture"] == "public"
-
+    print(str(result))
     response = (await async_client.get("/wallet/list-dids")).json()
 
+    print(str(response))
     found = [r for r in response["results"] if r["did"] == result["did_object"]["did"]]
 
     print(str(found))

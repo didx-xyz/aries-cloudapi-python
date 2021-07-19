@@ -109,8 +109,12 @@ async def create_pub_did(
     taa_response = await get_taa(aries_controller)
 
     await accept_taa(aries_controller, taa_response)
-    await wallet_facade.assign_pub_did(aries_controller, did_object["did"])
+    assign_pub_did = await wallet_facade.assign_pub_did(
+        aries_controller, did_object["did"]
+    )
+    print(str(assign_pub_did))
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
+    print(str(get_pub_did_response))
     issuer_nym = get_pub_did_response["result"]["did"]
     issuer_verkey = get_pub_did_response["result"]["verkey"]
     issuer_endpoint = await get_did_endpoint(aries_controller, issuer_nym)

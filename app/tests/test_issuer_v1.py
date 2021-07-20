@@ -1,7 +1,9 @@
 # from generic.issuers_v1 import send_credential
 import json
+import re
 import time
 from assertpy import assert_that
+import pprint
 
 from admin.governance.credential_definitions import (
     CredentialDefinition,
@@ -27,6 +29,7 @@ ALICE_CONNECTION_ID = ""
 BOB_CONNECTION_ID = ""
 CRED_DEF_ID = ""
 CRED_X_ID = ""
+CRED_X_ID_OFFER = ""
 
 
 @pytest.fixture
@@ -90,7 +93,7 @@ async def create_bob_and_alice_connect(async_client_bob, async_client_alice):
 @pytest.mark.asyncio
 async def create_credential_def(yoma_agent_mock):
     definition = SchemaDefinition(
-        name="test_schema", version="0.3", attributes=["average"]
+        name="test_schema", version="0.3", attributes=["speed"]
     )
 
     public_did = await create_public_did(yoma_agent_mock)
@@ -119,108 +122,127 @@ async def create_credential_def(yoma_agent_mock):
 
 
 @pytest.mark.asyncio
-async def test_send_credential(
-    async_client_alice, create_bob_and_alice_connect, create_credential_def
+async def test_all(
+    async_client_alice,
+    async_client_bob,
+    create_bob_and_alice_connect,
+    create_credential_def,
+    yoma_agent_mock,
 ):
-    cred_alice = CredentialHelper(
-        connection_id=ALICE_CONNECTION_ID,
-        schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
-        credential_attrs=["average"],
-    ).json()
-    cred_send_res = (
-        await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice)
-    ).json()
-    global CRED_X_ID
-    CRED_X_ID = cred_send_res["credential"]["credential_exchange_id"]
-    assert cred_send_res["credential"]
-    assert cred_send_res["credential"]["connection_id"] == ALICE_CONNECTION_ID
-    assert (
-        cred_send_res["credential"]["schema_id"]
-        == SCHEMA_DEFINITION_RESULT["schema_id"]
-    )
+    """Bit hacky here. Wrapping the below actual tests into this parent test so they can use the same fixture.
+    The agent fixtures create new wallets and new connections between Alice and Bob.
+    We only need this done once"""
 
+    async def test_send_credential(
+        async_client_alice=async_client_alice,
+    ):
+        cred_alice = CredentialHelper(
+            connection_id=ALICE_CONNECTION_ID,
+            schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+            credential_attrs=["average"],
+        ).json()
+        cred_send_res = (
+            await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice)
+        ).json()
+        global CRED_X_ID
+        CRED_X_ID = cred_send_res["credential"]["credential_exchange_id"]
+        assert cred_send_res["credential"]
+        assert cred_send_res["credential"]["connection_id"] == ALICE_CONNECTION_ID
+        assert (
+            cred_send_res["credential"]["schema_id"]
+            == SCHEMA_DEFINITION_RESULT["schema_id"]
+        )
 
-# @pytest.mark.asyncio
-# async def test_get_x_record(
-#     async_client_alice, create_bob_and_alice_connect, create_credential_def
-# ):
-#     print(CRED_X_ID)
-#     headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
-#     x_rec_res = (
-#         await async_client_alice.get(BASE_PATH + "/credential", headers=headers)
-#     ).json()
-#     assert x_rec_res == ""
+    async def test_offer_credential(
+        async_client_alice=async_client_alice,
+    ):
+        cred_alice = CredentialHelper(
+            connection_id=ALICE_CONNECTION_ID,
+            schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+            credential_attrs=["speed"],
+        ).json()
+        cred_offer_res = (
+            await async_client_alice.post(
+                BASE_PATH + "/credential/offer", data=cred_alice
+            )
+        ).json()
+        global CRED_X_ID
+        records_a = (await async_client_alice.get(BASE_PATH + "/records")).json()
+        print(
+            "x-records alice x id: ", records_a["results"][0]["credential_exchange_id"]
+        )
+        CRED_X_ID = records_a["results"][0]["credential_exchange_id"]
+        time.sleep(10)
+        assert cred_offer_res["auto_issue"]
+        assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
+        assert cred_offer_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
 
+    async def test_get_x_record(async_client_alice=async_client_alice):
+        headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
+        cred_send_res = (
+            await async_client_alice.get(BASE_PATH + "/credential/", headers=headers)
+        ).json()
+        assert cred_send_res["connection_id"] == ALICE_CONNECTION_ID
+        assert cred_send_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
+        records = await get_records(yoma_agent_mock)
+        print("x-records: ", records)
 
-@pytest.mark.asyncio
-async def test_send_offer():
-    pass
+    async def test_get_records(async_client_alice=async_client_alice):
+        records = (await async_client_alice.get(BASE_PATH + "/records")).json()
+        assert records
+        assert records["results"]
+        assert len(records["results"]) >= 1
 
+    async def test_send_credential_request(async_client_alice=async_client_alice):
+        # TODO check for the successful request
+        headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
+        cred_send_res = (
+            await async_client_alice.post(
+                BASE_PATH + "/credential/request", headers=headers
+            )
+        ).json()
+        # This returns an error - the correct one because the credential is in state received.
+        # For this to return another response we'd have to have state offer_received
+        assert cred_send_res["error_message"]
+        assert "Credential exchange" in cred_send_res["error_message"]
 
-@pytest.mark.asyncio
-async def test_send_proposal():
-    pass
+    async def test_store_credential(async_client_alice=async_client_alice):
+        # TODO check for the correct response when state is credential_received
+        time.sleep(10)
+        headers = async_client_alice.headers.update(
+            {"credential-x-id": CRED_X_ID, "credential-id": CRED_DEF_ID}
+        )
+        cred_store_res = (
+            await async_client_alice.get(
+                BASE_PATH + "/credential/store", headers=headers
+            )
+        ).json()
+        assert cred_store_res["error_message"]
+        assert (
+            "Credential exchange"
+            and "credential_issued state (must be credential_received)."
+        ) in cred_store_res["error_message"]
 
+    async def test_send_proposal(async_client_alice=async_client_alice):
+        # TODO check for the correct response when state is credential_received
+        cred_alice = CredentialHelper(
+            connection_id=ALICE_CONNECTION_ID,
+            schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+            credential_attrs=["average"],
+        ).json()
+        prop_send_res = (
+            await async_client_alice.post(
+                BASE_PATH + "/credential/proposal", data=cred_alice
+            )
+        ).json()
+        assert prop_send_res["auto_issue"] == False
+        assert prop_send_res["auto_remove"]
+        assert prop_send_res["connection_id"] == ALICE_CONNECTION_ID
 
-@pytest.mark.asyncio
-async def test_store_credential():
-    pass
-
-
-@pytest.mark.asyncio
-async def test_send_request():
-    pass
-
-
-@pytest.mark.asyncio
-async def test_send_offer():
-    pass
-
-
-@pytest.mark.asyncio
-async def test_problem_report():
-    pass
-
-
-@pytest.mark.asyncio
-async def test_get_records(yoma_agent_mock):
-    records = await get_records(yoma_agent_mock)
-    assert type(records) == dict
-    assert "results" in records.keys()
-    assert type(records["results"]) is list
-
-
-# @pytest.mark.asyncio
-# async def test_delete_record(
-#     async_client_alice, create_bob_and_alice_connect, create_credential_def
-# ):
-#     print(CRED_DEF_ID)
-#     headers = async_client_alice.header.update({"credential-id": CRED_DEF_ID})
-#     x_rec_res = (
-#         await async_client_alice.delete(BASE_PATH + "/credential", headers=headers)
-#     ).json()
-#     assert x_rec_res['credential'] == ""
-
-# @pytest.mark.asyncio
-# async def test_store_credential(
-#     async_client_bob, create_bob_and_alice_connect, create_credential_def
-# ):
-#     print(CRED_DEF_ID)
-#     print(CRED_X_ID)
-#     headers = async_client_bob.headers.update({"credential-id": CRED_DEF_ID, "credential-x-id": CRED_X_ID})
-#     rec_store_res = (
-#         await async_client_bob.get(BASE_PATH + "/credential/store", headers=headers)
-#     ).json()
-#     assert rec_store_res == ''
-
-# @pytest.mark.asyncio
-# async def test_remove_credential(
-#     async_client_bob, create_bob_and_alice_connect, create_credential_def
-# ):
-#     print(CRED_DEF_ID)
-#     print(CRED_X_ID)
-#     headers = async_client_bob.headers.update({"credential-id": CRED_DEF_ID})
-#     x_rec_res = (
-#         await async_client_bob.delete(BASE_PATH + "/credential", headers=headers)
-#     ).json()
-#     assert x_rec_res == ""
+    await test_send_credential()
+    await test_offer_credential()
+    await test_get_x_record()
+    await test_get_records()
+    await test_send_credential_request()
+    await test_store_credential()
+    await test_send_proposal()

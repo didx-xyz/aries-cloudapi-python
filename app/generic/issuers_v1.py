@@ -5,7 +5,7 @@ from dependencies import agent_selector
 from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from facade import (
     get_connection_id,
     get_cred_def_id,
@@ -29,11 +29,11 @@ class CredentialHelper(BaseModel):
 
 class CredentialOffer(BaseModel):
     connection_id: str
-    attributes: List[str]
     cred_def_id: str
+    attributes: List[str]
     comment: str = ""
     auto_issue: bool = True
-    auto_remove: bool = True
+    auto_remove: bool = False
     trace: bool = False
 
 
@@ -97,8 +97,8 @@ async def remove_credential(
 
 @router.post("/problem-report", tags=["issuer", "credential"])
 async def problem_report(
-    credential_x_id: str,
-    explanation: str,
+    credential_x_id=Header(...),
+    explanation: Optional[str] = Header(None),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.send_problem_report(
@@ -114,22 +114,14 @@ async def send_offer(
     cred_def_id, credential_attributes = await _credential_details(
         credentialHelper, aries_controller
     )
-    cred_offer = CredentialOffer(
-        connection_id=credentialHelper.connection_id,
-        schema_id=credentialHelper.schema_id,
-        attributes=credential_attributes,
-        cred_def_id=cred_def_id,
-        comment="",
-        auto_issue=True,
-        auto_remove=True,
-        trace=False,
+    return await aries_controller.issuer.send_offer(
+        credentialHelper.connection_id, cred_def_id, credential_attributes
     )
-    return await aries_controller.issuer.send_offer(**cred_offer.dict())
 
 
 @router.post("/credential/request", tags=["issuer", "credential"])
 async def send_credential_request(
-    credential_x_id: str,
+    credential_x_id=Header(...),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.send_request_for_record(credential_x_id)
@@ -137,8 +129,8 @@ async def send_credential_request(
 
 @router.get("/credential/store", tags=["issuer", "credential"])
 async def store_credential(
-    credential_x_id: str,
-    credential_id: str = None,
+    credential_x_id=Header(...),
+    credential_id=Header(...),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.store_credential(
@@ -146,9 +138,17 @@ async def store_credential(
     )
 
 
-@router.get("/credential/proposal", tags=["issuer", "credential"])
+@router.post("/credential/proposal", tags=["issuer", "credential"])
 async def send_credential_proposal(
-    CredentialHelper,
+    credentialHelper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    return await aries_controller.issuer.send_proposal(**CredentialHelper.dict())
+    cred_def_id, credential_attributes = await _credential_details(
+        credentialHelper, aries_controller
+    )
+    return await aries_controller.issuer.send_proposal(
+        connection_id=credentialHelper.connection_id,
+        schema_id=credentialHelper.schema_id,
+        cred_def_id=cred_def_id,
+        attributes=credential_attributes,
+    )

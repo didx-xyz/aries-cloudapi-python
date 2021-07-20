@@ -24,8 +24,8 @@ jobs:
     - name: Start Test Harness
       run: |
         chmod u+x manage
-        docker rm -f $(docker ps -a -q)
-        docker volume rm $(docker volume ls -q)
+        docker ps -a -q
+        docker volume ls -q
         ./manage up-as-daemon
         echo waiting for dockers to startup, sleeping for 60 seconds
         sleep 60

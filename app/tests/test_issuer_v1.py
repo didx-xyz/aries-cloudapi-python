@@ -1,9 +1,6 @@
-# from generic.issuers_v1 import send_credential
 import json
-import re
 import time
 from assertpy import assert_that
-import pprint
 
 from admin.governance.credential_definitions import (
     CredentialDefinition,
@@ -11,7 +8,6 @@ from admin.governance.credential_definitions import (
     get_credential_definition,
 )
 from admin.governance.schemas import SchemaDefinition, create_schema
-from assertpy import assert_that
 from tests.admin.governance.schemas.test_schemas import create_public_did
 from tests.utils_test import get_random_string
 
@@ -29,13 +25,12 @@ ALICE_CONNECTION_ID = ""
 BOB_CONNECTION_ID = ""
 CRED_DEF_ID = ""
 CRED_X_ID = ""
-CRED_X_ID_OFFER = ""
 
 
 @pytest.fixture
 @pytest.mark.asyncio
 async def create_bob_and_alice_connect(async_client_bob, async_client_alice):
-    """this test validates that bob and alice connect successfully...
+    """This test validates that bob and alice connect successfully...
 
     NB: it assumes you have all the "auto connection" settings flagged as on.
 
@@ -129,61 +124,63 @@ async def test_all(
     create_credential_def,
     yoma_agent_mock,
 ):
-    """Bit hacky here. Wrapping the below actual tests into this parent test so they can use the same fixture.
+    """
+    Bit hacky here. Wrapping the below actual tests into this parent test so they can use the same fixture.
     The agent fixtures create new wallets and new connections between Alice and Bob.
-    We only need this done once"""
+    We only need this done once
+    """
 
-    async def test_send_credential(
-        async_client_alice=async_client_alice,
+    # NOTE To be able to do all variations described here https://github.com/hyperledger/aries-rfcs/blob/master/features/0036-issue-credential/credential-issuance.png
+    # We need webhooks
+    async def test_issue_credential(
+        async_client_bob=async_client_bob,
     ):
         cred_alice = CredentialHelper(
-            connection_id=ALICE_CONNECTION_ID,
+            connection_id=BOB_CONNECTION_ID,
             schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
             credential_attrs=["average"],
         ).json()
-        cred_send_res = (
-            await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice)
+        cred_issue_res = (
+            await async_client_bob.post(BASE_PATH + "/credential", data=cred_alice)
         ).json()
         global CRED_X_ID
-        CRED_X_ID = cred_send_res["credential"]["credential_exchange_id"]
-        assert cred_send_res["credential"]
-        assert cred_send_res["credential"]["connection_id"] == ALICE_CONNECTION_ID
+        CRED_X_ID = cred_issue_res["credential"]["credential_exchange_id"]
+        assert cred_issue_res["credential"]
+        assert cred_issue_res["credential"]["connection_id"] == BOB_CONNECTION_ID
         assert (
-            cred_send_res["credential"]["schema_id"]
+            cred_issue_res["credential"]["schema_id"]
             == SCHEMA_DEFINITION_RESULT["schema_id"]
         )
 
     async def test_offer_credential(
-        async_client_alice=async_client_alice,
+        async_client_bob=async_client_bob,
     ):
         cred_alice = CredentialHelper(
-            connection_id=ALICE_CONNECTION_ID,
+            connection_id=BOB_CONNECTION_ID,
             schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
             credential_attrs=["speed"],
         ).json()
         cred_offer_res = (
-            await async_client_alice.post(
+            await async_client_bob.post(
                 BASE_PATH + "/credential/offer", data=cred_alice
             )
         ).json()
         global CRED_X_ID
-        records_a = (await async_client_alice.get(BASE_PATH + "/records")).json()
-        print(
-            "x-records alice x id: ", records_a["results"][0]["credential_exchange_id"]
-        )
-        CRED_X_ID = records_a["results"][0]["credential_exchange_id"]
+        records_b = (await async_client_bob.get(BASE_PATH + "/records")).json()
+        print("x-records bob x id: ", records_b["results"][0]["credential_exchange_id"])
+        CRED_X_ID = records_b["results"][0]["credential_exchange_id"]
         time.sleep(10)
         assert cred_offer_res["auto_issue"]
-        assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
+        assert cred_offer_res["connection_id"] == BOB_CONNECTION_ID
         assert cred_offer_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
 
-    async def test_get_x_record(async_client_alice=async_client_alice):
-        headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
-        cred_send_res = (
-            await async_client_alice.get(BASE_PATH + "/credential/", headers=headers)
+    async def test_get_x_record(async_client_bob=async_client_bob):
+        headers = async_client_bob.headers.update({"credential-x-id": CRED_X_ID})
+        cred_rec_red = (
+            await async_client_bob.get(BASE_PATH + "/credential/", headers=headers)
         ).json()
-        assert cred_send_res["connection_id"] == ALICE_CONNECTION_ID
-        assert cred_send_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
+        assert cred_rec_red["connection_id"] == BOB_CONNECTION_ID
+        assert cred_rec_red["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
         records = await get_records(yoma_agent_mock)
         print("x-records: ", records)
 
@@ -193,9 +190,10 @@ async def test_all(
         assert records["results"]
         assert len(records["results"]) >= 1
 
-    async def test_send_credential_request(async_client_alice=async_client_alice):
+    async def test_send_credential_request(async_client_alice=async_client_bob):
         # TODO check for the successful request
         headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
+        time.sleep(10)
         cred_send_res = (
             await async_client_alice.post(
                 BASE_PATH + "/credential/request", headers=headers
@@ -206,17 +204,16 @@ async def test_all(
         assert cred_send_res["error_message"]
         assert "Credential exchange" in cred_send_res["error_message"]
 
-    async def test_store_credential(async_client_alice=async_client_alice):
+    async def test_store_credential(async_client_bob=async_client_bob):
         # TODO check for the correct response when state is credential_received
         time.sleep(10)
-        headers = async_client_alice.headers.update(
+        headers = async_client_bob.headers.update(
             {"credential-x-id": CRED_X_ID, "credential-id": CRED_DEF_ID}
         )
         cred_store_res = (
-            await async_client_alice.get(
-                BASE_PATH + "/credential/store", headers=headers
-            )
+            await async_client_bob.get(BASE_PATH + "/credential/store", headers=headers)
         ).json()
+        time.sleep(10)
         assert cred_store_res["error_message"]
         assert (
             "Credential exchange"
@@ -230,19 +227,37 @@ async def test_all(
             schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
             credential_attrs=["average"],
         ).json()
-        prop_send_res = (
+        prop_prop_res = (
             await async_client_alice.post(
                 BASE_PATH + "/credential/proposal", data=cred_alice
             )
         ).json()
-        assert prop_send_res["auto_issue"] == False
-        assert prop_send_res["auto_remove"]
-        assert prop_send_res["connection_id"] == ALICE_CONNECTION_ID
+        assert prop_prop_res["auto_issue"] is False
+        assert prop_prop_res["auto_remove"]
+        assert prop_prop_res["connection_id"] == ALICE_CONNECTION_ID
 
-    await test_send_credential()
-    await test_offer_credential()
-    await test_get_x_record()
-    await test_get_records()
-    await test_send_credential_request()
-    await test_store_credential()
+    async def test_send_problem_report(async_client_bob=async_client_bob):
+        # TODO check for the correct response when state is credential_received
+        time.sleep(10)
+        async_client_bob.headers.update({"credential-x-id": CRED_X_ID})
+        cred_store_res = (
+            await async_client_bob.post(
+                BASE_PATH + "/problem-report",
+                data=json.dumps({"explanation": "Problem"}),
+            )
+        ).json()
+        time.sleep(10)
+        assert cred_store_res == {}
+
+    # NOTE it si with the current fastapi state not possible to test all scenarios
+    # described here: https://github.com/hyperledger/aries-rfcs/blob/master/features/0036-issue-credential/credential-issuance.png
+    # This also has to do with the AUTO_RESPOND_* startup args aca-py
+    # We need webhooks to handle the exchange states
+    await test_issue_credential()
     await test_send_proposal()
+    await test_offer_credential()
+    await test_send_credential_request()
+    await test_send_problem_report()
+    await test_store_credential()
+    await test_get_records()
+    await test_get_x_record()

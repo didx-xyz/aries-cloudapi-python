@@ -6,7 +6,7 @@ from typing import Dict
 import ledger_facade
 import pytest
 import utils
-from aries_cloudcontroller import AriesAgentControllerBase, AriesTenantController
+from aries_cloudcontroller import AriesAgentControllerBase
 from aries_cloudcontroller.controllers.ledger import LedgerController
 from aries_cloudcontroller.controllers.wallet import WalletController
 from dependencies import member_admin_agent, yoma_agent
@@ -74,13 +74,13 @@ class AgentEntity:
     token: str
 
 
-@pytest.fixture
+@pytest.fixture()
 async def async_client_bob(async_client):
     async with agent_client(async_client, "bob") as client:
         yield client
 
 
-@pytest.fixture
+@pytest.fixture()
 async def async_client_alice(async_client):
     async with agent_client(async_client, "alice") as client:
         yield client

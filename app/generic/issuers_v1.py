@@ -3,11 +3,9 @@ import logging
 from dependencies import agent_selector
 
 from aries_cloudcontroller import AriesAgentControllerBase
-from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from facade import (
-    get_connection_id,
     get_cred_def_id,
     get_schema_attributes,
     issue_credentials,
@@ -25,6 +23,10 @@ class CredentialHelper(BaseModel):
     schema_id: str
     connection_id: str
     credential_attrs: List[str]
+    comment: str = ""
+    auto_issue: bool = True
+    auto_remove: bool = False
+    trace: bool = False
 
 
 class CredentialOffer(BaseModel):
@@ -37,34 +39,34 @@ class CredentialOffer(BaseModel):
     trace: bool = False
 
 
-async def _credential_details(credentialHelper, aries_controller):
+async def _credential_details(credential_helper, aries_controller):
     schema_attr = await get_schema_attributes(
-        aries_controller, credentialHelper.schema_id
+        aries_controller, credential_helper.schema_id
     )
     credential_def = await write_credential_def(
-        aries_controller, credentialHelper.schema_id
+        aries_controller, credential_helper.schema_id
     )
 
     cred_def_id = await get_cred_def_id(aries_controller, credential_def)
     credential_attributes = [
         {"name": k, "value": v}
-        for k, v in list(zip(schema_attr, credentialHelper.credential_attrs))
+        for k, v in list(zip(schema_attr, credential_helper.credential_attrs))
     ]
     return cred_def_id, credential_attributes
 
 
 @router.post("/credential", tags=["issuer", "credential"])
-async def send_credential(
-    credentialHelper: CredentialHelper,
+async def issue_credential(
+    credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     cred_def_id, credential_attributes = await _credential_details(
-        credentialHelper, aries_controller
+        credential_helper, aries_controller
     )
     record = await issue_credentials(
         aries_controller,
-        credentialHelper.connection_id,
-        credentialHelper.schema_id,
+        credential_helper.connection_id,
+        credential_helper.schema_id,
         cred_def_id,
         credential_attributes,
     )
@@ -97,25 +99,25 @@ async def remove_credential(
 
 @router.post("/problem-report", tags=["issuer", "credential"])
 async def problem_report(
+    explanation: dict,
     credential_x_id=Header(...),
-    explanation: Optional[str] = Header(None),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.send_problem_report(
-        credential_x_id, explanation
+        credential_x_id, explanation=explanation["explanation"]
     )
 
 
 @router.post("/credential/offer", tags=["issuer", "credential"])
 async def send_offer(
-    credentialHelper: CredentialHelper,
+    credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     cred_def_id, credential_attributes = await _credential_details(
-        credentialHelper, aries_controller
+        credential_helper, aries_controller
     )
     return await aries_controller.issuer.send_offer(
-        credentialHelper.connection_id, cred_def_id, credential_attributes
+        credential_helper.connection_id, cred_def_id, credential_attributes
     )
 
 
@@ -140,15 +142,15 @@ async def store_credential(
 
 @router.post("/credential/proposal", tags=["issuer", "credential"])
 async def send_credential_proposal(
-    credentialHelper: CredentialHelper,
+    credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     cred_def_id, credential_attributes = await _credential_details(
-        credentialHelper, aries_controller
+        credential_helper, aries_controller
     )
     return await aries_controller.issuer.send_proposal(
-        connection_id=credentialHelper.connection_id,
-        schema_id=credentialHelper.schema_id,
+        connection_id=credential_helper.connection_id,
+        schema_id=credential_helper.schema_id,
         cred_def_id=cred_def_id,
         attributes=credential_attributes,
     )

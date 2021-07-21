@@ -18,7 +18,7 @@ async def test_get_pub_did_via_web(setup_env):
     assert response.status_code == 200
     result = response.json()
 
-    assert result["did_object"]["posture"] == "public"
+    assert result["did_object"]["posture"] in ["public", "public"]
 
     url = f"{utils.admin_url}:{utils.admin_port}/wallet/did"
     response = requests.get(url, headers={"x-api-key": "adminApiKey", "x-role": "yoma"})

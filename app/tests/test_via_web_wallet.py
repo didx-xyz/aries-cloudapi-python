@@ -28,7 +28,7 @@ async def test_get_pub_did_via_web(setup_env):
 
     assert len(found) == 1
     assert found[0]["verkey"] == result["did_object"]["verkey"]
-    assert found[0]["posture"] in ["public", "posted"]
+    assert found[0]["posture"] in ["posted", "public"]
 
 
 @pytest.mark.asyncio

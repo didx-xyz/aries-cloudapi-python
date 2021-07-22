@@ -1,1 +1,118 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="2" time="12.848" timestamp="2021-07-15T10:06:17.482276" hostname="localhost"><testcase classname="tests.admin.governance.dids.test_dids" name="test_get_trusted_registry" time="0.161" /><testcase classname="tests.admin.governance.dids.test_dids" name="test_get_trusted_partner" time="12.638" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="39.534" timestamp="2021-07-22T15:33:05.341139" hostname="vineeth-G3-3579"><testcase classname="tests.test_issuer_v2" name="test_all" time="39.453"><failure message="AssertionError: assert {'detail': 'Method Not Allowed'} == ''">async_client = &lt;httpx.AsyncClient object at 0x7fe3b6ecadf0&gt;, async_client_alice = &lt;httpx.AsyncClient object at 0x7fe3b6eca130&gt;
+async_client_bob = &lt;httpx.AsyncClient object at 0x7fe3b6f77eb0&gt;, test_bob_and_alice_connect = ('d77aaa4d-6e89-4d18-a370-894ee3b564e7', 'a6a33e96-9db8-46e8-ae64-5680bb4ee635')
+test_create_credential_def = CredentialDefinition(support_revocation=False, tag='STKZD', schema_id='LHFi2RqZB2xLg3ZBz9DcuG:2:test_schema:0.3')
+yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_key='adminApiKey', is_multitenant=False)
+
+    @pytest.mark.asyncio
+    async def test_all(
+        async_client,
+        async_client_alice,
+        async_client_bob,
+        test_bob_and_alice_connect,
+        test_create_credential_def,
+        yoma_agent_mock,
+        ):
+        async def test_send_credential(
+                async_client_alice=async_client_alice,
+            ):
+                cred_alice = Credential(
+                    connection_id=ALICE_CONNECTION_ID,
+                    schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+                    cred_def_id =CRED_DEF_ID,
+                    attributes=["average"],
+                ).json()
+                cred_send_res = (
+                    await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice)
+                ).json()
+                global CRED_X_ID
+                assert cred_send_res ==''
+
+                CRED_X_ID = cred_send_res["credential"]["credential_exchange_id"]
+
+                assert cred_send_res["credential"]
+                assert cred_send_res["credential"]["connection_id"] == ALICE_CONNECTION_ID
+                assert (
+                    cred_send_res["credential"]["schema_id"]
+                    == SCHEMA_DEFINITION_RESULT["schema_id"]
+                )
+
+
+        async def test_offer_credential(
+                async_client_alice=async_client_alice,
+            ):
+                cred_alice = CredentialOffer(
+                    connection_id=ALICE_CONNECTION_ID,
+                    cred_def_id=CRED_DEF_ID,
+                    attributes=["speed"],
+                ).json()
+                cred_offer_res = (
+                    await async_client_alice.post(
+                        BASE_PATH + "/credential/offer", data=cred_alice
+                    )
+                ).json()
+                assert cred_offer_res==''
+                global CRED_X_ID
+                records_a = (await async_client_alice.get(BASE_PATH + "/records")).json()
+
+                print(
+                    "x-records alice x id: ", records_a["results"][0]["credential_exchange_id"]
+                )
+                CRED_X_ID = records_a["results"][0]["credential_exchange_id"]
+                time.sleep(10)
+                assert cred_offer_res["auto_issue"]
+                assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
+                assert cred_offer_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
+
+
+        async def test_get_records(async_client=async_client):
+            records = (await async_client.get(BASE_PATH + "/records", headers={"x-api-key":"adminApiKey", "x-role":"yoma"},data=ALICE_CONNECTION_ID)).json()
+            assert records==''
+            assert records["results"]
+            assert len(records["results"]) &gt;= 1
+
+
+        async def test_send_credential_proposal(async_client_alice=async_client_alice):
+            cred_alice=Proposal(
+            connection_id=ALICE_CONNECTION_ID,
+            schema_id= SCHEMA_DEFINITION_RESULT["schema_id"],
+            cred_def_id= CRED_DEF_ID,
+            attributes=["bruh"]
+            ).json()
+            prop_send_response=(await async_client_alice.post(BASE_PATH+"/credential/proposal")).json()
+            assert prop_send_response==''
+            assert prop_send_response["auto_issue"]== False
+            assert prop_send_response["auto_remove"]
+            assert prop_send_response["connection"]== ALICE_CONNECTION_ID
+
+        async def test_credential_request(async_client_alice=async_client_alice):
+            headers= async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
+            cred_send_response=( await async_client_alice.post(BASE_PATH+"/credential/request",headers=headers)).json()
+            assert cred_send_response==''
+            assert cred_send_response["error_message"]
+            assert "Credential exchange" in cred_send_response["error_message"]
+
+        # await  test_get_records()
+&gt;       await test_send_credential()
+
+app/tests/test_issuer_v2.py:202:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+async_client_alice = &lt;httpx.AsyncClient object at 0x7fe3b6eca130&gt;
+
+    async def test_send_credential(
+            async_client_alice=async_client_alice,
+        ):
+            cred_alice = Credential(
+                connection_id=ALICE_CONNECTION_ID,
+                schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+                cred_def_id =CRED_DEF_ID,
+                attributes=["average"],
+            ).json()
+            cred_send_res = (
+                await async_client_alice.post(BASE_PATH + "/credential", data=cred_alice)
+            ).json()
+            global CRED_X_ID
+&gt;           assert cred_send_res ==''
+E           AssertionError: assert {'detail': 'Method Not Allowed'} == ''
+
+app/tests/test_issuer_v2.py:135: AssertionError</failure></testcase></testsuite></testsuites>

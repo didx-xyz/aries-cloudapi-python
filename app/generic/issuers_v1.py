@@ -16,7 +16,7 @@ from schemas import IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/generic/issuers/v1", tags=["issuer"])
+router = APIRouter(prefix="/generic/issuers/v1", tags=["issuer_v1"])
 
 
 class CredentialHelper(BaseModel):
@@ -55,7 +55,7 @@ async def _credential_details(credential_helper, aries_controller):
     return cred_def_id, credential_attributes
 
 
-@router.post("/credential", tags=["issuer", "credential"])
+@router.post("/credential", tags=["issuer_v1"])
 async def issue_credential(
     credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -70,18 +70,17 @@ async def issue_credential(
         cred_def_id,
         credential_attributes,
     )
-    response = IssueCredentialResponse(credential=record)
-    return response
+    return IssueCredentialResponse(credential=record)
 
 
-@router.get("/records", tags=["issuer", "credential"])
+@router.get("/records", tags=["issuer_v1"])
 async def get_records(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.get_records()
 
 
-@router.get("/credential", tags=["issuer", "credential"])
+@router.get("/credential", tags=["issuer_v1"])
 async def get_x_record(
     credential_x_id=Header(...),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -89,7 +88,7 @@ async def get_x_record(
     return await aries_controller.issuer.get_record_by_id(credential_x_id)
 
 
-@router.delete("/credential", tags=["issuer", "credential"])
+@router.delete("/credential", tags=["issuer_v1"])
 async def remove_credential(
     credential_id=Header(...),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -97,7 +96,7 @@ async def remove_credential(
     return await aries_controller.credentials.remove_credential(credential_id)
 
 
-@router.post("/problem-report", tags=["issuer", "credential"])
+@router.post("/problem-report", tags=["issuer_v1"])
 async def problem_report(
     explanation: dict,
     credential_x_id=Header(...),
@@ -108,7 +107,7 @@ async def problem_report(
     )
 
 
-@router.post("/credential/offer", tags=["issuer", "credential"])
+@router.post("/credential/offer", tags=["issuer_v1"])
 async def send_offer(
     credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -121,7 +120,7 @@ async def send_offer(
     )
 
 
-@router.post("/credential/request", tags=["issuer", "credential"])
+@router.post("/credential/request", tags=["issuer_v1"])
 async def send_credential_request(
     credential_x_id=Header(...),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -129,7 +128,7 @@ async def send_credential_request(
     return await aries_controller.issuer.send_request_for_record(credential_x_id)
 
 
-@router.get("/credential/store", tags=["issuer", "credential"])
+@router.get("/credential/store", tags=["issuer_v1"])
 async def store_credential(
     credential_x_id=Header(...),
     credential_id=Header(...),
@@ -140,7 +139,7 @@ async def store_credential(
     )
 
 
-@router.post("/credential/proposal", tags=["issuer", "credential"])
+@router.post("/credential/proposal", tags=["issuer_v1"])
 async def send_credential_proposal(
     credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),

@@ -3,8 +3,13 @@ import os
 import re
 from contextlib import asynccontextmanager
 
+import aiohttp
+import uplink
+from aiohttp import ClientSession, TraceRequestChunkSentParams
 from aries_cloudcontroller import AriesAgentController, AriesTenantController
 from fastapi import Header, HTTPException
+
+from api import WalletApi
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +22,24 @@ MEMBER_AGENT_URL = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
 EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 
 
+async def on_request_start(session, context, params):
+    print(f"Starting request <{params}>")
+
+
+async def on_signal(session, context, params: TraceRequestChunkSentParams):
+    print(f"chunk: <{params.chunk}>")
+
+
+async def on_event(session, context, params):
+    print(f"on event <{params}>")
+
+
+trace_config = aiohttp.TraceConfig()
+trace_config.on_request_start.append(on_request_start)
+trace_config.on_request_chunk_sent.append(on_signal)
+trace_config.on_response_chunk_received.append(on_signal)
+
+
 async def yoma_agent(x_api_key: str = Header(None)):
     agent = None
     try:
@@ -27,7 +50,16 @@ async def yoma_agent(x_api_key: str = Header(None)):
             api_key=x_api_key,
             is_multitenant=False,
         )
-        yield agent
+        url = YOMA_AGENT_URL
+        async with ClientSession(
+            headers={"x-api-key": "adminApiKey"},
+            trace_configs=[trace_config],
+            raise_for_status=True,
+        ) as session:
+            wallet = WalletApi(base_url=url, client=uplink.AiohttpClient(session))
+            agent.wallet = wallet
+            yield agent
+
     except Exception as e:
         # We can only log this here and not raise an HTTPExeption as
         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
@@ -36,6 +68,23 @@ async def yoma_agent(x_api_key: str = Header(None)):
     finally:
         if agent:
             await agent.terminate()
+
+
+async def create_agent(url, x_api_key):
+    with ClientSession(headers={"x-api-key": x_api_key}) as session:
+        wallet = WalletApi(base_url=url, client=uplink.AiohttpClient(session))
+        agent = object()
+        agent.wallet = wallet
+        yield agent
+
+
+async def create_agent0(agent, url, x_api_key):
+    agent = AriesAgentController(
+        admin_url=url,
+        api_key=x_api_key,
+        is_multitenant=False,
+    )
+    return agent
 
 
 async def agent_selector(

@@ -45,31 +45,12 @@ class Proposal(BaseModel):
     trace: bool = False
 
 
-class FetchRecord(BaseModel):
-    connection_id: str = None
-    role: str = None
-    state: str = None
-    thread_id: str = None
-
-
 @router.get("/records")
 async def get_records(
     connection_id: Optional[str] = Header(None),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    return await aries_controller.issuer_v2.get_records(connection_id)
-
-
-async def _credential_details(credential: Credential, aries_controller):
-    schema_attr = await get_schema_attributes(aries_controller, credential.schema_id)
-    credential_def = await write_credential_def(aries_controller, credential.schema_id)
-
-    cred_def_id = await get_cred_def_id(aries_controller, credential_def)
-    credential_attributes = [
-        {"name": k, "value": v}
-        for k, v in list(zip(schema_attr, credential.credential_attrs))
-    ]
-    return cred_def_id, credential_attributes
+    return await aries_controller.issuer_v2.get_records(connection_id=connection_id)
 
 
 @router.post("/credential")
@@ -78,18 +59,7 @@ async def send_credential(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
 
-    cred_def_id, credential_attributes = await _credential_details(
-        credential, aries_controller
-    )
-    record = await issue_credentials(
-        aries_controller,
-        credential.connection_id,
-        credential.schema_id,
-        cred_def_id,
-        credential_attributes,
-    )
-    response = IssueCredentialResponse(credential=record)
-    return response
+    return await aries_controller.issuer_v2.send_credential(**credential)
 
 
 @router.get("/credential")

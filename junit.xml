@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="45.090" timestamp="2021-07-23T13:05:24.835291" hostname="vineeth-G3-3579"><testcase classname="tests.test_issuer_v2" name="test_all" time="44.641"><failure message="AssertionError: assert {'detail': [{'loc': ['query', 'credential_x_id'], 'msg': 'field required', 'type': 'value_error.missing'}]} == ''">async_client = &lt;httpx.AsyncClient object at 0x7fdb8ec440d0&gt;, async_client_alice = &lt;httpx.AsyncClient object at 0x7fdb8ec44c10&gt;
-async_client_bob = &lt;httpx.AsyncClient object at 0x7fdb8ecb12e0&gt;, test_bob_and_alice_connect = ('7380a596-1808-4641-949f-be83c98294f7', 'cbc2f657-f178-4b31-93c1-8719a0e7a729')
-test_create_credential_def = CredentialDefinition(support_revocation=False, tag='GMKJM', schema_id='5aU75Rz8mYUAjXszX3soGx:2:test_schema:0.3')
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="56.741" timestamp="2021-07-26T03:15:24.153529" hostname="vineeth-G3-3579"><testcase classname="tests.test_issuer_v2" name="test_all" time="56.664"><failure message="AssertionError: assert {'error_message': 'Unprocessable Entity'} == ''">async_client = &lt;httpx.AsyncClient object at 0x7fa49f2e2160&gt;, async_client_alice = &lt;httpx.AsyncClient object at 0x7fa49f383a60&gt;, async_client_bob = &lt;httpx.AsyncClient object at 0x7fa49f348850&gt;
+test_bob_and_alice_connect = ('731a7a45-6af8-4185-bc68-9d5508e1db94', '9a65f486-5bc1-40af-b96f-7488d5b450f4')
+test_create_credential_def = CredentialDefinition(support_revocation=False, tag='SSRVU', schema_id='6ERgrPgNxeXExhuK1m7k2P:2:test_schema:0.3')
 yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_key='adminApiKey', is_multitenant=False)
 
     @pytest.mark.asyncio
@@ -19,20 +19,17 @@ yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_ke
                 connection_id=ALICE_CONNECTION_ID,
                 schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
                 cred_def_id=CRED_DEF_ID,
-                attributes=["average"],
+                attributes=["avg"],
             ).json()
             cred_send_res = (
                 await async_client_alice.post(ISSUER_PATH + "/credential", data=cred_alice)
             ).json()
             global CRED_X_ID
-            assert cred_send_res == ""
+            CRED_X_ID = cred_send_res["credential_exchange_id"]
 
-            CRED_X_ID = cred_send_res["credential"]["credential_exchange_id"]
-
-            assert cred_send_res["credential"]
-            assert cred_send_res["credential"]["connection_id"] == ALICE_CONNECTION_ID
+            assert cred_send_res["connection_id"] == ALICE_CONNECTION_ID
             assert (
-                cred_send_res["credential"]["schema_id"]
+                cred_send_res["schema_id"]
                 == SCHEMA_DEFINITION_RESULT["schema_id"]
             )
 
@@ -41,6 +38,7 @@ yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_ke
         ):
             cred_alice = CredentialOffer(
                 connection_id=ALICE_CONNECTION_ID,
+                schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
                 cred_def_id=CRED_DEF_ID,
                 attributes=["speed"],
             ).json()
@@ -49,10 +47,9 @@ yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_ke
                     ISSUER_PATH + "/credential/offer", data=cred_alice
                 )
             ).json()
-            assert cred_offer_res == ""
             global CRED_X_ID
-            records_a = (await async_client_alice.get(BASE_PATH + "/records")).json()
-
+            records_a = (await async_client_alice.get(ISSUER_PATH + "/records")).json()
+            assert records_a ==''
             print(
                 "x-records alice x id: ", records_a["results"][0]["credential_exchange_id"]
             )
@@ -69,18 +66,17 @@ yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_ke
                     ISSUER_PATH + "/records",
                 )
             ).json()
-            assert records["results"]
+            assert records
             # assert len(records["results"]) &gt;= 1
 
         async def test_send_credential_proposal(async_client_alice=async_client_alice):
             cred_alice = Proposal(
                 connection_id=ALICE_CONNECTION_ID,
                 schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
-                cred_def_id=CRED_DEF_ID,
-                attributes=["bruh"],
+                attributes=["avg"],
             ).json()
             prop_send_response = (
-                await async_client_alice.post(ISSUER_PATH + "/credential/proposal")
+                await async_client_alice.post(ISSUER_PATH + "/credential/proposal", data=cred_alice)
             ).json()
             assert prop_send_response == ""
             assert prop_send_response["auto_issue"] == False
@@ -94,29 +90,36 @@ yoma_agent_mock = AriesAgentController(admin_url='http://localhost:3021', api_ke
                     ISSUER_PATH + "/credential/request", headers=headers
                 )
             ).json()
-            assert cred_send_response == ""
             assert cred_send_response["error_message"]
             assert "Credential exchange" in cred_send_response["error_message"]
 
-        # await  test_get_records()
-        # await test_send_credential()
-        # await test_offer_credential()
-        # await test_send_credential_proposal()
-&gt;       await test_credential_request()
+        async def test_send_problem_report(async_client_alice=async_client_alice):
+            async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
+            cred_store_res=(
+                await async_client_alice.post(
+                    ISSUER_PATH+"/problem-report", data=json.dumps({"explanation":"Problem"})
+                )
+            ).json()
+            assert cred_store_res
+        await test_get_records()
+        await test_send_credential()
+&gt;       await test_send_credential_proposal()
 
-app/tests/test_issuer_v2.py:215:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app/tests/test_issuer_v2.py:216:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-async_client_alice = &lt;httpx.AsyncClient object at 0x7fdb8ec44c10&gt;
+async_client_alice = &lt;httpx.AsyncClient object at 0x7fa49f383a60&gt;
 
-    async def test_credential_request(async_client_alice=async_client_alice):
-        headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
-        cred_send_response = (
-            await async_client_alice.post(
-                ISSUER_PATH + "/credential/request", headers=headers
-            )
+    async def test_send_credential_proposal(async_client_alice=async_client_alice):
+        cred_alice = Proposal(
+            connection_id=ALICE_CONNECTION_ID,
+            schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+            attributes=["avg"],
         ).json()
-&gt;       assert cred_send_response == ""
-E       AssertionError: assert {'detail': [{'loc': ['query', 'credential_x_id'], 'msg': 'field required', 'type': 'value_error.missing'}]} == ''
+        prop_send_response = (
+            await async_client_alice.post(ISSUER_PATH + "/credential/proposal", data=cred_alice)
+        ).json()
+&gt;       assert prop_send_response == ""
+E       AssertionError: assert {'error_message': 'Unprocessable Entity'} == ''
 
-app/tests/test_issuer_v2.py:207: AssertionError</failure></testcase></testsuite></testsuites>
+app/tests/test_issuer_v2.py:191: AssertionError</failure></testcase></testsuite></testsuites>

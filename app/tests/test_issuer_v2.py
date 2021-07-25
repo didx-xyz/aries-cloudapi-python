@@ -129,28 +129,23 @@ async def test_all(
             connection_id=ALICE_CONNECTION_ID,
             schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
             cred_def_id=CRED_DEF_ID,
-            attributes=["average"],
+            attributes=["avg"],
         ).json()
         cred_send_res = (
             await async_client_alice.post(ISSUER_PATH + "/credential", data=cred_alice)
         ).json()
         global CRED_X_ID
-        assert cred_send_res == ""
+        CRED_X_ID = cred_send_res["credential_exchange_id"]
 
-        CRED_X_ID = cred_send_res["credential"]["credential_exchange_id"]
-
-        assert cred_send_res["credential"]
-        assert cred_send_res["credential"]["connection_id"] == ALICE_CONNECTION_ID
-        assert (
-            cred_send_res["credential"]["schema_id"]
-            == SCHEMA_DEFINITION_RESULT["schema_id"]
-        )
+        assert cred_send_res["connection_id"] == ALICE_CONNECTION_ID
+        assert cred_send_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
 
     async def test_offer_credential(
         async_client_alice=async_client_alice,
     ):
         cred_alice = CredentialOffer(
             connection_id=ALICE_CONNECTION_ID,
+            schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
             cred_def_id=CRED_DEF_ID,
             attributes=["speed"],
         ).json()
@@ -159,10 +154,9 @@ async def test_all(
                 ISSUER_PATH + "/credential/offer", data=cred_alice
             )
         ).json()
-        assert cred_offer_res == ""
         global CRED_X_ID
-        records_a = (await async_client_alice.get(BASE_PATH + "/records")).json()
-
+        records_a = (await async_client_alice.get(ISSUER_PATH + "/records")).json()
+        assert records_a == ""
         print(
             "x-records alice x id: ", records_a["results"][0]["credential_exchange_id"]
         )
@@ -179,18 +173,19 @@ async def test_all(
                 ISSUER_PATH + "/records",
             )
         ).json()
-        assert records["results"]
+        assert records
         # assert len(records["results"]) >= 1
 
     async def test_send_credential_proposal(async_client_alice=async_client_alice):
         cred_alice = Proposal(
             connection_id=ALICE_CONNECTION_ID,
             schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
-            cred_def_id=CRED_DEF_ID,
-            attributes=["bruh"],
+            attributes=["avg"],
         ).json()
         prop_send_response = (
-            await async_client_alice.post(ISSUER_PATH + "/credential/proposal")
+            await async_client_alice.post(
+                ISSUER_PATH + "/credential/proposal", data=cred_alice
+            )
         ).json()
         assert prop_send_response == ""
         assert prop_send_response["auto_issue"] == False
@@ -204,12 +199,22 @@ async def test_all(
                 ISSUER_PATH + "/credential/request", headers=headers
             )
         ).json()
-        assert cred_send_response == ""
         assert cred_send_response["error_message"]
         assert "Credential exchange" in cred_send_response["error_message"]
 
-    # await  test_get_records()
-    # await test_send_credential()
+    async def test_send_problem_report(async_client_alice=async_client_alice):
+        async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
+        cred_store_res = (
+            await async_client_alice.post(
+                ISSUER_PATH + "/problem-report",
+                data=json.dumps({"explanation": "Problem"}),
+            )
+        ).json()
+        assert cred_store_res
+
+    await test_get_records()
+    await test_send_credential()
+    await test_send_credential_proposal()
     # await test_offer_credential()
-    # await test_send_credential_proposal()
-    await test_credential_request()
+    # await test_credential_request()
+    # await test_send_problem_report()

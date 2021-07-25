@@ -71,6 +71,7 @@ class AgentEntity:
     did: str
     verkey: str
     token: str
+    pub_did: str
 
 
 @pytest.fixture
@@ -131,12 +132,19 @@ async def create_wallet(async_client, key):
         )
     ).json()
 
+    public_did = (
+        await async_client.get(
+            "/wallet/create-pub-did",
+            headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+        )
+    ).json()
     yield AgentEntity(
         headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
         wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
         verkey=local_did["result"]["verkey"],
         token=wallet["token"],
+        pub_did=public_did["did_object"]["did"],
     )
     connections = (await async_client.get("/generic/connections")).json()
     for c in connections["result"]:

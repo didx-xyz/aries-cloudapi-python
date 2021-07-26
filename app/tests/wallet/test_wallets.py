@@ -1,5 +1,5 @@
 import pytest
-from admin.governance.wallet.wallets import (
+from generic.wallet.wallets import (
     list_dids,
     fetch_current_did,
     set_did_endpoint,

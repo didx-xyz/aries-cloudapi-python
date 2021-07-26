@@ -1283,6 +1283,7 @@ class DIDCreate(BaseModel):
     """
 
     method: Optional[str] = None
+
     # options: Optional[Dict[str, Any]] = None
 
     class Config:
@@ -5950,6 +5951,8 @@ class ResolverApi(Consumer):
 
 
 class RevocationApi(Consumer):
+    @json
+    @returns.json
     @post("/revocation/clear-pending-revocations")
     def clear_pending_revocations(
         self,
@@ -5957,11 +5960,12 @@ class RevocationApi(Consumer):
     ) -> PublishRevocations:
         """Clear pending revocations"""
 
+    @json
     @post("/revocation/create-registry")
     def create_registry(
         self,
         body: Body(type=RevRegCreateRequest),
-    ) -> object:
+    ):
         """Creates a new revocation registry"""
 
     @get("/revocation/registry/{rev_reg_id}/tails-file")
@@ -5977,9 +5981,10 @@ class RevocationApi(Consumer):
         cred_ex_id: Query = None,
         cred_rev_id: Query = None,
         rev_reg_id: Query = None,
-    ) -> object:
+    ):
         """Get credential revocation status"""
 
+    @returns.json
     @get("/revocation/registry/{rev_reg_id}/issued")
     def get_number_credentials_against_revocation_registry(
         self,
@@ -5991,7 +5996,7 @@ class RevocationApi(Consumer):
     def get_revocation_registry_by_creddef_id(
         self,
         cred_def_id: str,
-    ) -> object:
+    ):
         """Get current active revocation registry by credential definition id"""
 
     @get("/revocation/registry/{rev_reg_id}")
@@ -6001,6 +6006,7 @@ class RevocationApi(Consumer):
     ) -> object:
         """Get revocation registry by revocation registry id"""
 
+    @returns.json
     @post("/revocation/publish-revocations")
     def publish_revocations(
         self,
@@ -6008,13 +6014,15 @@ class RevocationApi(Consumer):
     ) -> PublishRevocations:
         """Publish pending revocations to ledger"""
 
+    @json
     @post("/revocation/revoke")
     def revoke_issued_credential(
         self,
         body: Body(type=RevokeRequest),
-    ) -> object:
+    ):
         """Revoke an issued credential"""
 
+    @returns.json
     @get("/revocation/registries/created")
     def search_matching_revocation_registries(
         self,
@@ -6027,14 +6035,14 @@ class RevocationApi(Consumer):
     def send_revocation_entry_to_ledger(
         self,
         rev_reg_id: str,
-    ) -> object:
+    ):
         """Send revocation registry entry to ledger"""
 
     @post("/revocation/registry/{rev_reg_id}/definition")
     def send_revocation_registry_def_to_ledger(
         self,
         rev_reg_id: str,
-    ) -> object:
+    ):
         """Send revocation registry definition to ledger"""
 
     @patch("/revocation/registry/{rev_reg_id}/set-state")
@@ -6042,7 +6050,7 @@ class RevocationApi(Consumer):
         self,
         rev_reg_id: str,
         state: Query = None,
-    ) -> object:
+    ):
         """Set revocation registry state manually"""
 
     @patch("/revocation/registry/{rev_reg_id}")
@@ -6050,14 +6058,14 @@ class RevocationApi(Consumer):
         self,
         rev_reg_id: str,
         body: Body(type=RevRegUpdateTailsFileUri),
-    ) -> object:
+    ):
         """Update revocation registry with new public URI to its tails file"""
 
     @put("/revocation/registry/{rev_reg_id}/tails-file")
     def upload_tails_file(
         self,
         rev_reg_id: str,
-    ) -> object:
+    ):
         """Upload local tails file to server"""
 
 
@@ -6159,17 +6167,11 @@ class TrustpingApi(Consumer):
 @returns.json
 class WalletApi(Consumer):
     @post("/wallet/did/public")
-    def assign_public_did(
-        self,
-        did: Query = None,
-    ) -> DIDResult:
+    def assign_public_did(self, did: Query = None) -> DIDResult:
         """Assign the current public DID"""
 
     @post("/wallet/did/create")
-    def create_did(
-        self,
-        body: Body(type=DIDCreate),
-    ) -> DIDResult:
+    def create_did(self, body: Body(type=DIDCreate)) -> DIDResult:
         """Create a local DID"""
 
     @post("/wallet/did/create")
@@ -6177,17 +6179,12 @@ class WalletApi(Consumer):
         """Create a local DID with default settings - does not send a body at all"""
 
     @get("/wallet/did/public")
-    def get_public_did(
-        self,
-    ) -> DIDResult:
+    def get_public_did(self) -> DIDResult:
         """Fetch the current public DID"""
 
     @returns.json
     @get("/wallet/get-did-endpoint")
-    def get_did_endpoint(
-        self,
-        did: Query = None,
-    ) -> DIDEndpoint:
+    def get_did_endpoint(self, did: Query = None) -> DIDEndpoint:
         """Query DID endpoint in wallet"""
 
     @returns.json
@@ -6203,15 +6200,9 @@ class WalletApi(Consumer):
         """List wallet DIDs"""
 
     @patch("/wallet/did/local/rotate-keypair")
-    def rotate_keypair(
-        self,
-        did: Query = None,
-    ) -> object:
+    def rotate_keypair(self, did: Query = None) -> object:
         """Rotate keypair for a DID not posted to the ledger"""
 
     @post("/wallet/set-did-endpoint")
-    def set_did_endpoint(
-        self,
-        body: Body(type=DIDEndpointWithType),
-    ) -> Dict:
+    def set_did_endpoint(self, body: Body(type=DIDEndpointWithType)) -> Dict:
         """Update endpoint in wallet and on ledger if posted to it"""

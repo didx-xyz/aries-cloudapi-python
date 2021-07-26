@@ -2,6 +2,8 @@ import logging
 
 from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AriesAgentControllerBase
+
+from api import DIDCreate, DIDEndpointWithType
 from schemas import (
     DidCreationResponse,
 )
@@ -47,7 +49,7 @@ async def create_local_did(
     Create Local DID
     """
 
-    return await aries_controller.wallet.create_did()
+    return await aries_controller.wallet.create_default_did()
 
 
 @router.get("/list-dids")
@@ -83,7 +85,8 @@ async def get_did_endpoint(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
 
-    return await aries_controller.wallet.get_did_endpoint(did)
+    did_ = await aries_controller.wallet.get_did_endpoint(did)
+    return did_
 
 
 @router.get("/assign-pub-did")
@@ -107,4 +110,8 @@ async def set_did_endpoint(
     """
     Update Endpoint in wallet and on ledger if posted to it
     """
-    return await aries_controller.wallet.set_did_endpoint(did, endpoint, endpoint_type)
+    # return await aries_controller.wallet.set_did_endpoint(did, endpoint, endpoint_type)
+    result = await aries_controller.wallet.set_did_endpoint(
+        DIDEndpointWithType(did=did, endpoint=endpoint, endpoint_type=endpoint_type)
+    )
+    return result

@@ -103,7 +103,7 @@ async def create_pub_did(
     * Issuer Endpoint (url)
     """
     generate_did_res = await wallet_facade.create_did(aries_controller)
-    did_object = generate_did_res["result"]
+    did_object = generate_did_res.dict()["result"]
     await ledger_facade.post_to_ledger(did_object=did_object)
 
     taa_response = await get_taa(aries_controller)
@@ -111,12 +111,12 @@ async def create_pub_did(
     await accept_taa(aries_controller, taa_response)
     await wallet_facade.assign_pub_did(aries_controller, did_object["did"])
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
-    issuer_nym = get_pub_did_response["result"]["did"]
-    issuer_verkey = get_pub_did_response["result"]["verkey"]
+    issuer_nym = get_pub_did_response.result.did
+    issuer_verkey = get_pub_did_response.result.verkey
     issuer_endpoint = await get_did_endpoint(aries_controller, issuer_nym)
     issuer_endpoint_url = issuer_endpoint["endpoint"]
     final_response = DidCreationResponse(
-        did_object=get_pub_did_response["result"],
+        did_object=get_pub_did_response.dict()["result"],
         issuer_verkey=issuer_verkey,
         issuer_endpoint=issuer_endpoint_url,
     )

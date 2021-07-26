@@ -7,7 +7,6 @@ from admin.governance.wallet.wallets import (
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
 
-
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 
 
@@ -39,7 +38,6 @@ async def test_list_dids(async_client, yoma_agent_mock):
 
 @pytest.mark.asyncio
 async def test_create_local_did(async_client, yoma_agent_mock):
-
     response = await async_client.get(
         "/wallet/create-local-did",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
@@ -54,7 +52,6 @@ async def test_create_local_did(async_client, yoma_agent_mock):
 
 @pytest.mark.asyncio
 async def test_fetch_current_did(async_client, yoma_agent_mock):
-
     response = await async_client.get(
         "/wallet/fetch-current-did",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
@@ -71,7 +68,6 @@ async def test_fetch_current_did(async_client, yoma_agent_mock):
 
 @pytest.mark.asyncio
 async def test_get_did_endpoint(async_client, create_did_mock):
-
     did = create_did_mock
     response = await async_client.get(
         f"/wallet/get-did-endpoint/{did}",
@@ -86,7 +82,7 @@ async def test_get_did_endpoint(async_client, create_did_mock):
 @pytest.mark.asyncio
 async def test_assign_pub_did(async_client, yoma_agent_mock):
     generate_did_res = await wallet_facade.create_did(yoma_agent_mock)
-    did_object = generate_did_res["result"]
+    did_object = generate_did_res.dict()["result"]
     await ledger_facade.post_to_ledger(did_object=did_object)
     did = did_object["did"]
     response = await async_client.get(
@@ -117,10 +113,18 @@ async def test_set_did_endpoint(async_client, yoma_agent_mock):
 
     did = response["did_object"]["did"]
     endpoint_type = "Endpoint"
-    res_method = await set_did_endpoint(
-        did, endpoint, endpoint_type, aries_controller=yoma_agent_mock
+
+    response = await async_client.post(
+        "/wallet/set-did-endpoint",
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
+        params={"did": did, "endpoint": endpoint, "end_point_type": endpoint_type},
     )
-    assert res_method == {}
+
+    assert response.json() == {}
 
 
 @pytest.mark.asyncio

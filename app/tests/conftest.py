@@ -41,6 +41,17 @@ def mock_agent_controller():
     return controller
 
 
+@pytest.fixture(scope="module")
+async def yoma_agent_module_scope():
+    # fast api auto wraps the generator functions use for dependencies as context managers - thus why the
+    # async context manager decorator is not required.
+    # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
+    # flexibility - thus we have to.
+    # this is doing what using decorators does for you
+    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
+        yield c
+
+
 @pytest.fixture
 async def yoma_agent_mock():
     # fast api auto wraps the generator functions use for dependencies as context managers - thus why the
@@ -80,10 +91,24 @@ async def async_client_bob(async_client):
         yield client
 
 
+@pytest.fixture(scope="module")
+async def async_client_bob_module_scope():
+    async with AsyncClient(app=app, base_url="http://localhost:8000") as async_client:
+        async with agent_client(async_client, "bob") as client:
+            yield client
+
+
 @pytest.fixture()
 async def async_client_alice(async_client):
     async with agent_client(async_client, "alice") as client:
         yield client
+
+
+@pytest.fixture(scope="module")
+async def async_client_alice_module_scope():
+    async with AsyncClient(app=app, base_url="http://localhost:8000") as async_client:
+        async with agent_client(async_client, "alice") as client:
+            yield client
 
 
 @asynccontextmanager

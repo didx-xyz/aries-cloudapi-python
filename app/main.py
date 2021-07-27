@@ -11,7 +11,7 @@ from fastapi import FastAPI
 from generic import connections, issuers_v1
 from routers import issuer, verifier
 from admin.governance.multitenant_wallet import wallet_admin
-from admin.governance.wallet import wallets
+from generic.wallet import wallets
 
 import yaml
 

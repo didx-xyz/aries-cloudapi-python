@@ -15,7 +15,6 @@ from tests.utils_test import get_random_string
 import pytest
 from generic.issuers_v1 import (
     CredentialHelper,
-    get_records,
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}

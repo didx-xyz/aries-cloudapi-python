@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
 
+import acapy_ledger_facade
+import acapy_wallet_facade
 import ledger_facade
 import pytest
 import utils
@@ -50,3 +52,15 @@ async def async_client():
 async def member_admin_agent_mock():
     async with asynccontextmanager(member_admin_agent)(x_api_key="adminApiKey") as c:
         yield c
+
+
+@pytest.fixture
+async def public_did(yoma_agent_mock):
+    generate_did_res = await acapy_wallet_facade.create_did(yoma_agent_mock)
+    did_object = generate_did_res.result
+    await ledger_facade.post_to_ledger(did_object=did_object.dict())
+    # my local von network I was using did not requried the TAA
+    taa_response = await acapy_ledger_facade.get_taa(yoma_agent_mock)
+    await acapy_ledger_facade.accept_taa(yoma_agent_mock, taa_response)
+    await acapy_wallet_facade.assign_pub_did(yoma_agent_mock, did_object.did)
+    return did_object

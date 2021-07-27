@@ -14,7 +14,7 @@ async def test_list_dids():
         wallet_api = WalletApi(
             base_url="http://localhost:3021", client=uplink.AiohttpClient(session)
         )
-        did_list = await wallet_api.list_dids()
+        did_list = await wallet_api.get_dids()
         print(did_list)
 
 

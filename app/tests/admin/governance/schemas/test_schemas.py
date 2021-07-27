@@ -24,10 +24,10 @@ def setup_local_env():
 
 
 @pytest.mark.asyncio
-async def test_create_schema_via_web(setup_local_env, async_client, yoma_agent_mock):
+async def test_create_schema_via_web(
+    setup_local_env, async_client, yoma_agent_mock, public_did
+):
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
-
-    await create_public_did(yoma_agent_mock)
 
     response = await async_client.post(
         BASE_PATH,
@@ -48,11 +48,11 @@ async def test_create_schema_via_web(setup_local_env, async_client, yoma_agent_m
 
 
 @pytest.mark.asyncio
-async def test_get_schemas_via_web(setup_local_env, async_client, yoma_agent_mock):
+async def test_get_schemas_via_web(
+    setup_local_env, async_client, yoma_agent_mock, public_did
+):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
-
-    await create_public_did(yoma_agent_mock)
 
     # when
     response = await async_client.post(
@@ -81,11 +81,12 @@ async def test_get_schemas_via_web(setup_local_env, async_client, yoma_agent_moc
 
 
 @pytest.mark.asyncio
-async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent_mock):
+async def test_get_schema_via_web(
+    setup_local_env, async_client, yoma_agent_mock, public_did
+):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    await create_public_did(yoma_agent_mock)
     response = await async_client.post(
         "/admin/governance/schemas",
         data=json.dumps(definition.dict()),
@@ -111,23 +112,11 @@ async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent_mock
     assert_that(response.json()["schema"]["attrNames"]).contains_only("average")
 
 
-async def create_public_did(aries_agent_controller):
-    generate_did_res = await acapy_wallet_facade.create_did(aries_agent_controller)
-    did_object = generate_did_res["result"]
-    await ledger_facade.post_to_ledger(did_object=did_object)
-    # my local von network I was using did not requried the TAA
-    taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
-    await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
-    await acapy_wallet_facade.assign_pub_did(aries_agent_controller, did_object["did"])
-    return did_object
-
-
 @pytest.mark.asyncio
-async def test_create_one_schema(setup_local_env, yoma_agent_mock):
+async def test_create_one_schema(setup_local_env, yoma_agent_mock, public_did):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
 
     # when
@@ -136,20 +125,19 @@ async def test_create_one_schema(setup_local_env, yoma_agent_mock):
 
     # then
     response = await yoma_agent_mock.schema.get_created_schema(
-        schema_issuer_did=public_did["did"]
+        schema_issuer_did=public_did.did
     )
 
     assert_that(response["schema_ids"]).contains(schema_definition_result["schema_id"])
 
 
 @pytest.mark.asyncio
-async def test_update_schema(setup_local_env, yoma_agent_mock):
+async def test_update_schema(setup_local_env, yoma_agent_mock, public_did):
     # given
     definition1 = SchemaDefinition(name="xya", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(
         name="xya", version="0.2", attributes=["average", "bitrate"]
     )
-    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
 
     # when
@@ -158,7 +146,7 @@ async def test_update_schema(setup_local_env, yoma_agent_mock):
 
     # then
     response = await yoma_agent_mock.schema.get_created_schema(
-        schema_issuer_did=public_did["did"]
+        schema_issuer_did=public_did.did
     )
 
     assert_that(response["schema_ids"]).contains_only(
@@ -168,12 +156,11 @@ async def test_update_schema(setup_local_env, yoma_agent_mock):
 
 
 @pytest.mark.asyncio
-async def test_create_two_schemas(setup_local_env, yoma_agent_mock):
+async def test_create_two_schemas(setup_local_env, yoma_agent_mock, public_did):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
 
     # when
@@ -182,7 +169,7 @@ async def test_create_two_schemas(setup_local_env, yoma_agent_mock):
 
     # then
     response = await yoma_agent_mock.schema.get_created_schema(
-        schema_issuer_did=public_did["did"]
+        schema_issuer_did=public_did.did
     )
 
     assert_that(response["schema_ids"]).contains_only(
@@ -192,21 +179,20 @@ async def test_create_two_schemas(setup_local_env, yoma_agent_mock):
 
 
 @pytest.mark.asyncio
-async def test_get_schemas(setup_local_env, yoma_agent_mock):
+async def test_get_schemas(setup_local_env, yoma_agent_mock, public_did):
     # when
     name = get_random_string(10)
     definition1 = SchemaDefinition(name=name, version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(
         name=name, version="0.2", attributes=["average", "bitrate"]
     )
-    public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
     schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
     schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
 
     # when
     response = await get_schemas(
-        schema_issuer_did=public_did["did"], aries_controller=yoma_agent_mock
+        schema_issuer_did=public_did.did, aries_controller=yoma_agent_mock
     )
 
     # then

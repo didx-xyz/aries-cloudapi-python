@@ -28,9 +28,9 @@ async def get_trusted_registry(
     """
     all_dids_on_ledger = await aries_controller.wallet.get_dids()
     public_dids = []
-    if len(all_dids_on_ledger["results"]) >= 1:
+    if len(all_dids_on_ledger.results) >= 1:
         public_dids = [
-            r for r in all_dids_on_ledger["results"] if r["posture"] == "public"
+            r.dict() for r in all_dids_on_ledger.results if r.posture == "public"
         ]
     return public_dids
 

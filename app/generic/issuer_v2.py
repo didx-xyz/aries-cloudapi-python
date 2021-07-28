@@ -74,21 +74,22 @@ async def send_credential(
     cred_def_id, credential_attribute = await _credential_details(
         credential, aries_controller
     )
-    return await aries_controller.issuer.send_credential(
+    return await aries_controller.issuer_v2.send_credential(
         credential.connection_id,
         credential.schema_id,
         cred_def_id,
         credential_attribute,
+        auto_remove=False,
     )
 
 
 @router.get("/credential")
 async def get_credential(
-    credential_id: str,
+    credential_id=Header(...),
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     # Same as in v1
-    return await aries_controller.issuer.get_record_by_id(credential_id)
+    return await aries_controller.issuer_v2.get_record_by_id(credential_id)
 
 
 @router.delete("/credential")
@@ -118,8 +119,10 @@ async def send_offer(
     cred_def_id, credential_attribute = await _credential_details(
         credential_offer, aries_controller
     )
-    return await aries_controller.issuer_v2.send_offer(
-        credential_offer.connection_id, cred_def_id, credential_attribute
+    return await aries_controller.issuer.send_offer(
+        connection_id=credential_offer.connection_id,
+        cred_def_id=cred_def_id,
+        attributes=credential_attribute,
     )
 
 

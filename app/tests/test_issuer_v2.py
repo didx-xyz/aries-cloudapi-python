@@ -1,11 +1,9 @@
 import json
 import time
-from contextlib import asynccontextmanager
 import pytest
 from generic.issuer_v2 import (
     Credential,
     CredentialOffer,
-    send_credential,
     Proposal,
 )
 from tests.utils_test import get_random_string

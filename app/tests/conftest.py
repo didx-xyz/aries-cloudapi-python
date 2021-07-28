@@ -41,6 +41,17 @@ def mock_agent_controller():
     return controller
 
 
+@pytest.fixture(scope="module")
+async def yoma_agent_module_scope():
+    # fast api auto wraps the generator functions use for dependencies as context managers - thus why the
+    # async context manager decorator is not required.
+    # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
+    # flexibility - thus we have to.
+    # this is doing what using decorators does for you
+    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
+        yield c
+
+
 @pytest.fixture
 async def yoma_agent_mock():
     # fast api auto wraps the generator functions use for dependencies as context managers - thus why the
@@ -69,21 +80,35 @@ class AgentEntity:
     headers: Dict[str, str]
     wallet_id: str
     did: str
+    pub_did: str
     verkey: str
     token: str
-    pub_did: str
 
 
-@pytest.fixture
+@pytest.fixture()
 async def async_client_bob(async_client):
     async with agent_client(async_client, "bob") as client:
         yield client
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
+async def async_client_bob_module_scope():
+    async with AsyncClient(app=app, base_url="http://localhost:8000") as async_client:
+        async with agent_client(async_client, "bob") as client:
+            yield client
+
+
+@pytest.fixture()
 async def async_client_alice(async_client):
     async with agent_client(async_client, "alice") as client:
         yield client
+
+
+@pytest.fixture(scope="module")
+async def async_client_alice_module_scope():
+    async with AsyncClient(app=app, base_url="http://localhost:8000") as async_client:
+        async with agent_client(async_client, "alice") as client:
+            yield client
 
 
 @asynccontextmanager
@@ -131,7 +156,6 @@ async def create_wallet(async_client, key):
             headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
         )
     ).json()
-
     public_did = (
         await async_client.get(
             "/wallet/create-pub-did",
@@ -142,9 +166,9 @@ async def create_wallet(async_client, key):
         headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
         wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
+        pub_did=public_did["did_object"]["did"],
         verkey=local_did["result"]["verkey"],
         token=wallet["token"],
-        pub_did=public_did["did_object"]["did"],
     )
     connections = (await async_client.get("/generic/connections")).json()
     for c in connections["result"]:

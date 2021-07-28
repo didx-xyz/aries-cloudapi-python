@@ -334,4 +334,4 @@ async def test_send_problem_report(async_client_bob_module_scope):
     ).json()
     # This is the best we can do for now until we turn auto respond off
     # or have webhooks listeners
-    assert cred_store_res
+    assert cred_store_res == {}

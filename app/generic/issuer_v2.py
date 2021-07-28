@@ -2,7 +2,6 @@ import logging
 
 from dependencies import agent_selector
 from facade import (
-    issue_credentials,
     get_schema_attributes,
     write_credential_def,
     get_cred_def_id,
@@ -11,7 +10,6 @@ from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel
 from typing import List, Optional
-from schemas import IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
 

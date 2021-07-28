@@ -1,13 +1,8 @@
 import json
-import random
 import time
-import string
 from contextlib import asynccontextmanager
-import re
-import dependencies
 import pytest
 from generic.issuer_v2 import (
-    get_records,
     Credential,
     CredentialOffer,
     send_credential,

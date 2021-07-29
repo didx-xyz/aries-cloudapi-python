@@ -23,7 +23,7 @@ async def accept_invite(
     invite: dict,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    accept_invite_res = await aries_controller.connections.accept_connection(invite)
+    accept_invite_res = await aries_controller.connections.receive_invitation(invite)
     return accept_invite_res
 
 

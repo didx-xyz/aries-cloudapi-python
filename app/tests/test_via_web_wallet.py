@@ -18,17 +18,17 @@ async def test_get_pub_did_via_web(setup_env):
     assert response.status_code == 200
     result = response.json()
 
-    assert result["did_object"]["posture"] == "public"
+    assert result["did_object"]["posture"] in ["posted", "public"]
 
     url = f"{utils.admin_url}:{utils.admin_port}/wallet/did"
-    response = requests.get(url, headers={"x-api-key": "adminApiKey"})
+    response = requests.get(url, headers={"x-api-key": "adminApiKey", "x-role": "yoma"})
     found = [
         r for r in response.json()["results"] if r["did"] == result["did_object"]["did"]
     ]
 
     assert len(found) == 1
     assert found[0]["verkey"] == result["did_object"]["verkey"]
-    assert found[0]["posture"] == "public"
+    assert found[0]["posture"] in ["posted", "public"]
 
 
 @pytest.mark.asyncio

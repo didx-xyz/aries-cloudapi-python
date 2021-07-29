@@ -10,7 +10,7 @@ from facade import get_schema_list, write_credential_def, write_schema_definitio
 from fastapi import APIRouter, Depends, Query
 from schemas import SchemaLedgerRequest, SchemaResponse
 
-router = APIRouter(prefix="/schemas", tags=["schemas"])
+router = APIRouter(prefix="/schemas", tags=["Legacy: Schemas"])
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,6 @@ async def get_schema(
 
 @router.post(
     "/write-schema-and-credential-definition",
-    tags=["credentials"],
     response_model=SchemaResponse,
 )
 async def write_credential_schema(

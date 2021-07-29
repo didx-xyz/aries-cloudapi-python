@@ -1,7 +1,10 @@
 import json
 import random
 import string
+import time
 from contextlib import asynccontextmanager
+
+from assertpy import assert_that
 
 import dependencies
 import pytest
@@ -14,7 +17,9 @@ from generic.connections import (
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
+
 BASE_PATH = "/generic/connections"
+
 CREATE_WALLET_PAYLOAD_YODA = {
     "image_url": "https://aries.ca/images/sample.png",
     "key_management_mode": "managed",
@@ -38,11 +43,11 @@ CREATE_WALLET_PAYLOAD_HAN = {
 async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
     yoda_response = await async_client.delete(
         f"/admin/wallet-multitenant/{yoda_wallet_id}",
-        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
+        headers={"x-api-key": "adminApiKey", "x-role": "member"},
     )
     han_response = await async_client.delete(
         f"/admin/wallet-multitenant/{han_wallet_id}",
-        headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
+        headers={"x-api-key": "adminApiKey", "x-role": "member"},
     )
     return yoda_response, han_response
 
@@ -70,7 +75,7 @@ async def token_responses(async_client, create_wallets_mock):
         f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -79,7 +84,7 @@ async def token_responses(async_client, create_wallets_mock):
         f"/admin/wallet-multitenant/{han_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -105,7 +110,7 @@ async def fixture_create_wallets_mock(async_client):
         "/admin/wallet-multitenant/create-wallet",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
         data=json.dumps(CREATE_WALLET_PAYLOAD_YODA),
@@ -116,7 +121,7 @@ async def fixture_create_wallets_mock(async_client):
         "/admin/wallet-multitenant/create-wallet",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
         data=json.dumps(CREATE_WALLET_PAYLOAD_HAN),
@@ -129,9 +134,9 @@ async def fixture_create_wallets_mock(async_client):
         yoda_wallet_id, han_wallet_id, async_client
     )
     assert yoda_response.status_code == 200
-    assert yoda_response.json() == "Successfully removed wallet"
+    assert yoda_response.json() == {"status": "Successfully removed wallet"}
     assert han_response.status_code == 200
-    assert han_response.json() == "Successfully removed wallet"
+    assert han_response.json() == {"status": "Successfully removed wallet"}
 
 
 @pytest.mark.asyncio
@@ -144,7 +149,7 @@ async def test_create_invite(async_client, create_wallets_mock):
         f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
         headers={
             "x-api-key": "adminApiKey",
-            "x-role": "yoma",
+            "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
@@ -268,3 +273,67 @@ async def test_delete_connection(async_client, create_wallets_mock):
         )
         connection = await get_connections(aries_controller=member_agent)
     assert connection["results"] == []
+
+
+@pytest.mark.asyncio
+async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
+    """this test validates that bob and alice connect successfully...
+
+    NB: it assumes you have all the "auto connection" settings flagged as on.
+
+    ACAPY_AUTO_ACCEPT_INVITES=true
+    ACAPY_AUTO_ACCEPT_REQUESTS=true
+    ACAPY_AUTO_PING_CONNECTION=true
+
+    """
+    # creaet invitation on bob side
+    invitation = (await async_client_bob.get(BASE_PATH + "/create-invite")).json()
+    bob_connection_id = invitation["connection_id"]
+    connections = (await async_client_bob.get(BASE_PATH)).json()
+    assert_that(connections["results"]).extracting("connection_id").contains_only(
+        bob_connection_id
+    )
+
+    # accept invitation on alice side
+    invite_response = (
+        await async_client_alice.post(
+            BASE_PATH + "/accept-invite", data=json.dumps(invitation["invitation"])
+        )
+    ).json()
+    alice_connection_id = invite_response["connection_id"]
+
+    # wait for events to be exchanged
+    time.sleep(10)
+
+    # fetch and validate
+    # both connections should be active - we have waited long enough for events to be exchanged
+    # and we are running in "auto connect" mode.
+    bob_connections = (await async_client_bob.get(BASE_PATH)).json()
+    alice_connections = (await async_client_alice.get(BASE_PATH)).json()
+
+    assert_that(bob_connections["results"]).extracting("connection_id").contains(
+        bob_connection_id
+    )
+    bob_connection = [
+        c for c in bob_connections["results"] if c["connection_id"] == bob_connection_id
+    ][0]
+    assert_that(bob_connection).has_state("active")
+
+    assert_that(alice_connections["results"]).extracting("connection_id").contains(
+        alice_connection_id
+    )
+    alice_connection = [
+        c
+        for c in alice_connections["results"]
+        if c["connection_id"] == alice_connection_id
+    ][0]
+    assert_that(alice_connection).has_state("active")
+
+
+@pytest.mark.asyncio
+async def test_bob_has_agent(async_client_bob):
+    assert_that(hasattr(async_client_bob, "agent")).is_true()
+    assert_that(hasattr(async_client_bob.agent, "did")).is_true()
+    assert_that(async_client_bob.agent.did).is_not_none()
+    assert_that(async_client_bob.agent.headers).is_not_empty()
+    assert_that(async_client_bob.agent.token).is_not_none()

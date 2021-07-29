@@ -143,8 +143,7 @@ disable=print-statement,
         no-value-for-parameter,
         no-else-raise,
         redefined-builtin,
-        duplicate-code,
-        wrong-import-order
+        duplicate-code
 
 
 
@@ -409,16 +408,15 @@ class-naming-style=PascalCase
 
 # Regular expression matching correct class names. Overrides class-naming-
 # style.
-# class-rgx=[^\\W\\da-z][^\\W_]*$
+#class-rgx=
 
 # Naming style matching correct constant names.
 
 # Regular expression matching correct constant names. Overrides const-naming-
 # style.
 const-rgx=^[a-z][a-z0-9_]*|[A-Z][A-Z0-9_]*$
+class-rgx=[^\\W\\da-z][^\\W_]*$
 attr-rgx=([^\W\dA-Z]+|_[^\WA-Z]*|__[^\WA-Z\\d_][^\WA-Z]+__)$
-class-const-rgx=^[a-z][a-z0-9_]*|[A-Z][A-Z0-9_]*$
-
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.

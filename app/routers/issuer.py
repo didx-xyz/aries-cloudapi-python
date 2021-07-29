@@ -18,12 +18,11 @@ from fastapi.responses import StreamingResponse
 from schemas import ConnectionIdResponse, IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/issuer")
+router = APIRouter(prefix="/issuer", tags=["Legacy: Issuer"])
 
 
 @router.get(
     "/issue-credential",
-    tags=["issue", "credential"],
     response_model=IssueCredentialResponse,
 )
 async def issue_credential(
@@ -92,7 +91,6 @@ async def issue_credential(
 
 @router.get(
     "/connection",
-    tags=["connection", "wallets"],
     responses={
         200: {
             "content": {"image/png": {}},
@@ -142,7 +140,6 @@ async def create_connection(
 # TODO Decide where this endpoint to lie
 @router.get(
     "/get-connection-id",
-    tags=["connection"],
     response_model=ConnectionIdResponse,
 )
 async def get_connection_ids(

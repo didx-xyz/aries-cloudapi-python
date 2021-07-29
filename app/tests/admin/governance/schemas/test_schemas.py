@@ -32,7 +32,11 @@ async def test_create_schema_via_web(setup_local_env, async_client, yoma_agent_m
     response = await async_client.post(
         BASE_PATH,
         data=json.dumps(definition.dict()),
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     assert response.status_code == 200
     result = response.json()
@@ -54,7 +58,11 @@ async def test_get_schemas_via_web(setup_local_env, async_client, yoma_agent_moc
     response = await async_client.post(
         BASE_PATH,
         data=json.dumps(definition.dict()),
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     assert response.status_code == 200
     result = response.json()
@@ -63,7 +71,11 @@ async def test_get_schemas_via_web(setup_local_env, async_client, yoma_agent_moc
     response = await async_client.get(
         BASE_PATH,
         params={"schema_id": result["schema_id"]},
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     assert_that(response.json()["schema_ids"]).is_length(1)
 
@@ -77,7 +89,11 @@ async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent_mock
     response = await async_client.post(
         "/admin/governance/schemas",
         data=json.dumps(definition.dict()),
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     assert response.status_code == 200
     result = response.json()
@@ -85,7 +101,11 @@ async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent_mock
     # when
     response = await async_client.get(
         f"{BASE_PATH}/{result['schema_id']}",
-        headers={"x-api-key": "adminApiKey", **APPLICATION_JSON_CONTENT_TYPE},
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "yoma",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
     )
     # then
     assert_that(response.json()["schema"]["attrNames"]).contains_only("average")

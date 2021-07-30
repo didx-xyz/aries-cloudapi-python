@@ -82,7 +82,7 @@ async def get_records(
 
 @router.get("/credential")
 async def get_x_record(
-    credential_x_id=Header(...),
+    credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.get_record_by_id(credential_x_id)
@@ -90,7 +90,7 @@ async def get_x_record(
 
 @router.delete("/credential")
 async def remove_credential(
-    credential_id=Header(...),
+    credential_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.credentials.remove_credential(credential_id)
@@ -99,7 +99,7 @@ async def remove_credential(
 @router.post("/problem-report")
 async def problem_report(
     explanation: dict,
-    credential_x_id=Header(...),
+    credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.send_problem_report(
@@ -122,7 +122,7 @@ async def send_offer(
 
 @router.post("/credential/request")
 async def send_credential_request(
-    credential_x_id=Header(...),
+    credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.send_request_for_record(credential_x_id)
@@ -130,8 +130,8 @@ async def send_credential_request(
 
 @router.get("/credential/store")
 async def store_credential(
-    credential_x_id=Header(...),
-    credential_id=Header(...),
+    credential_x_id: str,
+    credential_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.store_credential(

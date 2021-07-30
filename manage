@@ -54,7 +54,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="yoma-multitenant-wallets-db yoma-multitenant-agent
+DEFAULT_CONTAINERS="yoma-multitenant-wallets-db yoma-multitenant-agent tails-server ledger-nodes ledger-browser
                     yoma-ga-wallets-db yoma-ga-agent yoma-multitenant-web yoma-ga-web"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:

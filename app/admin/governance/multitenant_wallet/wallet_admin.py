@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/wallet-multitenant", tags=["Admin: Wallets"])
+router = APIRouter(prefix="/admin/wallet-multitenant", tags=["admin: wallet"])
 
 
 class KeyManagementMode(Enum):

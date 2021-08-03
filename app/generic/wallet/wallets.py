@@ -10,7 +10,7 @@ from dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/wallet", tags=["wallets"])
+router = APIRouter(prefix="/wallet", tags=["wallet"])
 
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)

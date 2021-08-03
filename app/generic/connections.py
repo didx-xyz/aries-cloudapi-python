@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 
 
-@router.get("/create-invite", tags=["connections", "create"])
+@router.get("/create-invite")
 async def create_invite(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
@@ -18,7 +18,7 @@ async def create_invite(
     return invite
 
 
-@router.post("/accept-invite", tags=["connections", "accept"])
+@router.post("/accept-invite")
 async def accept_invite(
     invite: dict,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -27,7 +27,7 @@ async def accept_invite(
     return accept_invite_res
 
 
-@router.get("/", tags=["connections"])
+@router.get("/")
 async def get_connections(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
@@ -35,7 +35,7 @@ async def get_connections(
     return connections
 
 
-@router.get("/{conn_id}", tags=["connections"])
+@router.get("/{conn_id}")
 async def get_connection_by_id(
     connection_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
@@ -44,7 +44,7 @@ async def get_connection_by_id(
     return connection
 
 
-@router.delete("/{conn_id}", tags=["connections"])
+@router.delete("/{conn_id}")
 async def delete_connection_by_id(
     connection_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),

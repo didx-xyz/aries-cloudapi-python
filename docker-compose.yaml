@@ -113,6 +113,8 @@ services:
     networks:
       - yoma-multitenant
       - yoma-ga
+    depends_on:
+      - ledger-nodes
   ledger-nodes:
     build:
       context: https://github.com/bcgov/von-network.git

@@ -116,6 +116,7 @@ services:
     depends_on:
       - ledger-nodes
   ledger-nodes:
+    image: bcgovimages/von-image:py36-1.16-1
     build:
       context: https://github.com/bcgov/von-network.git
       dockerfile: Dockerfile

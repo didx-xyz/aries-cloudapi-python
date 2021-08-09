@@ -23,6 +23,8 @@ jobs:
         python-version: 3.8.10
     - name: Start Test Harness
       run: |
+        export LD_LIBRARY_PATH=/usr/local/lib
+        export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
         chmod u+x manage
         docker ps -a -q
         docker volume ls -q

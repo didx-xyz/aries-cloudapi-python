@@ -184,7 +184,7 @@ async def test_all(
             )
         ).json()
         assert cred_send_response["error_message"]
-        assert "Credential exchange" in cred_send_response["error_message"]
+        assert "credential exchange" in cred_send_response["error_message"]
 
     async def test_send_problem_report(async_client_alice=async_client_alice):
         async_client_alice.headers.update({"credential-x-id": CRED_X_ID})

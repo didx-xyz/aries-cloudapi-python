@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/admin/governance/credential-definitions",
-    tags=["Admin: CredentialDefinitions"],
+    tags=["admin: credentialdefinitions"],
 )
 
 

@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/governance/dids", tags=["Admin: Public Dids"])
+router = APIRouter(prefix="/admin/governance/dids", tags=["admin: public dids"])
 
 
 @router.get("/trusted-registry")

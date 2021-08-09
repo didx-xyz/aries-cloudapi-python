@@ -96,7 +96,7 @@ services:
       - yoma-ga
   ledger-browser:
     build:
-      context: https://github.com/bcgov/von-network.git
+      context: git@github.com:bcgov/von-network.git
       dockerfile: Dockerfile
     command: "bash -c 'sleep 10; ./scripts/start_webserver.sh;'"
     environment:
@@ -117,7 +117,7 @@ services:
       - ledger-nodes
   ledger-nodes:
     build:
-      context: https://github.com/bcgov/von-network.git
+      context: git@github.com:bcgov/von-network.git
       dockerfile: Dockerfile
     command: "bash -c './scripts/start_nodes.sh'"
     ports:

@@ -21,6 +21,7 @@ APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/generic/issuers/v1"
 BASE_PATH_CON = "/generic/connections"
 CRED_X_ID = ""
+CRED_DEF_ID = ""
 
 
 @pytest.yield_fixture(scope="module")
@@ -60,7 +61,7 @@ async def create_bob_and_alice_connect(
             BASE_PATH_CON + "/accept-invite", data=json.dumps(invitation["invitation"])
         )
     ).json()
-    time.sleep(10)
+    time.sleep(15)
     alice_connection_id = invite_response["connection_id"]
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
@@ -109,7 +110,7 @@ async def schema_definition(yoma_agent_module_scope):
     )
 
     public_did = await create_public_did(yoma_agent_module_scope)
-    print(f" created did:{public_did}")
+    print(f"created did: {public_did}")
     schema_definition_result = await create_schema(definition, yoma_agent_module_scope)
     print(schema_definition_result)
 
@@ -135,6 +136,8 @@ async def credential_definition(yoma_agent_module_scope, schema_definition):
     written = await get_credential_definition(
         result["credential_definition_id"], yoma_agent_module_scope
     )
+    global CRED_DEF_ID
+    CRED_DEF_ID = result["credential_definition_id"]
     print(f"created definition {str(result)}")
     return result
 
@@ -242,12 +245,9 @@ async def test_get_x_record(
     credential_exchange_id,
     schema_definition,
 ):
-    headers = async_client_bob_module_scope.headers.update(
-        {"credential-x-id": credential_exchange_id}
-    )
     cred_rec_red = (
         await async_client_bob_module_scope.get(
-            BASE_PATH + "/credential/", headers=headers
+            BASE_PATH + f"/credential?credential_x_id={credential_exchange_id}"
         )
     ).json()
     assert cred_rec_red["connection_id"] == bob_connection_id
@@ -265,13 +265,10 @@ async def test_get_records(async_client_alice_module_scope):
 @pytest.mark.asyncio
 async def test_send_credential_request(async_client_bob_module_scope):
     # TODO check for the successful request
-    headers = async_client_bob_module_scope.headers.update(
-        {"credential-x-id": CRED_X_ID}
-    )
     time.sleep(10)
     cred_send_res = (
         await async_client_bob_module_scope.post(
-            BASE_PATH + "/credential/request", headers=headers
+            BASE_PATH + f"/credential/request?credential_x_id={CRED_X_ID}"
         )
     ).json()
     # This returns an error - the correct one because the credential is in state received.
@@ -283,19 +280,14 @@ async def test_send_credential_request(async_client_bob_module_scope):
 @pytest.mark.asyncio
 async def test_store_credential(async_client_bob_module_scope, credential_definition):
     # TODO check for the correct response when state is credential_received
-    time.sleep(10)
-    headers = async_client_bob_module_scope.headers.update(
-        {
-            "credential-x-id": CRED_X_ID,
-            "credential-id": credential_definition["credential_definition_id"],
-        }
-    )
+    time.sleep(5)
     cred_store_res = (
         await async_client_bob_module_scope.get(
-            BASE_PATH + "/credential/store", headers=headers
+            BASE_PATH
+            + f"/credential/store?credential_x_id={CRED_X_ID}&credential_id={CRED_DEF_ID}"
         )
     ).json()
-    time.sleep(10)
+    time.sleep(5)
     assert cred_store_res["error_message"]
     assert (
         "Credential exchange" and "state (must be credential_received)."
@@ -325,10 +317,9 @@ async def test_send_proposal(
 @pytest.mark.asyncio
 async def test_send_problem_report(async_client_bob_module_scope):
     # TODO check for the correct response when state is credential_received
-    async_client_bob_module_scope.headers.update({"credential-x-id": CRED_X_ID})
     cred_store_res = (
         await async_client_bob_module_scope.post(
-            BASE_PATH + "/problem-report",
+            BASE_PATH + f"/problem-report?credential_x_id={CRED_X_ID}",
             data=json.dumps({"explanation": "Problem"}),
         )
     ).json()

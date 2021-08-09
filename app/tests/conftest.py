@@ -162,7 +162,6 @@ async def create_wallet(async_client, key):
             headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
         )
     ).json()
-
     yield AgentEntity(
         headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
         wallet_id=wallet["wallet_id"],

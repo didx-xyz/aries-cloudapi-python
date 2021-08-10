@@ -11,6 +11,8 @@ services:
       - ./app:/app
     depends_on:
       - yoma-ga-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-ga
     env_file:
@@ -33,6 +35,9 @@ services:
     command: ngrok http yoma-ga-agent:3020 --log stdout
     networks:
       - yoma-ga
+    depends_on:
+      - ledger-nodes
+      - ledger-browser
   yoma-ga-agent:
     build:
       context: .
@@ -44,6 +49,8 @@ services:
       - 3021:3021
     depends_on:
       - yoma-ga-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-ga
     extra_hosts:
@@ -58,6 +65,8 @@ services:
       - ./app:/app
     depends_on:
       - yoma-multitenant-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-multitenant
     env_file:
@@ -80,6 +89,9 @@ services:
     command: ngrok http yoma-multitenant-agent:3020 --log stdout
     networks:
       - yoma-multitenant
+    depends_on:
+      - ledger-nodes
+      - ledger-browser
   yoma-multitenant-agent:
     build:
       context: .
@@ -91,6 +103,8 @@ services:
       - 4021:3021
     depends_on:
       - yoma-multitenant-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-multitenant
       - yoma-ga
@@ -98,7 +112,7 @@ services:
     build:
       context: https://github.com/bcgov/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 10; ./scripts/start_webserver.sh;'"
+    command: "bash -c 'sleep 10; ./scripts/start_webserver.sh; sleep 10;'"
     environment:
       - DOCKERHOST=${DOCKERHOST}
       - MAX_FETCH=50000
@@ -119,7 +133,7 @@ services:
     build:
       context: https://github.com/bcgov/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c './scripts/start_nodes.sh'"
+    command: "bash -c 'sleep 10; ./scripts/start_nodes.sh; sleep 10;'"
     ports:
       - 9701:9701
       - 9702:9702

@@ -286,7 +286,7 @@ async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
     ACAPY_AUTO_PING_CONNECTION=true
 
     """
-    # creaet invitation on bob side
+    # create invitation on bob side
     invitation = (await async_client_bob.get(BASE_PATH + "/create-invite")).json()
     bob_connection_id = invitation["connection_id"]
     connections = (await async_client_bob.get(BASE_PATH)).json()

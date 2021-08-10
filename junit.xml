@@ -1,1 +1,189 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="0" time="0.236" timestamp="2021-08-09T08:09:27.561432" hostname="localhost" /></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="2" failures="0" skipped="0" tests="7" time="17.475" timestamp="2021-08-10T19:06:34.714109" hostname="vineeth-G3-3579"><testcase classname="tests.test_connections" name="test_create_invite" time="2.900" /><testcase classname="tests.test_connections" name="test_accept_invite" time="2.878" /><testcase classname="tests.test_connections" name="test_get_connections" time="2.926" /><testcase classname="tests.test_connections" name="test_get_connection_by_id" time="2.938" /><testcase classname="tests.test_connections" name="test_delete_connection" time="3.851" /><testcase classname="tests.test_connections" name="test_bob_and_alice_connect" time="0.883"><error message="failed on setup with &quot;KeyError: 'did_object'&quot;">args = (), kwargs = {'async_client': &lt;httpx.AsyncClient object at 0x7f321c692880&gt;}, request = &lt;SubRequest 'async_client_bob' for &lt;Function test_bob_and_alice_connect&gt;&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f321c67bdc0&gt;
+finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f321bbf3310&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+        request = fixture_stripper.get_and_strip_from(
+            FixtureStripper.REQUEST, kwargs
+        )
+
+        gen_obj = generator(*args, **kwargs)
+
+        async def setup():
+            res = await gen_obj.__anext__()
+            return res
+
+        def finalizer():
+            """Yield again, to finalize."""
+
+            async def async_finalizer():
+                try:
+                    await gen_obj.__anext__()
+                except StopAsyncIteration:
+                    pass
+                else:
+                    msg = "Async generator fixture didn't stop."
+                    msg += "Yield only once."
+                    raise ValueError(msg)
+
+            loop.run_until_complete(async_finalizer())
+
+        request.addfinalizer(finalizer)
+&gt;       return loop.run_until_complete(setup())
+
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
+    res = await gen_obj.__anext__()
+app/tests/conftest.py:90: in async_client_bob
+    async with agent_client(async_client, "bob") as client:
+app/tests/conftest.py:116: in agent_client
+    agent = await async_next(create_wallet(async_client, name))
+app/tests/test_dependencies.py:79: in async_next
+    async for item in param:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+async_client = &lt;httpx.AsyncClient object at 0x7f321c692880&gt;, key = 'bob'
+
+    async def create_wallet(async_client, key):
+        def create_wallet_payload(key):
+            return {
+                "image_url": "https://aries.ca/images/sample.png",
+                "label": f"{key}{get_random_string(3)}",
+                "wallet_key": "MySecretKey1234",
+                "wallet_name": f"{key}{get_random_string(3)}",
+            }
+
+        wallet_payload = create_wallet_payload(key)
+
+        wallet = (
+            await async_client.post(
+                "/admin/wallet-multitenant" + "/create-wallet",
+                headers=DEFAULT_HEADERS,
+                data=json.dumps(wallet_payload),
+            )
+        ).json()
+
+        local_did = (
+            await async_client.get(
+                "/wallet/create-local-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+        public_did = (
+            await async_client.get(
+                "/wallet/create-pub-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+
+        yield AgentEntity(
+            headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
+            wallet_id=wallet["wallet_id"],
+            did=local_did["result"]["did"],
+&gt;           pub_did=public_did["did_object"]["did"],
+            verkey=local_did["result"]["verkey"],
+            token=wallet["token"],
+        )
+E       KeyError: 'did_object'
+
+app/tests/conftest.py:170: KeyError</error></testcase><testcase classname="tests.test_connections" name="test_bob_has_agent" time="0.928"><error message="failed on setup with &quot;KeyError: 'did_object'&quot;">args = (), kwargs = {'async_client': &lt;httpx.AsyncClient object at 0x7f321bb432e0&gt;}, request = &lt;SubRequest 'async_client_bob' for &lt;Function test_bob_has_agent&gt;&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f321bb509d0&gt;
+finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f321bb50b80&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+        request = fixture_stripper.get_and_strip_from(
+            FixtureStripper.REQUEST, kwargs
+        )
+
+        gen_obj = generator(*args, **kwargs)
+
+        async def setup():
+            res = await gen_obj.__anext__()
+            return res
+
+        def finalizer():
+            """Yield again, to finalize."""
+
+            async def async_finalizer():
+                try:
+                    await gen_obj.__anext__()
+                except StopAsyncIteration:
+                    pass
+                else:
+                    msg = "Async generator fixture didn't stop."
+                    msg += "Yield only once."
+                    raise ValueError(msg)
+
+            loop.run_until_complete(async_finalizer())
+
+        request.addfinalizer(finalizer)
+&gt;       return loop.run_until_complete(setup())
+
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
+    res = await gen_obj.__anext__()
+app/tests/conftest.py:90: in async_client_bob
+    async with agent_client(async_client, "bob") as client:
+app/tests/conftest.py:116: in agent_client
+    agent = await async_next(create_wallet(async_client, name))
+app/tests/test_dependencies.py:79: in async_next
+    async for item in param:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+async_client = &lt;httpx.AsyncClient object at 0x7f321bb432e0&gt;, key = 'bob'
+
+    async def create_wallet(async_client, key):
+        def create_wallet_payload(key):
+            return {
+                "image_url": "https://aries.ca/images/sample.png",
+                "label": f"{key}{get_random_string(3)}",
+                "wallet_key": "MySecretKey1234",
+                "wallet_name": f"{key}{get_random_string(3)}",
+            }
+
+        wallet_payload = create_wallet_payload(key)
+
+        wallet = (
+            await async_client.post(
+                "/admin/wallet-multitenant" + "/create-wallet",
+                headers=DEFAULT_HEADERS,
+                data=json.dumps(wallet_payload),
+            )
+        ).json()
+
+        local_did = (
+            await async_client.get(
+                "/wallet/create-local-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+        public_did = (
+            await async_client.get(
+                "/wallet/create-pub-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+
+        yield AgentEntity(
+            headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
+            wallet_id=wallet["wallet_id"],
+            did=local_did["result"]["did"],
+&gt;           pub_did=public_did["did_object"]["did"],
+            verkey=local_did["result"]["verkey"],
+            token=wallet["token"],
+        )
+E       KeyError: 'did_object'
+
+app/tests/conftest.py:170: KeyError</error></testcase></testsuite></testsuites>

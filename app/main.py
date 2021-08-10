@@ -2,18 +2,18 @@ from aiohttp import ClientResponseError
 from distutils.util import strtobool
 import os
 import io
+import yaml
 
 from fastapi import FastAPI, Response, Request
 from fastapi.responses import JSONResponse
 
 from admin.governance import credential_definitions, dids, schemas
 from fastapi import FastAPI
-from generic import connections, issuers_v1
+from generic import connections, issuers_v1, messaging
 from routers import issuer, verifier
 from admin.governance.multitenant_wallet import wallet_admin
 from generic.wallet import wallets
 
-import yaml
 
 prod = strtobool(os.environ.get("prod", "True"))
 app = FastAPI(debug=not prod)
@@ -27,6 +27,7 @@ app.include_router(wallet_admin.router)
 app.include_router(verifier.router)
 app.include_router(issuer.router)
 app.include_router(wallets.router)
+app.include_router(messaging.router)
 
 
 @app.get("/", tags=["Root"])

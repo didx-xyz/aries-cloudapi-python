@@ -4,6 +4,7 @@ import time
 from assertpy import assert_that
 
 import pytest
+from httpx import Response
 from generic.messaging import Message
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
@@ -34,7 +35,7 @@ async def create_bob_and_alice_connect(
     ACAPY_AUTO_PING_CONNECTION=true
 
     """
-    # creaet invitation on bob side
+    # create invitation on bob side
     invitation = (await async_client_bob.get(BASE_PATH_CON + "/create-invite")).json()
     bob_connection_id = invitation["connection_id"]
     connections = (await async_client_bob.get(BASE_PATH_CON)).json()
@@ -91,12 +92,12 @@ def alice_connection_id(create_bob_and_alice_connect):
 
 
 @pytest.mark.asyncio(scope="module")
-async def test_send_messages(
-    bob_connection_id, async_client_alice_module_scope, async_client_bob_module_scope
-):
-
-    message = Message(connection_id=bob_connection_id, msg="Donda").json()
+async def test_send_trust_ping(alice_connection_id, async_client_alice_module_scope):
+    message = Message(connection_id=alice_connection_id, msg="Donda").json()
     response = await async_client_alice_module_scope.post(
-        MESSAGE_PATH + "/send-message", data=message
+        MESSAGE_PATH + "/trust-ping", data=message
     )
-    assert response == ""
+    assert type(response) is Response
+    assert response.status_code == 200
+    assert response.content != ""
+    assert response.json()["thread_id"]

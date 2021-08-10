@@ -1,12 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="37.878" timestamp="2021-08-10T16:16:07.067982" hostname="vineeth-G3-3579"><testcase classname="tests.test_messaging" name="test_send_messages" time="37.819"><failure message="AssertionError: assert &lt;Response [404 Not Found]&gt; == ''">bob_connection_id = 'a966d34d-786e-4f82-aa86-a1dd57347e3d', async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x7fa50d62f580&gt;
-async_client_bob_module_scope = &lt;httpx.AsyncClient object at 0x7fa50e70c610&gt;
-
-    @pytest.mark.asyncio(scope="module")
-    async def test_send_messages(bob_connection_id, async_client_alice_module_scope, async_client_bob_module_scope):
-
-        message=Message(connection_id=bob_connection_id,msg="Donda").json()
-        response= await async_client_alice_module_scope.post(MESSAGE_PATH + "/send-message", data=message)
-&gt;       assert response ==''
-E       AssertionError: assert &lt;Response [404 Not Found]&gt; == ''
-
-app/tests/test_messaging.py:98: AssertionError</failure></testcase></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="42.468" timestamp="2021-08-10T14:21:48.630159" hostname="localhost"><testcase classname="tests.test_messaging" name="test_send_trust_ping" time="42.409" /></testsuite></testsuites>

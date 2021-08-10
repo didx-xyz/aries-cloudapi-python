@@ -15,6 +15,11 @@ class Message(BaseModel):
     msg: str
 
 
+class TrustPingMsg(BaseModel):
+    connection_id: str
+    comment_msg: str = None
+
+
 @router.post("/send-message")
 async def send_messages(
     message: Message,
@@ -28,12 +33,11 @@ async def send_messages(
 
 @router.post("/trust-ping")
 async def send_trust_ping(
-    connection_id: str,
-    comment_msg: Optional[str],
+    trustping_msg: TrustPingMsg,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
 
     response = await aries_controller.messaging.trust_ping(
-        connection_id=connection_id, comment_msg=comment_msg
+        connection_id=trustping_msg.connection_id, comment_msg=trustping_msg.comment_msg
     )
     return response

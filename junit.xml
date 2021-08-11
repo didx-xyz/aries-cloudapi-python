@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="8" failures="0" skipped="0" tests="8" time="4.515" timestamp="2021-08-11T07:53:44.291223" hostname="localhost"><testcase classname="tests.test_issuer_v1" name="test_issue_credential" time="0.043"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_bob_module_scope' for &lt;Function test_issue_credential&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31bf2e4d30&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31bf2e4dc0&gt;
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="2" failures="0" skipped="0" tests="7" time="17.475" timestamp="2021-08-10T19:06:34.714109" hostname="vineeth-G3-3579"><testcase classname="tests.test_connections" name="test_create_invite" time="2.900" /><testcase classname="tests.test_connections" name="test_accept_invite" time="2.878" /><testcase classname="tests.test_connections" name="test_get_connections" time="2.926" /><testcase classname="tests.test_connections" name="test_get_connection_by_id" time="2.938" /><testcase classname="tests.test_connections" name="test_delete_connection" time="3.851" /><testcase classname="tests.test_connections" name="test_bob_and_alice_connect" time="0.883"><error message="failed on setup with &quot;KeyError: 'did_object'&quot;">args = (), kwargs = {'async_client': &lt;httpx.AsyncClient object at 0x7f321c692880&gt;}, request = &lt;SubRequest 'async_client_bob' for &lt;Function test_bob_and_alice_connect&gt;&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f321c67bdc0&gt;
+finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f321bbf3310&gt;
 
     def wrapper(*args, **kwargs):
         loop = fixture_stripper.get_and_strip_from(
@@ -34,85 +34,67 @@ finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&
         request.addfinalizer(finalizer)
 &gt;       return loop.run_until_complete(setup())
 
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
     return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
     res = await gen_obj.__anext__()
-app/tests/conftest.py:97: in async_client_bob_module_scope
+app/tests/conftest.py:90: in async_client_bob
     async with agent_client(async_client, "bob") as client:
 app/tests/conftest.py:116: in agent_client
     agent = await async_next(create_wallet(async_client, name))
 app/tests/test_dependencies.py:79: in async_next
     async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31bf2e5880&gt;
+async_client = &lt;httpx.AsyncClient object at 0x7f321c692880&gt;, key = 'bob'
 
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet
+    async def create_wallet(async_client, key):
+        def create_wallet_payload(key):
+            return {
+                "image_url": "https://aries.ca/images/sample.png",
+                "label": f"{key}{get_random_string(3)}",
+                "wallet_key": "MySecretKey1234",
+                "wallet_name": f"{key}{get_random_string(3)}",
+            }
 
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_offer_credential" time="0.001"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_bob_module_scope' for &lt;Function test_issue_credential&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31bf2e4d30&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31bf2e4dc0&gt;
+        wallet_payload = create_wallet_payload(key)
+
+        wallet = (
+            await async_client.post(
+                "/admin/wallet-multitenant" + "/create-wallet",
+                headers=DEFAULT_HEADERS,
+                data=json.dumps(wallet_payload),
+            )
+        ).json()
+
+        local_did = (
+            await async_client.get(
+                "/wallet/create-local-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+        public_did = (
+            await async_client.get(
+                "/wallet/create-pub-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+
+        yield AgentEntity(
+            headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
+            wallet_id=wallet["wallet_id"],
+            did=local_did["result"]["did"],
+&gt;           pub_did=public_did["did_object"]["did"],
+            verkey=local_did["result"]["verkey"],
+            token=wallet["token"],
+        )
+E       KeyError: 'did_object'
+
+app/tests/conftest.py:170: KeyError</error></testcase><testcase classname="tests.test_connections" name="test_bob_has_agent" time="0.928"><error message="failed on setup with &quot;KeyError: 'did_object'&quot;">args = (), kwargs = {'async_client': &lt;httpx.AsyncClient object at 0x7f321bb432e0&gt;}, request = &lt;SubRequest 'async_client_bob' for &lt;Function test_bob_has_agent&gt;&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f321bb509d0&gt;
+finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f321bb50b80&gt;
 
     def wrapper(*args, **kwargs):
         loop = fixture_stripper.get_and_strip_from(
@@ -146,752 +128,62 @@ finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&
         request.addfinalizer(finalizer)
 &gt;       return loop.run_until_complete(setup())
 
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
     return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
+../../anaconda3/envs/yoma_aries_cloudapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
     res = await gen_obj.__anext__()
-app/tests/conftest.py:97: in async_client_bob_module_scope
+app/tests/conftest.py:90: in async_client_bob
     async with agent_client(async_client, "bob") as client:
 app/tests/conftest.py:116: in agent_client
     agent = await async_next(create_wallet(async_client, name))
 app/tests/test_dependencies.py:79: in async_next
     async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31bf2e5880&gt;
+async_client = &lt;httpx.AsyncClient object at 0x7f321bb432e0&gt;, key = 'bob'
 
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet
+    async def create_wallet(async_client, key):
+        def create_wallet_payload(key):
+            return {
+                "image_url": "https://aries.ca/images/sample.png",
+                "label": f"{key}{get_random_string(3)}",
+                "wallet_key": "MySecretKey1234",
+                "wallet_name": f"{key}{get_random_string(3)}",
+            }
 
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_get_x_record" time="0.001"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_bob_module_scope' for &lt;Function test_issue_credential&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31bf2e4d30&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31bf2e4dc0&gt;
+        wallet_payload = create_wallet_payload(key)
 
-    def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(
-            FixtureStripper.EVENT_LOOP, kwargs
+        wallet = (
+            await async_client.post(
+                "/admin/wallet-multitenant" + "/create-wallet",
+                headers=DEFAULT_HEADERS,
+                data=json.dumps(wallet_payload),
+            )
+        ).json()
+
+        local_did = (
+            await async_client.get(
+                "/wallet/create-local-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+        public_did = (
+            await async_client.get(
+                "/wallet/create-pub-did",
+                headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            )
+        ).json()
+
+        yield AgentEntity(
+            headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
+            wallet_id=wallet["wallet_id"],
+            did=local_did["result"]["did"],
+&gt;           pub_did=public_did["did_object"]["did"],
+            verkey=local_did["result"]["verkey"],
+            token=wallet["token"],
         )
-        request = fixture_stripper.get_and_strip_from(
-            FixtureStripper.REQUEST, kwargs
-        )
+E       KeyError: 'did_object'
 
-        gen_obj = generator(*args, **kwargs)
-
-        async def setup():
-            res = await gen_obj.__anext__()
-            return res
-
-        def finalizer():
-            """Yield again, to finalize."""
-
-            async def async_finalizer():
-                try:
-                    await gen_obj.__anext__()
-                except StopAsyncIteration:
-                    pass
-                else:
-                    msg = "Async generator fixture didn't stop."
-                    msg += "Yield only once."
-                    raise ValueError(msg)
-
-            loop.run_until_complete(async_finalizer())
-
-        request.addfinalizer(finalizer)
-&gt;       return loop.run_until_complete(setup())
-
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
-    return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
-    res = await gen_obj.__anext__()
-app/tests/conftest.py:97: in async_client_bob_module_scope
-    async with agent_client(async_client, "bob") as client:
-app/tests/conftest.py:116: in agent_client
-    agent = await async_next(create_wallet(async_client, name))
-app/tests/test_dependencies.py:79: in async_next
-    async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31bf2e5880&gt;
-
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet
-
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_get_records" time="0.007"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_alice_module_scope' for &lt;Function test_get_records&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31be4a71f0&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31be4a78b0&gt;
-
-    def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(
-            FixtureStripper.EVENT_LOOP, kwargs
-        )
-        request = fixture_stripper.get_and_strip_from(
-            FixtureStripper.REQUEST, kwargs
-        )
-
-        gen_obj = generator(*args, **kwargs)
-
-        async def setup():
-            res = await gen_obj.__anext__()
-            return res
-
-        def finalizer():
-            """Yield again, to finalize."""
-
-            async def async_finalizer():
-                try:
-                    await gen_obj.__anext__()
-                except StopAsyncIteration:
-                    pass
-                else:
-                    msg = "Async generator fixture didn't stop."
-                    msg += "Yield only once."
-                    raise ValueError(msg)
-
-            loop.run_until_complete(async_finalizer())
-
-        request.addfinalizer(finalizer)
-&gt;       return loop.run_until_complete(setup())
-
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
-    return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
-    res = await gen_obj.__anext__()
-app/tests/conftest.py:110: in async_client_alice_module_scope
-    async with agent_client(async_client, "alice") as client:
-app/tests/conftest.py:116: in agent_client
-    agent = await async_next(create_wallet(async_client, name))
-app/tests/test_dependencies.py:79: in async_next
-    async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31be9a2940&gt;
-
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe
-
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_send_credential_request" time="0.001"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_bob_module_scope' for &lt;Function test_issue_credential&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31bf2e4d30&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31bf2e4dc0&gt;
-
-    def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(
-            FixtureStripper.EVENT_LOOP, kwargs
-        )
-        request = fixture_stripper.get_and_strip_from(
-            FixtureStripper.REQUEST, kwargs
-        )
-
-        gen_obj = generator(*args, **kwargs)
-
-        async def setup():
-            res = await gen_obj.__anext__()
-            return res
-
-        def finalizer():
-            """Yield again, to finalize."""
-
-            async def async_finalizer():
-                try:
-                    await gen_obj.__anext__()
-                except StopAsyncIteration:
-                    pass
-                else:
-                    msg = "Async generator fixture didn't stop."
-                    msg += "Yield only once."
-                    raise ValueError(msg)
-
-            loop.run_until_complete(async_finalizer())
-
-        request.addfinalizer(finalizer)
-&gt;       return loop.run_until_complete(setup())
-
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
-    return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
-    res = await gen_obj.__anext__()
-app/tests/conftest.py:97: in async_client_bob_module_scope
-    async with agent_client(async_client, "bob") as client:
-app/tests/conftest.py:116: in agent_client
-    agent = await async_next(create_wallet(async_client, name))
-app/tests/test_dependencies.py:79: in async_next
-    async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31bf2e5880&gt;
-
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet
-
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_store_credential" time="0.001"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_bob_module_scope' for &lt;Function test_issue_credential&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31bf2e4d30&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31bf2e4dc0&gt;
-
-    def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(
-            FixtureStripper.EVENT_LOOP, kwargs
-        )
-        request = fixture_stripper.get_and_strip_from(
-            FixtureStripper.REQUEST, kwargs
-        )
-
-        gen_obj = generator(*args, **kwargs)
-
-        async def setup():
-            res = await gen_obj.__anext__()
-            return res
-
-        def finalizer():
-            """Yield again, to finalize."""
-
-            async def async_finalizer():
-                try:
-                    await gen_obj.__anext__()
-                except StopAsyncIteration:
-                    pass
-                else:
-                    msg = "Async generator fixture didn't stop."
-                    msg += "Yield only once."
-                    raise ValueError(msg)
-
-            loop.run_until_complete(async_finalizer())
-
-        request.addfinalizer(finalizer)
-&gt;       return loop.run_until_complete(setup())
-
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
-    return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
-    res = await gen_obj.__anext__()
-app/tests/conftest.py:97: in async_client_bob_module_scope
-    async with agent_client(async_client, "bob") as client:
-app/tests/conftest.py:116: in agent_client
-    agent = await async_next(create_wallet(async_client, name))
-app/tests/test_dependencies.py:79: in async_next
-    async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31bf2e5880&gt;
-
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet
-
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_send_proposal" time="0.001"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_alice_module_scope' for &lt;Function test_get_records&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31be4a71f0&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31be4a78b0&gt;
-
-    def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(
-            FixtureStripper.EVENT_LOOP, kwargs
-        )
-        request = fixture_stripper.get_and_strip_from(
-            FixtureStripper.REQUEST, kwargs
-        )
-
-        gen_obj = generator(*args, **kwargs)
-
-        async def setup():
-            res = await gen_obj.__anext__()
-            return res
-
-        def finalizer():
-            """Yield again, to finalize."""
-
-            async def async_finalizer():
-                try:
-                    await gen_obj.__anext__()
-                except StopAsyncIteration:
-                    pass
-                else:
-                    msg = "Async generator fixture didn't stop."
-                    msg += "Yield only once."
-                    raise ValueError(msg)
-
-            loop.run_until_complete(async_finalizer())
-
-        request.addfinalizer(finalizer)
-&gt;       return loop.run_until_complete(setup())
-
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
-    return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
-    res = await gen_obj.__anext__()
-app/tests/conftest.py:110: in async_client_alice_module_scope
-    async with agent_client(async_client, "alice") as client:
-app/tests/conftest.py:116: in agent_client
-    agent = await async_next(create_wallet(async_client, name))
-app/tests/test_dependencies.py:79: in async_next
-    async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31be9a2940&gt;
-
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno 32] Broken pipe
-
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase><testcase classname="tests.test_issuer_v1" name="test_send_problem_report" time="0.002"><error message="failed on setup with &quot;aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet&quot;">args = (), kwargs = {}, request = &lt;SubRequest 'async_client_bob_module_scope' for &lt;Function test_issue_credential&gt;&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x7f31bf2e4d30&gt;
-finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x7f31bf2e4dc0&gt;
-
-    def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(
-            FixtureStripper.EVENT_LOOP, kwargs
-        )
-        request = fixture_stripper.get_and_strip_from(
-            FixtureStripper.REQUEST, kwargs
-        )
-
-        gen_obj = generator(*args, **kwargs)
-
-        async def setup():
-            res = await gen_obj.__anext__()
-            return res
-
-        def finalizer():
-            """Yield again, to finalize."""
-
-            async def async_finalizer():
-                try:
-                    await gen_obj.__anext__()
-                except StopAsyncIteration:
-                    pass
-                else:
-                    msg = "Async generator fixture didn't stop."
-                    msg += "Yield only once."
-                    raise ValueError(msg)
-
-            loop.run_until_complete(async_finalizer())
-
-        request.addfinalizer(finalizer)
-&gt;       return loop.run_until_complete(setup())
-
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-/usr/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
-    return future.result()
-../.venv-fastapi/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
-    res = await gen_obj.__anext__()
-app/tests/conftest.py:97: in async_client_bob_module_scope
-    async with agent_client(async_client, "bob") as client:
-app/tests/conftest.py:116: in agent_client
-    agent = await async_next(create_wallet(async_client, name))
-app/tests/test_dependencies.py:79: in async_next
-    async for item in param:
-app/tests/conftest.py:146: in create_wallet
-    await async_client.post(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1746: in post
-    return await self.request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1425: in request
-    response = await self.send(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1510: in send
-    response = await self._send_handling_auth(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
-    response = await self._send_handling_redirects(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
-    response = await self._send_single_request(request, timeout)
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
-    ) = await transport.handle_async_request(
-../.venv-fastapi/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
-    await super().__call__(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
-    await self.middleware_stack(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
-    await self.app(scope, receive, _send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
-    raise exc from None
-../.venv-fastapi/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
-    await self.app(scope, receive, sender)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
-    await route.handle(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:241: in handle
-    await self.app(scope, receive, send)
-../.venv-fastapi/lib/python3.8/site-packages/starlette/routing.py:52: in app
-    response = await func(request)
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:214: in app
-    raw_response = await run_endpoint_function(
-../.venv-fastapi/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
-    return await dependant.call(**values)
-app/admin/governance/multitenant_wallet/wallet_admin.py:327: in create_subwallet
-    wallet_response = await aries_controller.multitenant.create_subwallet(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/multitenant.py:21: in create_subwallet
-    return await self.admin_POST(f"{self.base_url}/wallet", json_data=request)
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:77: in admin_POST
-    response = await self.admin_request(
-../.venv-fastapi/lib/python3.8/site-packages/aries_cloudcontroller/controllers/base.py:40: in admin_request
-    async with self.client_session.request(
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:1117: in __aenter__
-    self._resp = await self._coro
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client.py:544: in _request
-    await resp.start(conn)
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/client_reqrep.py:890: in start
-    message, payload = await self._protocol.read()  # type: ignore
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;aiohttp.client_proto.ResponseHandler object at 0x7f31bf2e5880&gt;
-
-    async def read(self) -&gt; _T:
-        if not self._buffer and not self._eof:
-            assert not self._waiter
-            self._waiter = self._loop.create_future()
-            try:
-&gt;               await self._waiter
-E               aiohttp.client_exceptions.ClientOSError: [Errno None] Can not write request body for http://localhost:4021/multitenancy/wallet
-
-../.venv-fastapi/lib/python3.8/site-packages/aiohttp/streams.py:604: ClientOSError</error></testcase></testsuite></testsuites>
+app/tests/conftest.py:170: KeyError</error></testcase></testsuite></testsuites>

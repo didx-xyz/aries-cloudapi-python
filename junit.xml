@@ -1,1 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="42.468" timestamp="2021-08-10T14:21:48.630159" hostname="localhost"><testcase classname="tests.test_messaging" name="test_send_trust_ping" time="42.409" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="0" time="0.186" timestamp="2021-08-11T10:17:27.479150" hostname="localhost" /></testsuites>

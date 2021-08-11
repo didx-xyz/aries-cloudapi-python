@@ -5,7 +5,7 @@ from assertpy import assert_that
 
 import pytest
 from httpx import Response
-from generic.messaging import Message
+from generic.messaging import Message, TrustPingMsg
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 MESSAGE_PATH = "/generic/messaging"
@@ -21,7 +21,7 @@ def event_loop(request):
 
 @pytest.fixture(scope="module")
 @pytest.mark.asyncio
-async def create_bob_and_alice_connect(
+async def create_bob_and_alice_connection(
     async_client_bob_module_scope, async_client_alice_module_scope
 ):
     async_client_bob = async_client_bob_module_scope
@@ -82,18 +82,13 @@ async def create_bob_and_alice_connect(
 
 
 @pytest.fixture(scope="module")
-def bob_connection_id(create_bob_and_alice_connect):
-    return create_bob_and_alice_connect["bob_connection_id"]
+def alice_conn_id(create_bob_and_alice_connection):
+    return create_bob_and_alice_connection["alice_connection_id"]
 
 
-@pytest.fixture(scope="module")
-def alice_connection_id(create_bob_and_alice_connect):
-    return create_bob_and_alice_connect["alice_connection_id"]
-
-
-@pytest.mark.asyncio(scope="module")
-async def test_send_trust_ping(alice_connection_id, async_client_alice_module_scope):
-    message = Message(connection_id=alice_connection_id, msg="Donda").json()
+@pytest.mark.asyncio()
+async def test_send_trust_ping(alice_conn_id, async_client_alice_module_scope):
+    message = TrustPingMsg(connection_id=alice_conn_id, comment_msg="Donda").json()
     response = await async_client_alice_module_scope.post(
         MESSAGE_PATH + "/trust-ping", data=message
     )
@@ -101,3 +96,14 @@ async def test_send_trust_ping(alice_connection_id, async_client_alice_module_sc
     assert response.status_code == 200
     assert response.content != ""
     assert response.json()["thread_id"]
+
+
+@pytest.mark.asyncio()
+async def test_send_message(alice_conn_id, async_client_alice_module_scope):
+    message = Message(connection_id=alice_conn_id, msg="Donda").json()
+    response = await async_client_alice_module_scope.post(
+        MESSAGE_PATH + "/send-message", data=message
+    )
+    assert type(response) is Response
+    assert response.status_code == 200
+    assert response.json() == {}

@@ -112,7 +112,7 @@ services:
     build:
       context: https://github.com/bcgov/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 10; ./scripts/start_webserver.sh; sleep 10;'"
+    command: "bash -c 'sleep 10; ./scripts/start_webserver.sh;'"
     environment:
       - DOCKERHOST=${DOCKERHOST}
       - MAX_FETCH=50000
@@ -133,7 +133,7 @@ services:
     build:
       context: https://github.com/bcgov/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 10; ./scripts/start_nodes.sh; sleep 10;'"
+    command: "bash -c 'sleep 10; ./scripts/start_nodes.sh'"
     ports:
       - 9701:9701
       - 9702:9702

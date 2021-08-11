@@ -2,7 +2,6 @@ import logging
 from aries_cloudcontroller import AriesAgentControllerBase
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
-from typing import Optional
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)

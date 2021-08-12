@@ -101,11 +101,13 @@ async def remove_credential(
 
 @router.post("/problem-report")
 async def problem_report(
+    explanation: dict,
     credential_x_id: str,
-    explanation: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    return await aries_controller.issuer_v2.problem_report(credential_x_id, explanation)
+    return await aries_controller.issuer_v2.problem_report(
+        cred_ex_id=credential_x_id, explanation=explanation["description"]
+    )
 
 
 @router.post("/credential/offer")

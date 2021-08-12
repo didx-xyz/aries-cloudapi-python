@@ -320,7 +320,7 @@ async def test_send_problem_report(async_client_bob_module_scope):
     cred_store_res = (
         await async_client_bob_module_scope.post(
             BASE_PATH + f"/problem-report?credential_x_id={CRED_X_ID}",
-            data=json.dumps({"explanation": "Problem"}),
+            data=json.dumps({"description": "Problem"}),
         )
     ).json()
     # This is the best we can do for now until we turn auto respond off

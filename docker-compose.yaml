@@ -53,8 +53,8 @@ services:
       - ledger-browser
     networks:
       - yoma-ga
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
   yoma-multitenant-web:
     build:
       context: .

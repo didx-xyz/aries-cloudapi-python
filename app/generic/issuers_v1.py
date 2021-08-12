@@ -103,7 +103,7 @@ async def problem_report(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     return await aries_controller.issuer.send_problem_report(
-        credential_x_id, explanation=explanation["explanation"]
+        credential_x_id, explanation=explanation["description"]
     )
 
 

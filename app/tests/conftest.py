@@ -13,6 +13,7 @@ from dependencies import member_admin_agent, yoma_agent
 from httpx import AsyncClient
 from main import app
 from mockito import mock
+import os
 
 from tests.test_dependencies import async_next
 from tests.utils_test import get_random_string
@@ -23,13 +24,18 @@ DEFAULT_HEADERS = {
     "x-api-key": "adminApiKey",
 }
 
+if os.getenv("DOCKERHOST"):
+    LEDGER_URL = "http://ledger-browser:8000/register"
+else:
+    LEDGER_URL = "http://localhost:9000/register"
+
 
 @pytest.fixture
 def setup_env():
     utils.admin_url = "http://localhost"
     utils.admin_port = "3021"
     utils.is_multitenant = False
-    ledger_facade.LEDGER_URL = "http://localhost:9000/register"
+    ledger_facade.LEDGER_URL = LEDGER_URL
     ledger_facade.LEDGER_TYPE = "von"
 
 

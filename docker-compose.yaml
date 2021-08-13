@@ -15,6 +15,7 @@ services:
       - ledger-browser
     networks:
       - yoma-ga
+      - host
     env_file:
       - environments/yoma-ga/fastapi.default.env
   yoma-ga-wallets-db:
@@ -27,6 +28,7 @@ services:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - yoma-ga
+      - host
     tty: true
   ngrok-yoma-ga:
     image: wernight/ngrok
@@ -35,6 +37,7 @@ services:
     command: ngrok http yoma-ga-agent:3020 --log stdout
     networks:
       - yoma-ga
+      - host
     depends_on:
       - ledger-nodes
       - ledger-browser
@@ -53,6 +56,7 @@ services:
       - ledger-browser
     networks:
       - yoma-ga
+      - host
     extra_hosts:
       - "host.docker.internal:host-gateway"
   yoma-multitenant-web:
@@ -69,6 +73,7 @@ services:
       - ledger-browser
     networks:
       - yoma-multitenant
+      - host
     env_file:
       - environments/yoma-multitenant/fastapi.default.env
   yoma-multitenant-wallets-db:
@@ -81,6 +86,7 @@ services:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - yoma-multitenant
+      - host
     tty: true
   ngrok-yoma-multitenant:
     image: wernight/ngrok
@@ -89,6 +95,7 @@ services:
     command: ngrok http yoma-multitenant-agent:3020 --log stdout
     networks:
       - yoma-multitenant
+      - host
     depends_on:
       - ledger-nodes
       - ledger-browser
@@ -108,6 +115,7 @@ services:
     networks:
       - yoma-multitenant
       - yoma-ga
+      - host
   ledger-browser:
     build:
       context: https://github.com/didx-xyz/von-network.git
@@ -129,6 +137,7 @@ services:
     networks:
       - yoma-multitenant
       - yoma-ga
+      - host
     depends_on:
       - ledger-nodes
   ledger-nodes:
@@ -152,6 +161,7 @@ services:
     networks:
       - yoma-multitenant
       - yoma-ga
+      - host
   tails-server:
     build:
       context: https://github.com/bcgov/indy-tails-server.git
@@ -161,6 +171,7 @@ services:
     networks:
       - yoma-multitenant
       - yoma-ga
+      - host
     environment:
       - DOCKERHOST=${DOCKERHOST}
     command: >
@@ -178,3 +189,4 @@ volumes:
 networks:
   yoma-multitenant:
   yoma-ga:
+  host:

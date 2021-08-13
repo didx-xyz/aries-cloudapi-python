@@ -196,14 +196,13 @@ async def test_all(
         assert "credential exchange" in cred_send_response["error_message"]
 
     async def test_send_problem_report(async_client_alice=async_client_alice):
-        async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
         cred_store_res = (
             await async_client_alice.post(
-                ISSUER_PATH + "/problem-report",
-                data=json.dumps({"explanation": "Problem"}),
+                ISSUER_PATH + f"/problem-report?credential_x_id={CRED_X_ID}",
+                data=json.dumps({"description": "Problem"}),
             )
         ).json()
-        assert cred_store_res
+        assert cred_store_res == {}
 
     await test_send_credential()
     await test_send_credential_proposal()

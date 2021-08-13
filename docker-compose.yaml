@@ -53,8 +53,8 @@ services:
       - ledger-browser
     networks:
       - yoma-ga
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   yoma-multitenant-web:
     build:
       context: .
@@ -112,7 +112,7 @@ services:
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 10; ./scripts/start_webserver.sh;'"
+    command: "bash -c 'sleep 15; ./scripts/start_webserver.sh;'"
     environment:
       - DOCKERHOST=${DOCKERHOST}
       - MAX_FETCH=50000
@@ -133,7 +133,7 @@ services:
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 10; ./scripts/start_nodes.sh'"
+    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh'"
     ports:
       - 9701:9701
       - 9702:9702

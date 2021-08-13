@@ -29,8 +29,8 @@ jobs:
         docker ps -a -q
         docker volume ls -q
         ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 60 seconds
-        sleep 60
+        echo waiting for dockers to startup, sleeping for 120 seconds
+        sleep 120
         echo wait over, continuing
       shell: bash
     - name: Install test dependencies.

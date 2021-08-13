@@ -129,7 +129,7 @@ async def test_all(
         ).json()
         global CRED_X_ID
         CRED_X_ID = cred_send_res["cred_ex_id"]
-        if cred_send_res["conn_id"]:
+        if cred_send_res and "conn_id" in cred_send_res.keys():
             assert cred_send_res["conn_id"] == ALICE_CONNECTION_ID
         else:
             assert cred_send_res["connection_id"] == ALICE_CONNECTION_ID
@@ -150,7 +150,7 @@ async def test_all(
         ).json()
         time.sleep(10)
         assert cred_offer_res["auto_issue"]
-        if cred_offer_res["conn_id"]:
+        if cred_offer_res and "conn_id" in cred_offer_res.keys():
             assert cred_offer_res["conn_id"] == ALICE_CONNECTION_ID
         else:
             assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
@@ -180,10 +180,10 @@ async def test_all(
         ).json()
         assert prop_send_response["auto_issue"] == False
         assert prop_send_response["auto_remove"]
-        if prop_send_reponse["conn_id"]:
-            assert prop_send_reponse["conn_id"] == ALICE_CONNECTION_ID
+        if "conn_id" in prop_send_response.keys():
+            assert prop_send_response["conn_id"] == ALICE_CONNECTION_ID
         else:
-            assert prop_send_reponse["connection_id"] == ALICE_CONNECTION_ID
+            assert prop_send_response["connection_id"] == ALICE_CONNECTION_ID
 
     async def test_credential_request(async_client_alice=async_client_alice):
         headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})

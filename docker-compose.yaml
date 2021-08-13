@@ -124,6 +124,8 @@ services:
     volumes:
       - webserver-cli:/home/indy/.indy-cli
       - webserver-ledger:/home/indy/ledger
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
     networks:
       - yoma-multitenant
       - yoma-ga
@@ -159,6 +161,8 @@ services:
     networks:
       - yoma-multitenant
       - yoma-ga
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
     command: >
       tails-server
         --host 0.0.0.0

@@ -11,7 +11,7 @@ from facade import (
     issue_credentials,
     write_credential_def,
 )
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends
 from schemas import IssueCredentialResponse
 
 logger = logging.getLogger(__name__)

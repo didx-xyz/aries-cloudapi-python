@@ -234,7 +234,7 @@ start | up)
   configureEnvironment "$@"
   docker-compose\
   --log-level ERROR up \
-  --build --remove-orphans \
+  --build --remove-orphans --no-cache\
   -d ${_startupParams}
   ;;
 restart)

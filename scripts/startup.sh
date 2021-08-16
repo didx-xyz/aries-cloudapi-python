@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Sleep 15 hack to wait for von network nodes to start up
-sleep 15
+# Sleep 30 hack to wait for von network nodes to start up
+sleep 30
 
 aca-py start \
     -it http '0.0.0.0' "$HTTP_PORT" \

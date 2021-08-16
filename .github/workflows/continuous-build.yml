@@ -33,8 +33,8 @@ jobs:
       run: |
         chmod u+x manage
         ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 150 seconds
-        sleep 150
+        echo waiting for dockers to startup, sleeping for 120 seconds
+        sleep 120
         echo wait over, continuing
       shell: bash
     - name: Test with pytest

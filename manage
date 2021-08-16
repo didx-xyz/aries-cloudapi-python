@@ -54,7 +54,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="yoma-multitenant-wallets-db yoma-multitenant-agent
+DEFAULT_CONTAINERS="yoma-multitenant-wallets-db yoma-multitenant-agent tails-server ledger-nodes ledger-browser
                     yoma-ga-wallets-db yoma-ga-agent yoma-multitenant-web yoma-ga-web"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
@@ -232,9 +232,9 @@ start | up)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
-    docker-compose\
+  docker-compose\
   --log-level ERROR up \
-  --build --remove-orphans \
+  --build --remove-orphans --force-recreate\
   -d ${_startupParams}
   ;;
 restart)

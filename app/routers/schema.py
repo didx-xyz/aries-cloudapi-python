@@ -18,7 +18,7 @@ admin_url = os.getenv("ACAPY_ADMIN_URL")
 admin_port = os.getenv("ACAPY_ADMIN_PORT")
 admin_api_key = os.getenv("ACAPY_ADMIN_API_KEY")
 is_multitenant = strtobool(os.getenv("IS_MULTITENANT", "True"))
-ledger_url = os.getenv("LEDGER_NETWORK_URL")
+ledger_url = os.getenv("LEDGER_NETWORK_URL", "http://localhost:9000/register")
 
 
 @router.get("/all_schemas")

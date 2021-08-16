@@ -24,10 +24,7 @@ DEFAULT_HEADERS = {
     "x-api-key": "adminApiKey",
 }
 
-if os.getenv("DOCKERHOST"):
-    LEDGER_URL = "http://ledger-browser:8000/register"
-else:
-    LEDGER_URL = "http://localhost:9000/register"
+LEDGER_URL = "http://localhost:9000/register"
 
 
 @pytest.fixture

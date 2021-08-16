@@ -26,11 +26,9 @@ jobs:
     - name: Start Test Harness
       run: |
         chmod u+x manage
-        docker ps -a -q
-        docker volume ls -q
         ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 120 seconds
-        sleep 120
+        echo waiting for dockers to startup, sleeping for 180 seconds
+        sleep 180
         echo wait over, continuing
       shell: bash
     - name: Install test dependencies.

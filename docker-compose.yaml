@@ -120,7 +120,7 @@ services:
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 15; ./scripts/start_webserver.sh;'"
+    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh;'"
     environment:
       - DOCKERHOST=${DOCKERHOST}
       - MAX_FETCH=50000

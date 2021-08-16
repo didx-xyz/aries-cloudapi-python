@@ -13,7 +13,6 @@ from dependencies import member_admin_agent, yoma_agent
 from httpx import AsyncClient
 from main import app
 from mockito import mock
-import os
 
 from tests.test_dependencies import async_next
 from tests.utils_test import get_random_string

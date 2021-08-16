@@ -17,6 +17,14 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Install test dependencies.
+      run: |
+        cd app
+        python -m pip install --upgrade pip
+        pip install pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Install docker-compose with pip
+      run: sudo pip install docker-compose
     - name: Set up Python 3.8.10
       uses: actions/setup-python@v2
       with:
@@ -24,19 +32,11 @@ jobs:
     - name: Start Test Harness
       run: |
         chmod u+x manage
-        docker ps -a -q
-        docker volume ls -q
         ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 60 seconds
-        sleep 60
+        echo waiting for dockers to startup, sleeping for 150 seconds
+        sleep 150
         echo wait over, continuing
       shell: bash
-    - name: Install test dependencies.
-      run: |
-        cd app
-        python -m pip install --upgrade pip
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Test with pytest
       run: |
         cd app

@@ -23,13 +23,15 @@ DEFAULT_HEADERS = {
     "x-api-key": "adminApiKey",
 }
 
+LEDGER_URL = "http://localhost:9000/register"
+
 
 @pytest.fixture
 def setup_env():
     utils.admin_url = "http://localhost"
     utils.admin_port = "3021"
     utils.is_multitenant = False
-    ledger_facade.LEDGER_URL = "http://testnet.didx.xyz/register"
+    ledger_facade.LEDGER_URL = LEDGER_URL
     ledger_facade.LEDGER_TYPE = "von"
 
 

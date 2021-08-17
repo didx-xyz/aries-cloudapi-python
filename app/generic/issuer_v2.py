@@ -69,14 +69,14 @@ async def send_credential(
     credential: Credential,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    cred_def_id, credential_attribute = await _credential_details(
+    cred_def_id, credential_attributes = await _credential_details(
         credential, aries_controller
     )
     return await aries_controller.issuer_v2.send_credential(
         credential.connection_id,
         credential.schema_id,
         cred_def_id,
-        credential_attribute,
+        credential_attributes,
         auto_remove=False,
     )
 
@@ -101,11 +101,13 @@ async def remove_credential(
 
 @router.post("/problem-report")
 async def problem_report(
+    explanation: dict,
     credential_x_id: str,
-    explanation: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-    return await aries_controller.issuer_v2.problem_report(credential_x_id, explanation)
+    return await aries_controller.issuer_v2.problem_report(
+        cred_ex_id=credential_x_id, explanation=explanation["description"]
+    )
 
 
 @router.post("/credential/offer")

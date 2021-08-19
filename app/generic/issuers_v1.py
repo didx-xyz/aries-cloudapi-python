@@ -40,6 +40,19 @@ class CredentialOffer(BaseModel):
 
 
 async def _credential_details(credential_helper, aries_controller):
+    """
+    Helper methond that returns the credential definition id and credential attributes
+
+    Parameters:
+    -----------
+    credential_helper: CredentialHelper
+        payload for sending a credential helper
+
+    Returns:
+    ---------
+    cred_def_id: credential definition id
+    credential attributes: credential attributes
+    """
     schema_attr = await get_schema_attributes(
         aries_controller, credential_helper.schema_id
     )
@@ -60,6 +73,18 @@ async def issue_credential(
     credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Issue credential.
+
+    Parameters:
+    -----------
+    credential_helper: CredentialHelper
+        payload for sending a credential helper
+
+    Returns:
+    --------
+    The response object from issuing a credential
+    """
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
@@ -77,6 +102,9 @@ async def issue_credential(
 async def get_records(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Get list of records.
+    """
     return await aries_controller.issuer.get_records()
 
 
@@ -85,6 +113,15 @@ async def get_x_record(
     credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Get record by id.
+
+    Parameters:
+    -----------
+    credential_x_id: str
+        credential exchange id
+
+    """
     return await aries_controller.issuer.get_record_by_id(credential_x_id)
 
 
@@ -93,6 +130,18 @@ async def remove_credential(
     credential_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Remove credential.
+
+    Parameters:
+    -----------
+    credential_id: str
+        credential identifier
+
+    Returns:
+    The response object from removing a credential.
+
+    """
     return await aries_controller.credentials.remove_credential(credential_id)
 
 
@@ -104,12 +153,12 @@ async def problem_report(
 ):
 
     """
-    Create problem report for record
+    Create problem report for record.
 
     Parameters:
     -----------
-    explanation:dict
-    credential_x_id:str
+    explanation: dict
+    credential_x_id: str
         credential exchange id
     """
     return await aries_controller.issuer.send_problem_report(
@@ -130,7 +179,8 @@ async def send_offer(
     credential_helper: CredentialHelper
         payload for sending a credential helper
 
-    Response:
+    Returns:
+    --------
         The response object obtained from sending a credential offer.
     """
     cred_def_id, credential_attributes = await _credential_details(
@@ -154,7 +204,7 @@ async def send_credential_request(
     credential_x_id: str
         credential exchanged id
 
-    Response:
+    Returns:
     ---------
         The response object obtained from a credential  request.
     """
@@ -172,9 +222,9 @@ async def store_credential(
 
     Parameters:
     -----------
-    credential_x_id:str
+    credential_x_id: str
         credential exchange id
-    credential_id:str
+    credential_id: str
         credential identifier
 
     """
@@ -196,7 +246,7 @@ async def send_credential_proposal(
     credential_helper: CredentialHelper
         payload for sending a credential helper
 
-    Response:
+    Returns:
     ----------
         The response object from sending a credential proposal.
     """

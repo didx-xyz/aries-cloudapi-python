@@ -201,12 +201,12 @@ async def send_credential_request(
 
     Parameters:
     -----------
-    credential_x_id: str
-        credential exchanged id
+    credential_helper: CredentialHelper
+        payload for sending a credential helper
 
     Returns:
-    ---------
-        The response object obtained from a credential  request.
+    --------
+        The response object obtained from sending a credential offer.
     """
     return await aries_controller.issuer.send_request_for_record(credential_x_id)
 

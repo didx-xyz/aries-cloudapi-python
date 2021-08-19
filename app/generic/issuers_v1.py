@@ -102,6 +102,16 @@ async def problem_report(
     credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+
+    """
+    Create problem report for record
+
+    Parameters:
+    -----------
+    explanation:dict
+    credential_x_id:str
+        credential exchange id
+    """
     return await aries_controller.issuer.send_problem_report(
         credential_x_id, explanation=explanation["description"]
     )
@@ -112,6 +122,17 @@ async def send_offer(
     credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Send credential offer.
+
+    Parameters:
+    -----------
+    credential_helper: CredentialHelper
+        payload for sending a credential helper
+
+    Response:
+        The response object obtained from sending a credential offer.
+    """
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
@@ -125,6 +146,18 @@ async def send_credential_request(
     credential_x_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Send credential request.
+
+    Parameters:
+    -----------
+    credential_x_id: str
+        credential exchanged id
+
+    Response:
+    ---------
+        The response object obtained from a credential  request.
+    """
     return await aries_controller.issuer.send_request_for_record(credential_x_id)
 
 
@@ -134,6 +167,17 @@ async def store_credential(
     credential_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Store credential.
+
+    Parameters:
+    -----------
+    credential_x_id:str
+        credential exchange id
+    credential_id:str
+        credential identifier
+
+    """
     return await aries_controller.issuer.store_credential(
         credential_x_id, credential_id
     )
@@ -144,6 +188,18 @@ async def send_credential_proposal(
     credential_helper: CredentialHelper,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Send credential proposal.
+
+    Parameters:
+    -----------
+    credential_helper: CredentialHelper
+        payload for sending a credential helper
+
+    Response:
+    ----------
+        The response object from sending a credential proposal.
+    """
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )

@@ -94,6 +94,7 @@ async def send_credential(
         payload for sending a credential
 
     Returns:
+    --------
     The response object from sending a credential
     """
     cred_def_id, credential_attributes = await _credential_details(
@@ -138,6 +139,7 @@ async def remove_credential(
         credential identifier
 
     Returns:
+    --------
     The response object from removing a credential.
 
     """

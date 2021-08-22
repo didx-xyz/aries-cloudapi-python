@@ -3,18 +3,18 @@ from distutils.util import strtobool
 import os
 import io
 import yaml
+import logging
 
 from fastapi import FastAPI, Response, Request
 from fastapi.responses import JSONResponse
 
 from admin.governance import credential_definitions, dids, schemas
-from fastapi import FastAPI
 from generic import connections, issuers_v1, issuer_v2, messaging
 from routers import issuer, verifier
 from admin.governance.multitenant_wallet import wallet_admin
 from generic.wallet import wallets
 
-
+logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
 app = FastAPI(debug=not prod)
 

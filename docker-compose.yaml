@@ -76,6 +76,19 @@ services:
       - host
     env_file:
       - environments/yoma-multitenant/fastapi.default.env
+  yoma-webhooks-web:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/webhooks/Dockerfile
+    ports:
+      - "3010:3010"
+    volumes:
+      - ./webhooks:/webhooks
+    networks:
+      - yoma-multitenant
+      - yoma-ga
+    env_file:
+      - environments/webhooks/fastapi.webhooks.env
   yoma-multitenant-wallets-db:
     image: postgres:11
     container_name: yoma-multitenant-wallets-db

@@ -74,11 +74,11 @@ async def create_schema(
     Parameters:
     ------------
     schema_definition: SchemaDefinition
-        payload for creating a schema
+        Payload for creating a schema.
 
     Returns:
     --------
-        The response object from creating a schema.
+    The response object from creating a schema.
 
     """
     schema_definition = await aries_controller.schema.write_schema(

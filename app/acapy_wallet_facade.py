@@ -1,12 +1,12 @@
 import logging
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
 
-async def create_did(controller: AriesAgentControllerBase):
+async def create_did(controller: AcaPyClient):
     """
     Creates a DID against the ledger using an AriesController
 
@@ -30,7 +30,7 @@ async def create_did(controller: AriesAgentControllerBase):
     return generate_did_res
 
 
-async def assign_pub_did(controller: AriesAgentControllerBase, did: str):
+async def assign_pub_did(controller: AcaPyClient, did: str):
     """
     Assigns a publich did
 
@@ -57,7 +57,7 @@ async def assign_pub_did(controller: AriesAgentControllerBase, did: str):
     return assign_pub_did_response
 
 
-async def get_pub_did(controller: AriesAgentControllerBase):
+async def get_pub_did(controller: AcaPyClient):
     """
     Obtains the public DID
 

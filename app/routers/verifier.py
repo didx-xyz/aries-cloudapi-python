@@ -3,7 +3,7 @@ import time
 import traceback
 from typing import List
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from dependencies import *
 from facade import get_schema_attributes, send_proof_request, verify_proof_req
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -27,7 +27,7 @@ async def get_proof_request(
     self_attested: List[str] = None,
     revocation: int = None,
     exchange_tracing: bool = False,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Request proof of a (sub) set of attributes against a schema by ID.
@@ -111,7 +111,7 @@ async def get_proof_request(
 @router.get("/verify-proof-request")
 async def verify_proof_request(
     presentation_exchange_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_agent),
+    aries_controller: AcaPyClient = Depends(member_agent),
 ):
     """
     Verify a proof request against the ledger

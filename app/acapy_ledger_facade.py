@@ -2,14 +2,14 @@ import logging
 
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 from schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 
 
-async def get_taa(controller: AriesAgentControllerBase):
+async def get_taa(controller: AcaPyClient):
     """
     Obtains the TAA from the ledger
 
@@ -36,7 +36,7 @@ async def get_taa(controller: AriesAgentControllerBase):
     return taa
 
 
-async def accept_taa(controller: AriesAgentControllerBase, taa):
+async def accept_taa(controller: AcaPyClient, taa):
     """
     Accept the TAA
 
@@ -63,7 +63,7 @@ async def accept_taa(controller: AriesAgentControllerBase, taa):
     return accept_taa_response
 
 
-async def get_did_endpoint(controller: AriesAgentControllerBase, issuer_nym):
+async def get_did_endpoint(controller: AcaPyClient, issuer_nym):
     """
     Obtains the public DID endpoint
 
@@ -91,7 +91,7 @@ async def get_did_endpoint(controller: AriesAgentControllerBase, issuer_nym):
 
 
 async def create_pub_did(
-    aries_controller: AriesAgentControllerBase = None,
+    aries_controller: AcaPyClient = None,
 ) -> DidCreationResponse:
     """
     Create a new public DID and

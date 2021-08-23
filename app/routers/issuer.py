@@ -4,7 +4,7 @@ import traceback
 from typing import List
 
 import qrcode
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from dependencies import *
 from facade import (
     get_connection_id,
@@ -29,7 +29,7 @@ async def issue_credential(
     schema_id: str,
     connection_id: str,
     credential_attrs: List[str] = Query(None),
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Issues a credential
@@ -99,7 +99,7 @@ async def issue_credential(
     },
 )
 async def create_connection(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Creates invitation for the holder to scan
@@ -143,7 +143,7 @@ async def create_connection(
     response_model=ConnectionIdResponse,
 )
 async def get_connection_ids(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Creates invitation for the holder to scan

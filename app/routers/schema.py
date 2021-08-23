@@ -4,7 +4,7 @@ import traceback
 from distutils.util import strtobool
 from typing import List
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from dependencies import *
 from facade import get_schema_list, write_credential_def, write_schema_definition
 from fastapi import APIRouter, Depends, Query
@@ -23,7 +23,7 @@ ledger_url = os.getenv("LEDGER_NETWORK_URL")
 
 @router.get("/all_schemas")
 async def get_schema(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Get all valid schemas from YOMA
@@ -65,7 +65,7 @@ async def write_credential_schema(
     schema_name: str,
     schema_version: str,
     schema_attrs: List[str] = Query(None),
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Create schema and credential definition and

@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -18,7 +18,7 @@ class SchemaDefinition(BaseModel):
 @router.get("/{schema_id}")
 async def get_schema(
     schema_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     return await aries_controller.schema.get_by_id(schema_id=schema_id)
 
@@ -29,7 +29,7 @@ async def get_schemas(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     return await aries_controller.schema.get_created_schema(
         schema_id=schema_id,
@@ -42,7 +42,7 @@ async def get_schemas(
 @router.post("/")
 async def create_schema(
     schema_definition: SchemaDefinition,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     schema_definition = await aries_controller.schema.write_schema(
         schema_definition.name, schema_definition.attributes, schema_definition.version

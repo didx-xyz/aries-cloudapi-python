@@ -1,6 +1,6 @@
 import pytest
 from acapy_wallet_facade import assign_pub_did, create_did, get_pub_did
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.controllers.wallet import WalletController
 from fastapi import HTTPException
 from mockito import mock, when
@@ -13,7 +13,7 @@ async def get():
 
 @pytest.fixture
 def mock_agent_controller():
-    controller = mock(AriesAgentControllerBase)
+    controller = mock(AcaPyClient)
     controller.wallet = mock(WalletController)
     return controller
 

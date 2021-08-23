@@ -1,10 +1,10 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
 COPY app /app
 
 WORKDIR /app
 
-RUN cd /app && pip install -r requirements.txt
+RUN cd /app && pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ -r requirements.txt
 
 EXPOSE 8000
 

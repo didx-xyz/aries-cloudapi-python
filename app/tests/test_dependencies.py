@@ -4,7 +4,7 @@ import dependencies
 import pytest
 from aries_cloudcontroller import (
     AriesAgentController,
-    AriesAgentControllerBase,
+    AcaPyClient,
     AriesTenantController,
 )
 from assertpy import assert_that
@@ -168,7 +168,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
 
     @router.get("/admin")
     async def call_admin(
-        aries_controller: AriesAgentControllerBase = Depends(
+        aries_controller: AcaPyClient = Depends(
             dependencies.admin_agent_selector
         ),
     ):
@@ -177,7 +177,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
 
     @router.get("/")
     async def call(
-        aries_controller: AriesAgentControllerBase = Depends(
+        aries_controller: AcaPyClient = Depends(
             dependencies.agent_selector
         ),
     ):

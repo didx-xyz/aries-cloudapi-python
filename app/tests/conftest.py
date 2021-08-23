@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import ledger_facade
 import pytest
 import utils
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.controllers.ledger import LedgerController
 from aries_cloudcontroller.controllers.wallet import WalletController
 from dependencies import member_admin_agent, yoma_agent
@@ -23,7 +23,7 @@ def setup_env():
 
 @pytest.fixture
 def mock_agent_controller():
-    controller = mock(AriesAgentControllerBase)
+    controller = mock(AcaPyClient)
     controller.wallet = mock(WalletController)
     controller.ledger = mock(LedgerController)
     return controller

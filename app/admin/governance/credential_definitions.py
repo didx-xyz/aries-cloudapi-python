@@ -1,6 +1,6 @@
 from typing import Optional
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -20,7 +20,7 @@ class CredentialDefinition(BaseModel):
 @router.post("/")
 async def create_credential_definition(
     credential_definition: CredentialDefinition,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     credential_definition_result = await aries_controller.definitions.write_cred_def(
         **credential_definition.dict()
@@ -36,7 +36,7 @@ async def get_created_credential_definitions(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     return await aries_controller.definitions.search_created(
         issuer_did=issuer_did,
@@ -51,6 +51,6 @@ async def get_created_credential_definitions(
 @router.get("/{cred_def_id}")
 async def get_credential_definition(
     cred_def_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     return await aries_controller.definitions.get_by_id(cred_def_id)

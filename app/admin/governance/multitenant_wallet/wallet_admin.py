@@ -7,9 +7,9 @@ from datetime import datetime
 from typing import Optional, Dict, List
 
 import logging
+from aries_cloudcontroller import AcaPyClient
 from pydantic import BaseModel
 
-from aries_cloudcontroller import AriesAgentControllerBase
 from dependencies import member_admin_agent, admin_agent_selector
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -296,7 +296,7 @@ class UpdateWalletRequest(BaseModel):
 @router.post("/create-wallet", response_model=CreateWalletResponse)
 async def create_subwallet(
     wallet_payload: CreateWalletRequest,
-    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
+    aries_controller: AcaPyClient = Depends(admin_agent_selector),
 ) -> CreateWalletResponse:
     """
     Create a new wallet
@@ -334,7 +334,7 @@ async def create_subwallet(
 @router.delete("/{wallet_id}")
 async def remove_subwallet_by_id(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
+    aries_controller: AcaPyClient = Depends(admin_agent_selector),
 ):
     try:
         response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
@@ -350,7 +350,7 @@ async def remove_subwallet_by_id(
 @router.get("/{wallet_id}/auth-token", response_model=CreateWalletTokenResponse)
 async def get_subwallet_auth_token(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
+    aries_controller: AcaPyClient = Depends(admin_agent_selector),
 ):
     return await aries_controller.multitenant.get_subwallet_authtoken_by_id(
         wallet_id=wallet_id
@@ -361,7 +361,7 @@ async def get_subwallet_auth_token(
 async def update_subwallet(
     payload: UpdateWalletRequest,
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AcaPyClient = Depends(member_admin_agent),
 ) -> WalletRecord:
     return await aries_controller.multitenant.update_subwallet_by_id(
         json.loads(
@@ -374,7 +374,7 @@ async def update_subwallet(
 @router.get("/query-subwallet", response_model=WalletList)
 async def query_subwallet(
     wallet_name: str = None,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AcaPyClient = Depends(member_admin_agent),
 ) -> WalletList:
     return await aries_controller.multitenant.query_subwallets(wallet_name=wallet_name)
 
@@ -382,6 +382,6 @@ async def query_subwallet(
 @router.get("/{wallet_id}", response_model=WalletRecord)
 async def get_subwallet(
     wallet_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
+    aries_controller: AcaPyClient = Depends(member_admin_agent),
 ) -> WalletRecord:
     return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)

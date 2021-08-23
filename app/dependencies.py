@@ -3,7 +3,7 @@ import os
 import re
 from contextlib import asynccontextmanager
 
-from aries_cloudcontroller import AriesAgentController, AriesTenantController
+from aries_cloudcontroller import AcaPyClient
 from fastapi import Header, HTTPException
 
 logger = logging.getLogger(__name__)
@@ -22,10 +22,9 @@ async def yoma_agent(x_api_key: str = Header(None)):
     try:
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
-        agent = AriesAgentController(
-            admin_url=YOMA_AGENT_URL,
-            api_key=x_api_key,
-            is_multitenant=False,
+        agent = AcaPyClient(
+            YOMA_AGENT_URL,
+            api_key=x_api_key
         )
         yield agent
     except Exception as e:
@@ -35,7 +34,7 @@ async def yoma_agent(x_api_key: str = Header(None)):
         raise e
     finally:
         if agent:
-            await agent.terminate()
+            await agent.close()
 
 
 async def agent_selector(
@@ -97,11 +96,12 @@ async def ecosystem_agent(
         tenant_jwt = _extract_jwt_token_from_security_header(authorization)
 
         # yield the controller
-        agent = AriesTenantController(
-            admin_url=ECOSYSTEM_AGENT_URL,
+        agent = AcaPyClient(
+            ECOSYSTEM_AGENT_URL,
             api_key=EMBEDDED_API_KEY,
             tenant_jwt=tenant_jwt,
-            wallet_id=x_wallet_id,
+            # TODO: where is the wallet id used (webhooks?)
+            # wallet_id=x_wallet_id,
         )
         yield agent
     except Exception as e:
@@ -111,7 +111,7 @@ async def ecosystem_agent(
         raise e
     finally:
         if agent:
-            await agent.terminate()
+            await agent.close()
 
 
 async def member_agent(
@@ -123,11 +123,12 @@ async def member_agent(
         if str(authorization) == "extra={}":
             raise HTTPException(401)
         tenant_jwt = _extract_jwt_token_from_security_header(authorization)
-        agent = AriesTenantController(
-            admin_url=MEMBER_AGENT_URL,
+        agent = AcaPyClient(
+            MEMBER_AGENT_URL,
             api_key=EMBEDDED_API_KEY,
             tenant_jwt=tenant_jwt,
-            wallet_id=x_wallet_id,
+            # TODO: where is the wallet id used (webhooks?)
+            # wallet_id=x_wallet_id,
         )
         yield agent
     except Exception as e:
@@ -137,7 +138,7 @@ async def member_agent(
         raise e
     finally:
         if agent:
-            await agent.terminate()
+            await agent.close()
 
 
 async def member_admin_agent(
@@ -147,8 +148,9 @@ async def member_admin_agent(
     try:
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
-        agent = AriesAgentController(
-            admin_url=MEMBER_AGENT_URL, api_key=x_api_key, is_multitenant=True
+        agent = AcaPyClient(
+            MEMBER_AGENT_URL,
+            api_key=x_api_key
         )
         yield agent
     except Exception as e:
@@ -158,7 +160,7 @@ async def member_admin_agent(
         raise e
     finally:
         if agent:
-            await agent.terminate()
+            await agent.close()
 
 
 async def ecosystem_admin_agent(
@@ -168,8 +170,8 @@ async def ecosystem_admin_agent(
     try:
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
-        agent = AriesAgentController(
-            admin_url=ECOSYSTEM_AGENT_URL, api_key=x_api_key, is_multitenant=True
+        agent = AcaPyClient(
+            admin_url=ECOSYSTEM_AGENT_URL, api_key=x_api_key
         )
         yield agent
     except Exception as e:
@@ -179,7 +181,7 @@ async def ecosystem_admin_agent(
         raise e
     finally:
         if agent:
-            await agent.terminate()
+            await agent.close()
 
 
 def _extract_jwt_token_from_security_header(jwt_token):

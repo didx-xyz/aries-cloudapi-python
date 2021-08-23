@@ -1,1 +1,3 @@
 fastapi
+aioredis
+dependency_injector

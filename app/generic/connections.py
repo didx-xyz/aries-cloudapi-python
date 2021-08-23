@@ -14,6 +14,9 @@ router = APIRouter(prefix="/generic/connections", tags=["connections"])
 async def create_invite(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Create connection invite.
+    """
     invite = await aries_controller.connections.create_invitation()
     return invite
 
@@ -23,6 +26,9 @@ async def accept_invite(
     invite: dict,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Accept connection invite.
+    """
     accept_invite_res = await aries_controller.connections.receive_invitation(invite)
     return accept_invite_res
 
@@ -31,6 +37,9 @@ async def accept_invite(
 async def get_connections(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Retrieve list of connections.
+    """
     connections = await aries_controller.connections.get_connections()
     return connections
 
@@ -40,6 +49,14 @@ async def get_connection_by_id(
     connection_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Retrieve connection by id.
+
+    Parameters:
+    -----------
+    connection_id: str
+        connection id
+    """
     connection = await aries_controller.connections.get_connection(connection_id)
     return connection
 
@@ -49,5 +66,12 @@ async def delete_connection_by_id(
     connection_id: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
+    """
+    Delete connection by id.
+
+    Parameters:
+    -----------
+    connection_id: str
+    """
     remove_res = await aries_controller.connections.remove_connection(connection_id)
     return remove_res

@@ -336,6 +336,9 @@ async def remove_subwallet_by_id(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(admin_agent_selector),
 ):
+    """
+    Remove subwallet by id.
+    """
     try:
         response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
         if response == {}:
@@ -363,6 +366,20 @@ async def update_subwallet(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ) -> WalletRecord:
+    """
+    Update subwallet by id.
+
+    Parameters:
+    -----------
+    payload: UpdateWalletRequest
+      payload for updating a subwallet
+    wallet_id: str
+      wallet id
+
+    Returns:
+    ---------
+    The response object from updating a subwallet.
+    """
     return await aries_controller.multitenant.update_subwallet_by_id(
         json.loads(
             payload.json(exclude_unset=True, exclude_defaults=True, exclude_none=True)
@@ -376,6 +393,15 @@ async def query_subwallet(
     wallet_name: str = None,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ) -> WalletList:
+
+    """
+    Query subwallets.
+
+    Parameters:
+    -----------
+    wallet_name: str (Optional)
+
+    """
     return await aries_controller.multitenant.query_subwallets(wallet_name=wallet_name)
 
 
@@ -384,4 +410,11 @@ async def get_subwallet(
     wallet_id: str,
     aries_controller: AriesAgentControllerBase = Depends(member_admin_agent),
 ) -> WalletRecord:
+    """
+    Retrieve subwallet by id.
+
+    Parameters:
+    -------------
+    wallet_id: str
+    """
     return await aries_controller.multitenant.get_single_subwallet_by_id(wallet_id)

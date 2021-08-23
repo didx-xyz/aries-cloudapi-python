@@ -177,7 +177,7 @@ async def send_offer(
     Parameters:
     -----------
     credential_helper: CredentialHelper
-        payload for sending a credential helper
+        payload for sending a credential offer
 
     Returns:
     --------
@@ -202,7 +202,7 @@ async def send_credential_request(
     Parameters:
     -----------
     credential_helper: CredentialHelper
-        payload for sending a credential helper
+        payload for sending a credential request
 
     Returns:
     --------
@@ -244,7 +244,7 @@ async def send_credential_proposal(
     Parameters:
     -----------
     credential_helper: CredentialHelper
-        payload for sending a credential helper
+        payload for sending a credential proposal
 
     Returns:
     ----------

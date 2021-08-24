@@ -44,6 +44,10 @@ async def get_connections(
 ):
     """
     Retrieve list of connections.
+
+    Returns:
+    ---------
+    JSON object with “connections” (key), a list of connections (ids)
     """
     connections = await aries_controller.connections.get_connections()
     return connections
@@ -60,6 +64,7 @@ async def get_connection_by_id(
     Parameters:
     -----------
     connection_id: str
+
     """
     connection = await aries_controller.connections.get_connection(connection_id)
     return connection
@@ -76,6 +81,10 @@ async def delete_connection_by_id(
     Parameters:
     -----------
     connection_id: str
+
+    Returns:
+    ------------
+    Empty dict: {}
     """
     remove_res = await aries_controller.connections.remove_connection(connection_id)
     return remove_res

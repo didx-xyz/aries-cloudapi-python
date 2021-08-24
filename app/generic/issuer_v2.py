@@ -6,7 +6,7 @@ from facade import (
     write_credential_def,
     get_cred_def_id,
 )
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Header
 from pydantic import BaseModel
 from typing import List, Optional
@@ -72,7 +72,7 @@ async def _credential_details(credential_helper, aries_controller):
 @router.get("/records")
 async def get_records(
     connection_id: Optional[str] = Header(None),
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Get list of records.
@@ -87,7 +87,7 @@ async def get_records(
 @router.post("/credential")
 async def send_credential(
     credential: Credential,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create and send credential.
@@ -116,7 +116,7 @@ async def send_credential(
 @router.get("/credential")
 async def get_credential(
     credential_id=Header(...),
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Get credential by credential id.
@@ -133,7 +133,7 @@ async def get_credential(
 @router.delete("/credential")
 async def remove_credential(
     credential_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Remove credential.
@@ -156,7 +156,7 @@ async def remove_credential(
 async def problem_report(
     explanation: dict,
     credential_x_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create problem report for record.
@@ -175,7 +175,7 @@ async def problem_report(
 @router.post("/credential/offer")
 async def send_offer(
     credential_offer: CredentialOffer,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send credential offer.
@@ -202,7 +202,7 @@ async def send_offer(
 @router.post("/credential/request")
 async def credential_request(
     credential_x_id=Header(...),
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send credential request.
@@ -223,7 +223,7 @@ async def credential_request(
 async def store_credential(
     credential_x_id: str,
     credential_id: str = None,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Store credential.
@@ -244,7 +244,7 @@ async def store_credential(
 @router.post("/credential/proposal")
 async def send_credential_proposal(
     credential: Proposal,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send credential proposal.

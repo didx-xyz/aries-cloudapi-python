@@ -1,5 +1,5 @@
 import logging
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -22,7 +22,7 @@ class TrustPingMsg(BaseModel):
 @router.post("/send-message")
 async def send_messages(
     message: Message,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send basic message.
@@ -45,7 +45,7 @@ async def send_messages(
 @router.post("/trust-ping")
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Trust ping

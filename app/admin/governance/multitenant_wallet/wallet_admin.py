@@ -338,6 +338,9 @@ async def remove_subwallet_by_id(
 ):
     """
     Remove subwallet by id.
+
+    Parameters:
+    wallet_id: str
     """
     try:
         response = await aries_controller.multitenant.remove_subwallet_by_id(wallet_id)
@@ -374,7 +377,6 @@ async def update_subwallet(
     payload: UpdateWalletRequest
       payload for updating a subwallet
     wallet_id: str
-      wallet id
 
     Returns:
     ---------

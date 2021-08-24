@@ -28,6 +28,11 @@ async def accept_invite(
 ):
     """
     Accept connection invite.
+
+    Parameters:
+    ------------
+    invite: dict
+        the invitation object obtained from create_invite.
     """
     accept_invite_res = await aries_controller.connections.receive_invitation(invite)
     return accept_invite_res
@@ -55,7 +60,6 @@ async def get_connection_by_id(
     Parameters:
     -----------
     connection_id: str
-        connection id
     """
     connection = await aries_controller.connections.get_connection(connection_id)
     return connection

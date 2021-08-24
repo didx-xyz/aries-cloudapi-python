@@ -76,6 +76,10 @@ async def get_records(
 ):
     """
     Get list of records.
+
+    Parameters:
+    ------------
+    connection_id: str (Optional)
     """
     return await aries_controller.issuer_v2.get_records(connection_id=connection_id)
 
@@ -115,7 +119,8 @@ async def get_credential(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
-    Get credential by credential id
+    Get credential by credential id.
+
     Parameters:
     -----------
     credential_id: str

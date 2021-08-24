@@ -46,13 +46,9 @@ async def get_schemas(
     Parameters:
     -----------
     schema_id: str (Optional)
-        schema id
     schema_issuer_did: str (Optional)
-        schema issuer did
     schema_name: str (Optional)
-        schema name
     schema_version: str (Optional)]
-        schema version
 
     """
     return await aries_controller.schema.get_created_schema(

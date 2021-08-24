@@ -56,15 +56,11 @@ async def get_created_credential_definitions(
     Parameters:
     -----------
     issuer_did: str (Optional)
-        issuer did
     cred_def_id: str (Optional)
         credential definition id
     schema_id: str (Optional)
-        schema id
     schema_issuer_id: str (Optional)
-        schema issuer did
     schema_version: str (Optional)
-        schema version
 
     Returns:
     ---------

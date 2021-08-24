@@ -1,7 +1,5 @@
 """Services module."""
 
-from datetime import datetime
-
 from aioredis import Redis
 
 

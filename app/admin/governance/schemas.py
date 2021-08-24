@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from dependencies import yoma_agent
 
-router = APIRouter(prefix="/admin/governance/schemas", tags=["Admin: Schemas"])
+router = APIRouter(prefix="/admin/governance/schemas", tags=["admin: schemas"])
 
 
 class SchemaDefinition(BaseModel):
@@ -20,6 +20,15 @@ async def get_schema(
     schema_id: str,
     aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
+    """
+    Retrieve schemas by id.
+
+    Parameters:
+    -----------
+    schema_id: str
+        schema id
+    """
+
     return await aries_controller.schema.get_by_id(schema_id=schema_id)
 
 
@@ -31,6 +40,17 @@ async def get_schemas(
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
+    """
+    Retrieve schemas that the current agent created.
+
+    Parameters:
+    -----------
+    schema_id: str (Optional)
+    schema_issuer_did: str (Optional)
+    schema_name: str (Optional)
+    schema_version: str (Optional)]
+
+    """
     return await aries_controller.schema.get_created_schema(
         schema_id=schema_id,
         schema_issuer_did=schema_issuer_did,
@@ -44,6 +64,19 @@ async def create_schema(
     schema_definition: SchemaDefinition,
     aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
+    """
+    Create a new schema.
+
+    Parameters:
+    ------------
+    schema_definition: SchemaDefinition
+        Payload for creating a schema.
+
+    Returns:
+    --------
+    The response object from creating a schema.
+
+    """
     schema_definition = await aries_controller.schema.write_schema(
         schema_definition.name, schema_definition.attributes, schema_definition.version
     )

@@ -5,7 +5,7 @@ import requests
 from fastapi import HTTPException
 from schemas import LedgerRequestSovrin, LedgerRequestVon
 
-LEDGER_URL = os.getenv("LEDGER_NETWORK_URL", "http://testnet.didx.xyz/register")
+LEDGER_URL = os.getenv("LEDGER_NETWORK_URL", "http://localhost:9000/register")
 LEDGER_TYPE = os.getenv("LEDGER_TYPE", "von")
 
 logger = logging.getLogger(__name__)

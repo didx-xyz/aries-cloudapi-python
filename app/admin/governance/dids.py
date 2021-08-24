@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/governance/dids", tags=["Admin: Public Dids"])
+router = APIRouter(prefix="/admin/governance/dids", tags=["admin: public dids"])
 
 
 @router.get("/trusted-registry")
@@ -30,7 +30,9 @@ async def get_trusted_registry(
     public_dids = []
     if len(all_dids_on_ledger["results"]) >= 1:
         public_dids = [
-            r for r in all_dids_on_ledger["results"] if r["posture"] == "public"
+            r
+            for r in all_dids_on_ledger["results"]
+            if r["posture"] in ["public", "posted"]
         ]
     return public_dids
 

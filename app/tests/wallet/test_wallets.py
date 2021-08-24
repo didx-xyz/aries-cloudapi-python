@@ -1,5 +1,5 @@
 import pytest
-from admin.governance.wallet.wallets import (
+from generic.wallet.wallets import (
     list_dids,
     fetch_current_did,
     set_did_endpoint,
@@ -139,4 +139,4 @@ async def test_create_pub_did(async_client):
     assert response["did_object"] and response["did_object"] != {}
     assert response["issuer_verkey"] and response["issuer_verkey"] != {}
     assert response["issuer_endpoint"] and response["issuer_endpoint"] != {}
-    assert response["did_object"]["posture"] == "public"
+    assert response["did_object"]["posture"] in ["public", "posted"]

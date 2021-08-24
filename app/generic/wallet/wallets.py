@@ -54,7 +54,9 @@ async def create_local_did(
 async def list_dids(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-
+    """
+    Retrieve list of DIDs.
+    """
     return await aries_controller.wallet.get_dids()
 
 
@@ -63,7 +65,7 @@ async def fetch_current_did(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
-    Fetch the current public DID
+    Fetch the current public DID.
     """
     return await aries_controller.wallet.get_public_did()
 
@@ -82,7 +84,9 @@ async def get_did_endpoint(
     did: str,
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
-
+    """
+    Get DID endpoint.
+    """
     return await aries_controller.wallet.get_did_endpoint(did)
 
 
@@ -93,6 +97,10 @@ async def assign_pub_did(
 ):
     """
     Assign the current public DID
+
+    Parameter:
+    ----------
+    did: str
     """
     return await aries_controller.wallet.assign_public_did(did)
 
@@ -105,6 +113,11 @@ async def set_did_endpoint(
     aries_controller: AriesAgentControllerBase = Depends(agent_selector),
 ):
     """
-    Update Endpoint in wallet and on ledger if posted to it
+    Update Endpoint in wallet and on ledger if posted to it.
+
+    Parameters:
+    ------------
+    did: str
+    endpoint: str
     """
     return await aries_controller.wallet.set_did_endpoint(did, endpoint, endpoint_type)

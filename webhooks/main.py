@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 async def index(
     topic: str, service: Service = Depends(Provide[Container.service])
 ) -> dict:
-    value = await service.get_topic(f"{topic}")
+    value = await service.get_all_by_topic(f"{topic}")
     return {f"{topic}": value}
 
 
@@ -31,7 +31,7 @@ async def topic_root(
     topic, request: Request, service: Service = Depends(Provide[Container.service])
 ):
     payload = pformat(await request.json())
-    await service.add_topic_entry(topic, str(payload))
+    await service.add_topic_entry(str(topic), str(payload))
     getattr(log, LOG_LEVEL)(f"{topic}:\n{payload}")
 
 

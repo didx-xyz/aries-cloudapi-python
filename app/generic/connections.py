@@ -1,6 +1,6 @@
 import logging
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, InvitationResult, ReceiveInvitationRequest, ConnRecord, ConnectionList
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
 
@@ -10,20 +10,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 
 
-@router.get("/create-invite")
+@router.get("/create-invite", response_model=InvitationResult)
 async def create_invite(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create connection invite.
     """
-    invite = await aries_controller.connections.create_invitation()
+    invite = await aries_controller.connection.create_invitation()
     return invite
 
 
-@router.post("/accept-invite")
+@router.post("/accept-invite", response_model=ConnRecord)
 async def accept_invite(
-    invite: dict,
+    invite: ReceiveInvitationRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -31,14 +31,15 @@ async def accept_invite(
 
     Parameters:
     ------------
-    invite: dict
+    invite: ReceiveInvitationRequest
         the invitation object obtained from create_invite.
     """
-    accept_invite_res = await aries_controller.connections.receive_invitation(invite)
-    return accept_invite_res
+
+    conn_record = await aries_controller.connection.receive_invitation(body=invite)
+    return conn_record
 
 
-@router.get("/")
+@router.get("/", response_model=ConnectionList)
 async def get_connections(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
@@ -49,13 +50,13 @@ async def get_connections(
     ---------
     JSON object with “connections” (key), a list of connections (ids)
     """
-    connections = await aries_controller.connections.get_connections()
+    connections = await aries_controller.connection.get_connections()
     return connections
 
 
-@router.get("/{conn_id}")
+@router.get("/{conn_id}", response_model=ConnRecord)
 async def get_connection_by_id(
-    connection_id: str,
+    conn_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -63,16 +64,16 @@ async def get_connection_by_id(
 
     Parameters:
     -----------
-    connection_id: str
+    conn_id: str
 
     """
-    connection = await aries_controller.connections.get_connection(connection_id)
+    connection = await aries_controller.connection.get_connection(conn_id=conn_id)
     return connection
 
 
 @router.delete("/{conn_id}")
 async def delete_connection_by_id(
-    connection_id: str,
+    conn_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -86,5 +87,5 @@ async def delete_connection_by_id(
     ------------
     Empty dict: {}
     """
-    remove_res = await aries_controller.connections.remove_connection(connection_id)
+    remove_res = await aries_controller.connection.delete_connection(conn_id=conn_id)
     return remove_res

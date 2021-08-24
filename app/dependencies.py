@@ -23,8 +23,7 @@ async def yoma_agent(x_api_key: str = Header(None)):
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AcaPyClient(
-            YOMA_AGENT_URL,
-            api_key=x_api_key
+            YOMA_AGENT_URL, api_key=x_api_key, admin_insecure=x_api_key == None
         )
         yield agent
     except Exception as e:
@@ -100,6 +99,7 @@ async def ecosystem_agent(
             ECOSYSTEM_AGENT_URL,
             api_key=EMBEDDED_API_KEY,
             tenant_jwt=tenant_jwt,
+            admin_insecure=x_api_key == None
             # TODO: where is the wallet id used (webhooks?)
             # wallet_id=x_wallet_id,
         )
@@ -149,8 +149,7 @@ async def member_admin_agent(
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AcaPyClient(
-            MEMBER_AGENT_URL,
-            api_key=x_api_key
+            MEMBER_AGENT_URL, api_key=x_api_key, admin_insecure=x_api_key == None
         )
         yield agent
     except Exception as e:
@@ -171,7 +170,9 @@ async def ecosystem_admin_agent(
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AcaPyClient(
-            admin_url=ECOSYSTEM_AGENT_URL, api_key=x_api_key
+            admin_url=ECOSYSTEM_AGENT_URL,
+            api_key=x_api_key,
+            admin_insecure=x_api_key == None,
         )
         yield agent
     except Exception as e:

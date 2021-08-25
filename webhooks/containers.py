@@ -2,8 +2,8 @@
 
 from dependency_injector import containers, providers
 
-import redis
-import services
+from . import redis
+from . import services
 
 
 class Container(containers.DeclarativeContainer):

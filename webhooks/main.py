@@ -3,8 +3,8 @@ from dependency_injector.wiring import inject, Provide
 from fastapi_websocket_pubsub import PubSubEndpoint
 from starlette.websockets import WebSocket
 
-from containers import Container
-from services import Service
+from .containers import Container
+from .services import Service
 
 import logging
 from pprint import pformat

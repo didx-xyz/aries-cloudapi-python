@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Request, Depends, APIRouter
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Container, inject, Provide
 from fastapi_websocket_pubsub import PubSubEndpoint
 from starlette.websockets import WebSocket
 
-from .containers import Container
-from .services import Service
+from containers import Container
+from services import Service
 
 import logging
 from pprint import pformat
@@ -17,7 +17,9 @@ log = logging.getLogger(__name__)
 
 app = FastAPI()
 router = APIRouter()
-endpoint = PubSubEndpoint(broadcaster="redis://wh-redis:6379")
+endpoint = PubSubEndpoint()
+endpoint.register_route(router)
+app.include_router(router)
 
 
 @app.api_route("/{topic}")
@@ -74,7 +76,6 @@ async def websocket_rpc_endpoint(websocket: WebSocket):
 # async def websocket_topics(websocket: WebSocket):
 #     await websocket.accept()
 #     while True:
-#         log.error("Websocket root: \n")
 #         data = websocket.receive_text()
 #         getattr(log, LOG_LEVEL)(f"\n{data}")
 

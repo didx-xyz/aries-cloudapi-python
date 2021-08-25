@@ -1,19 +1,38 @@
 import logging
-from typing import TypeVar
+from typing import List, TypeVar, Union
+
+from aries_cloudcontroller import (
+    AcaPyClient,
+    SchemaGetResult,
+    CredentialDefinitionSendRequest,
+    CredentialDefinition,
+    CredentialPreview,
+    SchemaSendRequest,
+    V10CredentialProposalRequestMand,
+    V10PresentationSendRequestRequest,
+)
+
 
 from fastapi import HTTPException
+from pydantic.main import BaseModel
 
 T_co = TypeVar("T_co", contravariant=True)
 logger = logging.getLogger(__name__)
 
 
-async def get_schema_attributes(controller, schema_id):
+class SchemaDefinition(BaseModel):
+    name: str
+    attributes: List[str]
+    version: str
+
+
+async def get_schema_attributes(controller: AcaPyClient, schema_id: str):
     """
     Obtains Schema Attributes
 
     Parameters:
     ----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
     Returns
@@ -21,22 +40,25 @@ async def get_schema_attributes(controller, schema_id):
     schema_attr :dict
     """
 
-    schema_resp = await controller.schema.get_by_id(schema_id)
-    if not schema_resp:
+    schema_resp: SchemaGetResult = await controller.schema.get_schema(
+        schema_id=schema_id
+    )
+    if not schema_resp or not schema_resp.schema_:
         raise HTTPException(
             status_code=404, detail="Could not find schema from provided ID"
         )
-    schema_attr = schema_resp["schema"]["attrNames"]
+
+    schema_attr = schema_resp.schema_.attr_names
     return schema_attr
 
 
-async def write_credential_def(controller, schema_id):
+async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
     """
     Writes Credential Definition to the ledger
 
     Parameters:
     ----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
     Schema id
@@ -46,22 +68,32 @@ async def write_credential_def(controller, schema_id):
     write_cred_response :dict
     """
 
-    write_cred_response = await controller.definitions.write_cred_def(schema_id)
-    if not write_cred_response:
+    write_cred_response = await controller.credential_definition.publish_cred_def(
+        body=CredentialDefinitionSendRequest(
+            schema_id=schema_id, tag="default", support_revocation=False
+        )
+    )
+    if (
+        not write_cred_response.sent
+        or not write_cred_response.sent.credential_definition_id
+    ):
         raise HTTPException(
             status_code=404,
             detail="Something went wrong. Could not write credential definition to the ledger",
         )
-    return write_cred_response
+    return write_cred_response.sent.credential_definition_id
 
 
-async def get_cred_def_id(controller, credential_def):
+async def get_cred_def_id(
+    controller: AcaPyClient,
+    credential_def: Union[CredentialDefinition],
+):
     """
     Obtains the credential definition id
 
     Parameters:
     ----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
     credential_def : The credential definition whose id we wish to obtain
@@ -73,6 +105,8 @@ async def get_cred_def_id(controller, credential_def):
     """
 
     # TODO Determine what is funky here?!
+    credential_def.id
+    credential_def.sent.credential_definition_id
     cred_def_id = credential_def["credential_definition_id"]
     if not cred_def_id:
         raise HTTPException(
@@ -83,16 +117,23 @@ async def get_cred_def_id(controller, credential_def):
 
 
 async def issue_credentials(
-    controller, connection_id, schema_id, cred_def_id, credential_attributes
+    controller: AcaPyClient,
+    connection_id: str,
+    schema_id: str,
+    cred_def_id: str,
+    credential_attributes: CredentialPreview,
 ):
-    record = await controller.issuer.send_credential(
-        connection_id,
-        schema_id,
-        cred_def_id,
-        credential_attributes,
-        auto_remove=False,
-        trace=False,
+    record = await controller.issue_credential_v1_0.issue_credential_automated(
+        body=V10CredentialProposalRequestMand(
+            connection_id=connection_id,
+            schema_id=schema_id,
+            cred_def_id=cred_def_id,
+            credential_attributes=credential_attributes,
+            auto_remove=False,
+            trace=False,
+        )
     )
+
     if not record:
         raise HTTPException(
             status_code=404, detail="Something went wrong. Unable to issue credential."
@@ -101,21 +142,21 @@ async def issue_credentials(
     return record
 
 
-async def get_connection_id(controller):
+async def get_connection_id(controller: AcaPyClient):
     """
     Obtains list existing connection ids
 
     Parameters:
     -----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
     Returns:
     -------
-    connections: dict
+    connections: ConnectionList
         List of existing connections in
     """
-    connections = await controller.connections.get_connections()
+    connections = await controller.connection.get_connections()
     if not connections:
         raise HTTPException(
             status_code=404, detail="Something went wrong. Could not obtain connections"
@@ -124,21 +165,21 @@ async def get_connection_id(controller):
     return connections
 
 
-async def get_schema_list(controller):
+async def get_schema_list(controller: AcaPyClient):
     """
     Obtains list of existing schemas
 
     Parameters:
     -----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
     Returns
     -------
-    created_schemas : dict
+    created_schemas : SchemasCreatesResult
         List of schemas
     """
-    created_schemas = await controller.schema.get_created_schema()
+    created_schemas = await controller.schema.get_created_schemas()
     if not created_schemas:
         raise HTTPException(
             status_code=404, detail="Something went wrong. Could not obtain schema list"
@@ -146,39 +187,46 @@ async def get_schema_list(controller):
     return created_schemas
 
 
-async def write_schema_definition(controller, schema_definition_request):
+async def write_schema_definition(
+    controller: AcaPyClient, schema_definition_request: SchemaDefinition
+):
     """
     Writes schema definition to the ledger
 
     Parameters:
     -----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
-    schema_definition_request : Contains the schema name,schema version, schema attributes
+    schema_definition_request: SchemaDefinition
+        Contains the schema name,schema version, schema attributes
 
     Returns:
     --------
-    write_schema_resp : dict
+    write_schema_resp : SchemaSendResult
 
     """
-    write_schema_resp = await controller.schema.write_schema(
-        schema_definition_request.schema_name,
-        schema_definition_request.schema_attrs,
-        schema_definition_request.schema_version,
+    write_schema_resp = await controller.schema.publish_schema(
+        body=SchemaSendRequest(
+            attributes=schema_definition_request.attributes,
+            name=schema_definition_request.name,
+            schema_version=schema_definition_request.version,
+        )
     )
 
-    if not write_schema_resp or write_schema_resp == {}:
+    if not write_schema_resp or not write_schema_resp.sent:
         raise HTTPException(
             status_code=404,
-            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema}",
+            detail=f"Something went wrong.\n Could not write schema to ledger.\n{schema_definition_request}",
         )
-    return write_schema_resp
+    return write_schema_resp.sent
 
 
 # Need to rename this?
-async def verify_proof_req(controller, presentation_exchange_id):
-    verify = await controller.proofs.verify_presentation(presentation_exchange_id)
+async def verify_proof_req(controller: AcaPyClient, presentation_exchange_id: str):
+    verify = await controller.present_proof_v1_0.verify_presentation(
+        pres_ex_id=presentation_exchange_id
+    )
 
     if not verify:
         raise HTTPException(
@@ -189,8 +237,13 @@ async def verify_proof_req(controller, presentation_exchange_id):
     return verify
 
 
-async def send_proof_request(controller, proof_request_web_request):
-    response = await controller.proofs.send_request(proof_request_web_request)
+async def send_proof_request(
+    controller: AcaPyClient,
+    proof_request_web_request: V10PresentationSendRequestRequest,
+):
+    response = await controller.present_proof_v1_0.send_request_free(
+        body=proof_request_web_request
+    )
 
     if not response:
         raise HTTPException(

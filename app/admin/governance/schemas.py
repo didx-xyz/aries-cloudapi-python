@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, SchemaSendRequest, TxnOrSchemaSendResult
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -29,7 +29,7 @@ async def get_schema(
         schema id
     """
 
-    return await aries_controller.schema.get_by_id(schema_id=schema_id)
+    return await aries_controller.schema.get_schema(schema_id=schema_id)
 
 
 @router.get("/")
@@ -51,7 +51,7 @@ async def get_schemas(
     schema_version: str (Optional)]
 
     """
-    return await aries_controller.schema.get_created_schema(
+    return await aries_controller.schema.get_created_schemas(
         schema_id=schema_id,
         schema_issuer_did=schema_issuer_did,
         schema_name=schema_name,
@@ -59,7 +59,7 @@ async def get_schemas(
     )
 
 
-@router.post("/")
+@router.post("/", response_model=TxnOrSchemaSendResult)
 async def create_schema(
     schema_definition: SchemaDefinition,
     aries_controller: AcaPyClient = Depends(yoma_agent),
@@ -77,7 +77,11 @@ async def create_schema(
     The response object from creating a schema.
 
     """
-    schema_definition = await aries_controller.schema.write_schema(
-        schema_definition.name, schema_definition.attributes, schema_definition.version
+    schema = await aries_controller.schema.publish_schema(
+        body=SchemaSendRequest(
+            schema_name=schema_definition.name,
+            attributes=schema_definition.attributes,
+            schema_version=schema_definition.version,
+        )
     )
-    return schema_definition
+    return schema

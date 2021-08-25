@@ -1,5 +1,7 @@
 import logging
 import os
+from typing import Optional
+from aries_cloudcontroller import DID
 
 import requests
 from fastapi import HTTPException
@@ -11,7 +13,7 @@ LEDGER_TYPE = os.getenv("LEDGER_TYPE", "von")
 logger = logging.getLogger(__name__)
 
 
-async def _post_to_ledger(payload, url: str):
+async def _post_to_ledger(payload, url: Optional[str] = None):
     """
     Post the did payload to the ledger
 
@@ -52,10 +54,15 @@ async def _post_to_ledger(payload, url: str):
     return ledger_post_res
 
 
-async def post_to_ledger(did_object=None, ledger_url=None, did=None, verkey=None):
+async def post_to_ledger(
+    ledger_url: Optional[str] = None,
+    did_object: Optional[DID] = None,
+    did: Optional[str] = None,
+    verkey: Optional[str] = None,
+):
     if did_object:
-        did = did_object["did"]
-        verkey = did_object["verkey"]
+        did = did_object.did
+        verkey = did_object.verkey
 
     if LEDGER_TYPE == "sovrin":
         payload = LedgerRequestSovrin(

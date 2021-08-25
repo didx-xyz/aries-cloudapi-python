@@ -1,21 +1,22 @@
 import logging
+from typing import Tuple
 
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, TAAAccept, TAARecord
 from fastapi import HTTPException
 from schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 
 
-async def get_taa(controller: AcaPyClient):
+async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     """
     Obtains the TAA from the ledger
 
     Parameters:
     -----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
 
     Returns:
@@ -23,26 +24,25 @@ async def get_taa(controller: AcaPyClient):
     taa: dict
         The TAA object
     """
-    taa_response = await controller.ledger.get_taa()
+    taa_response = await controller.ledger.fetch_taa()
     logger.info(f"taa_response:\n{taa_response}")
-    if "result" not in taa_response or not taa_response["result"]:
+    if not taa_response.result or not taa_response.result.taa_record:
         logger.error("Failed to get TAA:\n{taa_response}")
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not get TAA. {taa_response}",
         )
-    taa = taa_response["result"]["taa_record"]
-    taa["mechanism"] = "service_agreement"
-    return taa
+    taa = taa_response.result.taa_record
+    return taa, "service_agreement"
 
 
-async def accept_taa(controller: AcaPyClient, taa):
+async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str):
     """
     Accept the TAA
 
     Parameters:
     -----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
     TAA:
         The TAA object we want to agree to
@@ -52,7 +52,9 @@ async def accept_taa(controller: AcaPyClient, taa):
     accept_taa_response: {}
         The response from letting the ledger know we accepted the response
     """
-    accept_taa_response = await controller.ledger.accept_taa(taa)
+    accept_taa_response = await controller.ledger.accept_taa(
+        body=TAAAccept(**taa.dict(), mechanism=mechanism)
+    )
     logger.info(f"accept_taa_response: {accept_taa_response}")
     if accept_taa_response != {}:
         logger.error(f"Failed to accept TAA.\n{accept_taa_response}")
@@ -63,13 +65,13 @@ async def accept_taa(controller: AcaPyClient, taa):
     return accept_taa_response
 
 
-async def get_did_endpoint(controller: AcaPyClient, issuer_nym):
+async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     """
     Obtains the public DID endpoint
 
     Parameters:
     -----------
-    controller: AriesController
+    controller: AcaPyClient
         The aries_cloudcontroller object
     issuer_nym: str
         The issuer's Verinym
@@ -80,7 +82,7 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym):
         The response from getting the public endpoint associated with
         the issuer's Verinym from the ledger
     """
-    issuer_endpoint_response = await controller.ledger.get_did_endpoint(issuer_nym)
+    issuer_endpoint_response = await controller.ledger.get_did_endpoint(did=issuer_nym)
     if not issuer_endpoint_response:
         logger.error(f"Failed to get DID endpoint:\n{issuer_endpoint_response}")
         raise HTTPException(
@@ -91,7 +93,7 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym):
 
 
 async def create_pub_did(
-    aries_controller: AcaPyClient = None,
+    aries_controller: AcaPyClient,
 ) -> DidCreationResponse:
     """
     Create a new public DID and
@@ -102,21 +104,20 @@ async def create_pub_did(
     * Issuer verkey (str)
     * Issuer Endpoint (url)
     """
-    generate_did_res = await wallet_facade.create_did(aries_controller)
-    did_object = generate_did_res["result"]
+    did_object = await wallet_facade.create_did(aries_controller)
     await ledger_facade.post_to_ledger(did_object=did_object)
 
-    taa_response = await get_taa(aries_controller)
+    taa_response, mechanism = await get_taa(aries_controller)
 
-    await accept_taa(aries_controller, taa_response)
-    await wallet_facade.assign_pub_did(aries_controller, did_object["did"])
+    await accept_taa(aries_controller, taa_response, mechanism)
+    await wallet_facade.assign_pub_did(aries_controller, did_object.did)
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
-    issuer_nym = get_pub_did_response["result"]["did"]
-    issuer_verkey = get_pub_did_response["result"]["verkey"]
+    issuer_nym = get_pub_did_response.result.did
+    issuer_verkey = get_pub_did_response.result.verkey
     issuer_endpoint = await get_did_endpoint(aries_controller, issuer_nym)
-    issuer_endpoint_url = issuer_endpoint["endpoint"]
+    issuer_endpoint_url = issuer_endpoint.endpoint
     final_response = DidCreationResponse(
-        did_object=get_pub_did_response["result"],
+        did_object=get_pub_did_response.result,
         issuer_verkey=issuer_verkey,
         issuer_endpoint=issuer_endpoint_url,
     )

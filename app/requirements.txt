@@ -15,7 +15,6 @@ contextlib2==0.6.0
 distlib==0.3.0
 distro==1.4.0
 fastapi==0.65.2
-fastapi_websocket_pubsub
 h11==0.12.0
 html5lib==1.0.1
 idna

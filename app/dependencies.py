@@ -40,18 +40,18 @@ async def yoma_agent(x_api_key: str = Header(None)):
 
 async def agent_selector(
     x_api_key: str = Header(None),
-    authorization: str = Header(None),
+    x_auth: str = Header(None),
     x_wallet_id=Header(None),
     x_role=Header(...),
 ):
     if x_role == "member":
-        async with asynccontextmanager(member_agent)(authorization, x_wallet_id) as x:
+        async with asynccontextmanager(member_agent)(x_auth, x_wallet_id) as x:
             yield x
     elif (
         x_role == "eco-system" or x_role == "ecosystem"
     ):  # cannot use in as it's not a string
         async with asynccontextmanager(ecosystem_agent)(
-            x_api_key, authorization, x_wallet_id
+            x_api_key, x_auth, x_wallet_id
         ) as x:
             yield x
     elif x_role == "yoma":
@@ -63,7 +63,7 @@ async def agent_selector(
 
 async def admin_agent_selector(
     x_api_key: str = Header(None),
-    authorization: str = Header(None),
+    x_auth: str = Header(None),
     x_wallet_id=Header(None),
     x_role=Header(...),
 ):
@@ -82,7 +82,7 @@ async def admin_agent_selector(
 
 async def ecosystem_agent(
     x_api_key: str = Header(None),
-    authorization: str = Header(None),
+    x_auth: str = Header(None),
     x_wallet_id=Header(None),
 ):
     agent = None
@@ -90,11 +90,11 @@ async def ecosystem_agent(
         # TODO extract wallet_id instead of passing it?!
 
         # check the header is present
-        if str(authorization) == "extra={}":
+        if str(x_auth) == "extra={}":
             raise HTTPException(401)
 
         # extract the JWT
-        tenant_jwt = _extract_jwt_token_from_security_header(authorization)
+        tenant_jwt = _extract_jwt_token_from_security_header(x_auth)
 
         # yield the controller
         agent = AriesTenantController(
@@ -115,14 +115,14 @@ async def ecosystem_agent(
 
 
 async def member_agent(
-    authorization: str = Header(None),
+    x_auth: str = Header(None),
     x_wallet_id=Header(None),
 ):
     agent = None
     try:
-        if str(authorization) == "extra={}":
+        if str(x_auth) == "extra={}":
             raise HTTPException(401)
-        tenant_jwt = _extract_jwt_token_from_security_header(authorization)
+        tenant_jwt = _extract_jwt_token_from_security_header(x_auth)
         agent = AriesTenantController(
             admin_url=MEMBER_AGENT_URL,
             api_key=EMBEDDED_API_KEY,

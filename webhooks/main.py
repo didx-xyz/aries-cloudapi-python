@@ -3,7 +3,7 @@ from dependency_injector.wiring import Container, inject, Provide
 from fastapi_websocket_pubsub import PubSubEndpoint
 from starlette.websockets import WebSocket
 
-from containers import Container
+from containers import Container as RedisContainer
 from services import Service
 
 import logging
@@ -33,7 +33,7 @@ async def index(
 
 @app.api_route("/{wallet_id}}")
 @inject
-async def index(
+async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
 ) -> dict:
     value = await service.get_all_by_topic(f"{wallet_id}")
@@ -81,7 +81,7 @@ async def websocket_rpc_endpoint(websocket: WebSocket):
 
 app.include_router(router)
 
-container = Container()
+container = RedisContainer()
 container.config.redis_host.from_env("REDIS_HOST", "wh-redis")
 container.config.redis_password.from_env("REDIS_PASSWORD", "")
 container.wire(modules=[sys.modules[__name__]])

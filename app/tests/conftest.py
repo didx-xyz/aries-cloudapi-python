@@ -155,17 +155,17 @@ async def create_wallet(async_client, key):
     local_did = (
         await async_client.get(
             "/wallet/create-local-did",
-            headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            headers={**DEFAULT_HEADERS, "x-auth": f"Bearer {wallet['token']}"},
         )
     ).json()
     public_did = (
         await async_client.get(
             "/wallet/create-pub-did",
-            headers={**DEFAULT_HEADERS, "authorization": f"Bearer {wallet['token']}"},
+            headers={**DEFAULT_HEADERS, "x-auth": f"Bearer {wallet['token']}"},
         )
     ).json()
     yield AgentEntity(
-        headers={**DEFAULT_HEADERS, "authorization": f'Bearer {wallet["token"]}'},
+        headers={**DEFAULT_HEADERS, "x-auth": f'Bearer {wallet["token"]}'},
         wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
         pub_did=public_did["did_object"]["did"],

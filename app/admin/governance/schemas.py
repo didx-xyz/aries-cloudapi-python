@@ -28,7 +28,6 @@ async def get_schema(
     schema_id: str
         schema id
     """
-
     return await aries_controller.schema.get_by_id(schema_id=schema_id)
 
 
@@ -48,8 +47,11 @@ async def get_schemas(
     schema_id: str (Optional)
     schema_issuer_did: str (Optional)
     schema_name: str (Optional)
-    schema_version: str (Optional)]
+    schema_version: str (Optional)
 
+    Returns:
+    --------
+    Json response with created schemas from ledger.
     """
     return await aries_controller.schema.get_created_schema(
         schema_id=schema_id,
@@ -75,9 +77,55 @@ async def create_schema(
     Returns:
     --------
     The response object from creating a schema.
-
     """
     schema_definition = await aries_controller.schema.write_schema(
         schema_definition.name, schema_definition.attributes, schema_definition.version
     )
     return schema_definition
+
+
+@router.post("/{schema_id}")
+async def update_schema(
+    schema_id: str,
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+):
+    """
+    Update an existing schema. This is a convenience method to mimic updating a schema.
+    Technically a new schema will be created under the same name with a new version and its own hash.
+
+    Parameters:
+    -----------
+    schema_id: str
+        The schema ID
+
+    Returns:
+    --------
+    The response object from creating a schema.
+    """
+    pass
+
+
+@router.get("/list")
+async def get_schema_list_pretty(
+    schema_id: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_version: Optional[str] = None,
+    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+):
+    """
+    Retrieve a list of schemas from the registry and dispaly them in human-readable and friendly form.
+
+    Parameters:
+    -----------
+    schema_id: str (Optional)
+    schema_issuer_did: str (Optional)
+    schema_name: str (Optional)
+    schema_version: str (Optional)
+
+    Returns:
+    --------
+    JSON object with ID, name, version and attributes by schema.
+    """
+    # TODO make return type pydantic model
+    pass

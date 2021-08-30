@@ -1,9 +1,8 @@
 from typing import List, Optional
 
 from aries_cloudcontroller import AriesAgentControllerBase
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from aiohttp.web_exceptions import HTTPUnprocessableEntity
 
 from dependencies import yoma_agent
 
@@ -85,7 +84,7 @@ async def create_schema(
     return schema_definition
 
 
-@router.post("/{schema_id}")
+@router.post("/update")
 async def update_schema(
     schema_id: str,
     schema_definition: SchemaDefinition,
@@ -107,9 +106,15 @@ async def update_schema(
     The response object from creating a schema.
     """
 
-    res = await aries_controller.schema.get_by_id(schema_id=schema_id)
-    assert res["schema"]
-    assert float(res["schema"]["version"]) < float(schema_definition.version)
+    schema_def = await aries_controller.schema.get_by_id(schema_id=schema_id)
+    assert schema_def["schema"]
+    try:
+        assert float(schema_def["schema"]["version"]) < float(schema_definition.version)
+    except AssertionError:
+        raise HTTPException(
+            status_code=405,
+            detail="Updated version must be higher than previous version",
+        )
     schema_definition = await aries_controller.schema.write_schema(
         schema_definition.name, schema_definition.attributes, schema_definition.version
     )

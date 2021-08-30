@@ -3,6 +3,7 @@ from typing import List, Optional
 from aries_cloudcontroller import AriesAgentControllerBase
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from aiohttp.web_exceptions import HTTPUnprocessableEntity
 
 from dependencies import yoma_agent
 
@@ -87,6 +88,7 @@ async def create_schema(
 @router.post("/{schema_id}")
 async def update_schema(
     schema_id: str,
+    schema_definition: SchemaDefinition,
     aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
 ):
     """
@@ -97,16 +99,25 @@ async def update_schema(
     -----------
     schema_id: str
         The schema ID
+    schema_definition: SchemaDefinition
+        Payload for creating a schema.
 
     Returns:
     --------
     The response object from creating a schema.
     """
-    pass
+
+    res = await aries_controller.schema.get_by_id(schema_id=schema_id)
+    assert res["schema"]
+    assert float(res["schema"]["version"]) < float(schema_definition.version)
+    schema_definition = await aries_controller.schema.write_schema(
+        schema_definition.name, schema_definition.attributes, schema_definition.version
+    )
+    return schema_definition
 
 
-@router.get("/list")
-async def get_schema_list_pretty(
+@router.get("/list/")
+async def get_schemas_list_detailed(
     schema_id: Optional[str] = None,
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
@@ -125,7 +136,22 @@ async def get_schema_list_pretty(
 
     Returns:
     --------
-    JSON object with ID, name, version and attributes by schema.
+    JSON object by ID with name, version ,and attributes by schema.
     """
-    # TODO make return type pydantic model
-    pass
+    ids = (
+        await aries_controller.schema.get_created_schema(
+            schema_id=schema_id,
+            schema_issuer_did=schema_issuer_did,
+            schema_name=schema_name,
+            schema_version=schema_version,
+        )
+    )["schema_ids"]
+    schemas = {}
+    for id in ids:
+        schema = (await aries_controller.schema.get_by_id(schema_id=id))["schema"]
+        schemas[schema["id"]] = {
+            "name": schema["name"],
+            "version": schema["version"],
+            "attributes": schema["attrNames"],
+        }
+    return schemas

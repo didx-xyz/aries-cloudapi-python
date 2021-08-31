@@ -1,12 +1,19 @@
 import json
-from contextlib import asynccontextmanager
+from fastapi.exceptions import HTTPException
+
 
 import acapy_ledger_facade
 import acapy_wallet_facade
 import ledger_facade
 import pytest
 import utils
-from admin.governance.schemas import SchemaDefinition, create_schema, get_schemas
+from admin.governance.schemas import (
+    SchemaDefinition,
+    create_schema,
+    get_schemas,
+    get_schemas_list_detailed,
+    update_schema,
+)
 from assertpy import assert_that
 
 # want to wrap an existing method with a decorator
@@ -143,7 +150,7 @@ async def test_create_one_schema(setup_local_env, yoma_agent_mock):
 
 
 @pytest.mark.asyncio
-async def test_update_schema(setup_local_env, yoma_agent_mock):
+async def test_update_schemas(setup_local_env, yoma_agent_mock):
     # given
     definition1 = SchemaDefinition(name="xya", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(
@@ -230,3 +237,80 @@ async def test_get_schemas(setup_local_env, yoma_agent_mock):
     assert_that(response["schema_ids"]).contains_only(
         schema_definition_result_2["schema_id"],
     )
+
+
+@pytest.mark.asyncio
+async def test_get_schemas_detail_list(setup_local_env, yoma_agent_mock):
+    name = get_random_string(10)
+    definition1 = SchemaDefinition(name=name, version="0.1", attributes=["average"])
+    definition2 = SchemaDefinition(
+        name=name, version="0.2", attributes=["average", "bitrate"]
+    )
+    public_did = await create_public_did(yoma_agent_mock)
+    print(f" created did:{public_did}")
+    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
+    schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
+
+    response = await get_schemas_list_detailed(
+        schema_issuer_did=public_did["did"], aries_controller=yoma_agent_mock
+    )
+
+    assert response
+    assert schema_definition_result_1["schema_id"] in response
+    assert schema_definition_result_2["schema_id"] in response
+    assert [
+        k in response[schema_definition_result_1["schema_id"]].keys()
+        for k in ["name", "version", "attributes"]
+    ]
+
+    response = await get_schemas_list_detailed(
+        schema_name=name, aries_controller=yoma_agent_mock
+    )
+
+    assert response
+    assert schema_definition_result_1["schema_id"] in response
+    assert schema_definition_result_2["schema_id"] in response
+
+    response = await get_schemas_list_detailed(
+        schema_name=name, schema_version="0.2", aries_controller=yoma_agent_mock
+    )
+    assert schema_definition_result_2["schema_id"] in response
+
+
+@pytest.mark.asyncio
+async def test_update_schema(setup_local_env, yoma_agent_mock):
+    name = get_random_string(10)
+    definition = SchemaDefinition(name=name, version="0.1", attributes=["average"])
+
+    public_did = await create_public_did(yoma_agent_mock)
+    print(f" created did:{public_did}")
+
+    schema_definition_result = await create_schema(definition, yoma_agent_mock)
+    definition_updated = SchemaDefinition(
+        name=name, version="0.2", attributes=["average"]
+    )
+    updated_result = await update_schema(
+        schema_id=schema_definition_result["schema_id"],
+        schema_definition=definition_updated,
+        aries_controller=yoma_agent_mock,
+    )
+
+    response = await get_schemas(
+        schema_issuer_did=public_did["did"], aries_controller=yoma_agent_mock
+    )
+
+    assert updated_result
+    assert updated_result["schema_id"] in response["schema_ids"]
+
+    definition_updated_low = SchemaDefinition(
+        name=name, version="0.0", attributes=["average"]
+    )
+
+    with pytest.raises(HTTPException) as exc:
+        await update_schema(
+            schema_id=schema_definition_result["schema_id"],
+            schema_definition=definition_updated_low,
+            aries_controller=yoma_agent_mock,
+        )
+    assert exc.value.status_code == 405
+    assert "pdated version must be higher than" in exc.value.detail

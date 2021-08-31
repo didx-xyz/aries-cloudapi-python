@@ -1,0 +1,4 @@
+fastapi
+aioredis
+dependency_injector
+fastapi_websocket_pubsub

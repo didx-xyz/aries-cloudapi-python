@@ -38,7 +38,7 @@ async def test_yoma_agent():
 @pytest.mark.asyncio
 async def test_ecosystem_agent():
     async with asynccontextmanager(dependencies.ecosystem_agent)(
-        x_api_key="adminApiKey", authorization="Bearer 12345", x_wallet_id="12345"
+        x_api_key="adminApiKey", x_auth="Bearer 12345", x_wallet_id="12345"
     ) as c:
         assert c is not None
         assert c.tenant_jwt == "12345"
@@ -51,7 +51,7 @@ async def test_ecosystem_agent():
 @pytest.mark.asyncio
 async def test_member_agent():
     async with asynccontextmanager(dependencies.member_agent)(
-        authorization="Bearer 12345", x_wallet_id="12345"
+        x_auth="Bearer 12345", x_wallet_id="12345"
     ) as c:
         assert c is not None
         assert c.tenant_jwt == "12345"
@@ -122,14 +122,14 @@ async def test_agent_selector(
     # maybe create another ticket to look at this.
     with pytest.raises(HTTPException) as e:
         await async_next(
-            dependency_function(x_api_key="apikey", authorization=TEST_BEARER_HEADER)
+            dependency_function(x_api_key="apikey", x_auth=TEST_BEARER_HEADER)
         )
     assert e.value.status_code == 400
     assert e.value.detail == "invalid role"
 
     c = await async_next(
         dependency_function(
-            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="ecosystem"
+            x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="ecosystem"
         )
     )
     assert type(c) == controller_type
@@ -137,7 +137,7 @@ async def test_agent_selector(
 
     c = await async_next(
         dependency_function(
-            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="member"
+            x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="member"
         )
     )
     assert type(c) == controller_type
@@ -145,7 +145,7 @@ async def test_agent_selector(
 
     c = await async_next(
         dependency_function(
-            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="yoma"
+            x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="yoma"
         )
     )
     assert type(c) == AriesAgentController
@@ -168,18 +168,14 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
 
     @router.get("/admin")
     async def call_admin(
-        aries_controller: AcaPyClient = Depends(
-            dependencies.admin_agent_selector
-        ),
+        aries_controller: AcaPyClient = Depends(dependencies.admin_agent_selector),
     ):
         nonlocal injected_controller
         injected_controller = aries_controller
 
     @router.get("/")
     async def call(
-        aries_controller: AcaPyClient = Depends(
-            dependencies.agent_selector
-        ),
+        aries_controller: AcaPyClient = Depends(dependencies.agent_selector),
     ):
         nonlocal injected_controller
         injected_controller = aries_controller
@@ -214,7 +210,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
     assert type(injected_controller) == AriesAgentController
 
     # when
-    await make_call(headers={"x-role": "ecosystem", "Authorization": "Bearer X"})
+    await make_call(headers={"x-role": "ecosystem", "x-auth": "Bearer X"})
     # then
     assert injected_controller.admin_url == dependencies.ECOSYSTEM_AGENT_URL
     assert injected_controller.tenant_jwt == "X"
@@ -222,7 +218,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
     assert type(injected_controller) == AriesTenantController
 
     # when
-    await make_call(headers={"x-role": "member", "Authorization": "Bearer Y"})
+    await make_call(headers={"x-role": "member", "x-auth": "Bearer Y"})
     # then
     assert injected_controller.admin_url == dependencies.MEMBER_AGENT_URL
     assert injected_controller.tenant_jwt == "Y"
@@ -257,7 +253,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         headers={
             "x-api-key": "provided-api-key",
             "x-role": "ecosystem",
-            "Authorization": "Bearer X",
+            "x-auth": "Bearer X",
         },
     )
     # then
@@ -271,7 +267,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         headers={
             "x-api-key": "provided-x-api-key-1",
             "x-role": "member",
-            "Authorization": "Bearer Y",
+            "x-auth": "Bearer Y",
         },
     )
     # then

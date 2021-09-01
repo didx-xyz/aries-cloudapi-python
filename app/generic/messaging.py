@@ -36,7 +36,7 @@ async def send_messages(
     ---------
     The response object obtained when sending a message.
     """
-    send = await aries_controller.messaging.send_message(
+    send = await aries_controller.basicmessage.send_message(
         connection_id=message.connection_id, msg=message.msg
     )
     return send
@@ -59,7 +59,7 @@ async def send_trust_ping(
     --------
     The response object obtained when sending a trust ping.
     """
-    response = await aries_controller.messaging.trust_ping(
+    response = await aries_controller.trustping.send_ping(
         connection_id=trustping_msg.connection_id, comment_msg=trustping_msg.comment_msg
     )
     return response

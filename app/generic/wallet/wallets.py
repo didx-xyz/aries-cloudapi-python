@@ -76,7 +76,7 @@ async def rotate_keypair(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
 
-    return await aries_controller.wallet.rotate_pub_key_pair(did)
+    return await aries_controller.wallet.rotate_keypair(did)
 
 
 @router.get("/get-did-endpoint/{did}")
@@ -102,7 +102,7 @@ async def assign_pub_did(
     ----------
     did: str
     """
-    return await aries_controller.wallet.assign_public_did(did)
+    return await aries_controller.wallet.set_public_did(did)
 
 
 @router.post("/set-did-endpoint")

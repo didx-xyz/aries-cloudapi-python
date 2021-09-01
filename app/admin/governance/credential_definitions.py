@@ -1,6 +1,12 @@
 from typing import Optional
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import (
+    AcaPyClient,
+    CredentialDefinitionGetResult,
+    CredentialDefinitionSendRequest,
+    CredentialDefinitionsCreatedResult,
+    TxnOrCredentialDefinitionSendResult,
+)
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
@@ -17,7 +23,7 @@ class CredentialDefinition(BaseModel):
     schema_id: str
 
 
-@router.post("/")
+@router.post("/", response_model=TxnOrCredentialDefinitionSendResult)
 async def create_credential_definition(
     credential_definition: CredentialDefinition,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -34,13 +40,15 @@ async def create_credential_definition(
     --------
     The response object obtained from creating a credential definition.
     """
-    credential_definition_result = await aries_controller.definitions.write_cred_def(
-        **credential_definition.dict()
+    credential_definition_result = (
+        await aries_controller.credential_definitions.publish_cred_def(
+            **credential_definition.dict()
+        )
     )
     return credential_definition_result
 
 
-@router.get("/created")
+@router.get("/created", response_model=CredentialDefinitionsCreatedResult)
 async def get_created_credential_definitions(
     issuer_did: Optional[str] = None,
     cred_def_id: Optional[str] = None,
@@ -57,7 +65,7 @@ async def get_created_credential_definitions(
     -----------
     issuer_did: str (Optional)
     cred_def_id: str (Optional)
-        credential definition id
+    credential definition id
     schema_id: str (Optional)
     schema_issuer_id: str (Optional)
     schema_version: str (Optional)
@@ -66,7 +74,7 @@ async def get_created_credential_definitions(
     ---------
     The created credential definitions.
     """
-    return await aries_controller.definitions.search_created(
+    return await aries_controller.credential_definitions.get_created_defs(
         issuer_did=issuer_did,
         cred_def_id=cred_def_id,
         schema_id=schema_id,
@@ -76,7 +84,7 @@ async def get_created_credential_definitions(
     )
 
 
-@router.get("/{cred_def_id}")
+@router.get("/{cred_def_id}", response_models=CredentialDefinitionGetResult)
 async def get_credential_definition(
     cred_def_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -90,4 +98,6 @@ async def get_credential_definition(
         credential definition id
 
     """
-    return await aries_controller.definitions.get_by_id(cred_def_id)
+    return await aries_controller.credential_definitions.get_cred_def(
+        cred_def_id=cred_def_id
+    )

@@ -1,6 +1,12 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import AcaPyClient, SchemaSendRequest, TxnOrSchemaSendResult
+from aries_cloudcontroller import (
+    AcaPyClient,
+    SchemaSendRequest,
+    TxnOrSchemaSendResult,
+    SchemaGetResult,
+    SchemasCreatedResult,
+)
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -15,7 +21,7 @@ class SchemaDefinition(BaseModel):
     attributes: List[str]
 
 
-@router.get("/{schema_id}")
+@router.get("/{schema_id}", response_model=SchemaGetResult)
 async def get_schema(
     schema_id: str,
     aries_controller: AcaPyClient = Depends(yoma_agent),
@@ -28,10 +34,10 @@ async def get_schema(
     schema_id: str
         schema id
     """
-    return await aries_controller.schema.get_by_id(schema_id=schema_id)
+    return await aries_controller.schema.get_schema(schema_id=schema_id)
 
 
-@router.get("/")
+@router.get("/", response_model=SchemasCreatedResult)
 async def get_schemas(
     schema_id: Optional[str] = None,
     schema_issuer_did: Optional[str] = None,
@@ -78,7 +84,7 @@ async def create_schema(
     --------
     The response object from creating a schema.
     """
-    schema_definition = await aries_controller.schema.write_schema(
+    schema_definition = await aries_controller.schema.publish_schema(
         schema_definition.name, schema_definition.attributes, schema_definition.version
     )
     return schema_definition
@@ -115,7 +121,7 @@ async def update_schema(
             status_code=405,
             detail="Updated version must be higher than previous version",
         )
-    schema_definition = await aries_controller.schema.write_schema(
+    schema_definition = await aries_controller.schema.publish_schema(
         schema_definition.name, schema_definition.attributes, schema_definition.version
     )
     return schema_definition

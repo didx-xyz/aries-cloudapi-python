@@ -1,6 +1,12 @@
 import logging
 
-from aries_cloudcontroller import AcaPyClient, InvitationResult, ReceiveInvitationRequest, ConnRecord, ConnectionList
+from aries_cloudcontroller import (
+    AcaPyClient,
+    InvitationResult,
+    ReceiveInvitationRequest,
+    ConnRecord,
+    ConnectionList,
+)
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
 

@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 
 
+# TODO this should be a post request
 @router.get("/create-invite", response_model=InvitationResult)
 async def create_invite(
     alias: Optional[str] = None,

@@ -408,7 +408,7 @@ async def query_subwallet(
     wallet_name: str (Optional)
 
     """
-    return await aries_controller.multitenancy.query_subwallets(wallet_name=wallet_name)
+    return await aries_controller.multitenancy.get_wallets(wallet_name=wallet_name)
 
 
 @router.get("/{wallet_id}", response_model=WalletRecord)

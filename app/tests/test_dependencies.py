@@ -3,9 +3,7 @@ from contextlib import asynccontextmanager
 import dependencies
 import pytest
 from aries_cloudcontroller import (
-    # AriesAgentController,
     AcaPyClient,
-    # AriesTenantController,
 )
 from assertpy import assert_that
 from fastapi import APIRouter, Depends, HTTPException

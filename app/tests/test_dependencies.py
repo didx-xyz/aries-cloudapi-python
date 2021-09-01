@@ -3,9 +3,9 @@ from contextlib import asynccontextmanager
 import dependencies
 import pytest
 from aries_cloudcontroller import (
-    AriesAgentController,
+    # AriesAgentController,
     AcaPyClient,
-    AriesTenantController,
+    # AriesTenantController,
 )
 from assertpy import assert_that
 from fastapi import APIRouter, Depends, HTTPException
@@ -104,8 +104,8 @@ def setup_agent_urls_for_testing():
 
 
 agent_selector_data = [
-    (dependencies.agent_selector, False, AriesTenantController),
-    (dependencies.admin_agent_selector, True, AriesAgentController),
+    (dependencies.agent_selector, False, AcaPyClient),
+    (dependencies.admin_agent_selector, True, AcaPyClient),
 ]
 
 

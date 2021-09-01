@@ -1,7 +1,7 @@
 import pytest
 from acapy_wallet_facade import assign_pub_did, create_did, get_pub_did
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.controllers.wallet import WalletController
+from aries_cloudcontroller.api.wallet import WalletApi
 from fastapi import HTTPException
 from mockito import mock, when
 

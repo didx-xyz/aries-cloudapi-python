@@ -20,7 +20,7 @@ async def create_did(controller: AcaPyClient):
     generate_did_response: dict
         The response object from generating a DID on the ledger
     """
-    generate_did_res = await controller.wallet.create_did()
+    generate_did_res = await controller.wallet.create_did(body={})
     if not generate_did_res.result:
         logger.error(f"Failed to create DID:\n{generate_did_res}")
         raise HTTPException(

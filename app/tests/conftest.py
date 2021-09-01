@@ -7,8 +7,8 @@ import ledger_facade
 import pytest
 import utils
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.controllers.ledger import LedgerController
-from aries_cloudcontroller.controllers.wallet import WalletController
+from aries_cloudcontroller.api.ledger import LedgerApi
+from aries_cloudcontroller.api.wallet import WalletApi
 from dependencies import member_admin_agent, yoma_agent
 from httpx import AsyncClient
 from main import app
@@ -38,8 +38,8 @@ def setup_env():
 @pytest.fixture
 def mock_agent_controller():
     controller = mock(AcaPyClient)
-    controller.wallet = mock(WalletController)
-    controller.ledger = mock(LedgerController)
+    controller.wallet = mock(WalletApi)
+    controller.ledger = mock(LedgerApi)
     return controller
 
 

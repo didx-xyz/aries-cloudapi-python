@@ -342,7 +342,7 @@ async def remove_subwallet_by_id(
     wallet_id: str
     """
     try:
-        response = await aries_controller.multitenancy.remove_subwallet_by_id(wallet_id)
+        response = await aries_controller.multitenancy.delete_wallet(wallet_id)
         if response == {}:
             return {"status": "Successfully removed wallet"}
         else:
@@ -357,9 +357,7 @@ async def get_subwallet_auth_token(
     wallet_id: str,
     aries_controller: AcaPyClient = Depends(admin_agent_selector),
 ):
-    return await aries_controller.multitenancy.get_subwallet_authtoken_by_id(
-        wallet_id=wallet_id
-    )
+    return await aries_controller.multitenancy.get_auth_token(wallet_id=wallet_id)
 
 
 @router.post("/{wallet_id}", response_model=WalletRecord)
@@ -381,11 +379,11 @@ async def update_subwallet(
     ---------
     The response object from updating a subwallet.
     """
-    return await aries_controller.multitenancy.update_subwallet_by_id(
-        json.loads(
+    return await aries_controller.multitenancy.update_wallet(
+        body=json.loads(
             payload.json(exclude_unset=True, exclude_defaults=True, exclude_none=True)
         ),
-        wallet_id,
+        wallet_id=wallet_id,
     )
 
 
@@ -403,7 +401,7 @@ async def query_subwallet(
     wallet_name: str (Optional)
 
     """
-    return await aries_controller.multitenancy.query_subwallets(wallet_name=wallet_name)
+    return await aries_controller.multitenancy.get_wallets(wallet_name=wallet_name)
 
 
 @router.get("/{wallet_id}", response_model=WalletRecord)
@@ -418,4 +416,4 @@ async def get_subwallet(
     -------------
     wallet_id: str
     """
-    return await aries_controller.multitenancy.get_single_subwallet_by_id(wallet_id)
+    return await aries_controller.multitenancy.get_wallet(wallet_id=wallet_id)

@@ -84,7 +84,7 @@ async def get_created_credential_definitions(
     )
 
 
-@router.get("/{cred_def_id}", response_models=CredentialDefinitionGetResult)
+@router.get("/{cred_def_id}", response_model=CredentialDefinitionGetResult)
 async def get_credential_definition(
     cred_def_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),

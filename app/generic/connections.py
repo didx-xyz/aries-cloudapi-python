@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -6,6 +7,7 @@ from aries_cloudcontroller import (
     ReceiveInvitationRequest,
     ConnRecord,
     ConnectionList,
+    CreateInvitationRequest,
 )
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
@@ -18,12 +20,23 @@ router = APIRouter(prefix="/generic/connections", tags=["connections"])
 
 @router.get("/create-invite", response_model=InvitationResult)
 async def create_invite(
+    alias: Optional[str] = None,
+    auto_accept: Optional[bool] = None,
+    multi_use: Optional[bool] = None,
+    public: Optional[bool] = None,
+    createInvitationRequest: Optional[CreateInvitationRequest] = {},
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create connection invite.
     """
-    invite = await aries_controller.connection.create_invitation()
+    invite = await aries_controller.connection.create_invitation(
+        alias=alias,
+        auto_accept=auto_accept,
+        multi_use=multi_use,
+        public=public,
+        body=createInvitationRequest,
+    )
     return invite
 
 

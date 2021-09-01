@@ -8,6 +8,7 @@ from typing import Optional, Dict, List
 
 import logging
 from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller.model import RemoveWalletRequest, CreateWalletTokenRequest
 from pydantic import BaseModel
 
 from dependencies import member_admin_agent, admin_agent_selector
@@ -333,6 +334,7 @@ async def create_subwallet(
 @router.delete("/{wallet_id}")
 async def remove_subwallet_by_id(
     wallet_id: str,
+    removeWalletRequest: Optional[RemoveWalletRequest] = {},
     aries_controller: AcaPyClient = Depends(admin_agent_selector),
 ):
     """
@@ -342,7 +344,9 @@ async def remove_subwallet_by_id(
     wallet_id: str
     """
     try:
-        response = await aries_controller.multitenancy.remove_subwallet_by_id(wallet_id)
+        response = await aries_controller.multitenancy.delete_wallet(
+            wallet_id=wallet_id, body=removeWalletRequest
+        )
         if response == {}:
             return {"status": "Successfully removed wallet"}
         else:
@@ -355,10 +359,11 @@ async def remove_subwallet_by_id(
 @router.get("/{wallet_id}/auth-token", response_model=CreateWalletTokenResponse)
 async def get_subwallet_auth_token(
     wallet_id: str,
+    createWalletTokenRequest: Optional[CreateWalletTokenRequest] = {},
     aries_controller: AcaPyClient = Depends(admin_agent_selector),
 ):
-    return await aries_controller.multitenancy.get_subwallet_authtoken_by_id(
-        wallet_id=wallet_id
+    return await aries_controller.multitenancy.get_auth_token(
+        wallet_id=wallet_id, body=createWalletTokenRequest
     )
 
 

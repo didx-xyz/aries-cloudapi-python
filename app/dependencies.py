@@ -123,8 +123,8 @@ async def member_agent(
         if str(x_auth) == "extra={}":
             raise HTTPException(401)
         tenant_jwt = _extract_jwt_token_from_security_header(x_auth)
-        agent = AriesTenantController(
-            admin_url=MEMBER_AGENT_URL,
+        agent = AcaPyClient(
+            base_url=MEMBER_AGENT_URL,
             api_key=EMBEDDED_API_KEY,
             tenant_jwt=tenant_jwt,
             # TODO: where is the wallet id used (webhooks?)
@@ -170,7 +170,7 @@ async def ecosystem_admin_agent(
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AcaPyClient(
-            admin_url=ECOSYSTEM_AGENT_URL,
+            base_url=ECOSYSTEM_AGENT_URL,
             api_key=x_api_key,
             admin_insecure=x_api_key == None,
         )

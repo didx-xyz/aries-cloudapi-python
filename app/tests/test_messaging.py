@@ -1,5 +1,6 @@
 import pytest
 from httpx import Response
+from aries_cloudcontroller import SendMessage, PingRequest
 from generic.messaging import Message, TrustPingMsg
 from .test_issuer_v1 import (
     create_bob_and_alice_connect,
@@ -14,11 +15,11 @@ BASE_PATH_CON = "/generic/connections"
 
 @pytest.mark.asyncio()
 async def test_send_trust_ping(alice_connection_id, async_client_alice_module_scope):
-    message = TrustPingMsg(
-        connection_id=alice_connection_id, comment_msg="Donda"
+    trustping_msg = TrustPingMsg(
+        conn_id=alice_connection_id, pingRequest=PingRequest(comment="Donda")
     ).json()
     response = await async_client_alice_module_scope.post(
-        MESSAGE_PATH + "/trust-ping", data=message
+        MESSAGE_PATH + "/trust-ping", data=trustping_msg
     )
     assert type(response) is Response
     assert response.status_code == 200
@@ -28,7 +29,9 @@ async def test_send_trust_ping(alice_connection_id, async_client_alice_module_sc
 
 @pytest.mark.asyncio()
 async def test_send_message(alice_connection_id, async_client_alice_module_scope):
-    message = Message(connection_id=alice_connection_id, msg="Donda").json()
+    message = Message(
+        conn_id=alice_connection_id, sendMessage=SendMessage(content="Donda")
+    ).json()
     response = await async_client_alice_module_scope.post(
         MESSAGE_PATH + "/send-message", data=message
     )

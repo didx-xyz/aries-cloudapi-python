@@ -5,6 +5,7 @@ import time
 from contextlib import asynccontextmanager
 
 from assertpy import assert_that
+from aries_cloudcontroller import ReceiveInvitationRequest
 
 import dependencies
 import pytest
@@ -143,7 +144,7 @@ async def fixture_create_wallets_mock(async_client):
 async def test_create_invite(async_client, create_wallets_mock):
     yoda, _ = create_wallets_mock
 
-    yoda_wallet_id = yoda["wallet_id"]
+    yoda_wallet_id = yoda["settings"]["wallet.id"]
 
     yoda_token_response = await async_client.get(
         f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
@@ -157,9 +158,11 @@ async def test_create_invite(async_client, create_wallets_mock):
     yoda_token = yoda_token_response.json()["token"]
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {yoda_token}", x_wallet_id=yoda_wallet_id
+        x_auth=f"Bearer {yoda_token}"
     ) as member_agent:
-        invite_creation_response = await create_invite(member_agent)
+        invite_creation_response = (
+            await create_invite(aries_controller=member_agent)
+        ).dict()
     assert (
         invite_creation_response["connection_id"]
         and invite_creation_response["connection_id"] != {}
@@ -169,8 +172,8 @@ async def test_create_invite(async_client, create_wallets_mock):
         and invite_creation_response["invitation"] != {}
     )
     assert (
-        invite_creation_response["invitation"]["@id"]
-        and invite_creation_response["invitation"]["@id"] != {}
+        invite_creation_response["invitation"]["id"]
+        and invite_creation_response["invitation"]["id"] != {}
     )
 
 
@@ -185,9 +188,11 @@ async def test_accept_invite(async_client, create_wallets_mock):
     async with asynccontextmanager(dependencies.member_agent)(
         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
     ) as member_agent:
-        accept_invite_response = await accept_invite(
-            invite=invite, aries_controller=member_agent
-        )
+        accept_invite_response = (
+            await accept_invite(
+                invite=ReceiveInvitationRequest(**invite), aries_controller=member_agent
+            )
+        ).dict()
     assert (
         accept_invite_response["accept"] and accept_invite_response["accept"] == "auto"
     )
@@ -213,7 +218,7 @@ async def test_get_connections(async_client, create_wallets_mock):
         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
     ) as member_agent:
         await accept_invite(invite=invite, aries_controller=member_agent)
-        connection = await get_connections(aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
 
     assert connection["results"] and len(connection["results"]) >= 1
     assert (
@@ -246,10 +251,10 @@ async def test_get_connection_by_id(async_client, create_wallets_mock):
         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
     ) as member_agent:
         await accept_invite(invite=invite, aries_controller=member_agent)
-        connection = await get_connections(aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
         connection_id = connection["results"][0]["connection_id"]
         connection_from_method = await get_connection_by_id(
-            connection_id=connection_id, aries_controller=member_agent
+            conn_id=connection_id, aries_controller=member_agent
         )
     assert connection["results"][0] == connection_from_method
 
@@ -266,12 +271,12 @@ async def test_delete_connection(async_client, create_wallets_mock):
         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
     ) as member_agent:
         await accept_invite(invite=invite, aries_controller=member_agent)
-        connection = await get_connections(aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
         connection_id = connection["results"][0]["connection_id"]
         await delete_connection_by_id(
-            connection_id=connection_id, aries_controller=member_agent
+            conn_id=connection_id, aries_controller=member_agent
         )
-        connection = await get_connections(aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
     assert connection["results"] == []
 
 
@@ -303,7 +308,7 @@ async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
     alice_connection_id = invite_response["connection_id"]
 
     # wait for events to be exchanged
-    time.sleep(10)
+    time.sleep(5)
 
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged

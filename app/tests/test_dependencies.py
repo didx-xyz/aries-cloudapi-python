@@ -3,9 +3,7 @@ from contextlib import asynccontextmanager
 import dependencies
 import pytest
 from aries_cloudcontroller import (
-    # AriesAgentController,
     AcaPyClient,
-    # AriesTenantController,
 )
 from assertpy import assert_that
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +14,7 @@ TEST_BEARER_HEADER = "Bearer x"
 
 
 def test_extract_token_from_bearer():
-    # assert_that(yoma_agent).is_type_of(AriesAgentController)
+    # assert_that(yoma_agent).is_type_of(AcaPyClient)
     assert_that(
         dependencies._extract_jwt_token_from_security_header("Bearer TOKEN")
     ).is_equal_to("TOKEN")
@@ -28,7 +26,7 @@ async def test_yoma_agent():
         x_api_key="adminApiKey"
     ) as c:
         assert c is not None
-        assert c.api_key == "adminApiKey"
+        assert c.client.headers["x-api-key"] == "adminApiKey"
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.yoma_agent)() as c:
@@ -41,7 +39,7 @@ async def test_ecosystem_agent():
         x_api_key="adminApiKey", x_auth="Bearer 12345", x_wallet_id="12345"
     ) as c:
         assert c is not None
-        assert c.tenant_jwt == "12345"
+        assert c.client.headers["authorization"] == "Bearer 12345"
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.ecosystem_agent)() as c:
@@ -54,7 +52,7 @@ async def test_member_agent():
         x_auth="Bearer 12345", x_wallet_id="12345"
     ) as c:
         assert c is not None
-        assert c.tenant_jwt == "12345"
+        assert c.client.headers["authorization"] == "Bearer 12345"
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.member_agent)() as c:
@@ -67,8 +65,8 @@ async def test_member_admin_agent():
         x_api_key="adminApiKey"
     ) as c:
         assert c is not None
-        assert c.api_key == "adminApiKey"
-        assert c.multitenant is not None
+        assert c.client.headers["x-api-key"] == "adminApiKey"
+        assert c.multitenancy is not None
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.member_admin_agent)() as c:
@@ -133,7 +131,7 @@ async def test_agent_selector(
         )
     )
     assert type(c) == controller_type
-    assert c.admin_url == "ecosystem-agent-url"
+    assert c.base_url == "ecosystem-agent-url"
 
     c = await async_next(
         dependency_function(
@@ -141,15 +139,15 @@ async def test_agent_selector(
         )
     )
     assert type(c) == controller_type
-    assert c.admin_url == "member-agent-url"
+    assert c.base_url == "member-agent-url"
 
     c = await async_next(
         dependency_function(
             x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="yoma"
         )
     )
-    assert type(c) == AriesAgentController
-    assert c.admin_url == "yoma-agent-url"
+    assert type(c) == AcaPyClient
+    assert c.base_url == "yoma-agent-url"
 
 
 @pytest.mark.asyncio
@@ -205,25 +203,29 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         }
     )
     # then
-    assert injected_controller.admin_url == dependencies.YOMA_AGENT_URL
-    assert injected_controller.api_key == "ADDASDFDFF"
-    assert type(injected_controller) == AriesAgentController
+    assert injected_controller.base_url == dependencies.YOMA_AGENT_URL
+    assert injected_controller.client.headers["x-api-key"] == "ADDASDFDFF"
+    assert type(injected_controller) == AcaPyClient
 
     # when
     await make_call(headers={"x-role": "ecosystem", "x-auth": "Bearer X"})
     # then
-    assert injected_controller.admin_url == dependencies.ECOSYSTEM_AGENT_URL
-    assert injected_controller.tenant_jwt == "X"
-    assert injected_controller.api_key == dependencies.EMBEDDED_API_KEY
-    assert type(injected_controller) == AriesTenantController
+    assert injected_controller.base_url == dependencies.ECOSYSTEM_AGENT_URL
+    assert injected_controller.client.headers["authorization"] == "Bearer X"
+    assert (
+        injected_controller.client.headers["x-api-key"] == dependencies.EMBEDDED_API_KEY
+    )
+    assert type(injected_controller) == AcaPyClient
 
     # when
     await make_call(headers={"x-role": "member", "x-auth": "Bearer Y"})
     # then
-    assert injected_controller.admin_url == dependencies.MEMBER_AGENT_URL
-    assert injected_controller.tenant_jwt == "Y"
-    assert injected_controller.api_key == dependencies.EMBEDDED_API_KEY
-    assert type(injected_controller) == AriesTenantController
+    assert injected_controller.base_url == dependencies.MEMBER_AGENT_URL
+    assert injected_controller.client.headers["authorization"] == "Bearer Y"
+    assert (
+        injected_controller.client.headers["x-api-key"] == dependencies.EMBEDDED_API_KEY
+    )
+    assert type(injected_controller) == AcaPyClient
 
     # admin agents
     # when
@@ -243,9 +245,9 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         },
     )
     # then
-    assert injected_controller.admin_url == dependencies.YOMA_AGENT_URL
-    assert injected_controller.api_key == "ADDASDFDFF"
-    assert type(injected_controller) == AriesAgentController
+    assert injected_controller.base_url == dependencies.YOMA_AGENT_URL
+    assert injected_controller.client.headers["x-api-key"] == "ADDASDFDFF"
+    assert type(injected_controller) == AcaPyClient
 
     # when
     await make_call(
@@ -257,9 +259,9 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         },
     )
     # then
-    assert injected_controller.admin_url == dependencies.ECOSYSTEM_AGENT_URL
-    assert injected_controller.api_key == "provided-api-key"
-    assert type(injected_controller) == AriesAgentController
+    assert injected_controller.base_url == dependencies.ECOSYSTEM_AGENT_URL
+    assert injected_controller.client.headers["x-api-key"] == "provided-api-key"
+    assert type(injected_controller) == AcaPyClient
 
     # when
     await make_call(
@@ -271,9 +273,9 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         },
     )
     # then
-    assert injected_controller.admin_url == dependencies.MEMBER_AGENT_URL
-    assert injected_controller.api_key == "provided-x-api-key-1"
-    assert type(injected_controller) == AriesAgentController
+    assert injected_controller.base_url == dependencies.MEMBER_AGENT_URL
+    assert injected_controller.client.headers["x-api-key"] == "provided-x-api-key-1"
+    assert type(injected_controller) == AcaPyClient
 
 
 @pytest.mark.asyncio
@@ -282,8 +284,8 @@ async def test_ecosystem_admin_agent():
         x_api_key="adminApiKey"
     ) as c:
         assert c is not None
-        assert c.api_key == "adminApiKey"
-        assert c.multitenant is not None
+        assert c.client.headers["x-api-key"] == "adminApiKey"
+        assert c.multitenancy is not None
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.ecosystem_admin_agent)() as c:

@@ -36,7 +36,10 @@ async def send_messages(
     ---------
     The response object obtained when sending a message.
     """
-    send = await aries_controller.basicmessage.send_message()
+    send = await aries_controller.basicmessage.send_message(
+        conn_id=message.conn_id, body=message.sendMessage
+    )
+    return send
 
 
 @router.post("/trust-ping")

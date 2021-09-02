@@ -116,7 +116,7 @@ async def send_credential(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Create and send credential.
+    Create and send credential. Automating the entire flow.
 
     Parameters:
     ------------

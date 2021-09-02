@@ -386,11 +386,11 @@ async def update_subwallet(
     ---------
     The response object from updating a subwallet.
     """
-    return await aries_controller.multitenancy.update_subwallet_by_id(
-        json.loads(
+    return await aries_controller.multitenancy.update_wallet(
+        body=json.loads(
             payload.json(exclude_unset=True, exclude_defaults=True, exclude_none=True)
         ),
-        wallet_id,
+        wallet_id=wallet_id,
     )
 
 
@@ -423,4 +423,4 @@ async def get_subwallet(
     -------------
     wallet_id: str
     """
-    return await aries_controller.multitenancy.get_single_subwallet_by_id(wallet_id)
+    return await aries_controller.multitenancy.get_wallet(wallet_id=wallet_id)

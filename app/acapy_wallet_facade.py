@@ -2,6 +2,7 @@ import logging
 
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did_create import DIDCreate
+from aries_cloudcontroller.model.did_create_options import DIDCreateOptions
 from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)

@@ -177,7 +177,8 @@ async def problem_report(
         credential exchange id
     """
     return await aries_controller.issue_credential_v1_0.report_problem(
-        credential_x_id, explanation=explanation["description"]
+        cred_ex_id=credential_x_id,
+        body=V10CredentialProblemReportRequest(description=explanation["description"]),
     )
 
 
@@ -223,7 +224,9 @@ async def send_credential_request(
     --------
         The response object obtained from sending a credential offer.
     """
-    return await aries_controller.issue_credential_v1_0.send_request(credential_x_id)
+    return await aries_controller.issue_credential_v1_0.send_request(
+        cred_ex_id=credential_x_id
+    )
 
 
 @router.get("/credential/store", response_model=V10CredentialStoreRequest)

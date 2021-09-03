@@ -3,6 +3,7 @@ import json
 import time
 from assertpy import assert_that
 
+import acapy_ledger_facade
 from admin.governance.credential_definitions import (
     CredentialDefinition,
     create_credential_definition,
@@ -109,7 +110,7 @@ async def schema_definition(yoma_agent_module_scope):
         name="test_schema", version="0.3", attributes=["speed"]
     )
 
-    public_did = await create_public_did(yoma_agent_module_scope)
+    public_did = await acapy_ledger_facade.create_pub_did(yoma_agent_module_scope)
     print(f"created did: {public_did}")
     schema_definition_result = await create_schema(definition, yoma_agent_module_scope)
     print(schema_definition_result)

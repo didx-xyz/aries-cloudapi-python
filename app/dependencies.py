@@ -96,10 +96,9 @@ async def ecosystem_agent(
 
         # yield the controller
         agent = AcaPyClient(
-            ECOSYSTEM_AGENT_URL,
+            base_url=ECOSYSTEM_AGENT_URL,
             api_key=EMBEDDED_API_KEY,
             tenant_jwt=tenant_jwt,
-            admin_insecure=x_api_key == None
             # TODO: where is the wallet id used (webhooks?)
             # wallet_id=x_wallet_id,
         )
@@ -149,7 +148,9 @@ async def member_admin_agent(
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
         agent = AcaPyClient(
-            MEMBER_AGENT_URL, api_key=x_api_key, admin_insecure=x_api_key == None
+            base_url=MEMBER_AGENT_URL,
+            api_key=x_api_key,
+            admin_insecure=x_api_key == None,
         )
         yield agent
     except Exception as e:

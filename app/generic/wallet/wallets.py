@@ -2,6 +2,8 @@ import logging
 
 from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller.model.did_create import DIDCreate
+from aries_cloudcontroller.model.did_create_options import DIDCreateOptions
 from schemas import (
     DidCreationResponse,
 )
@@ -47,7 +49,7 @@ async def create_local_did(
     Create Local DID
     """
 
-    return await aries_controller.wallet.create_did()
+    return await aries_controller.wallet.create_did(body={})
 
 
 @router.get("/list-dids")

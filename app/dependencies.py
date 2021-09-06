@@ -148,6 +148,7 @@ async def member_admin_agent(
         agent = AcaPyClient(
             base_url=MEMBER_AGENT_URL,
             api_key=x_api_key,
+            admin_insecure=True,
         )
         yield agent
     except Exception as e:

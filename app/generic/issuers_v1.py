@@ -118,7 +118,7 @@ async def get_records(
     """
     Get list of records.
     """
-    return await aries_controller.issuer_credential_v1_0.get_records()
+    return await aries_controller.issue_credential_v1_0.get_records()
 
 
 @router.get("/credential", response_model=V10CredentialExchange)
@@ -135,7 +135,7 @@ async def get_x_record(
         credential exchange id
 
     """
-    return await aries_controller.issuer_credential_v1_0.get_record(
+    return await aries_controller.issue_credential_v1_0.get_record(
         cred_ex_id=credential_x_id
     )
 
@@ -176,8 +176,9 @@ async def problem_report(
     credential_x_id: str
         credential exchange id
     """
-    return await aries_controller.issuer_credential_v1_0.send_problem_report(
-        credential_x_id, explanation=explanation["description"]
+    return await aries_controller.issue_credential_v1_0.report_problem(
+        cred_ex_id=credential_x_id,
+        body=V10CredentialProblemReportRequest(description=explanation["description"]),
     )
 
 
@@ -201,7 +202,7 @@ async def send_offer(
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
-    return await aries_controller.issuer_credential_v1_0.send_offer(
+    return await aries_controller.issue_credential_v1_0.send_offer(
         credential_helper.connection_id, cred_def_id, credential_attributes
     )
 
@@ -223,7 +224,9 @@ async def send_credential_request(
     --------
         The response object obtained from sending a credential offer.
     """
-    return await aries_controller.issuer_credential_v1_0.send_request(credential_x_id)
+    return await aries_controller.issue_credential_v1_0.send_request(
+        cred_ex_id=credential_x_id
+    )
 
 
 @router.get("/credential/store", response_model=V10CredentialStoreRequest)
@@ -243,7 +246,7 @@ async def store_credential(
         credential identifier
 
     """
-    return await aries_controller.issuer_credential_v1_0.store_credential(
+    return await aries_controller.issue_credential_v1_0.store_credential(
         credential_x_id, credential_id
     )
 
@@ -268,7 +271,7 @@ async def send_credential_proposal(
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
-    return await aries_controller.issuer_credential_v1_0.send_proposal(
+    return await aries_controller.issue_credential_v1_0.send_proposal(
         connection_id=credential_helper.connection_id,
         schema_id=credential_helper.schema_id,
         cred_def_id=cred_def_id,

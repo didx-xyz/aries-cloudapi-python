@@ -36,7 +36,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     return taa, "service_agreement"
 
 
-async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str):
+async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
     """
     Accept the TAA
 

@@ -73,20 +73,17 @@ async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
             schema_id=schema_id, tag="default", support_revocation=False
         )
     )
-    if (
-        not write_cred_response.sent
-        or not write_cred_response.sent.credential_definition_id
-    ):
+    if not write_cred_response.credential_definition_id:
         raise HTTPException(
             status_code=404,
             detail="Something went wrong. Could not write credential definition to the ledger",
         )
-    return write_cred_response.sent.credential_definition_id
+    return write_cred_response
 
 
 async def get_cred_def_id(
     controller: AcaPyClient,
-    credential_def: Union[CredentialDefinition],
+    credential_def: CredentialDefinition,
 ):
     """
     Obtains the credential definition id
@@ -105,9 +102,7 @@ async def get_cred_def_id(
     """
 
     # TODO Determine what is funky here?!
-    credential_def.id
-    credential_def.sent.credential_definition_id
-    cred_def_id = credential_def["credential_definition_id"]
+    cred_def_id = credential_def
     if not cred_def_id:
         raise HTTPException(
             status_code=404,
@@ -128,7 +123,7 @@ async def issue_credentials(
             connection_id=connection_id,
             schema_id=schema_id,
             cred_def_id=cred_def_id,
-            credential_attributes=credential_attributes,
+            credential_proposal=CredentialPreview(attributes=credential_attributes),
             auto_remove=False,
             trace=False,
         )

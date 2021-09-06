@@ -3,7 +3,6 @@ from typing import Optional
 from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinitionSendRequest,
-    TxnOrCredentialDefinitionSendResult,
 )
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends
@@ -21,7 +20,7 @@ class CredentialDefinition(BaseModel):
     schema_id: str
 
 
-@router.post("/", response_model=TxnOrCredentialDefinitionSendResult)
+@router.post("/")
 async def create_credential_definition(
     credential_definition: CredentialDefinition,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -38,12 +37,9 @@ async def create_credential_definition(
     --------
     The response object obtained from creating a credential definition.
     """
-    credential_definition_result = (
-        await aries_controller.credential_definition.publish_cred_def(
-            body=CredentialDefinitionSendRequest(**credential_definition.dict())
-        )
+    return await aries_controller.credential_definition.publish_cred_def(
+        body=CredentialDefinitionSendRequest(**credential_definition.dict())
     )
-    return credential_definition_result
 
 
 @router.get("/created")
@@ -72,7 +68,7 @@ async def get_created_credential_definitions(
     ---------
     The created credential definitions.
     """
-    return await aries_controller.credential_definition.get_created_cred_defs(
+    result = await aries_controller.credential_definition.get_created_cred_defs(
         issuer_did=issuer_did,
         cred_def_id=cred_def_id,
         schema_id=schema_id,
@@ -80,6 +76,9 @@ async def get_created_credential_definitions(
         schema_name=schema_name,
         schema_version=schema_version,
     )
+    async with result:
+        content = await result.json()
+    return content
 
 
 @router.get("/{cred_def_id}")
@@ -96,6 +95,9 @@ async def get_credential_definition(
         credential definition id
 
     """
-    return await aries_controller.credential_definition.get_cred_def(
+    result = await aries_controller.credential_definition.get_cred_def(
         cred_def_id=cred_def_id
     )
+    async with result:
+        content = await result.json()
+    return content

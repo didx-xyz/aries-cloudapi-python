@@ -86,9 +86,9 @@ async def test_get_did_endpoint(async_client, create_did_mock):
 @pytest.mark.asyncio
 async def test_assign_pub_did(async_client, yoma_agent_mock):
     generate_did_res = await wallet_facade.create_did(yoma_agent_mock)
-    did_object = generate_did_res["result"]
+    did_object = generate_did_res
     await ledger_facade.post_to_ledger(did_object=did_object)
-    did = did_object["did"]
+    did = did_object.did
     response = await async_client.get(
         f"/wallet/assign-pub-did?did={did}",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},

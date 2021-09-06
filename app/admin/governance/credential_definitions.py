@@ -1,10 +1,8 @@
-from typing import Optional, Any
+from typing import Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    CredentialDefinitionGetResult,
     CredentialDefinitionSendRequest,
-    CredentialDefinitionsCreatedResult,
     TxnOrCredentialDefinitionSendResult,
 )
 from dependencies import agent_selector

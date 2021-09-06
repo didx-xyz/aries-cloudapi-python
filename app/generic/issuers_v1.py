@@ -1,38 +1,25 @@
 import logging
 from aries_cloudcontroller.model.credential_preview import CredentialPreview
 from aries_cloudcontroller.model.credential_proposal import CredentialProposal
-from aries_cloudcontroller.model.v10_presentation_proposal_request import (
-    V10PresentationProposalRequest,
-)
-
-from numpy import record
 
 from dependencies import agent_selector
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    V10CredentialCreate,
     V10CredentialExchange,
     V10CredentialBoundOfferRequest,
-    V10CredentialExchangeListResult,
-    V10CredentialFreeOfferRequest,
-    V10CredentialIssueRequest,
     V10CredentialProblemReportRequest,
-    V10CredentialProposalRequestMand,
     V10CredentialProposalRequestOpt,
-    V10CredentialStoreRequest,
 )
 
 from pydantic import BaseModel
 from typing import List, Optional
 from facade import (
-    get_cred_def_id,
     get_schema_attributes,
     issue_credentials,
     write_credential_def,
 )
 from fastapi import APIRouter, Depends
-from schemas import IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
 

@@ -43,9 +43,9 @@ async def fixture_create_wallet(async_client, member_admin_agent_mock):
     wallets = await query_subwallet(
         wallet_name=None, aries_controller=member_admin_agent_mock
     )
-    for w in wallets["results"]:
+    for w in wallets.results:
         await async_client.delete(
-            f"{WALLET_PATH}/{w['wallet_id']}",
+            f"{WALLET_PATH}/{w.wallet_id}",
             headers=WALLET_HEADERS,
         )
 
@@ -109,7 +109,8 @@ async def test_update_wallet(async_client, create_wallet, member_admin_agent_moc
     res_method = await get_subwallet(
         wallet_id=wallet_id, aries_controller=member_admin_agent_mock
     )
-    assert_that(res_method["settings"]["image_url"]).is_equal_to("update")
+    res_method.json()
+    assert_that(res_method.settings["image_url"]).is_equal_to("update")
 
 
 @pytest.mark.asyncio
@@ -120,7 +121,8 @@ async def test_query_subwallet(async_client, member_admin_agent_mock, create_wal
     )
     query_response = query_response.json()
     res_method = await query_subwallet(aries_controller=member_admin_agent_mock)
-    assert len(res_method["results"]) == len(query_response["results"])
+    res_method.json()
+    assert len(res_method.results) == len(query_response["results"])
 
 
 # @pytest.mark.skip(reason="until wallet_name is honoured by cloudcontroller")

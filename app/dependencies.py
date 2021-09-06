@@ -22,9 +22,7 @@ async def yoma_agent(x_api_key: str = Header(None)):
     try:
         if str(x_api_key) == "extra={}":
             raise HTTPException(401)
-        agent = AcaPyClient(
-            YOMA_AGENT_URL, api_key=x_api_key, admin_insecure=x_api_key == None
-        )
+        agent = AcaPyClient(YOMA_AGENT_URL, api_key=x_api_key)
         yield agent
     except Exception as e:
         # We can only log this here and not raise an HTTPExeption as
@@ -150,7 +148,6 @@ async def member_admin_agent(
         agent = AcaPyClient(
             base_url=MEMBER_AGENT_URL,
             api_key=x_api_key,
-            admin_insecure=x_api_key == None,
         )
         yield agent
     except Exception as e:
@@ -173,7 +170,6 @@ async def ecosystem_admin_agent(
         agent = AcaPyClient(
             base_url=ECOSYSTEM_AGENT_URL,
             api_key=x_api_key,
-            admin_insecure=x_api_key == None,
         )
         yield agent
     except Exception as e:

@@ -2,8 +2,8 @@ import logging
 
 from fastapi import APIRouter, Depends
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.model.did_create import DIDCreate
-from aries_cloudcontroller.model.did_create_options import DIDCreateOptions
+from aries_cloudcontroller.model.did_endpoint_with_type import DIDEndpointWithType
+
 from schemas import (
     DidCreationResponse,
 )
@@ -89,7 +89,7 @@ async def get_did_endpoint(
     """
     Get DID endpoint.
     """
-    return await aries_controller.wallet.get_did_endpoint(did)
+    return await aries_controller.wallet.get_did_endpoint(did=did)
 
 
 @router.get("/assign-pub-did")
@@ -104,7 +104,7 @@ async def assign_pub_did(
     ----------
     did: str
     """
-    return await aries_controller.wallet.set_public_did(did)
+    return await aries_controller.wallet.set_public_did(did=did)
 
 
 @router.post("/set-did-endpoint")
@@ -122,4 +122,8 @@ async def set_did_endpoint(
     did: str
     endpoint: str
     """
-    return await aries_controller.wallet.set_did_endpoint(did, endpoint, endpoint_type)
+    return await aries_controller.wallet.set_did_endpoint(
+        body=DIDEndpointWithType(
+            did=did, endpoint=endpoint, endpoint_type=endpoint_type
+        )
+    )

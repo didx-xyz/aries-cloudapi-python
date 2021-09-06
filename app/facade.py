@@ -1,11 +1,10 @@
 import logging
-from typing import List, TypeVar, Union
+from typing import List, TypeVar
 
 from aries_cloudcontroller import (
     AcaPyClient,
     SchemaGetResult,
     CredentialDefinitionSendRequest,
-    CredentialDefinition,
     CredentialPreview,
     SchemaSendRequest,
     V10CredentialProposalRequestMand,
@@ -79,36 +78,6 @@ async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
             detail="Something went wrong. Could not write credential definition to the ledger",
         )
     return write_cred_response
-
-
-async def get_cred_def_id(
-    controller: AcaPyClient,
-    credential_def: CredentialDefinition,
-):
-    """
-    Obtains the credential definition id
-
-    Parameters:
-    ----------
-    controller: AcaPyClient
-        The aries_cloudcontroller object
-
-    credential_def : The credential definition whose id we wish to obtain
-
-    Returns:
-    -------
-    cred_def_id : dict
-        The credential definition id
-    """
-
-    # TODO Determine what is funky here?!
-    cred_def_id = credential_def
-    if not cred_def_id:
-        raise HTTPException(
-            status_code=404,
-            detail="Something went wrong. Could not find credential definition id from the provided credential definition",
-        )
-    return cred_def_id
 
 
 async def issue_credentials(

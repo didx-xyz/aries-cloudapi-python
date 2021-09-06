@@ -4,7 +4,6 @@ from aries_cloudcontroller import (
     AcaPyClient,
     SchemaSendRequest,
     SchemaSendResult,
-    TxnOrSchemaSendResult,
     SchemaGetResult,
     SchemasCreatedResult,
 )

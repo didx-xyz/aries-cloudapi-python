@@ -1,5 +1,4 @@
 import pytest
-import json
 
 from acapy_ledger_facade import accept_taa, get_did_endpoint, get_taa
 from fastapi import HTTPException

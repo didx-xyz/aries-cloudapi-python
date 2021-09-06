@@ -10,14 +10,12 @@ from admin.governance.credential_definitions import (
     get_credential_definition,
 )
 from admin.governance.schemas import SchemaDefinition, create_schema
-from tests.admin.governance.schemas.test_schemas import create_public_did
 from tests.utils_test import get_random_string
 
 import pytest
 from generic.issuers_v1 import (
     CredentialHelper,
 )
-from aries_cloudcontroller import CredentialProposal
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/generic/issuers/v1"

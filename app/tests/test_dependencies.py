@@ -10,7 +10,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from httpx import AsyncClient
 from main import app
 
+
 TEST_BEARER_HEADER = "Bearer x"
+TEST_BEARER_HEADER_2 = "Bearer Y"
+BEARER_TOKEN = "Bearer 12345"
 
 
 def test_extract_token_from_bearer():
@@ -36,10 +39,10 @@ async def test_yoma_agent():
 @pytest.mark.asyncio
 async def test_ecosystem_agent():
     async with asynccontextmanager(dependencies.ecosystem_agent)(
-        x_api_key="adminApiKey", x_auth="Bearer 12345", x_wallet_id="12345"
+        x_api_key="adminApiKey", x_auth=BEARER_TOKEN, x_wallet_id="12345"
     ) as c:
         assert c is not None
-        assert c.client.headers["authorization"] == "Bearer 12345"
+        assert c.client.headers["authorization"] == BEARER_TOKEN
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.ecosystem_agent)() as c:
@@ -49,10 +52,10 @@ async def test_ecosystem_agent():
 @pytest.mark.asyncio
 async def test_member_agent():
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth="Bearer 12345", x_wallet_id="12345"
+        x_auth=BEARER_TOKEN, x_wallet_id="12345"
     ) as c:
         assert c is not None
-        assert c.client.headers["authorization"] == "Bearer 12345"
+        assert c.client.headers["authorization"] == BEARER_TOKEN
 
     with pytest.raises(HTTPException):
         async with asynccontextmanager(dependencies.member_agent)() as c:
@@ -208,20 +211,20 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
     assert isinstance(injected_controller, AcaPyClient)
 
     # when
-    await make_call(headers={"x-role": "ecosystem", "x-auth": "Bearer X"})
+    await make_call(headers={"x-role": "ecosystem", "x-auth": TEST_BEARER_HEADER})
     # then
     assert injected_controller.base_url == dependencies.ECOSYSTEM_AGENT_URL
-    assert injected_controller.client.headers["authorization"] == "Bearer X"
+    assert injected_controller.client.headers["authorization"] == TEST_BEARER_HEADER
     assert (
         injected_controller.client.headers["x-api-key"] == dependencies.EMBEDDED_API_KEY
     )
     assert isinstance(injected_controller, AcaPyClient)
 
     # when
-    await make_call(headers={"x-role": "member", "x-auth": "Bearer Y"})
+    await make_call(headers={"x-role": "member", "x-auth": TEST_BEARER_HEADER_2})
     # then
     assert injected_controller.base_url == dependencies.MEMBER_AGENT_URL
-    assert injected_controller.client.headers["authorization"] == "Bearer Y"
+    assert injected_controller.client.headers["authorization"] == TEST_BEARER_HEADER_2
     assert (
         injected_controller.client.headers["x-api-key"] == dependencies.EMBEDDED_API_KEY
     )
@@ -255,7 +258,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         headers={
             "x-api-key": "provided-api-key",
             "x-role": "ecosystem",
-            "x-auth": "Bearer X",
+            "x-auth": TEST_BEARER_HEADER,
         },
     )
     # then
@@ -269,7 +272,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         headers={
             "x-api-key": "provided-x-api-key-1",
             "x-role": "member",
-            "x-auth": "Bearer Y",
+            "x-auth": TEST_BEARER_HEADER_2,
         },
     )
     # then

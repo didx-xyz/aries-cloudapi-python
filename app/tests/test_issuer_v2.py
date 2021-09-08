@@ -150,10 +150,7 @@ async def test_all(
             )
         ).json()
         assert cred_offer_res["auto_issue"]
-        if cred_offer_res and "connection_id" in cred_offer_res.keys():
-            assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
-        else:
-            assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
+        assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
         assert (
             cred_offer_res["by_format"]["cred_offer"]["indy"]["schema_id"]
             == SCHEMA_DEFINITION_RESULT["schema_id"]

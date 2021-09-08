@@ -25,7 +25,7 @@ async def create_invite(
     auto_accept: Optional[bool] = None,
     multi_use: Optional[bool] = None,
     public: Optional[bool] = None,
-    createInvitationRequest: Optional[CreateInvitationRequest] = {},
+    create_invitation_request: Optional[CreateInvitationRequest] = {},
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -36,7 +36,7 @@ async def create_invite(
         auto_accept=auto_accept,
         multi_use=multi_use,
         public=public,
-        body=createInvitationRequest,
+        body=create_invitation_request,
     )
     return invite
 

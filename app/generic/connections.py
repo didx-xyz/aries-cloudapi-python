@@ -1,8 +1,10 @@
 import logging
 from typing import Optional
+import os
 
 from aries_cloudcontroller import (
     AcaPyClient,
+    ConnectionStaticRequest,
     InvitationResult,
     InvitationMessage,
     InvitationRecord,
@@ -14,8 +16,11 @@ from aries_cloudcontroller import (
 from aries_cloudcontroller.model.invitation_create_request import (
     InvitationCreateRequest,
 )
-from dependencies import agent_selector
+from dependencies import agent_selector, member_admin_agent
+from admin.governance.dids import get_trusted_partner
 from fastapi import APIRouter, Depends, Request, Header
+
+ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "adminApiKey")
 
 logger = logging.getLogger(__name__)
 
@@ -167,3 +172,38 @@ async def receive_invite_oob(
         body=body,
     )
     return conn_record
+
+
+@router.post("/oob/create-static")
+async def oob_create_static(
+    their_did: Optional[str] = None,
+    their_verkey: Optional[str] = None,
+    my_verkey: Optional[str] = None,
+    body: Optional[ConnectionStaticRequest] = None,
+    aries_controller: AcaPyClient = Depends(agent_selector),
+):
+    """
+    Create a static connection
+    """
+
+    """
+    We need to obtain the following for a succesfull request:
+
+    mv_verkey: str
+    my_did: str
+    my_endpoint: str
+    their_did: str
+    their_verkey: str
+    """
+    if their_did:
+        body.their_did = their_did
+        their_endpoint = await get_trusted_partner(
+            partner_did=their_did,
+            aries_controller=member_admin_agent(x_api_key=ADMIN_API_KEY),
+        )
+        body.their_endpoint = their_endpoint
+
+    conn_static_result = await aries_controller.connection.create_static_connection(
+        body=body,
+    )
+    return conn_static_result

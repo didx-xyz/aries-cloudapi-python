@@ -5,7 +5,7 @@ import time
 from contextlib import asynccontextmanager
 
 from assertpy import assert_that
-from aries_cloudcontroller import ReceiveInvitationRequest
+from aries_cloudcontroller import ReceiveInvitationRequest, ConnectionStaticRequest
 
 import dependencies
 import pytest
@@ -17,6 +17,7 @@ from generic.connections import (
     get_connections,
     create_invite_oob,
     receive_invite_oob,
+    oob_create_static,
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
@@ -145,208 +146,208 @@ async def fixture_create_wallets_mock(async_client):
     assert han_response.json() == {"status": "Successfully removed wallet"}
 
 
-# @pytest.mark.asyncio
-# async def test_create_invite(async_client, create_wallets_mock):
-#     yoda, _ = create_wallets_mock
+@pytest.mark.asyncio
+async def test_create_invite(async_client, create_wallets_mock):
+    yoda, _ = create_wallets_mock
 
-#     yoda_wallet_id = yoda["settings"]["wallet.id"]
+    yoda_wallet_id = yoda["settings"]["wallet.id"]
 
-#     yoda_token_response = await async_client.get(
-#         f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
-#         headers={
-#             "x-api-key": "adminApiKey",
-#             "x-role": "member",
-#             **APPLICATION_JSON_CONTENT_TYPE,
-#         },
-#     )
+    yoda_token_response = await async_client.get(
+        f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "member",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
+    )
 
-#     yoda_token = yoda_token_response.json()["token"]
+    yoda_token = yoda_token_response.json()["token"]
 
-#     async with asynccontextmanager(dependencies.member_agent)(
-#         x_auth=f"Bearer {yoda_token}"
-#     ) as member_agent:
-#         invite_creation_response = (
-#             await create_invite(aries_controller=member_agent)
-#         ).dict()
-#     assert (
-#         invite_creation_response["connection_id"]
-#         and invite_creation_response["connection_id"] != {}
-#     )
-#     assert (
-#         invite_creation_response["invitation"]
-#         and invite_creation_response["invitation"] != {}
-#     )
-#     assert (
-#         invite_creation_response["invitation"]["id"]
-#         and invite_creation_response["invitation"]["id"] != {}
-#     )
-
-
-# @pytest.mark.asyncio
-# async def test_accept_invite(async_client, create_wallets_mock):
-#     yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
-#         async_client, create_wallets_mock
-#     )
-
-#     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
-
-#     async with asynccontextmanager(dependencies.member_agent)(
-#         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
-#     ) as member_agent:
-#         accept_invite_response = (
-#             await accept_invite(
-#                 invite=ReceiveInvitationRequest(**invite), aries_controller=member_agent
-#             )
-#         ).dict()
-#     assert (
-#         accept_invite_response["accept"] and accept_invite_response["accept"] == "auto"
-#     )
-#     assert (
-#         accept_invite_response["created_at"]
-#         and accept_invite_response["created_at"] != ""
-#     )
-#     assert (
-#         accept_invite_response["invitation_key"]
-#         and accept_invite_response["invitation_key"] != ""
-#     )
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {yoda_token}"
+    ) as member_agent:
+        invite_creation_response = (
+            await create_invite(aries_controller=member_agent)
+        ).dict()
+    assert (
+        invite_creation_response["connection_id"]
+        and invite_creation_response["connection_id"] != {}
+    )
+    assert (
+        invite_creation_response["invitation"]
+        and invite_creation_response["invitation"] != {}
+    )
+    assert (
+        invite_creation_response["invitation"]["id"]
+        and invite_creation_response["invitation"]["id"] != {}
+    )
 
 
-# @pytest.mark.asyncio
-# async def test_get_connections(async_client, create_wallets_mock):
-#     yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
-#         async_client, create_wallets_mock
-#     )
+@pytest.mark.asyncio
+async def test_accept_invite(async_client, create_wallets_mock):
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
 
-#     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
-#     async with asynccontextmanager(dependencies.member_agent)(
-#         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
-#     ) as member_agent:
-#         await accept_invite(invite=invite, aries_controller=member_agent)
-#         connection = (await get_connections(aries_controller=member_agent)).dict()
-
-#     assert connection["results"] and len(connection["results"]) >= 1
-#     assert (
-#         connection["results"][0]["accept"]
-#         and connection["results"][0]["accept"] == "auto"
-#     )
-#     assert (
-#         connection["results"][0]["connection_id"]
-#         and connection["results"][0]["connection_id"] != ""
-#     )
-#     assert (
-#         connection["results"][0]["created_at"]
-#         and connection["results"][0]["created_at"] != ""
-#     )
-#     assert (
-#         connection["results"][0]["invitation_key"]
-#         and connection["results"][0]["invitation_key"] != ""
-#     )
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        accept_invite_response = (
+            await accept_invite(
+                invite=ReceiveInvitationRequest(**invite), aries_controller=member_agent
+            )
+        ).dict()
+    assert (
+        accept_invite_response["accept"] and accept_invite_response["accept"] == "auto"
+    )
+    assert (
+        accept_invite_response["created_at"]
+        and accept_invite_response["created_at"] != ""
+    )
+    assert (
+        accept_invite_response["invitation_key"]
+        and accept_invite_response["invitation_key"] != ""
+    )
 
 
-# @pytest.mark.asyncio
-# async def test_get_connection_by_id(async_client, create_wallets_mock):
-#     yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
-#         async_client, create_wallets_mock
-#     )
+@pytest.mark.asyncio
+async def test_get_connections(async_client, create_wallets_mock):
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
 
-#     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
-#     async with asynccontextmanager(dependencies.member_agent)(
-#         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
-#     ) as member_agent:
-#         await accept_invite(invite=invite, aries_controller=member_agent)
-#         connection = (await get_connections(aries_controller=member_agent)).dict()
-#         connection_id = connection["results"][0]["connection_id"]
-#         connection_from_method = await get_connection_by_id(
-#             conn_id=connection_id, aries_controller=member_agent
-#         )
-#     assert connection["results"][0] == connection_from_method
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        await accept_invite(invite=invite, aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
 
-
-# @pytest.mark.asyncio
-# async def test_delete_connection(async_client, create_wallets_mock):
-#     yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
-#         async_client, create_wallets_mock
-#     )
-
-#     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
-
-#     async with asynccontextmanager(dependencies.member_agent)(
-#         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
-#     ) as member_agent:
-#         await accept_invite(invite=invite, aries_controller=member_agent)
-#         connection = (await get_connections(aries_controller=member_agent)).dict()
-#         connection_id = connection["results"][0]["connection_id"]
-#         await delete_connection_by_id(
-#             conn_id=connection_id, aries_controller=member_agent
-#         )
-#         connection = (await get_connections(aries_controller=member_agent)).dict()
-#     assert connection["results"] == []
+    assert connection["results"] and len(connection["results"]) >= 1
+    assert (
+        connection["results"][0]["accept"]
+        and connection["results"][0]["accept"] == "auto"
+    )
+    assert (
+        connection["results"][0]["connection_id"]
+        and connection["results"][0]["connection_id"] != ""
+    )
+    assert (
+        connection["results"][0]["created_at"]
+        and connection["results"][0]["created_at"] != ""
+    )
+    assert (
+        connection["results"][0]["invitation_key"]
+        and connection["results"][0]["invitation_key"] != ""
+    )
 
 
-# @pytest.mark.asyncio
-# async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
-#     """this test validates that bob and alice connect successfully...
+@pytest.mark.asyncio
+async def test_get_connection_by_id(async_client, create_wallets_mock):
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
 
-#     NB: it assumes you have all the "auto connection" settings flagged as on.
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
-#     ACAPY_AUTO_ACCEPT_INVITES=true
-#     ACAPY_AUTO_ACCEPT_REQUESTS=true
-#     ACAPY_AUTO_PING_CONNECTION=true
-
-#     """
-#     # create invitation on bob side
-#     invitation = (await async_client_bob.get(BASE_PATH + "/create-invite")).json()
-#     bob_connection_id = invitation["connection_id"]
-#     connections = (await async_client_bob.get(BASE_PATH)).json()
-#     assert_that(connections["results"]).extracting("connection_id").contains_only(
-#         bob_connection_id
-#     )
-
-#     # accept invitation on alice side
-#     invite_response = (
-#         await async_client_alice.post(
-#             BASE_PATH + "/accept-invite", data=json.dumps(invitation["invitation"])
-#         )
-#     ).json()
-#     alice_connection_id = invite_response["connection_id"]
-
-#     # wait for events to be exchanged
-#     time.sleep(5)
-
-#     # fetch and validate
-#     # both connections should be active - we have waited long enough for events to be exchanged
-#     # and we are running in "auto connect" mode.
-#     bob_connections = (await async_client_bob.get(BASE_PATH)).json()
-#     alice_connections = (await async_client_alice.get(BASE_PATH)).json()
-
-#     assert_that(bob_connections["results"]).extracting("connection_id").contains(
-#         bob_connection_id
-#     )
-#     bob_connection = [
-#         c for c in bob_connections["results"] if c["connection_id"] == bob_connection_id
-#     ][0]
-#     assert_that(bob_connection).has_state("active")
-
-#     assert_that(alice_connections["results"]).extracting("connection_id").contains(
-#         alice_connection_id
-#     )
-#     alice_connection = [
-#         c
-#         for c in alice_connections["results"]
-#         if c["connection_id"] == alice_connection_id
-#     ][0]
-#     assert_that(alice_connection).has_state("active")
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        await accept_invite(invite=invite, aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
+        connection_id = connection["results"][0]["connection_id"]
+        connection_from_method = await get_connection_by_id(
+            conn_id=connection_id, aries_controller=member_agent
+        )
+    assert connection["results"][0] == connection_from_method
 
 
-# @pytest.mark.asyncio
-# async def test_bob_has_agent(async_client_bob):
-#     assert_that(hasattr(async_client_bob, "agent")).is_true()
-#     assert_that(hasattr(async_client_bob.agent, "did")).is_true()
-#     assert_that(async_client_bob.agent.did).is_not_none()
-#     assert_that(async_client_bob.agent.headers).is_not_empty()
-#     assert_that(async_client_bob.agent.token).is_not_none()
+@pytest.mark.asyncio
+async def test_delete_connection(async_client, create_wallets_mock):
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
+
+    invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
+
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        await accept_invite(invite=invite, aries_controller=member_agent)
+        connection = (await get_connections(aries_controller=member_agent)).dict()
+        connection_id = connection["results"][0]["connection_id"]
+        await delete_connection_by_id(
+            conn_id=connection_id, aries_controller=member_agent
+        )
+        connection = (await get_connections(aries_controller=member_agent)).dict()
+    assert connection["results"] == []
+
+
+@pytest.mark.asyncio
+async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
+    """this test validates that bob and alice connect successfully...
+
+    NB: it assumes you have all the "auto connection" settings flagged as on.
+
+    ACAPY_AUTO_ACCEPT_INVITES=true
+    ACAPY_AUTO_ACCEPT_REQUESTS=true
+    ACAPY_AUTO_PING_CONNECTION=true
+
+    """
+    # create invitation on bob side
+    invitation = (await async_client_bob.get(BASE_PATH + "/create-invite")).json()
+    bob_connection_id = invitation["connection_id"]
+    connections = (await async_client_bob.get(BASE_PATH)).json()
+    assert_that(connections["results"]).extracting("connection_id").contains_only(
+        bob_connection_id
+    )
+
+    # accept invitation on alice side
+    invite_response = (
+        await async_client_alice.post(
+            BASE_PATH + "/accept-invite", data=json.dumps(invitation["invitation"])
+        )
+    ).json()
+    alice_connection_id = invite_response["connection_id"]
+
+    # wait for events to be exchanged
+    time.sleep(5)
+
+    # fetch and validate
+    # both connections should be active - we have waited long enough for events to be exchanged
+    # and we are running in "auto connect" mode.
+    bob_connections = (await async_client_bob.get(BASE_PATH)).json()
+    alice_connections = (await async_client_alice.get(BASE_PATH)).json()
+
+    assert_that(bob_connections["results"]).extracting("connection_id").contains(
+        bob_connection_id
+    )
+    bob_connection = [
+        c for c in bob_connections["results"] if c["connection_id"] == bob_connection_id
+    ][0]
+    assert_that(bob_connection).has_state("active")
+
+    assert_that(alice_connections["results"]).extracting("connection_id").contains(
+        alice_connection_id
+    )
+    alice_connection = [
+        c
+        for c in alice_connections["results"]
+        if c["connection_id"] == alice_connection_id
+    ][0]
+    assert_that(alice_connection).has_state("active")
+
+
+@pytest.mark.asyncio
+async def test_bob_has_agent(async_client_bob):
+    assert_that(hasattr(async_client_bob, "agent")).is_true()
+    assert_that(hasattr(async_client_bob.agent, "did")).is_true()
+    assert_that(async_client_bob.agent.did).is_not_none()
+    assert_that(async_client_bob.agent.headers).is_not_empty()
+    assert_that(async_client_bob.agent.token).is_not_none()
 
 
 @pytest.mark.asyncio
@@ -415,3 +416,30 @@ async def test_accept_invite_oob(async_client, create_wallets_mock):
         accept_invite_response["invitation_key"]
         and accept_invite_response["invitation_key"] != ""
     )
+
+
+@pytest.mark.asyncio
+async def test_oob_create_static(async_client, create_wallets_mock):
+    pass
+    # yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+    #     async_client, create_wallets_mock
+    # )
+
+    # # TODO: create public DIDs and retrieve dids and verkeys to pass below
+    # async with asynccontextmanager(dependencies.member_agent)(
+    #     x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    # ) as member_agent:
+    #     connec_static_result = (
+    #         await oob_create_static(body=ConnectionStaticRequest(my_seed='00000000000000000000000YOMA1Any1', their_seed='00000000000000000000000YOMA1Any1'), aries_controller=member_agent)
+    #     ).dict()
+    # assert (
+    #     connec_static_result["accept"] and connec_static_result["accept"] == "auto"
+    # )
+    # assert (
+    #     connec_static_result["created_at"]
+    #     and connec_static_result["created_at"] != ""
+    # )
+    # assert (
+    #     connec_static_result["invitation_key"]
+    #     and connec_static_result["invitation_key"] != ""
+    # )

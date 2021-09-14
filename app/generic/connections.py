@@ -176,32 +176,34 @@ async def receive_invite_oob(
 
 @router.post("/oob/create-static")
 async def oob_create_static(
-    their_did: Optional[str] = None,
-    their_verkey: Optional[str] = None,
+    their_did: str,
+    my_did: Optional[str] = None,
     my_verkey: Optional[str] = None,
     body: Optional[ConnectionStaticRequest] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create a static connection
-    """
 
     """
-    We need to obtain the following for a succesfull request:
+    if not (my_did and my_verkey):
+        local_did_res = await aries_controller.wallet.create_did(body={})
+        my_did = local_did_res.result.did
+        my_verkey = local_did_res.result.verkey
 
-    mv_verkey: str
-    my_did: str
-    my_endpoint: str
-    their_did: str
-    their_verkey: str
-    """
-    if their_did:
-        body.their_did = their_did
-        their_endpoint = await get_trusted_partner(
-            partner_did=their_did,
-            aries_controller=member_admin_agent(x_api_key=ADMIN_API_KEY),
+    if not body:
+        their_endpoint = (
+            await aries_controller.ledger.get_did_endpoint(did=their_did)
+        ).endpoint
+        their_verkey = (
+            await aries_controller.ledger.get_did_verkey(did=their_did)
+        ).verkey
+        body = ConnectionStaticRequest(
+            their_did=their_did,
+            their_endpoint=their_endpoint,
+            their_verkey=their_verkey,
+            my_did=my_did,
         )
-        body.their_endpoint = their_endpoint
 
     conn_static_result = await aries_controller.connection.create_static_connection(
         body=body,

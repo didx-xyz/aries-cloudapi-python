@@ -47,6 +47,8 @@ async def get_trusted_partner(
 
     Parameters:
     -----------
+    partner_id: str
+        The id of the trusted partner
     api_key: Header(None)
         The admin API key
 

@@ -3,9 +3,11 @@ import random
 import string
 import time
 from contextlib import asynccontextmanager
+import aries_cloudcontroller
 
 from assertpy import assert_that
 from aries_cloudcontroller import ReceiveInvitationRequest, ConnectionStaticRequest
+from aiohttp.client_exceptions import ClientResponseError
 
 import dependencies
 import pytest
@@ -19,6 +21,8 @@ from generic.connections import (
     receive_invite_oob,
     oob_create_static,
 )
+from acapy_ledger_facade import create_pub_did
+from admin.governance.dids import get_trusted_registry
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 
@@ -421,17 +425,35 @@ async def test_accept_invite_oob(async_client, create_wallets_mock):
 @pytest.mark.asyncio
 async def test_oob_create_static(async_client, create_wallets_mock):
     pass
-    # yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
-    #     async_client, create_wallets_mock
-    # )
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
 
-    # # TODO: create public DIDs and retrieve dids and verkeys to pass below
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {yoda_token}", x_wallet_id=yoda_wallet_id
+    ) as member_agent:
+        await create_pub_did(member_agent)
+        my_dids_yoda = await member_agent.wallet.get_dids()
+        trusted_registry_res_yoda = await get_trusted_registry(member_agent)
+
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        with pytest.raises(ClientResponseError) as exc:
+            await oob_create_static(
+                their_did=my_dids_yoda.results[0].did, aries_controller=member_agent
+            )
+        assert exc.value.status == 400
+        assert exc.value.message == "DID already present in wallet."
+
+    # TODO: make the below work. That actually checks for creating a connection successfully
     # async with asynccontextmanager(dependencies.member_agent)(
     #     x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
     # ) as member_agent:
-    #     connec_static_result = (
-    #         await oob_create_static(body=ConnectionStaticRequest(my_seed='00000000000000000000000YOMA1Any1', their_seed='00000000000000000000000YOMA1Any1'), aries_controller=member_agent)
-    #     ).dict()
+    #     my_dids_han = await member_agent.wallet.get_dids()
+    #     assert my_dids_han != my_dids_yoda
+    #     trusted_registry_res_han = await get_trusted_registry(member_agent)
+    #     connec_static_result = await oob_create_static(their_did=my_dids_yoda.results[0].did, aries_controller=member_agent)
     # assert (
     #     connec_static_result["accept"] and connec_static_result["accept"] == "auto"
     # )

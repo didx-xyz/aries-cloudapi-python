@@ -3,11 +3,9 @@ import random
 import string
 import time
 from contextlib import asynccontextmanager
-import aries_cloudcontroller
 
 from assertpy import assert_that
-from aries_cloudcontroller import ReceiveInvitationRequest, ConnectionStaticRequest
-from aiohttp.client_exceptions import ClientResponseError
+from aries_cloudcontroller import ReceiveInvitationRequest, DIDResult, ConnRecord
 
 import dependencies
 import pytest
@@ -19,10 +17,9 @@ from generic.connections import (
     get_connections,
     create_invite_oob,
     receive_invite_oob,
-    oob_create_static,
+    oob_connect_via_pubdid,
 )
 from acapy_ledger_facade import create_pub_did
-from admin.governance.dids import get_trusted_registry
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 
@@ -423,7 +420,7 @@ async def test_accept_invite_oob(async_client, create_wallets_mock):
 
 
 @pytest.mark.asyncio
-async def test_oob_create_static(async_client, create_wallets_mock):
+async def test_oob_connect_via_pubdid(async_client, create_wallets_mock):
     pass
     yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
         async_client, create_wallets_mock
@@ -432,36 +429,37 @@ async def test_oob_create_static(async_client, create_wallets_mock):
     async with asynccontextmanager(dependencies.member_agent)(
         x_auth=f"Bearer {yoda_token}", x_wallet_id=yoda_wallet_id
     ) as member_agent:
-        await create_pub_did(member_agent)
-        my_dids_yoda = await member_agent.wallet.get_dids()
-        trusted_registry_res_yoda = await get_trusted_registry(member_agent)
+        # CReate a new public DID and write it to ledger
+        pub_did_yoda_res = (await create_pub_did(member_agent)).dict()
+        # Use the new public DID as the DID and therefore as an implicit invitation
+        pub_did_yoda = pub_did_yoda_res["did_object"]["did"]
+        new_pub_did_as_invite = await member_agent.wallet.set_public_did(
+            did=pub_did_yoda
+        )
+
+    assert isinstance(new_pub_did_as_invite, DIDResult)
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        han_dids = (await member_agent.wallet.get_dids()).dict()
+        conn_record = await oob_connect_via_pubdid(
+            their_public_did=pub_did_yoda, body={}, aries_controller=member_agent
+        )
+    # There is no public DID for han yet
+    assert han_dids["results"] == []
+
+    # We should have obtained a conneciton record
+    assert isinstance(conn_record, ConnRecord)
+    conn_record = conn_record.dict()
 
     async with asynccontextmanager(dependencies.member_agent)(
         x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
     ) as member_agent:
-        with pytest.raises(ClientResponseError) as exc:
-            await oob_create_static(
-                their_did=my_dids_yoda.results[0].did, aries_controller=member_agent
-            )
-        assert exc.value.status == 400
-        assert exc.value.message == "DID already present in wallet."
-
-    # TODO: make the below work. That actually checks for creating a connection successfully
-    # async with asynccontextmanager(dependencies.member_agent)(
-    #     x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
-    # ) as member_agent:
-    #     my_dids_han = await member_agent.wallet.get_dids()
-    #     assert my_dids_han != my_dids_yoda
-    #     trusted_registry_res_han = await get_trusted_registry(member_agent)
-    #     connec_static_result = await oob_create_static(their_did=my_dids_yoda.results[0].did, aries_controller=member_agent)
-    # assert (
-    #     connec_static_result["accept"] and connec_static_result["accept"] == "auto"
-    # )
-    # assert (
-    #     connec_static_result["created_at"]
-    #     and connec_static_result["created_at"] != ""
-    # )
-    # assert (
-    #     connec_static_result["invitation_key"]
-    #     and connec_static_result["invitation_key"] != ""
-    # )
+        # Now we should have a public did as we have a connection with yoda
+        han_dids = [
+            result["did"]
+            for result in (await member_agent.wallet.get_dids()).dict()["results"]
+        ]
+    # Check our did is in our wallet and in the conneciton record
+    assert conn_record["my_did"] in han_dids
+    assert conn_record["their_public_did"] == pub_did_yoda

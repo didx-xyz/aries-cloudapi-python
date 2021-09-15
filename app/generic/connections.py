@@ -4,7 +4,6 @@ import os
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    ConnectionStaticRequest,
     InvitationResult,
     InvitationMessage,
     InvitationRecord,
@@ -16,16 +15,25 @@ from aries_cloudcontroller import (
 from aries_cloudcontroller.model.invitation_create_request import (
     InvitationCreateRequest,
 )
-from dependencies import agent_selector, member_admin_agent
-from admin.governance.dids import get_trusted_partner
-from fastapi import APIRouter, Depends, Request, Header
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel
+
+from dependencies import agent_selector
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "adminApiKey")
+
 
 logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
+
+
+class CreateConnFromDIDRequest(BaseModel):
+    mediation_id: Optional[str] = None
+    my_endpoint: Optional[str] = None
+    my_label: Optional[str] = None
+    use_public_did: Optional[bool] = None
 
 
 # TODO this should be a post request
@@ -174,38 +182,28 @@ async def receive_invite_oob(
     return conn_record
 
 
-@router.post("/oob/create-static")
-async def oob_create_static(
-    their_did: str,
-    my_did: Optional[str] = None,
-    my_verkey: Optional[str] = None,
-    body: Optional[ConnectionStaticRequest] = None,
+@router.post("/oob/connect-pub-did", response_model=ConnRecord)
+async def oob_connect_via_pubdid(
+    their_public_did: str,
+    body: Optional[CreateConnFromDIDRequest] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Create a static connection
+    Use a public DID as implicit invitation and connect.
 
+    Parameters:
+    -----------
+    their_public_did: str
+        The public did of the entity you want to connect to
+
+    body: CreateConnFromDIDRequest (optional)
+        Extra information about the connection request
+
+    Returns:
+    ------------
+    ConnRecord
+        The connection record
     """
-    if not (my_did and my_verkey):
-        local_did_res = await aries_controller.wallet.create_did(body={})
-        my_did = local_did_res.result.did
-        my_verkey = local_did_res.result.verkey
-
-    if not body:
-        their_endpoint = (
-            await aries_controller.ledger.get_did_endpoint(did=their_did)
-        ).endpoint
-        their_verkey = (
-            await aries_controller.ledger.get_did_verkey(did=their_did)
-        ).verkey
-        body = ConnectionStaticRequest(
-            their_did=their_did,
-            their_endpoint=their_endpoint,
-            their_verkey=their_verkey,
-            my_did=my_did,
-        )
-
-    conn_static_result = await aries_controller.connection.create_static_connection(
-        body=body,
+    return await aries_controller.did_exchange.create_request(
+        their_public_did=their_public_did, **body
     )
-    return conn_static_result

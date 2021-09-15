@@ -4,6 +4,7 @@ import pytest
 from generic.issuer_v2 import (
     Credential,
     CredentialOffer,
+    Proposal,
 )
 from tests.utils_test import get_random_string
 from admin.governance.credential_definitions import (
@@ -169,25 +170,22 @@ async def test_all(
         ).json()
         assert records
 
-    # TODO Fix this test - method return "Record ID not provided." alhtough record id is not inrequired schemas
-    # See also https://github.com/didx-xyz/aries-cloudcontroller-python/issues/62
-    # async def test_send_credential_proposal(async_client_alice=async_client_alice):
-    #     cred_alice = Proposal(
-    #         connection_id=ALICE_CONNECTION_ID,
-    #         schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
-    #         attributes=["avg"],
-    #     ).json()
-    #     prop_send_response = (
-    #         await async_client_alice.post(
-    #             ISSUER_PATH + "/credential/proposal", data=cred_alice
-    #         )
-    #     ).json()
-    #     assert prop_send_response["auto_issue"] == False
-    #     assert prop_send_response["auto_remove"]
-    #     if "conn_id" in prop_send_response.keys():
-    #         assert prop_send_response["conn_id"] == ALICE_CONNECTION_ID
-    #     else:
-    #         assert prop_send_response["connection_id"] == ALICE_CONNECTION_ID
+    async def test_send_credential_proposal(async_client_alice=async_client_alice):
+        cred_alice = Proposal(
+            connection_id=ALICE_CONNECTION_ID,
+            schema_id=SCHEMA_DEFINITION_RESULT["schema_id"],
+            attributes=["avg"],
+        ).json()
+        prop_send_response = (
+            await async_client_alice.post(
+                ISSUER_PATH + "/credential/proposal", data=cred_alice
+            )
+        ).json()
+        assert prop_send_response["auto_issue"] == False
+        if "conn_id" in prop_send_response.keys():
+            assert prop_send_response["conn_id"] == ALICE_CONNECTION_ID
+        else:
+            assert prop_send_response["connection_id"] == ALICE_CONNECTION_ID
 
     async def test_credential_request(async_client_alice=async_client_alice):
         headers = async_client_alice.headers.update({"credential-x-id": CRED_X_ID})
@@ -209,7 +207,7 @@ async def test_all(
         assert cred_store_res == {}
 
     await test_send_credential()
-    # await test_send_credential_proposal()
+    await test_send_credential_proposal()
 
     await test_offer_credential()
     await test_get_records()

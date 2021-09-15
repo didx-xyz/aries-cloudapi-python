@@ -14,7 +14,6 @@ from aries_cloudcontroller import (
     V20CredFilterIndy,
     V20CredPreview,
     V20CredStoreRequest,
-    V20IssueCredSchemaCore,
     V20CredIssueProblemReportRequest,
 )
 from fastapi import APIRouter, Depends, Header
@@ -303,7 +302,7 @@ async def send_credential_proposal(
     )
 
     return await aries_controller.issue_credential_v2_0.send_proposal(
-        body=V20IssueCredSchemaCore(
+        body=V20CredExFree(
             # connection_id is missing from 0.7.0 OpenAPI spec
             # https://github.com/hyperledger/aries-cloudagent-python/pull/1377
             connection_id=credential.connection_id,

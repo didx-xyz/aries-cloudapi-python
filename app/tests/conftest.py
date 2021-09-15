@@ -80,7 +80,6 @@ async def member_admin_agent_mock():
 @dataclass
 class AgentEntity:
     headers: Dict[str, str]
-    wallet_id: str
     did: str
     pub_did: str
     verkey: str
@@ -166,7 +165,6 @@ async def create_wallet(async_client, key):
     ).json()
     yield AgentEntity(
         headers={**DEFAULT_HEADERS, "x-auth": f'Bearer {wallet["token"]}'},
-        wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
         pub_did=public_did["did_object"]["did"],
         verkey=local_did["result"]["verkey"],

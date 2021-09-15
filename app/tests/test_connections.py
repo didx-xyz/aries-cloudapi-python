@@ -58,7 +58,6 @@ async def invite_creation(async_client, token, wallet_id):
         "/generic/connections/create-invite",
         headers={
             "x-auth": f"Bearer {token}",
-            "x-wallet-id": wallet_id,
             "x-role": "member",
             **APPLICATION_JSON_CONTENT_TYPE,
         },
@@ -186,7 +185,7 @@ async def test_accept_invite(async_client, create_wallets_mock):
     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         accept_invite_response = (
             await accept_invite(
@@ -215,7 +214,7 @@ async def test_get_connections(async_client, create_wallets_mock):
     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         await accept_invite(invite=invite, aries_controller=member_agent)
         connection = (await get_connections(aries_controller=member_agent)).dict()
@@ -248,7 +247,7 @@ async def test_get_connection_by_id(async_client, create_wallets_mock):
     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         await accept_invite(invite=invite, aries_controller=member_agent)
         connection = (await get_connections(aries_controller=member_agent)).dict()
@@ -268,7 +267,7 @@ async def test_delete_connection(async_client, create_wallets_mock):
     invite = await invite_creation(async_client, yoda_token, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         await accept_invite(invite=invite, aries_controller=member_agent)
         connection = (await get_connections(aries_controller=member_agent)).dict()

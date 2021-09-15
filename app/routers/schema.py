@@ -32,8 +32,6 @@ async def get_schema(
     -----------
     api_key: Header(None)
         The request header object api_key
-    wallet_id: Header(None)
-        The request header object wallet_id
     tenant_jwt: Header(None)
         The request header object tenant_jwt
 
@@ -82,8 +80,6 @@ async def write_credential_schema(
         A list of attributes for the schema (default is None)
     api_key: Header(None)
         The request header object api_key
-    wallet_id: Header(None)
-        The request header object wallet_id
     tenant_jwt: Header(None)
         The request header object tenant_jwt
 

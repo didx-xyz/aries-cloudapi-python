@@ -39,7 +39,7 @@ async def test_yoma_agent():
 @pytest.mark.asyncio
 async def test_ecosystem_agent():
     async with asynccontextmanager(dependencies.ecosystem_agent)(
-        x_api_key="adminApiKey", x_auth=BEARER_TOKEN, x_wallet_id="12345"
+        x_api_key="adminApiKey", x_auth=BEARER_TOKEN
     ) as c:
         assert c is not None
         assert c.client.headers["authorization"] == BEARER_TOKEN
@@ -51,9 +51,7 @@ async def test_ecosystem_agent():
 
 @pytest.mark.asyncio
 async def test_member_agent():
-    async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=BEARER_TOKEN, x_wallet_id="12345"
-    ) as c:
+    async with asynccontextmanager(dependencies.member_agent)(x_auth=BEARER_TOKEN) as c:
         assert c is not None
         assert c.client.headers["authorization"] == BEARER_TOKEN
 

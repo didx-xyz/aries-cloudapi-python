@@ -93,16 +93,13 @@ async def issue_credential(
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
-    record = await issue_credentials(
+    return await issue_credentials(
         aries_controller,
         credential_helper.connection_id,
         credential_helper.schema_id,
         str(cred_def_id),
         credential_attributes,
     )
-    async with record:
-        content = await record.json()
-    return content
 
 
 @router.get("/records")
@@ -112,10 +109,7 @@ async def get_records(
     """
     Get list of records.
     """
-    result = await aries_controller.issue_credential_v1_0.get_records()
-    async with result:
-        content = await result.json()
-    return content
+    return await aries_controller.issue_credential_v1_0.get_records()
 
 
 @router.get("/credential")
@@ -132,12 +126,9 @@ async def get_x_record(
         credential exchange id
 
     """
-    result = await aries_controller.issue_credential_v1_0.get_record(
+    return await aries_controller.issue_credential_v1_0.get_record(
         cred_ex_id=credential_x_id
     )
-    async with result:
-        content = await result.json()
-    return content
 
 
 @router.delete("/credential")
@@ -269,7 +260,7 @@ async def send_credential_proposal(
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
-    result = await aries_controller.issue_credential_v1_0.send_proposal(
+    return await aries_controller.issue_credential_v1_0.send_proposal(
         body=V10CredentialProposalRequestOpt(
             connection_id=credential_helper.connection_id,
             schema_id=credential_helper.schema_id,
@@ -277,6 +268,3 @@ async def send_credential_proposal(
             credential_proposal=CredentialPreview(attributes=credential_attributes),
         )
     )
-    async with result:
-        content = await result.json()
-    return content

@@ -97,9 +97,11 @@ async def test_create_credential_def(yoma_agent_mock):
     ).dict()
 
     # then
-    written = await get_credential_definition(
-        result["credential_definition_id"], yoma_agent_mock
-    )
+    written = (
+        await get_credential_definition(
+            result["credential_definition_id"], yoma_agent_mock
+        )
+    ).dict()
     global CRED_DEF_ID
     CRED_DEF_ID = written["credential_definition"]["id"]
     global SCHEMA_DEFINITION_RESULT

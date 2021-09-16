@@ -68,7 +68,7 @@ async def get_created_credential_definitions(
     ---------
     The created credential definitions.
     """
-    result = await aries_controller.credential_definition.get_created_cred_defs(
+    return await aries_controller.credential_definition.get_created_cred_defs(
         issuer_did=issuer_did,
         cred_def_id=cred_def_id,
         schema_id=schema_id,
@@ -76,9 +76,6 @@ async def get_created_credential_definitions(
         schema_name=schema_name,
         schema_version=schema_version,
     )
-    async with result:
-        content = await result.json()
-    return content
 
 
 @router.get("/{cred_def_id}")
@@ -95,9 +92,6 @@ async def get_credential_definition(
         credential definition id
 
     """
-    result = await aries_controller.credential_definition.get_cred_def(
+    return await aries_controller.credential_definition.get_cred_def(
         cred_def_id=cred_def_id
     )
-    async with result:
-        content = await result.json()
-    return content

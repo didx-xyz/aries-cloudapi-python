@@ -28,8 +28,6 @@ async def create_public_did(
     -----------
     api_key: Header(None)
         The request header object api_key
-    wallet_id: Header(None)
-        The request header object wallet_id
     tenant_jwt: Header(None)
         The request header object tenant_jwt
 

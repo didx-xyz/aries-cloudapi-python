@@ -7,14 +7,13 @@ from facade import (
 )
 from aries_cloudcontroller import (
     AcaPyClient,
+    V20CredExFree,
     V20CredOfferRequest,
-    V20CredSendRequest,
     V20CredAttrSpec,
     V20CredFilter,
     V20CredFilterIndy,
     V20CredPreview,
     V20CredStoreRequest,
-    V20IssueCredSchemaCore,
     V20CredIssueProblemReportRequest,
 )
 from fastapi import APIRouter, Depends, Header
@@ -102,12 +101,9 @@ async def get_records(
     ------------
     connection_id: str (Optional)
     """
-    result = await aries_controller.issue_credential_v2_0.get_records(
+    return await aries_controller.issue_credential_v2_0.get_records(
         connection_id=connection_id
     )
-    async with result:
-        content = await result.json()
-    return content
 
 
 @router.post("/credential")
@@ -130,8 +126,8 @@ async def send_credential(
     cred_def_id, credential_preview = await _credential_details(
         credential, aries_controller
     )
-    result = await aries_controller.issue_credential_v2_0.issue_credential_automated(
-        body=V20CredSendRequest(
+    return await aries_controller.issue_credential_v2_0.issue_credential_automated(
+        body=V20CredExFree(
             connection_id=credential.connection_id,
             credential_preview=V20CredPreview(attributes=credential_preview.attributes),
             auto_remove=False,
@@ -142,9 +138,6 @@ async def send_credential(
             ),
         )
     )
-    async with result:
-        content = await result.json()
-    return content
 
 
 @router.get("/credential")
@@ -229,7 +222,7 @@ async def send_offer(
     cred_def_id, credential_preview = await _credential_details(
         credential_offer, aries_controller
     )
-    result = await aries_controller.issue_credential_v2_0.send_offer_free(
+    return await aries_controller.issue_credential_v2_0.send_offer_free(
         body=V20CredOfferRequest(
             connection_id=credential_offer.connection_id,
             credential_preview=credential_preview,
@@ -240,9 +233,6 @@ async def send_offer(
             ),
         )
     )
-    async with result:
-        content = await result.json()
-    return content
 
 
 @router.post("/credential/request")
@@ -262,12 +252,9 @@ async def credential_request(
     --------
         The response object obtained from sending a credential request.
     """
-    result = await aries_controller.issue_credential_v2_0.send_request(
+    return await aries_controller.issue_credential_v2_0.send_request(
         cred_ex_id=credential_x_id, body={}
     )
-    async with result:
-        content = await result.json()
-    return content
 
 
 @router.get("/credential/store")
@@ -314,8 +301,8 @@ async def send_credential_proposal(
         credential, aries_controller
     )
 
-    result = await aries_controller.issue_credential_v2_0.send_proposal(
-        body=V20IssueCredSchemaCore(
+    return await aries_controller.issue_credential_v2_0.send_proposal(
+        body=V20CredExFree(
             # connection_id is missing from 0.7.0 OpenAPI spec
             # https://github.com/hyperledger/aries-cloudagent-python/pull/1377
             connection_id=credential.connection_id,
@@ -328,6 +315,3 @@ async def send_credential_proposal(
             ),
         )
     )
-    async with result:
-        content = await result.json()
-    return content

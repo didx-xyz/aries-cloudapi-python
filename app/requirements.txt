@@ -1,6 +1,6 @@
 aiohttp==3.7.4.post0
 appdirs~=1.4.4
-git+https://github.com/didx-xyz/aries-cloudcontroller-python@1162bb8b51ef5ddcaec916708c66966e3f18c358
+aries-cloudcontroller==0.3.0
 async-timeout==3.0.1
 asyncio==3.4.3
 attrs==21.2.0

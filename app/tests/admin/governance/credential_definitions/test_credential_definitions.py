@@ -44,9 +44,11 @@ async def test_create_credential_definition(setup_local_env, yoma_agent_mock):
     ).dict()
 
     # then
-    written = await get_credential_definition(
-        result["credential_definition_id"], yoma_agent_mock
-    )
+    written = (
+        await get_credential_definition(
+            result["credential_definition_id"], yoma_agent_mock
+        )
+    ).dict()
     assert_that(written).is_not_empty().contains_key("credential_definition")
     assert_that(written["credential_definition"]["tag"]).is_equal_to(
         credential_definition.tag
@@ -85,9 +87,11 @@ async def test_create_credential_definition_via_web(
     ).json()
 
     # then
-    written = await get_credential_definition(
-        result["credential_definition_id"], yoma_agent_mock
-    )
+    written = (
+        await get_credential_definition(
+            result["credential_definition_id"], yoma_agent_mock
+        )
+    ).dict()
     assert_that(written).is_not_empty().contains_key("credential_definition")
     assert_that(written["credential_definition"]["tag"]).is_equal_to(
         credential_definition.tag
@@ -126,10 +130,12 @@ async def test_get_credential_definitions(setup_local_env, yoma_agent_mock):
     ).dict()
 
     # when
-    credential_definition = await get_created_credential_definitions(
-        schema_id=schema_definition_result_2["schema_id"],
-        aries_controller=yoma_agent_mock,
-    )
+    credential_definition = (
+        await get_created_credential_definitions(
+            schema_id=schema_definition_result_2["schema_id"],
+            aries_controller=yoma_agent_mock,
+        )
+    ).dict()
 
     # then
     assert_that(credential_definition["credential_definition_ids"]).contains_only(
@@ -194,9 +200,11 @@ async def test_get_credential_definition(setup_local_env, yoma_agent_mock):
     ).dict()
 
     # when
-    result = await get_credential_definition(
-        credential_definition_result["credential_definition_id"], yoma_agent_mock
-    )
+    result = (
+        await get_credential_definition(
+            credential_definition_result["credential_definition_id"], yoma_agent_mock
+        )
+    ).dict()
 
     # then
     assert_that(result).contains_key("credential_definition")

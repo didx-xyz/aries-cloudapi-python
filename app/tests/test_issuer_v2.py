@@ -84,7 +84,7 @@ async def test_create_credential_def(yoma_agent_mock):
 
     public_did = await create_public_did(yoma_agent_mock)
     print(f" created did:{public_did}")
-    schema_definition_result = await create_schema(definition, yoma_agent_mock)
+    schema_definition_result = (await create_schema(definition, yoma_agent_mock)).dict()
     print(schema_definition_result)
     credential_definition = CredentialDefinition(
         schema_id=schema_definition_result["schema_id"],
@@ -93,12 +93,16 @@ async def test_create_credential_def(yoma_agent_mock):
     )
 
     # when
-    result = await create_credential_definition(credential_definition, yoma_agent_mock)
+    result = (
+        await create_credential_definition(credential_definition, yoma_agent_mock)
+    ).dict()
 
     # then
-    written = await get_credential_definition(
-        result["credential_definition_id"], yoma_agent_mock
-    )
+    written = (
+        await get_credential_definition(
+            result["credential_definition_id"], yoma_agent_mock
+        )
+    ).dict()
     global CRED_DEF_ID
     CRED_DEF_ID = written["credential_definition"]["id"]
     global SCHEMA_DEFINITION_RESULT
@@ -148,17 +152,16 @@ async def test_all(
                 ISSUER_PATH + "/credential/offer", data=cred_alice
             )
         ).json()
-        time.sleep(10)
         assert cred_offer_res["auto_issue"]
-        if cred_offer_res and "conn_id" in cred_offer_res.keys():
-            assert cred_offer_res["conn_id"] == ALICE_CONNECTION_ID
-        else:
-            assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
-        assert cred_offer_res["schema_id"] == SCHEMA_DEFINITION_RESULT["schema_id"]
-        assert cred_offer_res["credential_exchange_id"]
+        assert cred_offer_res["connection_id"] == ALICE_CONNECTION_ID
+        assert (
+            cred_offer_res["by_format"]["cred_offer"]["indy"]["schema_id"]
+            == SCHEMA_DEFINITION_RESULT["schema_id"]
+        )
+        assert cred_offer_res["cred_ex_id"]
 
     async def test_get_records(async_client_alice=async_client_alice):
-        time.sleep(10)
+        time.sleep(5)
         async_client_alice.headers.update({"connection-id": ALICE_CONNECTION_ID})
         records = (
             await async_client_alice.get(
@@ -179,7 +182,6 @@ async def test_all(
             )
         ).json()
         assert prop_send_response["auto_issue"] == False
-        assert prop_send_response["auto_remove"]
         if "conn_id" in prop_send_response.keys():
             assert prop_send_response["conn_id"] == ALICE_CONNECTION_ID
         else:

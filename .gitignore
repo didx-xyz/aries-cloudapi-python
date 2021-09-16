@@ -141,3 +141,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 junit.xml
+
+# macOS
+.DS_Store
+
+# VSCode
+.vscode

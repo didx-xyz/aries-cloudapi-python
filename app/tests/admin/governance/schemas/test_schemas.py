@@ -1,17 +1,15 @@
 import json
 from fastapi.exceptions import HTTPException
 
-
-import acapy_ledger_facade
-import acapy_wallet_facade
+from acapy_ledger_facade import create_pub_did as create_public_did
 import ledger_facade
 import pytest
 import utils
 from admin.governance.schemas import (
     SchemaDefinition,
     create_schema,
-    get_schemas,
     get_schemas_list_detailed,
+    get_schemas,
     update_schema,
 )
 from assertpy import assert_that
@@ -51,7 +49,7 @@ async def test_create_schema_via_web(setup_local_env, async_client, yoma_agent_m
     response = await get_schemas(
         schema_id=result["schema_id"], aries_controller=yoma_agent_mock
     )
-    assert_that(response["schema_ids"]).is_length(1)
+    assert_that(response.dict()["schema_ids"]).is_length(1)
 
 
 @pytest.mark.asyncio
@@ -118,35 +116,26 @@ async def test_get_schema_via_web(setup_local_env, async_client, yoma_agent_mock
     assert_that(response.json()["schema"]["attrNames"]).contains_only("average")
 
 
-async def create_public_did(aries_agent_controller):
-    generate_did_res = await acapy_wallet_facade.create_did(aries_agent_controller)
-    did_object = generate_did_res["result"]
-    await ledger_facade.post_to_ledger(did_object=did_object)
-    # my local von network I was using did not requried the TAA
-    taa_response = await acapy_ledger_facade.get_taa(aries_agent_controller)
-    await acapy_ledger_facade.accept_taa(aries_agent_controller, taa_response)
-    await acapy_wallet_facade.assign_pub_did(aries_agent_controller, did_object["did"])
-    return did_object
-
-
 @pytest.mark.asyncio
 async def test_create_one_schema(setup_local_env, yoma_agent_mock):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
+    public_did = (await create_public_did(yoma_agent_mock)).dict()["did_object"]
     print(f" created did:{public_did}")
 
     # when
-    schema_definition_result = await create_schema(definition, yoma_agent_mock)
+    schema_definition_result = (await create_schema(definition, yoma_agent_mock)).dict()
     print(schema_definition_result)
 
     # then
-    response = await yoma_agent_mock.schema.get_created_schema(
+    response = await yoma_agent_mock.schema.get_created_schemas(
         schema_issuer_did=public_did["did"]
     )
 
-    assert_that(response["schema_ids"]).contains(schema_definition_result["schema_id"])
+    assert_that(response.dict()["schema_ids"]).contains(
+        schema_definition_result["schema_id"]
+    )
 
 
 @pytest.mark.asyncio
@@ -156,19 +145,23 @@ async def test_update_schemas(setup_local_env, yoma_agent_mock):
     definition2 = SchemaDefinition(
         name="xya", version="0.2", attributes=["average", "bitrate"]
     )
-    public_did = await create_public_did(yoma_agent_mock)
+    public_did = (await create_public_did(yoma_agent_mock)).dict()["did_object"]
     print(f" created did:{public_did}")
 
     # when
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
-    schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
+    schema_definition_result_1 = (
+        await create_schema(definition1, yoma_agent_mock)
+    ).dict()
+    schema_definition_result_2 = (
+        await create_schema(definition2, yoma_agent_mock)
+    ).dict()
 
     # then
-    response = await yoma_agent_mock.schema.get_created_schema(
+    response = await yoma_agent_mock.schema.get_created_schemas(
         schema_issuer_did=public_did["did"]
     )
 
-    assert_that(response["schema_ids"]).contains_only(
+    assert_that(response.dict()["schema_ids"]).contains_only(
         schema_definition_result_1["schema_id"],
         schema_definition_result_2["schema_id"],
     )
@@ -180,19 +173,23 @@ async def test_create_two_schemas(setup_local_env, yoma_agent_mock):
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
+    public_did = (await create_public_did(yoma_agent_mock)).dict()["did_object"]
     print(f" created did:{public_did}")
 
     # when
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
-    schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
+    schema_definition_result_1 = (
+        await create_schema(definition1, yoma_agent_mock)
+    ).dict()
+    schema_definition_result_2 = (
+        await create_schema(definition2, yoma_agent_mock)
+    ).dict()
 
     # then
-    response = await yoma_agent_mock.schema.get_created_schema(
+    response = await yoma_agent_mock.schema.get_created_schemas(
         schema_issuer_did=public_did["did"]
     )
 
-    assert_that(response["schema_ids"]).contains_only(
+    assert_that(response.dict()["schema_ids"]).contains_only(
         schema_definition_result_1["schema_id"],
         schema_definition_result_2["schema_id"],
     )
@@ -206,10 +203,14 @@ async def test_get_schemas(setup_local_env, yoma_agent_mock):
     definition2 = SchemaDefinition(
         name=name, version="0.2", attributes=["average", "bitrate"]
     )
-    public_did = await create_public_did(yoma_agent_mock)
+    public_did = (await create_public_did(yoma_agent_mock)).dict()["did_object"]
     print(f" created did:{public_did}")
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
-    schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
+    schema_definition_result_1 = (
+        await create_schema(definition1, yoma_agent_mock)
+    ).dict()
+    schema_definition_result_2 = (
+        await create_schema(definition2, yoma_agent_mock)
+    ).dict()
 
     # when
     response = await get_schemas(
@@ -217,14 +218,14 @@ async def test_get_schemas(setup_local_env, yoma_agent_mock):
     )
 
     # then
-    assert_that(response["schema_ids"]).contains_only(
+    assert_that(response.dict()["schema_ids"]).contains_only(
         schema_definition_result_1["schema_id"],
         schema_definition_result_2["schema_id"],
     )
     # when
     response = await get_schemas(schema_name=name, aries_controller=yoma_agent_mock)
     # then
-    assert_that(response["schema_ids"]).contains_only(
+    assert_that(response.dict()["schema_ids"]).contains_only(
         schema_definition_result_1["schema_id"],
         schema_definition_result_2["schema_id"],
     )
@@ -234,7 +235,7 @@ async def test_get_schemas(setup_local_env, yoma_agent_mock):
         schema_name=name, schema_version="0.2", aries_controller=yoma_agent_mock
     )
     # then
-    assert_that(response["schema_ids"]).contains_only(
+    assert_that(response.dict()["schema_ids"]).contains_only(
         schema_definition_result_2["schema_id"],
     )
 
@@ -246,10 +247,14 @@ async def test_get_schemas_detail_list(setup_local_env, yoma_agent_mock):
     definition2 = SchemaDefinition(
         name=name, version="0.2", attributes=["average", "bitrate"]
     )
-    public_did = await create_public_did(yoma_agent_mock)
+    public_did = (await create_public_did(yoma_agent_mock)).dict()["did_object"]
     print(f" created did:{public_did}")
-    schema_definition_result_1 = await create_schema(definition1, yoma_agent_mock)
-    schema_definition_result_2 = await create_schema(definition2, yoma_agent_mock)
+    schema_definition_result_1 = (
+        await create_schema(definition1, yoma_agent_mock)
+    ).dict()
+    schema_definition_result_2 = (
+        await create_schema(definition2, yoma_agent_mock)
+    ).dict()
 
     response = await get_schemas_list_detailed(
         schema_issuer_did=public_did["did"], aries_controller=yoma_agent_mock
@@ -282,10 +287,10 @@ async def test_update_schema(setup_local_env, yoma_agent_mock):
     name = get_random_string(10)
     definition = SchemaDefinition(name=name, version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
+    public_did = (await create_public_did(yoma_agent_mock)).dict()["did_object"]
     print(f" created did:{public_did}")
 
-    schema_definition_result = await create_schema(definition, yoma_agent_mock)
+    schema_definition_result = (await create_schema(definition, yoma_agent_mock)).dict()
     definition_updated = SchemaDefinition(
         name=name, version="0.2", attributes=["average"]
     )
@@ -295,12 +300,14 @@ async def test_update_schema(setup_local_env, yoma_agent_mock):
         aries_controller=yoma_agent_mock,
     )
 
-    response = await get_schemas(
-        schema_issuer_did=public_did["did"], aries_controller=yoma_agent_mock
-    )
+    response = (
+        await get_schemas(
+            schema_issuer_did=public_did["did"], aries_controller=yoma_agent_mock
+        )
+    ).dict()
 
     assert updated_result
-    assert updated_result["schema_id"] in response["schema_ids"]
+    assert updated_result["id"] in response["schema_ids"]
 
     definition_updated_low = SchemaDefinition(
         name=name, version="0.0", attributes=["average"]

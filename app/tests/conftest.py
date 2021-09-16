@@ -6,9 +6,9 @@ from typing import Dict
 import ledger_facade
 import pytest
 import utils
-from aries_cloudcontroller import AriesAgentControllerBase
-from aries_cloudcontroller.controllers.ledger import LedgerController
-from aries_cloudcontroller.controllers.wallet import WalletController
+from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller.api.ledger import LedgerApi
+from aries_cloudcontroller.api.wallet import WalletApi
 from dependencies import member_admin_agent, yoma_agent
 from httpx import AsyncClient
 from main import app
@@ -37,9 +37,9 @@ def setup_env():
 
 @pytest.fixture
 def mock_agent_controller():
-    controller = mock(AriesAgentControllerBase)
-    controller.wallet = mock(WalletController)
-    controller.ledger = mock(LedgerController)
+    controller = mock(AcaPyClient)
+    controller.wallet = mock(WalletApi)
+    controller.ledger = mock(LedgerApi)
     return controller
 
 
@@ -80,7 +80,6 @@ async def member_admin_agent_mock():
 @dataclass
 class AgentEntity:
     headers: Dict[str, str]
-    wallet_id: str
     did: str
     pub_did: str
     verkey: str
@@ -166,7 +165,6 @@ async def create_wallet(async_client, key):
     ).json()
     yield AgentEntity(
         headers={**DEFAULT_HEADERS, "x-auth": f'Bearer {wallet["token"]}'},
-        wallet_id=wallet["wallet_id"],
         did=local_did["result"]["did"],
         pub_did=public_did["did_object"]["did"],
         verkey=local_did["result"]["verkey"],

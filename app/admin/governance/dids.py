@@ -1,6 +1,6 @@
 import logging
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
 from dependencies import yoma_agent
 from fastapi import APIRouter, Depends
 
@@ -11,7 +11,7 @@ router = APIRouter(prefix="/admin/governance/dids", tags=["admin: public dids"])
 
 @router.get("/trusted-registry")
 async def get_trusted_registry(
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Retrieve Trusted partner list from Trust Registry
@@ -28,11 +28,11 @@ async def get_trusted_registry(
     """
     all_dids_on_ledger = await aries_controller.wallet.get_dids()
     public_dids = []
-    if len(all_dids_on_ledger["results"]) >= 1:
+    if len(all_dids_on_ledger.results) >= 1:
         public_dids = [
-            r
-            for r in all_dids_on_ledger["results"]
-            if r["posture"] in ["public", "posted"]
+            r.did
+            for r in all_dids_on_ledger.results
+            if r.posture in ["public", "posted"]
         ]
     return public_dids
 
@@ -40,13 +40,15 @@ async def get_trusted_registry(
 @router.get("/trusted-registry/{partner_did}")
 async def get_trusted_partner(
     partner_did: str,
-    aries_controller: AriesAgentControllerBase = Depends(yoma_agent),
+    aries_controller: AcaPyClient = Depends(yoma_agent),
 ):
     """
     Retrieve Trusted partner from Trust Registry
 
     Parameters:
     -----------
+    partner_id: str
+        The id of the trusted partner
     api_key: Header(None)
         The admin API key
 
@@ -55,7 +57,7 @@ async def get_trusted_partner(
     trusted_partner: dict/JSON
         Unique trusted partner endpoint and DID
     """
-    return await aries_controller.wallet.get_did_endpoint(partner_did)
+    return await aries_controller.wallet.get_did_endpoint(did=partner_did)
 
 
 # TODO how do we want to delete a partner from the registry?

@@ -1,7 +1,9 @@
 import logging
 
 from fastapi import APIRouter, Depends
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller.model.did_endpoint_with_type import DIDEndpointWithType
+
 from schemas import (
     DidCreationResponse,
 )
@@ -15,7 +17,7 @@ router = APIRouter(prefix="/wallet", tags=["wallet"])
 
 @router.get("/create-pub-did", tags=["did"], response_model=DidCreationResponse)
 async def create_public_did(
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create a new public DID and
@@ -26,8 +28,6 @@ async def create_public_did(
     -----------
     api_key: Header(None)
         The request header object api_key
-    wallet_id: Header(None)
-        The request header object wallet_id
     tenant_jwt: Header(None)
         The request header object tenant_jwt
 
@@ -41,18 +41,18 @@ async def create_public_did(
 
 @router.get("/create-local-did")
 async def create_local_did(
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create Local DID
     """
 
-    return await aries_controller.wallet.create_did()
+    return await aries_controller.wallet.create_did(body={})
 
 
 @router.get("/list-dids")
 async def list_dids(
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Retrieve list of DIDs.
@@ -62,7 +62,7 @@ async def list_dids(
 
 @router.get("/fetch-current-did")
 async def fetch_current_did(
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Fetch the current public DID.
@@ -73,27 +73,27 @@ async def fetch_current_did(
 @router.patch("/rotate-keypair")
 async def rotate_keypair(
     did: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
 
-    return await aries_controller.wallet.rotate_pub_key_pair(did)
+    return await aries_controller.wallet.rotate_keypair(did)
 
 
 @router.get("/get-did-endpoint/{did}")
 async def get_did_endpoint(
     did: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Get DID endpoint.
     """
-    return await aries_controller.wallet.get_did_endpoint(did)
+    return await aries_controller.wallet.get_did_endpoint(did=did)
 
 
 @router.get("/assign-pub-did")
 async def assign_pub_did(
     did: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Assign the current public DID
@@ -102,7 +102,7 @@ async def assign_pub_did(
     ----------
     did: str
     """
-    return await aries_controller.wallet.assign_public_did(did)
+    return await aries_controller.wallet.set_public_did(did=did)
 
 
 @router.post("/set-did-endpoint")
@@ -110,7 +110,7 @@ async def set_did_endpoint(
     did: str,
     endpoint: str,
     endpoint_type="Endpoint",
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Update Endpoint in wallet and on ledger if posted to it.
@@ -120,4 +120,8 @@ async def set_did_endpoint(
     did: str
     endpoint: str
     """
-    return await aries_controller.wallet.set_did_endpoint(did, endpoint, endpoint_type)
+    return await aries_controller.wallet.set_did_endpoint(
+        body=DIDEndpointWithType(
+            did=did, endpoint=endpoint, endpoint_type=endpoint_type
+        )
+    )

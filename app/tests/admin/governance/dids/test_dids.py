@@ -19,7 +19,7 @@ async def test_get_trusted_registry(async_client, yoma_agent_mock):
     result = response.json()
     if len(result) >= 1:
         expected_keys = ["did", "posture", "verkey"]
-        assert [list(res.keys()) == expected_keys for res in result]
+        assert [list(res) == expected_keys for res in result]
 
     res_method = await get_trusted_registry(aries_controller=yoma_agent_mock)
     assert res_method == result

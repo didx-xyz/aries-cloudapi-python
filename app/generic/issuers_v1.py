@@ -1,18 +1,25 @@
 import logging
+from aries_cloudcontroller.model.credential_preview import CredentialPreview
+from aries_cloudcontroller.model.credential_proposal import CredentialProposal
 
 from dependencies import agent_selector
 
-from aries_cloudcontroller import AriesAgentControllerBase
+from aries_cloudcontroller import (
+    AcaPyClient,
+    V10CredentialExchange,
+    V10CredentialBoundOfferRequest,
+    V10CredentialProblemReportRequest,
+    V10CredentialProposalRequestOpt,
+)
+
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from facade import (
-    get_cred_def_id,
     get_schema_attributes,
     issue_credentials,
     write_credential_def,
 )
 from fastapi import APIRouter, Depends
-from schemas import IssueCredentialResponse
 
 logger = logging.getLogger(__name__)
 
@@ -56,22 +63,20 @@ async def _credential_details(credential_helper, aries_controller):
     schema_attr = await get_schema_attributes(
         aries_controller, credential_helper.schema_id
     )
-    credential_def = await write_credential_def(
+    cred_def_id = await write_credential_def(
         aries_controller, credential_helper.schema_id
     )
-
-    cred_def_id = await get_cred_def_id(aries_controller, credential_def)
     credential_attributes = [
         {"name": k, "value": v}
         for k, v in list(zip(schema_attr, credential_helper.credential_attrs))
     ]
-    return cred_def_id, credential_attributes
+    return cred_def_id.credential_definition_id, credential_attributes
 
 
 @router.post("/credential")
 async def issue_credential(
     credential_helper: CredentialHelper,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Issue credential.
@@ -88,30 +93,29 @@ async def issue_credential(
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
-    record = await issue_credentials(
+    return await issue_credentials(
         aries_controller,
         credential_helper.connection_id,
         credential_helper.schema_id,
-        cred_def_id,
+        str(cred_def_id),
         credential_attributes,
     )
-    return IssueCredentialResponse(credential=record)
 
 
 @router.get("/records")
 async def get_records(
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Get list of records.
     """
-    return await aries_controller.issuer.get_records()
+    return await aries_controller.issue_credential_v1_0.get_records()
 
 
 @router.get("/credential")
 async def get_x_record(
     credential_x_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Get record by id.
@@ -122,13 +126,15 @@ async def get_x_record(
         credential exchange id
 
     """
-    return await aries_controller.issuer.get_record_by_id(credential_x_id)
+    return await aries_controller.issue_credential_v1_0.get_record(
+        cred_ex_id=credential_x_id
+    )
 
 
 @router.delete("/credential")
 async def remove_credential(
     credential_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Remove credential.
@@ -149,7 +155,7 @@ async def remove_credential(
 async def problem_report(
     explanation: dict,
     credential_x_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
 
     """
@@ -161,40 +167,40 @@ async def problem_report(
     credential_x_id: str
         credential exchange id
     """
-    return await aries_controller.issuer.send_problem_report(
-        credential_x_id, explanation=explanation["description"]
+    return await aries_controller.issue_credential_v1_0.report_problem(
+        cred_ex_id=credential_x_id,
+        body=V10CredentialProblemReportRequest(description=explanation["description"]),
     )
 
 
 @router.post("/credential/offer")
 async def send_offer(
-    credential_helper: CredentialHelper,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    cred_ex_id: str,
+    counter_proposal: Optional[CredentialProposal] = CredentialProposal(),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send credential offer.
 
     Parameters:
     -----------
-    credential_helper: CredentialHelper
-        payload for sending a credential offer
 
     Returns:
     --------
         The response object obtained from sending a credential offer.
     """
-    cred_def_id, credential_attributes = await _credential_details(
-        credential_helper, aries_controller
-    )
-    return await aries_controller.issuer.send_offer(
-        credential_helper.connection_id, cred_def_id, credential_attributes
+    return await aries_controller.issue_credential_v1_0.send_offer(
+        cred_ex_id=cred_ex_id,
+        body=V10CredentialBoundOfferRequest(
+            counter_proposal=CredentialProposal(**counter_proposal.dict())
+        ),
     )
 
 
-@router.post("/credential/request")
+@router.post("/credential/request", response_model=V10CredentialExchange)
 async def send_credential_request(
     credential_x_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send credential request.
@@ -208,14 +214,15 @@ async def send_credential_request(
     --------
         The response object obtained from sending a credential offer.
     """
-    return await aries_controller.issuer.send_request_for_record(credential_x_id)
+    return await aries_controller.issue_credential_v1_0.send_request(
+        cred_ex_id=credential_x_id
+    )
 
 
 @router.get("/credential/store")
 async def store_credential(
     credential_x_id: str,
-    credential_id: str,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Store credential.
@@ -228,15 +235,15 @@ async def store_credential(
         credential identifier
 
     """
-    return await aries_controller.issuer.store_credential(
-        credential_x_id, credential_id
+    return await aries_controller.issue_credential_v1_0.store_credential(
+        cred_ex_id=credential_x_id, body={}
     )
 
 
 @router.post("/credential/proposal")
 async def send_credential_proposal(
     credential_helper: CredentialHelper,
-    aries_controller: AriesAgentControllerBase = Depends(agent_selector),
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Send credential proposal.
@@ -253,9 +260,11 @@ async def send_credential_proposal(
     cred_def_id, credential_attributes = await _credential_details(
         credential_helper, aries_controller
     )
-    return await aries_controller.issuer.send_proposal(
-        connection_id=credential_helper.connection_id,
-        schema_id=credential_helper.schema_id,
-        cred_def_id=cred_def_id,
-        attributes=credential_attributes,
+    return await aries_controller.issue_credential_v1_0.send_proposal(
+        body=V10CredentialProposalRequestOpt(
+            connection_id=credential_helper.connection_id,
+            schema_id=credential_helper.schema_id,
+            cred_def_id=cred_def_id,
+            credential_proposal=CredentialPreview(attributes=credential_attributes),
+        )
     )

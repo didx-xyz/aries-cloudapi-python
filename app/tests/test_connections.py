@@ -400,7 +400,7 @@ async def test_accept_invite_oob(async_client, create_wallets_mock):
     )
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         accept_invite_response = (
             await receive_invite_oob(body=INVITE_A, aries_controller=member_agent)
@@ -425,7 +425,7 @@ async def test_oob_connect_via_pubdid(async_client, create_wallets_mock):
     )
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {yoda_token}", x_wallet_id=yoda_wallet_id
+        x_auth=f"Bearer {yoda_token}"
     ) as member_agent:
         # CReate a new public DID and write it to ledger
         pub_did_yoda_res = (await create_pub_did(member_agent)).dict()
@@ -437,7 +437,7 @@ async def test_oob_connect_via_pubdid(async_client, create_wallets_mock):
 
     assert isinstance(new_pub_did_as_invite, DIDResult)
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         han_dids = (await member_agent.wallet.get_dids()).dict()
         conn_record = await oob_connect_via_pubdid(
@@ -451,7 +451,7 @@ async def test_oob_connect_via_pubdid(async_client, create_wallets_mock):
     conn_record = conn_record.dict()
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+        x_auth=f"Bearer {han_token}"
     ) as member_agent:
         # Now we should have a public did as we have a connection with yoda
         han_dids = [

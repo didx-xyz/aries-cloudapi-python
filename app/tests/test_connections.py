@@ -5,7 +5,7 @@ import time
 from contextlib import asynccontextmanager
 
 from assertpy import assert_that
-from aries_cloudcontroller import ReceiveInvitationRequest
+from aries_cloudcontroller import ReceiveInvitationRequest, DIDResult, ConnRecord
 
 import dependencies
 import pytest
@@ -15,7 +15,11 @@ from generic.connections import (
     delete_connection_by_id,
     get_connection_by_id,
     get_connections,
+    create_invite_oob,
+    receive_invite_oob,
+    oob_connect_via_pubdid,
 )
+from acapy_ledger_facade import create_pub_did
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 
@@ -40,6 +44,8 @@ CREATE_WALLET_PAYLOAD_HAN = {
     "wallet_type": "indy",
 }
 
+INVITE_A = ""
+
 
 async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
     yoda_response = await async_client.delete(
@@ -62,6 +68,7 @@ async def invite_creation(async_client, token, wallet_id):
             **APPLICATION_JSON_CONTENT_TYPE,
         },
     )
+    print(invite_creation_response.json()["invitation"])
     return invite_creation_response.json()["invitation"]
 
 
@@ -341,3 +348,116 @@ async def test_bob_has_agent(async_client_bob):
     assert_that(async_client_bob.agent.did).is_not_none()
     assert_that(async_client_bob.agent.headers).is_not_empty()
     assert_that(async_client_bob.agent.token).is_not_none()
+
+
+@pytest.mark.asyncio
+async def test_create_invite_oob(async_client, create_wallets_mock):
+    yoda, _ = create_wallets_mock
+
+    yoda_wallet_id = yoda["settings"]["wallet.id"]
+
+    yoda_token_response = await async_client.get(
+        f"/admin/wallet-multitenant/{yoda_wallet_id}/auth-token",
+        headers={
+            "x-api-key": "adminApiKey",
+            "x-role": "ecosystem",
+            **APPLICATION_JSON_CONTENT_TYPE,
+        },
+    )
+
+    yoda_token = yoda_token_response.json()["token"]
+
+    async with asynccontextmanager(dependencies.ecosystem_agent)(
+        x_auth=f"Bearer {yoda_token}"
+    ) as ecosystem_agent:
+        invite_creation_response = (
+            await create_invite_oob(aries_controller=ecosystem_agent)
+        ).dict()
+    assert (
+        invite_creation_response["invi_msg_id"]
+        and invite_creation_response["invi_msg_id"] != ""
+    )
+    assert (
+        invite_creation_response["invitation"]
+        and invite_creation_response["invitation"] != {}
+    )
+    global INVITE_A
+    INVITE_A = invite_creation_response["invitation"]
+    assert (
+        invite_creation_response["invitation"]["id"]
+        and invite_creation_response["invitation"]["id"] != ""
+    )
+    assert (
+        invite_creation_response["invitation"]["services"][0]["recipientKeys"]
+        and invite_creation_response["invitation"]["services"][0]["recipientKeys"] != []
+    )
+
+
+@pytest.mark.asyncio
+async def test_accept_invite_oob(async_client, create_wallets_mock):
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
+
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        accept_invite_response = (
+            await receive_invite_oob(body=INVITE_A, aries_controller=member_agent)
+        ).dict()
+    assert (
+        accept_invite_response["accept"] and accept_invite_response["accept"] == "auto"
+    )
+    assert (
+        accept_invite_response["created_at"]
+        and accept_invite_response["created_at"] != ""
+    )
+    assert (
+        accept_invite_response["invitation_key"]
+        and accept_invite_response["invitation_key"] != ""
+    )
+
+
+@pytest.mark.asyncio
+async def test_oob_connect_via_pubdid(async_client, create_wallets_mock):
+    yoda_token, yoda_wallet_id, han_token, han_wallet_id = await token_responses(
+        async_client, create_wallets_mock
+    )
+
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {yoda_token}", x_wallet_id=yoda_wallet_id
+    ) as member_agent:
+        # CReate a new public DID and write it to ledger
+        pub_did_yoda_res = (await create_pub_did(member_agent)).dict()
+        # Use the new public DID as the DID and therefore as an implicit invitation
+        pub_did_yoda = pub_did_yoda_res["did_object"]["did"]
+        new_pub_did_as_invite = await member_agent.wallet.set_public_did(
+            did=pub_did_yoda
+        )
+
+    assert isinstance(new_pub_did_as_invite, DIDResult)
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        han_dids = (await member_agent.wallet.get_dids()).dict()
+        conn_record = await oob_connect_via_pubdid(
+            their_public_did=pub_did_yoda, body={}, aries_controller=member_agent
+        )
+    # There is no public DID for han yet
+    assert han_dids["results"] == []
+
+    # We should have obtained a conneciton record
+    assert isinstance(conn_record, ConnRecord)
+    conn_record = conn_record.dict()
+
+    async with asynccontextmanager(dependencies.member_agent)(
+        x_auth=f"Bearer {han_token}", x_wallet_id=han_wallet_id
+    ) as member_agent:
+        # Now we should have a public did as we have a connection with yoda
+        han_dids = [
+            result["did"]
+            for result in (await member_agent.wallet.get_dids()).dict()["results"]
+        ]
+    # Check our did is in our wallet and in the conneciton record
+    assert conn_record["my_did"] in han_dids
+    assert conn_record["their_public_did"] == pub_did_yoda

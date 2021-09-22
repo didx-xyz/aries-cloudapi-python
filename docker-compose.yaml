@@ -59,6 +59,20 @@ services:
       - host
     extra_hosts:
       - "host.docker.internal:host-gateway"
+  yoma-trust-registry:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/trustregistry/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./trustregistry:/app
+    networks:
+      - yoma-ga
+      - yoma-multitenant
+      - host
+    env_file:
+      - environments/trustregistry/fastapi.trustregistry.env
   yoma-multitenant-web:
     build:
       context: .

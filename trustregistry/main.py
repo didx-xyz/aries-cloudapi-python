@@ -2,11 +2,12 @@ from fastapi import FastAPI
 
 import json
 
-from registry import actor
+from registry import actor, schema
 
 app = FastAPI()
 
 app.include_router(actor.router)
+app.include_router(schema.router)
 
 
 @app.get("/")

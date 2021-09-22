@@ -1,10 +1,8 @@
-import enum
 import logging
 from fastapi import APIRouter
 from pydantic import BaseModel, validator
-from typing import List, ClassVar
+from typing import List
 from slugify import Slugify
-from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +24,6 @@ class ActorUpdateFields(BaseModel):
 
     @validator("slug", always=True)
     def slugify_id_for_name(cls, value, values):
-        print("values", values)
         return custom_slugify(values["name"])
 
 
@@ -39,7 +36,7 @@ async def register_actor(actor: RegisterActor):
     return actor.dict()
 
 
-@router.post("/{actor_id}")
+@router.put("/{actor_id}")
 async def update_actor(actor_id: str, actor: ActorUpdateFields):
     return actor.dict()
 

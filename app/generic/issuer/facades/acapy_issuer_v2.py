@@ -11,6 +11,7 @@ from aries_cloudcontroller import (
     V20CredExFree,
     V20CredRequestRequest,
 )
+from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
 from generic.issuer.facades.acapy_issuer import Issuer
 from generic.issuer.models import (
     Credential,
@@ -21,37 +22,12 @@ from generic.issuer.models import (
 logger = logging.getLogger(__name__)
 
 
-def _preview_from_attributes(
-    attributes: Dict[str, str],
-):
-    return V20CredPreview(
-        attributes=[
-            V20CredAttrSpec(name=name, value=value)
-            for name, value in attributes.items()
-        ]
-    )
-
-
-def _attributes_from_record(record: V20CredExRecord) -> Optional[Dict[str, str]]:
-    preview = None
-
-    if record.cred_preview:
-        preview = record.cred_preview
-    elif record.cred_offer and record.cred_offer.credential_preview:
-        preview = record.cred_offer.credential_preview
-    elif record.cred_proposal and record.cred_proposal.credential_preview:
-        preview = record.cred_proposal.credential_preview
-
-    return {attr.name: attr.value for attr in preview.attributes} if preview else None
-
-    # Unable to extract attributes (possible if state is proposed)
-    return None
-
-
 class IssuerV2(Issuer):
     @classmethod
     async def send_credential(cls, controller: AcaPyClient, credential: Credential):
-        credential_preview = _preview_from_attributes(attributes=credential.attributes)
+        credential_preview = cls.__preview_from_attributes(
+            attributes=credential.attributes
+        )
 
         record = await controller.issue_credential_v2_0.issue_credential_automated(
             body=V20CredExFree(
@@ -66,7 +42,7 @@ class IssuerV2(Issuer):
             )
         )
 
-        return IssuerV2.__record_to_model(record)
+        return cls.__record_to_model(record)
 
     @classmethod
     async def request_credential(
@@ -76,20 +52,20 @@ class IssuerV2(Issuer):
             cred_ex_id=credential_exchange_id, body=V20CredRequestRequest()
         )
 
-        return IssuerV2.__record_to_model(record)
+        return cls.__record_to_model(record)
 
     @classmethod
     async def store_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
     ):
         record = await controller.issue_credential_v2_0.store_credential(
-            cred_ex_id=credential_exchange_id
+            cred_ex_id=credential_exchange_id, body=V20CredStoreRequest()
         )
 
         if not record.cred_ex_record:
             raise Exception("No cred_ex_record found on record")
 
-        return IssuerV2.__record_to_model(record.cred_ex_record)
+        return cls.__record_to_model(record.cred_ex_record)
 
     @classmethod
     async def delete_credential(
@@ -111,7 +87,7 @@ class IssuerV2(Issuer):
 
     @classmethod
     def __record_to_model(cls, record: V20CredExRecord) -> CredentialExchange:
-        attributes = _attributes_from_record(record)
+        attributes = cls.__attributes_from_record(record)
 
         schema_id = None
         credential_definition_id = None
@@ -149,7 +125,7 @@ class IssuerV2(Issuer):
             return []
 
         return [
-            IssuerV2.__record_to_model(record.cred_ex_record)
+            cls.__record_to_model(record.cred_ex_record)
             for record in result.results
             if record.cred_ex_record
         ]
@@ -163,4 +139,33 @@ class IssuerV2(Issuer):
         if not record.cred_ex_record:
             raise Exception("Record has not credential exchang record")
 
-        return IssuerV2.__record_to_model(record.cred_ex_record)
+        return cls.__record_to_model(record.cred_ex_record)
+
+    @classmethod
+    def __preview_from_attributes(
+        cls,
+        attributes: Dict[str, str],
+    ) -> V20CredPreview:
+        return V20CredPreview(
+            attributes=[
+                V20CredAttrSpec(name=name, value=value)
+                for name, value in attributes.items()
+            ]
+        )
+
+    @classmethod
+    def __attributes_from_record(
+        cls, record: V20CredExRecord
+    ) -> Optional[Dict[str, str]]:
+        preview = None
+
+        if record.cred_preview:
+            preview = record.cred_preview
+        elif record.cred_offer and record.cred_offer.credential_preview:
+            preview = record.cred_offer.credential_preview
+        elif record.cred_proposal and record.cred_proposal.credential_preview:
+            preview = record.cred_proposal.credential_preview
+
+        return (
+            {attr.name: attr.value for attr in preview.attributes} if preview else None
+        )

@@ -8,6 +8,9 @@ from aries_cloudcontroller import (
     V10CredentialExchange,
     V10CredentialProposalRequestMand,
 )
+from aries_cloudcontroller.model.v10_credential_store_request import (
+    V10CredentialStoreRequest,
+)
 from generic.issuer.facades.acapy_issuer import Issuer
 from generic.issuer.models import (
     Credential,
@@ -18,43 +21,12 @@ from generic.issuer.models import (
 logger = logging.getLogger(__name__)
 
 
-def _preview_from_attributes(
-    attributes: Dict[str, str],
-):
-    return CredentialPreview(
-        attributes=[
-            CredAttrSpec(name=name, value=value) for name, value in attributes.items()
-        ]
-    )
-
-
-def _attributes_from_preview(preview: CredentialPreview):
-    return {attr.name: attr.value for attr in preview.attributes}
-
-
-def _v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
-    translation_dict = {
-        "proposal_sent": "proposal-sent",
-        "proposal_received": "proposal-received",
-        "offer_sent": "offer-sent",
-        "offer_received": "offer-received",
-        "request_sent": "request-sent",
-        "request_received": "request-received",
-        "credential_issued": "credential-issued",
-        "credential_received": "credential-received",
-        "credential_acked": "done",
-    }
-
-    if not state or state not in translation_dict:
-        return None
-
-    return translation_dict[state]
-
-
 class IssuerV1(Issuer):
     @classmethod
     async def send_credential(cls, controller: AcaPyClient, credential: Credential):
-        credential_preview = _preview_from_attributes(attributes=credential.attributes)
+        credential_preview = cls.__preview_from_attributes(
+            attributes=credential.attributes
+        )
 
         record = await controller.issue_credential_v1_0.issue_credential_automated(
             body=V10CredentialProposalRequestMand(
@@ -65,7 +37,7 @@ class IssuerV1(Issuer):
             )
         )
 
-        return IssuerV1.__record_to_model(record)
+        return cls.__record_to_model(record)
 
     @classmethod
     async def request_credential(
@@ -75,17 +47,17 @@ class IssuerV1(Issuer):
             cred_ex_id=credential_exchange_id
         )
 
-        return IssuerV1.__record_to_model(record)
+        return cls.__record_to_model(record)
 
     @classmethod
     async def store_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
     ):
         record = await controller.issue_credential_v1_0.store_credential(
-            cred_ex_id=credential_exchange_id
+            cred_ex_id=credential_exchange_id, body=V10CredentialStoreRequest()
         )
 
-        return IssuerV1.__record_to_model(record)
+        return cls.__record_to_model(record)
 
     @classmethod
     async def delete_credential(
@@ -106,25 +78,6 @@ class IssuerV1(Issuer):
             )
 
     @classmethod
-    def __record_to_model(cls, record: V10CredentialExchange) -> CredentialExchange:
-        attributes = _attributes_from_preview(
-            record.credential_proposal_dict.credential_proposal
-        )
-
-        return CredentialExchange(
-            credential_id=f"v1-{record.credential_exchange_id}",
-            role=record.role,
-            created_at=record.created_at,
-            updated_at=record.updated_at,
-            attributes=attributes,
-            protocol_version=IssueCredentialProtocolVersion.v1,
-            schema_id=record.schema_id,
-            credential_definition_id=record.credential_definition_id,
-            state=_v1_state_to_rfc_state(record.state),
-            connection_id=record.connection_id,
-        )
-
-    @classmethod
     async def get_records(
         cls, controller: AcaPyClient, connection_id: Optional[str] = None
     ):
@@ -135,7 +88,7 @@ class IssuerV1(Issuer):
         if not result.results:
             return []
 
-        return [IssuerV1.__record_to_model(record) for record in result.results]
+        return [cls.__record_to_model(record) for record in result.results]
 
     @classmethod
     async def get_record(cls, controller: AcaPyClient, credential_exchange_id: str):
@@ -143,4 +96,68 @@ class IssuerV1(Issuer):
             cred_ex_id=credential_exchange_id,
         )
 
-        return IssuerV1.__record_to_model(record)
+        return cls.__record_to_model(record)
+
+    @classmethod
+    def __record_to_model(cls, record: V10CredentialExchange) -> CredentialExchange:
+        attributes = cls.__attributes_from_record(record)
+
+        return CredentialExchange(
+            credential_id=f"v1-{record.credential_exchange_id}",
+            role=record.role,
+            created_at=record.created_at,
+            updated_at=record.updated_at,
+            attributes=attributes,
+            protocol_version=IssueCredentialProtocolVersion.v1,
+            schema_id=record.schema_id,
+            credential_definition_id=record.credential_definition_id,
+            state=cls.__v1_state_to_rfc_state(record.state),
+            connection_id=record.connection_id,
+        )
+
+    @classmethod
+    def __attributes_from_record(
+        cls, record: V10CredentialExchange
+    ) -> Optional[Dict[str, str]]:
+        preview = None
+
+        if (
+            record.credential_proposal_dict
+            and record.credential_proposal_dict.credential_proposal
+        ):
+            preview = record.credential_proposal_dict.credential_proposal
+
+        return (
+            {attr.name: attr.value for attr in preview.attributes} if preview else None
+        )
+
+    @classmethod
+    def __preview_from_attributes(
+        cls,
+        attributes: Dict[str, str],
+    ) -> CredentialPreview:
+        return CredentialPreview(
+            attributes=[
+                CredAttrSpec(name=name, value=value)
+                for name, value in attributes.items()
+            ]
+        )
+
+    @classmethod
+    def __v1_state_to_rfc_state(cls, state: Optional[str]) -> Optional[str]:
+        translation_dict = {
+            "proposal_sent": "proposal-sent",
+            "proposal_received": "proposal-received",
+            "offer_sent": "offer-sent",
+            "offer_received": "offer-received",
+            "request_sent": "request-sent",
+            "request_received": "request-received",
+            "credential_issued": "credential-issued",
+            "credential_received": "credential-received",
+            "credential_acked": "done",
+        }
+
+        if not state or state not in translation_dict:
+            return None
+
+        return translation_dict[state]

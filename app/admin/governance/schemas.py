@@ -89,10 +89,8 @@ async def create_schema(
         schema_name=schema_definition.name,
         schema_version=schema_definition.version,
     )
-    schema_definition = await aries_controller.schema.publish_schema(
-        body=schema_send_request
-    )
-    return schema_definition
+    result = await aries_controller.schema.publish_schema(body=schema_send_request)
+    return result
 
 
 @router.post("/update")

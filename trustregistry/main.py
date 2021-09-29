@@ -1,22 +1,22 @@
 from fastapi import FastAPI
 
-import json
+from registry import actors, schemas
+from dependencies import read_registry
 
-from registry import actor, schema
+from fastapi import Depends
+
 
 app = FastAPI()
 
-app.include_router(actor.router)
-app.include_router(schema.router)
+app.include_router(actors.router)
+app.include_router(schemas.router)
 
 
 @app.get("/")
-async def root():
-    with open("./registryfiles/trustregistry.json", "r") as tr:
-        registry_file = json.load(tr)
+async def root(registry_file=Depends(read_registry)):
     return registry_file
 
 
 @app.get("/registry")
-async def registry():
-    return await root()
+async def registry(registry_file=Depends(read_registry)):
+    return registry_file

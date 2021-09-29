@@ -3,14 +3,20 @@
 	    {
 		"id": "yoma-africa",
 		"name": "Yoma Africa",
-		"roles": ["issuer", "verifier"],
+		"roles": [
+		    "issuer",
+		    "verifier"
+		],
 		"did": "XDfajccajdcjx"
 	    },
 	    {
 		"id": "yoma-europe",
 		"name": "Yoma Europe",
-		"roles": ["verifier"],
-		"invitation_url": "https://agent.com?c_i=eyXXXX"
+		"roles": [
+		    "verifier"
+		],
+		"invitation_url": "https://agent.com?c_i=eyXXXX",
+		"did": "XDfajccajdjdcjx"
 	    }
 	],
 	"schemas": [

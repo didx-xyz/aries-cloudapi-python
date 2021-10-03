@@ -21,8 +21,8 @@ class CredentialExchange(BaseModel):
     created_at: str
     updated_at: str
     protocol_version: IssueCredentialProtocolVersion
-    schema_id: str
-    credential_definition_id: str
+    schema_id: Optional[str]
+    credential_definition_id: Optional[str]
     state: Literal[
         "proposal-sent",
         "proposal-received",

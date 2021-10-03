@@ -9,9 +9,14 @@ from assertpy import assert_that
 import ledger_facade
 import pytest
 import utils
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.api.ledger import LedgerApi
-from aries_cloudcontroller.api.wallet import WalletApi
+from aries_cloudcontroller import (
+    AcaPyClient,
+    LedgerApi,
+    WalletApi,
+    IssueCredentialV10Api,
+    IssueCredentialV20Api,
+    CredentialsApi,
+)
 from dependencies import member_admin_agent, yoma_agent
 from httpx import AsyncClient
 from main import app
@@ -50,6 +55,9 @@ def mock_agent_controller():
     controller = mock(AcaPyClient)
     controller.wallet = mock(WalletApi)
     controller.ledger = mock(LedgerApi)
+    controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
+    controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
+    controller.credentials = mock(CredentialsApi)
     return controller
 
 

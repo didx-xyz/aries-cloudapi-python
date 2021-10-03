@@ -69,7 +69,7 @@ async def credential_definition_id(
 async def credential_exchange_id(
     async_client_bob_module_scope: AsyncClient,
     alice_connection_id: str,
-    credential_definition_id: str,
+    schema_definition: Dict[str, Any],
     bob_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
 ):
@@ -78,7 +78,7 @@ async def credential_exchange_id(
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_connection_id,
-        "cred_def_id": credential_definition_id,
+        "schema_id": schema_definition["schema_id"],
         "attributes": {"speed": "average"},
     }
 
@@ -88,6 +88,7 @@ async def credential_exchange_id(
     )
     credential_exchange = response.json()
     credential_exchange_id = credential_exchange["credential_id"]
+    assert credential_exchange["protocol_version"] == "v1"
 
     time.sleep(5)
     response = await async_client_alice_module_scope.get(
@@ -102,7 +103,7 @@ async def credential_exchange_id(
 @pytest.mark.asyncio
 async def test_send_credential(
     async_client_bob_module_scope: AsyncClient,
-    credential_definition_id: str,
+    schema_definition: Dict[str, Any],
     bob_connection_id: str,
     alice_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
@@ -110,7 +111,7 @@ async def test_send_credential(
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_connection_id,
-        "cred_def_id": credential_definition_id,
+        "schema_id": schema_definition["schema_id"],
         "attributes": {"speed": "average"},
     }
 
@@ -156,7 +157,6 @@ async def test_get_records(async_client_alice_module_scope: AsyncClient):
 async def test_send_credential_request(
     async_client_bob_module_scope: AsyncClient, credential_exchange_id: str
 ):
-    # TODO check for the successful request
     time.sleep(10)
     response = await async_client_bob_module_scope.post(
         f"{BASE_PATH}/{credential_exchange_id}/request"
@@ -176,6 +176,7 @@ async def test_store_credential(
     async_client_bob_module_scope: AsyncClient, credential_exchange_id: str
 ):
     # TODO check for the correct response when state is credential_received
+    # We can't complete this with auto accept enabled
     time.sleep(5)
     response = await async_client_bob_module_scope.post(
         f"{BASE_PATH}/{credential_exchange_id}/store"

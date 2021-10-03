@@ -1,0 +1,7 @@
+{
+  "reportUntypedFunctionDecorator": "none",
+  "reportUnknownVariableType": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownArgumentType": "none",
+  "reportMissingTypeStubs": "none"
+}

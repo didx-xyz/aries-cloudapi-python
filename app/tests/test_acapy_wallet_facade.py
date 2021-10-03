@@ -12,13 +12,6 @@ async def get(response):
     return response
 
 
-@pytest.fixture
-def mock_agent_controller():
-    controller = mock(AcaPyClient)
-    controller.wallet = mock(WalletApi)
-    return controller
-
-
 @pytest.mark.asyncio
 async def test_error_on_get_pub_did(mock_agent_controller):
     when(mock_agent_controller.wallet).get_public_did().thenReturn(

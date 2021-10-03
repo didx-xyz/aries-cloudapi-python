@@ -1,14 +1,16 @@
 import logging
 from enum import Enum
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from aries_cloudcontroller import AcaPyClient
+from pydantic.main import BaseModel
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends, Query
 from generic.issuer.facades.acapy_issuer import Issuer
 from generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from generic.issuer.models import Credential, IssueCredentialProtocolVersion
+from facade import write_credential_def
 
 # TypedDict from typing itself has some missing features for pydantic only available in 3.9
 # https://pydantic-docs.helpmanual.io/usage/types/#typeddict
@@ -28,16 +30,16 @@ class ProblemReportExplanation(TypedDict):
     description: str
 
 
-class SendCredential(Credential):
+class SendCredential(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
+    connection_id: str
+    schema_id: str
+    attributes: Dict[str, str]
 
 
 def __issuer_from_id(id: str) -> Tuple[str, Issuer]:
     if id.startswith("v1-"):
-        return (
-            id[3:],
-            IssueCredentialFacades.v1.value,
-        )
+        return (id[3:], IssueCredentialFacades.v1.value)
 
     elif id.startswith("v2-"):
         return (id[3:], IssueCredentialFacades.v2.value)
@@ -49,13 +51,6 @@ def __issuer_from_protocol_version(version: IssueCredentialProtocolVersion) -> I
     facade = IssueCredentialFacades[version.name]
 
     return facade.value
-
-
-# class CredentialOffer(Credential):
-#     comment: Optional[str]
-#     auto_issue: bool = True
-#     auto_remove: bool = True
-#     trace: bool = False
 
 
 @router.get("/credentials")
@@ -123,8 +118,15 @@ async def send_credential(
 
     issuer = __issuer_from_protocol_version(credential.protocol_version)
 
+    cred_def_id = await write_credential_def(aries_controller, credential.schema_id)
+
     return await issuer.send_credential(
-        controller=aries_controller, credential=credential
+        controller=aries_controller,
+        credential=Credential(
+            attributes=credential.attributes,
+            cred_def_id=cred_def_id,
+            connection_id=credential.connection_id,
+        ),
     )
 
 
@@ -192,24 +194,3 @@ async def store_credential(
     return await issuer.store_credential(
         controller=aries_controller, credential_exchange_id=id
     )
-
-
-# @router.post("/problem-report")
-# async def problem_report(
-#     explanation: ProblemReportExplanation,
-#     credential_exchange_id: str,
-#     aries_controller: AcaPyClient = Depends(agent_selector),
-# ):
-#     """
-#     Create problem report for record.
-
-#     Parameters:
-#     -----------
-#     explanation: ProblemReportExplanation
-#     credential_exchange_id: str
-#         credential exchange id
-#     """
-#     return await aries_controller.issue_credential_v2_0.report_problem(
-#         cred_ex_id=credential_x_id,
-#         body=V20CredIssueProblemReportRequest(description=explanation["description"]),
-#     )

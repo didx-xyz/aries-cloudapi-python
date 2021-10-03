@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -86,34 +86,6 @@ class IssuerV2(Issuer):
             )
 
     @classmethod
-    def __record_to_model(cls, record: V20CredExRecord) -> CredentialExchange:
-        attributes = cls.__attributes_from_record(record)
-
-        schema_id = None
-        credential_definition_id = None
-
-        if record.by_format and record.by_format.cred_offer:
-            schema_id = record.by_format.cred_offer.get("indy", {}).get(
-                "schema_id", None
-            )
-            credential_definition_id = record.by_format.cred_offer.get("indy", {}).get(
-                "cred_def_id", None
-            )
-
-        return CredentialExchange(
-            credential_id=f"v2-{record.cred_ex_id}",
-            role=record.role,
-            created_at=record.created_at,
-            updated_at=record.updated_at,
-            attributes=attributes,
-            protocol_version=IssueCredentialProtocolVersion.v2,
-            schema_id=schema_id,
-            credential_definition_id=credential_definition_id,
-            state=record.state,
-            connection_id=record.connection_id,
-        )
-
-    @classmethod
     async def get_records(
         cls, controller: AcaPyClient, connection_id: Optional[str] = None
     ):
@@ -140,6 +112,43 @@ class IssuerV2(Issuer):
             raise Exception("Record has not credential exchang record")
 
         return cls.__record_to_model(record.cred_ex_record)
+
+    @classmethod
+    def __record_to_model(cls, record: V20CredExRecord) -> CredentialExchange:
+        attributes = cls.__attributes_from_record(record)
+        schema_id, credential_definition_id = cls.__schema_cred_def_from_record(record)
+
+        return CredentialExchange(
+            credential_id=f"v2-{record.cred_ex_id}",
+            role=record.role,
+            created_at=record.created_at,
+            updated_at=record.updated_at,
+            attributes=attributes,
+            protocol_version=IssueCredentialProtocolVersion.v2,
+            schema_id=schema_id,
+            credential_definition_id=credential_definition_id,
+            state=record.state,
+            connection_id=record.connection_id,
+        )
+
+    @classmethod
+    def __schema_cred_def_from_record(
+        cls, record: V20CredExRecord
+    ) -> Tuple[Optional[str], Optional[str]]:
+        schema_id = None
+        credential_definition_id = None
+
+        if record.by_format and record.by_format.cred_offer:
+            indy = record.by_format.cred_offer.get("indy", {})
+            schema_id = indy.get("schema_id", None)
+            credential_definition_id = indy.get("cred_def_id", None)
+
+        elif record.by_format and record.by_format.cred_proposal:
+            indy = record.by_format.cred_proposal.get("indy", {})
+            schema_id = indy.get("schema_id", None)
+            credential_definition_id = indy.get("cred_def_id", None)
+
+        return schema_id, credential_definition_id
 
     @classmethod
     def __preview_from_attributes(

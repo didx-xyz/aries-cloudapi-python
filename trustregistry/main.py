@@ -1,22 +1,26 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
 
-from registry import actors, schemas
-from dependencies import read_registry
+from registry import registry_actors, registry_schemas
+import crud, models
+from db import get_db
+from database import engine
 
-from fastapi import Depends
-
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-app.include_router(actors.router)
-app.include_router(schemas.router)
+app.include_router(registry_actors.router)
+app.include_router(registry_schemas.router)
 
 
 @app.get("/")
-async def root(registry_file=Depends(read_registry)):
-    return registry_file
+async def root(db: Session = Depends(get_db)):
+    db_schemas = crud.get_schemas(db)
+    db_actors = crud.get_actors(db)
+    return {"actors": db_actors, "schemas": db_schemas}
 
 
 @app.get("/registry")
-async def registry(registry_file=Depends(read_registry)):
-    return registry_file
+async def registry(db: Session = Depends(get_db)):
+    return await root(db)

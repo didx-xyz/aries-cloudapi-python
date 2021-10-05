@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 import crud
@@ -10,16 +9,13 @@ from schemas import Schema
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
 
-class Schema(BaseModel):
-    did: str
-    name: str
-    version: str
-
-
 @router.get("/")
 async def get_schemas(db: Session = Depends(get_db)):
     db_schemas = crud.get_schemas(db)
-    return {"schemas": db_schemas}
+    schemas_repr = [
+        f"{schema.did}:{schema.name}:{schema.version}" for schema in db_schemas
+    ]
+    return {"schemas": schemas_repr}
 
 
 @router.post("/")
@@ -47,5 +43,5 @@ async def remove_schema(schema_did: str, db: Session = Depends(get_db)):
     if delete_scheme_res is None:
         raise HTTPException(
             status_code=404,
-            detail=f"Schema does not exists.",
+            detail=f"Schema not found.",
         )

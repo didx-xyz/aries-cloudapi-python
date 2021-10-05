@@ -1,0 +1,175 @@
+************* Module app.facade
+app/facade.py:105: [W0511(fixme), ] TODO DO we want to return the credential or just SUCCESS ?
+app/facade.py:128: [W0511(fixme), ] TODO Return only the active connection id??
+app/facade.py:18: [C0103(invalid-name), ] Class name "T_co" doesn't conform to PascalCase naming style ('[^\\W\\da-z][^\\W_]+$' pattern)
+************* Module app.acapy_wallet_facade
+app/acapy_wallet_facade.py:25: [W1203(logging-fstring-interpolation), create_did] Use lazy % formatting in logging functions
+app/acapy_wallet_facade.py:50: [W1203(logging-fstring-interpolation), assign_pub_did] Use lazy % formatting in logging functions
+app/acapy_wallet_facade.py:52: [W1203(logging-fstring-interpolation), assign_pub_did] Use lazy % formatting in logging functions
+app/acapy_wallet_facade.py:76: [W1203(logging-fstring-interpolation), get_pub_did] Use lazy % formatting in logging functions
+************* Module app.schemas
+app/schemas.py:6: [W0511(fixme), ] TODO what is a good name for this
+app/schemas.py:7: [W0511(fixme), ] TODO should this really be a schema
+************* Module app.utils
+app/utils.py:11: [W0106(expression-not-assigned), construct_zkp] Expression "[req_preds.append({'name': item['name'], 'p_type': item['p_type'], 'p_value': item['p_value'], 'restrictions': [{'schema_id': schema_id}]}) for item in zero_knowledge_proof]" is assigned to nothing
+************* Module app.ledger_facade
+app/ledger_facade.py:43: [W1203(logging-fstring-interpolation), _post_to_ledger] Use lazy % formatting in logging functions
+************* Module app.main
+app/main.py:48: [W0613(unused-argument), client_response_error_exception_handler] Unused argument 'request'
+************* Module app.acapy_ledger_facade
+app/acapy_ledger_facade.py:28: [W1203(logging-fstring-interpolation), get_taa] Use lazy % formatting in logging functions
+app/acapy_ledger_facade.py:58: [W1203(logging-fstring-interpolation), accept_taa] Use lazy % formatting in logging functions
+app/acapy_ledger_facade.py:60: [W1203(logging-fstring-interpolation), accept_taa] Use lazy % formatting in logging functions
+app/acapy_ledger_facade.py:87: [W1203(logging-fstring-interpolation), get_did_endpoint] Use lazy % formatting in logging functions
+app/acapy_ledger_facade.py:90: [W1309(f-string-without-interpolation), get_did_endpoint] Using an f-string that does not have any interpolated variables
+************* Module app.dependencies
+app/dependencies.py:29: [C0301(line-too-long), ] Line too long (160/120)
+app/dependencies.py:97: [C0301(line-too-long), ] Line too long (160/120)
+app/dependencies.py:121: [C0301(line-too-long), ] Line too long (160/120)
+app/dependencies.py:144: [C0301(line-too-long), ] Line too long (160/120)
+app/dependencies.py:166: [C0301(line-too-long), ] Line too long (160/120)
+app/dependencies.py:46: [R1714(consider-using-in), agent_selector] Consider merging these comparisons with "in" to "x_role in ('eco-system', 'ecosystem')"
+app/dependencies.py:65: [R1714(consider-using-in), admin_agent_selector] Consider merging these comparisons with "in" to "x_role in ('eco-system', 'ecosystem')"
+app/dependencies.py:59: [W0613(unused-argument), admin_agent_selector] Unused argument 'x_auth'
+app/dependencies.py:76: [W0613(unused-argument), ecosystem_agent] Unused argument 'x_api_key'
+************* Module app.routers.schema
+app/routers/schema.py:45: [W0511(fixme), ] TODO: Should this come from env var or from the client request?
+app/routers/schema.py:95: [W0511(fixme), ] TODO: Should this come from env var or from the client request?
+app/routers/schema.py:8: [W0401(wildcard-import), ] Wildcard import dependencies
+app/routers/schema.py:51: [E1111(assignment-from-no-return), get_schema] Assigning result of a function call, where the function has no return
+app/routers/schema.py:52: [W1203(logging-fstring-interpolation), get_schema] Use lazy % formatting in logging functions
+app/routers/schema.py:123: [E1111(assignment-from-no-return), write_credential_schema] Assigning result of a function call, where the function has no return
+app/routers/schema.py:124: [W1203(logging-fstring-interpolation), write_credential_schema] Use lazy % formatting in logging functions
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import re from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import EXTRACT_TOKEN_FROM_BEARER from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import YOMA_AGENT_URL from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import ECOSYSTEM_AGENT_URL from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import MEMBER_AGENT_URL from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import EMBEDDED_API_KEY from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import agent_selector from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import admin_agent_selector from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import ecosystem_agent from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import member_agent from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import member_admin_agent from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import ecosystem_admin_agent from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import asynccontextmanager from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import Header from wildcard import
+app/routers/schema.py:8: [W0614(unused-wildcard-import), ] Unused import HTTPException from wildcard import
+************* Module app.tests.test_utils
+app/tests/test_utils.py:2: [W0611(unused-import), ] Unused assert_that imported from assertpy
+************* Module app.tests.conftest
+app/tests/conftest.py:108: [W0621(redefined-outer-name), async_client_bob] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:115: [W0621(redefined-outer-name), async_client_bob_module_scope] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:121: [W0621(redefined-outer-name), async_client_alice] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:128: [W0621(redefined-outer-name), async_client_alice_module_scope] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:134: [W0621(redefined-outer-name), agent_client] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:144: [W0621(redefined-outer-name), member_bob] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:149: [W0621(redefined-outer-name), member_alice] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:153: [W0621(redefined-outer-name), create_wallet] Redefining name 'async_client' from outer scope (line 87)
+app/tests/conftest.py:204: [W0621(redefined-outer-name), create_bob_and_alice_connect] Redefining name 'async_client_bob_module_scope' from outer scope (line 114)
+app/tests/conftest.py:205: [W0621(redefined-outer-name), create_bob_and_alice_connect] Redefining name 'async_client_alice_module_scope' from outer scope (line 127)
+app/tests/conftest.py:217: [W0621(redefined-outer-name), create_bob_and_alice_connect] Redefining name 'async_client_bob' from outer scope (line 108)
+app/tests/conftest.py:218: [W0621(redefined-outer-name), create_bob_and_alice_connect] Redefining name 'async_client_alice' from outer scope (line 121)
+app/tests/conftest.py:221: [W0621(redefined-outer-name), create_bob_and_alice_connect] Redefining name 'bob_connection_id' from outer scope (line 266)
+app/tests/conftest.py:234: [W0621(redefined-outer-name), create_bob_and_alice_connect] Redefining name 'alice_connection_id' from outer scope (line 271)
+app/tests/conftest.py:266: [W0621(redefined-outer-name), bob_connection_id] Redefining name 'create_bob_and_alice_connect' from outer scope (line 203)
+app/tests/conftest.py:271: [W0621(redefined-outer-name), alice_connection_id] Redefining name 'create_bob_and_alice_connect' from outer scope (line 203)
+************* Module app.tests.test_connections
+app/tests/test_connections.py:62: [W0613(unused-argument), invite_creation] Unused argument 'wallet_id'
+app/tests/test_connections.py:188: [W0612(unused-variable), test_accept_invite] Unused variable 'han_wallet_id'
+app/tests/test_connections.py:217: [W0612(unused-variable), test_get_connections] Unused variable 'han_wallet_id'
+app/tests/test_connections.py:250: [W0612(unused-variable), test_get_connection_by_id] Unused variable 'han_wallet_id'
+app/tests/test_connections.py:270: [W0612(unused-variable), test_delete_connection] Unused variable 'han_wallet_id'
+app/tests/test_connections.py:384: [W0603(global-statement), test_create_invite_oob] Using the global statement
+app/tests/test_connections.py:398: [W0612(unused-variable), test_accept_invite_oob] Unused variable 'yoda_token'
+app/tests/test_connections.py:398: [W0612(unused-variable), test_accept_invite_oob] Unused variable 'yoda_wallet_id'
+app/tests/test_connections.py:398: [W0612(unused-variable), test_accept_invite_oob] Unused variable 'han_wallet_id'
+app/tests/test_connections.py:423: [W0612(unused-variable), test_oob_connect_via_pubdid] Unused variable 'yoda_wallet_id'
+app/tests/test_connections.py:423: [W0612(unused-variable), test_oob_connect_via_pubdid] Unused variable 'han_wallet_id'
+************* Module app.tests.test_dependencies
+app/tests/test_dependencies.py:22: [W0212(protected-access), test_extract_token_from_bearer] Access to a protected member _extract_jwt_token_from_security_header of a client class
+app/tests/test_dependencies.py:116: [W0621(redefined-outer-name), test_agent_selector] Redefining name 'setup_agent_urls_for_testing' from outer scope (line 85)
+app/tests/test_dependencies.py:116: [W0613(unused-argument), test_agent_selector] Unused argument 'is_multitenant'
+app/tests/test_dependencies.py:116: [W0613(unused-argument), test_agent_selector] Unused argument 'setup_agent_urls_for_testing'
+app/tests/test_dependencies.py:155: [W0621(redefined-outer-name), test_web_ecosystem_or_member] Redefining name 'setup_agent_urls_for_testing' from outer scope (line 85)
+app/tests/test_dependencies.py:155: [W0613(unused-argument), test_web_ecosystem_or_member] Unused argument 'setup_agent_urls_for_testing'
+************* Module app.tests.test_acapy_wallet_facade
+app/tests/test_acapy_wallet_facade.py:3: [W0611(unused-import), ] Unused AcaPyClient imported from aries_cloudcontroller
+app/tests/test_acapy_wallet_facade.py:4: [W0611(unused-import), ] Unused WalletApi imported from aries_cloudcontroller.api.wallet
+app/tests/test_acapy_wallet_facade.py:7: [W0611(unused-import), ] Unused mock imported from mockito
+************* Module app.tests.test_messaging
+app/tests/test_messaging.py:21: [C0123(unidiomatic-typecheck), test_send_trust_ping] Use isinstance() rather than type() for a typecheck.
+app/tests/test_messaging.py:37: [C0123(unidiomatic-typecheck), test_send_message] Use isinstance() rather than type() for a typecheck.
+************* Module app.tests.test_via_web_wallet
+app/tests/test_via_web_wallet.py:12: [W0613(unused-argument), test_get_pub_did_via_web] Unused argument 'setup_env'
+app/tests/test_via_web_wallet.py:35: [W0613(unused-argument), test_get_pub_did_via_web_no_header] Unused argument 'setup_env'
+************* Module app.tests.admin.governance.credential_definitions.test_credential_definitions
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:26: [W0621(redefined-outer-name), test_create_credential_definition] Redefining name 'setup_local_env' from outer scope (line 19)
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:26: [W0613(unused-argument), test_create_credential_definition] Unused argument 'setup_local_env'
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:60: [W0621(redefined-outer-name), test_create_credential_definition_via_web] Redefining name 'setup_local_env' from outer scope (line 19)
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:60: [W0613(unused-argument), test_create_credential_definition_via_web] Unused argument 'setup_local_env'
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:102: [W0621(redefined-outer-name), test_get_credential_definitions] Redefining name 'setup_local_env' from outer scope (line 19)
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:102: [W0613(unused-argument), test_get_credential_definitions] Unused argument 'setup_local_env'
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:148: [W0621(redefined-outer-name), test_get_credential_definitions_via_web] Redefining name 'setup_local_env' from outer scope (line 19)
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:148: [W0613(unused-argument), test_get_credential_definitions_via_web] Unused argument 'setup_local_env'
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:183: [W0621(redefined-outer-name), test_get_credential_definition] Redefining name 'setup_local_env' from outer scope (line 19)
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:183: [W0613(unused-argument), test_get_credential_definition] Unused argument 'setup_local_env'
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:219: [W0621(redefined-outer-name), test_get_credential_definition_via_web] Redefining name 'setup_local_env' from outer scope (line 19)
+app/tests/admin/governance/credential_definitions/test_credential_definitions.py:219: [W0613(unused-argument), test_get_credential_definition_via_web] Unused argument 'setup_local_env'
+************* Module app.tests.admin.governance.schemas.test_schemas
+app/tests/admin/governance/schemas/test_schemas.py:32: [W0621(redefined-outer-name), test_create_schema_via_web] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:32: [W0613(unused-argument), test_create_schema_via_web] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:56: [W0621(redefined-outer-name), test_get_schemas_via_web] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:56: [W0613(unused-argument), test_get_schemas_via_web] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:89: [W0621(redefined-outer-name), test_get_schema_via_web] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:89: [W0613(unused-argument), test_get_schema_via_web] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:120: [W0621(redefined-outer-name), test_create_one_schema] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:120: [W0613(unused-argument), test_create_one_schema] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:142: [W0621(redefined-outer-name), test_update_schemas] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:142: [W0613(unused-argument), test_update_schemas] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:171: [W0621(redefined-outer-name), test_create_two_schemas] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:171: [W0613(unused-argument), test_create_two_schemas] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:199: [W0621(redefined-outer-name), test_get_schemas] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:199: [W0613(unused-argument), test_get_schemas] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:244: [W0621(redefined-outer-name), test_get_schemas_detail_list] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:244: [W0613(unused-argument), test_get_schemas_detail_list] Unused argument 'setup_local_env'
+app/tests/admin/governance/schemas/test_schemas.py:286: [W0621(redefined-outer-name), test_update_schema] Redefining name 'setup_local_env' from outer scope (line 26)
+app/tests/admin/governance/schemas/test_schemas.py:286: [W0613(unused-argument), test_update_schema] Unused argument 'setup_local_env'
+************* Module app.tests.admin.governance.multitenantwallet.test_wallet_admin
+app/tests/admin/governance/multitenantwallet/test_wallet_admin.py:77: [C0123(unidiomatic-typecheck), test_get_subwallet_auth_token] Use isinstance() rather than type() for a typecheck.
+app/tests/admin/governance/multitenantwallet/test_wallet_admin.py:117: [W0613(unused-argument), test_query_subwallet] Unused argument 'create_wallet'
+************* Module app.tests.wallet.test_wallets
+app/tests/wallet/test_wallets.py:41: [W0613(unused-argument), test_create_local_did] Unused argument 'yoma_agent_mock'
+************* Module app.tests.issuer.test_issuer
+app/tests/issuer/test_issuer.py:160: [W0511(fixme), ] TODO check for the successful request
+app/tests/issuer/test_issuer.py:179: [W0511(fixme), ] TODO check for the correct response when state is credential_received
+app/tests/issuer/test_issuer.py:25: [W0613(unused-argument), event_loop] Unused argument 'request'
+app/tests/issuer/test_issuer.py:49: [W0621(redefined-outer-name), credential_definition_id] Redefining name 'schema_definition' from outer scope (line 32)
+app/tests/issuer/test_issuer.py:72: [W0621(redefined-outer-name), credential_exchange_id] Redefining name 'schema_definition' from outer scope (line 32)
+app/tests/issuer/test_issuer.py:90: [W0621(redefined-outer-name), credential_exchange_id] Redefining name 'credential_exchange_id' from outer scope (line 69)
+app/tests/issuer/test_issuer.py:106: [W0621(redefined-outer-name), test_send_credential] Redefining name 'schema_definition' from outer scope (line 32)
+app/tests/issuer/test_issuer.py:158: [W0621(redefined-outer-name), test_send_credential_request] Redefining name 'credential_exchange_id' from outer scope (line 69)
+app/tests/issuer/test_issuer.py:177: [W0621(redefined-outer-name), test_store_credential] Redefining name 'credential_exchange_id' from outer scope (line 69)
+************* Module app.admin.governance.dids
+app/admin/governance/dids.py:63: [W0511(fixme), ] TODO how do we want to delete a partner from the registry?
+app/admin/governance/dids.py:67: [W0511(fixme), ] TODO update a partner on registry? Howto? Update their wallet? How or their schema(s)?
+app/admin/governance/dids.py:71: [W0511(fixme), ] TODO Determine what (or even if) should be updated/whether that makes sense
+************* Module app.admin.governance.schemas
+app/admin/governance/schemas.py:124: [W0707(raise-missing-from), update_schema] Consider explicitly re-raising using the 'from' keyword
+************* Module app.admin.governance.multitenant_wallet.wallet_admin
+app/admin/governance/multitenant_wallet/wallet_admin.py:296: [W0511(fixme), ] TODO: This should be somehow restricted?!
+app/admin/governance/multitenant_wallet/wallet_admin.py:39: [W0105(pointless-string-statement), ] String statement has no effect
+app/admin/governance/multitenant_wallet/wallet_admin.py:116: [W0105(pointless-string-statement), ] String statement has no effect
+app/admin/governance/multitenant_wallet/wallet_admin.py:177: [W0105(pointless-string-statement), ] String statement has no effect
+app/admin/governance/multitenant_wallet/wallet_admin.py:236: [W0105(pointless-string-statement), ] String statement has no effect
+app/admin/governance/multitenant_wallet/wallet_admin.py:252: [W0105(pointless-string-statement), ] String statement has no effect
+app/admin/governance/multitenant_wallet/wallet_admin.py:335: [W0102(dangerous-default-value), remove_subwallet_by_id] Dangerous default value {} as argument
+app/admin/governance/multitenant_wallet/wallet_admin.py:360: [W0102(dangerous-default-value), get_subwallet_auth_token] Dangerous default value {} as argument
+************* Module app.generic.connections
+app/generic/connections.py:39: [W0511(fixme), ] TODO this should be a post request
+app/generic/connections.py:41: [W0102(dangerous-default-value), create_invite] Dangerous default value {} as argument
+app/generic/connections.py:133: [W0102(dangerous-default-value), create_invite_oob] Dangerous default value {} as argument
+
+------------------------------------------------------------------
+Your code has been rated at 9.22/10 (previous run: 9.02/10, +0.20)
+

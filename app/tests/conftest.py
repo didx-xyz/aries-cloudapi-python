@@ -1,14 +1,22 @@
 import json
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Dict
+import time
+from typing import Dict, TypedDict
+
+from assertpy import assert_that
 
 import ledger_facade
 import pytest
 import utils
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.api.ledger import LedgerApi
-from aries_cloudcontroller.api.wallet import WalletApi
+from aries_cloudcontroller import (
+    AcaPyClient,
+    LedgerApi,
+    WalletApi,
+    IssueCredentialV10Api,
+    IssueCredentialV20Api,
+    CredentialsApi,
+)
 from dependencies import member_admin_agent, yoma_agent
 from httpx import AsyncClient
 from main import app
@@ -17,6 +25,7 @@ from mockito import mock
 from tests.test_dependencies import async_next
 from tests.utils_test import get_random_string
 
+
 DEFAULT_HEADERS = {
     "content-type": "application/json",
     "x-role": "member",
@@ -24,6 +33,12 @@ DEFAULT_HEADERS = {
 }
 
 LEDGER_URL = "http://localhost:9000/register"
+BASE_PATH_CON = "/generic/connections"
+
+
+class AliceBobConnect(TypedDict):
+    alice_connection_id: str
+    bob_connection_id: str
 
 
 @pytest.fixture
@@ -40,6 +55,9 @@ def mock_agent_controller():
     controller = mock(AcaPyClient)
     controller.wallet = mock(WalletApi)
     controller.ledger = mock(LedgerApi)
+    controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
+    controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
+    controller.credentials = mock(CredentialsApi)
     return controller
 
 
@@ -178,3 +196,77 @@ async def create_wallet(async_client, key):
         f"/admin/wallet-multitenant/{wallet['wallet_id']}",
         headers=DEFAULT_HEADERS,
     )
+
+
+@pytest.fixture(scope="module")
+@pytest.mark.asyncio
+async def create_bob_and_alice_connect(
+    async_client_bob_module_scope: AsyncClient,
+    async_client_alice_module_scope: AsyncClient,
+) -> AliceBobConnect:
+    """This test validates that bob and alice connect successfully...
+
+    NB: it assumes you have all the "auto connection" settings flagged as on.
+
+    ACAPY_AUTO_ACCEPT_INVITES=true
+    ACAPY_AUTO_ACCEPT_REQUESTS=true
+    ACAPY_AUTO_PING_CONNECTION=true
+
+    """
+
+    async_client_bob = async_client_bob_module_scope
+    async_client_alice = async_client_alice_module_scope
+    # create invitation on bob side
+    invitation = (await async_client_bob.get(BASE_PATH_CON + "/create-invite")).json()
+    bob_connection_id = invitation["connection_id"]
+    connections = (await async_client_bob.get(BASE_PATH_CON)).json()
+    assert_that(connections["results"]).extracting("connection_id").contains_only(
+        bob_connection_id
+    )
+
+    # accept invitation on alice side
+    invite_response = (
+        await async_client_alice.post(
+            BASE_PATH_CON + "/accept-invite", data=json.dumps(invitation["invitation"])
+        )
+    ).json()
+    time.sleep(15)
+    alice_connection_id = invite_response["connection_id"]
+    # fetch and validate
+    # both connections should be active - we have waited long enough for events to be exchanged
+    # and we are running in "auto connect" mode.
+    bob_connections = (await async_client_bob.get(BASE_PATH_CON)).json()
+    alice_connections = (await async_client_alice.get(BASE_PATH_CON)).json()
+
+    assert_that(bob_connections["results"]).extracting("connection_id").contains(
+        bob_connection_id
+    )
+    bob_connection = [
+        c for c in bob_connections["results"] if c["connection_id"] == bob_connection_id
+    ][0]
+    assert_that(bob_connection).has_state("active")
+
+    assert_that(alice_connections["results"]).extracting("connection_id").contains(
+        alice_connection_id
+    )
+    alice_connection = [
+        c
+        for c in alice_connections["results"]
+        if c["connection_id"] == alice_connection_id
+    ][0]
+    assert_that(alice_connection).has_state("active")
+
+    return {
+        "alice_connection_id": alice_connection_id,
+        "bob_connection_id": bob_connection_id,
+    }
+
+
+@pytest.fixture(scope="module")
+def bob_connection_id(create_bob_and_alice_connect: AliceBobConnect):
+    return create_bob_and_alice_connect["bob_connection_id"]
+
+
+@pytest.fixture(scope="module")
+def alice_connection_id(create_bob_and_alice_connect: AliceBobConnect):
+    return create_bob_and_alice_connect["alice_connection_id"]

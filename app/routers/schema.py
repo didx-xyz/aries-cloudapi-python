@@ -108,14 +108,14 @@ async def write_credential_schema(
         schema_id = write_schema_resp["schema_id"]
 
         # Writing credential definition
-        credential_definition = await write_credential_def(aries_controller, schema_id)
-
-        credential_definition_id = credential_definition["credential_definition_id"]
+        credential_definition_id = await write_credential_def(
+            aries_controller, schema_id
+        )
 
         final_response = SchemaResponse(
             schema_resp=write_schema_resp,
             schema_id=schema_id,
-            credential_definition=credential_definition,
+            credential_definition=credential_definition_id,
             credential_definition_id=credential_definition_id,
         )
         return final_response

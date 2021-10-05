@@ -47,6 +47,4 @@ async def test_error_on_get_did_endpoint(mock_agent_controller):
     with pytest.raises(HTTPException) as exc:
         await get_did_endpoint(mock_agent_controller, "data")
     assert exc.value.status_code == 404
-    assert (
-        exc.value.detail == f"Something went wrong. Could not obtain issuer endpoint."
-    )
+    assert exc.value.detail == "Something went wrong. Could not obtain issuer endpoint."

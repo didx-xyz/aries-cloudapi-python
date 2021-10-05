@@ -77,7 +77,7 @@ async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
             status_code=404,
             detail="Something went wrong. Could not write credential definition to the ledger",
         )
-    return write_cred_response
+    return write_cred_response.credential_definition_id
 
 
 async def issue_credentials(

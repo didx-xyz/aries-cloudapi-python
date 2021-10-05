@@ -9,7 +9,8 @@ from fastapi import FastAPI, Response, Request
 from fastapi.responses import JSONResponse
 
 from admin.governance import credential_definitions, dids, schemas
-from generic import connections, issuers_v1, issuer_v2, messaging
+from generic import connections, messaging
+from generic.issuer import issuer
 from admin.governance.multitenant_wallet import wallet_admin
 from generic.wallet import wallets
 
@@ -20,8 +21,7 @@ app = FastAPI(debug=not prod)
 app.include_router(connections.router)
 app.include_router(credential_definitions.router)
 app.include_router(dids.router)
-app.include_router(issuer_v2.router)
-app.include_router(issuers_v1.router)
+app.include_router(issuer.router)
 app.include_router(messaging.router)
 app.include_router(schemas.router)
 app.include_router(wallet_admin.router)

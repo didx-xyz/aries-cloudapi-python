@@ -18,6 +18,8 @@ async def get_actors(db: Session = Depends(get_db)):
 @router.post("/")
 async def register_actor(actor: Actor, db: Session = Depends(get_db)):
     created_actor = crud.create_actor(db, actor=actor)
+    if created_actor is None:
+        raise HTTPException(status_code=405, detail="Actor already exists.")
     return created_actor
 
 

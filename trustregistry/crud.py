@@ -16,6 +16,9 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000):
 
 
 def create_actor(db: Session, actor: schemas.Actor):
+    db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
+    if db_actor is not None:
+        return None
     db_actor = models.Actor(**actor.dict())
     db.add(db_actor)
     db.commit()

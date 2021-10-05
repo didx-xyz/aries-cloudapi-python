@@ -71,8 +71,6 @@ services:
       - yoma-ga
       - yoma-multitenant
       - host
-    env_file:
-      - environments/trustregistry/fastapi.trustregistry.env
   yoma-multitenant-web:
     build:
       context: .

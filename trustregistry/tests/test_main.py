@@ -5,12 +5,12 @@ from sqlalchemy.orm import sessionmaker
 from database import Base
 from main import app, get_db
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./tests/test.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 Base.metadata.create_all(bind=engine)

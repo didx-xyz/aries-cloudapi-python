@@ -3,14 +3,6 @@ from sqlalchemy.orm import Session
 import models, schemas
 
 
-def get_actor(db: Session, actor_id: int):
-    return db.query(models.User).filter(models.Actor.id == actor_id).first()
-
-
-def get_actor_by_name(db: Session, name: str):
-    return db.query(models.Actor).filter(models.Actor.name == name).first()
-
-
 def get_actors(db: Session, skip: int = 0, limit: int = 1000):
     return db.query(models.Actor).offset(skip).limit(limit).all()
 

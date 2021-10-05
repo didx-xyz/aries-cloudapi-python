@@ -1,6 +1,6 @@
 import json
 
-from tests.test_main import client
+from trustregistry.tests.test_main import client
 
 
 def test_get_schemas():
@@ -60,7 +60,7 @@ def test_update_schema():
 def test_remove_schema():
     response = client.delete("/registry/schemas/string")
     assert response.status_code == 200
-    assert response.json() == None
+    assert response.json() is None
 
     response = client.delete(
         "/registry/schemas/string",

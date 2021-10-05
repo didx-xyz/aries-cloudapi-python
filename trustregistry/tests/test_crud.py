@@ -1,10 +1,10 @@
 from typing import List
 
-from sqlalchemy import schema
-import crud
-import schemas
-from tests.test_main import client, app, override_get_db
-from schemas import Actor
+from trustregistry import crud
+from trustregistry import schemas
+from trustregistry.tests.test_main import override_get_db
+
+# from trustregistry.schemas import Actor
 
 actor_model = schemas.Actor(
     id="mickey-mouse",
@@ -53,7 +53,7 @@ def test_update_actor():
         updated_actor_non_ex = crud.update_actor(
             db, actor=actor_model_update, actor_id="idontexist"
         )
-        assert updated_actor_non_ex == None
+        assert updated_actor_non_ex is None
 
 
 def test_delete_actor():
@@ -69,8 +69,8 @@ def test_delete_actor():
 
 def test_get_schemas():
     for db in override_get_db():
-        schemas = crud.get_schemas(db)
-        assert isinstance(schemas, List)
+        schemas_db = crud.get_schemas(db)
+        assert isinstance(schemas_db, List)
 
 
 new_schema = schemas.Schema(did="abc", name="awesomeschema", version="0.4.20")

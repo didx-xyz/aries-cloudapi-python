@@ -1,6 +1,6 @@
 import json
 
-from tests.test_main import client
+from trustregistry.tests.test_main import client
 
 
 new_actor = {
@@ -55,6 +55,7 @@ def test_update_actor():
     new_actors_resp = client.get("/registry/actors")
     assert new_actors_resp.status_code == 200
     new_actors_list = new_actors_resp.json()
+    new_actor["roles"] = [x.strip() for x in new_actor["roles"].split(",")]
     assert new_actor in new_actors_list["actors"]
 
     response = client.post(
@@ -69,7 +70,7 @@ def test_update_actor():
 def test_remove_schema():
     response = client.delete("/registry/actors/darth-vader")
     assert response.status_code == 200
-    assert response.json() == None
+    assert response.json() is None
 
     response = client.delete(
         "/registry/actors/darth-vader",

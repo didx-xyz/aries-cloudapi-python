@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
-import models, schemas
+from . import models
+from . import schemas
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 1000):

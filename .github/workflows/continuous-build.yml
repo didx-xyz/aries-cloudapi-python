@@ -23,6 +23,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        cd ../trustregistry
+        pip install -r requirements.txt
     - name: Install docker-compose with pip
       run: sudo pip install docker-compose
     - name: Set up Python 3.8.10
@@ -39,8 +41,7 @@ jobs:
       shell: bash
     - name: Test with pytest
       run: |
-        cd app
-        pytest --cov --ignore=tests/bdd
+        pytest trustregistry/ app/ --cov --ignore=app/tests/bdd --ignore=webhooks
         echo done
     - name: Run Pylint
       run: |

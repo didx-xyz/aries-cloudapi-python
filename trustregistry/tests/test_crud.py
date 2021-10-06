@@ -4,7 +4,6 @@ from trustregistry import crud
 from trustregistry import schemas
 from trustregistry.tests.test_main import override_get_db
 
-# from trustregistry.schemas import Actor
 
 actor_model = schemas.Actor(
     id="mickey-mouse",

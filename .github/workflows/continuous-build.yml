@@ -41,7 +41,7 @@ jobs:
       shell: bash
     - name: Test with pytest
       run: |
-        pytest trustregistry/ app/ --cov --ignore=app/tests/bdd --ignore=webhooks
+        pytest trustregistry/ app/ --cov --ignore=app/tests/bdd --ignore=webhooks --ignore=/usr
         echo done
     - name: Run Pylint
       run: |
@@ -63,14 +63,14 @@ jobs:
          -Dsonar.python.xunit.reportPath=junit.xml
          -Dsonar.python.coverage.reportPaths=coverage.xml
          -Dsonar.python.pylint.reportPaths=pylintreport.txt
-         -Dsonar.projectBaseDir=./app
+         -Dsonar.projectBaseDir=./
          -Dsonar.coverage.exclusions=tests/**/*
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
     - name: multiple command
-      if: ${{ github.ref == 'refs/heads/development' && github.event.pull_request == 'merged' }}
+      if: github.ref == 'refs/heads/development' && github.event.pull_request.merged == true
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}

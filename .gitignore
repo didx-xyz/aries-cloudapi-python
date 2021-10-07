@@ -147,3 +147,5 @@ junit.xml
 
 # VSCode
 .vscode
+
+.trustregistry.db

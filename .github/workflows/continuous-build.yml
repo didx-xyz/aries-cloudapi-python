@@ -35,13 +35,13 @@ jobs:
       run: |
         chmod u+x manage
         ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 120 seconds
-        sleep 300
+        echo waiting for dockers to startup, sleeping for 600 seconds
+        sleep 600
         echo wait over, continuing
       shell: bash
     - name: Test with pytest
       run: |
-        pytest trustregistry/ app/ --cov --ignore=app/tests/bdd --ignore=webhooks --ignore=/usr
+        pytest app/ trustregistry/ --cov=trustregistry --cov=app --ignore=webhooks
         echo done
     - name: Run Pylint
       run: |

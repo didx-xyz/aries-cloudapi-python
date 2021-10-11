@@ -35,13 +35,20 @@ jobs:
       run: |
         chmod u+x manage
         ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 600 seconds
-        sleep 600
+        echo waiting for dockers to startup, sleeping for 240 seconds
+        sleep 240
         echo wait over, continuing
       shell: bash
     - name: Test with pytest
+      id: test
+      continue-on-error: true
       run: |
-        pytest app/ trustregistry/ --cov=trustregistry --cov=app --ignore=webhooks
+        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks
+        echo done
+    - name: Retry tests
+      if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
+      run: |
+        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
         echo done
     - name: Run Pylint
       run: |

@@ -1,6 +1,9 @@
 import logging
 from typing import Tuple
 
+from aries_cloudcontroller.model.taa_info import TAAInfo
+from aries_cloudcontroller.model.taa_result import TAAResult
+
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
 from aries_cloudcontroller import AcaPyClient, TAAAccept, TAARecord
@@ -25,15 +28,18 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
         The TAA object
     """
     taa_response = await controller.ledger.fetch_taa()
-    logger.info(f"taa_response:\n{taa_response}")
-    if not taa_response.result or not taa_response.result.taa_record:
-        logger.error("Failed to get TAA:\n{taa_response}")
-        raise HTTPException(
-            status_code=404,
-            detail=f"Something went wrong. Could not get TAA. {taa_response}",
-        )
-    taa = taa_response.result.taa_record
-    return taa, "service_agreement"
+    logger.info(f"taa_response:\n {taa_response}")
+    if isinstance(taa_response, TAAInfo):
+        return taa_response.taa_record, taa_response.taa_accepted.mechanism
+    elif isinstance(taa_response, TAAResult):
+        if not taa_response.result.taa_record:
+            logger.error(f"Failed to get TAA:\n {taa_response}")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Something went wrong. Could not get TAA. {taa_response}",
+            )
+        taa = taa_response.result.taa_record
+        return taa, "service_agreement"
 
 
 async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
@@ -109,7 +115,8 @@ async def create_pub_did(
 
     taa_response, mechanism = await get_taa(aries_controller)
 
-    await accept_taa(aries_controller, taa_response, mechanism)
+    if isinstance(taa_response, TAARecord):
+        await accept_taa(aries_controller, taa_response, mechanism)
     await wallet_facade.assign_pub_did(aries_controller, did_object.did)
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
     issuer_nym = get_pub_did_response.result.did

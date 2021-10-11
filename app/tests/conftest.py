@@ -181,6 +181,7 @@ async def create_wallet(async_client, key):
             headers={**DEFAULT_HEADERS, "x-auth": f"Bearer {wallet['token']}"},
         )
     ).json()
+    time.sleep(5)
     yield AgentEntity(
         headers={**DEFAULT_HEADERS, "x-auth": f'Bearer {wallet["token"]}'},
         did=local_did["result"]["did"],

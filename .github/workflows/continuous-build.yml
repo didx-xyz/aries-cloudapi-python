@@ -43,11 +43,17 @@ jobs:
       id: test
       continue-on-error: true
       run: |
+        docker-compose up --build -d yoma-ga-agent
+        docker-compose up --build -d yoma-multitenant-agent
+        sleep 120
         pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks
         echo done
     - name: Retry tests
       if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
       run: |
+        docker-compose up --build -d yoma-ga-agent
+        docker-compose up --build -d yoma-multitenant-agent
+        sleep 120
         pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
         echo done
     - name: Run Pylint

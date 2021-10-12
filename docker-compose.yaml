@@ -88,33 +88,33 @@ services:
       - host
     env_file:
       - environments/yoma-multitenant/fastapi.default.env
-  yoma-webhooks-web:
-    build:
-      context: .
-      dockerfile: ./dockerfiles/webhooks/Dockerfile
-    ports:
-      - "3010:3010"
-    volumes:
-      - ./webhooks:/webhooks
-    networks:
-      - yoma-multitenant
-      - yoma-ga
-      - host
-    env_file:
-      - environments/webhooks/fastapi.webhooks.env
-    environment:
-      - REDIS_URL=redis://wh-redis
-  wh-redis:
-    image: redis:latest
-    restart: always
-    ports:
-      - "6379:6379"
-    volumes:
-      - $PWD/data:/data
-    networks:
-      - host
-    env_file:
-      - environments/webhooks/redis.env
+  # yoma-webhooks-web:
+  #   build:
+  #     context: .
+  #     dockerfile: ./dockerfiles/webhooks/Dockerfile
+  #   ports:
+  #     - "3010:3010"
+  #   volumes:
+  #     - ./webhooks:/webhooks
+  #   networks:
+  #     - yoma-multitenant
+  #     - yoma-ga
+  #     - host
+  #   env_file:
+  #     - environments/webhooks/fastapi.webhooks.env
+  #   environment:
+  #     - REDIS_URL=redis://wh-redis
+  # wh-redis:
+  #   image: redis:latest
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - $PWD/data:/data
+  #   networks:
+  #     - host
+  #   env_file:
+  #     - environments/webhooks/redis.env
   yoma-multitenant-wallets-db:
     image: postgres:11
     container_name: yoma-multitenant-wallets-db
@@ -159,7 +159,7 @@ services:
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh;'"
+    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh; sleep 60'"
     environment:
       - DOCKERHOST=${DOCKERHOST}
       - MAX_FETCH=50000
@@ -183,7 +183,7 @@ services:
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh'"
+    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh; sleep 60'"
     ports:
       - 9701:9701
       - 9702:9702

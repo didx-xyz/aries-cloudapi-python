@@ -2,7 +2,6 @@ import logging
 from typing import Tuple
 
 from aries_cloudcontroller.model.taa_info import TAAInfo
-from aries_cloudcontroller.model.taa_result import TAAResult
 
 import acapy_wallet_facade as wallet_facade
 import ledger_facade
@@ -29,17 +28,23 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     """
     taa_response = await controller.ledger.fetch_taa()
     logger.info(f"taa_response:\n {taa_response}")
-    if isinstance(taa_response, TAAInfo):
-        return taa_response.taa_record, taa_response.taa_accepted.mechanism
-    elif isinstance(taa_response, TAAResult):
-        if not taa_response.result.taa_record:
+    if isinstance(taa_response, TAAInfo) or isinstance(taa_response.result, TAAInfo):
+        if taa_response.result:
+            taa_response = taa_response.result
+        mechanism = (
+            taa_response.taa_accepted.mechanism
+            if taa_response.taa_accepted
+            else "service_agreement"
+        )
+        if not taa_response.taa_record and taa_response.taa_required:
             logger.error(f"Failed to get TAA:\n {taa_response}")
             raise HTTPException(
                 status_code=404,
                 detail=f"Something went wrong. Could not get TAA. {taa_response}",
             )
-        taa = taa_response.result.taa_record
-        return taa, "service_agreement"
+        return taa_response, mechanism
+    else:
+        return taa_response, "service_agreement"
 
 
 async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
@@ -114,7 +119,13 @@ async def create_pub_did(
     await ledger_facade.post_to_ledger(did_object=did_object)
 
     taa_response, mechanism = await get_taa(aries_controller)
-
+    if isinstance(taa_response, TAAInfo):
+        if taa_response.taa_required:
+            await accept_taa(
+                aries_controller,
+                taa_response.taa_record,
+                mechanism,
+            )
     if isinstance(taa_response, TAARecord):
         await accept_taa(aries_controller, taa_response, mechanism)
     await wallet_facade.assign_pub_did(aries_controller, did_object.did)

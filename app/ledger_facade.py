@@ -40,7 +40,7 @@ async def _post_to_ledger(payload, url: Optional[str] = None):
 
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()
-        logger.error(f"Failed to write to ledger:\n{error_json}")
+        logger.error("Failed to write to ledger:\n %s", error_json)
         raise HTTPException(
             status_code=post_to_ledger_resp.status_code,
             detail=f"Something went wrong.\nCould not write to Ledger.\n{error_json}",

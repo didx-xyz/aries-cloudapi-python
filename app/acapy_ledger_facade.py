@@ -27,7 +27,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
         The TAA object
     """
     taa_response = await controller.ledger.fetch_taa()
-    logger.info(f"taa_response:\n {taa_response}")
+    logger.info("taa_response:\n %s", taa_response)
     if isinstance(taa_response, TAAInfo) or isinstance(taa_response.result, TAAInfo):
         if taa_response.result:
             taa_response = taa_response.result
@@ -37,14 +37,13 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
             else "service_agreement"
         )
         if not taa_response.taa_record and taa_response.taa_required:
-            logger.error(f"Failed to get TAA:\n {taa_response}")
+            logger.error("Failed to get TAA:\n %s", taa_response)
             raise HTTPException(
                 status_code=404,
                 detail=f"Something went wrong. Could not get TAA. {taa_response}",
             )
         return taa_response, mechanism
-    else:
-        return taa_response, "service_agreement"
+    return taa_response, "service_agreement"
 
 
 async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
@@ -66,9 +65,9 @@ async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = N
     accept_taa_response = await controller.ledger.accept_taa(
         body=TAAAccept(**taa.dict(), mechanism=mechanism)
     )
-    logger.info(f"accept_taa_response: {accept_taa_response}")
+    logger.info("accept_taa_response: %s", accept_taa_response)
     if accept_taa_response != {}:
-        logger.error(f"Failed to accept TAA.\n{accept_taa_response}")
+        logger.error("Failed to accept TAA.\n %s", accept_taa_response)
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not accept TAA. {accept_taa_response}",
@@ -95,10 +94,10 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     """
     issuer_endpoint_response = await controller.ledger.get_did_endpoint(did=issuer_nym)
     if not issuer_endpoint_response:
-        logger.error(f"Failed to get DID endpoint:\n{issuer_endpoint_response}")
+        logger.error("Failed to get DID endpoint:\n %s", issuer_endpoint_response)
         raise HTTPException(
             status_code=404,
-            detail=f"Something went wrong. Could not obtain issuer endpoint.",
+            detail="Something went wrong. Could not obtain issuer endpoint.",
         )
     return issuer_endpoint_response
 
@@ -119,13 +118,12 @@ async def create_pub_did(
     await ledger_facade.post_to_ledger(did_object=did_object)
 
     taa_response, mechanism = await get_taa(aries_controller)
-    if isinstance(taa_response, (TAAInfo, TAARecord)):
-        if taa_response.taa_required:
-            await accept_taa(
-                aries_controller,
-                taa_response.taa_record,
-                mechanism,
-            )
+    if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
+        await accept_taa(
+            aries_controller,
+            taa_response.taa_record,
+            mechanism,
+        )
     await wallet_facade.assign_pub_did(aries_controller, did_object.did)
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
     issuer_nym = get_pub_did_response.result.did

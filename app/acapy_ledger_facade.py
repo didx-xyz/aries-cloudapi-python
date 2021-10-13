@@ -119,15 +119,13 @@ async def create_pub_did(
     await ledger_facade.post_to_ledger(did_object=did_object)
 
     taa_response, mechanism = await get_taa(aries_controller)
-    if isinstance(taa_response, TAAInfo):
+    if isinstance(taa_response, (TAAInfo, TAARecord)):
         if taa_response.taa_required:
             await accept_taa(
                 aries_controller,
                 taa_response.taa_record,
                 mechanism,
             )
-    if isinstance(taa_response, TAARecord):
-        await accept_taa(aries_controller, taa_response, mechanism)
     await wallet_facade.assign_pub_did(aries_controller, did_object.did)
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
     issuer_nym = get_pub_did_response.result.did

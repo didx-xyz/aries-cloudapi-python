@@ -34,6 +34,14 @@ async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db
     return update_actor_result
 
 
+@router.get("/did/{actor_did}")
+async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
+    actor = crud.get_actor_by_did(db, actor_did=actor_did)
+    if actor is None:
+        raise HTTPException(status_code=404, detail="Actor not found.")
+    return actor
+
+
 @router.delete("/{actor_id}")
 async def remove_actor(actor_id: str, db: Session = Depends(get_db)):
     delete_actor_result = crud.delete_actor(db, actor_id=actor_id)

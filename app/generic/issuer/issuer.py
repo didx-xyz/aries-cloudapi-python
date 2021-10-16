@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple
 
 from aries_cloudcontroller import AcaPyClient
 from pydantic.main import BaseModel
+from trust_registry_facade import assert_valid_issuer
 from dependencies import agent_selector
 from fastapi import APIRouter, Depends, Query
 from generic.issuer.facades.acapy_issuer import Issuer
@@ -118,6 +119,15 @@ async def send_credential(
 
     issuer = __issuer_from_protocol_version(credential.protocol_version)
 
+    public_did = await aries_controller.wallet.get_public_did()
+    if not public_did.result or not public_did.result.did:
+        raise Exception(
+            "Unable to issue credential without public did. Make sure to set the public did before issuing."
+        )
+
+    # Make sure we are allowed to issue according to trust registry rules
+    await assert_valid_issuer(public_did.result.did, credential.schema_id)
+
     cred_def_id = await write_credential_def(aries_controller, credential.schema_id)
 
     return await issuer.send_credential(
@@ -169,6 +179,19 @@ async def request_credential(
         credential id
     """
     id, issuer = __issuer_from_id(credential_id)
+
+    record = await issuer.get_record(aries_controller, id)
+
+    if not record.credential_definition_id or not record.schema_id:
+        raise Exception(
+            "Record has not credential definition or schema associated. "
+            "This proably means you haven't received an offer yet."
+        )
+
+    [did] = record.credential_definition_id.split(":")
+
+    # Make sure the issuer is allowed to issue this credential according to trust registry rules
+    await assert_valid_issuer(did, record.schema_id)
 
     return await issuer.request_credential(
         controller=aries_controller, credential_exchange_id=id

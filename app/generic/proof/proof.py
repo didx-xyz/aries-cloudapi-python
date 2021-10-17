@@ -1,25 +1,17 @@
 import logging
 from enum import Enum
+from typing import Optional
 
 from fastapi import APIRouter
-from typing_extensions import TypedDict
-
 from generic.proof.facades.acapy_proof_v1 import ProofsV1
 from generic.proof.facades.acapy_proof_v2 import ProofsV2
+from pydantic.main import BaseModel
+from typing_extensions import TypedDict
 
 logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/generic/proof/", tags=["proof"])
-
-
-class ProofsFacade(Enum):
-    v1 = ProofsV1
-    v2 = ProofsV2
-
-
-class ProblemReportExplanation(TypedDict):
-    description: str
 
 
 @router.post("/send-request")

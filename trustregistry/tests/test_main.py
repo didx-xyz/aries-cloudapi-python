@@ -2,8 +2,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from trustregistry.database import Base
-from trustregistry.main import app, get_db
+import database
+import main
+
+Base = database.Base
+app = main.app
+get_db = main.get_db
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 

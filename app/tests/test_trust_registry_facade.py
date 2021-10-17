@@ -6,6 +6,110 @@ import trust_registry_facade as trf
 
 
 @pytest.mark.asyncio
+async def test_assert_valid_issuer():
+    did = "did:sov:xxxx"
+    actor = {"id": "actor-id", "roles": ["issuer"], "did": did}
+    schema_id = "a_schema_id"
+
+    # Success
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
+        trf, "registry_has_schema"
+    ) as mock_registry_has_schema:
+        mock_actor_by_did.return_value = actor
+        mock_registry_has_schema.return_value = True
+
+        await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+
+        mock_actor_by_did.assert_called_once_with(did)
+        mock_registry_has_schema.assert_called_once_with(schema_id)
+
+    # No actor with specified did
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
+        trf, "registry_has_schema"
+    ) as mock_registry_has_schema:
+        mock_actor_by_did.return_value = None
+
+        with pytest.raises(
+            Exception, match=f"Did {did} not registered in the trust registry"
+        ):
+            await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+
+    # Actor does not have required role 'issuer'
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did:
+        mock_actor_by_did.return_value = {**actor, "roles": ["verifier"]}
+
+        with pytest.raises(
+            Exception, match="Actor actor-id does not have required role 'issuer'"
+        ):
+            await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+
+    # Schema is not registered in registry
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
+        trf, "registry_has_schema"
+    ) as mock_registry_has_schema:
+        mock_actor_by_did.return_value = actor
+        mock_registry_has_schema.return_value = False
+
+        with pytest.raises(
+            Exception,
+            match=f"Schema with id {schema_id} is not registered in trust registry",
+        ):
+            await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+
+
+@pytest.mark.asyncio
+async def test_assert_valid_verifier():
+    did = "did:sov:xxxx"
+    actor = {"id": "actor-id", "roles": ["verifier"], "did": did}
+    schema_id = "a_schema_id"
+
+    # Success
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
+        trf, "registry_has_schema"
+    ) as mock_registry_has_schema:
+        mock_actor_by_did.return_value = actor
+        mock_registry_has_schema.return_value = True
+
+        await trf.assert_valid_verifier(did=did, schema_id=schema_id)
+
+        mock_actor_by_did.assert_called_once_with(did)
+        mock_registry_has_schema.assert_called_once_with(schema_id)
+
+    # No actor with specified did
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
+        trf, "registry_has_schema"
+    ) as mock_registry_has_schema:
+        mock_actor_by_did.return_value = None
+
+        with pytest.raises(
+            Exception, match=f"Did {did} not registered in the trust registry"
+        ):
+            await trf.assert_valid_verifier(did=did, schema_id=schema_id)
+
+    # Actor does not have required role 'issuer'
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did:
+        mock_actor_by_did.return_value = {**actor, "roles": ["issuer"]}
+
+        with pytest.raises(
+            Exception, match="Actor actor-id does not have required role 'verifier'"
+        ):
+            await trf.assert_valid_verifier(did=did, schema_id=schema_id)
+
+    # Schema is not registered in registry
+    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
+        trf, "registry_has_schema"
+    ) as mock_registry_has_schema:
+        mock_actor_by_did.return_value = actor
+        mock_registry_has_schema.return_value = False
+
+        with pytest.raises(
+            Exception,
+            match=f"Schema with id {schema_id} is not registered in trust registry",
+        ):
+            await trf.assert_valid_verifier(did=did, schema_id=schema_id)
+
+
+@pytest.mark.asyncio
 async def test_actor_has_schema():
     with patch("requests.get") as mock_request:
         mock_request.return_value.status_code = 200
@@ -21,7 +125,7 @@ async def test_actor_has_schema():
 
     with patch("requests.get") as mock_request:
         mock_request.return_value.status_code = 200
-        mock_request.return_value.json.return_value = {"schemas": "schema_id"}
+        mock_request.return_value.json.return_value = {"schemas": ["schema_id"]}
 
         assert await trf.actor_has_schema("1", "schema_id") is True
 
@@ -30,29 +134,57 @@ async def test_actor_has_schema():
 async def test_actor_has_role():
     with patch("requests.get") as mock_request:
         mock_request.return_value.status_code = 200
-        mock_request.return_value.json.return_value = {"roles": "verifier"}
+        mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         assert await trf.actor_has_role("yoma", "issuer") is False
 
     with patch("requests.get") as mock_request:
         mock_request.return_value.status_code = 428
-        mock_request.return_value.json.return_value = {"roles": "verifier"}
+        mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         with pytest.raises(HTTPException):
             await trf.actor_has_role("yoma", "issuer")
 
     with patch("requests.get") as mock_request:
         mock_request.return_value.status_code = 428
-        mock_request.return_value.json.return_value = {"roles": "issuer"}
+        mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
         with pytest.raises(HTTPException):
             await trf.actor_has_role("yoma", "issuer")
 
     with patch("requests.get") as mock_request:
         mock_request.return_value.status_code = 200
-        mock_request.return_value.json.return_value = {"roles": "issuer"}
+        mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
         assert await trf.actor_has_role("yoma", "issuer") is True
+
+
+@pytest.mark.asyncio
+async def test_actor_by_did():
+    with patch("requests.get") as mock_request:
+        res = {
+            "id": "yoma",
+            "roles": ["verifier"],
+        }
+
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.json.return_value = res
+
+        actor = await trf.actor_by_did("did:sov:xxx")
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + "registry/actors/did/did:sov:xxx"
+        )
+        assert actor is res
+
+    with patch("requests.get") as mock_request:
+        mock_request.return_value.status_code = 404
+        mock_request.return_value.json.return_value = {}
+
+        actor = await trf.actor_by_did("did:sov:xxx")
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + "registry/actors/did/did:sov:xxx"
+        )
+        assert actor is None
 
 
 @pytest.mark.asyncio

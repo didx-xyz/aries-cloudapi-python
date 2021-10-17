@@ -119,6 +119,7 @@ async def send_credential(
 
     issuer = __issuer_from_protocol_version(credential.protocol_version)
 
+    # Assert the agent has a public did
     public_did = await aries_controller.wallet.get_public_did()
     if not public_did.result or not public_did.result.did:
         raise Exception(
@@ -126,7 +127,7 @@ async def send_credential(
         )
 
     # Make sure we are allowed to issue according to trust registry rules
-    await assert_valid_issuer(public_did.result.did, credential.schema_id)
+    await assert_valid_issuer(f"did:sov:{public_did.result.did}", credential.schema_id)
 
     cred_def_id = await write_credential_def(aries_controller, credential.schema_id)
 
@@ -191,7 +192,7 @@ async def request_credential(
     [did] = record.credential_definition_id.split(":")
 
     # Make sure the issuer is allowed to issue this credential according to trust registry rules
-    await assert_valid_issuer(did, record.schema_id)
+    await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
 
     return await issuer.request_credential(
         controller=aries_controller, credential_exchange_id=id

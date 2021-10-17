@@ -13,15 +13,67 @@ Role = Literal["issuer", "verifier"]
 
 
 async def assert_valid_issuer(did: str, schema_id: str):
-    full_did = f"did:sov:{did}"
-    actor = await actor_by_did(full_did)
+    """Assert that an actor with the specified did is registered as issuer.
+
+    This method asserts that there is an actor registered in the trust registry
+    with the specified did. It verifies whether this actor has the `issuer` role
+    and will also make sure the specified schema_id is regsitred as a valid schema.
+    Raises an exception if one of the assertions fail.
+
+    NOTE: the dids in the registry are registered as fully qualified dids. This means
+    when passing a did to this method it must also be fully qualified (e.g. `did:sov:xxxx`)
+
+    Args:
+        did (str): the did of the issuer in fully qualified format.
+        schema_id (str): the schema_id of the credential being issued
+
+    Raises:
+        Exception: When the did is not registered, the actor doesn't have the issuer role
+            or the schema is not registered in the registry.
+    """
+    actor = await actor_by_did(did)
 
     if not actor:
-        raise Exception(f"Did {full_did} not registered in the trust registry")
+        raise Exception(f"Did {did} not registered in the trust registry")
 
     actor_id = actor["id"]
     if not "issuer" in actor["roles"]:
         raise Exception(f"Actor {actor_id} does not have required role 'issuer'")
+
+    has_schema = await registry_has_schema(schema_id)
+    if not has_schema:
+        raise Exception(
+            f"Schema with id {schema_id} is not registered in trust registry"
+        )
+
+
+async def assert_valid_verifier(did: str, schema_id: str):
+    """Assert that an actor with the specified did is registered as verifier.
+
+    This method asserts that there is an actor registered in the trust registry
+    with the specified did. It verifies whether this actor has the `verifier` role
+    and will also make sure the specified schema_id is regsitred as a valid schema.
+    Raises an exception if one of the assertions fail.
+
+    NOTE: the dids in the registry are registered as fully qualified dids. This means
+    when passing a did to this method it must also be fully qualified (e.g. `did:sov:xxxx`)
+
+    Args:
+        did (str): the did of the verifier in fully qualified format.
+        schema_id (str): the schema_id of the credential being issued
+
+    Raises:
+        Exception: When the did is not registered, the actor doesn't have the verifier role
+            or the schema is not registered in the registry.
+    """
+    actor = await actor_by_did(did)
+
+    if not actor:
+        raise Exception(f"Did {did} not registered in the trust registry")
+
+    actor_id = actor["id"]
+    if not "verifier" in actor["roles"]:
+        raise Exception(f"Actor {actor_id} does not have required role 'verifier'")
 
     has_schema = await registry_has_schema(schema_id)
     if not has_schema:

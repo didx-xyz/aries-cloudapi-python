@@ -1,3 +1,4 @@
+from aries_cloudcontroller.model.taa_info import TAAInfo
 import pytest
 
 from acapy_ledger_facade import accept_taa, get_did_endpoint, get_taa
@@ -13,7 +14,9 @@ async def get(response):
 
 @pytest.mark.asyncio
 async def test_error_on_get_taa(mock_agent_controller):
-    when(mock_agent_controller.ledger).fetch_taa().thenReturn(get(TAAResult(result={})))
+    when(mock_agent_controller.ledger).fetch_taa().thenReturn(
+        get(TAAResult(result=TAAInfo(taa_required=True)))
+    )
 
     with pytest.raises(HTTPException) as exc:
         await get_taa(mock_agent_controller)

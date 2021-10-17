@@ -352,7 +352,7 @@ async def remove_subwallet_by_id(
         else:
             raise HTTPException(500, "Unable to delete sub wallet")
     except ClientError as client_error:
-        if client_error.value.status == 401:
+        if client_error.status == 401:
             return HTTPException(401, "subwallet to delete is not found")
 
 

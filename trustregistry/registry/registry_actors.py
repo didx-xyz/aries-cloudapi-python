@@ -12,9 +12,6 @@ router = APIRouter(prefix="/registry/actors", tags=["actor"])
 @router.get("/")
 async def get_actors(db: Session = Depends(get_db)):
     db_actors = crud.get_actors(db)
-    if len(db_actors) > 0:
-        for actor in db_actors:
-            actor.roles = [x.strip() for x in actor.roles.split(",")]
     return {"actors": db_actors}
 
 

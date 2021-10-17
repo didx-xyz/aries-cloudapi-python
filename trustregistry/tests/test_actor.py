@@ -55,7 +55,6 @@ def test_update_actor():
     new_actors_resp = client.get("/registry/actors")
     assert new_actors_resp.status_code == 200
     new_actors_list = new_actors_resp.json()
-    new_actor["roles"] = [x.strip() for x in new_actor["roles"].split(",")]
     assert new_actor in new_actors_list["actors"]
 
     response = client.post(

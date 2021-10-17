@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String
 
-from .database import Base
+from list_type import StringList
 
 
 class Actor(Base):
@@ -8,7 +8,7 @@ class Actor(Base):
 
     id = Column(String, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    roles = Column(String, index=True)
+    roles = Column(StringList, index=True)
     didcomm_invitation = Column(String, unique=True, index=True)
     did = Column(String, unique=True, index=True)
 

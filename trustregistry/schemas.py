@@ -1,12 +1,14 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
 class Actor(BaseModel):
     id: str
     name: str
-    roles: str
-    didcomm_invitation: str = None
-    did: str = None
+    roles: List[str]
+    did: str
+    didcomm_invitation: Optional[str] = None
 
     class Config:
         orm_mode = True

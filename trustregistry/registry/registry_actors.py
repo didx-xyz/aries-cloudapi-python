@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
-from .. import crud
-from trustregistry.db import get_db
-from trustregistry.schemas import Actor
+import crud
+from db import get_db
+from schemas import Actor
 
 router = APIRouter(prefix="/registry/actors", tags=["actor"])
 

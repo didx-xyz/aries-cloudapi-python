@@ -6,7 +6,7 @@ from trustregistry.tests.test_main import client
 new_actor = {
     "id": "darth-vader",
     "name": "Darth Vader",
-    "roles": "issuer, verifier",
+    "roles": ["issuer", "verifier"],
     "didcomm_invitation": "string",
     "did": "string",
 }

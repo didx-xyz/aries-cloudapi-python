@@ -1,15 +1,22 @@
 import logging
 import os
-from typing import Literal, List
+from typing import Literal, List, Optional, TypedDict
 from fastapi.exceptions import HTTPException
-
 import requests
 
-TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001/")
+TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001")
 
 logger = logging.getLogger(__name__)
 
 Role = Literal["issuer", "verifier"]
+
+
+class Actor(TypedDict):
+    id: str
+    name: str
+    roles: List[str]
+    did: str
+    didcomm_invitation: Optional[str]
 
 
 async def assert_valid_issuer(did: str, schema_id: str):
@@ -89,8 +96,8 @@ async def actor_has_role(actor_id: str, role: Role) -> bool:
     return bool(role in actor_res.json()["roles"])
 
 
-async def actor_by_did(did: str):
-    actor_res = requests.get(TRUST_REGISTRY_URL + f"registry/actors/did/{did}")
+async def actor_by_did(did: str) -> Optional[Actor]:
+    actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/did/{did}")
 
     if actor_res.status_code != 200:
         return None
@@ -98,7 +105,7 @@ async def actor_by_did(did: str):
     return actor_res.json()
 
 
-async def actors_with_role(role: Role) -> list:
+async def actors_with_role(role: Role) -> List[Actor]:
     actors = requests.get(TRUST_REGISTRY_URL + "/registry/actors")
     if actors.status_code != 200:
         return []
@@ -129,3 +136,25 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
     did = actor_res.json()["did"]
     didcomm_invitation = actor_res.json()["didcomm_invitation"]
     return [did, didcomm_invitation]
+
+
+async def register_schema(schema_id: str) -> None:
+    [schema_did, _, schema_name, schema_version] = schema_id.split(":")
+
+    schema = {
+        "did": schema_did,
+        "name": schema_name,
+        "version": schema_version,
+    }
+
+    schema_res = requests.post(TRUST_REGISTRY_URL + "/registry/schemas", json=schema)
+
+    if schema_res.status_code != 200:
+        raise Exception(f"Error registering schema {schema_id}: {schema_res.text}")
+
+
+async def register_actor(actor: Actor) -> None:
+    actor_res = requests.post(TRUST_REGISTRY_URL + "/registry/actors", json=actor)
+
+    if actor_res.status_code != 200:
+        raise Exception(f"Error registering actor: {actor_res.text}")

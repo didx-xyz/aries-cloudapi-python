@@ -292,3 +292,55 @@ async def test_get_did_for_actor():
         mock_request.return_value.json.return_value = actor
 
         assert await trf.get_did_for_actor("yoma") == [None, None]
+
+
+@pytest.mark.asyncio
+async def test_register_schema():
+    with patch("requests.post") as mock_request:
+        schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
+        mock_request.return_value.status_code = 200
+
+        await trf.register_schema(schema_id=schema_id)
+
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + "/registry/schemas",
+            json={
+                "did": "WgWxqztrNooG92RXvxSTWv",
+                "name": "schema_name",
+                "version": "1.0",
+            },
+        )
+
+    with patch("requests.post") as mock_request, pytest.raises(
+        Exception, match="Error registering schema: "
+    ):
+        schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
+        mock_request.return_value.status_code = 500
+
+        await trf.register_schema(schema_id=schema_id)
+
+
+@pytest.mark.asyncio
+async def test_register_actor():
+    actor = trf.Actor(
+        id="actor-id",
+        name="actor-name",
+        roles=["issuer", "verifier"],
+        did="actor-did",
+        didcomm_invitation="actor-didcomm-invitation",
+    )
+    with patch("requests.post") as mock_request:
+        mock_request.return_value.status_code = 200
+
+        await trf.register_actor(actor=actor)
+
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + "/registry/actors", json=actor
+        )
+
+    with patch("requests.post") as mock_request, pytest.raises(
+        Exception, match="Error registering actor: "
+    ):
+        mock_request.return_value.status_code = 500
+
+        await trf.register_actor(actor=actor)

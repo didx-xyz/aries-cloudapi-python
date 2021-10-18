@@ -1,8 +1,7 @@
 import asyncio
-import json
 import time
+from random import random
 from typing import Any, Dict
-
 
 import acapy_ledger_facade
 import pytest
@@ -12,6 +11,13 @@ from assertpy.assertpy import assert_that
 from dependencies import MEMBER_AGENT_URL
 from httpx import AsyncClient
 from tests.utils_test import get_random_string
+from trust_registry_facade import (
+    Actor,
+    actor_by_did,
+    register_actor,
+    register_schema,
+    registry_has_schema,
+)
 
 BASE_PATH = "/generic/issuer/credentials"
 
@@ -19,6 +25,26 @@ BASE_PATH = "/generic/issuer/credentials"
 # need this to handle the async with the mock
 async def get(response):
     return response
+
+
+async def register_issuer(client: AsyncClient, schema_id: str):
+    pub_did_res = await client.get("/wallet/fetch-current-did")
+    pub_did = pub_did_res.json()["result"]["did"]
+
+    if not await registry_has_schema(schema_id=schema_id):
+        await register_schema(schema_id)
+
+    if not await actor_by_did(pub_did):
+        rand = random()
+        await register_actor(
+            Actor(
+                id=f"test-actor-{rand}",
+                name=f"Test Actor-{rand}",
+                roles=["issuer", "verifier"],
+                did=f"did:sov:{pub_did}",
+                didcomm_invitation=None,
+            )
+        )
 
 
 @pytest.yield_fixture(scope="module")
@@ -51,13 +77,11 @@ async def credential_definition_id(
     # when
     response = await async_client_bob_module_scope.post(
         MEMBER_AGENT_URL + "/admin/governance/credential-definitions",
-        data=json.dumps(
-            {
-                "support_revocation": False,
-                "schema_id": schema_definition["schema_id"],
-                "tag": get_random_string(5),
-            }
-        ),
+        json={
+            "support_revocation": False,
+            "schema_id": schema_definition["schema_id"],
+            "tag": get_random_string(5),
+        },
     )
     result = response.json()
 
@@ -82,9 +106,11 @@ async def credential_exchange_id(
         "attributes": {"speed": "average"},
     }
 
+    await register_issuer(async_client_bob_module_scope, schema_definition["schema_id"])
+
     response = await async_client_bob_module_scope.post(
         BASE_PATH,
-        data=json.dumps(credential),
+        json=credential,
     )
     credential_exchange = response.json()
     credential_exchange_id = credential_exchange["credential_id"]
@@ -115,6 +141,8 @@ async def test_send_credential(
         "attributes": {"speed": "average"},
     }
 
+    await register_issuer(async_client_bob_module_scope, schema_definition["schema_id"])
+
     response = await async_client_alice_module_scope.get(
         BASE_PATH, params={"connection_id": alice_connection_id}
     )
@@ -125,13 +153,13 @@ async def test_send_credential(
 
     response = await async_client_bob_module_scope.post(
         BASE_PATH,
-        data=json.dumps(credential),
+        json=credential,
     )
 
     credential["protocol_version"] = "v2"
     response = await async_client_bob_module_scope.post(
         BASE_PATH,
-        data=json.dumps(credential),
+        json=credential,
     )
 
     time.sleep(5)

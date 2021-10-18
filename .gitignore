@@ -147,3 +147,6 @@ junit.xml
 
 # VSCode
 .vscode
+
+# junit / pytest
+junit.xml

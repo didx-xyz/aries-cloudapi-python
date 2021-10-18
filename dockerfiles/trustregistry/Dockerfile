@@ -1,10 +1,10 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
-COPY trustregistry /app
+COPY trustregistry /trustregistry
 
-WORKDIR /app
+WORKDIR /trustregistry
 
-RUN cd /app && pip install -r requirements.txt
+RUN cd /trustregistry && pip install -r requirements.txt
 
 EXPOSE 8001
 

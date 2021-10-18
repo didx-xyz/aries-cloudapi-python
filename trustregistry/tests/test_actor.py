@@ -1,7 +1,8 @@
 import json
 
-from trustregistry.tests.test_main import client
+from . import test_main
 
+client = test_main.client
 
 new_actor = {
     "id": "darth-vader",

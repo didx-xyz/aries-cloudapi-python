@@ -1,8 +1,8 @@
 from typing import List
 
-from trustregistry import crud
-from trustregistry import schemas
-from trustregistry.tests.test_main import override_get_db
+import crud
+import schemas
+from .test_main import override_get_db
 
 
 actor_model = schemas.Actor(

@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from .. import crud
-from trustregistry.db import get_db
-from trustregistry.schemas import Schema
+import crud
+from db import get_db
+from schemas import Schema
 
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 
-from .database import Base
-from .list_type import StringList
+from database import Base
+from list_type import StringList
 
 
 class Actor(Base):

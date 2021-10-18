@@ -185,14 +185,14 @@ async def request_credential(
 
     if not record.credential_definition_id or not record.schema_id:
         raise Exception(
-            "Record has not credential definition or schema associated. "
+            "Record has no credential definition or schema associated. "
             "This proably means you haven't received an offer yet."
         )
 
-    [did] = record.credential_definition_id.split(":")
+    cred_def_parts = record.credential_definition_id.split(":")
 
     # Make sure the issuer is allowed to issue this credential according to trust registry rules
-    await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
+    await assert_valid_issuer(f"did:sov:{cred_def_parts[0]}", record.schema_id)
 
     return await issuer.request_credential(
         controller=aries_controller, credential_exchange_id=id

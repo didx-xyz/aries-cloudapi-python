@@ -4,16 +4,17 @@ from typing import Dict, Optional, Tuple
 from aries_cloudcontroller import (
     AcaPyClient,
     V20CredAttrSpec,
+    V20CredExFree,
     V20CredExRecord,
     V20CredFilter,
     V20CredFilterIndy,
     V20CredPreview,
-    V20CredExFree,
     V20CredRequestRequest,
 )
 from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
-from generic.issuer.facades.acapy_issuer import Issuer
-from generic.issuer.models import (
+
+from app.generic.issuer.facades.acapy_issuer import Issuer
+from app.generic.issuer.models import (
     Credential,
     CredentialExchange,
     IssueCredentialProtocolVersion,

@@ -46,7 +46,8 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry app --ignore=webhooks
+        pytest --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r junit.xml
         echo done
     - name: Retry tests
       if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
@@ -54,7 +55,7 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1 --junit-xml=junit.xml
         # Submit coverage report to //help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
         bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r junit.xml
         echo done

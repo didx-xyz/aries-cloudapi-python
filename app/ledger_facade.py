@@ -1,11 +1,12 @@
 import logging
 import os
 from typing import Optional
-from aries_cloudcontroller import DID
 
 import requests
+from aries_cloudcontroller import DID
 from fastapi import HTTPException
-from schemas import LedgerRequestSovrin, LedgerRequestVon
+
+from app.schemas import LedgerRequestSovrin, LedgerRequestVon
 
 LEDGER_URL = os.getenv("LEDGER_NETWORK_URL", "http://localhost:9000/register")
 LEDGER_TYPE = os.getenv("LEDGER_TYPE", "von")

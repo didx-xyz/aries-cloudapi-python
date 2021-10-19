@@ -3,15 +3,13 @@ from typing import List, TypeVar
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    SchemaGetResult,
     CredentialDefinitionSendRequest,
     CredentialPreview,
+    SchemaGetResult,
     SchemaSendRequest,
     V10CredentialProposalRequestMand,
     V10PresentationSendRequestRequest,
 )
-
-
 from fastapi import HTTPException
 from pydantic.main import BaseModel
 

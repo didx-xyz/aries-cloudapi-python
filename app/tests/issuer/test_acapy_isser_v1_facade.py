@@ -1,4 +1,5 @@
 from typing import Any, Optional
+
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -10,9 +11,10 @@ from aries_cloudcontroller import (
     V10CredentialStoreRequest,
 )
 from assertpy import assert_that
-from generic.issuer.facades.acapy_issuer_v1 import IssuerV1
-from generic.issuer.models import Credential
 from mockito import when
+
+from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
+from app.generic.issuer.models import Credential
 
 
 # need this to handle the async with the mock

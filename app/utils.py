@@ -1,6 +1,7 @@
 import logging
-import base58
 from typing import List
+
+import base58
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,9 @@
 import logging
 import os
-from typing import Literal, List, Optional, TypedDict
-from fastapi.exceptions import HTTPException
+from typing import List, Literal, Optional, TypedDict
+
 import requests
+from fastapi.exceptions import HTTPException
 
 TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001")
 

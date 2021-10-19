@@ -1,16 +1,17 @@
-import ledger_facade
 import pytest
-import utils
-from admin.governance.credential_definitions import (
+from assertpy import assert_that
+
+import app.ledger_facade as ledger_facade
+import app.utils as utils
+from app.admin.governance.credential_definitions import (
     CredentialDefinition,
     create_credential_definition,
     get_created_credential_definitions,
     get_credential_definition,
 )
-from admin.governance.schemas import SchemaDefinition, create_schema
-from assertpy import assert_that
-from tests.admin.governance.schemas.test_schemas import create_public_did
-from tests.utils_test import get_random_string
+from app.admin.governance.schemas import SchemaDefinition, create_schema
+from app.tests.admin.governance.schemas.test_schemas import create_public_did
+from app.tests.utils_test import get_random_string
 
 base_path = "/admin/governance/credential-definitions"
 

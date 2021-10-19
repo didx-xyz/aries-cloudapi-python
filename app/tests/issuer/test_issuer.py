@@ -1,24 +1,42 @@
 import asyncio
 import json
 import time
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-
-import acapy_ledger_facade
 import pytest
-from admin.governance.schemas import SchemaDefinition, create_schema
-from aries_cloudcontroller import AcaPyClient
-from assertpy.assertpy import assert_that
-from dependencies import MEMBER_AGENT_URL
+from aries_cloudcontroller import DID, AcaPyClient, DIDResult
 from httpx import AsyncClient
-from tests.utils_test import get_random_string
+from mockito import when, mock
 
-BASE_PATH = "/generic/issuer/credentials"
+import app.generic.issuer.issuer as test_module
+from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
+from app.generic.issuer.models import CredentialExchange, IssueCredentialProtocolVersion
 
 
 # need this to handle the async with the mock
-async def get(response):
-    return response
+async def get(response: Optional[Any] = None):
+    if response:
+        return response
+
+
+@pytest.mark.asyncio
+async def test_send_credential(mock_agent_controller: AcaPyClient):
+    did = "WgWxqztrNooG92RXvxSTWv"
+    cred_ex = mock(CredentialExchange)
+
+    when(test_module).assert_valid_issuer(...).thenReturn(get(True))
+    when(test_module).write_credential_def(...).thenReturn(get("cred_def_id"))
+    when(IssuerV1).send_credential(...).thenReturn(get(cred_ex))
+    when(mock_agent_controller.wallet).get_public_did().thenReturn(
+        get(DIDResult(result=DID(did=did)))
+    )
+
+    credential = test_module.SendCredential(
+        protocol_version=IssueCredentialProtocolVersion.v1,
+        connection_id="conn_id",
+        schema_id="schema_id",
+        attributes={"name": "John", "age": "23"},
+    )
 
 
 @pytest.yield_fixture(scope="module")

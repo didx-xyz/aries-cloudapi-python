@@ -11,8 +11,9 @@ from aries_cloudcontroller import (
 from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
-from generic.issuer.facades.acapy_issuer import Issuer
-from generic.issuer.models import (
+
+from app.generic.issuer.facades.acapy_issuer import Issuer
+from app.generic.issuer.models import (
     Credential,
     CredentialExchange,
     IssueCredentialProtocolVersion,

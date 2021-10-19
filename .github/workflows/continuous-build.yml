@@ -46,7 +46,7 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry app --ignore=webhooks
+        pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
         echo done
     - name: Retry tests
       if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time

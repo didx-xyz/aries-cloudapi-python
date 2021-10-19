@@ -14,9 +14,10 @@ from aries_cloudcontroller import (
     V20CredRequestRequest,
 )
 from assertpy import assert_that
-from generic.issuer.facades.acapy_issuer_v2 import IssuerV2
-from generic.issuer.models import Credential
 from mockito import when
+
+from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
+from app.generic.issuer.models import Credential
 
 
 # need this to handle the async with the mock

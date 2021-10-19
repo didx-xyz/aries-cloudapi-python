@@ -4,22 +4,22 @@ import string
 import time
 from contextlib import asynccontextmanager
 
-from assertpy import assert_that
-from aries_cloudcontroller import ReceiveInvitationRequest, DIDResult, ConnRecord
-
-import dependencies
 import pytest
-from generic.connections import (
+from aries_cloudcontroller import ConnRecord, DIDResult, ReceiveInvitationRequest
+from assertpy import assert_that
+
+import app.dependencies as dependencies
+from app.acapy_ledger_facade import create_pub_did
+from app.generic.connections import (
     accept_invite,
     create_invite,
+    create_invite_oob,
     delete_connection_by_id,
     get_connection_by_id,
     get_connections,
-    create_invite_oob,
-    receive_invite_oob,
     oob_connect_via_pubdid,
+    receive_invite_oob,
 )
-from acapy_ledger_facade import create_pub_did
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 

@@ -1,5 +1,6 @@
 import pytest
-from admin.governance.dids import get_trusted_partner, get_trusted_registry
+
+from app.admin.governance.dids import get_trusted_partner, get_trusted_registry
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/admin/governance/dids"

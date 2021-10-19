@@ -46,7 +46,8 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry app --ignore=webhooks
+        pytest app --cov=app --ignore=webhooks
+        pytest trustregistry --cov=trustregistry --ignore=webhooks
         echo done
     - name: Retry tests
       if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
@@ -54,7 +55,8 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+        pytest app --cov=app --ignore=webhooks --log-cli-level=1
+        pytest trustregistry --cov=trustregistry --ignore=webhooks --log-cli-level=1
         echo done
     - name: Run Pylint
       run: |

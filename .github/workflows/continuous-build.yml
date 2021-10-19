@@ -48,6 +48,8 @@ jobs:
         sleep 120
         pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
         echo done
+      env:
+       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
     - name: Retry tests
       if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
       run: |
@@ -56,6 +58,8 @@ jobs:
         sleep 120
         pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
         echo done
+      env:
+       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
     - name: Run Pylint
       run: |
         pip install pylint

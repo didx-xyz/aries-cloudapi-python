@@ -12,6 +12,7 @@ router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 @router.get("/")
 async def get_schemas(db: Session = Depends(get_db)):
     db_schemas = crud.get_schemas(db)
+    # This is the same as id field now.
     schemas_repr = [
         f"{schema.did}:{schema.name}:{schema.version}" for schema in db_schemas
     ]
@@ -26,9 +27,9 @@ async def register_schema(schema: Schema, db: Session = Depends(get_db)):
     return create_schema_res
 
 
-@router.post("/{schema_did}")
-async def update_schema(schema_did: str, schema: Schema, db: Session = Depends(get_db)):
-    update_schema_res = crud.update_schema(db, schema=schema, schema_did=schema_did)
+@router.post("/{schema_id}")
+async def update_schema(schema_id: str, schema: Schema, db: Session = Depends(get_db)):
+    update_schema_res = crud.update_schema(db, schema=schema, schema_id=schema_id)
     if update_schema_res is None:
         raise HTTPException(
             status_code=405,
@@ -37,9 +38,9 @@ async def update_schema(schema_did: str, schema: Schema, db: Session = Depends(g
     return update_schema_res
 
 
-@router.delete("/{schema_did}")
-async def remove_schema(schema_did: str, db: Session = Depends(get_db)):
-    delete_scheme_res = crud.delete_schema(db, schema_did=schema_did)
+@router.delete("/{schema_id}")
+async def remove_schema(schema_id: str, db: Session = Depends(get_db)):
+    delete_scheme_res = crud.delete_schema(db, schema_id=schema_id)
     if delete_scheme_res is None:
         raise HTTPException(
             status_code=404,

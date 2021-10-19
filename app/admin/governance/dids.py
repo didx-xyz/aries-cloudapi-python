@@ -1,8 +1,9 @@
 import logging
 
 from aries_cloudcontroller import AcaPyClient
-from dependencies import yoma_agent
 from fastapi import APIRouter, Depends
+
+from app.dependencies import yoma_agent
 
 logger = logging.getLogger(__name__)
 

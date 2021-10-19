@@ -1,5 +1,5 @@
-import utils
-from utils import ed25519_verkey_to_did_key
+import app.utils as utils
+from app.utils import ed25519_verkey_to_did_key
 
 ID_CONSTANT = "abcde:test:0.0.1"
 

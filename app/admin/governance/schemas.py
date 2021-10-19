@@ -2,15 +2,15 @@ from typing import List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    SchemaSendRequest,
-    SchemaSendResult,
     SchemaGetResult,
     SchemasCreatedResult,
+    SchemaSendRequest,
+    SchemaSendResult,
 )
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from dependencies import yoma_agent
+from app.dependencies import yoma_agent
 
 router = APIRouter(prefix="/admin/governance/schemas", tags=["admin: schemas"])
 

@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient
-from generic.issuer.models import Credential, CredentialExchange
+
+from app.generic.issuer.models import Credential, CredentialExchange
 
 
 class Issuer(ABC):

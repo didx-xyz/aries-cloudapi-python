@@ -1,12 +1,13 @@
 from typing import Any, Optional
 
-import generic.issuer.issuer as test_module
 import pytest
 from aries_cloudcontroller import DID, AcaPyClient, DIDResult
-from generic.issuer.facades.acapy_issuer_v1 import IssuerV1
-from generic.issuer.facades.acapy_issuer_v2 import IssuerV2
-from generic.issuer.models import CredentialExchange, IssueCredentialProtocolVersion
 from mockito import mock, verify, when
+
+import app.generic.issuer.issuer as test_module
+from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
+from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
+from app.generic.issuer.models import CredentialExchange, IssueCredentialProtocolVersion
 
 
 # need this to handle the async with the mock

@@ -1,15 +1,13 @@
 from contextlib import asynccontextmanager
 
-import dependencies
 import pytest
-from aries_cloudcontroller import (
-    AcaPyClient,
-)
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from fastapi import APIRouter, Depends, HTTPException
 from httpx import AsyncClient
-from main import app
 
+import app.dependencies as dependencies
+from app.main import app
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"

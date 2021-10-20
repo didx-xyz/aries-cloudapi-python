@@ -1,16 +1,16 @@
 import logging
-from typing import Optional
 import os
+from typing import Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    InvitationResult,
+    ConnectionList,
+    ConnRecord,
+    CreateInvitationRequest,
     InvitationMessage,
     InvitationRecord,
+    InvitationResult,
     ReceiveInvitationRequest,
-    ConnRecord,
-    ConnectionList,
-    CreateInvitationRequest,
 )
 from aries_cloudcontroller.model.invitation_create_request import (
     InvitationCreateRequest,
@@ -18,7 +18,7 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from dependencies import agent_selector
+from app.dependencies import agent_selector
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "adminApiKey")
 

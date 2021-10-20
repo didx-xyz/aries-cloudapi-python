@@ -1,5 +1,4 @@
-import utils
-from assertpy import assert_that
+import app.utils as utils
 
 ID_CONSTANT = "abcde:test:0.0.1"
 

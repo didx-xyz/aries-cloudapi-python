@@ -1,18 +1,16 @@
 import json
+import logging
+from datetime import datetime
 from enum import Enum
+from typing import Dict, List, Optional
 
 from aiohttp import ClientError
-from datetime import datetime
-
-from typing import Optional, Dict, List
-
-import logging
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.model import RemoveWalletRequest, CreateWalletTokenRequest
+from aries_cloudcontroller.model import CreateWalletTokenRequest, RemoveWalletRequest
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from dependencies import member_admin_agent, admin_agent_selector
-from fastapi import APIRouter, Depends, HTTPException
+from app.dependencies import admin_agent_selector, member_admin_agent
 
 logger = logging.getLogger(__name__)
 

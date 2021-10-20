@@ -1,18 +1,18 @@
-from aiohttp import ClientResponseError
-from distutils.util import strtobool
-import os
 import io
-import yaml
 import logging
+import os
+from distutils.util import strtobool
 
-from fastapi import FastAPI, Response, Request
+import yaml
+from aiohttp import ClientResponseError
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
-from admin.governance import credential_definitions, dids, schemas
-from generic import connections, messaging
-from generic.issuer import issuer
-from admin.governance.multitenant_wallet import wallet_admin
-from generic.wallet import wallets
+from app.admin.governance import credential_definitions, dids, schemas
+from app.admin.governance.multitenant_wallet import wallet_admin
+from app.generic import connections, messaging
+from app.generic.issuer import issuer
+from app.generic.wallet import wallets
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))

@@ -1,10 +1,10 @@
-from aries_cloudcontroller.model.taa_info import TAAInfo
 import pytest
-
-from acapy_ledger_facade import accept_taa, get_did_endpoint, get_taa
+from aries_cloudcontroller.model import TAAAccept, TAARecord, TAAResult
+from aries_cloudcontroller.model.taa_info import TAAInfo
 from fastapi import HTTPException
 from mockito import when
-from aries_cloudcontroller.model import TAAResult, TAARecord, TAAAccept
+
+from app.acapy_ledger_facade import accept_taa, get_did_endpoint, get_taa
 
 
 # need this to handle the async with the mock

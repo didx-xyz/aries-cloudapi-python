@@ -1,8 +1,10 @@
 import logging
-from aries_cloudcontroller import AcaPyClient, SendMessage, PingRequest
-from dependencies import agent_selector
+
+from aries_cloudcontroller import AcaPyClient, PingRequest, SendMessage
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from app.dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
 

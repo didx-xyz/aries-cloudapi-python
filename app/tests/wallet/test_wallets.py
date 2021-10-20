@@ -1,12 +1,8 @@
 import pytest
-from generic.wallet.wallets import (
-    list_dids,
-    fetch_current_did,
-    set_did_endpoint,
-)
-import acapy_wallet_facade as wallet_facade
-import ledger_facade
 
+import app.acapy_wallet_facade as wallet_facade
+import app.ledger_facade as ledger_facade
+from app.generic.wallet.wallets import fetch_current_did, list_dids, set_did_endpoint
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 

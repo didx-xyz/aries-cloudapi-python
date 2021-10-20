@@ -1,12 +1,10 @@
 from typing import Optional
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinitionSendRequest,
-)
-from dependencies import agent_selector
+from aries_cloudcontroller import AcaPyClient, CredentialDefinitionSendRequest
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from app.dependencies import agent_selector
 
 router = APIRouter(
     prefix="/admin/governance/credential-definitions",

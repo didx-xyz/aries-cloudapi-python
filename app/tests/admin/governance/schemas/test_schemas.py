@@ -1,22 +1,23 @@
 import json
+
+import pytest
+from assertpy import assert_that
 from fastapi.exceptions import HTTPException
 
-from acapy_ledger_facade import create_pub_did as create_public_did
-import ledger_facade
-import pytest
-import utils
-from admin.governance.schemas import (
+import app.ledger_facade as ledger_facade
+import app.utils as utils
+from app.acapy_ledger_facade import create_pub_did as create_public_did
+from app.admin.governance.schemas import (
     SchemaDefinition,
     create_schema,
-    get_schemas_list_detailed,
     get_schemas,
+    get_schemas_list_detailed,
     update_schema,
 )
-from assertpy import assert_that
 
 # want to wrap an existing method with a decorator
 # the method is normally used by fast api and then fast api manages the tear down
-from tests.utils_test import get_random_string
+from app.tests.utils_test import get_random_string
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 BASE_PATH = "/admin/governance/schemas"

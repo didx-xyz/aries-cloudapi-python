@@ -46,7 +46,8 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=cobertura.xml
+        pytest  --cov=trustregistry --cov=app trustregistry app
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         echo done
       env:
        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
@@ -56,9 +57,8 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1 --junit-xml=junit.xml
-        # Submit coverage report to //help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r cobertura.xml
+        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         echo done
       env:
        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting

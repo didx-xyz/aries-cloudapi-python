@@ -49,6 +49,8 @@ jobs:
         pytest --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
         bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r junit.xml
         echo done
+      env:
+       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
     - name: Retry tests
       if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
       run: |
@@ -59,6 +61,8 @@ jobs:
         # Submit coverage report to //help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
         bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r junit.xml
         echo done
+      env:
+       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
     - name: Run Pylint
       run: |
         pip install pylint

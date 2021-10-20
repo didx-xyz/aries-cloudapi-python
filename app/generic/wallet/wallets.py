@@ -4,9 +4,6 @@ from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did_endpoint_with_type import DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
-from app.schemas import (
-    DidCreationResponse,
-)
 from app.acapy_ledger_facade import create_pub_did
 from app.dependencies import agent_selector
 

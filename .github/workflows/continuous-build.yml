@@ -46,7 +46,7 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
+        pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=cobertura.xml
         echo done
       env:
        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
@@ -56,7 +56,9 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+        pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1 --junit-xml=junit.xml
+        # Submit coverage report to //help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r cobertura.xml
         echo done
       env:
        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting
@@ -67,22 +69,6 @@ jobs:
     - name: Tear down test harnless
       run: |
        ./manage down || true
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-         -Dsonar.organization=didx-xyz
-         -Dsonar.projectKey=didx-xyz_aries-cloudapi-python
-         -Dsonar.verbose=false
-         -Dsonar.python.xunit.reportPath=junit.xml
-         -Dsonar.tests=app/tests,trustregistry/tests
-         -Dsonar.python.coverage.reportPaths=coverage.xml
-         -Dsonar.python.pylint.reportPaths=pylintreport.txt
-         -Dsonar.projectBaseDir=./
-         -Dsonar.coverage.exclusions=tests/**/*
   deploy:
     runs-on: ubuntu-latest
     needs: build

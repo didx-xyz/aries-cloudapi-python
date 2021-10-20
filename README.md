@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/66120846a7ba4bd9939d94a32e86bfef)](https://app.codacy.com/gh/didx-xyz/aries-cloudapi-python?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Grade_Settings)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=bugs)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=coverage)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)

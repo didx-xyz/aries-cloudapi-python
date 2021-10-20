@@ -46,8 +46,7 @@ jobs:
         docker-compose up --build -d yoma-ga-agent
         docker-compose up --build -d yoma-multitenant-agent
         sleep 120
-        pytest --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
-        bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r junit.xml
+        pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
         echo done
       env:
        CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}  # Needed for Codacy reporting

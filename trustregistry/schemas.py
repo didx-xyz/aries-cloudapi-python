@@ -16,6 +16,7 @@ class Schema(BaseModel):
     did: str
     name: str
     version: str
+    id: str = None
 
     class Config:
         orm_mode = True

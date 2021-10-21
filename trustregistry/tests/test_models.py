@@ -1,4 +1,4 @@
-import models
+from trustregistry import models
 
 
 def test_actor():

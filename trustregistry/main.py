@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 
-from registry import registry_actors, registry_schemas
-import crud
-import models
-from db import get_db
-from database import engine
+from trustregistry.registry import registry_actors, registry_schemas
+from trustregistry import crud
+from trustregistry import models
+from trustregistry.db import get_db
+from trustregistry.database import engine
 
 models.Base.metadata.create_all(bind=engine)
 

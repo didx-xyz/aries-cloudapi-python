@@ -1,18 +1,17 @@
-from typing import Dict, Union
-
 import json
+from typing import Dict, Union
 
 import pytest
 from aiohttp import ClientResponseError
 from assertpy import assert_that
 
-from admin.governance.multitenant_wallet.wallet_admin import (
-    get_subwallet_auth_token,
+from app.admin.governance.multitenant_wallet.wallet_admin import (
     UpdateWalletRequest,
     get_subwallet,
+    get_subwallet_auth_token,
     query_subwallet,
 )
-from tests.utils_test import get_random_string
+from app.tests.utils_test import get_random_string
 
 WALLET_HEADERS = {
     "content-type": "application/json",

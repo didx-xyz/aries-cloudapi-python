@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from . import models
-from . import schemas
+import models
+import schemas
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 1000):
@@ -59,9 +59,9 @@ def create_schema(db: Session, schema: schemas.Schema):
     return db_schema
 
 
-def update_schema(db: Session, schema: schemas.Schema, schema_did: str):
+def update_schema(db: Session, schema: schemas.Schema, schema_id: str):
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.did == schema_did).one_or_none()
+        db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
     )
     if db_schema is None:
         return None
@@ -75,9 +75,9 @@ def update_schema(db: Session, schema: schemas.Schema, schema_did: str):
     return db_schema
 
 
-def delete_schema(db: Session, schema_did: str):
+def delete_schema(db: Session, schema_id: str):
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.did == schema_did).one_or_none()
+        db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
     )
     if db_schema is None:
         return None

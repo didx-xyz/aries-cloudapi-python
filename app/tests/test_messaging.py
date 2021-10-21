@@ -2,8 +2,9 @@ import asyncio
 
 import pytest
 from aries_cloudcontroller import PingRequest, SendMessage
-from generic.messaging import Message, TrustPingMsg
 from httpx import AsyncClient, Response
+
+from app.generic.messaging import Message, TrustPingMsg
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 MESSAGE_PATH = "/generic/messaging"

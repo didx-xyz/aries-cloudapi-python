@@ -1,8 +1,5 @@
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=bugs)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=coverage)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=didx-xyz_aries-cloudapi-python&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=didx-xyz_aries-cloudapi-python)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=didx-xyz/aries-cloudapi-python&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Coverage)
 
 # aries-cloudapi-python
 ## WIP

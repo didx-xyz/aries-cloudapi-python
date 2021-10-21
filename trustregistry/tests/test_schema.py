@@ -1,6 +1,8 @@
 import json
 
-from trustregistry.tests.test_main import client
+from . import test_main
+
+client = test_main.client
 
 
 def test_get_schemas():
@@ -10,13 +12,15 @@ def test_get_schemas():
 
 
 def test_register_schema():
-    payload = json.dumps({"did": "string", "name": "string", "version": "string"})
+    schema_dict = {"did": "string", "name": "string", "version": "string"}
+    payload = json.dumps(schema_dict)
     response = client.post(
         "/registry/schemas/",
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
-    assert response.json() == json.loads(payload)
+    schema_dict["id"] = "string:string:string"
+    assert response.json() == schema_dict
     assert response.status_code == 200
 
     new_schemas_resp = client.get("/registry/schemas")
@@ -34,13 +38,15 @@ def test_register_schema():
 
 
 def test_update_schema():
-    payload = json.dumps({"did": "string", "name": "string", "version": "string"})
+    schema_dict = {"did": "string", "name": "string", "version": "string"}
+    payload = json.dumps(schema_dict)
     response = client.post(
-        "/registry/schemas/string",
+        "/registry/schemas/string:string:string",
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
-    assert response.json() == json.loads(payload)
+    schema_dict["id"] = "string:string:string"
+    assert response.json() == schema_dict
     assert response.status_code == 200
 
     new_schemas_resp = client.get("/registry/schemas")
@@ -49,7 +55,7 @@ def test_update_schema():
     assert "string:string:string" in new_schemas["schemas"]
 
     response = client.post(
-        "/registry/schemas/idonotexist",
+        "/registry/schemas/i:donot:exist",
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
@@ -58,12 +64,12 @@ def test_update_schema():
 
 
 def test_remove_schema():
-    response = client.delete("/registry/schemas/string")
+    response = client.delete("/registry/schemas/string:string:string")
     assert response.status_code == 200
     assert response.json() is None
 
     response = client.delete(
-        "/registry/schemas/string",
+        "/registry/schemas/string:string:string",
         headers={"content-type": "application/json", "accept": "application/json"},
     )
     assert response.status_code == 404

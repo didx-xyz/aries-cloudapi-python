@@ -14,14 +14,6 @@ from generic.proof.proof import ProofsV1, ProofsV2
 from pydantic import BaseModel
 
 
-class ProofRequest(BaseModel):
-    pass
-
-
-class PresentationExchange(BaseModel):
-    pass
-
-
 class ProofsFacade(Enum):
     v1 = ProofsV1
     v2 = ProofsV2

@@ -1,4 +1,4 @@
-from database import SessionLocal
+from trustregistry.database import SessionLocal
 
 
 def get_db():

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-import models
-import schemas
+from trustregistry import models
+from trustregistry import schemas
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 1000):

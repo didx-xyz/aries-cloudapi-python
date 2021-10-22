@@ -1,7 +1,7 @@
 from typing import List
 
-import crud
-import schemas
+from trustregistry import crud
+from trustregistry import schemas
 from .test_main import override_get_db
 
 

@@ -2,8 +2,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import database
-import main
+from trustregistry import database
+from trustregistry import main
 
 Base = database.Base
 app = main.app

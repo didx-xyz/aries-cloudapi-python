@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 
 
 class Actor(BaseModel):
@@ -18,5 +18,11 @@ class Schema(BaseModel):
     version: str
     id: str = None
 
+    @root_validator
+    def default_id_create(cls, values):
+        values["id"] = f"{values['did']}:{values['name']}:{values['version']}"
+        return values
+
     class Config:
+        validate_assignment = True
         orm_mode = True

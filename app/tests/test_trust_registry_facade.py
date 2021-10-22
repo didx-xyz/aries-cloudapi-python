@@ -31,7 +31,8 @@ async def test_assert_valid_issuer():
         mock_actor_by_did.return_value = None
 
         with pytest.raises(
-            Exception, match=f"Did {did} not registered in the trust registry"
+            trf.TrustRegistryException,
+            match=f"Did {did} not registered in the trust registry",
         ):
             await trf.assert_valid_issuer(did=did, schema_id=schema_id)
 
@@ -40,7 +41,8 @@ async def test_assert_valid_issuer():
         mock_actor_by_did.return_value = {**actor, "roles": ["verifier"]}
 
         with pytest.raises(
-            Exception, match="Actor actor-id does not have required role 'issuer'"
+            trf.TrustRegistryException,
+            match="Actor actor-id does not have required role 'issuer'",
         ):
             await trf.assert_valid_issuer(did=did, schema_id=schema_id)
 
@@ -52,7 +54,7 @@ async def test_assert_valid_issuer():
         mock_registry_has_schema.return_value = False
 
         with pytest.raises(
-            Exception,
+            trf.TrustRegistryException,
             match=f"Schema with id {schema_id} is not registered in trust registry",
         ):
             await trf.assert_valid_issuer(did=did, schema_id=schema_id)
@@ -83,7 +85,8 @@ async def test_assert_valid_verifier():
         mock_actor_by_did.return_value = None
 
         with pytest.raises(
-            Exception, match=f"Did {did} not registered in the trust registry"
+            trf.TrustRegistryException,
+            match=f"Did {did} not registered in the trust registry",
         ):
             await trf.assert_valid_verifier(did=did, schema_id=schema_id)
 
@@ -92,7 +95,8 @@ async def test_assert_valid_verifier():
         mock_actor_by_did.return_value = {**actor, "roles": ["issuer"]}
 
         with pytest.raises(
-            Exception, match="Actor actor-id does not have required role 'verifier'"
+            trf.TrustRegistryException,
+            match="Actor actor-id does not have required role 'verifier'",
         ):
             await trf.assert_valid_verifier(did=did, schema_id=schema_id)
 
@@ -104,7 +108,7 @@ async def test_assert_valid_verifier():
         mock_registry_has_schema.return_value = False
 
         with pytest.raises(
-            Exception,
+            trf.TrustRegistryException,
             match=f"Schema with id {schema_id} is not registered in trust registry",
         ):
             await trf.assert_valid_verifier(did=did, schema_id=schema_id)

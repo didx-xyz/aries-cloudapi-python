@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 Role = Literal["issuer", "verifier"]
 
 
+class TrustRegistryException(Exception):
+    """Class that represents a trust registry error"""
+
+
 class Actor(TypedDict):
     id: str
     name: str
@@ -42,15 +46,17 @@ async def assert_valid_issuer(did: str, schema_id: str):
     actor = await actor_by_did(did)
 
     if not actor:
-        raise Exception(f"Did {did} not registered in the trust registry")
+        raise TrustRegistryException(f"Did {did} not registered in the trust registry")
 
     actor_id = actor["id"]
     if not "issuer" in actor["roles"]:
-        raise Exception(f"Actor {actor_id} does not have required role 'issuer'")
+        raise TrustRegistryException(
+            f"Actor {actor_id} does not have required role 'issuer'"
+        )
 
     has_schema = await registry_has_schema(schema_id)
     if not has_schema:
-        raise Exception(
+        raise TrustRegistryException(
             f"Schema with id {schema_id} is not registered in trust registry"
         )
 
@@ -77,15 +83,17 @@ async def assert_valid_verifier(did: str, schema_id: str):
     actor = await actor_by_did(did)
 
     if not actor:
-        raise Exception(f"Did {did} not registered in the trust registry")
+        raise TrustRegistryException(f"Did {did} not registered in the trust registry")
 
     actor_id = actor["id"]
     if not "verifier" in actor["roles"]:
-        raise Exception(f"Actor {actor_id} does not have required role 'verifier'")
+        raise TrustRegistryException(
+            f"Actor {actor_id} does not have required role 'verifier'"
+        )
 
     has_schema = await registry_has_schema(schema_id)
     if not has_schema:
-        raise Exception(
+        raise TrustRegistryException(
             f"Schema with id {schema_id} is not registered in trust registry"
         )
 

@@ -173,7 +173,7 @@ async def test_actor_by_did():
 
         actor = await trf.actor_by_did("did:sov:xxx")
         mock_request.assert_called_once_with(
-            trf.TRUST_REGISTRY_URL + "registry/actors/did/did:sov:xxx"
+            trf.TRUST_REGISTRY_URL + "/registry/actors/did/did:sov:xxx"
         )
         assert actor is res
 
@@ -183,7 +183,7 @@ async def test_actor_by_did():
 
         actor = await trf.actor_by_did("did:sov:xxx")
         mock_request.assert_called_once_with(
-            trf.TRUST_REGISTRY_URL + "registry/actors/did/did:sov:xxx"
+            trf.TRUST_REGISTRY_URL + "/registry/actors/did/did:sov:xxx"
         )
         assert actor is None
 
@@ -313,7 +313,8 @@ async def test_register_schema():
         )
 
     with patch("requests.post") as mock_request, pytest.raises(
-        Exception, match="Error registering schema: "
+        Exception,
+        match="Error registering schema WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0: ",
     ):
         schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
         mock_request.return_value.status_code = 500

@@ -1,7 +1,7 @@
 from typing import List
 
-import crud
-import schemas
+from trustregistry import crud
+from trustregistry import schemas
 from .test_main import override_get_db
 
 
@@ -72,9 +72,13 @@ def test_get_schemas():
         assert isinstance(schemas_db, List)
 
 
-new_schema = schemas.Schema(did="abc", name="awesomeschema", version="0.4.20")
+new_schema = schemas.Schema(
+    did="abc", name="awesomeschema", version="0.4.20", id="abc:awesomeschema:0.4.20"
+)
 
-update_schema = schemas.Schema(did="abcde", name="awesomeschema", version="0.4.20")
+update_schema = schemas.Schema(
+    did="abcde", name="awesomeschema", version="0.4.20", id="abcde:awesomeschema:0.4.20"
+)
 
 
 def test_create_schema():
@@ -91,24 +95,24 @@ def test_create_schema():
 def test_update_schema():
     for db in override_get_db():
         schema_updated = crud.update_schema(
-            db, schema=update_schema, schema_did=new_schema.did
+            db, schema=update_schema, schema_id=new_schema.id
         )
         schema_updated = schema_updated.__dict__
         del schema_updated["_sa_instance_state"]
         assert schema_updated == update_schema.dict()
 
         schema_updated_non_ex = crud.update_schema(
-            db, schema=update_schema, schema_did="idontexist"
+            db, schema=update_schema, schema_id="idontexist"
         )
         assert schema_updated_non_ex is None
 
 
 def test_delete_schema():
     for db in override_get_db():
-        schema_deleted = crud.delete_schema(db, schema_did=update_schema.did)
+        schema_deleted = crud.delete_schema(db, schema_id=update_schema.id)
         schema_deleted = schema_deleted.__dict__
         del schema_deleted["_sa_instance_state"]
         assert schema_deleted == update_schema.dict()
 
-        schema_deleted_non_ex = crud.delete_schema(db, schema_did=update_schema.did)
+        schema_deleted_non_ex = crud.delete_schema(db, schema_id=update_schema.id)
         assert schema_deleted_non_ex is None

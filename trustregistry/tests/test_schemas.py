@@ -1,4 +1,4 @@
-import schemas
+from trustregistry import schemas
 
 
 def test_actor():

@@ -17,8 +17,8 @@ from assertpy import assert_that
 from httpx import AsyncClient
 from mockito import mock
 
-import app.ledger_facade
-import app.utils
+import app.ledger_facade as ledger_facade
+import app.utils as utils
 from app.dependencies import member_admin_agent, yoma_agent
 from app.main import app
 

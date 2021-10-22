@@ -5,96 +5,84 @@ name: Continuous Build
 
 on:
   push:
-    branches: [ development, feature/*, main ]
+    branches: [development, feature/*, main]
   pull_request:
-    branches: [ development ]
+    branches: [development]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Install test dependencies.
-      run: |
-        cd app
-        python -m pip install --upgrade pip
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        cd ../trustregistry
-        pip install -r requirements.txt
-    - name: Install docker-compose with pip
-      run: sudo pip install docker-compose
-    - name: Set up Python 3.8.10
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8.10
-    - name: Start Test Harness
-      run: |
-        chmod u+x manage
-        ./manage up-as-daemon
-        echo waiting for dockers to startup, sleeping for 240 seconds
-        sleep 240
-        echo wait over, continuing
-      shell: bash
-    - name: Test with pytest
-      id: test
-      continue-on-error: true
-      run: |
-        docker-compose up --build -d yoma-ga-agent
-        docker-compose up --build -d yoma-multitenant-agent
-        sleep 120
-        pytest  --cov=trustregistry --cov=app trustregistry app --junit-xml=junit.xml
-        echo done
-    - name: Retry tests
-      if: steps.test.outcome=='failure'         # check the step outcome, retry 1st time
-      run: |
-        docker-compose up --build -d yoma-ga-agent
-        docker-compose up --build -d yoma-multitenant-agent
-        sleep 120
-        pytest app --cov=app --ignore=webhooks --log-cli-level=1
-        pytest trustregistry --cov=trustregistry --ignore=webhooks --log-cli-level=1
-        echo done
-    - name: Run Pylint
-      run: |
-        pip install pylint
-        pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
-    - name: Tear down test harnless
-      run: |
-       ./manage down || true
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-         -Dsonar.organization=didx-xyz
-         -Dsonar.projectKey=didx-xyz_aries-cloudapi-python
-         -Dsonar.verbose=false
-         -Dsonar.python.xunit.reportPath=junit.xml
-         -Dsonar.tests=app/tests,trustregistry/tests
-         -Dsonar.python.coverage.reportPaths=coverage.xml
-         -Dsonar.python.pylint.reportPaths=pylintreport.txt
-         -Dsonar.projectBaseDir=./
-         -Dsonar.coverage.exclusions=tests/**/*
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install test dependencies.
+        run: |
+          cd app
+          python -m pip install --upgrade pip
+          pip install pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          cd ../trustregistry
+          pip install -r requirements.txt
+      - name: Install docker-compose with pip
+        run: sudo pip install docker-compose
+      - name: Set up Python 3.8.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8.10
+      - name: Start Test Harness
+        run: |
+          chmod u+x manage
+          ./manage up-as-daemon
+          echo waiting for dockers to startup, sleeping for 240 seconds
+          sleep 240
+          echo wait over, continuing
+        shell: bash
+      - name: Test with pytest
+        id: test
+        continue-on-error: true
+        run: |
+          docker-compose up --build -d yoma-ga-agent
+          docker-compose up --build -d yoma-multitenant-agent
+          sleep 120
+          pytest  --cov=trustregistry --cov=app trustregistry app
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          echo done
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+      - name: Retry tests
+        if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
+        run: |
+          docker-compose up --build -d yoma-ga-agent
+          docker-compose up --build -d yoma-multitenant-agent
+          sleep 120
+          pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          echo done
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+      - name: Run Pylint
+        run: |
+          pip install pylint
+          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+      - name: Tear down test harnless
+        run: |
+          ./manage down || true
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
-    - name: multiple command
-      if: github.ref == 'refs/heads/development' && github.event.pull_request.merged == true
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.KEY }}
-        port: ${{ secrets.PORT }}
-        script: |
-          cd aries-cloudapi-python
-          git pull
-          make stop_n_clean
-          make start
-
+      - name: multiple command
+        if: github.ref == 'refs/heads/development' && github.event.pull_request.merged == true
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd aries-cloudapi-python
+            git pull
+            make stop_n_clean
+            make start

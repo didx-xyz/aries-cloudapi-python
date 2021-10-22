@@ -108,33 +108,6 @@ async def test_get_credential(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.asyncio
-async def test_get_credential(mock_agent_controller: AcaPyClient):
-    v1_record = mock(CredentialExchange)
-    v2_record = mock(CredentialExchange)
-
-    with when(IssuerV1).get_record(...).thenReturn(get(v1_record)):
-        result = await test_module.get_credential(
-            "v1-credential_id", mock_agent_controller
-        )
-
-        assert result is v1_record
-
-        verify(IssuerV1).get_record(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
-        )
-
-    with when(IssuerV2).get_record(...).thenReturn(get(v2_record)):
-        result = await test_module.get_credential(
-            "v2-credential_id", mock_agent_controller
-        )
-
-        assert result is v2_record
-        verify(IssuerV2).get_record(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
-        )
-
-
-@pytest.mark.asyncio
 async def test_remove_credential(mock_agent_controller: AcaPyClient):
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)

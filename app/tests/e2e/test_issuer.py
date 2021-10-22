@@ -35,7 +35,7 @@ async def register_issuer(client: AsyncClient, schema_id: str):
     if not await registry_has_schema(schema_id=schema_id):
         await register_schema(schema_id)
 
-    if not await actor_by_did(pub_did):
+    if not await actor_by_did(f"did:sov:{pub_did}"):
         rand = random()
         await register_actor(
             Actor(

@@ -34,7 +34,7 @@ class ProofsV1(Proof):
             )
         )
 
-        return proof_request
+        return cls.__presentation_to_model(proof_request)
 
     @classmethod
     async def send_proof_request(
@@ -81,7 +81,7 @@ class ProofsV1(Proof):
         controller: AcaPyClient,
         pres_ex_id: str,
         body: Optional[IndyPresSpec] = None,
-    ) -> V10PresentationExchange:
+    ) -> Presentation:
         presentation_record = await controller.present_proof_v1_0.send_presentation(
             pres_ex_id=pres_ex_id, body=body
         )
@@ -94,7 +94,7 @@ class ProofsV1(Proof):
         controller: AcaPyClient,
         pres_ex_id: str,
         problem_report: str = None,
-    ):
+    ) -> None:
         # get the record
         proof_request = await controller.present_proof_v1_0.get_record(
             pres_ex_id=pres_ex_id
@@ -122,7 +122,7 @@ class ProofsV1(Proof):
             or not isinstance(delete_proof_request_res, dict)
             or proof_request == deleted_request_record
         ):
-            raise HTTPException(status_code=500, detail="failed to delete record")
+            raise HTTPException(status_code=500, detail="Failed to delete record")
 
     @classmethod
     def __presentation_to_model(cls, presentation: V10PresentationExchange):

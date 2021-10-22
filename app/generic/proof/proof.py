@@ -16,8 +16,6 @@ from fastapi import APIRouter
 from generic.proof.models import Presentation
 from generic.proof.facades.acapy_proof_v1 import ProofsV1
 from generic.proof.facades.acapy_proof_v2 import ProofsV2
-from pydantic.main import BaseModel, validate_custom_root_type
-from typing_extensions import TypedDict
 
 from generic.proof.proof import ProofsV1, ProofsV2
 

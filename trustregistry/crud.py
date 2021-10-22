@@ -51,7 +51,7 @@ def get_schemas(db: Session, skip: int = 0, limit: int = 1000):
 
 def create_schema(db: Session, schema: schemas.Schema):
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.did == schema.did).one_or_none()
+        db.query(models.Schema).filter(models.Schema.id == schema.id).one_or_none()
     )
     if db_schema is not None:
         return 1

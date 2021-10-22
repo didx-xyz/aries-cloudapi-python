@@ -1,33 +1,40 @@
 from typing import Optional, Union
 
-from aries_cloudcontroller.acapy_client import AcaPyClient
-from aries_cloudcontroller.model.v10_presentation_create_request_request import (
+from aries_cloudcontroller import (
+    AcaPyClient,
     AdminAPIMessageTracing,
     IndyPresSpec,
+    IndyProofRequest,
     V10PresentationSendRequestRequest,
-    ProblemReportExplanation,
+    V10PresentationProposalRequest,
+    V10PresentationProblemReportRequest,
     V10PresentationCreateRequestRequest,
     V10PresentationExchange,
 )
-from fastapi import exceptions
-from fastapi.exceptions import HTTPException, V10PresentationProblemReportRequest
+from fastapi.exceptions import HTTPException
 from generic.proof.facades.acapy_proof import IndyProofRequest, Proof
 from generic.proof.models import Presentation
 
 
 class ProofsV1(Proof):
     @classmethod
-    async def create_proof_request(cls, controller: AcaPyClient, proof: Proof):
+    async def create_proof_request(
+        cls,
+        controller: AcaPyClient,
+        proof: IndyProofRequest,
+        comment: str = None,
+        trace: bool = False,
+    ) -> Presentation:
 
         proof_request = await controller.present_proof_v1_0.create_proof_request(
             body=V10PresentationCreateRequestRequest(
-                proof_request=IndyProofRequest,
-                comment=Optional[str],
-                trace=Optional[bool],
+                proof_request=proof,
+                comment=comment,
+                trace=trace,
             )
         )
 
-        return cls.__proof_request_from_indy(proof_request)
+        return proof_request
 
     @classmethod
     async def send_proof_request(
@@ -35,10 +42,12 @@ class ProofsV1(Proof):
         controller: AcaPyClient,
         presentation_request: Union[
             V10PresentationSendRequestRequest,
+            AdminAPIMessageTracing,
+            V10PresentationProposalRequest,
         ],
         free: bool = False,
         pres_ex_id: str = None,
-    ):
+    ) -> Presentation:
         try:
             if free:
                 presentation_exchange = (
@@ -72,7 +81,7 @@ class ProofsV1(Proof):
         controller: AcaPyClient,
         pres_ex_id: str,
         body: Optional[IndyPresSpec] = None,
-    ):
+    ) -> V10PresentationExchange:
         presentation_record = await controller.present_proof_v1_0.send_presentation(
             pres_ex_id=pres_ex_id, body=body
         )
@@ -84,7 +93,7 @@ class ProofsV1(Proof):
         cls,
         controller: AcaPyClient,
         pres_ex_id: str,
-        problem_report: Optional[V10PresentationProblemReportRequest] = None,
+        problem_report: str = None,
     ):
         # get the record
         proof_request = await controller.present_proof_v1_0.get_record(
@@ -94,7 +103,10 @@ class ProofsV1(Proof):
         if problem_report:
             try:
                 await controller.present_proof_v1_0.report_problem(
-                    pres_ex_id=pres_ex_id, body=problem_report
+                    pres_ex_id=pres_ex_id,
+                    body=V10PresentationProblemReportRequest(
+                        description=problem_report
+                    ),
                 )
             except Exception as e:
                 raise e from e

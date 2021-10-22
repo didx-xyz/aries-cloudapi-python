@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String
 
-from database import Base
+from trustregistry.database import Base
 
 
 def schema_id_gen(context):

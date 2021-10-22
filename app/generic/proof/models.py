@@ -10,13 +10,7 @@ from aries_cloudcontroller import (
     V20PresProposal,
     V20PresRequest,
 )
-from generic.proof.proof import ProofsV1, ProofsV2
 from pydantic import BaseModel
-
-
-class ProofsFacade(Enum):
-    v1 = ProofsV1
-    v2 = ProofsV2
 
 
 class Presentation(BaseModel):

@@ -23,7 +23,7 @@ def test_schema():
     assert schema.did == "abc"
     assert schema.name == "doubleaceschema"
     assert schema.version == "0.4.20"
-    assert schema.id == "abc:doubleaceschema:0.4.20"
+    assert schema.id == "abc:2:doubleaceschema:0.4.20"
 
     schema.did = "abcde"
-    assert schema.id == "abcde:doubleaceschema:0.4.20"
+    assert schema.id == "abcde:2:doubleaceschema:0.4.20"

@@ -20,7 +20,7 @@ class Schema(BaseModel):
 
     @root_validator
     def default_id_create(cls, values):
-        values["id"] = f"{values['did']}:{values['name']}:{values['version']}"
+        values["id"] = f"{values['did']}:2:{values['name']}:{values['version']}"
         return values
 
     class Config:

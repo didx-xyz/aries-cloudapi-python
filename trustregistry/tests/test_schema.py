@@ -20,14 +20,14 @@ def test_register_schema():
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
-    schema_dict["id"] = schema_id
+    schema_dict["id"] = schema_id.replace(":", ":2:", 1)
     assert response.json() == schema_dict
     assert response.status_code == 200
 
     new_schemas_resp = client.get("/registry/schemas")
     assert new_schemas_resp.status_code == 200
     new_schemas = new_schemas_resp.json()
-    assert "string:string:string" in new_schemas["schemas"]
+    assert "string:2:string:string" in new_schemas["schemas"]
 
     response = client.post(
         "/registry/schemas/",
@@ -45,9 +45,10 @@ def test_update_schema():
         "version": "string_updated",
     }
     schema_id = ":".join(schema_dict.values())
+    schema_id = schema_id.replace(":", ":2:", 1)
     payload = json.dumps({"schema_id": schema_id})
     response = client.post(
-        "/registry/schemas/string:string:string",
+        "/registry/schemas/string:2:string:string",
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
@@ -71,7 +72,7 @@ def test_update_schema():
 
 def test_remove_schema():
     response = client.delete(
-        "/registry/schemas/string_updated:string_updated:string_updated"
+        "/registry/schemas/string_updated:2:string_updated:string_updated"
     )
     assert response.status_code == 200
     assert response.json() is None

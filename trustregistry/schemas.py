@@ -18,9 +18,14 @@ class Schema(BaseModel):
     version: str
     id: str = None
 
-    @root_validator
+    @root_validator(pre=True)
     def default_id_create(cls, values):
-        values["id"] = f"{values['did']}:2:{values['name']}:{values['version']}"
+        for v in ["name", "version"]:
+            if ":" in values[v]:
+                raise ValueError(f"{v} must not contain colon.")
+        values["id"] = f"{values['did']}:{values['name']}:{values['version']}"
+        if values["did"].endswith(tuple([f":{n}" for n in range(1, 4)])):
+            values["did"] = values["did"][:-2]
         return values
 
     class Config:

@@ -1,6 +1,7 @@
 import json
 
 from . import test_main
+from trustregistry.registry.registry_schemas import _get_schema_attrs, SchemaID
 
 client = test_main.client
 
@@ -12,7 +13,7 @@ def test_get_schemas():
 
 
 def test_register_schema():
-    schema_dict = {"did": "string", "name": "string", "version": "string"}
+    schema_dict = {"did": "string:2", "name": "string", "version": "string"}
     schema_id = ":".join(schema_dict.values())
     payload = json.dumps({"schema_id": schema_id})
     response = client.post(
@@ -20,7 +21,8 @@ def test_register_schema():
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
-    schema_dict["id"] = schema_id.replace(":", ":2:", 1)
+    schema_dict["id"] = schema_id
+    schema_dict["did"] = "string"
     assert response.json() == schema_dict
     assert response.status_code == 200
 
@@ -40,12 +42,11 @@ def test_register_schema():
 
 def test_update_schema():
     schema_dict = {
-        "did": "string_updated",
+        "did": "string_updated:2",
         "name": "string_updated",
         "version": "string_updated",
     }
     schema_id = ":".join(schema_dict.values())
-    schema_id = schema_id.replace(":", ":2:", 1)
     payload = json.dumps({"schema_id": schema_id})
     response = client.post(
         "/registry/schemas/string:2:string:string",
@@ -53,6 +54,7 @@ def test_update_schema():
         data=payload,
     )
     schema_dict["id"] = schema_id
+    schema_dict["did"] = "string_updated"
     assert response.json() == schema_dict
     assert response.status_code == 200
 
@@ -78,8 +80,18 @@ def test_remove_schema():
     assert response.json() is None
 
     response = client.delete(
-        "/registry/schemas/string_updated:string_updated:string_updated",
+        "/registry/schemas/string_updated:2:string_updated:string_updated",
         headers={"content-type": "application/json", "accept": "application/json"},
     )
     assert response.status_code == 404
     assert "Schema not found" in response.json()["detail"]
+
+
+def test__get_schema_attrs():
+    res = _get_schema_attrs(schema_id=SchemaID(schema_id="abc:2:Peter Parker:0.4.20"))
+
+    assert res == ["abc:2", "Peter Parker", "0.4.20"]
+
+    res = _get_schema_attrs(schema_id=SchemaID(schema_id="abc:Peter Parker:0.4.20"))
+
+    assert res == ["abc", "Peter Parker", "0.4.20"]

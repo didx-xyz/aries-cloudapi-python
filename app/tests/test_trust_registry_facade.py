@@ -309,11 +309,7 @@ async def test_register_schema():
 
         mock_request.assert_called_once_with(
             trf.TRUST_REGISTRY_URL + "/registry/schemas",
-            json={
-                "did": "WgWxqztrNooG92RXvxSTWv",
-                "name": "schema_name",
-                "version": "1.0",
-            },
+            json={"schema_id": schema_id},
         )
 
     with patch("requests.post") as mock_request, pytest.raises(

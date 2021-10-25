@@ -9,7 +9,7 @@ from aries_cloudcontroller import ConnRecord, DIDResult, ReceiveInvitationReques
 from assertpy import assert_that
 
 import app.dependencies as dependencies
-from app.acapy_ledger_facade import create_pub_did
+from app.facades.acapy_ledger import create_pub_did
 from app.generic.connections import (
     accept_invite,
     create_invite,

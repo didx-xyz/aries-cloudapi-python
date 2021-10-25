@@ -1,10 +1,10 @@
 import logging
+from typing import Literal
 
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.model.did_endpoint_with_type import DIDEndpointWithType
+from aries_cloudcontroller import AcaPyClient, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
-from app.acapy_ledger_facade import create_pub_did
+from app.facades.acapy_ledger import create_pub_did
 from app.dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
@@ -72,8 +72,7 @@ async def rotate_keypair(
     did: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
-
-    return await aries_controller.wallet.rotate_keypair(did)
+    return await aries_controller.wallet.rotate_keypair(did=did)
 
 
 @router.get("/get-did-endpoint/{did}")
@@ -106,7 +105,7 @@ async def assign_pub_did(
 async def set_did_endpoint(
     did: str,
     endpoint: str,
-    endpoint_type="Endpoint",
+    endpoint_type: Literal["Endpoint", "Profile", "LinkedDomains"] = "Endpoint",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """

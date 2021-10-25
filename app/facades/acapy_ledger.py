@@ -1,12 +1,17 @@
 import logging
 from typing import Tuple
 
-from aries_cloudcontroller import AcaPyClient, TAAAccept, TAARecord
-from aries_cloudcontroller.model.taa_info import TAAInfo
+from aries_cloudcontroller import (
+    AcaPyClient,
+    TAAAccept,
+    TAARecord,
+    CredentialDefinitionSendRequest,
+    TAAInfo,
+)
 from fastapi import HTTPException
 
-import app.acapy_wallet_facade as wallet_facade
-import app.ledger_facade as ledger_facade
+import app.facades.acapy_wallet as wallet_facade
+import app.facades.acapy_ledger as ledger_facade
 from app.schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
@@ -136,3 +141,32 @@ async def create_pub_did(
         issuer_endpoint=issuer_endpoint_url,
     )
     return final_response
+
+
+async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
+    """
+    Writes Credential Definition to the ledger
+
+    Parameters:
+    ----------
+    controller: AcaPyClient
+        The aries_cloudcontroller object
+
+    Schema id
+
+    Returns:
+    -------
+    write_cred_response :dict
+    """
+
+    write_cred_response = await controller.credential_definition.publish_cred_def(
+        body=CredentialDefinitionSendRequest(
+            schema_id=schema_id, tag="default", support_revocation=False
+        )
+    )
+    if not write_cred_response.credential_definition_id:
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong. Could not write credential definition to the ledger",
+        )
+    return write_cred_response.credential_definition_id

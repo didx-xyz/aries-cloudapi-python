@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
-from app.facade import write_credential_def
+from app.facades.acapy_ledger import write_credential_def
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2

@@ -153,3 +153,5 @@ junit.xml
 # junit / pytest
 junit.xml
 *junit.xml
+
+*.db

@@ -92,9 +92,9 @@ async def get_connections(
     return connections
 
 
-@router.get("/{conn_id}", response_model=ConnRecord)
+@router.get("/{connection_id}", response_model=ConnRecord)
 async def get_connection_by_id(
-    conn_id: str,
+    connection_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -102,16 +102,16 @@ async def get_connection_by_id(
 
     Parameters:
     -----------
-    conn_id: str
+    connection_id: str
 
     """
-    connection = await aries_controller.connection.get_connection(conn_id=conn_id)
+    connection = await aries_controller.connection.get_connection(conn_id=connection_id)
     return connection
 
 
-@router.delete("/{conn_id}")
+@router.delete("/{connection_id}")
 async def delete_connection_by_id(
-    conn_id: str,
+    connection_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -125,7 +125,9 @@ async def delete_connection_by_id(
     ------------
     Empty dict: {}
     """
-    remove_res = await aries_controller.connection.delete_connection(conn_id=conn_id)
+    remove_res = await aries_controller.connection.delete_connection(
+        conn_id=connection_id
+    )
     return remove_res
 
 

@@ -27,11 +27,6 @@ app.include_router(wallet_admin.router)
 app.include_router(wallets.router)
 
 
-@app.get("/", tags=["Root"])
-async def root():
-    return {"message": "Hi, and welcome to the Aries Cloud API."}
-
-
 # add endpoints
 # additional yaml version of openapi.json
 @app.get("/openapi.yaml", include_in_schema=False)

@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/wallet", tags=["wallet"])
 
 
-@router.get("/create-pub-did", tags=["did"])
+@router.get("/create-pub-did")
 async def create_public_did(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):

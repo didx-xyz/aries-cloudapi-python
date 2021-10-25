@@ -15,7 +15,7 @@ def schema_id_gen(context):
 class Actor(Base):
     __tablename__ = "actors"
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True, unique=True)
     name = Column(String, unique=True, index=True)
     roles = Column(StringList, index=True)
     didcomm_invitation = Column(String, unique=True, index=True)
@@ -29,6 +29,7 @@ class Schema(Base):
         String,
         primary_key=True,
         index=True,
+        unique=True,
         default=schema_id_gen,
         onupdate=schema_id_gen,
     )

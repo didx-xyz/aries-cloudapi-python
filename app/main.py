@@ -8,7 +8,7 @@ from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
-from app.admin.governance import credential_definitions, dids, schemas
+from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
 from app.generic import connections, messaging
 from app.generic.issuer import issuer
@@ -20,7 +20,6 @@ app = FastAPI(debug=not prod)
 
 app.include_router(connections.router)
 app.include_router(credential_definitions.router)
-app.include_router(dids.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
 app.include_router(schemas.router)

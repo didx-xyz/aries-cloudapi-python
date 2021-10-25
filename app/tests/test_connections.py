@@ -280,7 +280,7 @@ async def test_delete_connection(async_client, create_wallets_mock):
         connection = (await get_connections(aries_controller=member_agent)).dict()
         connection_id = connection["results"][0]["connection_id"]
         await delete_connection_by_id(
-            conn_id=connection_id, aries_controller=member_agent
+            connection_id=connection_id, aries_controller=member_agent
         )
         connection = (await get_connections(aries_controller=member_agent)).dict()
     assert connection["results"] == []

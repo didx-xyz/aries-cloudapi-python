@@ -11,7 +11,7 @@ from aries_cloudcontroller import (
 from fastapi import HTTPException
 
 import app.facades.acapy_wallet as wallet_facade
-import app.facades.acapy_ledger as ledger_facade
+import app.facades.ledger as ledger_facade
 from app.schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)

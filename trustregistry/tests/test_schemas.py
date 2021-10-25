@@ -9,14 +9,14 @@ def test_actor():
         name="Mickey Mouse",
         roles=["verifier", "issuer"],
         didcomm_invitation="xyz",
-        did="abc",
+        did="did:key:abc",
     )
 
     assert actor.id == "mickey-mouse"
     assert actor.name == "Mickey Mouse"
     assert actor.roles == ["verifier", "issuer"]
     assert actor.didcomm_invitation == "xyz"
-    assert actor.did == "abc"
+    assert actor.did == "did:key:abc"
 
 
 def test_schema():

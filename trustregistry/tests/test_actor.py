@@ -9,7 +9,7 @@ new_actor = {
     "name": "Darth Vader",
     "roles": ["issuer", "verifier"],
     "didcomm_invitation": "string",
-    "did": "string",
+    "did": "did:key:string",
 }
 
 

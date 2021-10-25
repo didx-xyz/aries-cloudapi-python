@@ -12,7 +12,8 @@ class Actor(BaseModel):
     didcomm_invitation: Optional[str] = None
 
     @validator("did")
-    def did_validator(self, did: str):
+    @classmethod
+    def did_validator(cls, did: str):
         if not did.startswith("did:"):
             raise ValueError("Only fully qualified DIDs allowed")
 

@@ -1,14 +1,16 @@
+from typing import List
+
 from sqlalchemy.orm import Session
 
 from trustregistry import models
 from trustregistry import schemas
 
 
-def get_actors(db: Session, skip: int = 0, limit: int = 1000):
+def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Actor]:
     return db.query(models.Actor).offset(skip).limit(limit).all()
 
 
-def create_actor(db: Session, actor: schemas.Actor):
+def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
     if db_actor is not None:
         return None
@@ -19,7 +21,7 @@ def create_actor(db: Session, actor: schemas.Actor):
     return db_actor
 
 
-def delete_actor(db: Session, actor_id: str):
+def delete_actor(db: Session, actor_id: str) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor_id).one_or_none()
     if db_actor is None:
         return None
@@ -28,7 +30,7 @@ def delete_actor(db: Session, actor_id: str):
     return db_actor
 
 
-def update_actor(db: Session, actor: schemas.Actor, actor_id=str):
+def update_actor(db: Session, actor: schemas.Actor, actor_id=str) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor_id).one_or_none()
     if db_actor is None:
         return None
@@ -42,13 +44,13 @@ def update_actor(db: Session, actor: schemas.Actor, actor_id=str):
     return db_actor
 
 
-def get_schemas(db: Session, skip: int = 0, limit: int = 1000):
+def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Schema]:
     return db.query(models.Schema).offset(skip).limit(limit).all()
 
 
-def create_schema(db: Session, schema: schemas.Schema):
+def create_schema(db: Session, schema: schemas.Schema) -> models.Schema:
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.did == schema.did).one_or_none()
+        db.query(models.Schema).filter(models.Schema.id == schema.id).one_or_none()
     )
     if db_schema is not None:
         return 1
@@ -59,7 +61,7 @@ def create_schema(db: Session, schema: schemas.Schema):
     return db_schema
 
 
-def update_schema(db: Session, schema: schemas.Schema, schema_id: str):
+def update_schema(db: Session, schema: schemas.Schema, schema_id: str) -> models.Schema:
     db_schema = (
         db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
     )
@@ -75,7 +77,7 @@ def update_schema(db: Session, schema: schemas.Schema, schema_id: str):
     return db_schema
 
 
-def delete_schema(db: Session, schema_id: str):
+def delete_schema(db: Session, schema_id: str) -> models.Schema:
     db_schema = (
         db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
     )

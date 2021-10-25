@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from pydantic import BaseModel, root_validator
+from pydantic.class_validators import validator
 
 
 class Actor(BaseModel):
@@ -10,7 +11,15 @@ class Actor(BaseModel):
     did: str
     didcomm_invitation: Optional[str] = None
 
+    @validator("did")
+    def did_validator(cls, did: str):
+        if not did.startswith("did:"):
+            raise ValueError("Only fully qualified DIDs allowed")
+
+        return did
+
     class Config:
+        validate_assignment = True
         orm_mode = True
 
 

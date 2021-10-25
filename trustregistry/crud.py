@@ -9,6 +9,10 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
     return db.query(models.Actor).offset(skip).limit(limit).all()
 
 
+def get_actor_by_did(db: Session, actor_did: str):
+    return db.query(models.Actor).filter(models.Actor.did == actor_did).first()
+
+
 def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
     if db_actor is not None:

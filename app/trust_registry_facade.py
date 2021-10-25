@@ -148,15 +148,9 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
 
 
 async def register_schema(schema_id: str) -> None:
-    [schema_did, _, schema_name, schema_version] = schema_id.split(":")
-
-    schema = {
-        "did": schema_did,
-        "name": schema_name,
-        "version": schema_version,
-    }
-
-    schema_res = requests.post(TRUST_REGISTRY_URL + "/registry/schemas", json=schema)
+    schema_res = requests.post(
+        TRUST_REGISTRY_URL + "/registry/schemas", json={"schema_id": schema_id}
+    )
 
     if schema_res.status_code != 200:
         raise Exception(f"Error registering schema {schema_id}: {schema_res.text}")

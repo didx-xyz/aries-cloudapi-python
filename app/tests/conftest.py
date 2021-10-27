@@ -11,6 +11,8 @@ from aries_cloudcontroller import (
     IssueCredentialV10Api,
     IssueCredentialV20Api,
     LedgerApi,
+    PresentProofV10Api,
+    PresentProofV20Api,
     WalletApi,
 )
 from assertpy import assert_that
@@ -56,6 +58,8 @@ def mock_agent_controller():
     controller.ledger = mock(LedgerApi)
     controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
     controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
+    controller.present_proof_v1_0 = mock(PresentProofV10Api)
+    controller.present_proof_v2_0 = mock(PresentProofV20Api)
     controller.credentials = mock(CredentialsApi)
     return controller
 

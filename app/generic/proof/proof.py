@@ -1,23 +1,19 @@
 import logging
 from enum import Enum
-from typing import Optional, Union, Tuple
+from typing import Optional, Union
 
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.indy_proof_request import IndyProofRequest
 from aries_cloudcontroller.model.v10_presentation_create_request_request import (
     AdminAPIMessageTracing,
-    V10PresentationSendRequestRequest,
-    V10PresentationProposalRequest,
-    V10PresentationExchange,
-    V20PresentationExchange,
     IndyPresSpec,
+    V10PresentationProposalRequest,
+    V10PresentationSendRequestRequest,
 )
 from fastapi import APIRouter
-from generic.proof.models import Presentation
 from generic.proof.facades.acapy_proof_v1 import ProofsV1
 from generic.proof.facades.acapy_proof_v2 import ProofsV2
-
-from generic.proof.proof import ProofsV1, ProofsV2
+from generic.proof.models import Presentation
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +34,7 @@ async def send_proof_request(
         V10PresentationProposalRequest,
     ],
     aries_controller: AcaPyClient,
-) -> Tuple[V10PresentationExchange, V20PresentationExchange]:
+) -> Presentation:
     """
     Send proof request.
 
@@ -55,7 +51,7 @@ async def send_proof_request(
         controller=aries_controller, presentation_request=presentation_request
     )
 
-    return v1_proof, v2_proof
+    return Presentation(V10=v1_proof, V20=v2_proof)
 
 
 @router.post("/create-request")
@@ -64,7 +60,7 @@ async def create_proof_request(
     proof: IndyProofRequest,
     comment: Optional[str],
     trace: Optional[bool] = False,
-) -> Tuple[V10PresentationExchange, V20PresentationExchange]:
+) -> Presentation:
     """
     Create proof request.
 
@@ -81,7 +77,7 @@ async def create_proof_request(
         controller=aries_controller, proof=proof
     )
 
-    return v1_proof, v2_proof
+    return Presentation(V10=v1_proof.V10, V20=v2_proof.V20)
 
 
 @router.get("/accept-request")
@@ -112,7 +108,7 @@ async def accept_proof_request(
         presentation_spec=presentation_spec,
     )
 
-    return v1_proof, v2_proof
+    return Presentation(V10=v1_proof.V10, V20=v2_proof.V20)
 
 
 @router.get("/reject-request")
@@ -141,4 +137,4 @@ async def reject_proof_request(
         problem_report=problem_report,
     )
 
-    return v1_proof, v2_proof
+    return Presentation(V10=v1_proof.V10, V20=v2_proof.V20)

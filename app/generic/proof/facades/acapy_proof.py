@@ -1,17 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    V10PresentationCreateRequestRequest,
-    V10PresentationExchange,
-    V20PresCreateRequestRequest,
-    V20PresExRecord,
-)
+from aries_cloudcontroller import AcaPyClient, IndyProofRequest
 
-from generic.proof.models import PresentationExchange, ProofRequest
-
-## TODO import some  the correct return classes from AcaPy client
+from app.generic.proof.models import Presentation
 
 
 class Proof(ABC):
@@ -24,7 +16,7 @@ class Proof(ABC):
         controller: AcaPyClient,
         proof_request: Any = None,
         connection_id: str = None,
-    ) -> PresentationExchange:
+    ) -> Presentation:
         """
         Request proof from a connection ID.
 
@@ -43,8 +35,8 @@ class Proof(ABC):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: Optional[ProofRequest] = None,
-    ) -> PresentationExchange:
+        proof_request: Optional[IndyProofRequest] = None,
+    ) -> Presentation:
         """
         Create proof request
 
@@ -60,7 +52,7 @@ class Proof(ABC):
     @abstractmethod
     async def accept_proof_request(
         cls, controller: AcaPyClient, pres_ex_id: str
-    ) -> PresentationExchange:
+    ) -> Presentation:
         """ "
         Accept proof request
 
@@ -76,7 +68,7 @@ class Proof(ABC):
     @abstractmethod
     async def decline_proof_request(
         cls, controller: AcaPyClient, pres_ex_id: str
-    ) -> PresentationExchange:
+    ) -> Presentation:
         """ "
         Accept proof request
 

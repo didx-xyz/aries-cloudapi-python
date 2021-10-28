@@ -1,7 +1,7 @@
 import asyncio
 import json
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
@@ -12,12 +12,6 @@ import app.acapy_ledger_facade as acapy_ledger_facade
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.dependencies import MEMBER_AGENT_URL
 from app.tests.utils_test import get_random_string
-
-
-# need this to handle the async with the mock
-async def get(response: Optional[Any] = None):
-    if response:
-        return response
 
 
 BASE_PATH = "/generic/issuer/credentials"

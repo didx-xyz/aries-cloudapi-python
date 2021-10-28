@@ -37,11 +37,11 @@ indy_proof = IndyProof(
 
 indy_proof_request = IndyProofRequest(
     name=None,
-    non_revoked=None,  # IndyProofRequestNonRevoked(),
+    non_revoked=None,
     nonce=None,
-    requested_attributes=None,  # Optional[Dict[str, IndyProofReqAttrSpec]] = None
-    requested_predicates=None,  # Optional[Dict[str, IndyProofReqPredSpec]] = None
-    version="0.0.1",  # Optional[str] = None
+    requested_attributes=None,
+    requested_predicates=None,
+    version="0.0.1",
 )
 
 v10_presentation_exchange_records = [

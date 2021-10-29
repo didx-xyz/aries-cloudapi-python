@@ -12,8 +12,13 @@ from aries_cloudcontroller import (
     V20PresRequestByFormat,
     V20PresProposalRequest,
     V20PresSendRequestRequest,
+    V20PresProposalByFormat,
 )
+import aries_cloudcontroller
+from aries_cloudcontroller.model.indy_pres_preview import IndyPresPreview
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from pydantic.main import Extra
 
 from app.dependencies import agent_selector
 from app.generic.proof.facades.acapy_proof_v1 import ProofsV1
@@ -31,15 +36,19 @@ class ProofsFacade(Enum):
     v2 = ProofsV2
 
 
-@router.post("/send-request")
-async def send_proof_request(
-    presentation_request: Union[
+class PresentationRequest(BaseModel):
+    proof_request: Union[
         V10PresentationSendRequestRequest,
         AdminAPIMessageTracing,
         V10PresentationProposalRequest,
         V20PresProposalRequest,
         V20PresSendRequestRequest,
-    ],
+    ]
+
+
+@router.post("/send-request")
+async def send_proof_request(
+    presentation_request: PresentationRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> Presentation:
     """
@@ -50,18 +59,76 @@ async def send_proof_request(
     presentation_request:
         The proof request
     """
-    v1_proof = await ProofsFacade.v1.value.send_proof_request(
-        controller=aries_controller, presentation_request=presentation_request
-    )
-    v2_proof = await ProofsFacade.v2.value.send_proof_request(
-        controller=aries_controller, presentation_request=presentation_request
-    )
-    return Presentation(V10=v1_proof, V20=v2_proof)
+
+    async def _send_proof_request_v1(
+        aries_controller,
+        presentation_request,
+        free: bool = False,
+        pres_ex_id: str = None,
+    ):
+        return await ProofsFacade.v1.value.send_proof_request(
+            controller=aries_controller,
+            presentation_request=presentation_request,
+            free=free,
+            pres_ex_id=pres_ex_id,
+        )
+
+    async def _send_proof_request_v2(
+        aries_controller,
+        presentation_request,
+        free: bool = False,
+        pres_ex_id: str = None,
+    ):
+        return await ProofsFacade.v2.value.send_proof_request(
+            controller=aries_controller,
+            presentation_request=presentation_request,
+            free=free,
+            pres_ex_id=pres_ex_id,
+        )
+
+    v1_proof = None
+    v2_proof = None
+    if isinstance(presentation_request.proof_request, AdminAPIMessageTracing):
+        v1_proof = await _send_proof_request_v1(
+            aries_controller, presentation_request.proof_request
+        )
+        v2_proof = await _send_proof_request_v2(
+            aries_controller, presentation_request.proof_request
+        )
+        return Presentation(V10=v1_proof, V20=v2_proof)
+    elif isinstance(presentation_request.proof_request, V10PresentationProposalRequest):
+        v1_proof = await _send_proof_request_v1(
+            aries_controller, presentation_request.proof_request
+        )
+        return Presentation(V10=v1_proof)
+    elif isinstance(
+        presentation_request.proof_request, V10PresentationSendRequestRequest
+    ):
+        v1_proof = await _send_proof_request_v1(
+            aries_controller, presentation_request.proof_request, free=True
+        )
+        return Presentation(V10=v1_proof)
+    elif isinstance(
+        presentation_request.proof_request, V20PresSendRequestRequest
+    ) or isinstance(presentation_request.proof_request, V20PresProposalRequest):
+        v2_proof = await _send_proof_request_v1(
+            aries_controller, presentation_request.proof_request
+        )
+        return Presentation(V20=v2_proof)
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail="Could not match provided type.",
+        )
+
+
+class CreateRequest(BaseModel):
+    proof: Union[IndyProofRequest, V20PresRequestByFormat]
 
 
 @router.post("/create-request")
 async def create_proof_request(
-    proof: Union[IndyProofRequest, V20PresRequestByFormat] = None,
+    proof: CreateRequest,
     comment: Optional[str] = None,
     trace: Optional[bool] = False,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -74,19 +141,18 @@ async def create_proof_request(
     proof: IndyProofRequest
         The proof request
     """
-    try:
-        proof = IndyProofRequest(**proof.dict())
+    if isinstance(proof.proof, IndyProofRequest):
         v1_proof = await ProofsFacade.v1.value.create_proof_request(
             controller=aries_controller, proof=proof, comment=comment, trace=trace
         )
         return Presentation(V10=v1_proof.V10)
-    except TypeError:
+    elif isinstance(proof.proof, V20PresRequestByFormat):
         proof = V20PresRequestByFormat(**proof.dict())
         v2_proof = await ProofsFacade.v2.value.create_proof_request(
             controller=aries_controller, proof=proof
         )
         return Presentation(V20=v2_proof.V20)
-    except TypeError:
+    else:
         raise HTTPException(
             status_code=500,
             detail="Could not match provided type. Type needs to be IndyProofRequest or V20PresRequestByFormat",

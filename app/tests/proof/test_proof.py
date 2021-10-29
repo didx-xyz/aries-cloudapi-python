@@ -8,6 +8,10 @@ from aries_cloudcontroller import (
     IndyProofRequest,
     IndyProofReqAttrSpec,
 )
+from aries_cloudcontroller.model.admin_api_message_tracing import AdminAPIMessageTracing
+from aries_cloudcontroller.model.v10_presentation_send_request_request import (
+    V10PresentationSendRequestRequest,
+)
 from httpx import AsyncClient
 import pytest
 from starlette.responses import RedirectResponse
@@ -107,16 +111,60 @@ async def credential_exchange_id(
 
 @pytest.mark.asyncio
 async def test_send_proof_request(
-    # schema_definition: Dict[str, Any],
-    # async_client_alice_module_scope: AsyncClient,
+    alice_connection_id: str,
+    async_client_alice_module_scope: AsyncClient,
 ):
-    # response = await async_client_alice_module_scope.post(
-    #     BASE_PATH + "/reject-request",
-    #     data=json.dumps({"presentation_request": "abc"}),
-    # )
+    proof_dict = dict(
+        {
+            "connection_id": "string",
+            "proof_request": {
+                "name": "string",
+                "non_revoked": {"from": 0, "to": 0},
+                "nonce": "12345",
+                "requested_attributes": {
+                    "additionalProp1": {
+                        "name": "string",
+                        "names": ["string"],
+                        "non_revoked": {"from": 0, "to": 0},
+                        "restrictions": [
+                            {
+                                "additionalProp1": "string",
+                            }
+                        ],
+                    },
+                },
+                "requested_predicates": {
+                    "additionalProp1": {
+                        "name": "string",
+                        "p_type": "<",
+                        "p_value": 0,
+                        "non_revoked": {"from": 0, "to": 0},
+                        "restrictions": [
+                            {
+                                "additionalProp1": "string",
+                            }
+                        ],
+                    },
+                },
+                "version": "0.1",
+            },
+            "comment": "string",
+            "trace": True,
+        }
+    )
+    proof = V10PresentationSendRequestRequest(
+        connection_id=alice_connection_id, proof_request=IndyProofRequest(**proof_dict)
+    )
+    response = await async_client_alice_module_scope.post(
+        BASE_PATH + "/send-request",
+        data=json.dumps({"proof_request": proof.dict()}),
+    )
 
-    # result = response.json()
-    pass
+    result = response.json()
+    assert result["V10"]
+    assert "auto_present" in result["V10"].keys()
+    assert "created_at" in result["V10"].keys()
+    assert "presentation_request" in result["V10"].keys()
 
 
 @pytest.mark.asyncio
@@ -155,25 +203,25 @@ async def test_create_proof_request(
     assert "presentation_request" in result["V10"].keys()
 
 
-@pytest.mark.asyncio
-async def test_accept_proof_request(
-    # async_client_alice_module_scope: AsyncClient,
-):
-    # response = await async_client_alice_module_scope.post(
-    #     BASE_PATH + "/accept-request",
-    #     data=json.dumps({"pres_ex_id": f"{credential_exchange_id}"}),
-    # )
-    # result = response.json()
-    pass
+# @pytest.mark.asyncio
+# async def test_accept_proof_request(
+#     # async_client_alice_module_scope: AsyncClient,
+# ):
+#     # response = await async_client_alice_module_scope.post(
+#     #     BASE_PATH + "/accept-request",
+#     #     data=json.dumps({"pres_ex_id": f"{credential_exchange_id}"}),
+#     # )
+#     # result = response.json()
+#     pass
 
 
-@pytest.mark.asyncio
-async def test_reject_proof_request(
-    # async_client_alice_module_scope: AsyncClient,
-):
-    # response = await async_client_alice_module_scope.post(
-    #     BASE_PATH + "/reject-request",
-    #     data=json.dumps({"pres_ex_id": f"{credential_exchange_id}"}),
-    # )
-    # result = response.json()
-    pass
+# @pytest.mark.asyncio
+# async def test_reject_proof_request(
+#     # async_client_alice_module_scope: AsyncClient,
+# ):
+#     # response = await async_client_alice_module_scope.post(
+#     #     BASE_PATH + "/reject-request",
+#     #     data=json.dumps({"pres_ex_id": f"{credential_exchange_id}"}),
+#     # )
+#     # result = response.json()
+#     pass

@@ -84,10 +84,10 @@ class ProofsV1(Proof):
         cls,
         controller: AcaPyClient,
         pres_ex_id: str,
-        body: Optional[IndyPresSpec] = None,
+        body: Optional[IndyPresSpec] = {},
     ) -> Presentation:
         presentation_record = await controller.present_proof_v1_0.send_presentation(
-            pres_ex_id=pres_ex_id, body=body
+            pres_ex_id=pres_ex_id
         )
 
         return Presentation(V10=presentation_record)

@@ -12,13 +12,10 @@ from aries_cloudcontroller import (
     V20PresRequestByFormat,
     V20PresProposalRequest,
     V20PresSendRequestRequest,
-    V20PresProposalByFormat,
+    V20PresSpecByFormatRequest,
 )
-import aries_cloudcontroller
-from aries_cloudcontroller.model.indy_pres_preview import IndyPresPreview
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
-from pydantic.main import Extra
 
 from app.dependencies import agent_selector
 from app.generic.proof.facades.acapy_proof_v1 import ProofsV1
@@ -159,10 +156,14 @@ async def create_proof_request(
         )
 
 
-@router.get("/accept-request")
+class AcceptRequest(BaseModel):
+    presentation_spec: Union[V20PresSpecByFormatRequest, IndyPresSpec]
+
+
+@router.post("/accept-request")
 async def accept_proof_request(
+    presentation_spec: AcceptRequest,
     pres_ex_id: str,
-    presentation_spec: Optional[IndyPresSpec],
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> Presentation:
     """
@@ -175,22 +176,43 @@ async def accept_proof_request(
     presentation_spec: IndyPresSpec
         The presentation spec
     """
-    v1_proof = await ProofsFacade.v1.value.accept_proof_request(
-        controller=aries_controller,
-        pres_ex_id=pres_ex_id,
-        presentation_spec=presentation_spec,
-    )
+    return pres_ex_id
+    if presentation_spec and presentation_spec.presentation_spec:
+        if isinstance(presentation_spec.spec, IndyPresSpec):
+            v1_proof = await ProofsFacade.v1.value.accept_proof_request(
+                controller=aries_controller,
+                pres_ex_id=pres_ex_id,
+                presentation_spec=presentation_spec,
+            )
+            return Presentation(V10=v1_proof.V10)
+        elif isinstance(
+            presentation_spec.presentation_spec, V20PresSpecByFormatRequest
+        ):
+            v2_proof = await ProofsFacade.v2.value.accept_proof_request(
+                controller=aries_controller,
+                pres_ex_id=pres_ex_id,
+                presentation_spec=presentation_spec,
+            )
+            return Presentation(V20=v2_proof.V20)
+    elif not presentation_spec:
+        v1_proof = await ProofsFacade.v1.value.accept_proof_request(
+            controller=aries_controller,
+            pres_ex_id=pres_ex_id,
+        )
+        # v2_proof = await ProofsFacade.v2.value.accept_proof_request(
+        #     controller=aries_controller,
+        #     pres_ex_id=pres_ex_id,
+        # )
+        # return Presentation(v10=v1_proof.V10,V20=v2_proof.V20)
+        return Presentation(v10=v1_proof.V10)
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail="Could not match provided type.",
+        )
 
-    v2_proof = await ProofsFacade.v2.value.accept_proof_request(
-        controller=aries_controller,
-        pres_ex_id=pres_ex_id,
-        presentation_spec=presentation_spec,
-    )
 
-    return Presentation(V10=v1_proof.V10, V20=v2_proof.V20)
-
-
-@router.get("/reject-request")
+@router.post("/reject-request")
 async def reject_proof_request(
     pres_ex_id: str,
     problem_report: Optional[str] = None,
@@ -219,3 +241,5 @@ async def reject_proof_request(
     )
 
     return Presentation(V10=v1_proof.V10, V20=v2_proof.V20)
+    # return Presentation(V10=v1_proof.V10)
+    # return v1_proof

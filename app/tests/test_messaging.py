@@ -1,7 +1,6 @@
 import asyncio
 
 import pytest
-from aries_cloudcontroller import PingRequest, SendMessage
 from httpx import AsyncClient, Response
 
 from app.generic.messaging import Message, TrustPingMsg
@@ -23,7 +22,7 @@ async def test_send_trust_ping(
     alice_connection_id: str, async_client_alice_module_scope: AsyncClient
 ):
     trustping_msg = TrustPingMsg(
-        conn_id=alice_connection_id, pingRequest=PingRequest(comment="Donda")
+        connection_id=alice_connection_id, comment="Donda"
     ).json()
     response = await async_client_alice_module_scope.post(
         MESSAGE_PATH + "/trust-ping", data=trustping_msg
@@ -38,9 +37,7 @@ async def test_send_trust_ping(
 async def test_send_message(
     alice_connection_id: str, async_client_alice_module_scope: AsyncClient
 ):
-    message = Message(
-        conn_id=alice_connection_id, sendMessage=SendMessage(content="Donda")
-    ).json()
+    message = Message(connection_id=alice_connection_id, content="Donda").json()
     response = await async_client_alice_module_scope.post(
         MESSAGE_PATH + "/send-message", data=message
     )

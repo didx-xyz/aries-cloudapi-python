@@ -8,7 +8,7 @@ from app.dependencies import agent_selector
 
 router = APIRouter(
     prefix="/admin/governance/credential-definitions",
-    tags=["admin: credentialdefinitions"],
+    tags=["admin: credential definitions"],
 )
 
 

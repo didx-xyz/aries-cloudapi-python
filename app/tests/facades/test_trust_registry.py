@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.exceptions import HTTPException
 
-import app.trust_registry_facade as trf
+import app.facades.trust_registry as trf
 
 
 @pytest.mark.asyncio

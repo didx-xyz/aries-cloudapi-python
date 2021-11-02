@@ -9,7 +9,7 @@ from aries_cloudcontroller import ConnRecord, DIDResult, ReceiveInvitationReques
 from assertpy import assert_that
 
 import app.dependencies as dependencies
-from app.acapy_ledger_facade import create_pub_did
+from app.facades.acapy_ledger import create_pub_did
 from app.generic.connections import (
     accept_invite,
     create_invite,
@@ -260,7 +260,7 @@ async def test_get_connection_by_id(async_client, create_wallets_mock):
         connection = (await get_connections(aries_controller=member_agent)).dict()
         connection_id = connection["results"][0]["connection_id"]
         connection_from_method = await get_connection_by_id(
-            conn_id=connection_id, aries_controller=member_agent
+            connection_id=connection_id, aries_controller=member_agent
         )
     assert connection["results"][0] == connection_from_method
 
@@ -280,7 +280,7 @@ async def test_delete_connection(async_client, create_wallets_mock):
         connection = (await get_connections(aries_controller=member_agent)).dict()
         connection_id = connection["results"][0]["connection_id"]
         await delete_connection_by_id(
-            conn_id=connection_id, aries_controller=member_agent
+            connection_id=connection_id, aries_controller=member_agent
         )
         connection = (await get_connections(aries_controller=member_agent)).dict()
     assert connection["results"] == []

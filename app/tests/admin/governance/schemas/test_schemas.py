@@ -4,9 +4,9 @@ import pytest
 from assertpy import assert_that
 from fastapi.exceptions import HTTPException
 
-import app.ledger_facade as ledger_facade
+import app.facades.ledger as ledger_facade
 import app.utils as utils
-from app.acapy_ledger_facade import create_pub_did as create_public_did
+from app.facades.acapy_ledger import create_pub_did as create_public_did
 from app.admin.governance.schemas import (
     SchemaDefinition,
     create_schema,

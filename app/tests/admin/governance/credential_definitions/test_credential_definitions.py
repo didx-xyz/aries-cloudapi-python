@@ -1,7 +1,7 @@
 import pytest
 from assertpy import assert_that
 
-import app.ledger_facade as ledger_facade
+import app.facades.ledger as ledger_facade
 import app.utils as utils
 from app.admin.governance.credential_definitions import (
     CredentialDefinition,

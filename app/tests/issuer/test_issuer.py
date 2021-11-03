@@ -9,7 +9,6 @@ from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import CredentialExchange, IssueCredentialProtocolVersion
 
-
 # need this to handle the async with the mock
 async def get(response: Optional[Any] = None):
     if response:

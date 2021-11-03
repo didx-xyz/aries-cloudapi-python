@@ -8,11 +8,11 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy.assertpy import assert_that
 from httpx import AsyncClient
 
-import app.acapy_ledger_facade as acapy_ledger_facade
+import app.facades.acapy_ledger as acapy_ledger_facade
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.dependencies import MEMBER_AGENT_URL
 from app.tests.utils_test import get_random_string
-from app.trust_registry_facade import (
+from app.facades.trust_registry import (
     Actor,
     actor_by_did,
     register_actor,

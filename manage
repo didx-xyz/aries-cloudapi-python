@@ -220,20 +220,20 @@ start | up)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
-  docker --log-level ERROR \
-    compose up \
+  docker-compose\
+  --log-level ERROR up \
   --build --remove-orphans \
   -d ${_startupParams}
-  docker --log-level ERROR \
-    compose logs \
+  docker-compose \
+  --log-level ERROR logs \
   -f
   ;;
  up-as-daemon)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
-  docker --log-level ERROR \
-    compose up \
+  docker-compose\
+  --log-level ERROR up \
   --build --remove-orphans --force-recreate\
   -d ${_startupParams}
   ;;
@@ -253,8 +253,8 @@ stop)
   ;;
 rm | down)
   configureEnvironment
-  docker --log-level ERROR \
-    compose down \
+  docker-compose \
+  --log-level ERROR down \
   -v
   usage
   ;;

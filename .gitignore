@@ -49,6 +49,8 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+trjunit.xml
+appjunit.xml
 *.cover
 *.py,cover
 .hypothesis/
@@ -147,3 +149,9 @@ junit.xml
 
 # VSCode
 .vscode
+
+# junit / pytest
+junit.xml
+*junit.xml
+
+*.db

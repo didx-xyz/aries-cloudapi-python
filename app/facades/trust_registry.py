@@ -1,15 +1,102 @@
 import logging
 import os
-from fastapi.exceptions import HTTPException
+from typing import List, Literal, Optional, TypedDict
+
 import requests
-from typing import List, Literal
+from fastapi.exceptions import HTTPException
 
-
-TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001/")
+TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001")
 
 logger = logging.getLogger(__name__)
 
 Role = Literal["issuer", "verifier"]
+
+
+class TrustRegistryException(Exception):
+    """Class that represents a trust registry error"""
+    pass
+
+
+class Actor(TypedDict):
+    id: str
+    name: str
+    roles: List[str]
+    did: str
+    didcomm_invitation: Optional[str]
+
+
+async def assert_valid_issuer(did: str, schema_id: str):
+    """Assert that an actor with the specified did is registered as issuer.
+
+    This method asserts that there is an actor registered in the trust registry
+    with the specified did. It verifies whether this actor has the `issuer` role
+    and will also make sure the specified schema_id is regsitred as a valid schema.
+    Raises an exception if one of the assertions fail.
+
+    NOTE: the dids in the registry are registered as fully qualified dids. This means
+    when passing a did to this method it must also be fully qualified (e.g. `did:sov:xxxx`)
+
+    Args:
+        did (str): the did of the issuer in fully qualified format.
+        schema_id (str): the schema_id of the credential being issued
+
+    Raises:
+        Exception: When the did is not registered, the actor doesn't have the issuer role
+            or the schema is not registered in the registry.
+    """
+    actor = await actor_by_did(did)
+
+    if not actor:
+        raise TrustRegistryException(f"Did {did} not registered in the trust registry")
+
+    actor_id = actor["id"]
+    if not "issuer" in actor["roles"]:
+        raise TrustRegistryException(
+            f"Actor {actor_id} does not have required role 'issuer'"
+        )
+
+    has_schema = await registry_has_schema(schema_id)
+    if not has_schema:
+        raise TrustRegistryException(
+            f"Schema with id {schema_id} is not registered in trust registry"
+        )
+
+
+async def assert_valid_verifier(did: str, schema_id: str):
+    """Assert that an actor with the specified did is registered as verifier.
+
+    This method asserts that there is an actor registered in the trust registry
+    with the specified did. It verifies whether this actor has the `verifier` role
+    and will also make sure the specified schema_id is regsitred as a valid schema.
+    Raises an exception if one of the assertions fail.
+
+    NOTE: the dids in the registry are registered as fully qualified dids. This means
+    when passing a did to this method it must also be fully qualified (e.g. `did:sov:xxxx`)
+
+    Args:
+        did (str): the did of the verifier in fully qualified format.
+        schema_id (str): the schema_id of the credential being issued
+
+    Raises:
+        Exception: When the did is not registered, the actor doesn't have the verifier role
+            or the schema is not registered in the registry.
+    """
+    actor = await actor_by_did(did)
+
+    if not actor:
+        raise TrustRegistryException(f"Did {did} not registered in the trust registry")
+
+    actor_id = actor["id"]
+    if not "verifier" in actor["roles"]:
+        raise TrustRegistryException(
+            f"Actor {actor_id} does not have required role 'verifier'"
+        )
+
+    has_schema = await registry_has_schema(schema_id)
+    if not has_schema:
+        raise TrustRegistryException(
+            f"Schema with id {schema_id} is not registered in trust registry"
+        )
 
 
 async def actor_has_role(actor_id: str, role: Role) -> bool:
@@ -19,7 +106,18 @@ async def actor_has_role(actor_id: str, role: Role) -> bool:
     return bool(role in actor_res.json()["roles"])
 
 
-async def actors_with_role(role: str = Role) -> list:
+async def actor_by_did(did: str) -> Optional[Actor]:
+    actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/did/{did}")
+
+    if actor_res.status_code == 404:
+        return None
+    if actor_res.status_code != 200:
+        raise HTTPException(500, f"Error fetching actor by did: {actor_res.text}")
+
+    return actor_res.json()
+
+
+async def actors_with_role(role: Role) -> List[Actor]:
     actors = requests.get(TRUST_REGISTRY_URL + "/registry/actors")
     if actors.status_code != 200:
         return []
@@ -50,3 +148,19 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
     did = actor_res.json()["did"]
     didcomm_invitation = actor_res.json()["didcomm_invitation"]
     return [did, didcomm_invitation]
+
+
+async def register_schema(schema_id: str) -> None:
+    schema_res = requests.post(
+        TRUST_REGISTRY_URL + "/registry/schemas", json={"schema_id": schema_id}
+    )
+
+    if schema_res.status_code != 200:
+        raise Exception(f"Error registering schema {schema_id}: {schema_res.text}")
+
+
+async def register_actor(actor: Actor) -> None:
+    actor_res = requests.post(TRUST_REGISTRY_URL + "/registry/actors", json=actor)
+
+    if actor_res.status_code != 200:
+        raise Exception(f"Error registering actor: {actor_res.text}")

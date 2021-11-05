@@ -14,6 +14,7 @@ Role = Literal["issuer", "verifier"]
 
 class TrustRegistryException(Exception):
     """Class that represents a trust registry error"""
+    pass
 
 
 class Actor(TypedDict):
@@ -108,8 +109,10 @@ async def actor_has_role(actor_id: str, role: Role) -> bool:
 async def actor_by_did(did: str) -> Optional[Actor]:
     actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/did/{did}")
 
-    if actor_res.status_code != 200:
+    if actor_res.status_code == 404:
         return None
+    if actor_res.status_code != 200:
+        raise HTTPException(500, f"Error fetching actor by did: {actor_res.text}")
 
     return actor_res.json()
 

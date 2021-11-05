@@ -74,7 +74,7 @@ jobs:
     needs: build
     steps:
     - name: multiple command
-      if: github.ref == 'refs/heads/development' && github.event.pull_request.merged == true
+      if: github.ref == 'refs/heads/development' && github.repository == 'didx-xyz/aries-cloudapi-python' && github.event_name == 'push'
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}

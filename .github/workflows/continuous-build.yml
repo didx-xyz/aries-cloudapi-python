@@ -71,13 +71,12 @@ jobs:
           ./manage down || true
   deploy:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: multiple command
-        if: github.ref == 'refs/heads/development' && github.event.pull_request.merged == true
+        if: github.ref == 'refs/heads/development' && github.repository == 'didx-xyz/aries-cloudapi-python' && github.event_name == 'push'
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ secrets.HOSTNAME }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
@@ -86,3 +85,4 @@ jobs:
             git pull
             make stop_n_clean
             make start
+

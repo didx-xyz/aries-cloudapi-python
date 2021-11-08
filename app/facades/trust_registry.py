@@ -14,6 +14,7 @@ Role = Literal["issuer", "verifier"]
 
 class TrustRegistryException(Exception):
     """Class that represents a trust registry error"""
+
     pass
 
 

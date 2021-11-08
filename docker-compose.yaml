@@ -30,17 +30,17 @@ services:
       - yoma-ga
       - host
     tty: true
-  ngrok-yoma-ga:
-    image: wernight/ngrok
-    env_file:
-      - environments/yoma-ga/aca-py-agent.default.env
-    command: ngrok http yoma-ga-agent:3020 --log stdout
-    networks:
-      - yoma-ga
-      - host
-    depends_on:
-      - ledger-nodes
-      - ledger-browser
+  # ngrok-yoma-ga:
+  #   image: wernight/ngrok
+  #   env_file:
+  #     - environments/yoma-ga/aca-py-agent.default.env
+  #   command: ngrok http yoma-ga-agent:3020 --log stdout
+  #   networks:
+  #     - yoma-ga
+  #     - host
+  #   depends_on:
+  #     - ledger-nodes
+  #     - ledger-browser
   yoma-ga-agent:
     build:
       context: .

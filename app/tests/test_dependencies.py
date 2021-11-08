@@ -233,7 +233,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
     assert response.status_code == 422
     assert (
         response.text
-        == '{"detail":[{"loc":["header","x-role"],"msg":"field required","type":"value_error.missing"}]}'
+        == '{"detail":[{"loc":["header","x-api-key"],"msg":"field required","type":"value_error.missing"},{"loc":["header","x-role"],"msg":"field required","type":"value_error.missing"}]}'
     )
     # when
     await make_call(

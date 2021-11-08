@@ -84,5 +84,5 @@ jobs:
             cd aries-cloudapi-python
             git pull
             make stop_n_clean
-            make start
+            ./manage up-as-daemon
 

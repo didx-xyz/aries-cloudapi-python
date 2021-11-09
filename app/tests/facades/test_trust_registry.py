@@ -346,3 +346,30 @@ async def test_register_actor():
         mock_request.return_value.status_code = 500
 
         await trf.register_actor(actor=actor)
+
+@pytest.mark.asyncio
+async def test_actor_by_did():
+    with patch("requests.get") as mock_request:
+        res = {
+            "actors": [],
+            "schemas": [],
+        }
+
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.json.return_value = res
+
+        tr = await trf.get_trust_registry()
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + "/registry"
+        )
+        assert tr is res
+
+    with patch("requests.get") as mock_request:
+        mock_request.return_value.status_code = 404
+        mock_request.return_value.json.return_value = {}
+
+        with pytest.raises(
+            HTTPException,
+            
+        ):
+            tr = await trf.get_trust_registry()

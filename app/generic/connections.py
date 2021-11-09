@@ -20,9 +20,6 @@ from pydantic import BaseModel
 
 from app.dependencies import agent_selector
 
-ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "adminApiKey")
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,7 +33,6 @@ class CreateConnFromDIDRequest(BaseModel):
     use_public_did: Optional[bool] = None
 
 
-# TODO this should be a post request
 @router.post("/create-invite", response_model=InvitationResult)
 async def create_invite(
     alias: Optional[str] = None,

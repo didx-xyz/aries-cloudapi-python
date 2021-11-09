@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
-from app.generic import connections, messaging
+from app.generic import connections, messaging, trust_registry
 from app.generic.issuer import issuer
 from app.generic.wallet import wallets
 
@@ -19,12 +19,13 @@ prod = strtobool(os.environ.get("prod", "True"))
 app = FastAPI(debug=not prod)
 
 app.include_router(connections.router)
-app.include_router(credential_definitions.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
-app.include_router(schemas.router)
-app.include_router(wallet_admin.router)
 app.include_router(wallets.router)
+app.include_router(wallet_admin.router)
+app.include_router(schemas.router)
+app.include_router(credential_definitions.router)
+app.include_router(trust_registry.router)
 
 
 # add endpoints

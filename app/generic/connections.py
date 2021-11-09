@@ -37,7 +37,7 @@ class CreateConnFromDIDRequest(BaseModel):
 
 
 # TODO this should be a post request
-@router.get("/create-invite", response_model=InvitationResult)
+@router.post("/create-invite", response_model=InvitationResult)
 async def create_invite(
     alias: Optional[str] = None,
     auto_accept: Optional[bool] = None,

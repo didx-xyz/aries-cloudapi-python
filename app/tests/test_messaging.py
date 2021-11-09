@@ -23,9 +23,9 @@ async def test_send_trust_ping(
 ):
     trustping_msg = TrustPingMsg(
         connection_id=alice_connection_id, comment="Donda"
-    ).json()
+    ).dict()
     response = await async_client_alice_module_scope.post(
-        MESSAGE_PATH + "/trust-ping", data=trustping_msg
+        MESSAGE_PATH + "/trust-ping", json=trustping_msg
     )
     assert type(response) is Response
     assert response.status_code == 200
@@ -37,9 +37,9 @@ async def test_send_trust_ping(
 async def test_send_message(
     alice_connection_id: str, async_client_alice_module_scope: AsyncClient
 ):
-    message = Message(connection_id=alice_connection_id, content="Donda").json()
+    message = Message(connection_id=alice_connection_id, content="Donda").dict()
     response = await async_client_alice_module_scope.post(
-        MESSAGE_PATH + "/send-message", data=message
+        MESSAGE_PATH + "/send-message", json=message
     )
     assert type(response) is Response
     assert response.status_code == 200

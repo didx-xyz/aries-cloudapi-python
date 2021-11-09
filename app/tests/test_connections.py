@@ -60,7 +60,7 @@ async def remove_wallets(yoda_wallet_id, han_wallet_id, async_client):
 
 
 async def invite_creation(async_client, token, wallet_id):
-    invite_creation_response = await async_client.get(
+    invite_creation_response = await async_client.post(
         "/generic/connections/create-invite",
         headers={
             "x-auth": f"Bearer {token}",
@@ -298,7 +298,7 @@ async def test_bob_and_alice_connect(async_client_bob, async_client_alice):
 
     """
     # create invitation on bob side
-    invitation = (await async_client_bob.get(BASE_PATH + "/create-invite")).json()
+    invitation = (await async_client_bob.post(BASE_PATH + "/create-invite")).json()
     bob_connection_id = invitation["connection_id"]
     connections = (await async_client_bob.get(BASE_PATH)).json()
     assert_that(connections["results"]).extracting("connection_id").contains_only(

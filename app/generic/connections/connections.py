@@ -91,8 +91,7 @@ async def create_oob_invitation(
     invitation = await aries_controller.out_of_band.create_invitation(
         multi_use=body.multi_use,
         body=oob_body,
-        # FIXME: https://github.com/didx-xyz/aries-cloudcontroller-python/issues/67
-        auto_accept="true",
+        auto_accept=True,
     )
     # If the trust registry is not derived but an entity providing this information,
     # we should possibly write the (multi-use) invitation to the registry
@@ -110,10 +109,8 @@ async def accept_oob_invitation(
     """
 
     conn_record = await aries_controller.out_of_band.receive_invitation(
-        # FIXME: https://github.com/didx-xyz/aries-cloudcontroller-python/issues/67
-        auto_accept="true",
-        # FIXME: https://github.com/didx-xyz/aries-cloudcontroller-python/issues/67
-        use_existing_connection=str(body.use_existing_connection).lower() if type(body.use_existing_connection) == bool else None,
+        auto_accept=True,
+        use_existing_connection=body.use_existing_connection,
         alias=body.alias,
         body=body.invitation,
     )
@@ -158,8 +155,7 @@ async def create_invitation(
     """
     invitation = await aries_controller.connection.create_invitation(
         alias=body.alias,
-        # FIXME: https://github.com/didx-xyz/aries-cloudcontroller-python/issues/67
-        auto_accept="true",
+        auto_accept=True,
         multi_use=body.multi_use,
         public=body.use_public_did,
         body=CreateInvitationRequest(),
@@ -183,8 +179,7 @@ async def accept_invitation(
 
     conn_record = await aries_controller.connection.receive_invitation(
         body=body.invitation,
-        # FIXME: https://github.com/didx-xyz/aries-cloudcontroller-python/issues/67
-        auto_accept="true",
+        auto_accept=True,
         alias=body.alias,
     )
     return conn_record_to_connection(conn_record)

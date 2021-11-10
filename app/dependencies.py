@@ -37,8 +37,10 @@ async def yoma_agent(x_api_key: str = Header(None)):
 async def agent_selector(
     x_api_key: str = Header(None),
     x_auth: str = Header(None),
-    x_role=Header(...),
+    x_role: str = Header(...),
 ):
+    if not x_api_key and not x_auth:
+        raise HTTPException(400, "API key or JWT required for auth.")
     if x_role == "member":
         async with asynccontextmanager(member_agent)(x_auth) as x:
             yield x
@@ -55,9 +57,9 @@ async def agent_selector(
 
 
 async def admin_agent_selector(
-    x_api_key: str = Header(None),
+    x_api_key: str = Header(...),
     x_auth: str = Header(None),
-    x_role=Header(...),
+    x_role: str = Header(...),
 ):
     if x_role == "member":
         async with asynccontextmanager(member_admin_agent)(x_api_key) as x:

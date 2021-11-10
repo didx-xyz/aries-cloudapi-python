@@ -211,10 +211,10 @@ async def create_bob_and_alice_connect(
     invitation = (
         await async_client_bob.post(BASE_PATH_CON + "/create-invitation")
     ).json()
-    bob_connection_id = invitation["connection_id"]
+    bob_conn_id = invitation["connection_id"]
     connections = (await async_client_bob.get(BASE_PATH_CON)).json()
     assert_that(connections).extracting("connection_id").contains_only(
-        bob_connection_id
+        bob_conn_id
     )
 
     # accept invitation on alice side
@@ -225,7 +225,7 @@ async def create_bob_and_alice_connect(
         )
     ).json()
     time.sleep(15)
-    alice_connection_id = invitation_response["connection_id"]
+    alice_conn_id = invitation_response["connection_id"]
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
     # and we are running in "auto connect" mode.
@@ -233,26 +233,26 @@ async def create_bob_and_alice_connect(
     alice_connections = (await async_client_alice.get(BASE_PATH_CON)).json()
 
     assert_that(bob_connections).extracting("connection_id").contains(
-        bob_connection_id
+        bob_conn_id
     )
     bob_connection = [
-        c for c in bob_connections if c["connection_id"] == bob_connection_id
+        c for c in bob_connections if c["connection_id"] == bob_conn_id
     ][0]
     assert_that(bob_connection).has_state("completed")
 
     assert_that(alice_connections).extracting("connection_id").contains(
-        alice_connection_id
+        alice_conn_id
     )
     alice_connection = [
         c
         for c in alice_connections
-        if c["connection_id"] == alice_connection_id
+        if c["connection_id"] == alice_conn_id
     ][0]
     assert_that(alice_connection).has_state("completed")
 
     return {
-        "alice_connection_id": alice_connection_id,
-        "bob_connection_id": bob_connection_id,
+        "alice_connection_id": alice_conn_id,
+        "bob_connection_id": bob_conn_id,
     }
 
 

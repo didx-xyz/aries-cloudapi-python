@@ -216,7 +216,7 @@ async def create_bob_and_alice_connect(
     async_client_bob = async_client_bob_module_scope
     async_client_alice = async_client_alice_module_scope
     # create invitation on bob side
-    invitation = (await async_client_bob.get(BASE_PATH_CON + "/create-invite")).json()
+    invitation = (await async_client_bob.post(BASE_PATH_CON + "/create-invite")).json()
     bob_connection_id = invitation["connection_id"]
     connections = (await async_client_bob.get(BASE_PATH_CON)).json()
     assert_that(connections["results"]).extracting("connection_id").contains_only(

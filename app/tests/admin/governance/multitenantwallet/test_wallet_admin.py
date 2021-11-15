@@ -1,6 +1,5 @@
 import json
 from typing import Dict, Union
-import os
 
 import pytest
 from aiohttp import ClientResponseError

@@ -1,6 +1,5 @@
 import pytest
 from assertpy import assert_that
-import os
 
 import app.facades.ledger as ledger_facade
 import app.utils as utils
@@ -13,9 +12,8 @@ from app.admin.governance.credential_definitions import (
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.admin.governance.schemas.test_schemas import create_public_did
 from app.tests.utils_test import get_random_string
-
-BASE_PATH = os.getenv(
-    "CREDENTIAL_DEFINITIONS_ROUTE", "/admin/governance/credential-definitions"
+from app.admin.governance.credential_definitions import (
+    CREDENTIAL_DEFINITIONS_ROUTE as BASE_PATH,
 )
 
 

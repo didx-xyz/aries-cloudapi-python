@@ -2,7 +2,12 @@ import pytest
 
 import app.facades.acapy_wallet as wallet_facade
 import app.facades.ledger as ledger_facade
-from app.generic.wallet.wallets import fetch_current_did, list_dids, set_did_endpoint
+from app.generic.wallet.wallets import (
+    fetch_current_did,
+    list_dids,
+    set_did_endpoint,
+    WALLET_ROUTE as BASE_PATH,
+)
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 
@@ -10,7 +15,7 @@ APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
 @pytest.fixture(name="create_did_mock")
 async def fixture_create_did_mock(async_client):
     did_response = await async_client.get(
-        "/wallet/create-local-did",
+        f"{BASE_PATH}/create-local-did",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     did_response = did_response.json()
@@ -21,7 +26,7 @@ async def fixture_create_did_mock(async_client):
 @pytest.mark.asyncio
 async def test_list_dids(async_client, yoma_agent_mock):
     response = await async_client.get(
-        "/wallet/list-dids",
+        f"{BASE_PATH}/list-dids",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
 
@@ -37,7 +42,7 @@ async def test_list_dids(async_client, yoma_agent_mock):
 async def test_create_local_did(async_client, yoma_agent_mock):
 
     response = await async_client.get(
-        "/wallet/create-local-did",
+        f"{BASE_PATH}/create-local-did",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
 
@@ -52,7 +57,7 @@ async def test_create_local_did(async_client, yoma_agent_mock):
 async def test_fetch_current_did(async_client, yoma_agent_mock):
 
     response = await async_client.get(
-        "/wallet/fetch-current-did",
+        f"{BASE_PATH}/fetch-current-did",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     assert response.status_code == 200
@@ -70,7 +75,7 @@ async def test_get_did_endpoint(async_client, create_did_mock):
 
     did = create_did_mock
     response = await async_client.get(
-        f"/wallet/get-did-endpoint/{did}",
+        f"{BASE_PATH}/get-did-endpoint/{did}",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     assert response.status_code == 200
@@ -86,7 +91,7 @@ async def test_assign_pub_did(async_client, yoma_agent_mock):
     await ledger_facade.post_to_ledger(did_object=did_object)
     did = did_object.did
     response = await async_client.get(
-        f"/wallet/assign-pub-did?did={did}",
+        f"{BASE_PATH}/assign-pub-did?did={did}",
         headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
     )
     assert response.status_code == 200
@@ -99,7 +104,7 @@ async def test_assign_pub_did(async_client, yoma_agent_mock):
 @pytest.mark.asyncio
 async def test_set_did_endpoint(async_client, yoma_agent_mock):
     response = await async_client.get(
-        "/wallet/create-pub-did",
+        f"{BASE_PATH}/create-pub-did",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",
@@ -122,7 +127,7 @@ async def test_set_did_endpoint(async_client, yoma_agent_mock):
 @pytest.mark.asyncio
 async def test_create_pub_did(async_client):
     response = await async_client.get(
-        "/wallet/create-pub-did",
+        f"{BASE_PATH}/create-pub-did",
         headers={
             "x-api-key": "adminApiKey",
             "x-role": "yoma",

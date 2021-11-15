@@ -15,7 +15,7 @@ from app.dependencies import admin_agent_selector, member_admin_agent
 
 logger = logging.getLogger(__name__)
 
-WALLET_ADMIN_ROUTE = os.getenv("WALLET_ADMIN_ROUTE")
+WALLET_ADMIN_ROUTE = os.getenv("WALLET_ADMIN_ROUTE", "/admin/wallet-multitenant")
 WALLET_ADMIN_TAGS = os.getenv("WALLET_ADMIN_TAGS", "admin: wallet")
 
 router = APIRouter(prefix=WALLET_ADMIN_ROUTE, tags=[WALLET_ADMIN_TAGS])

@@ -34,6 +34,11 @@ DEFAULT_HEADERS = {
 }
 
 LEDGER_URL = os.getenv("TEST_LEDGER_URL", "http://localhost:9000/register")
+X_API_KEY = os.getenv("X_API_KEY", "adminApiKey")
+CONFTEST_ADMIN_URL = os.getenv("CONFTEST_ADMIN_URL", "http://localhost")
+CONFTEST_ADMIN_PORT = os.getenv("CONFTEST_ADMIN_PORT", "3021")
+CONFTEST_IS_MULTITENANT = bool(os.getenv("CONFTEST_IS_MULTITENANT", "False"))
+CONFTEST_LEDGER_TYPE = os.getenv("CONFTEST_LEDGER_TYPE", "von")
 
 
 class AliceBobConnect(TypedDict):
@@ -43,11 +48,11 @@ class AliceBobConnect(TypedDict):
 
 @pytest.fixture
 def setup_env():
-    utils.admin_url = "http://localhost"
-    utils.admin_port = "3021"
-    utils.is_multitenant = False
+    utils.admin_url = CONFTEST_ADMIN_URL
+    utils.admin_port = CONFTEST_ADMIN_PORT
+    utils.is_multitenant = CONFTEST_IS_MULTITENANT
     ledger_facade.LEDGER_URL = LEDGER_URL
-    ledger_facade.LEDGER_TYPE = "von"
+    ledger_facade.LEDGER_TYPE = CONFTEST_LEDGER_TYPE
 
 
 @pytest.fixture
@@ -68,7 +73,7 @@ async def yoma_agent_module_scope():
     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
     # flexibility - thus we have to.
     # this is doing what using decorators does for you
-    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(yoma_agent)(x_api_key=X_API_KEY) as c:
         yield c
 
 
@@ -79,7 +84,7 @@ async def yoma_agent_mock():
     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
     # flexibility - thus we have to.
     # this is doing what using decorators does for you
-    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(yoma_agent)(x_api_key=X_API_KEY) as c:
         yield c
 
 
@@ -91,7 +96,7 @@ async def async_client():
 
 @pytest.fixture
 async def member_admin_agent_mock():
-    async with asynccontextmanager(member_admin_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(member_admin_agent)(x_api_key=X_API_KEY) as c:
         yield c
 
 

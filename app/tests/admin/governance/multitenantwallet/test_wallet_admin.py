@@ -1,5 +1,6 @@
 import json
 from typing import Dict, Union
+import os
 
 import pytest
 from aiohttp import ClientResponseError
@@ -10,6 +11,7 @@ from app.admin.governance.multitenant_wallet.wallet_admin import (
     get_subwallet,
     get_subwallet_auth_token,
     query_subwallet,
+    WALLET_ADMIN_ROUTE as WALLET_PATH,
 )
 from app.tests.utils_test import get_random_string
 
@@ -18,7 +20,7 @@ WALLET_HEADERS = {
     "x-role": "member",
     "x-api-key": "adminApiKey",
 }
-WALLET_PATH = "/admin/wallet-multitenant"
+
 CREATE_WALLET_PAYLOAD = {
     "image_url": "https://aries.ca/images/sample.png",
     "label": "YOMA",

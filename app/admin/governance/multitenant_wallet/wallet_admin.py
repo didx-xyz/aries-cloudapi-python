@@ -3,6 +3,7 @@ import logging
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional
+import os
 
 from aiohttp import ClientError
 from aries_cloudcontroller import AcaPyClient
@@ -14,7 +15,10 @@ from app.dependencies import admin_agent_selector, member_admin_agent
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/admin/wallet-multitenant", tags=["admin: wallet"])
+WALLET_ADMIN_ROUTE = os.getenv("WALLET_ADMIN_ROUTE")
+WALLET_ADMIN_TAGS = os.getenv("WALLET_ADMIN_TAGS", "admin: wallet")
+
+router = APIRouter(prefix=WALLET_ADMIN_ROUTE, tags=[WALLET_ADMIN_TAGS])
 
 
 class KeyManagementMode(Enum):

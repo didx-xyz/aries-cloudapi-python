@@ -1,4 +1,5 @@
 import json
+import os
 
 import pytest
 from assertpy import assert_that
@@ -20,7 +21,7 @@ from app.admin.governance.schemas import (
 from app.tests.utils_test import get_random_string
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
-BASE_PATH = "/admin/governance/schemas"
+BASE_PATH = os.getenv("SCHEMAS_ROUTE", "/admin/governance/schemas")
 
 
 @pytest.fixture

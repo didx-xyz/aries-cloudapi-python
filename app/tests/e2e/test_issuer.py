@@ -2,6 +2,8 @@ import asyncio
 import time
 from random import random
 from typing import Any, Dict
+from app.generic.issuer.issuer import ISSUER_ROUTE
+import os
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
@@ -20,6 +22,7 @@ from app.facades.trust_registry import (
     registry_has_schema,
 )
 
+BASE_PATH = os.getenv("ISSUER_ROUTE", "/generic/issuer/credentials")
 BASE_PATH = "/generic/issuer/credentials"
 
 

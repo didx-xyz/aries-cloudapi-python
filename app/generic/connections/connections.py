@@ -21,12 +21,14 @@ from app.dependencies import agent_selector
 from app.generic.connections.models import Connection, conn_record_to_connection
 
 ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "adminApiKey")
+CONNECTIONS_ROUTE = os.getenv("CONNECTIONS_ROUTE", "/generic/connections")
+CONNECTIONS_TAGS = os.getenv("CONNECTIONSTAGS", "connections")
 
 
 logger = logging.getLogger(__name__)
 
 
-router = APIRouter(prefix="/generic/connections", tags=["connections"])
+router = APIRouter(prefix=CONNECTIONS_ROUTE, tags=[CONNECTIONS_TAGS])
 
 
 class ConnectToPublicDid(BaseModel):

@@ -2,12 +2,15 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from trustregistry import models
-from trustregistry import schemas
+from trustregistry import models, schemas
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Actor]:
     return db.query(models.Actor).offset(skip).limit(limit).all()
+
+
+def get_actor_by_did(db: Session, actor_did: str):
+    return db.query(models.Actor).filter(models.Actor.did == actor_did).first()
 
 
 def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:

@@ -11,11 +11,12 @@ from pydantic.main import BaseModel
 from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
-from app.facade import write_credential_def
+from app.facades.acapy_ledger import write_credential_def
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential, IssueCredentialProtocolVersion
+from app.facades.trust_registry import assert_valid_issuer
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +120,16 @@ async def send_credential(
 
     issuer = __issuer_from_protocol_version(credential.protocol_version)
 
+    # Assert the agent has a public did
+    public_did = await aries_controller.wallet.get_public_did()
+    if not public_did.result or not public_did.result.did:
+        raise Exception(
+            "Unable to issue credential without public did. Make sure to set the public did before issuing."
+        )
+
+    # Make sure we are allowed to issue according to trust registry rules
+    await assert_valid_issuer(f"did:sov:{public_did.result.did}", credential.schema_id)
+
     cred_def_id = await write_credential_def(aries_controller, credential.schema_id)
 
     return await issuer.send_credential(
@@ -170,6 +181,19 @@ async def request_credential(
         credential id
     """
     id, issuer = __issuer_from_id(credential_id)
+
+    record = await issuer.get_record(aries_controller, id)
+
+    if not record.credential_definition_id or not record.schema_id:
+        raise Exception(
+            "Record has no credential definition or schema associated. "
+            "This proably means you haven't received an offer yet."
+        )
+
+    cred_def_parts = record.credential_definition_id.split(":")
+
+    # Make sure the issuer is allowed to issue this credential according to trust registry rules
+    await assert_valid_issuer(f"did:sov:{cred_def_parts[0]}", record.schema_id)
 
     return await issuer.request_credential(
         controller=aries_controller, credential_exchange_id=id

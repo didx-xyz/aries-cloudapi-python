@@ -8,9 +8,10 @@ from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 
-from app.admin.governance import credential_definitions, dids, schemas
+from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
-from app.generic import connections, messaging
+from app.generic import messaging
+from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.proof import proof
 from app.generic.wallet import wallets
@@ -21,18 +22,12 @@ app = FastAPI(debug=not prod)
 
 app.include_router(connections.router)
 app.include_router(credential_definitions.router)
-app.include_router(dids.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
 app.include_router(proof.router)
 app.include_router(schemas.router)
 app.include_router(wallet_admin.router)
 app.include_router(wallets.router)
-
-
-@app.get("/", tags=["Root"])
-async def root():
-    return {"message": "Hi, and welcome to the Aries Cloud API."}
 
 
 # add endpoints

@@ -15,7 +15,7 @@ from fastapi.exceptions import HTTPException
 from pydantic.typing import NoneType
 
 from app.generic.proof.facades.acapy_proof import Proof
-from app.generic.proof.models import Presentation
+from app.generic.proof.models import PresentationExchange
 
 
 class ProofsV2(Proof):
@@ -26,7 +26,7 @@ class ProofsV2(Proof):
         proof: V20PresRequestByFormat,
         comment: str = None,
         trace: bool = False,
-    ) -> Presentation:
+    ) -> PresentationExchange:
 
         proof_request = await controller.present_proof_v2_0.create_proof_request(
             body=V20PresCreateRequestRequest(
@@ -36,7 +36,7 @@ class ProofsV2(Proof):
             )
         )
 
-        return Presentation(V20=proof_request)
+        return PresentationExchange(v20=proof_request)
 
     @classmethod
     async def send_proof_request(
@@ -47,7 +47,7 @@ class ProofsV2(Proof):
         ],
         free: bool = False,
         pres_ex_id: str = None,
-    ) -> Presentation:
+    ) -> PresentationExchange:
         try:
             if free:
                 presentation_exchange = (
@@ -71,7 +71,7 @@ class ProofsV2(Proof):
                 )
             else:
                 raise NotImplementedError
-            return Presentation(V20=presentation_exchange)
+            return PresentationExchange(v20=presentation_exchange)
         except Exception as e:
             raise e from e
 
@@ -81,12 +81,12 @@ class ProofsV2(Proof):
         controller: AcaPyClient,
         pres_ex_id: str,
         body: V20PresSpecByFormatRequest = None,
-    ) -> Presentation:
+    ) -> PresentationExchange:
         presentation_record = await controller.present_proof_v2_0.send_presentation(
             pres_ex_id=pres_ex_id, body=body
         )
 
-        return Presentation(V20=presentation_record)
+        return PresentationExchange(v20=presentation_record)
 
     @classmethod
     async def reject_proof_request(

@@ -20,7 +20,7 @@ from fastapi.exceptions import HTTPException
 from mockito import when
 
 from app.generic.proof.facades.acapy_proof_v1 import ProofsV1
-from app.generic.proof.models import Presentation
+from app.generic.proof.models import PresentationExchange
 
 
 # need this to handle the async with the mock
@@ -78,7 +78,7 @@ v10_presentation_proposal_request = V10PresentationProposalRequest(
 @pytest.mark.asyncio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).create_proof_request(...).thenReturn(
-        get(Presentation(V10=v10_presentation_exchange_records[0]))
+        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
     )
 
     created_proof_request = await ProofsV1.create_proof_request(
@@ -88,9 +88,9 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
         trace=False,
     )
 
-    assert isinstance(created_proof_request, Presentation)
-    assert isinstance(created_proof_request.V10, V10PresentationExchange)
-    assert created_proof_request.V20 is None
+    assert isinstance(created_proof_request, PresentationExchange)
+    assert isinstance(created_proof_request.v10, V10PresentationExchange)
+    assert created_proof_request.v20 is None
 
 
 @pytest.mark.asyncio
@@ -99,16 +99,16 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # proof interface decides upon params which methods it calls on the client
     # so let's mock those methods out
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
-        get(Presentation(V10=v10_presentation_exchange_records[0]))
+        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
     )
     when(mock_agent_controller.present_proof_v1_0).send_proposal(...).thenReturn(
-        get(Presentation(V10=v10_presentation_exchange_records[0]))
+        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
     )
     when(mock_agent_controller.present_proof_v1_0).send_request(...).thenReturn(
-        get(Presentation(V10=v10_presentation_exchange_records[0]))
+        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
     )
     when(mock_agent_controller.present_proof_v1_0).send_request_free(...).thenReturn(
-        get(Presentation(V10=v10_presentation_exchange_records[0]))
+        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
     )
 
     created_proof_send_proposal = await ProofsV1.send_proof_request(
@@ -118,9 +118,9 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         free=False,
     )
 
-    assert isinstance(created_proof_send_proposal, Presentation)
-    assert isinstance(created_proof_send_proposal.V10, V10PresentationExchange)
-    assert created_proof_send_proposal.V20 is None
+    assert isinstance(created_proof_send_proposal, PresentationExchange)
+    assert isinstance(created_proof_send_proposal.v10, V10PresentationExchange)
+    assert created_proof_send_proposal.v20 is None
 
     created_proof_request_free = await ProofsV1.send_proof_request(
         controller=mock_agent_controller,
@@ -132,9 +132,9 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         free=True,
     )
 
-    assert isinstance(created_proof_request_free, Presentation)
-    assert isinstance(created_proof_request_free.V10, V10PresentationExchange)
-    assert created_proof_request_free.V20 is None
+    assert isinstance(created_proof_request_free, PresentationExchange)
+    assert isinstance(created_proof_request_free.v10, V10PresentationExchange)
+    assert created_proof_request_free.v20 is None
 
     created_proof_send_request = await ProofsV1.send_proof_request(
         controller=mock_agent_controller,
@@ -144,9 +144,9 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         pres_ex_id="abc",
     )
 
-    assert isinstance(created_proof_send_request, Presentation)
-    assert isinstance(created_proof_send_request.V10, V10PresentationExchange)
-    assert created_proof_send_request.V20 is None
+    assert isinstance(created_proof_send_request, PresentationExchange)
+    assert isinstance(created_proof_send_request.v10, V10PresentationExchange)
+    assert created_proof_send_request.v20 is None
 
     with pytest.raises(NotImplementedError):
         await ProofsV1.send_proof_request(
@@ -157,7 +157,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 @pytest.mark.asyncio
 async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
-        get(Presentation(V10=v10_presentation_exchange_records[0]))
+        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
     )
 
     accepted_proof_request = await ProofsV1.accept_proof_request(
@@ -170,9 +170,9 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
         ),
     )
 
-    assert isinstance(accepted_proof_request, Presentation)
-    assert isinstance(accepted_proof_request.V10, V10PresentationExchange)
-    assert accepted_proof_request.V20 is None
+    assert isinstance(accepted_proof_request, PresentationExchange)
+    assert isinstance(accepted_proof_request.v10, V10PresentationExchange)
+    assert accepted_proof_request.v20 is None
 
 
 @pytest.mark.asyncio

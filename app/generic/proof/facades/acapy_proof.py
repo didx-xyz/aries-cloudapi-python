@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from aries_cloudcontroller import AcaPyClient, IndyProofRequest
 
-from app.generic.proof.models import Presentation
+from app.generic.proof.models import PresentationExchange
 
 
 class Proof(ABC):
@@ -16,7 +16,7 @@ class Proof(ABC):
         controller: AcaPyClient,
         proof_request: Any = None,
         connection_id: str = None,
-    ) -> Presentation:
+    ) -> PresentationExchange:
         """
         Request proof from a connection ID.
 
@@ -36,7 +36,7 @@ class Proof(ABC):
         cls,
         controller: AcaPyClient,
         proof_request: Optional[IndyProofRequest] = None,
-    ) -> Presentation:
+    ) -> PresentationExchange:
         """
         Create proof request
 
@@ -52,7 +52,7 @@ class Proof(ABC):
     @abstractmethod
     async def accept_proof_request(
         cls, controller: AcaPyClient, pres_ex_id: str
-    ) -> Presentation:
+    ) -> PresentationExchange:
         """ "
         Accept proof request
 
@@ -66,9 +66,9 @@ class Proof(ABC):
 
     @classmethod
     @abstractmethod
-    async def decline_proof_request(
+    async def reject_proof_request(
         cls, controller: AcaPyClient, pres_ex_id: str
-    ) -> Presentation:
+    ) -> None:
         """ "
         Accept proof request
 

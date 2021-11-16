@@ -6,18 +6,14 @@ import json
 from aries_cloudcontroller import (
     AcaPyClient,
     IndyProofRequest,
-    IndyProofReqAttrSpec,
 )
-from aries_cloudcontroller.model.admin_api_message_tracing import AdminAPIMessageTracing
 from aries_cloudcontroller.model.v10_presentation_send_request_request import (
     V10PresentationSendRequestRequest,
 )
 from httpx import AsyncClient
 import pytest
-from starlette.responses import RedirectResponse
 
-from app.generic.proof.models import Presentation
-import app.acapy_ledger_facade as acapy_ledger_facade
+from app.facades.acapy_ledger import create_pub_did
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.dependencies import MEMBER_AGENT_URL
 from app.tests.utils_test import get_random_string
@@ -43,7 +39,7 @@ async def schema_definition(yoma_agent_module_scope: AcaPyClient) -> Dict[str, A
         name="test_schema", version="0.3", attributes=["speed"]
     )
 
-    public_did = await acapy_ledger_facade.create_pub_did(yoma_agent_module_scope)
+    public_did = await create_pub_did(yoma_agent_module_scope)
     print(f"created did: {public_did}")
 
     schema_definition_result = await create_schema(definition, yoma_agent_module_scope)
@@ -163,10 +159,11 @@ async def test_send_proof_request(
     )
 
     result = response.json()
-    assert result["V10"]
-    assert "auto_present" in result["V10"].keys()
-    assert "created_at" in result["V10"].keys()
-    assert "presentation_request" in result["V10"].keys()
+    assert result == ''
+    assert result["v10"]
+    assert "auto_present" in result["v10"].keys()
+    assert "created_at" in result["v10"].keys()
+    assert "presentation_request" in result["v10"].keys()
 
 
 indy_proof_request = IndyProofRequest(
@@ -200,10 +197,10 @@ async def test_create_proof_request(
     )
 
     result = response.json()
-    assert result["V10"]
-    assert "auto_present" in result["V10"].keys()
-    assert "created_at" in result["V10"].keys()
-    assert "presentation_request" in result["V10"].keys()
+    assert result["v10"]
+    assert "auto_present" in result["v10"].keys()
+    assert "created_at" in result["v10"].keys()
+    assert "presentation_request" in result["v10"].keys()
 
 
 @pytest.mark.asyncio
@@ -217,8 +214,8 @@ async def test_accept_proof_request(
         BASE_PATH + "/create-request",
         data=json.dumps({"proof": indy_proof_request.dict()}),
     )
-    print(proof_req_res.json()["V10"])
-    presentation_exchange_id = proof_req_res.json()["V10"]["presentation_exchange_id"]
+    print(proof_req_res.json()["v10"])
+    presentation_exchange_id = proof_req_res.json()["v10"]["presentation_exchange_id"]
     print(f"\n\n\n {presentation_exchange_id} \n\n\n")
     WALLET_HEADERS = {
         "content-type": "application/json",
@@ -261,7 +258,7 @@ async def test_accept_proof_request(
 #         data=json.dumps({"proof_request": proof.dict()}),
 #     )
 #     print(f"\n\n\n {proof_req_res.json()['V10']} \n\n\n")
-#     proof_req = proof_req_res.json()["V10"]
+#     proof_req = proof_req_res.json()["v10"]
 #     conn_id = proof_req["connection_id"]
 #     pres_ex_id = proof_req["presentation_exchange_id"]
 #     print(f"\n\n\n {response.json()} \n\n\n")

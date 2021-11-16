@@ -217,15 +217,13 @@ async def create_bob_and_alice_connect(
     ).json()
     bob_conn_id = invitation["connection_id"]
     connections = (await async_client_bob.get(BASE_PATH_CON)).json()
-    assert_that(connections).extracting("connection_id").contains_only(
-        bob_conn_id
-    )
+    assert_that(connections).extracting("connection_id").contains_only(bob_conn_id)
 
     # accept invitation on alice side
     invitation_response = (
         await async_client_alice.post(
             BASE_PATH_CON + "/accept-invitation",
-            json={ "invitation": invitation["invitation"] },
+            json={"invitation": invitation["invitation"]},
         )
     ).json()
     time.sleep(15)
@@ -236,21 +234,15 @@ async def create_bob_and_alice_connect(
     bob_connections = (await async_client_bob.get(BASE_PATH_CON)).json()
     alice_connections = (await async_client_alice.get(BASE_PATH_CON)).json()
 
-    assert_that(bob_connections).extracting("connection_id").contains(
-        bob_conn_id
-    )
-    bob_connection = [
-        c for c in bob_connections if c["connection_id"] == bob_conn_id
-    ][0]
+    assert_that(bob_connections).extracting("connection_id").contains(bob_conn_id)
+    bob_connection = [c for c in bob_connections if c["connection_id"] == bob_conn_id][
+        0
+    ]
     assert_that(bob_connection).has_state("completed")
 
-    assert_that(alice_connections).extracting("connection_id").contains(
-        alice_conn_id
-    )
+    assert_that(alice_connections).extracting("connection_id").contains(alice_conn_id)
     alice_connection = [
-        c
-        for c in alice_connections
-        if c["connection_id"] == alice_conn_id
+        c for c in alice_connections if c["connection_id"] == alice_conn_id
     ][0]
     assert_that(alice_connection).has_state("completed")
 

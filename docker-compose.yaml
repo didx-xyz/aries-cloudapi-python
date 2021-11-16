@@ -173,8 +173,6 @@ services:
     volumes:
       - webserver-cli:/home/indy/.indy-cli
       - webserver-ledger:/home/indy/ledger
-    environment:
-      - DOCKERHOST=${DOCKERHOST}
     networks:
       - yoma-multitenant
       - yoma-ga
@@ -205,7 +203,7 @@ services:
       - host
   tails-server:
     build:
-      context: https://github.com/bcgov/indy-tails-server.git
+      context: https://github.com/bcgov/indy-tails-server.git#main
       dockerfile: docker/Dockerfile.tails-server
     ports:
       - 6543:6543

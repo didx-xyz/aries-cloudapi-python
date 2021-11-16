@@ -31,4 +31,4 @@ bdd-tests:
 
 .PHONY: tests
 tests:
-	pytest --cov=app/
+	pytest --cov=app/ --cov=trustregistry trustregistry app

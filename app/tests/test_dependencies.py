@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import os
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
@@ -12,6 +13,7 @@ from app.main import app
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"
 BEARER_TOKEN = "Bearer 12345"
+X_API_KEY = os.getenv("X_API_KEY", "adminApiKey")
 
 
 def test_extract_token_from_bearer():
@@ -23,9 +25,7 @@ def test_extract_token_from_bearer():
 
 @pytest.mark.asyncio
 async def test_yoma_agent():
-    async with asynccontextmanager(dependencies.yoma_agent)(
-        x_api_key="adminApiKey"
-    ) as c:
+    async with asynccontextmanager(dependencies.yoma_agent)(x_api_key=X_API_KEY) as c:
         assert c is not None
         assert c.client.headers["x-api-key"] == "adminApiKey"
 
@@ -37,7 +37,7 @@ async def test_yoma_agent():
 @pytest.mark.asyncio
 async def test_ecosystem_agent():
     async with asynccontextmanager(dependencies.ecosystem_agent)(
-        x_api_key="adminApiKey", x_auth=BEARER_TOKEN
+        x_api_key=X_API_KEY, x_auth=BEARER_TOKEN
     ) as c:
         assert c is not None
         assert c.client.headers["authorization"] == BEARER_TOKEN
@@ -61,7 +61,7 @@ async def test_member_agent():
 @pytest.mark.asyncio
 async def test_member_admin_agent():
     async with asynccontextmanager(dependencies.member_admin_agent)(
-        x_api_key="adminApiKey"
+        x_api_key=X_API_KEY
     ) as c:
         assert c is not None
         assert c.client.headers["x-api-key"] == "adminApiKey"
@@ -280,7 +280,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
 @pytest.mark.asyncio
 async def test_ecosystem_admin_agent():
     async with asynccontextmanager(dependencies.ecosystem_admin_agent)(
-        x_api_key="adminApiKey"
+        x_api_key=X_API_KEY
     ) as c:
         assert c is not None
         assert c.client.headers["x-api-key"] == "adminApiKey"

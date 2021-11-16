@@ -268,7 +268,7 @@ async def test_get_did_for_actor():
             "id": "yoma",
             "roles": ["verifier"],
             "did": "actor_did",
-            "didcomm_invitation": "invite",
+            "didcomm_invitation": "invitation",
         }
         mock_request.return_value.status_code = 418
 
@@ -279,12 +279,12 @@ async def test_get_did_for_actor():
             "id": "yoma",
             "roles": ["verifier"],
             "did": "actor_did",
-            "didcomm_invitation": "invite",
+            "didcomm_invitation": "invitation",
         }
         mock_request.return_value.status_code = 200
         mock_request.return_value.json.return_value = actor
 
-        assert await trf.get_did_for_actor("yoma") == ["actor_did", "invite"]
+        assert await trf.get_did_for_actor("yoma") == ["actor_did", "invitation"]
 
     with patch("requests.get") as mock_request:
         actor = {

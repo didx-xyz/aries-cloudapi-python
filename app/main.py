@@ -10,7 +10,8 @@ from fastapi.responses import JSONResponse
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
-from app.generic import connections, messaging, trust_registry
+from app.generic import messaging, trust_registry
+from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.wallet import wallets
 

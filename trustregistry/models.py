@@ -9,7 +9,7 @@ def schema_id_gen(context):
     did = parameters["did"]
     name = parameters["name"]
     version = parameters["version"]
-    return f"{did}:{name}:{version}"
+    return f"{did}:2:{name}:{version}"
 
 
 class Actor(Base):

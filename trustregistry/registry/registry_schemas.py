@@ -23,17 +23,16 @@ async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
     schemas_repr = [schema.id for schema in db_schemas]
     return GetSchemasResponse(schemas=schemas_repr)
 
-
-@router.post("/", response_model=Schema)
+@router.post("/")
 async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) -> Schema:
     schema_attrs_list = _get_schema_attrs(schema_id)
     create_schema_res = crud.create_schema(
         db,
         schema=Schema(
             did=schema_attrs_list[0],
-            name=schema_attrs_list[1],
-            version=schema_attrs_list[2],
-            id=schema_id,
+            name=schema_attrs_list[2],
+            version=schema_attrs_list[3],
+            id=schema_id.schema_id,
         ),
     )
     if create_schema_res == 1:
@@ -41,7 +40,7 @@ async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) ->
     return create_schema_res
 
 
-@router.post("/{schema_id}", response_model=Schema)
+@router.put("/{schema_id}")
 async def update_schema(
     schema_id: str, new_schema_id: SchemaID, db: Session = Depends(get_db)
 ) -> Schema:
@@ -50,8 +49,8 @@ async def update_schema(
         db,
         schema=Schema(
             did=schema_attrs_list[0],
-            name=schema_attrs_list[1],
-            version=schema_attrs_list[2],
+            name=schema_attrs_list[2],
+            version=schema_attrs_list[3],
             id=new_schema_id.schema_id,
         ),
         schema_id=schema_id,
@@ -76,4 +75,4 @@ async def remove_schema(schema_id: str, db: Session = Depends(get_db)) -> None:
 
 def _get_schema_attrs(schema_id: SchemaID) -> List[str]:
     # Split from the back because DID may contain a colon
-    return schema_id.schema_id.rsplit(":", 2)
+    return schema_id.schema_id.split(":", 3)

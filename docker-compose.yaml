@@ -205,7 +205,8 @@ services:
       - host
   tails-server:
     build:
-      context: https://github.com/bcgov/indy-tails-server.git
+      # The #main is required for some docker-compose versions because it otherwise tries to use master branch which does not exist n
+      context: https://github.com/bcgov/indy-tails-server.git#main
       dockerfile: docker/Dockerfile.tails-server
     ports:
       - 6543:6543

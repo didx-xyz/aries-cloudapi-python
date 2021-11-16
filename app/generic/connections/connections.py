@@ -19,9 +19,7 @@ from pydantic import BaseModel
 from app.dependencies import agent_selector
 from app.generic.connections.models import Connection, conn_record_to_connection
 
-
 logger = logging.getLogger(__name__)
-
 
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 

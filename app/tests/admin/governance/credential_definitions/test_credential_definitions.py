@@ -8,12 +8,13 @@ from app.admin.governance.credential_definitions import (
     create_credential_definition,
     get_created_credential_definitions,
     get_credential_definition,
+    router,
 )
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.admin.governance.schemas.test_schemas import create_public_did
 from app.tests.utils_test import get_random_string
 
-base_path = "/admin/governance/credential-definitions"
+BASE_PATH = router.prefix
 
 
 @pytest.fixture
@@ -77,7 +78,7 @@ async def test_create_credential_definition_via_web(
     # when
     result = (
         await async_client.post(
-            f"{base_path}",
+            f"{BASE_PATH}",
             data=credential_definition.json(),
             headers={
                 "x-api-key": "adminApiKey",
@@ -168,7 +169,7 @@ async def test_get_credential_definitions_via_web(
     # when
     credential_definition = (
         await async_client.get(
-            f"{base_path}/created",
+            f"{BASE_PATH}/created",
             params={"schema_id": schema_definition_result["schema_id"]},
             headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
         )
@@ -236,7 +237,7 @@ async def test_get_credential_definition_via_web(
     # when
     result_json = (
         await async_client.get(
-            f"{base_path}/{credential_definition_result['credential_definition_id']}",
+            f"{BASE_PATH}/{credential_definition_result['credential_definition_id']}",
             headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
         )
     ).json()

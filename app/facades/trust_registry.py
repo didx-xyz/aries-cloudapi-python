@@ -6,7 +6,7 @@ import requests
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
-TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://yoma-trust-registry:8001")
+TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001")
 
 logger = logging.getLogger(__name__)
 

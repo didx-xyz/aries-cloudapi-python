@@ -3,16 +3,12 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
-import os
 
 from trustregistry import crud
 from trustregistry.db import get_db
 from trustregistry.schemas import Schema
 
-SCHEMAS_ROUTE = os.getenv("SCHEMAS_ROUTE", "/registry/schemas")
-SCHEMAS_TAGS = os.getenv("SCHEMAS_TAGS", "schema")
-
-router = APIRouter(prefix=SCHEMAS_ROUTE, tags=[SCHEMAS_TAGS])
+router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
 
 class SchemaID(BaseModel):

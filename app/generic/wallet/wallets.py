@@ -1,6 +1,5 @@
 import logging
 from typing import Literal
-import os
 
 from aries_cloudcontroller import AcaPyClient, DIDEndpointWithType
 from fastapi import APIRouter, Depends
@@ -8,12 +7,9 @@ from fastapi import APIRouter, Depends
 from app.facades.acapy_ledger import create_pub_did
 from app.dependencies import agent_selector
 
-WALLET_ROUTE = os.getenv("WALLET_URL", "/wallet")
-WALLET_TAGS = os.getenv("WALLET_TAGS", "WALLET")
-
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix=WALLET_ROUTE, tags=[WALLET_TAGS])
+router = APIRouter(prefix="/wallet", tags=["wallet"])
 
 
 @router.get("/create-pub-did")

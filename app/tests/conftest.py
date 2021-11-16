@@ -18,7 +18,7 @@ from assertpy import assert_that
 from httpx import AsyncClient
 from mockito import mock
 
-from app.generic.connections.connections import CONNECTIONS_ROUTE as BASE_PATH_CON
+from app.generic.connections.connections import router
 import app.facades.ledger as ledger_facade
 import app.utils as utils
 from app.dependencies import member_admin_agent, yoma_agent
@@ -33,6 +33,7 @@ DEFAULT_HEADERS = {
     "x-api-key": "adminApiKey",
 }
 
+BASE_PATH_CON = router.prefix
 LEDGER_URL = os.getenv("TEST_LEDGER_URL", "http://localhost:9000/register")
 X_API_KEY = os.getenv("X_API_KEY", "adminApiKey")
 CONFTEST_ADMIN_URL = os.getenv("CONFTEST_ADMIN_URL", "http://localhost")

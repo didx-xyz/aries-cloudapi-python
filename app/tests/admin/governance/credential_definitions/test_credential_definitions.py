@@ -8,13 +8,13 @@ from app.admin.governance.credential_definitions import (
     create_credential_definition,
     get_created_credential_definitions,
     get_credential_definition,
+    router,
 )
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.admin.governance.schemas.test_schemas import create_public_did
 from app.tests.utils_test import get_random_string
-from app.admin.governance.credential_definitions import (
-    CREDENTIAL_DEFINITIONS_ROUTE as BASE_PATH,
-)
+
+BASE_PATH = router.prefix
 
 
 @pytest.fixture

@@ -10,10 +10,11 @@ from app.admin.governance.multitenant_wallet.wallet_admin import (
     get_subwallet,
     get_subwallet_auth_token,
     query_subwallet,
-    WALLET_ADMIN_ROUTE as WALLET_PATH,
+    router,
 )
 from app.tests.utils_test import get_random_string
 
+WALLET_PATH = router.prefix
 WALLET_HEADERS = {
     "content-type": "application/json",
     "x-role": "member",

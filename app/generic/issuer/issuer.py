@@ -1,7 +1,6 @@
 import logging
 from enum import Enum
 from typing import Dict, Optional, Tuple
-import os
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Query
@@ -19,12 +18,9 @@ from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential, IssueCredentialProtocolVersion
 from app.facades.trust_registry import assert_valid_issuer
 
-ISSUER_ROUTE = os.getenv("ISSUER_ROUTE", "/generic/issuer")
-ISSUER_TAGS = os.getenv("ISSUER_TAGS", "issuer")
-
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix=ISSUER_ROUTE, tags=[ISSUER_TAGS])
+router = APIRouter(prefix="/generic/issuer", tags=["issuer"])
 
 
 class IssueCredentialFacades(Enum):

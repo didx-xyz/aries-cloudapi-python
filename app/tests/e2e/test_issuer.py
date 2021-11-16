@@ -2,7 +2,7 @@ import asyncio
 import time
 from random import random
 from typing import Any, Dict
-from app.generic.issuer.issuer import ISSUER_ROUTE
+from app.generic.issuer.issuer import router
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
@@ -21,7 +21,7 @@ from app.facades.trust_registry import (
     registry_has_schema,
 )
 
-BASE_PATH = ISSUER_ROUTE + "/credentials"
+BASE_PATH = router.prefix + "/credentials"
 
 
 # need this to handle the async with the mock

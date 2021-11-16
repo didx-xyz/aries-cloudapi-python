@@ -1,5 +1,4 @@
 from typing import List, Optional
-import os
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -13,10 +12,7 @@ from pydantic import BaseModel
 
 from app.dependencies import yoma_agent
 
-SCHEMAS_ROUTE = os.getenv("SCHEMAS_ROUTE", "/admin/governance/schemas")
-SCHEMAS_TAGS = os.getenv("SCHEMAS_TAGS", "admin: schemas")
-
-router = APIRouter(prefix=SCHEMAS_ROUTE, tags=[SCHEMAS_TAGS])
+router = APIRouter(prefix="/admin/governance/schemas", tags=["admin: schemas"])
 
 
 class SchemaDefinition(BaseModel):

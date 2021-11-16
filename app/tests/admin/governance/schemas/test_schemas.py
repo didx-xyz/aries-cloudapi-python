@@ -13,7 +13,7 @@ from app.admin.governance.schemas import (
     get_schemas,
     get_schemas_list_detailed,
     update_schema,
-    SCHEMAS_ROUTE as BASE_PATH,
+    router,
 )
 
 # want to wrap an existing method with a decorator
@@ -21,6 +21,7 @@ from app.admin.governance.schemas import (
 from app.tests.utils_test import get_random_string
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
+BASE_PATH = router.prefix
 
 
 @pytest.fixture

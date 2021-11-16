@@ -6,10 +6,11 @@ from app.generic.wallet.wallets import (
     fetch_current_did,
     list_dids,
     set_did_endpoint,
-    WALLET_ROUTE as BASE_PATH,
+    router,
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
+BASE_PATH = router.prefix
 
 
 @pytest.fixture(name="create_did_mock")

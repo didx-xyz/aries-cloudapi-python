@@ -1,5 +1,4 @@
 import logging
-import os
 
 from aries_cloudcontroller import AcaPyClient, PingRequest, SendMessage
 from fastapi import APIRouter, Depends
@@ -7,12 +6,9 @@ from pydantic import BaseModel
 
 from app.dependencies import agent_selector
 
-MESSAGING_ROUTE = os.getenv("MESSAGING_ROUTE", "/generic/messaging")
-MESSAGING_TAGS = os.getenv("MESSAGING_TAGS", "messaging")
-
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix=MESSAGING_ROUTE, tags=[MESSAGING_TAGS])
+router = APIRouter(prefix="/generic/messaging", tags=["messaging"])
 
 
 class Message(BaseModel):

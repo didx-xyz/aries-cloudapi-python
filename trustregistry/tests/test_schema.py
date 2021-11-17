@@ -14,7 +14,12 @@ def test_get_schemas():
 
 def test_register_schema():
     schema_id = "string:2:string:string"
-    schema_dict = {"id": schema_id, "did": "string", "name": "string", "version": "string"}
+    schema_dict = {
+        "id": schema_id,
+        "did": "string",
+        "name": "string",
+        "version": "string",
+    }
     payload = {"schema_id": schema_id}
 
     response = client.post(
@@ -41,7 +46,7 @@ def test_register_schema():
 
 
 def test_update_schema():
-    schema_id =  "string_updated:2:string_updated:string_updated"
+    schema_id = "string_updated:2:string_updated:string_updated"
     schema_dict = {
         "id": schema_id,
         "did": "string_updated",
@@ -90,4 +95,4 @@ def test_remove_schema():
 def test__get_schema_attrs():
     res = _get_schema_attrs(schema_id=SchemaID(schema_id="abc:2:Peter Parker:0.4.20"))
 
-    assert res == ["abc","2", "Peter Parker", "0.4.20"]
+    assert res == ["abc", "2", "Peter Parker", "0.4.20"]

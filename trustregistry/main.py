@@ -19,9 +19,7 @@ app.include_router(registry_schemas.router)
 async def root(db: Session = Depends(get_db)):
     db_schemas = crud.get_schemas(db)
     db_actors = crud.get_actors(db)
-    schemas_repr = [
-        schema.id for schema in db_schemas
-    ]
+    schemas_repr = [schema.id for schema in db_schemas]
     return {"actors": db_actors, "schemas": schemas_repr}
 
 

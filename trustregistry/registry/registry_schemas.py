@@ -10,8 +10,10 @@ from trustregistry.schemas import Schema
 
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
+
 class GetSchemasResponse(BaseModel):
     schemas: List[str]
+
 
 class SchemaID(BaseModel):
     schema_id: str = Field(..., example="WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0")
@@ -22,6 +24,7 @@ async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
     db_schemas = crud.get_schemas(db)
     schemas_repr = [schema.id for schema in db_schemas]
     return GetSchemasResponse(schemas=schemas_repr)
+
 
 @router.post("/")
 async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) -> Schema:

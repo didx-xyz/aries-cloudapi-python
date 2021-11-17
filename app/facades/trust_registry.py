@@ -26,6 +26,7 @@ class Actor(TypedDict):
     did: str
     didcomm_invitation: Optional[str]
 
+
 class TrustRegistry(TypedDict):
     actors: List[Actor]
     schemas: List[str]
@@ -155,6 +156,7 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
     didcomm_invitation = actor_res.json()["didcomm_invitation"]
     return [did, didcomm_invitation]
 
+
 async def get_trust_registry() -> TrustRegistry:
     print(TRUST_REGISTRY_URL)
     trust_registry_res = requests.get(f"{TRUST_REGISTRY_URL}/registry")
@@ -163,6 +165,7 @@ async def get_trust_registry() -> TrustRegistry:
         raise HTTPException(500, detail=trust_registry_res.content)
 
     return trust_registry_res.json()
+
 
 async def register_schema(schema_id: str) -> None:
     schema_res = requests.post(

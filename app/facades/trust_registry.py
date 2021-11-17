@@ -2,7 +2,7 @@ import logging
 import os
 from typing import List, Literal, Optional
 
-import requests
+import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
@@ -107,14 +107,14 @@ async def assert_valid_verifier(did: str, schema_id: str):
 
 
 async def actor_has_role(actor_id: str, role: Role) -> bool:
-    actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
+    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
     if actor_res.status_code != 200:
         raise HTTPException(404, detail="Actor does not exist")
     return bool(role in actor_res.json()["roles"])
 
 
 async def actor_by_did(did: str) -> Optional[Actor]:
-    actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/did/{did}")
+    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/did/{did}")
 
     if actor_res.status_code == 404:
         return None
@@ -125,7 +125,7 @@ async def actor_by_did(did: str) -> Optional[Actor]:
 
 
 async def actors_with_role(role: Role) -> List[Actor]:
-    actors = requests.get(TRUST_REGISTRY_URL + "/registry/actors")
+    actors = httpx.get(TRUST_REGISTRY_URL + "/registry/actors")
     if actors.status_code != 200:
         return []
     actors_with_role_list = [
@@ -135,21 +135,21 @@ async def actors_with_role(role: Role) -> List[Actor]:
 
 
 async def actor_has_schema(actor_id: str, schema_id: str) -> bool:
-    actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
+    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
     if actor_res.status_code != 200:
         return False
     return bool(schema_id in actor_res.json()["schemas"])
 
 
 async def registry_has_schema(schema_id: str) -> bool:
-    schema_res = requests.get(TRUST_REGISTRY_URL + "/registry/schemas")
+    schema_res = httpx.get(TRUST_REGISTRY_URL + "/registry/schemas")
     if schema_res.status_code != 200:
         return False
     return bool(schema_id in schema_res.json()["schemas"])
 
 
 async def get_did_for_actor(actor_id: str) -> List[str]:
-    actor_res = requests.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
+    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
     if actor_res.status_code != 200:
         return None
     did = actor_res.json()["did"]
@@ -158,7 +158,7 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
 
 
 async def get_trust_registry() -> TrustRegistry:
-    trust_registry_res = requests.get(f"{TRUST_REGISTRY_URL}/registry")
+    trust_registry_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry")
 
     if trust_registry_res.status_code != 200:
         raise HTTPException(500, detail=trust_registry_res.content)
@@ -167,7 +167,7 @@ async def get_trust_registry() -> TrustRegistry:
 
 
 async def register_schema(schema_id: str) -> None:
-    schema_res = requests.post(
+    schema_res = httpx.post(
         TRUST_REGISTRY_URL + "/registry/schemas", json={"schema_id": schema_id}
     )
 
@@ -176,7 +176,7 @@ async def register_schema(schema_id: str) -> None:
 
 
 async def register_actor(actor: Actor) -> None:
-    actor_res = requests.post(TRUST_REGISTRY_URL + "/registry/actors", json=actor)
+    actor_res = httpx.post(TRUST_REGISTRY_URL + "/registry/actors", json=actor)
 
     if actor_res.status_code != 200:
         raise Exception(f"Error registering actor: {actor_res.text}")

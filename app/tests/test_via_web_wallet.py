@@ -1,5 +1,5 @@
 import pytest
-import requests
+import httpx
 from aiohttp import ClientResponseError
 from httpx import AsyncClient
 
@@ -20,7 +20,7 @@ async def test_get_pub_did_via_web(setup_env):
     assert result["did_object"]["posture"] in ["posted", "public"]
 
     url = f"{utils.admin_url}:{utils.admin_port}/wallet/did"
-    response = requests.get(url, headers={"x-api-key": "adminApiKey", "x-role": "yoma"})
+    response = httpx.get(url, headers={"x-api-key": "adminApiKey", "x-role": "yoma"})
     found = [
         r for r in response.json()["results"] if r["did"] == result["did_object"]["did"]
     ]

@@ -41,10 +41,8 @@ jobs:
             ::                                          ::
             :: Inbound Transports:                      ::
             ::                                          ::
-            :: "); then ((i++)); fi
+            :: "); then ((i++)); echo wait over, continue; exit 0; fi
           done
-          echo wait over, continuing
-          exit 0
         shell: bash
       - name: Test with pytest
         id: test

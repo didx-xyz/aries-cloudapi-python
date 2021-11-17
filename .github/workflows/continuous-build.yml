@@ -23,12 +23,8 @@ jobs:
           python-version: 3.8.10
       - name: Install test dependencies.
         run: |
-          cd app
           python -m pip install --upgrade pip
-          pip install pytest
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          cd ../trustregistry
-          pip install -r requirements.txt
+          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
       - name: Install docker-compose with pip
         run: pip install docker-compose
       - name: Start Test Harness
@@ -64,9 +60,8 @@ jobs:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
       - name: Run Pylint
         run: |
-          pip install pylint
           pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
-      - name: Tear down test harnless
+      - name: Tear down test harness
         run: |
           ./manage down || true
   deploy:

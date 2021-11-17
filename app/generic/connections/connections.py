@@ -1,5 +1,4 @@
 import logging
-import os
 from typing import List, Optional
 
 from aries_cloudcontroller import (
@@ -20,11 +19,7 @@ from pydantic import BaseModel
 from app.dependencies import agent_selector
 from app.generic.connections.models import Connection, conn_record_to_connection
 
-ADMIN_API_KEY = os.getenv("ADMIN_API_KEY", "adminApiKey")
-
-
 logger = logging.getLogger(__name__)
-
 
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 

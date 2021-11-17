@@ -3,6 +3,7 @@ import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Dict, TypedDict
+import os
 
 import pytest
 from aries_cloudcontroller import (
@@ -19,6 +20,7 @@ from assertpy import assert_that
 from httpx import AsyncClient
 from mockito import mock
 
+from app.generic.connections.connections import router
 import app.facades.ledger as ledger_facade
 import app.utils as utils
 from app.dependencies import member_admin_agent, yoma_agent
@@ -33,8 +35,13 @@ DEFAULT_HEADERS = {
     "x-api-key": "adminApiKey",
 }
 
-LEDGER_URL = "http://localhost:9000/register"
-BASE_PATH_CON = "/generic/connections"
+BASE_PATH_CON = router.prefix
+LEDGER_URL = os.getenv("TEST_LEDGER_URL", "http://localhost:9000/register")
+X_API_KEY = os.getenv("X_API_KEY", "adminApiKey")
+CONFTEST_ADMIN_URL = os.getenv("CONFTEST_ADMIN_URL", "http://localhost")
+CONFTEST_ADMIN_PORT = os.getenv("CONFTEST_ADMIN_PORT", "3021")
+CONFTEST_IS_MULTITENANT = bool(os.getenv("CONFTEST_IS_MULTITENANT", "False"))
+CONFTEST_LEDGER_TYPE = os.getenv("CONFTEST_LEDGER_TYPE", "von")
 
 
 class AliceBobConnect(TypedDict):
@@ -44,11 +51,11 @@ class AliceBobConnect(TypedDict):
 
 @pytest.fixture
 def setup_env():
-    utils.admin_url = "http://localhost"
-    utils.admin_port = "3021"
-    utils.is_multitenant = False
+    utils.admin_url = CONFTEST_ADMIN_URL
+    utils.admin_port = CONFTEST_ADMIN_PORT
+    utils.is_multitenant = CONFTEST_IS_MULTITENANT
     ledger_facade.LEDGER_URL = LEDGER_URL
-    ledger_facade.LEDGER_TYPE = "von"
+    ledger_facade.LEDGER_TYPE = CONFTEST_LEDGER_TYPE
 
 
 @pytest.fixture
@@ -71,7 +78,7 @@ async def yoma_agent_module_scope():
     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
     # flexibility - thus we have to.
     # this is doing what using decorators does for you
-    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(yoma_agent)(x_api_key=X_API_KEY) as c:
         yield c
 
 
@@ -82,7 +89,7 @@ async def yoma_agent_mock():
     # it is a bit of a pity that pytest fixtures don't do the same - I guess they want to maintain
     # flexibility - thus we have to.
     # this is doing what using decorators does for you
-    async with asynccontextmanager(yoma_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(yoma_agent)(x_api_key=X_API_KEY) as c:
         yield c
 
 
@@ -94,7 +101,7 @@ async def async_client():
 
 @pytest.fixture
 async def member_admin_agent_mock():
-    async with asynccontextmanager(member_admin_agent)(x_api_key="adminApiKey") as c:
+    async with asynccontextmanager(member_admin_agent)(x_api_key=X_API_KEY) as c:
         yield c
 
 

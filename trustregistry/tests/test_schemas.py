@@ -20,7 +20,7 @@ def test_actor():
 
 
 def test_schema():
-    schema = schemas.Schema(did="abc:2", name="doubleaceschema", version="0.4.20")
+    schema = schemas.Schema(did="abc", name="doubleaceschema", version="0.4.20")
 
     assert schema.did == "abc"
     assert schema.name == "doubleaceschema"
@@ -28,7 +28,7 @@ def test_schema():
     assert schema.id == "abc:2:doubleaceschema:0.4.20"
 
     schema.did = "abcde"
-    assert schema.id == "abcde:doubleaceschema:0.4.20"
+    assert schema.id == "abcde:2:doubleaceschema:0.4.20"
 
     with pytest.raises(ValueError):
         schemas.Schema(did="abc", name="double:ace:schema", version="0.4.20")

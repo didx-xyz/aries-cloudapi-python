@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 import pytest
 from httpx import AsyncClient, Response
@@ -6,8 +7,8 @@ from httpx import AsyncClient, Response
 from app.generic.messaging import Message, TrustPingMsg
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
-MESSAGE_PATH = "/generic/messaging"
-BASE_PATH_CON = "/generic/connections"
+MESSAGE_PATH = os.getenv("MESSAGING_ROUTE", "/generic/messaging")
+BASE_PATH_CON = os.getenv("CONNECTIONS_ROUTE", "/generic/connections")
 
 
 @pytest.yield_fixture(scope="module")

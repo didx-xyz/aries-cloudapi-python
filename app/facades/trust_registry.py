@@ -1,9 +1,10 @@
 import logging
 import os
-from typing import List, Literal, Optional, TypedDict
+from typing import List, Literal, Optional
 
 import requests
 from fastapi.exceptions import HTTPException
+from typing_extensions import TypedDict
 
 TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001")
 
@@ -24,6 +25,11 @@ class Actor(TypedDict):
     roles: List[str]
     did: str
     didcomm_invitation: Optional[str]
+
+
+class TrustRegistry(TypedDict):
+    actors: List[Actor]
+    schemas: List[str]
 
 
 async def assert_valid_issuer(did: str, schema_id: str):
@@ -149,6 +155,15 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
     did = actor_res.json()["did"]
     didcomm_invitation = actor_res.json()["didcomm_invitation"]
     return [did, didcomm_invitation]
+
+
+async def get_trust_registry() -> TrustRegistry:
+    trust_registry_res = requests.get(f"{TRUST_REGISTRY_URL}/registry")
+
+    if trust_registry_res.status_code != 200:
+        raise HTTPException(500, detail=trust_registry_res.content)
+
+    return trust_registry_res.json()
 
 
 async def register_schema(schema_id: str) -> None:

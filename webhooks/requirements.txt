@@ -1,4 +1,6 @@
-fastapi
-aioredis
-dependency_injector
-fastapi_websocket_pubsub
+aioredis~=2.0.0
+dependency_injector~=4.37.0
+fastapi==0.65.2
+fastapi_websocket_pubsub~=0.1.21
+starlette==0.16.0
+uvicorn[standard]==0.15.0

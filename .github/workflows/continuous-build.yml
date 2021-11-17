@@ -30,18 +30,18 @@ jobs:
       - name: Start Test Harness
         run: |
           chmod u+x manage
-          ./manage up-as-daemon
+          ./manage up-daemon-usecache
           i=0
+          echo echo waiting for dockers to startup
           while [ $i -le 2 ]
           do
-            echo echo waiting for dockers to startup
             if (docker logs $(docker ps -f name="yoma-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
             :: Alice                                    ::
             ::                                          ::
             ::                                          ::
             :: Inbound Transports:                      ::
             ::                                          ::
-            :: "); then ((i++)); echo wait over, continue; exit 0; fi
+            :: "); echo wait over; exit 0; then ((i++)); fi
           done
         shell: bash
       - name: Test with pytest

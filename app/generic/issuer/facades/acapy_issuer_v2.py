@@ -34,7 +34,6 @@ class IssuerV2(Issuer):
             body=V20CredExFree(
                 connection_id=credential.connection_id,
                 credential_preview=credential_preview,
-                auto_remove=False,
                 filter=V20CredFilter(
                     indy=V20CredFilterIndy(
                         cred_def_id=credential.cred_def_id,

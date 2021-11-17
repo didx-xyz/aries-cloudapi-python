@@ -33,7 +33,6 @@ class IssuerV1(Issuer):
             body=V10CredentialProposalRequestMand(
                 connection_id=credential.connection_id,
                 credential_proposal=credential_preview,
-                auto_remove=False,
                 cred_def_id=credential.cred_def_id,
             )
         )

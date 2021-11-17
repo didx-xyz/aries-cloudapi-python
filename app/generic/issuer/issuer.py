@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
-from app.facades.acapy_ledger import write_credential_def
+from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
@@ -35,7 +35,7 @@ class ProblemReportExplanation(TypedDict):
 class SendCredential(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     connection_id: str
-    schema_id: str
+    credential_definition_id: str
     attributes: Dict[str, str]
 
 
@@ -127,16 +127,17 @@ async def send_credential(
             "Unable to issue credential without public did. Make sure to set the public did before issuing."
         )
 
-    # Make sure we are allowed to issue according to trust registry rules
-    await assert_valid_issuer(f"did:sov:{public_did.result.did}", credential.schema_id)
+    # Retrieve the schema_id based on the credential definition id
+    schema_id = await schema_id_from_credential_definition_id(aries_controller, credential.credential_definition_id)
 
-    cred_def_id = await write_credential_def(aries_controller, credential.schema_id)
+    # Make sure we are allowed to issue according to trust registry rules
+    await assert_valid_issuer(f"did:sov:{public_did.result.did}", schema_id)
 
     return await issuer.send_credential(
         controller=aries_controller,
         credential=Credential(
             attributes=credential.attributes,
-            cred_def_id=cred_def_id,
+            cred_def_id=credential.credential_definition_id,
             connection_id=credential.connection_id,
         ),
     )

@@ -18,10 +18,11 @@ async def get(response: Optional[Any] = None):
 @pytest.mark.asyncio
 async def test_send_credential(mock_agent_controller: AcaPyClient):
     did = "WgWxqztrNooG92RXvxSTWv"
+    cred_def_id = f"{did}:1:12345:tag"
     cred_ex = mock(CredentialExchange)
 
     when(test_module).assert_valid_issuer(...).thenReturn(get(True))
-    when(test_module).write_credential_def(...).thenReturn(get("cred_def_id"))
+    when(test_module).schema_id_from_credential_definition_id(mock_agent_controller, cred_def_id).thenReturn(get("schema_id"))
     when(IssuerV1).send_credential(...).thenReturn(get(cred_ex))
     when(mock_agent_controller.wallet).get_public_did().thenReturn(
         get(DIDResult(result=DID(did=did)))
@@ -30,7 +31,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
     credential = test_module.SendCredential(
         protocol_version=IssueCredentialProtocolVersion.v1,
         connection_id="conn_id",
-        schema_id="schema_id",
+        credential_definition_id=cred_def_id,
         attributes={"name": "John", "age": "23"},
     )
 
@@ -38,7 +39,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
 
     assert result is cred_ex
     verify(IssuerV1).send_credential(...)
-    verify(test_module).write_credential_def(mock_agent_controller, "schema_id")
+    verify(test_module).schema_id_from_credential_definition_id(mock_agent_controller, cred_def_id)
     verify(mock_agent_controller.wallet).get_public_did()
     verify(test_module).assert_valid_issuer(f"did:sov:{did}", "schema_id")
 

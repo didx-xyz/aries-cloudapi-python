@@ -96,6 +96,7 @@ async def credential_exchange_id(
     async_client_bob_module_scope: AsyncClient,
     alice_connection_id: str,
     schema_definition: Dict[str, Any],
+    credential_definition_id: str,
     bob_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
 ):
@@ -104,7 +105,7 @@ async def credential_exchange_id(
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_connection_id,
-        "schema_id": schema_definition["schema_id"],
+        "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
 
@@ -132,6 +133,7 @@ async def credential_exchange_id(
 async def test_send_credential(
     async_client_bob_module_scope: AsyncClient,
     schema_definition: Dict[str, Any],
+    credential_definition_id: str,
     bob_connection_id: str,
     alice_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
@@ -139,7 +141,7 @@ async def test_send_credential(
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_connection_id,
-        "schema_id": schema_definition["schema_id"],
+        "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
 

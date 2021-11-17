@@ -158,7 +158,6 @@ async def get_did_for_actor(actor_id: str) -> List[str]:
 
 
 async def get_trust_registry() -> TrustRegistry:
-    print(TRUST_REGISTRY_URL)
     trust_registry_res = requests.get(f"{TRUST_REGISTRY_URL}/registry")
 
     if trust_registry_res.status_code != 200:

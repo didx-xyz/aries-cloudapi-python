@@ -45,14 +45,14 @@ class ProofsV2(Proof):
         presentation_request: Union[
             V20PresSendRequestRequest, AdminAPIMessageTracing, V20PresProposalRequest
         ],
-        free: bool = False,
+        free: bool = True,
         pres_ex_id: str = None,
     ) -> PresentationExchange:
         try:
             if free:
                 presentation_exchange = (
                     await controller.present_proof_v2_0.send_request_free(
-                        body=presentation_request
+                        body=V20PresSendRequestRequest(**presentation_request.dict())
                     )
                 )
             elif (

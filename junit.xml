@@ -1,41 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="2" skipped="0" tests="4" time="32.024" timestamp="2021-11-17T13:29:47.419733" hostname="MacBook-Pro-van-Moritz.local"><testcase classname="tests.proof.test_proof" name="test_send_proof_request" time="25.468"><failure message="KeyError: 'v10'">alice_connection_id = 'f5c88d58-579e-44b1-b579-e413058c3563'
-async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x10845d100&gt;
-
-    @pytest.mark.asyncio
-    async def test_send_proof_request(
-        alice_connection_id: str,
-        async_client_alice_module_scope: AsyncClient,
-    ):
-        response = await async_client_alice_module_scope.post(
-            BASE_PATH + f"/send-request?connection_id={alice_connection_id}",
-            data=json.dumps(proof_dict['proof_request']),
-        )
-    
-        result = response.json()
-&gt;       assert result["v10"] is None
-E       KeyError: 'v10'
-
-app/tests/proof/test_proof.py:162: KeyError</failure></testcase><testcase classname="tests.proof.test_proof" name="test_create_proof_request" time="0.011"><failure message="KeyError: 'v10'">async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x10845d100&gt;
-
-    @pytest.mark.asyncio
-    async def test_create_proof_request(
-        async_client_alice_module_scope: AsyncClient,
-    ):
-        response = await async_client_alice_module_scope.post(
-            BASE_PATH
-            + "/create-request?connection_id={alice_connection_id}&amp;protocol_version=2",
-            data=json.dumps(indy_proof_request.dict()),
-        )
-    
-        result = response.json()
-&gt;       assert result["v10"] is None
-E       KeyError: 'v10'
-
-app/tests/proof/test_proof.py:200: KeyError</failure></testcase><testcase classname="tests.proof.test_proof" name="test_accept_proof_request" time="0.001" /><testcase classname="tests.proof.test_proof" name="test_reject_proof_request" time="6.211"><error message="failed on setup with &quot;app.facades.trust_registry.TrustRegistryException: Did did:sov:DfhqAWFYb1Ef2AechqwYQ2 not registered in the trust registry&quot;">async_client_bob_module_scope = &lt;httpx.AsyncClient object at 0x10840f0a0&gt;
-alice_connection_id = 'f5c88d58-579e-44b1-b579-e413058c3563'
-schema_definition = {'schema_': {'attr_names': ['speed'], 'id': 'JJ4saz1kcJV5k6Tiim2LJA:2:test_schema:0.3', 'name': 'test_schema', 'seq_no': 1426, ...}, 'schema_id': 'JJ4saz1kcJV5k6Tiim2LJA:2:test_schema:0.3'}
-bob_connection_id = 'c2113123-9db6-44aa-8835-38d2cbd32707'
-async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x10845d100&gt;
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="32.026" timestamp="2021-11-17T14:51:27.075123" hostname="MacBook-Pro-van-Moritz.local"><testcase classname="tests.proof.test_proof" name="test_reject_proof_request" time="31.702"><error message="failed on setup with &quot;app.facades.trust_registry.TrustRegistryException: Did did:sov:64hPpwZYwBrfcvz3xkeCUM not registered in the trust registry&quot;">async_client_bob_module_scope = &lt;httpx.AsyncClient object at 0x1123eea60&gt;
+alice_connection_id = 'b92aff30-9407-4089-b9a3-d154f93bddfb'
+schema_definition = {'schema_': {'attr_names': ['speed'], 'id': 'G9EcEr7sY21EVBkm3JawN:2:test_schema:0.3', 'name': 'test_schema', 'seq_no': 1522, ...}, 'schema_id': 'G9EcEr7sY21EVBkm3JawN:2:test_schema:0.3'}
+bob_connection_id = '4573e865-ea94-426c-b4f1-aaed708c469f'
+async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x112547df0&gt;
 
     @pytest.fixture(scope="module")
     async def credential_exchange_id(
@@ -59,8 +26,8 @@ async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x10845d100&gt
             data=json.dumps(credential),
         )
 
-app/tests/proof/test_proof.py:93: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+app/tests/proof/test_proof.py:94: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 ../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1746: in post
     return await self.request(
 ../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1425: in request
@@ -99,10 +66,10 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
     return await dependant.call(**values)
 app/generic/issuer/issuer.py:131: in send_credential
     await assert_valid_issuer(f"did:sov:{public_did.result.did}", credential.schema_id)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-did = 'did:sov:DfhqAWFYb1Ef2AechqwYQ2'
-schema_id = 'JJ4saz1kcJV5k6Tiim2LJA:2:test_schema:0.3'
+did = 'did:sov:64hPpwZYwBrfcvz3xkeCUM'
+schema_id = 'G9EcEr7sY21EVBkm3JawN:2:test_schema:0.3'
 
     async def assert_valid_issuer(did: str, schema_id: str):
         """Assert that an actor with the specified did is registered as issuer.
@@ -127,6 +94,6 @@ schema_id = 'JJ4saz1kcJV5k6Tiim2LJA:2:test_schema:0.3'
     
         if not actor:
 &gt;           raise TrustRegistryException(f"Did {did} not registered in the trust registry")
-E           app.facades.trust_registry.TrustRegistryException: Did did:sov:DfhqAWFYb1Ef2AechqwYQ2 not registered in the trust registry
+E           app.facades.trust_registry.TrustRegistryException: Did did:sov:64hPpwZYwBrfcvz3xkeCUM not registered in the trust registry
 
 app/facades/trust_registry.py:57: TrustRegistryException</error></testcase></testsuite></testsuites>

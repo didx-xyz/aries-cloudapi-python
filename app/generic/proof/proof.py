@@ -10,7 +10,7 @@ from aries_cloudcontroller import (
     V20PresRequestByFormat,
     V20PresSendRequestRequest,
     V20PresSpecByFormatRequest,
-    V20PresProblemReportRequest
+    V20PresProblemReportRequest,
 )
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.param_functions import Body
@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/generic/proof", tags=["proof"])
 
-ProtocolVersion = Literal['1', '2']
+ProtocolVersion = Literal["1", "2"]
+
 
 class ProofsFacade(Enum):
     v10 = ProofsV1
@@ -36,7 +37,7 @@ class ProofsFacade(Enum):
 async def send_proof_request(
     connection_id: str,
     presentation_request: IndyProofRequest,
-    protocol_version: Optional[ProtocolVersion] = '2',
+    protocol_version: Optional[ProtocolVersion] = "2",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> PresentationExchange:
     """
@@ -47,7 +48,7 @@ async def send_proof_request(
     presentation_request:
         The proof request
     """
-    if protocol_version == 2:
+    if protocol_version == "2":
         v2_presentation_exchange_rec = await ProofsFacade.v20.value.send_proof_request(
             controller=aries_controller,
             presentation_request=V20PresSendRequestRequest(
@@ -76,7 +77,7 @@ async def create_proof_request(
     proof: IndyProofRequest,
     comment: Optional[str] = None,
     trace: Optional[bool] = False,
-    protocol_version: Optional[ProtocolVersion] = '2',
+    protocol_version: Optional[ProtocolVersion] = "2",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> PresentationExchange:
     """
@@ -87,7 +88,7 @@ async def create_proof_request(
     proof: IndyProofRequest
         The proof request
     """
-    if protocol_version == 2:
+    if protocol_version == "2":
         v2_proof = await ProofsFacade.v20.value.create_proof_request(
             controller=aries_controller,
             proof=V20PresRequestByFormat(
@@ -111,7 +112,7 @@ async def create_proof_request(
 async def accept_proof_request(
     presentation_spec: IndyPresSpec,
     pres_ex_id: str,
-    protocol_version: Optional[ProtocolVersion] = '2',
+    protocol_version: Optional[ProtocolVersion] = "2",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> PresentationExchange:
     """
@@ -124,7 +125,7 @@ async def accept_proof_request(
     presentation_spec: IndyPresSpec
         The presentation spec
     """
-    if protocol_version == 2:
+    if protocol_version == "2":
         v2_presentation = await ProofsFacade.v20.value.accept_proof_request(
             controller=aries_controller,
             pres_ex_id=pres_ex_id,
@@ -146,7 +147,7 @@ async def accept_proof_request(
 async def reject_proof_request(
     pres_ex_id: str,
     problem_report: Optional[V20PresProblemReportRequest] = None,
-    protocol_version: Optional[ProtocolVersion] = '2',
+    protocol_version: Optional[ProtocolVersion] = "2",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> None:
     """

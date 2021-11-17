@@ -6,6 +6,7 @@ import json
 from aries_cloudcontroller import (
     AcaPyClient,
     IndyProofRequest,
+    IndyProofReqAttrSpec,
     IndyRequestedCredsRequestedAttr,
     IndyRequestedCredsRequestedPred,
 )
@@ -113,31 +114,23 @@ proof_dict = dict(
         "connection_id": "string",
         "proof_request": {
             "name": "string",
-            "non_revoked": {"from": 0, "to": 0},
+            "non_revoked": {"from_": 0, "to": 0},
             "nonce": "12345",
             "requested_attributes": {
-                "additionalProp1": {
+                "0_string_uuid": {
                     "name": "string",
                     "names": ["string"],
-                    "non_revoked": {"from": 0, "to": 0},
-                    "restrictions": [
-                        {
-                            "additionalProp1": "string",
-                        }
-                    ],
+                    "non_revoked": {"from_": 0, "to": 0},
+                    "restrictions": None,
                 },
             },
             "requested_predicates": {
-                "additionalProp1": {
+                "0_string_GE_uuid": {
                     "name": "string",
                     "p_type": "<",
                     "p_value": 0,
-                    "non_revoked": {"from": 0, "to": 0},
-                    "restrictions": [
-                        {
-                            "additionalProp1": "string",
-                        }
-                    ],
+                    "non_revoked": {"from_": 0, "to": 0},
+                    "restrictions": None,
                 },
             },
             "version": "0.1",
@@ -148,6 +141,31 @@ proof_dict = dict(
 )
 
 
+indy_proof_request = IndyProofRequest(
+    name="Proof Request",
+    non_revoked=None,
+    nonce=None,
+    requested_attributes={
+        "0_string_uuid": {
+            "name": "string",
+            "names": ["string"],
+            "non_revoked": {"from_": 0, "to": 0},
+            "restrictions": None,
+        },
+    },
+    requested_predicates={
+        "0_string_GE_uuid": {
+            "name": "string",
+            "p_type": "<",
+            "p_value": 0,
+            "non_revoked": {"from_": 0, "to": 0},
+            "restrictions": None,
+        },
+    },
+    version="0.3",
+)
+
+
 @pytest.mark.asyncio
 async def test_send_proof_request(
     alice_connection_id: str,
@@ -155,7 +173,7 @@ async def test_send_proof_request(
 ):
     response = await async_client_alice_module_scope.post(
         BASE_PATH + f"/send-request?connection_id={alice_connection_id}",
-        data=json.dumps(proof_dict['proof_request']),
+        data=json.dumps(proof_dict),
     )
 
     result = response.json()
@@ -165,27 +183,6 @@ async def test_send_proof_request(
     assert "pres_request" in result["v20"].keys()
 
 
-indy_proof_request = IndyProofRequest(
-    name="Proof Request",
-    non_revoked=None,
-    nonce=None,
-    requested_attributes={
-        "additionalProp1": {
-            "name": "favouriteDrink",
-            "names": ["age"],
-            "non_revoked": {"from": 1, "to": 3},
-            "restrictions": [
-                {
-                    "additionalProp1": "WgWxqztrNooG92RXvxSTWv:3:CL:20:tag",
-                }
-            ],
-        }
-    },
-    requested_predicates=None,
-    version="0.3",
-)
-
-
 @pytest.mark.asyncio
 async def test_create_proof_request(
     async_client_alice_module_scope: AsyncClient,
@@ -193,7 +190,7 @@ async def test_create_proof_request(
     response = await async_client_alice_module_scope.post(
         BASE_PATH
         + "/create-request?connection_id={alice_connection_id}&protocol_version=2",
-        data=json.dumps(indy_proof_request.dict()),
+        data=json.dumps(proof_dict),
     )
 
     result = response.json()
@@ -245,12 +242,11 @@ async def test_accept_proof_request(
     # assert result == ""
     pass
 
+
 @pytest.mark.asyncio
 async def test_reject_proof_request(
-    member_admin_agent_mock,
+    async_client,
     alice_connection_id: str,
-    credential_exchange_id: str,
-    async_client_bob_module_scope: AsyncClient,
     async_client_alice_module_scope: AsyncClient,
 ):
     # response = await async_client_alice_module_scope.post(
@@ -265,8 +261,8 @@ async def test_reject_proof_request(
 
     print(f"\n\n\n {response.json()} \n\n\n")
     pres_ex_id = response.json()["v20"]["pres_ex_id"]
-   
-    response = await async_client_bob_module_scope.post(
+
+    response = await async_client.post(
         BASE_PATH + f"/reject-request?pres_ex_id={pres_ex_id}",
     )
     result = response.json()

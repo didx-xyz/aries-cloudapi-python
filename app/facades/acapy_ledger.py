@@ -170,3 +170,37 @@ async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
             detail="Something went wrong. Could not write credential definition to the ledger",
         )
     return write_cred_response.credential_definition_id
+
+
+async def schema_id_from_credential_definition_id(
+    controller: AcaPyClient, credential_definition_id: str
+):
+    """
+    From a credential definition, get the identifier for its schema.
+
+    Taken from ACA-Py implementation:
+    https://github.com/hyperledger/aries-cloudagent-python/blob/f9506df755e46c5be93b228c8811276b743a1adc/aries_cloudagent/ledger/indy.py#L790
+
+    Parameters:
+    ----------
+    credential_definition_id: The identifier of the credential definition
+            from which to identify a schema
+
+    Returns:
+    -------
+    schema_id : string
+    """
+    # scrape schema id or sequence number from cred def id
+    tokens = credential_definition_id.split(":")
+    if len(tokens) == 8:  # node protocol >= 1.4: cred def id has 5 or 8 tokens
+        return ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
+
+    # get txn by sequence number, retrieve schema identifier components
+    seq_no = tokens[3]
+
+    schema = await controller.schema.get_schema(schema_id=seq_no)
+
+    if not schema.schema_ or not schema.schema_.id:
+        raise Exception(f"Schema with transaction number {seq_no} not found")
+
+    return schema.schema_.id

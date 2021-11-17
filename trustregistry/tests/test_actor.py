@@ -69,7 +69,7 @@ def test_update_actor():
 
 def test_remove_schema():
     response = client.delete("/registry/actors/darth-vader")
-    assert response.status_code == 200
+    assert response.status_code == 204
     assert response.json() is None
 
     response = client.delete(

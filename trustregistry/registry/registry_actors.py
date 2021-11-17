@@ -39,7 +39,7 @@ async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
     return actor
 
 
-@router.delete("/{actor_id}")
+@router.delete("/{actor_id}", status_code=204)
 async def remove_actor(actor_id: str, db: Session = Depends(get_db)):
     delete_actor_result = crud.delete_actor(db, actor_id=actor_id)
     if delete_actor_result is None:

@@ -118,19 +118,19 @@ async def test_assert_valid_verifier():
 
 @pytest.mark.asyncio
 async def test_actor_has_schema():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.text = "{}"
 
         assert await trf.actor_has_schema("1", "2") is False
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.text = "{}"
 
         assert await trf.actor_has_schema("1", "2") is False
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.json.return_value = {"schemas": ["schema_id"]}
 
@@ -139,27 +139,27 @@ async def test_actor_has_schema():
 
 @pytest.mark.asyncio
 async def test_actor_has_role():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         assert await trf.actor_has_role("yoma", "issuer") is False
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         with pytest.raises(HTTPException):
             await trf.actor_has_role("yoma", "issuer")
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
         with pytest.raises(HTTPException):
             await trf.actor_has_role("yoma", "issuer")
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
@@ -168,7 +168,7 @@ async def test_actor_has_role():
 
 @pytest.mark.asyncio
 async def test_actor_by_did():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         res = {
             "id": "yoma",
             "roles": ["verifier"],
@@ -183,7 +183,7 @@ async def test_actor_by_did():
         )
         assert actor is res
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 404
         mock_request.return_value.json.return_value = {}
 
@@ -196,7 +196,7 @@ async def test_actor_by_did():
 
 @pytest.mark.asyncio
 async def test_actor_with_role():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actors = [
             {"id": "yoma", "roles": ["issuer"]},
             {"id": "yoma2", "roles": ["issuer"]},
@@ -206,7 +206,7 @@ async def test_actor_with_role():
 
         assert await trf.actors_with_role("issuer") == actors
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actors = [
             {"id": "yoma", "roles": ["issuer"]},
             {"id": "yoma2", "roles": ["verifier"]},
@@ -216,7 +216,7 @@ async def test_actor_with_role():
 
         assert await trf.actors_with_role("issuer") == [actors[0]]
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actors = [
             {"id": "yoma", "roles": ["issuer"]},
             {"id": "yoma2", "roles": ["verifier"]},
@@ -226,7 +226,7 @@ async def test_actor_with_role():
 
         assert await trf.actors_with_role("issuer") == []
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actors = [
             {"id": "yoma", "roles": ["verifier"]},
             {"id": "yoma2", "roles": ["verifier"]},
@@ -239,7 +239,7 @@ async def test_actor_with_role():
 
 @pytest.mark.asyncio
 async def test_registry_has_schema():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did:name:version"
         mock_request.return_value.status_code = 200
@@ -247,7 +247,7 @@ async def test_registry_has_schema():
 
         assert await trf.registry_has_schema(schema_id) is True
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did_3:name:version"
         mock_request.return_value.status_code = 200
@@ -255,7 +255,7 @@ async def test_registry_has_schema():
 
         assert await trf.registry_has_schema(schema_id) is False
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did_3:name:version"
         mock_request.return_value.status_code = 418
@@ -265,7 +265,7 @@ async def test_registry_has_schema():
 
 @pytest.mark.asyncio
 async def test_get_did_for_actor():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actor = {
             "id": "yoma",
             "roles": ["verifier"],
@@ -276,7 +276,7 @@ async def test_get_did_for_actor():
 
         assert await trf.get_did_for_actor("yoma") is None
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actor = {
             "id": "yoma",
             "roles": ["verifier"],
@@ -288,7 +288,7 @@ async def test_get_did_for_actor():
 
         assert await trf.get_did_for_actor("yoma") == ["actor_did", "invitation"]
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         actor = {
             "id": "yoma",
             "roles": ["verifier"],
@@ -303,7 +303,7 @@ async def test_get_did_for_actor():
 
 @pytest.mark.asyncio
 async def test_register_schema():
-    with patch("requests.post") as mock_request:
+    with patch("httpx.post") as mock_request:
         schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
         mock_request.return_value.status_code = 200
 
@@ -314,7 +314,7 @@ async def test_register_schema():
             json={"schema_id": schema_id},
         )
 
-    with patch("requests.post") as mock_request, pytest.raises(
+    with patch("httpx.post") as mock_request, pytest.raises(
         Exception,
         match="Error registering schema WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0: ",
     ):
@@ -333,7 +333,7 @@ async def test_register_actor():
         did="actor-did",
         didcomm_invitation="actor-didcomm-invitation",
     )
-    with patch("requests.post") as mock_request:
+    with patch("httpx.post") as mock_request:
         mock_request.return_value.status_code = 200
 
         await trf.register_actor(actor=actor)
@@ -342,7 +342,7 @@ async def test_register_actor():
             trf.TRUST_REGISTRY_URL + "/registry/actors", json=actor
         )
 
-    with patch("requests.post") as mock_request, pytest.raises(
+    with patch("httpx.post") as mock_request, pytest.raises(
         Exception, match="Error registering actor: "
     ):
         mock_request.return_value.status_code = 500
@@ -352,7 +352,7 @@ async def test_register_actor():
 
 @pytest.mark.asyncio
 async def test_get_actor_by_did():
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         res = {
             "actors": [],
             "schemas": [],
@@ -365,7 +365,7 @@ async def test_get_actor_by_did():
         mock_request.assert_called_once_with(trf.TRUST_REGISTRY_URL + "/registry")
         assert tr is res
 
-    with patch("requests.get") as mock_request:
+    with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 404
         mock_request.return_value.json.return_value = {}
 

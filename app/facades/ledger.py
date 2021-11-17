@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Optional
 
-import requests
+import httpx
 from aries_cloudcontroller import DID
 from fastapi import HTTPException
 
@@ -37,7 +37,7 @@ async def _post_to_ledger(payload, url: Optional[str] = None):
         The response object of the post request
     """
     url = url if url else LEDGER_URL
-    post_to_ledger_resp = requests.post(url, data=payload.json(), headers={})
+    post_to_ledger_resp = httpx.post(url, data=payload.json(), headers={})
 
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()

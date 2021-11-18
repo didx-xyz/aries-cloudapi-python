@@ -24,6 +24,12 @@ from app.tests.utils_test import get_random_string
 
 BASE_PATH = "/generic/proof"
 
+# WALLET_HEADERS = {
+#     "content-type": "application/json",
+#     "x-role": "yoma",
+#     "x-api-key": "adminApiKey",
+# }
+
 
 async def get(response: Optional[Any] = None):
     if response:
@@ -178,18 +184,21 @@ async def test_send_proof_request(
 
     result = response.json()
     assert result["v10"] is None
+    assert result["v20"]["auto_present"] is not None
     assert "auto_present" in result["v20"].keys()
     assert "created_at" in result["v20"].keys()
     assert "pres_request" in result["v20"].keys()
+    assert result["v20"]["role"] == "verifier"
 
 
 @pytest.mark.asyncio
 async def test_create_proof_request(
+    alice_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
 ):
+    print(alice_connection_id)
     response = await async_client_alice_module_scope.post(
-        BASE_PATH
-        + "/create-request?connection_id={alice_connection_id}&protocol_version=2",
+        BASE_PATH + "/create-request?connection_id={alice_connection_id}",
         data=json.dumps(proof_dict),
     )
 
@@ -197,50 +206,55 @@ async def test_create_proof_request(
     assert result["v10"] is None
     assert result["v20"]
     assert "auto_present" in result["v20"].keys()
+    assert result["v20"]["auto_present"] is not None
     assert "created_at" in result["v20"].keys()
     assert "pres_request" in result["v20"].keys()
+    assert result["v20"]["role"] == "verifier"
 
 
 @pytest.mark.asyncio
 async def test_accept_proof_request(
     alice_connection_id,
+    bob_connection_id,
     async_client,
     async_client_bob_module_scope: AsyncClient,
     async_client_alice_module_scope: AsyncClient,
 ):
-    # proof_dict['connection_id'] = alice_connection_id
-    # proof_req_res = await async_client_alice_module_scope.post(
-    #     BASE_PATH + f"/send-request?connection_id={alice_connection_id}",
-    #     data=json.dumps(proof_dict),
-    # )
-    # print(proof_req_res.json())
-    # assert proof_req_res.json() == ""
-    # presentation_exchange_id = proof_req_res.json()["v20"]["pres_ex_id"]
-    # print(f"\n\n\n {presentation_exchange_id} \n\n\n")
-    # WALLET_HEADERS = {
-    #     "content-type": "application/json",
-    #     "x-role": "yoma",
-    #     "x-api-key": "adminApiKey",
-    # }
-    # response = await async_client.post(
-    #     BASE_PATH + f"/accept-request?pres_ex_id={presentation_exchange_id}",
-    #     data=json.dumps(IndyPresSpec(**{
-    #             "requested_attributes": {
-    #                 "additionalProp1": {"cred_id": "string", "revealed": True},
-    #             },
-    #             "requested_predicates": {
-    #                 "additionalProp1": {"cred_id": "string", "timestamp": 0},
-    #             },
-    #             "self_attested_attributes": {
-    #                 "additionalProp1": "string",
-    #             },
-    #             "trace": True,
-    #         }).dict()),
-    #     headers=WALLET_HEADERS,
-    # )
-    # result = response.json()
-    # assert result == ""
-    pass
+    proof_dict["connection_id"] = alice_connection_id
+    proof_req_res = await async_client_alice_module_scope.post(
+        BASE_PATH + f"/send-request?connection_id={alice_connection_id}",
+        data=json.dumps(proof_dict),
+    )
+    print(f"\n{json.dumps(proof_req_res.json(), indent=4)}\n")
+    presentation_exchange_id = proof_req_res.json()["v20"]["pres_ex_id"]
+    print(f"\n {presentation_exchange_id} \n")
+    time.sleep(5)
+    response = await async_client_alice_module_scope.post(
+        BASE_PATH + f"/accept-request?pres_ex_id={presentation_exchange_id}",
+        data=json.dumps(
+            IndyPresSpec(
+                **{
+                    "requested_attributes": {
+                        "0_string_uuid": {"cred_id": "string", "revealed": True},
+                    },
+                    "requested_predicates": {
+                        "0_string_GE_uuid": {"cred_id": "string", "timestamp": 1},
+                    },
+                    "self_attested_attributes": {
+                        "0_string_uuid": "string",
+                    },
+                    "trace": True,
+                }
+            ).dict()
+        ),
+    )
+    # TODO check for the correct response when state is request_received
+    result = response.json()
+    assert result["error_message"]
+    assert ("Presentation exchange" and "state (must be request-received)") in result[
+        "error_message"
+    ]
+    assert response.status_code == 400
 
 
 @pytest.mark.asyncio
@@ -249,21 +263,16 @@ async def test_reject_proof_request(
     alice_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
 ):
-    # response = await async_client_alice_module_scope.post(
-    #     BASE_PATH
-    #     + "/create-request?connection_id={alice_connection_id}&protocol_version=2",
-    #     data=json.dumps(proof_dict),
-    # )
     response = await async_client_alice_module_scope.post(
         BASE_PATH + f"/send-request?connection_id={alice_connection_id}",
         data=json.dumps(proof_dict),
     )
 
-    print(f"\n\n\n {response.json()} \n\n\n")
+    print(f"\n\n\n {json.dumps(response.json(), indent=4)} \n\n\n")
     pres_ex_id = response.json()["v20"]["pres_ex_id"]
 
-    response = await async_client.post(
+    response = await async_client_alice_module_scope.post(
         BASE_PATH + f"/reject-request?pres_ex_id={pres_ex_id}",
     )
     result = response.json()
-    assert result == ""
+    assert result is None

@@ -30,15 +30,13 @@ class ProofsV1(Proof):
         trace: bool = False,
     ) -> V10PresentationExchange:
 
-        proof_request = await controller.present_proof_v1_0.create_proof_request(
+        return await controller.present_proof_v1_0.create_proof_request(
             body=V10PresentationCreateRequestRequest(
                 proof_request=proof,
                 comment=comment,
                 trace=trace,
             )
         )
-
-        return PresentationExchange(v10=proof_request)
 
     @classmethod
     async def send_proof_request(
@@ -57,7 +55,9 @@ class ProofsV1(Proof):
             if free:
                 presentation_exchange = (
                     await controller.present_proof_v1_0.send_request_free(
-                        body=presentation_request
+                        body=V10PresentationSendRequestRequest(
+                            **presentation_request.dict()
+                        )
                     )
                 )
             elif (
@@ -76,7 +76,7 @@ class ProofsV1(Proof):
                 )
             else:
                 raise NotImplementedError
-            return PresentationExchange(v10=presentation_exchange)
+            return presentation_exchange
         except Exception as e:
             raise e from e
 
@@ -90,7 +90,7 @@ class ProofsV1(Proof):
         presentation_record = await controller.present_proof_v1_0.send_presentation(
             pres_ex_id=pres_ex_id, body=body
         )
-        return PresentationExchange(v10=presentation_record)
+        return V10PresentationExchange(presentation_record)
 
     @classmethod
     async def reject_proof_request(

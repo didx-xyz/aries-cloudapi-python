@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -35,8 +35,7 @@ class ProofsV2(Proof):
                 trace=trace,
             )
         )
-
-        return PresentationExchange(v20=proof_request)
+        return proof_request
 
     @classmethod
     async def send_proof_request(
@@ -71,7 +70,7 @@ class ProofsV2(Proof):
                 )
             else:
                 raise NotImplementedError
-            return PresentationExchange(v20=presentation_exchange)
+            return presentation_exchange
         except Exception as e:
             raise e from e
 
@@ -80,13 +79,13 @@ class ProofsV2(Proof):
         cls,
         controller: AcaPyClient,
         pres_ex_id: str,
-        body: V20PresSpecByFormatRequest = None,
+        body: Optional[V20PresSpecByFormatRequest] = None,
     ) -> PresentationExchange:
         presentation_record = await controller.present_proof_v2_0.send_presentation(
             pres_ex_id=pres_ex_id, body=body
         )
 
-        return PresentationExchange(v20=presentation_record)
+        return presentation_record
 
     @classmethod
     async def reject_proof_request(

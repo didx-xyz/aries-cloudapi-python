@@ -9,6 +9,9 @@ stop_n_clean:
 clean:
 	docker rm $(shell docker ps -a -q)
 
+start_usecache:
+	./manage up-daemon-usecache
+
 .PHONY: start
 start:
 	./manage start

@@ -11,7 +11,6 @@ from aries_cloudcontroller import (
     V20PresSendRequestRequest,
     V20PresSpecByFormatRequest,
 )
-from aries_cloudcontroller.model.indy_proof_request import IndyProofRequest
 from fastapi.exceptions import HTTPException
 from pydantic.typing import NoneType
 
@@ -24,14 +23,14 @@ class ProofsV2(Proof):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof: V20PresRequestByFormat,
+        proof_request: V20PresRequestByFormat,
         comment: str = None,
         trace: bool = False,
     ) -> PresentationExchange:
 
         proof_request = await controller.present_proof_v2_0.create_proof_request(
             body=V20PresCreateRequestRequest(
-                presentation_request=proof,
+                presentation_request=proof_request,
                 comment=comment,
                 trace=trace,
             )
@@ -42,7 +41,7 @@ class ProofsV2(Proof):
     async def send_proof_request(
         cls,
         controller: AcaPyClient,
-        presentation_request: Union[
+        proof_request: Union[
             V20PresSendRequestRequest, AdminAPIMessageTracing, V20PresProposalRequest
         ],
         free: bool = True,
@@ -51,16 +50,16 @@ class ProofsV2(Proof):
         if free:
             presentation_exchange = (
                 await controller.present_proof_v2_0.send_request_free(
-                    body=presentation_request
+                    body=proof_request
                 )
             )
-        elif isinstance(presentation_request, AdminAPIMessageTracing) and pres_ex_id:
+        elif isinstance(proof_request, AdminAPIMessageTracing) and pres_ex_id:
             presentation_exchange = await controller.present_proof_v2_0.send_request(
-                pres_ex_id=pres_ex_id, body=presentation_request
+                pres_ex_id=pres_ex_id, body=proof_request
             )
-        elif isinstance(presentation_request, V20PresProposalRequest):
+        elif isinstance(proof_request, V20PresProposalRequest):
             presentation_exchange = await controller.present_proof_v2_0.send_proposal(
-                body=presentation_request
+                body=proof_request
             )
         else:
             raise NotImplementedError
@@ -118,20 +117,18 @@ class ProofsV2(Proof):
 
     @classmethod
     def __record_to_model(cls, record: V20PresExRecord) -> PresentationExchange:
-        presentation_exchange_attrs = record
 
         return PresentationExchange(
-            auto_present=presentation_exchange_attrs.auto_present,
-            connection_id=presentation_exchange_attrs.connection_id,
-            created_at=presentation_exchange_attrs.created_at,
-            initiator=presentation_exchange_attrs.initiator,
-            presentation=presentation_exchange_attrs.pres,
-            presentation_exchange_id="v2-"
-            + str(presentation_exchange_attrs.pres_ex_id),
-            role=presentation_exchange_attrs.role,
-            state=cls.__v2_state_to_rfc_state(presentation_exchange_attrs.state),
-            updated_at=presentation_exchange_attrs.updated_at,
-            verified=cls.__string_to_bool(presentation_exchange_attrs.verified),
+            auto_present=record.auto_present,
+            connection_id=record.connection_id,
+            created_at=record.created_at,
+            initiator=record.initiator,
+            presentation=record.pres,
+            presentation_exchange_id="v2-" + str(record.pres_ex_id),
+            role=record.role,
+            state=cls.__v2_state_to_rfc_state(record.state),
+            updated_at=record.updated_at,
+            verified=cls.__string_to_bool(record.verified),
         )
 
     @classmethod

@@ -49,7 +49,7 @@ async def schema_definition(yoma_agent_module_scope: AcaPyClient) -> Dict[str, A
 
 @pytest.fixture(scope="module")
 async def credential_definition_id(
-    async_client_bob_module_scope: AsyncClient, schema_definition: Dict[str, Any]
+    async_client_bob_module_scope: AsyncClient, schema_def: Dict[str, Any]
 ) -> str:
     # when
     response = await async_client_bob_module_scope.post(
@@ -57,7 +57,7 @@ async def credential_definition_id(
         data=json.dumps(
             {
                 "support_revocation": False,
-                "schema_id": schema_definition["schema_id"],
+                "schema_id": schema_def["schema_id"],
                 "tag": get_random_string(5),
             }
         ),

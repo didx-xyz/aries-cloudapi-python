@@ -1,19 +1,23 @@
-from typing import Any, Optional
+from typing import Optional, Any
+from aries_cloudcontroller.model.v20_pres import V20Pres
 
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
+    AttachDecorator,
+    AttachDecoratorData,
     AdminAPIMessageTracing,
     IndyProof,
     IndyProofProof,
     IndyProofRequest,
     IndyProofRequestedProof,
     V20PresExRecord,
+    V20PresFormat,
     V20PresExRecordByFormat,
     V20PresProposalByFormat,
     V20PresProposalRequest,
+    V20PresProposal,
     V20PresRequestByFormat,
-    V20PresSendRequestRequest,
     V20PresSpecByFormatRequest,
 )
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
@@ -36,18 +40,6 @@ indy_proof = IndyProof(
     requested_proof=IndyProofRequestedProof(),
 )
 
-proof_request_indy = V20PresRequestByFormat(
-    dif=None,
-    indy=IndyProofRequest(
-        name=None,
-        non_revoked=None,
-        nonce=None,
-        requested_attributes=None,
-        requested_predicates=None,
-        version="0.0.1",
-    ),
-)
-
 send_request_tracing = AdminAPIMessageTracing(trace=False)
 
 v20_presentation_exchange_records = [
@@ -62,11 +54,25 @@ v20_presentation_exchange_records = [
         created_at="2021-09-15 13:49:47Z",
         error_msg=None,
         initiator="self",
-        pres=None,
-        pres_ex_id=None,
-        pres_proposal=None,
+        pres=V20Pres(
+            formats=[V20PresFormat(attach_id="1234", format="indy")],
+            presentationsattach=[
+                AttachDecorator(
+                    data=AttachDecoratorData(base64="kjbdvjbvekjvo"),
+                )
+            ],
+            pres_ex_id="abcd",
+            pres_proposal=V20PresProposal(
+                formats=[V20PresFormat(attach_id="1234", format="indy")],
+                proposalsattach=[
+                    AttachDecorator(
+                        data=AttachDecoratorData(base64="kjbdvjbvekjvo"),
+                    )
+                ],
+            ),
+        ),
         pres_request=None,
-        role=None,
+        role="prover",
         state=None,
         thread_id=None,
         trace=None,
@@ -75,23 +81,70 @@ v20_presentation_exchange_records = [
     ),
 ]
 
+proof_dict = dict(
+    {
+        "connection_id": "string",
+        "proof_request": {
+            "name": "string",
+            "non_revoked": {"from_": 0, "to": 0},
+            "nonce": "12345",
+            "requested_attributes": {
+                "0_string_uuid": {
+                    "name": "string",
+                    "names": ["string"],
+                    "non_revoked": {"from_": 0, "to": 0},
+                    "restrictions": None,
+                },
+            },
+            "requested_predicates": {
+                "0_string_GE_uuid": {
+                    "name": "string",
+                    "p_type": "<",
+                    "p_value": 0,
+                    "non_revoked": {"from_": 0, "to": 0},
+                    "restrictions": None,
+                },
+            },
+            "version": "0.1",
+        },
+        "comment": "string",
+        "trace": True,
+    }
+)
+
+presentation_exchange_record = PresentationExchange(
+    auto_present=True,
+    connection_id="abcde",
+    created_at="2021-11-22 11:37:45.179595Z",
+    updated_at="2021-11-22 11:37:45.179595Z",
+    initiator="self",
+    presentation_exchange_id="abcde",
+    presentation={},
+    role="prover",
+    state="presentation-sent",
+    verified=False,
+)
+
+proof_request_indy = V20PresRequestByFormat(
+    dif=None,
+    indy=IndyProofRequest(**proof_dict),
+)
+
 
 @pytest.mark.asyncio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v2_0).create_proof_request(...).thenReturn(
-        get(PresentationExchange(v20=v20_presentation_exchange_records[0]))
+        get(v20_presentation_exchange_records[0])
     )
 
     created_proof_request = await ProofsV2.create_proof_request(
         controller=mock_agent_controller,
-        proof=proof_request_indy,
+        proof_request=proof_request_indy,
         comment=None,
         trace=False,
     )
 
     assert isinstance(created_proof_request, PresentationExchange)
-    assert isinstance(created_proof_request.v20, V20PresExRecord)
-    assert created_proof_request.v10 is None
 
 
 @pytest.mark.asyncio
@@ -100,55 +153,39 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # proof interface decides upon params which methods it calls on the client
     # so let's mock those methods out
     when(mock_agent_controller.present_proof_v2_0).send_request(...).thenReturn(
-        get(PresentationExchange(v20=v20_presentation_exchange_records[0]))
+        get(v20_presentation_exchange_records[0])
     )
     when(mock_agent_controller.present_proof_v2_0).send_proposal(...).thenReturn(
-        get(PresentationExchange(v20=v20_presentation_exchange_records[0]))
+        get(v20_presentation_exchange_records[0])
     )
     when(mock_agent_controller.present_proof_v2_0).send_request_free(...).thenReturn(
-        get(PresentationExchange(v20=v20_presentation_exchange_records[0]))
+        get(v20_presentation_exchange_records[0])
     )
 
     created_proof_send_proposal = await ProofsV2.send_proof_request(
         controller=mock_agent_controller,
-        presentation_request=send_request_tracing,
+        proof_request=send_request_tracing,
         pres_ex_id="abc",
         free=False,
     )
 
     assert isinstance(created_proof_send_proposal, PresentationExchange)
-    assert isinstance(created_proof_send_proposal.v20, V20PresExRecord)
-    assert created_proof_send_proposal.v10 is None
-
-    created_proof_request_free = await ProofsV2.send_proof_request(
-        controller=mock_agent_controller,
-        presentation_request=V20PresSendRequestRequest(
-            connection_id="abc", presentation_request=proof_request_indy
-        ),
-        pres_ex_id=None,
-        free=True,
-    )
-
-    assert isinstance(created_proof_request_free, PresentationExchange)
-    assert isinstance(created_proof_request_free.v20, V20PresExRecord)
-    assert created_proof_request_free.v10 is None
 
     created_proof_send_request = await ProofsV2.send_proof_request(
         controller=mock_agent_controller,
-        presentation_request=V20PresProposalRequest(
+        proof_request=V20PresProposalRequest(
             connection_id="abc",
             presentation_proposal=V20PresProposalByFormat(**proof_request_indy.dict()),
         ),
         pres_ex_id="abc",
+        free=False,
     )
 
     assert isinstance(created_proof_send_request, PresentationExchange)
-    assert isinstance(created_proof_send_request.v20, V20PresExRecord)
-    assert created_proof_send_request.v10 is None
 
     with pytest.raises(NotImplementedError):
         await ProofsV2.send_proof_request(
-            mock_agent_controller, presentation_request="I am invalid"
+            mock_agent_controller, proof_request="I am invalid", free=False
         )
 
 
@@ -172,8 +209,6 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     )
 
     assert isinstance(accepted_proof_request, PresentationExchange)
-    assert isinstance(accepted_proof_request.v20, V20PresExRecord)
-    assert accepted_proof_request.v10 is None
 
 
 @pytest.mark.asyncio

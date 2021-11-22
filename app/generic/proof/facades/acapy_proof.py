@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Optional
 
 from aries_cloudcontroller import AcaPyClient, IndyProofRequest
+from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 
 from app.generic.proof.models import PresentationExchange
 
@@ -11,11 +12,12 @@ class Proof(ABC):
 
     @classmethod
     @abstractmethod
-    async def request_proof(
+    async def send_request_proof(
         cls,
         controller: AcaPyClient,
-        proof_request: Any = None,
-        connection_id: str = None,
+        proof_request: IndyProofRequest,
+        comment: Optional[str] = None,
+        trace: Optional[bool] = False,
     ) -> PresentationExchange:
         """
         Request proof from a connection ID.
@@ -35,7 +37,9 @@ class Proof(ABC):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: Optional[IndyProofRequest] = None,
+        proof_request: IndyProofRequest,
+        comment: Optional[str] = None,
+        trace: Optional[bool] = False,
     ) -> PresentationExchange:
         """
         Create proof request
@@ -51,7 +55,7 @@ class Proof(ABC):
     @classmethod
     @abstractmethod
     async def accept_proof_request(
-        cls, controller: AcaPyClient, pres_ex_id: str
+        cls, controller: AcaPyClient, pres_ex_id: str, body: Optional[IndyPresSpec]
     ) -> PresentationExchange:
         """ "
         Accept proof request
@@ -67,7 +71,10 @@ class Proof(ABC):
     @classmethod
     @abstractmethod
     async def reject_proof_request(
-        cls, controller: AcaPyClient, pres_ex_id: str
+        cls,
+        controller: AcaPyClient,
+        pres_ex_id: str,
+        problem_report: Optional[str] = None,
     ) -> None:
         """ "
         Accept proof request

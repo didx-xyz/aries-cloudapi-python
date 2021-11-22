@@ -3,19 +3,19 @@ from typing import Any, Optional
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    AdminAPIMessageTracing,
     IndyPresAttrSpec,
     IndyPresPredSpec,
     IndyPresPreview,
     IndyProof,
+    IndyPresSpec,
     IndyProofProof,
     IndyProofRequest,
     IndyProofRequestedProof,
+    AdminAPIMessageTracing,
     V10PresentationExchange,
-    V10PresentationProposalRequest,
     V10PresentationSendRequestRequest,
+    V10PresentationProposalRequest,
 )
-from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from fastapi.exceptions import HTTPException
 from mockito import when
 
@@ -74,23 +74,65 @@ v10_presentation_proposal_request = V10PresentationProposalRequest(
     auto_present=True,
 )
 
+proof_dict = dict(
+    {
+        "connection_id": "string",
+        "proof_request": {
+            "name": "string",
+            "non_revoked": {"from_": 0, "to": 0},
+            "nonce": "12345",
+            "requested_attributes": {
+                "0_string_uuid": {
+                    "name": "string",
+                    "names": ["string"],
+                    "non_revoked": {"from_": 0, "to": 0},
+                    "restrictions": None,
+                },
+            },
+            "requested_predicates": {
+                "0_string_GE_uuid": {
+                    "name": "string",
+                    "p_type": "<",
+                    "p_value": 0,
+                    "non_revoked": {"from_": 0, "to": 0},
+                    "restrictions": None,
+                },
+            },
+            "version": "0.1",
+        },
+        "comment": "string",
+        "trace": True,
+    }
+)
+
+presentation_exchange_record = PresentationExchange(
+    auto_present=True,
+    connection_id="abcde",
+    created_at="2021-11-22 11:37:45.179595Z",
+    updated_at="2021-11-22 11:37:45.179595Z",
+    initiator="self",
+    presentation_exchange_id="abcde",
+    presentation={},
+    role="prover",
+    state="presentation-sent",
+    verified=False,
+)
+
 
 @pytest.mark.asyncio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).create_proof_request(...).thenReturn(
-        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
+        get(presentation_exchange_record)
     )
 
     created_proof_request = await ProofsV1.create_proof_request(
         controller=mock_agent_controller,
-        proof=indy_proof_request,
+        proof_request=IndyProofRequest(**proof_dict),
         comment=None,
         trace=False,
     )
 
     assert isinstance(created_proof_request, PresentationExchange)
-    assert isinstance(created_proof_request.v10, V10PresentationExchange)
-    assert created_proof_request.v20 is None
 
 
 @pytest.mark.asyncio
@@ -99,32 +141,30 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # proof interface decides upon params which methods it calls on the client
     # so let's mock those methods out
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
-        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
+        get(presentation_exchange_record)
     )
     when(mock_agent_controller.present_proof_v1_0).send_proposal(...).thenReturn(
-        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
+        get(presentation_exchange_record)
     )
     when(mock_agent_controller.present_proof_v1_0).send_request(...).thenReturn(
-        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
+        get(presentation_exchange_record)
     )
     when(mock_agent_controller.present_proof_v1_0).send_request_free(...).thenReturn(
-        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
+        get(presentation_exchange_record)
     )
 
     created_proof_send_proposal = await ProofsV1.send_proof_request(
         controller=mock_agent_controller,
-        presentation_request=v10_presentation_proposal_request,
+        proof_request=v10_presentation_proposal_request,
         pres_ex_id=None,
         free=False,
     )
 
     assert isinstance(created_proof_send_proposal, PresentationExchange)
-    assert isinstance(created_proof_send_proposal.v10, V10PresentationExchange)
-    assert created_proof_send_proposal.v20 is None
 
     created_proof_request_free = await ProofsV1.send_proof_request(
         controller=mock_agent_controller,
-        presentation_request=V10PresentationSendRequestRequest(
+        proof_request=V10PresentationSendRequestRequest(
             connection_id="abc",
             proof_request=indy_proof_request,
         ),
@@ -133,31 +173,27 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     )
 
     assert isinstance(created_proof_request_free, PresentationExchange)
-    assert isinstance(created_proof_request_free.v10, V10PresentationExchange)
-    assert created_proof_request_free.v20 is None
 
     created_proof_send_request = await ProofsV1.send_proof_request(
         controller=mock_agent_controller,
-        presentation_request=AdminAPIMessageTracing(
+        proof_request=AdminAPIMessageTracing(
             trace=False,
         ),
         pres_ex_id="abc",
     )
 
     assert isinstance(created_proof_send_request, PresentationExchange)
-    assert isinstance(created_proof_send_request.v10, V10PresentationExchange)
-    assert created_proof_send_request.v20 is None
 
     with pytest.raises(NotImplementedError):
         await ProofsV1.send_proof_request(
-            mock_agent_controller, presentation_request="I am invalid"
+            mock_agent_controller, proof_request="I am invalid"
         )
 
 
 @pytest.mark.asyncio
 async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
-        get(PresentationExchange(v10=v10_presentation_exchange_records[0]))
+        get(presentation_exchange_record)
     )
 
     accepted_proof_request = await ProofsV1.accept_proof_request(
@@ -171,8 +207,6 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     )
 
     assert isinstance(accepted_proof_request, PresentationExchange)
-    assert isinstance(accepted_proof_request.v10, V10PresentationExchange)
-    assert accepted_proof_request.v20 is None
 
 
 @pytest.mark.asyncio

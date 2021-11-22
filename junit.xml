@@ -1,1 +1,112 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="4" time="25.606" timestamp="2021-11-22T12:08:25.605095" hostname="MBP-van-Moritz"><testcase classname="tests.e2e.test_proof" name="test_send_proof_request" time="25.344" /><testcase classname="tests.e2e.test_proof" name="test_create_proof_request" time="0.056" /><testcase classname="tests.e2e.test_proof" name="test_accept_proof_request" time="0.093" /><testcase classname="tests.e2e.test_proof" name="test_reject_proof_request" time="0.069" /></testsuite></testsuites>
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="25.857" timestamp="2021-11-22T17:42:32.382209" hostname="MBP-van-Moritz"><testcase classname="tests.e2e.test_proof" name="test_send_proof_request" time="25.262" /><testcase classname="tests.e2e.test_proof" name="test_create_proof_request" time="0.041" /><testcase classname="tests.e2e.test_proof" name="test_accept_proof_request" time="0.060"><failure message="TypeError: must be real number, not ClientResponseError">alice_connection_id = '5a30ab64-7e5e-45f4-b132-ed857ed71e5d', async_client_alice_module_scope = &lt;httpx.AsyncClient object at 0x10f51c070&gt;
+
+    @pytest.mark.asyncio
+    async def test_accept_proof_request(
+        alice_connection_id,
+        async_client_alice_module_scope: AsyncClient,
+    ):
+        # # V1
+        proof_dict["connection_id"] = alice_connection_id
+        proof_req_res = await async_client_alice_module_scope.post(
+            BASE_PATH + f"/send-request?connection_id={alice_connection_id}",
+            data=json.dumps(proof_dict),
+        )
+        presentation_exchange_id = proof_req_res.json()["presentation_exchange_id"]
+    
+        indy_pres_spec = IndyPresSpec(
+            requested_attributes={
+                "0_string_uuid": IndyRequestedCredsRequestedAttr(cred_id="0_string_uuid")
+            },
+            requested_predicates={
+                "0_string_GE_uuid": IndyRequestedCredsRequestedPred(
+                    cred_id="0_string_GE_uuid"
+                )
+            },
+            self_attested_attributes={"sth": "sth_else"},
+        )
+    
+&gt;       response = await async_client_alice_module_scope.post(
+            BASE_PATH + f"/accept-request?pres_ex_id={presentation_exchange_id}",
+            data=json.dumps(indy_pres_spec.dict()),
+        )
+
+app/tests/e2e/test_proof.py:235: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1746: in post
+    return await self.request(
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1425: in request
+    response = await self.send(
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1510: in send
+    response = await self._send_handling_auth(
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1545: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1579: in _send_handling_redirects
+    response = await self._send_single_request(request, timeout)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_client.py:1620: in _send_single_request
+    ) = await transport.handle_async_request(
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/httpx/_transports/asgi.py:157: in handle_async_request
+    await self.app(scope, receive, send)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/fastapi/applications.py:199: in __call__
+    await super().__call__(scope, receive, send)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/applications.py:112: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/middleware/errors.py:181: in __call__
+    raise exc from None
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/middleware/errors.py:159: in __call__
+    await self.app(scope, receive, _send)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/exceptions.py:82: in __call__
+    raise exc from None
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/exceptions.py:71: in __call__
+    await self.app(scope, receive, sender)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/routing.py:580: in __call__
+    await route.handle(scope, receive, send)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/routing.py:241: in handle
+    await self.app(scope, receive, send)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/starlette/routing.py:52: in app
+    response = await func(request)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/fastapi/routing.py:214: in app
+    raw_response = await run_endpoint_function(
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/fastapi/routing.py:149: in run_endpoint_function
+    return await dependant.call(**values)
+app/generic/proof/proof.py:176: in accept_proof_request
+    logger.error("Failed to create presentation record:\n %e", e)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:1475: in error
+    self._log(ERROR, msg, args, **kwargs)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:1589: in _log
+    self.handle(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:1599: in handle
+    self.callHandlers(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:1661: in callHandlers
+    hdlr.handle(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:954: in handle
+    self.emit(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/_pytest/logging.py:331: in emit
+    super().emit(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:1093: in emit
+    self.handleError(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:1085: in emit
+    msg = self.format(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:929: in format
+    return fmt.format(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/_pytest/logging.py:92: in format
+    return super().format(record)
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:668: in format
+    record.message = record.getMessage()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;LogRecord: app.generic.proof.proof, 40, /Users/moriarty/Projects/aries-cloudapi-python/app/generic/proof/proof.py, 176, "Failed to create presentation record:
+ %e"&gt;
+
+    def getMessage(self):
+        """
+        Return the message for this LogRecord.
+    
+        Return the message for this LogRecord after merging any user-supplied
+        arguments with the message.
+        """
+        msg = str(self.msg)
+        if self.args:
+&gt;           msg = msg % self.args
+E           TypeError: must be real number, not ClientResponseError
+
+../../.pyenv/versions/3.8.10/lib/python3.8/logging/__init__.py:373: TypeError</failure></testcase><testcase classname="tests.e2e.test_proof" name="test_reject_proof_request" time="0.051" /></testsuite></testsuites>

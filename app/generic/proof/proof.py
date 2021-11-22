@@ -10,10 +10,8 @@ from aries_cloudcontroller import (
     V20PresRequestByFormat,
     V20PresSendRequestRequest,
     V20PresSpecByFormatRequest,
-    V20PresProblemReportRequest,
 )
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.param_functions import Body
+from fastapi import APIRouter, Depends
 
 from app.dependencies import agent_selector
 from app.generic.proof.facades.acapy_proof_v1 import ProofsV1
@@ -36,7 +34,7 @@ class ProofsFacade(Enum):
 @router.post("/send-request")
 async def send_proof_request(
     connection_id: str,
-    presentation_request: IndyProofRequest,
+    proof_request: IndyProofRequest,
     protocol_version: Optional[ProtocolVersion] = "1",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> PresentationExchange:
@@ -45,38 +43,49 @@ async def send_proof_request(
 
     Parameters:
     -----------
-    presentation_request:
+    connection_id: str
+        The connection id
+    proof_request:
         The proof request
     protocol_version: Literal["1", "2"]
         The protocol version. default is 1
+
+    Returns:
+    --------
+    presnetation_exchange: PresentationExchange
+        The presentation exchange record
     """
-    if protocol_version == "2":
-        v2_presentation_exchange_rec = await ProofsFacade.v20.value.send_proof_request(
-            controller=aries_controller,
-            presentation_request=V20PresSendRequestRequest(
-                connection_id=connection_id,
-                presentation_request=V20PresRequestByFormat(
-                    dif=None, indy=IndyProofRequest(**presentation_request.dict())
+    try:
+        if protocol_version == "2":
+            presentation_exchange_rec = await ProofsFacade.v20.value.send_proof_request(
+                controller=aries_controller,
+                proof_request=V20PresSendRequestRequest(
+                    connection_id=connection_id,
+                    presentation_request=V20PresRequestByFormat(
+                        dif=None, indy=IndyProofRequest(**proof_request.dict())
+                    ),
                 ),
-            ),
-            free=True,  # alway set this to TRUE because we only support this for now.
-        )
-        return v2_presentation_exchange_rec
-    else:
-        v1_presentation_exchange_rec = await ProofsFacade.v10.value.send_proof_request(
-            controller=aries_controller,
-            presentation_request=V10PresentationSendRequestRequest(
-                connection_id=connection_id,
-                proof_request=IndyProofRequest(**presentation_request.dict()),
-            ),
-            free=True,  # alway set this to TRUE because we only support this for now.
-        )
-        return v1_presentation_exchange_rec
+                free=True,  # alway set this to TRUE because we only support this for now.
+            )
+            return presentation_exchange_rec
+        else:
+            presentation_exchange_rec = await ProofsFacade.v10.value.send_proof_request(
+                controller=aries_controller,
+                proof_request=V10PresentationSendRequestRequest(
+                    connection_id=connection_id,
+                    proof_request=IndyProofRequest(**proof_request.dict()),
+                ),
+                free=True,  # alway set this to TRUE because we only support this for now.
+            )
+        return presentation_exchange_rec
+    except Exception as e:
+        logger.error(f"Failed to create presentation record: \n{e!r}")
+        raise e from e
 
 
 @router.post("/create-request")
 async def create_proof_request(
-    proof: IndyProofRequest,
+    proof_request: IndyProofRequest,
     comment: Optional[str] = None,
     trace: Optional[bool] = False,
     protocol_version: Optional[ProtocolVersion] = "1",
@@ -89,15 +98,24 @@ async def create_proof_request(
     -----------
     proof: IndyProofRequest
         The proof request
+    comment: Optional[str]
+        A human-readable comment
+    trace: bool
+        Whether to enable exchange tracing
     protocol_version: Literal["1", "2"]
         The protocol version. default is 1
+
+    Returns:
+    --------
+    presnetation_exchange: PresentationExchange
+        The presentation exchange record
     """
     try:
         if protocol_version == "2":
             presentation_exchange = await ProofsFacade.v20.value.create_proof_request(
                 controller=aries_controller,
-                proof=V20PresRequestByFormat(
-                    dif=None, indy=IndyProofRequest(**proof.dict())
+                proof_request=V20PresRequestByFormat(
+                    dif=None, indy=IndyProofRequest(**proof_request.dict())
                 ),
                 comment=comment,
                 trace=trace,
@@ -105,7 +123,7 @@ async def create_proof_request(
         else:
             presentation_exchange = await ProofsFacade.v10.value.create_proof_request(
                 controller=aries_controller,
-                proof=IndyProofRequest(**proof.dict()),
+                proof_request=IndyProofRequest(**proof_request.dict()),
                 comment=comment,
                 trace=trace,
             )
@@ -129,10 +147,17 @@ async def accept_proof_request(
     -----------
     pres_ex_id: str
         The presentation exchange ID
+    presentation_spec: IndyPresSpec
+        The presentation specification for Indy
     protocol_version: Literal["1", "2"]
         The protocol version. default is 1
     presentation_spec: IndyPresSpec
         The presentation spec
+
+    Returns:
+    --------
+    presnetation_exchange: PresentationExchange
+        The presentation exchange record
     """
     try:
         pres_spec = IndyPresSpec(**presentation_spec.dict())
@@ -168,6 +193,11 @@ async def reject_proof_request(
         The presentation exchange ID
     problem_report: Optional[str]
         The problem report
+
+    Returns:
+    --------
+    presnetation_exchange: PresentationExchange
+        The presentation exchange record
     """
     try:
         if protocol_version == "2":

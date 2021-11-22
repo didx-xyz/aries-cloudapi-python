@@ -1,9 +1,6 @@
-from gettext import translation
 from typing import Dict, Optional, Union
 import logging
-import json
 
-from pydantic import ValidationError
 from aries_cloudcontroller import (
     AcaPyClient,
     AdminAPIMessageTracing,
@@ -31,14 +28,14 @@ class ProofsV1(Proof):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof: IndyProofRequest,
+        proof_request: IndyProofRequest,
         comment: str = None,
         trace: bool = False,
     ) -> V10PresentationExchange:
         presentation_exchange = (
             await controller.present_proof_v1_0.create_proof_request(
                 body=V10PresentationCreateRequestRequest(
-                    proof_request=proof,
+                    proof_request=proof_request,
                     comment=comment,
                     trace=trace,
                 )
@@ -50,7 +47,7 @@ class ProofsV1(Proof):
     async def send_proof_request(
         cls,
         controller: AcaPyClient,
-        presentation_request: Union[
+        proof_request: Union[
             V10PresentationSendRequestRequest,
             AdminAPIMessageTracing,
             V10PresentationProposalRequest,
@@ -63,23 +60,19 @@ class ProofsV1(Proof):
             if free:
                 presentation_exchange = (
                     await controller.present_proof_v1_0.send_request_free(
-                        body=V10PresentationSendRequestRequest(
-                            **presentation_request.dict()
-                        )
+                        body=V10PresentationSendRequestRequest(**proof_request.dict())
                     )
                 )
-            elif (
-                isinstance(presentation_request, AdminAPIMessageTracing) and pres_ex_id
-            ):
+            elif isinstance(proof_request, AdminAPIMessageTracing) and pres_ex_id:
                 presentation_exchange = (
                     await controller.present_proof_v1_0.send_request(
-                        pres_ex_id=pres_ex_id, body=presentation_request
+                        pres_ex_id=pres_ex_id, body=proof_request
                     )
                 )
-            elif isinstance(presentation_request, V10PresentationProposalRequest):
+            elif isinstance(proof_request, V10PresentationProposalRequest):
                 presentation_exchange = (
                     await controller.present_proof_v1_0.send_proposal(
-                        body=presentation_request
+                        body=proof_request
                     )
                 )
             else:

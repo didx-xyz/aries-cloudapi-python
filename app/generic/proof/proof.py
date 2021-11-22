@@ -155,7 +155,7 @@ async def accept_proof_request(
 @router.post("/reject-request")
 async def reject_proof_request(
     pres_ex_id: str,
-    problem_report: Optional[V20PresProblemReportRequest] = None,
+    problem_report: Optional[str] = None,
     protocol_version: Optional[ProtocolVersion] = "1",
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> None:

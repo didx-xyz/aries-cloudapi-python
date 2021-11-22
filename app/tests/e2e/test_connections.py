@@ -68,7 +68,7 @@ async def test_create_invitation(
     yoda_token = await test_utils.get_wallet_token(async_client, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {yoda_token}"
+        authorization=f"Bearer {yoda_token}"
     ) as member_agent:
         invitation_creation_response = (
             await test_module.create_invitation(aries_controller=member_agent)
@@ -98,7 +98,7 @@ async def test_accept_invitation(
     invitation = await test_utils.create_invitation(async_client, yoda_token)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         accept_invitation_response = (
             await test_module.accept_invitation(
@@ -128,7 +128,7 @@ async def test_get_connections(
     invitation = await test_utils.create_invitation(async_client, yoda_token)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         await test_module.accept_invitation(
             body=AcceptInvitation(invitation=invitation), aries_controller=member_agent
@@ -152,7 +152,7 @@ async def test_get_connection_by_id(
     invitation = await test_utils.create_invitation(async_client, yoda_token)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         await test_module.accept_invitation(
             body=AcceptInvitation(invitation=invitation), aries_controller=member_agent
@@ -176,7 +176,7 @@ async def test_delete_connection(
     invitation = await test_utils.create_invitation(async_client, yoda_token)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         await test_module.accept_invitation(
             body=AcceptInvitation(invitation=invitation), aries_controller=member_agent
@@ -258,7 +258,7 @@ async def test_create_invitation_oob(
     yoda_token = await test_utils.get_wallet_token(async_client, yoda_wallet_id)
 
     async with asynccontextmanager(dependencies.ecosystem_agent)(
-        x_auth=f"Bearer {yoda_token}"
+        authorization=f"Bearer {yoda_token}"
     ) as ecosystem_agent:
         invitation_creation_response = (
             await test_module.create_oob_invitation(
@@ -295,7 +295,7 @@ async def test_accept_invitation_oob(
     _, _, han_token, _ = await token_responses(async_client, create_wallets_mock)
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         accept_invitation_response = (
             await test_module.accept_oob_invitation(
@@ -322,7 +322,7 @@ async def test_oob_connect_via_public_did(
     )
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {yoda_token}"
+        authorization=f"Bearer {yoda_token}"
     ) as member_agent:
         # CReate a new public DID and write it to ledger
         pub_did_yoda_res = (await create_pub_did(member_agent)).dict()
@@ -334,7 +334,7 @@ async def test_oob_connect_via_public_did(
 
     assert isinstance(new_pub_did_as_invitation, DIDResult)
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         han_dids = (await member_agent.wallet.get_dids()).dict()
         connection = await test_module.connect_to_public_did(
@@ -349,7 +349,7 @@ async def test_oob_connect_via_public_did(
     connection = connection.dict()
 
     async with asynccontextmanager(dependencies.member_agent)(
-        x_auth=f"Bearer {han_token}"
+        authorization=f"Bearer {han_token}"
     ) as member_agent:
         # Now we should have a public did as we have a connection with yoda
         han_dids = [

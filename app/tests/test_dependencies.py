@@ -37,7 +37,7 @@ async def test_yoma_agent():
 @pytest.mark.asyncio
 async def test_ecosystem_agent():
     async with asynccontextmanager(dependencies.ecosystem_agent)(
-        x_api_key=X_API_KEY, x_auth=BEARER_TOKEN
+        authorization=BEARER_TOKEN
     ) as c:
         assert c is not None
         assert c.client.headers["authorization"] == BEARER_TOKEN
@@ -49,7 +49,9 @@ async def test_ecosystem_agent():
 
 @pytest.mark.asyncio
 async def test_member_agent():
-    async with asynccontextmanager(dependencies.member_agent)(x_auth=BEARER_TOKEN) as c:
+    async with asynccontextmanager(dependencies.member_agent)(
+        authorization=BEARER_TOKEN
+    ) as c:
         assert c is not None
         assert c.client.headers["authorization"] == BEARER_TOKEN
 
@@ -119,14 +121,14 @@ async def test_agent_selector(
     # maybe create another ticket to look at this.
     with pytest.raises(HTTPException) as e:
         await async_next(
-            dependency_function(x_api_key="apikey", x_auth=TEST_BEARER_HEADER)
+            dependency_function(x_api_key="apikey", authorization=TEST_BEARER_HEADER)
         )
     assert e.value.status_code == 400
     assert e.value.detail == "invalid role"
 
     c = await async_next(
         dependency_function(
-            x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="ecosystem"
+            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="ecosystem"
         )
     )
     assert isinstance(c, controller_type)
@@ -134,7 +136,7 @@ async def test_agent_selector(
 
     c = await async_next(
         dependency_function(
-            x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="member"
+            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="member"
         )
     )
     assert isinstance(c, controller_type)
@@ -142,7 +144,7 @@ async def test_agent_selector(
 
     c = await async_next(
         dependency_function(
-            x_api_key="apikey", x_auth=TEST_BEARER_HEADER, x_role="yoma"
+            x_api_key="apikey", authorization=TEST_BEARER_HEADER, x_role="yoma"
         )
     )
     assert isinstance(c, AcaPyClient)
@@ -207,7 +209,9 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
     assert isinstance(injected_controller, AcaPyClient)
 
     # when
-    await make_call(headers={"x-role": "ecosystem", "x-auth": TEST_BEARER_HEADER})
+    await make_call(
+        headers={"x-role": "ecosystem", "Authorization": TEST_BEARER_HEADER}
+    )
     # then
     assert injected_controller.base_url == dependencies.ECOSYSTEM_AGENT_URL
     assert injected_controller.client.headers["authorization"] == TEST_BEARER_HEADER
@@ -217,7 +221,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
     assert isinstance(injected_controller, AcaPyClient)
 
     # when
-    await make_call(headers={"x-role": "member", "x-auth": TEST_BEARER_HEADER_2})
+    await make_call(headers={"x-role": "member", "Authorization": TEST_BEARER_HEADER_2})
     # then
     assert injected_controller.base_url == dependencies.MEMBER_AGENT_URL
     assert injected_controller.client.headers["authorization"] == TEST_BEARER_HEADER_2
@@ -254,7 +258,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         headers={
             "x-api-key": "provided-api-key",
             "x-role": "ecosystem",
-            "x-auth": TEST_BEARER_HEADER,
+            "Authorization": TEST_BEARER_HEADER,
         },
     )
     # then
@@ -268,7 +272,7 @@ async def test_web_ecosystem_or_member(setup_agent_urls_for_testing):
         headers={
             "x-api-key": "provided-x-api-key-1",
             "x-role": "member",
-            "x-auth": TEST_BEARER_HEADER_2,
+            "Authorization": TEST_BEARER_HEADER_2,
         },
     )
     # then

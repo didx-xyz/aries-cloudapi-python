@@ -66,7 +66,7 @@ async def create_invitation(
     invitation_creation_response = await async_client.post(
         f"{CONNECTIONS_BASE_PATH}/create-invitation",
         headers={
-            "x-auth": f"Bearer {token}",
+            "Authorization": f"Bearer {token}",
             "x-role": role,
             **APPLICATION_JSON_CONTENT_TYPE,
         },

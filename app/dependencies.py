@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import Header, HTTPException
+from fastapi.params import Depends
+from fastapi.security import APIKeyHeader, HTTPBearer
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +18,12 @@ MEMBER_AGENT_URL = os.getenv("ACAPY_MEMBER_AGENT_URL", "http://localhost:4021")
 
 EMBEDDED_API_KEY = os.getenv("EMBEDDED_API_KEY", "adminApiKey")
 
+x_api_key_scheme = APIKeyHeader(name="x-api-key")
+authorization_optional = HTTPBearer(auto_error=False)
+authorization_required = HTTPBearer(auto_error=True)
 
-async def yoma_agent(x_api_key: str = Header(None)):
+
+async def yoma_agent(x_api_key: str = Depends(x_api_key_scheme)):
     agent = None
     try:
         if str(x_api_key) == "extra={}":
@@ -35,19 +41,19 @@ async def yoma_agent(x_api_key: str = Header(None)):
 
 
 async def agent_selector(
-    x_api_key: str = Header(None),
-    x_auth: str = Header(None),
+    authorization: str = Depends(authorization_optional),
+    x_api_key: str = Depends(x_api_key_scheme),
     x_role: str = Header(...),
 ):
-    if not x_api_key and not x_auth:
+    if not x_api_key and not authorization:
         raise HTTPException(400, "API key or JWT required for auth.")
     if x_role == "member":
-        async with asynccontextmanager(member_agent)(x_auth) as x:
+        async with asynccontextmanager(member_agent)(authorization) as x:
             yield x
     elif (
         x_role == "eco-system" or x_role == "ecosystem"
     ):  # cannot use in as it's not a string
-        async with asynccontextmanager(ecosystem_agent)(x_api_key, x_auth) as x:
+        async with asynccontextmanager(ecosystem_agent)(authorization) as x:
             yield x
     elif x_role == "yoma":
         async with asynccontextmanager(yoma_agent)(x_api_key) as x:
@@ -57,8 +63,7 @@ async def agent_selector(
 
 
 async def admin_agent_selector(
-    x_api_key: str = Header(...),
-    x_auth: str = Header(None),
+    x_api_key: str = Depends(x_api_key_scheme),
     x_role: str = Header(...),
 ):
     if x_role == "member":
@@ -75,17 +80,16 @@ async def admin_agent_selector(
 
 
 async def ecosystem_agent(
-    x_api_key: str = Header(None),
-    x_auth: str = Header(None),
+    authorization: str = Depends(authorization_required),
 ):
     agent = None
     try:
         # check the header is present
-        if str(x_auth) == "extra={}":
+        if str(authorization) == "extra={}":
             raise HTTPException(401)
 
         # extract the JWT
-        tenant_jwt = _extract_jwt_token_from_security_header(x_auth)
+        tenant_jwt = _extract_jwt_token_from_security_header(authorization)
 
         # yield the controller
         agent = AcaPyClient(
@@ -95,7 +99,7 @@ async def ecosystem_agent(
         )
         yield agent
     except Exception as e:
-        # We can only log this here and not raise an HTTPExeption as
+        # We can only log this here and not raise an HTTPException as
         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error("%s", e, exc_info=e)
         raise e
@@ -105,13 +109,13 @@ async def ecosystem_agent(
 
 
 async def member_agent(
-    x_auth: str = Header(None),
+    authorization: str = Depends(authorization_required),
 ):
     agent = None
     try:
-        if str(x_auth) == "extra={}":
+        if str(authorization) == "extra={}":
             raise HTTPException(401)
-        tenant_jwt = _extract_jwt_token_from_security_header(x_auth)
+        tenant_jwt = _extract_jwt_token_from_security_header(authorization)
         agent = AcaPyClient(
             base_url=MEMBER_AGENT_URL,
             api_key=EMBEDDED_API_KEY,
@@ -119,7 +123,7 @@ async def member_agent(
         )
         yield agent
     except Exception as e:
-        # We can only log this here and not raise an HTTPExeption as
+        # We can only log this here and not raise an HTTPException as
         # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error("%s", e, exc_info=e)
         raise e
@@ -128,9 +132,7 @@ async def member_agent(
             await agent.close()
 
 
-async def member_admin_agent(
-    x_api_key: str = Header(None),
-):
+async def member_admin_agent(x_api_key: str = Depends(x_api_key_scheme)):
     agent = None
     try:
         if str(x_api_key) == "extra={}":
@@ -151,9 +153,7 @@ async def member_admin_agent(
             await agent.close()
 
 
-async def ecosystem_admin_agent(
-    x_api_key: str = Header(None),
-):
+async def ecosystem_admin_agent(x_api_key: str = Depends(x_api_key_scheme)):
     agent = None
     try:
         if str(x_api_key) == "extra={}":

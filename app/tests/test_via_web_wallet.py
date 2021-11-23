@@ -1,5 +1,5 @@
-import pytest
 import httpx
+import pytest
 from aiohttp import ClientResponseError
 from httpx import AsyncClient
 

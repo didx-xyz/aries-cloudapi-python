@@ -13,7 +13,7 @@ from app.admin.governance.multitenant_wallet import wallet_admin
 from app.generic import messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer
-from app.generic.proof import proof
+from app.generic.verifier import verifier
 from app.generic.wallet import wallets
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ app.include_router(issuer.router)
 app.include_router(messaging.router)
 app.include_router(wallets.router)
 app.include_router(wallet_admin.router)
-app.include_router(proof.router)
+app.include_router(verifier.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
 app.include_router(trust_registry.router)

@@ -1,9 +1,9 @@
 import json
+import os
 import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Dict, TypedDict
-import os
 
 import pytest
 from aries_cloudcontroller import (
@@ -20,10 +20,10 @@ from assertpy import assert_that
 from httpx import AsyncClient
 from mockito import mock
 
-from app.generic.connections.connections import router
 import app.facades.ledger as ledger_facade
 import app.utils as utils
 from app.dependencies import member_admin_agent, yoma_agent
+from app.generic.connections.connections import router
 from app.main import app
 
 from .test_dependencies import async_next

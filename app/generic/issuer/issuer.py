@@ -12,11 +12,11 @@ from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
 from app.facades.acapy_ledger import write_credential_def
+from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential, IssueCredentialProtocolVersion
-from app.facades.trust_registry import assert_valid_issuer
 
 logger = logging.getLogger(__name__)
 

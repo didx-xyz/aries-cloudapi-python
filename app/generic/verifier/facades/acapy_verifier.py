@@ -1,23 +1,25 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
-from aries_cloudcontroller import AcaPyClient, IndyProofRequest
-from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
+from aries_cloudcontroller import AcaPyClient
 
-from app.generic.proof.models import PresentationExchange
+from app.generic.verifier.models import (
+    AcceptProofRequest,
+    CreateProofRequest,
+    PresentationExchange,
+    RejectProofRequest,
+    SendProofRequest,
+)
 
 
-class Proof(ABC):
+class Verifier(ABC):
     """Abstract proof interface"""
 
     @classmethod
     @abstractmethod
-    async def send_request_proof(
+    async def send_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: IndyProofRequest,
-        comment: Optional[str] = None,
-        trace: Optional[bool] = False,
+        proof_request: SendProofRequest,
     ) -> PresentationExchange:
         """
         Request proof from a connection ID.
@@ -26,10 +28,13 @@ class Proof(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: ProofRequest
+        proof_request: SendProofRequest
             The proof request object
-        connection_id: str
-            The connection ID
+
+        Returns:
+        --------
+        exchange_record: PresentationExchange
+            The proof exchange record
         """
 
     @classmethod
@@ -37,9 +42,7 @@ class Proof(ABC):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: IndyProofRequest,
-        comment: Optional[str] = None,
-        trace: Optional[bool] = False,
+        proof_request: CreateProofRequest,
     ) -> PresentationExchange:
         """
         Create proof request
@@ -48,41 +51,53 @@ class Proof(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: V10PresentationCreateRequestRequest
+        proof_request: CreateProofRequest
             The proof request object
+
+        Returns:
+        --------
+        exchange_record: PresentationExchange
+            The proof exchange record
         """
 
     @classmethod
     @abstractmethod
     async def accept_proof_request(
-        cls, controller: AcaPyClient, pres_ex_id: str, body: Optional[IndyPresSpec]
+        cls, controller: AcaPyClient, proof_request: AcceptProofRequest
     ) -> PresentationExchange:
-        """ "
+        """
         Accept proof request
 
         Parameters:
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        pres_ex_id: str
-            The presentation exchange ID
+        proof_request: AcceptProofRequet
+            The proof request object
+
+        Returns:
+        --------
+        exchange_record: PresentationExchange
+            The proof exchange record
         """
 
     @classmethod
     @abstractmethod
     async def reject_proof_request(
-        cls,
-        controller: AcaPyClient,
-        pres_ex_id: str,
-        problem_report: Optional[str] = None,
+        cls, controller: AcaPyClient, proof_request: RejectProofRequest
     ) -> None:
-        """ "
+        """
         Accept proof request
 
         Parameters:
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        pres_ex_id: str
-            The presentation exchange ID
+        proof_request: AcceptProofRequet
+            The proof request object
+
+        Returns:
+        --------
+        None
+            Returns None on successful record deletion.
         """

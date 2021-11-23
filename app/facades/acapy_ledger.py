@@ -3,10 +3,10 @@ from typing import Tuple
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    TAAAccept,
-    TAARecord,
     CredentialDefinitionSendRequest,
+    TAAAccept,
     TAAInfo,
+    TAARecord,
 )
 from fastapi import HTTPException
 

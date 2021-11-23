@@ -6,15 +6,15 @@ from fastapi.exceptions import HTTPException
 
 import app.facades.ledger as ledger_facade
 import app.utils as utils
-from app.facades.acapy_ledger import create_pub_did as create_public_did
 from app.admin.governance.schemas import (
     SchemaDefinition,
     create_schema,
     get_schemas,
     get_schemas_list_detailed,
-    update_schema,
     router,
+    update_schema,
 )
+from app.facades.acapy_ledger import create_pub_did as create_public_did
 
 # want to wrap an existing method with a decorator
 # the method is normally used by fast api and then fast api manages the tear down

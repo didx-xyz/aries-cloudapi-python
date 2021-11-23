@@ -1,8 +1,7 @@
-from typing import Dict, Union, Optional
+from typing import Dict, Union
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    AdminAPIMessageTracing,
     V20PresCreateRequestRequest,
     V20PresExRecord,
     V20PresProblemReportRequest,
@@ -15,6 +14,7 @@ from fastapi.exceptions import HTTPException
 from pydantic.typing import NoneType
 
 from app.generic.proof.facades.acapy_proof import Proof
+import app.generic.proof.facades.acapy_proof_utils as utils
 from app.generic.proof.models import PresentationExchange
 
 
@@ -25,37 +25,29 @@ class ProofsV2(Proof):
         controller: AcaPyClient,
         proof_request: V20PresRequestByFormat,
         comment: str = None,
-        trace: bool = False,
     ) -> PresentationExchange:
 
         proof_request = await controller.present_proof_v2_0.create_proof_request(
             body=V20PresCreateRequestRequest(
                 presentation_request=proof_request,
                 comment=comment,
-                trace=trace,
+                trace=False,
             )
         )
-        return cls.__record_to_model(proof_request)
+        return utils.record_to_model(proof_request)
 
     @classmethod
     async def send_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: Union[
-            V20PresSendRequestRequest, AdminAPIMessageTracing, V20PresProposalRequest
-        ],
+        proof_request: Union[V20PresSendRequestRequest, V20PresProposalRequest],
         free: bool = True,
-        pres_ex_id: str = None,
     ) -> PresentationExchange:
-        if free:
+        if free and isinstance(proof_request, V20PresSendRequestRequest):
             presentation_exchange = (
                 await controller.present_proof_v2_0.send_request_free(
                     body=proof_request
                 )
-            )
-        elif isinstance(proof_request, AdminAPIMessageTracing) and pres_ex_id:
-            presentation_exchange = await controller.present_proof_v2_0.send_request(
-                pres_ex_id=pres_ex_id, body=proof_request
             )
         elif isinstance(proof_request, V20PresProposalRequest):
             presentation_exchange = await controller.present_proof_v2_0.send_proposal(
@@ -63,97 +55,47 @@ class ProofsV2(Proof):
             )
         else:
             raise NotImplementedError
-        return cls.__record_to_model(presentation_exchange)
+        return utils.record_to_model(presentation_exchange)
 
     @classmethod
     async def accept_proof_request(
         cls,
         controller: AcaPyClient,
-        pres_ex_id: str,
+        proof_id: str,
         body: V20PresSpecByFormatRequest,
     ) -> PresentationExchange:
-        pres_ex_id = cls.__pres_id_no_version(pres_ex_id=pres_ex_id)
+        proof_id = utils.pres_id_no_version(proof_id=proof_id)
         presentation_record = await controller.present_proof_v2_0.send_presentation(
-            pres_ex_id=pres_ex_id, body=body
+            pres_ex_id=proof_id, body=body
         )
-        return cls.__record_to_model(presentation_record)
+        return utils.record_to_model(presentation_record)
 
     @classmethod
     async def reject_proof_request(
         cls,
         controller: AcaPyClient,
-        pres_ex_id: str,
+        proof_id: str,
         problem_report: str = None,
     ) -> None:
         # get the record
-        pres_ex_id = cls.__pres_id_no_version(pres_ex_id=pres_ex_id)
+        proof_id = utils.pres_id_no_version(proof_id=proof_id)
         proof_request = await controller.present_proof_v2_0.get_record(
-            pres_ex_id=pres_ex_id
+            pres_ex_id=proof_id
         )
         # Report problem if desired
         if problem_report:
             try:
                 await controller.present_proof_v2_0.report_problem(
-                    pres_ex_id=pres_ex_id,
+                    pres_ex_id=proof_id,
                     body=V20PresProblemReportRequest(description=problem_report),
                 )
             except Exception as e:
                 raise e from e
         # delete exchange record
         delete_proof_request_res = await controller.present_proof_v2_0.delete_record(
-            pres_ex_id=pres_ex_id
+            pres_ex_id=proof_id
         )
         if not isinstance(proof_request, V20PresExRecord) or not isinstance(
             delete_proof_request_res, (Dict, NoneType)
         ):
             raise HTTPException(status_code=500, detail="Failed to delete record")
-
-    @classmethod
-    def __pres_id_no_version(cls, pres_ex_id: str) -> str:
-        if pres_ex_id.startswith("v1-") or pres_ex_id.startswith("v2-"):
-            return pres_ex_id[3:]
-        else:
-            return pres_ex_id
-
-    @classmethod
-    def __record_to_model(cls, record: V20PresExRecord) -> PresentationExchange:
-
-        return PresentationExchange(
-            auto_present=record.auto_present,
-            connection_id=record.connection_id,
-            created_at=record.created_at,
-            initiator=record.initiator,
-            presentation=record.pres,
-            presentation_exchange_id="v2-" + str(record.pres_ex_id),
-            role=record.role,
-            state=cls.__v2_state_to_rfc_state(record.state),
-            updated_at=record.updated_at,
-            verified=cls.__string_to_bool(record.verified),
-        )
-
-    @classmethod
-    def __string_to_bool(cls, verified: Optional[str]) -> Optional[bool]:
-        if verified == "true":
-            return True
-        elif verified == "false":
-            return False
-        else:
-            return None
-
-    @classmethod
-    def __v2_state_to_rfc_state(cls, state: Optional[str]) -> Optional[str]:
-        translation_dict = {
-            "proposal_sent": "proposal-sent",
-            "proposal-received": "proposal-received",
-            "request-sent": "request-sent",
-            "request-received": "request-received",
-            "presentation-sent": "presentation-sent",
-            "presentation-received": "presentation-received",
-            "done": "done",
-            "abandoned": "abandoned",
-        }
-
-        if not state or not state in translation_dict:
-            return None
-
-        return translation_dict[state]

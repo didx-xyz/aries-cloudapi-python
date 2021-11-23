@@ -112,19 +112,6 @@ proof_dict = dict(
     }
 )
 
-presentation_exchange_record = PresentationExchange(
-    auto_present=True,
-    connection_id="abcde",
-    created_at="2021-11-22 11:37:45.179595Z",
-    updated_at="2021-11-22 11:37:45.179595Z",
-    initiator="self",
-    presentation_exchange_id="abcde",
-    presentation={},
-    role="prover",
-    state="presentation-sent",
-    verified=False,
-)
-
 proof_request_indy = V20PresRequestByFormat(
     dif=None,
     indy=IndyProofRequest(**proof_dict),
@@ -141,7 +128,6 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller,
         proof_request=proof_request_indy,
         comment=None,
-        trace=False,
     )
 
     assert isinstance(created_proof_request, PresentationExchange)
@@ -162,30 +148,19 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         get(v20_presentation_exchange_records[0])
     )
 
-    created_proof_send_proposal = await ProofsV2.send_proof_request(
-        controller=mock_agent_controller,
-        proof_request=send_request_tracing,
-        pres_ex_id="abc",
-        free=False,
-    )
-
-    assert isinstance(created_proof_send_proposal, PresentationExchange)
-
     created_proof_send_request = await ProofsV2.send_proof_request(
         controller=mock_agent_controller,
         proof_request=V20PresProposalRequest(
             connection_id="abc",
             presentation_proposal=V20PresProposalByFormat(**proof_request_indy.dict()),
         ),
-        pres_ex_id="abc",
-        free=False,
     )
 
     assert isinstance(created_proof_send_request, PresentationExchange)
 
     with pytest.raises(NotImplementedError):
         await ProofsV2.send_proof_request(
-            mock_agent_controller, proof_request="I am invalid", free=False
+            mock_agent_controller, proof_request="I am invalid"
         )
 
 
@@ -197,7 +172,7 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
 
     accepted_proof_request = await ProofsV2.accept_proof_request(
         mock_agent_controller,
-        pres_ex_id="123",
+        proof_id="v2-123",
         body=V20PresSpecByFormatRequest(
             dif=None,
             indy=IndyPresSpec(
@@ -224,7 +199,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
     )
 
     deleted_proof_request = await ProofsV2.reject_proof_request(
-        controller=mock_agent_controller, pres_ex_id="abc"
+        controller=mock_agent_controller, proof_id="v2-abc"
     )
 
     assert deleted_proof_request is None
@@ -242,5 +217,5 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
 
     with pytest.raises(HTTPException):
         deleted_proof_request = await ProofsV2.reject_proof_request(
-            controller=mock_agent_controller, pres_ex_id="abc"
+            controller=mock_agent_controller, proof_id="v2-abc"
         )

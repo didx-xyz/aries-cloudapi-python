@@ -11,7 +11,6 @@ from aries_cloudcontroller import (
     IndyProofProof,
     IndyProofRequest,
     IndyProofRequestedProof,
-    AdminAPIMessageTracing,
     V10PresentationExchange,
     V10PresentationSendRequestRequest,
     V10PresentationProposalRequest,
@@ -105,31 +104,17 @@ proof_dict = dict(
     }
 )
 
-presentation_exchange_record = PresentationExchange(
-    auto_present=True,
-    connection_id="abcde",
-    created_at="2021-11-22 11:37:45.179595Z",
-    updated_at="2021-11-22 11:37:45.179595Z",
-    initiator="self",
-    presentation_exchange_id="abcde",
-    presentation={},
-    role="prover",
-    state="presentation-sent",
-    verified=False,
-)
-
 
 @pytest.mark.asyncio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).create_proof_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(v10_presentation_exchange_records[0])
     )
 
     created_proof_request = await ProofsV1.create_proof_request(
         controller=mock_agent_controller,
         proof_request=IndyProofRequest(**proof_dict),
         comment=None,
-        trace=False,
     )
 
     assert isinstance(created_proof_request, PresentationExchange)
@@ -141,23 +126,22 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # proof interface decides upon params which methods it calls on the client
     # so let's mock those methods out
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
-        get(presentation_exchange_record)
+        get(v10_presentation_exchange_records[0])
     )
     when(mock_agent_controller.present_proof_v1_0).send_proposal(...).thenReturn(
-        get(presentation_exchange_record)
+        get(v10_presentation_exchange_records[0])
     )
     when(mock_agent_controller.present_proof_v1_0).send_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(v10_presentation_exchange_records[0])
     )
     when(mock_agent_controller.present_proof_v1_0).send_request_free(...).thenReturn(
-        get(presentation_exchange_record)
+        get(v10_presentation_exchange_records[0])
     )
 
     created_proof_send_proposal = await ProofsV1.send_proof_request(
         controller=mock_agent_controller,
         proof_request=v10_presentation_proposal_request,
-        pres_ex_id=None,
-        free=False,
+        proof_id=None,
     )
 
     assert isinstance(created_proof_send_proposal, PresentationExchange)
@@ -168,21 +152,10 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
             connection_id="abc",
             proof_request=indy_proof_request,
         ),
-        pres_ex_id=None,
-        free=True,
+        proof_id=None,
     )
 
     assert isinstance(created_proof_request_free, PresentationExchange)
-
-    created_proof_send_request = await ProofsV1.send_proof_request(
-        controller=mock_agent_controller,
-        proof_request=AdminAPIMessageTracing(
-            trace=False,
-        ),
-        pres_ex_id="abc",
-    )
-
-    assert isinstance(created_proof_send_request, PresentationExchange)
 
     with pytest.raises(NotImplementedError):
         await ProofsV1.send_proof_request(
@@ -193,12 +166,12 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 @pytest.mark.asyncio
 async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
-        get(presentation_exchange_record)
+        get(v10_presentation_exchange_records[0])
     )
 
     accepted_proof_request = await ProofsV1.accept_proof_request(
         mock_agent_controller,
-        pres_ex_id="123",
+        proof_id="v1-123",
         body=IndyPresSpec(
             requested_attributes=[],
             requested_predicates=[],
@@ -222,7 +195,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
     )
 
     deleted_proof_request = await ProofsV1.reject_proof_request(
-        controller=mock_agent_controller, pres_ex_id="abc"
+        controller=mock_agent_controller, proof_id="v1-abc"
     )
 
     assert deleted_proof_request is None
@@ -240,5 +213,5 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
 
     with pytest.raises(HTTPException):
         deleted_proof_request = await ProofsV1.reject_proof_request(
-            controller=mock_agent_controller, pres_ex_id="abc"
+            controller=mock_agent_controller, proof_id="v1-abc"
         )

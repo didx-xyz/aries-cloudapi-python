@@ -15,14 +15,13 @@ class ProofRequestProtocolVersion(Enum):
 
 
 class PresentationExchange(BaseModel):
-    auto_present: bool
     connection_id: Optional[str] = None
     created_at: Optional[str] = None
-    initiator: Literal["self", "external"]
-    presentation_exchange_id: str
+    proof_id: str
     presentation: Optional[
         Union[IndyProof, V20Pres, V20PresExRecordByFormat, Dict]
     ] = None
+    protocol_version: ProofRequestProtocolVersion
     role: Literal["prover", "verifier"]
     state: Optional[
         Literal[

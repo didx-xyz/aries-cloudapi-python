@@ -9,7 +9,7 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedPred,
 )
 from mockito import verify, when
-from app.generic.proof.models import PresentationExchange
+from app.generic.proof.models import PresentationExchange, ProofRequestProtocolVersion
 
 import app.generic.proof.proof as test_module
 from app.generic.proof.facades.acapy_proof_v1 import ProofsV1
@@ -56,13 +56,24 @@ proof_dict = dict(
     }
 )
 
-presentation_exchange_record = PresentationExchange(
-    auto_present=True,
+presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
-    initiator="self",
-    presentation_exchange_id="abcde",
+    proof_id="abcde",
+    protocol_version=ProofRequestProtocolVersion.v10.value,
+    presentation={},
+    role="prover",
+    state="presentation-sent",
+    verified=False,
+)
+
+presentation_exchange_record_2 = PresentationExchange(
+    connection_id="abcde",
+    created_at="2021-11-22 11:37:45.179595Z",
+    updated_at="2021-11-22 11:37:45.179595Z",
+    proof_id="abcde",
+    protocol_version=ProofRequestProtocolVersion.v20.value,
     presentation={},
     role="prover",
     state="presentation-sent",
@@ -79,29 +90,37 @@ async def get(response: Optional[Any] = None):
 @pytest.mark.asyncio
 async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # V1
-    when(ProofsV1).send_proof_request(...).thenReturn(get(presentation_exchange_record))
+    when(ProofsV1).send_proof_request(...).thenReturn(
+        get(presentation_exchange_record_1)
+    )
 
     result = await test_module.send_proof_request(
-        connection_id="abcde",
-        proof_request=IndyProofRequest(**proof_dict),
-        protocol_version="1",
+        proof_request=test_module.SendProofRequest(
+            connection_id="abcde",
+            proof_request=IndyProofRequest(**proof_dict),
+            protocol_version="v1",
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record
+    assert result is presentation_exchange_record_1
     verify(ProofsV1).send_proof_request(...)
 
     # V2
-    when(ProofsV2).send_proof_request(...).thenReturn(get(presentation_exchange_record))
+    when(ProofsV2).send_proof_request(...).thenReturn(
+        get(presentation_exchange_record_2)
+    )
 
     result = await test_module.send_proof_request(
-        connection_id="abcde",
-        proof_request=IndyProofRequest(**proof_dict),
-        protocol_version="2",
+        proof_request=test_module.SendProofRequest(
+            connection_id="abcde",
+            proof_request=IndyProofRequest(**proof_dict),
+            protocol_version="v2",
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record
+    assert result is presentation_exchange_record_2
     verify(ProofsV2).send_proof_request(...)
 
 
@@ -109,30 +128,32 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     # V1
     when(ProofsV1).create_proof_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(presentation_exchange_record_1)
     )
 
     result = await test_module.create_proof_request(
-        proof_request=IndyProofRequest(**proof_dict),
-        protocol_version="1",
+        proof_request=test_module.CreateProofRequest(
+            protocol_version="v1", proof_request=IndyProofRequest(**proof_dict)
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record
+    assert result is presentation_exchange_record_1
     verify(ProofsV1).create_proof_request(...)
 
     # V2
     when(ProofsV2).create_proof_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(presentation_exchange_record_2)
     )
 
     result = await test_module.create_proof_request(
-        proof_request=IndyProofRequest(**proof_dict),
-        protocol_version="2",
+        proof_request=test_module.CreateProofRequest(
+            protocol_version="v2", proof_request=IndyProofRequest(**proof_dict)
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record
+    assert result is presentation_exchange_record_2
     verify(ProofsV2).create_proof_request(...)
 
 
@@ -140,32 +161,36 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     # V1
     when(ProofsV1).accept_proof_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(presentation_exchange_record_1)
     )
 
     result = await test_module.accept_proof_request(
-        pres_ex_id="1234",
-        presentation_spec=indy_pres_spec,
-        protocol_version="1",
+        proof_request=test_module.AcceptProofRequest(
+            proof_id="1234",
+            presentation_spec=indy_pres_spec,
+            protocol_version="v1",
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record
+    assert result is presentation_exchange_record_1
     verify(ProofsV1).accept_proof_request(...)
 
     # V2
     when(ProofsV2).accept_proof_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(presentation_exchange_record_2)
     )
 
     result = await test_module.accept_proof_request(
-        pres_ex_id="1234",
-        presentation_spec=indy_pres_spec,
-        protocol_version="2",
+        proof_request=test_module.AcceptProofRequest(
+            proof_id="1234",
+            presentation_spec=indy_pres_spec,
+            protocol_version="v2",
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record
+    assert result is presentation_exchange_record_2
     verify(ProofsV2).accept_proof_request(...)
 
 
@@ -175,7 +200,10 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     when(ProofsV1).reject_proof_request(...).thenReturn(get(None))
 
     result = await test_module.reject_proof_request(
-        pres_ex_id="1234", protocol_version="1", aries_controller=mock_agent_controller
+        proof_request=test_module.RejectProofRequest(
+            protocol_version="v1", proof_id="1234"
+        ),
+        aries_controller=mock_agent_controller,
     )
 
     assert result is None
@@ -183,11 +211,14 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
     # V2
     when(ProofsV2).reject_proof_request(...).thenReturn(
-        get(presentation_exchange_record)
+        get(presentation_exchange_record_2)
     )
 
     result = await test_module.reject_proof_request(
-        pres_ex_id="1234", protocol_version="2", aries_controller=mock_agent_controller
+        proof_request=test_module.RejectProofRequest(
+            protocol_version="v2", proof_id="1234"
+        ),
+        aries_controller=mock_agent_controller,
     )
 
     assert result is None

@@ -12,12 +12,11 @@ class Proof(ABC):
 
     @classmethod
     @abstractmethod
-    async def send_request_proof(
+    async def send_proof_request(
         cls,
         controller: AcaPyClient,
         proof_request: IndyProofRequest,
         comment: Optional[str] = None,
-        trace: Optional[bool] = False,
     ) -> PresentationExchange:
         """
         Request proof from a connection ID.
@@ -28,8 +27,13 @@ class Proof(ABC):
             The aries_cloudcontroller object
         proof_request: ProofRequest
             The proof request object
-        connection_id: str
-            The connection ID
+        comment: Optional[str]
+            A human-readable comment
+
+        Returns:
+        --------
+        Exchange record: PresentationExchange
+            The proof exchange record
         """
 
     @classmethod
@@ -39,7 +43,6 @@ class Proof(ABC):
         controller: AcaPyClient,
         proof_request: IndyProofRequest,
         comment: Optional[str] = None,
-        trace: Optional[bool] = False,
     ) -> PresentationExchange:
         """
         Create proof request
@@ -50,14 +53,21 @@ class Proof(ABC):
             The aries_cloudcontroller object
         proof_request: V10PresentationCreateRequestRequest
             The proof request object
+        comment: Optional[str]
+            A human-readable comment
+
+        Returns:
+        --------
+        Exchange record: PresentationExchange
+            The proof exchange record
         """
 
     @classmethod
     @abstractmethod
     async def accept_proof_request(
-        cls, controller: AcaPyClient, pres_ex_id: str, body: Optional[IndyPresSpec]
+        cls, controller: AcaPyClient, proof_id: str, body: Optional[IndyPresSpec]
     ) -> PresentationExchange:
-        """ "
+        """
         Accept proof request
 
         Parameters:
@@ -66,6 +76,13 @@ class Proof(ABC):
             The aries_cloudcontroller object
         pres_ex_id: str
             The presentation exchange ID
+        body: IndyPresSpec
+            The Indy presenatation specification
+
+        Returns:
+        --------
+        Exchange record: PresentationExchange
+            The proof exchange record
         """
 
     @classmethod
@@ -76,7 +93,7 @@ class Proof(ABC):
         pres_ex_id: str,
         problem_report: Optional[str] = None,
     ) -> None:
-        """ "
+        """
         Accept proof request
 
         Parameters:
@@ -85,4 +102,11 @@ class Proof(ABC):
             The aries_cloudcontroller object
         pres_ex_id: str
             The presentation exchange ID
+        problem_report: Optional[str]
+            The optional problem report
+
+        Returns:
+        --------
+        None
+            Returns None on successful record deletion.
         """

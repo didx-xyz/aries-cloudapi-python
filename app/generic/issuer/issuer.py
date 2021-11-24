@@ -39,12 +39,12 @@ class SendCredential(BaseModel):
     attributes: Dict[str, str]
 
 
-def __issuer_from_id(id: str) -> Tuple[str, Issuer]:
+def __issuer_from_id(id: str) -> Issuer:
     if id.startswith("v1-"):
-        return (id[3:], IssueCredentialFacades.v1.value)
+        return IssueCredentialFacades.v1.value
 
     elif id.startswith("v2-"):
-        return (id[3:], IssueCredentialFacades.v2.value)
+        return IssueCredentialFacades.v2.value
 
     raise Exception("Unknown version. ID is expected to contain protocol version")
 
@@ -93,10 +93,10 @@ async def get_credential(
         credential identifier
     """
 
-    id, issuer = __issuer_from_id(credential_id)
+    issuer = __issuer_from_id(credential_id)
 
     return await issuer.get_record(
-        controller=aries_controller, credential_exchange_id=id
+        controller=aries_controller, credential_exchange_id=credential_exchange_id
     )
 
 
@@ -160,10 +160,10 @@ async def remove_credential(
     The response object from removing a credential.
 
     """
-    id, issuer = __issuer_from_id(credential_id)
+    issuer = __issuer_from_id(credential_id)
 
     await issuer.delete_credential(
-        controller=aries_controller, credential_exchange_id=id
+        controller=aries_controller, credential_exchange_id=credential_exchange_id
     )
 
 
@@ -180,9 +180,9 @@ async def request_credential(
     credential_id: str
         credential id
     """
-    id, issuer = __issuer_from_id(credential_id)
+    issuer = __issuer_from_id(credential_id)
 
-    record = await issuer.get_record(aries_controller, id)
+    record = await issuer.get_record(aries_controller, credential_id)
 
     if not record.credential_definition_id or not record.schema_id:
         raise Exception(
@@ -196,7 +196,7 @@ async def request_credential(
     await assert_valid_issuer(f"did:sov:{cred_def_parts[0]}", record.schema_id)
 
     return await issuer.request_credential(
-        controller=aries_controller, credential_exchange_id=id
+        controller=aries_controller, credential_exchange_id=credential_id
     )
 
 
@@ -214,8 +214,8 @@ async def store_credential(
         credential identifier
 
     """
-    id, issuer = __issuer_from_id(credential_id)
+    issuer = __issuer_from_id(credential_id)
 
     return await issuer.store_credential(
-        controller=aries_controller, credential_exchange_id=id
+        controller=aries_controller, credential_exchange_id=credential_id
     )

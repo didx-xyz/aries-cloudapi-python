@@ -21,7 +21,7 @@ from app.generic.verifier.models import (
 logger = logging.getLogger(__name__)
 
 
-router = APIRouter(prefix="/generic/proof", tags=["proof"])
+router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 
 ProtocolVersion = Literal[
     ProofRequestProtocolVersion.v10.value, ProofRequestProtocolVersion.v20.value
@@ -33,7 +33,7 @@ class VerifierFacade(Enum):
     v20 = VerifierV2
 
 
-def __get_prover_by_version(protocol_version: str) -> Verifier:
+def __get_verifier_by_version(protocol_version: str) -> Verifier:
     if protocol_version == "v1":
         return VerifierFacade.v10.value
     elif protocol_version == "v2":
@@ -61,7 +61,7 @@ async def send_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_prover_by_version(proof_request.protocol_version)
+        prover = __get_verifier_by_version(proof_request.protocol_version)
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -89,7 +89,7 @@ async def create_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_prover_by_version(proof_request.protocol_version)
+        prover = __get_verifier_by_version(proof_request.protocol_version)
         return await prover.create_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -117,7 +117,7 @@ async def accept_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_prover_by_version(proof_request.protocol_version)
+        prover = __get_verifier_by_version(proof_request.protocol_version)
         return await prover.accept_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -145,7 +145,7 @@ async def reject_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_prover_by_version(proof_request.protocol_version)
+        prover = __get_verifier_by_version(proof_request.protocol_version)
         return await prover.reject_proof_request(
             controller=aries_controller, proof_request=proof_request
         )

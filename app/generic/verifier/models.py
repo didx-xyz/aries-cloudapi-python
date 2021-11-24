@@ -43,15 +43,14 @@ class RejectProofRequest(ProofRequestBase):
 
 class PresentationExchange(BaseModel):
     connection_id: Optional[str] = None
-    created_at: Optional[str] = None
+    created_at: str
     proof_id: str
     presentation: Optional[
         Union[IndyProof, V20Pres, V20PresExRecordByFormat, Dict]
     ] = None
     protocol_version: ProofRequestProtocolVersion
     role: Literal["prover", "verifier"]
-    state: Optional[
-        Literal[
+    state: Literal[
             "proposal-sent",
             "proposal-received",
             "request-sent",
@@ -61,6 +60,5 @@ class PresentationExchange(BaseModel):
             "done",
             "abandoned",
         ]
-    ] = None
     updated_at: Optional[str] = None
     verified: Optional[bool] = None

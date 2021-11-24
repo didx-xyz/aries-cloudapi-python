@@ -10,7 +10,6 @@ from aries_cloudcontroller.model import CreateWalletTokenRequest, RemoveWalletRe
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-# from app.config import get_settings
 from app.dependencies import admin_agent_selector, member_admin_agent
 
 logger = logging.getLogger(__name__)

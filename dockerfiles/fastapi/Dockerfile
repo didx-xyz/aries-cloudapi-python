@@ -4,7 +4,7 @@ COPY app /app
 
 WORKDIR /app
 
-RUN cd /app && pip install -r requirements.txt && export $(grep -v '^#' /app/.env | xargs)
+RUN cd /app && pip install -r requirements.txt
 
 EXPOSE 8000
 

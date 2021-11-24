@@ -14,7 +14,7 @@ from app.generic.verifier.verifier import (
 from app.tests.verifier.test_verifier_utils import proof_dict, indy_pres_spec
 from app.tests.e2e.test_fixtures import *  # NOQA
 
-BASE_PATH = "/generic/proof"
+BASE_PATH = "/generic/verifier"
 
 
 def create_send_request(connection_id: str, protocol_version: str) -> SendProofRequest:
@@ -66,7 +66,6 @@ async def test_send_proof_request(
 
 @pytest.mark.asyncio
 async def test_create_proof_request(
-    alice_connection_id: str,
     async_client_alice_module_scope: AsyncClient,
 ):
     # V1

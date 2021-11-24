@@ -51,14 +51,14 @@ class PresentationExchange(BaseModel):
     protocol_version: ProofRequestProtocolVersion
     role: Literal["prover", "verifier"]
     state: Literal[
-            "proposal-sent",
-            "proposal-received",
-            "request-sent",
-            "request-received",
-            "presentation-sent",
-            "presentation-received",
-            "done",
-            "abandoned",
-        ]
+        "proposal-sent",
+        "proposal-received",
+        "request-sent",
+        "request-received",
+        "presentation-sent",
+        "presentation-received",
+        "done",
+        "abandoned",
+    ]
     updated_at: Optional[str] = None
     verified: Optional[bool] = None

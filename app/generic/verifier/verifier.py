@@ -1,6 +1,5 @@
 import logging
 from enum import Enum
-from typing import Literal
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends
@@ -13,7 +12,6 @@ from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
     PresentationExchange,
-    ProofRequestProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -22,10 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
-
-ProtocolVersion = Literal[
-    ProofRequestProtocolVersion.v10.value, ProofRequestProtocolVersion.v20.value
-]
 
 
 class VerifierFacade(Enum):

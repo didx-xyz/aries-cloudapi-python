@@ -85,7 +85,6 @@ proof_dict = dict(
             "requested_attributes": {
                 "0_string_uuid": {
                     "name": "string",
-                    "names": ["string"],
                     "non_revoked": {"from_": 0, "to": 0},
                     "restrictions": None,
                 },

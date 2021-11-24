@@ -21,7 +21,7 @@ def create_send_request(connection_id: str, protocol_version: str) -> SendProofR
     return SendProofRequest(
         protocol_version=protocol_version,
         connection_id=connection_id,
-        proof_request=IndyProofRequest(**proof_dict),
+        proof_request=IndyProofRequest(**proof_dict["proof_request"]),
     )
 
 
@@ -70,7 +70,7 @@ async def test_create_proof_request(
 ):
     # V1
     proof_request_v1 = CreateProofRequest(
-        proof_request=IndyProofRequest(**proof_dict),
+        proof_request=IndyProofRequest(**proof_dict["proof_request"]),
         protocol_version=ProofRequestProtocolVersion.v10.value,
     )
     response = await async_client_alice_module_scope.post(

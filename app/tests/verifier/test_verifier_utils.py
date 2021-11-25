@@ -109,9 +109,9 @@ v20_presentation_exchange_records = [
     V20PresExRecord(
         auto_present=False,
         by_format=V20PresExRecordByFormat(
-            pres={},
-            pres_proposal={},
-            pres_request={},
+            pres={"indy": {"hello": "world"}},
+            pres_proposal={"indy": {"hello": "world"}},
+            pres_request={"indy": {"hello": "world"}},
         ),
         connection_id="abc",
         created_at="2021-09-15 13:49:47Z",

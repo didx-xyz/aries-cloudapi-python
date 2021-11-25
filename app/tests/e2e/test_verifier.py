@@ -41,7 +41,9 @@ async def test_send_proof_request(
     )
 
     result = response.json()
+
     assert "presentation" in result.keys()
+    assert "presentation_request" in result.keys()
     assert "created_at" in result.keys()
     assert "proof_id" in result.keys()
     assert result["role"] == "verifier"
@@ -57,6 +59,7 @@ async def test_send_proof_request(
 
     result = response.json()
     assert "presentation" in result.keys()
+    assert "presentation_request" in result.keys()
     assert "created_at" in result.keys()
     assert "proof_id" in result.keys()
     assert "v2-" in result["proof_id"]

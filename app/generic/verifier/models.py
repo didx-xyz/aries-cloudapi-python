@@ -4,10 +4,7 @@ from typing import Dict, Literal, Optional, Union
 from aries_cloudcontroller import (
     IndyPresPreview,
     IndyPresSpec,
-    IndyProof,
     IndyProofRequest,
-    V20Pres,
-    V20PresExRecordByFormat,
 )
 from pydantic import BaseModel
 
@@ -45,9 +42,8 @@ class PresentationExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str
     proof_id: str
-    presentation: Optional[
-        Union[IndyProof, V20Pres, V20PresExRecordByFormat, Dict]
-    ] = None
+    presentation: Optional[Dict] = None
+    presentation_request: Optional[Dict] = None
     protocol_version: ProofRequestProtocolVersion
     role: Literal["prover", "verifier"]
     state: Literal[

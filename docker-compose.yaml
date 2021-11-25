@@ -9,6 +9,7 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/app
+      - ./environments/yoma-ga/fastapi.default.env:/app/.env
     depends_on:
       - yoma-ga-wallets-db
       - ledger-nodes
@@ -81,6 +82,7 @@ services:
       - "8100:8000"
     volumes:
       - ./app:/app
+      - ./environments/yoma-multitenant/fastapi.default.env:/app/.env
     depends_on:
       - yoma-multitenant-wallets-db
       - ledger-nodes
@@ -173,8 +175,6 @@ services:
     volumes:
       - webserver-cli:/home/indy/.indy-cli
       - webserver-ledger:/home/indy/ledger
-    environment:
-      - DOCKERHOST=${DOCKERHOST}
     networks:
       - yoma-multitenant
       - yoma-ga

@@ -1,4 +1,5 @@
 import logging
+
 from fastapi import APIRouter
 
 import app.facades.trust_registry as trust_registry_facade

@@ -1,6 +1,6 @@
 from typing import Literal, Optional
-from aries_cloudcontroller import ConnRecord
 
+from aries_cloudcontroller import ConnRecord
 from pydantic import BaseModel
 
 

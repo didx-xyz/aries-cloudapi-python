@@ -5,8 +5,8 @@ import app.facades.ledger as ledger_facade
 from app.generic.wallet.wallets import (
     fetch_current_did,
     list_dids,
-    set_did_endpoint,
     router,
+    set_did_endpoint,
 )
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}

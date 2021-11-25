@@ -11,7 +11,6 @@ from aries_cloudcontroller import (
 from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
-from pydantic import utils
 
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import (

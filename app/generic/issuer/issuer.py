@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Query
@@ -96,7 +96,7 @@ async def get_credential(
     issuer = __issuer_from_id(credential_id)
 
     return await issuer.get_record(
-        controller=aries_controller, credential_exchange_id=credential_exchange_id
+        controller=aries_controller, credential_exchange_id=credential_id
     )
 
 
@@ -163,7 +163,7 @@ async def remove_credential(
     issuer = __issuer_from_id(credential_id)
 
     await issuer.delete_credential(
-        controller=aries_controller, credential_exchange_id=credential_exchange_id
+        controller=aries_controller, credential_exchange_id=credential_id
     )
 
 

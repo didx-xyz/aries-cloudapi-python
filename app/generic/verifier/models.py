@@ -1,11 +1,12 @@
 from enum import Enum
-from typing import Dict, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 from aries_cloudcontroller import (
     IndyPresPreview,
     IndyPresSpec,
     IndyProofRequest,
 )
+from aries_cloudcontroller.model.indy_proof import IndyProof
 from pydantic import BaseModel
 
 
@@ -42,8 +43,8 @@ class PresentationExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str
     proof_id: str
-    presentation: Optional[Dict] = None
-    presentation_request: Optional[Dict] = None
+    presentation: Optional[IndyProof] = None
+    presentation_request: Optional[IndyProofRequest] = None
     protocol_version: ProofRequestProtocolVersion
     role: Literal["prover", "verifier"]
     state: Literal[

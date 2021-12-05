@@ -64,6 +64,7 @@ async def credential_exchange_id(
     bob_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
     schema_definition: SchemaSendResult,
+    credential_definition_id: str,
     alice_member_client: AsyncClient,
 ):
     """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
@@ -71,7 +72,7 @@ async def credential_exchange_id(
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_and_alice_connection["bob_connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
 

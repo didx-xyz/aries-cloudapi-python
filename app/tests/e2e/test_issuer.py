@@ -18,20 +18,26 @@ from app.tests.util.event_loop import event_loop
 from app.tests.util.client_fixtures import yoma_acapy_client
 
 from app.tests.e2e.test_fixtures import BASE_PATH
-from app.tests.e2e.test_fixtures import *  # NOQA
+from app.tests.e2e.test_fixtures import (
+    schema_definition,
+    credential_definition_id,
+    credential_exchange_id,
+    register_issuer,
+)
 
 
 @pytest.mark.asyncio
 async def test_send_credential(
     bob_member_client: AsyncClient,
     schema_definition: SchemaSendResult,
+    credential_definition_id: str,
     bob_and_alice_connection: BobAliceConnect,
     alice_member_client: AsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_and_alice_connection["bob_connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "credential_defintion_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
 

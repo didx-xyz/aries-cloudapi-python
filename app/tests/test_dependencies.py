@@ -225,7 +225,7 @@ async def test_web_ecosystem_or_member():
     )
     # then
     assert response.status_code == 401
-    assert response.text == '{"detail":"Not authorized"}'
+    assert response.text == '{"detail":"Unauthorized"}'
 
     # when
     await make_call(

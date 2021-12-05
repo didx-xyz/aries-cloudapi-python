@@ -23,7 +23,7 @@ async def test_create_credential_definition(yoma_acapy_client: AcaPyClient):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_acapy_client)
+    await create_public_did(yoma_acapy_client)
     schema_definition_result = (
         await create_schema(definition, yoma_acapy_client)
     ).dict()
@@ -58,7 +58,7 @@ async def test_create_credential_definition_via_web(
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_acapy_client)
+    await create_public_did(yoma_acapy_client)
     schema_definition_result = (
         await create_schema(definition, yoma_acapy_client)
     ).dict()
@@ -92,7 +92,7 @@ async def test_get_credential_definitions(yoma_acapy_client: AcaPyClient):
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_acapy_client)
+    await create_public_did(yoma_acapy_client)
     schema_definition_result_1 = (
         await create_schema(definition1, yoma_acapy_client)
     ).dict()
@@ -137,7 +137,7 @@ async def test_get_credential_definitions_via_web(
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_acapy_client)
+    await create_public_did(yoma_acapy_client)
     schema_definition_result = (
         await create_schema(definition, yoma_acapy_client)
     ).dict()

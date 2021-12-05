@@ -1,7 +1,5 @@
 import pytest
-from aries_cloudcontroller import (
-    IndyProofRequest,
-)
+from aries_cloudcontroller import IndyProofRequest
 from httpx import AsyncClient
 
 from app.generic.verifier.models import ProofRequestProtocolVersion
@@ -11,8 +9,13 @@ from app.generic.verifier.verifier import (
     RejectProofRequest,
     SendProofRequest,
 )
-from app.tests.verifier.test_verifier_utils import proof_dict, indy_pres_spec
-from app.tests.e2e.test_fixtures import *  # NOQA
+from app.tests.util.event_loop import event_loop
+from app.tests.util.member_personas import (
+    BobAliceConnect,
+    alice_member_client,
+    bob_and_alice_connection,
+)
+from app.tests.verifier.test_verifier_utils import indy_pres_spec, proof_dict
 
 BASE_PATH = "/generic/verifier"
 

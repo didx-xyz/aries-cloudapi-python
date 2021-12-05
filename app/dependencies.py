@@ -35,7 +35,7 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)):
     role = Role.from_str(role_str)
 
     if not role:
-        raise HTTPException(401, f"Not authorized")
+        raise HTTPException(401, "Unauthorized")
 
     return AcaPyAuth(role=role, token=token)
 

@@ -2,11 +2,11 @@ import io
 import logging
 import os
 from distutils.util import strtobool
+from fastapi.exceptions import HTTPException
+from starlette.responses import JSONResponse
 
 import yaml
-from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import JSONResponse
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
@@ -15,6 +15,7 @@ from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.verifier import verifier
 from app.generic.wallet import wallets
+from app.generic.definitions import definitions
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -28,6 +29,7 @@ app.include_router(wallet_admin.router)
 app.include_router(verifier.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
+app.include_router(definitions.router)
 app.include_router(trust_registry.router)
 
 
@@ -41,23 +43,11 @@ def read_openapi_yaml() -> Response:
     return Response(content=yaml_s.getvalue(), media_type="text/yaml")
 
 
-@app.exception_handler(ClientResponseError)
+@app.exception_handler(Exception)
 async def client_response_error_exception_handler(
-    request: Request, exc: ClientResponseError
+    request: Request, exception: Exception
 ):
-    """This is the handler for handling the ClientResponseError
-
-    that is the error fired by the aries cloud controller.
-    It converts this erro into a nice json response which indicates the status and the
-    message
-    """
-    if exc.status == 401:
-        return JSONResponse(
-            status_code=exc.status,
-            content={"error_message": "401 Unauthorized"},
-        )
+    if not isinstance(exception, HTTPException):
+        return JSONResponse({"detail": f"Error processing request:"}, 500)
     else:
-        return JSONResponse(
-            status_code=exc.status,
-            content={"error_message": exc.message},
-        )
+        return JSONResponse(exception.detail, exception.status_code, exception.headers)

@@ -1,5 +1,5 @@
 import logging
-from typing import List, Literal, Optional
+from typing import Any, List, Literal, Optional
 
 import httpx
 from fastapi.exceptions import HTTPException
@@ -11,10 +11,15 @@ logger = logging.getLogger(__name__)
 Role = Literal["issuer", "verifier"]
 
 
-class TrustRegistryException(Exception):
+class TrustRegistryException(HTTPException):
     """Class that represents a trust registry error"""
 
-    pass
+    def __init__(
+        self,
+        detail: str,
+        status_code: int = 403,
+    ) -> None:
+        super().__init__(status_code=status_code, detail=detail)
 
 
 class Actor(TypedDict):

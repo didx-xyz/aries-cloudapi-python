@@ -1,12 +1,10 @@
 import logging
-import os
 from typing import List, Literal, Optional
 
 import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
-
-TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", "http://localhost:8001")
+from app.constants import TRUST_REGISTRY_URL
 
 logger = logging.getLogger(__name__)
 

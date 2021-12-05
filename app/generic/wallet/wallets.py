@@ -1,11 +1,11 @@
 import logging
 from typing import Literal
 
-from aries_cloudcontroller import AcaPyClient, DIDEndpointWithType
+from aries_cloudcontroller import AcaPyClient, DIDEndpointWithType, DIDList
 from fastapi import APIRouter, Depends
 
 from app.dependencies import agent_selector
-from app.facades.acapy_ledger import create_pub_did
+from app.facades.acapy_ledger import accept_taa_if_required, create_pub_did
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ async def create_local_did(
     return await aries_controller.wallet.create_did(body={})
 
 
-@router.get("/list-dids")
+@router.get("/list-dids", response_model=DIDList)
 async def list_dids(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
@@ -98,6 +98,7 @@ async def assign_pub_did(
     ----------
     did: str
     """
+    await accept_taa_if_required(aries_controller)
     return await aries_controller.wallet.set_public_did(did=did)
 
 

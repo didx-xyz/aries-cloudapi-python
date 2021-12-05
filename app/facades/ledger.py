@@ -1,15 +1,12 @@
 import logging
-import os
 from typing import Optional
 
 import httpx
 from aries_cloudcontroller import DID
 from fastapi import HTTPException
 
+from app.constants import LEDGER_TYPE, LEDGER_URL
 from app.schemas import LedgerRequestSovrin, LedgerRequestVon
-
-LEDGER_URL = os.getenv("LEDGER_NETWORK_URL", "http://localhost:9000/register")
-LEDGER_TYPE = os.getenv("LEDGER_TYPE", "von")
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +34,7 @@ async def _post_to_ledger(payload, url: Optional[str] = None):
         The response object of the post request
     """
     url = url if url else LEDGER_URL
-    post_to_ledger_resp = httpx.post(url, data=payload.json(), headers={})
+    post_to_ledger_resp = httpx.post(url, data=payload.json(), headers={}, timeout=20)
 
     if post_to_ledger_resp.status_code != 200:
         error_json = post_to_ledger_resp.json()

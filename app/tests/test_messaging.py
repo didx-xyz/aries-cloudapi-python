@@ -1,47 +1,45 @@
-import asyncio
-import os
-
 import pytest
-from httpx import AsyncClient, Response
+from assertpy.assertpy import assert_that
+from httpx import AsyncClient
 
 from app.generic.messaging import Message, TrustPingMsg
 
-APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}
-MESSAGE_PATH = os.getenv("MESSAGING_ROUTE", "/generic/messaging")
-BASE_PATH_CON = os.getenv("CONNECTIONS_ROUTE", "/generic/connections")
-
-
-@pytest.yield_fixture(scope="module")
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+# These imports are important for tests to run!
+from app.tests.util.event_loop import event_loop
+from app.tests.util.member_personas import (
+    BobAliceConnect,
+)
 
 
 @pytest.mark.asyncio()
 async def test_send_trust_ping(
-    alice_connection_id: str, async_client_alice_module_scope: AsyncClient
+    bob_and_alice_connection: BobAliceConnect, alice_member_client: AsyncClient
 ):
     trustping_msg = TrustPingMsg(
-        connection_id=alice_connection_id, comment="Donda"
-    ).dict()
-    response = await async_client_alice_module_scope.post(
-        MESSAGE_PATH + "/trust-ping", json=trustping_msg
+        connection_id=bob_and_alice_connection["alice_connection_id"], comment="Donda"
     )
-    assert type(response) is Response
-    assert response.status_code == 200
-    assert response.content != ""
-    assert response.json()["thread_id"]
+
+    response = await alice_member_client.post(
+        "/generic/messaging/trust-ping", json=trustping_msg.dict()
+    )
+    response_data = response.json()
+
+    assert_that(response.status_code).is_equal_to(200)
+    assert_that(response_data).contains("thread_id")
 
 
 @pytest.mark.asyncio()
 async def test_send_message(
-    alice_connection_id: str, async_client_alice_module_scope: AsyncClient
+    bob_and_alice_connection: BobAliceConnect, alice_member_client: AsyncClient
 ):
-    message = Message(connection_id=alice_connection_id, content="Donda").dict()
-    response = await async_client_alice_module_scope.post(
-        MESSAGE_PATH + "/send-message", json=message
+    message = Message(
+        connection_id=bob_and_alice_connection["alice_connection_id"], content="Donda"
     )
-    assert type(response) is Response
-    assert response.status_code == 200
-    assert response.json() == {}
+
+    response = await alice_member_client.post(
+        "/generic/messaging/send-message", json=message.dict()
+    )
+    response_data = response.json()
+
+    assert_that(response.status_code).is_equal_to(200)
+    assert_that(response_data).is_equal_to({})

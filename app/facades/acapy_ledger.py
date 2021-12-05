@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -51,7 +51,9 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     return taa_response, "service_agreement"
 
 
-async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
+async def accept_taa(
+    controller: AcaPyClient, taa: TAARecord, mechanism: Optional[str] = None
+):
     """
     Accept the TAA
 
@@ -107,6 +109,33 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     return issuer_endpoint_response
 
 
+async def register_nym_on_ledger(
+    aries_controller: AcaPyClient,
+    *,
+    did: str,
+    verkey: str,
+    alias: Optional[str] = None,
+    role: Optional[str] = None,
+):
+    nym_response = await aries_controller.ledger.register_nym(
+        did=did, verkey=verkey, alias=alias, role=role
+    )
+
+    if not nym_response.success:
+        raise HTTPException(500, "Error registering nym on ledger")
+
+
+async def accept_taa_if_required(aries_controller: AcaPyClient):
+    taa_response, mechanism = await get_taa(aries_controller)
+
+    if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
+        await accept_taa(
+            aries_controller,
+            taa_response.taa_record,
+            mechanism,
+        )
+
+
 async def create_pub_did(
     aries_controller: AcaPyClient,
 ) -> DidCreationResponse:
@@ -122,13 +151,8 @@ async def create_pub_did(
     did_object = await wallet_facade.create_did(aries_controller)
     await ledger_facade.post_to_ledger(did_object=did_object)
 
-    taa_response, mechanism = await get_taa(aries_controller)
-    if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
-        await accept_taa(
-            aries_controller,
-            taa_response.taa_record,
-            mechanism,
-        )
+    await accept_taa_if_required(aries_controller)
+
     await wallet_facade.assign_pub_did(aries_controller, did_object.did)
     get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
     issuer_nym = get_pub_did_response.result.did

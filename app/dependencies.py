@@ -10,8 +10,9 @@ from fastapi.security import APIKeyHeader
 from app.constants import (
     YOMA_AGENT_URL,
     ECOSYSTEM_AGENT_URL,
+    ECOSYSTEM_AGENT_API_KEY,
     MEMBER_AGENT_URL,
-    EMBEDDED_API_KEY,
+    MEMBER_AGENT_API_KEY,
 )
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ async def multitenant_agent(auth: AcaPyAuth = Depends(acapy_auth)):
         # yield the controller
         agent = AcaPyClient(
             base_url=auth.role.agent_type.base_url,
-            api_key=EMBEDDED_API_KEY,
+            api_key=auth.role.agent_type.x_api_key,
             tenant_jwt=auth.token,
         )
         yield agent
@@ -109,16 +110,25 @@ class AgentType(NamedTuple):
     base_url: str
     agent_selector: Callable[["AcaPyAuth"], AsyncGenerator[AcaPyClient, None]]
     is_admin: bool
+    x_api_key: Optional[str]
 
 
 class Role(Enum):
-    YOMA = AgentType("yoma", YOMA_AGENT_URL, admin_agent, True)
-    ECOSYSTEM = AgentType("ecosystem", ECOSYSTEM_AGENT_URL, multitenant_agent, False)
-    ECOSYSTEM_ADMIN = AgentType(
-        "ecosystem-admin", ECOSYSTEM_AGENT_URL, admin_agent, True
+    YOMA = AgentType("yoma", YOMA_AGENT_URL, admin_agent, True, None)
+    ECOSYSTEM = AgentType(
+        "ecosystem",
+        ECOSYSTEM_AGENT_URL,
+        multitenant_agent,
+        False,
+        ECOSYSTEM_AGENT_API_KEY,
     )
-    MEMBER = AgentType("member", MEMBER_AGENT_URL, multitenant_agent, False)
-    MEMBER_ADMIN = AgentType("member-admin", MEMBER_AGENT_URL, admin_agent, True)
+    ECOSYSTEM_ADMIN = AgentType(
+        "ecosystem-admin", ECOSYSTEM_AGENT_URL, admin_agent, True, None
+    )
+    MEMBER = AgentType(
+        "member", MEMBER_AGENT_URL, multitenant_agent, False, MEMBER_AGENT_API_KEY
+    )
+    MEMBER_ADMIN = AgentType("member-admin", MEMBER_AGENT_URL, admin_agent, True, None)
 
     @staticmethod
     def from_str(role: str) -> Optional["Role"]:

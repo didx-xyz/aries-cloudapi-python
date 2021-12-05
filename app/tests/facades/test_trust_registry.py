@@ -1,12 +1,9 @@
-import os
 from unittest.mock import patch
 
 import pytest
 from fastapi.exceptions import HTTPException
 
 import app.facades.trust_registry as trf
-
-trf.TRUST_REGISTRY_URL = os.getenv("TEST_TRUST_REGISTRY_URL", "http://localhost:8001")
 
 
 @pytest.mark.asyncio

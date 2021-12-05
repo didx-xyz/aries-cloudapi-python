@@ -194,7 +194,8 @@ async def test_web_ecosystem_or_member():
         == f"Bearer {TEST_BEARER_HEADER}"
     )
     assert (
-        injected_controller.client.headers["x-api-key"] == dependencies.EMBEDDED_API_KEY
+        injected_controller.client.headers["x-api-key"]
+        == dependencies.ECOSYSTEM_AGENT_API_KEY
     )
     assert isinstance(injected_controller, AcaPyClient)
 
@@ -208,7 +209,8 @@ async def test_web_ecosystem_or_member():
         == f"Bearer {TEST_BEARER_HEADER_2}"
     )
     assert (
-        injected_controller.client.headers["x-api-key"] == dependencies.EMBEDDED_API_KEY
+        injected_controller.client.headers["x-api-key"]
+        == dependencies.MEMBER_AGENT_API_KEY
     )
     assert isinstance(injected_controller, AcaPyClient)
 

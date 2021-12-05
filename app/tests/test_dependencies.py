@@ -1,6 +1,5 @@
-from contextlib import asynccontextmanager
-import os
 import fastapi
+from contextlib import asynccontextmanager
 
 import pytest
 from aries_cloudcontroller import AcaPyClient

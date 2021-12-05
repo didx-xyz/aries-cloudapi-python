@@ -4,8 +4,8 @@ from typing import Literal
 from aries_cloudcontroller import AcaPyClient, DIDEndpointWithType, DIDList
 from fastapi import APIRouter, Depends
 
-from app.facades.acapy_ledger import create_pub_did, accept_taa_if_required
 from app.dependencies import agent_selector
+from app.facades.acapy_ledger import accept_taa_if_required, create_pub_did
 
 logger = logging.getLogger(__name__)
 

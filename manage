@@ -220,6 +220,7 @@ start | up)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
+  docker-compose \
   --log-level ERROR up \
   --build --remove-orphans \
   -d ${_startupParams}

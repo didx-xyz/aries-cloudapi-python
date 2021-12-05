@@ -18,6 +18,7 @@ from app.generic.issuer.models import (
     CredentialExchange,
     IssueCredentialProtocolVersion,
 )
+from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ class IssuerV1(Issuer):
     async def request_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
     ):
+        credential_exchange_id = cred_id_no_version(credential_exchange_id)
         record = await controller.issue_credential_v1_0.send_request(
             cred_ex_id=credential_exchange_id
         )
@@ -54,6 +56,7 @@ class IssuerV1(Issuer):
     async def store_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
     ):
+        credential_exchange_id = cred_id_no_version(credential_exchange_id)
         record = await controller.issue_credential_v1_0.store_credential(
             cred_ex_id=credential_exchange_id, body=V10CredentialStoreRequest()
         )
@@ -64,6 +67,7 @@ class IssuerV1(Issuer):
     async def delete_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
     ):
+        credential_exchange_id = cred_id_no_version(credential_exchange_id)
         record = await controller.issue_credential_v1_0.get_record(
             cred_ex_id=credential_exchange_id
         )
@@ -93,6 +97,7 @@ class IssuerV1(Issuer):
 
     @classmethod
     async def get_record(cls, controller: AcaPyClient, credential_exchange_id: str):
+        credential_exchange_id = cred_id_no_version(credential_exchange_id)
         record = await controller.issue_credential_v1_0.get_record(
             cred_ex_id=credential_exchange_id,
         )

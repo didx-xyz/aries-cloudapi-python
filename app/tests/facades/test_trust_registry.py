@@ -1,5 +1,6 @@
-from unittest.mock import patch
 import os
+from unittest.mock import patch
+
 import pytest
 from fastapi.exceptions import HTTPException
 

@@ -9,6 +9,7 @@ from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import CredentialExchange, IssueCredentialProtocolVersion
 
+
 # need this to handle the async with the mock
 async def get(response: Optional[Any] = None):
     if response:
@@ -92,7 +93,7 @@ async def test_get_credential(mock_agent_controller: AcaPyClient):
         assert result is v1_record
 
         verify(IssuerV1).get_record(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
         )
 
     with when(IssuerV2).get_record(...).thenReturn(get(v2_record)):
@@ -102,7 +103,7 @@ async def test_get_credential(mock_agent_controller: AcaPyClient):
 
         assert result is v2_record
         verify(IssuerV2).get_record(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
         )
 
 
@@ -115,13 +116,13 @@ async def test_remove_credential(mock_agent_controller: AcaPyClient):
         await test_module.remove_credential("v1-credential_id", mock_agent_controller)
 
         verify(IssuerV1).delete_credential(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
         )
     with when(IssuerV2).delete_credential(...).thenReturn(get(v2_record)):
         await test_module.remove_credential("v2-credential_id", mock_agent_controller)
 
         verify(IssuerV2).delete_credential(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
         )
 
 
@@ -148,7 +149,7 @@ async def test_request_credential(
         await test_module.request_credential("v1-credential_id", mock_agent_controller)
 
         verify(IssuerV1).request_credential(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
         )
         verify(test_module).assert_valid_issuer(
             "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id1"
@@ -164,7 +165,7 @@ async def test_request_credential(
         await test_module.request_credential("v2-credential_id", mock_agent_controller)
 
         verify(IssuerV2).request_credential(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
         )
         verify(test_module).assert_valid_issuer(
             "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id2"
@@ -205,8 +206,8 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
     await test_module.store_credential("v2-credential_id2", mock_agent_controller)
 
     verify(IssuerV1).store_credential(
-        controller=mock_agent_controller, credential_exchange_id="credential_id1"
+        controller=mock_agent_controller, credential_exchange_id="v1-credential_id1"
     )
     verify(IssuerV2).store_credential(
-        controller=mock_agent_controller, credential_exchange_id="credential_id2"
+        controller=mock_agent_controller, credential_exchange_id="v2-credential_id2"
     )

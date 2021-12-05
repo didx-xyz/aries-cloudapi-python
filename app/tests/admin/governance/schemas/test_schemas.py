@@ -13,15 +13,11 @@ from app.admin.governance.schemas import (
     update_schema,
 )
 from app.facades.acapy_ledger import create_pub_did as create_public_did
+from app.tests.util.client_fixtures import yoma_acapy_client, yoma_client
 
 # These imports are important for tests to run!
 from app.tests.util.event_loop import event_loop
-from app.tests.util.client_fixtures import yoma_acapy_client, yoma_client
-
-# want to wrap an existing method with a decorator
-# the method is normally used by fast api and then fast api manages the tear down
 from app.tests.util.string import get_random_string
-
 
 BASE_PATH = router.prefix
 

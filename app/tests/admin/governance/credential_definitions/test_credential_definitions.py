@@ -1,8 +1,7 @@
 import pytest
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
-
-import app.facades.ledger as ledger_facade
-import app.utils as utils
+from httpx import AsyncClient
 from app.admin.governance.credential_definitions import (
     CredentialDefinition,
     create_credential_definition,
@@ -12,27 +11,22 @@ from app.admin.governance.credential_definitions import (
 )
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.admin.governance.schemas.test_schemas import create_public_did
-from app.tests.utils_test import get_random_string
+from app.tests.util.client_fixtures import yoma_acapy_client, yoma_client
+from app.tests.util.event_loop import event_loop
+from app.tests.util.string import get_random_string
 
 BASE_PATH = router.prefix
 
 
-@pytest.fixture
-def setup_local_env():
-    utils.is_multitenant = False
-    utils.yoma_agent_url = "http://localhost:3021"
-    ledger_facade.LEDGER_TYPE = "von"
-
-
 @pytest.mark.asyncio
-async def test_create_credential_definition(setup_local_env, yoma_agent_mock):
+async def test_create_credential_definition(yoma_acapy_client: AcaPyClient):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
-    print(f" created did:{public_did}")
-    schema_definition_result = (await create_schema(definition, yoma_agent_mock)).dict()
-    print(schema_definition_result)
+    public_did = await create_public_did(yoma_acapy_client)
+    schema_definition_result = (
+        await create_schema(definition, yoma_acapy_client)
+    ).dict()
 
     credential_definition = CredentialDefinition(
         schema_id=schema_definition_result["schema_id"],
@@ -42,13 +36,13 @@ async def test_create_credential_definition(setup_local_env, yoma_agent_mock):
 
     # when
     result = (
-        await create_credential_definition(credential_definition, yoma_agent_mock)
+        await create_credential_definition(credential_definition, yoma_acapy_client)
     ).dict()
 
     # then
     written = (
         await get_credential_definition(
-            result["credential_definition_id"], yoma_agent_mock
+            result["credential_definition_id"], yoma_acapy_client
         )
     ).dict()
     assert_that(written).is_not_empty().contains_key("credential_definition")
@@ -59,15 +53,15 @@ async def test_create_credential_definition(setup_local_env, yoma_agent_mock):
 
 @pytest.mark.asyncio
 async def test_create_credential_definition_via_web(
-    setup_local_env, yoma_agent_mock, async_client
+    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
 ):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
-    print(f" created did:{public_did}")
-    schema_definition_result = (await create_schema(definition, yoma_agent_mock)).dict()
-    print(schema_definition_result)
+    public_did = await create_public_did(yoma_acapy_client)
+    schema_definition_result = (
+        await create_schema(definition, yoma_acapy_client)
+    ).dict()
 
     credential_definition = CredentialDefinition(
         schema_id=schema_definition_result["schema_id"],
@@ -77,21 +71,13 @@ async def test_create_credential_definition_via_web(
 
     # when
     result = (
-        await async_client.post(
-            f"{BASE_PATH}",
-            data=credential_definition.json(),
-            headers={
-                "x-api-key": "adminApiKey",
-                "x-role": "yoma",
-                "content-type": "application/json",
-            },
-        )
+        await yoma_client.post(BASE_PATH, json=credential_definition.dict())
     ).json()
 
     # then
     written = (
         await get_credential_definition(
-            result["credential_definition_id"], yoma_agent_mock
+            result["credential_definition_id"], yoma_acapy_client
         )
     ).dict()
     assert_that(written).is_not_empty().contains_key("credential_definition")
@@ -101,18 +87,17 @@ async def test_create_credential_definition_via_web(
 
 
 @pytest.mark.asyncio
-async def test_get_credential_definitions(setup_local_env, yoma_agent_mock):
+async def test_get_credential_definitions(yoma_acapy_client: AcaPyClient):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
-    print(f" created did:{public_did}")
+    public_did = await create_public_did(yoma_acapy_client)
     schema_definition_result_1 = (
-        await create_schema(definition1, yoma_agent_mock)
+        await create_schema(definition1, yoma_acapy_client)
     ).dict()
     schema_definition_result_2 = (
-        await create_schema(definition2, yoma_agent_mock)
+        await create_schema(definition2, yoma_acapy_client)
     ).dict()
 
     credential_definition_1 = CredentialDefinition(
@@ -126,16 +111,16 @@ async def test_get_credential_definitions(setup_local_env, yoma_agent_mock):
         support_revocation=False,
     )
 
-    await create_credential_definition(credential_definition_1, yoma_agent_mock)
+    await create_credential_definition(credential_definition_1, yoma_acapy_client)
     credential_definition_result_2 = (
-        await create_credential_definition(credential_definition_2, yoma_agent_mock)
+        await create_credential_definition(credential_definition_2, yoma_acapy_client)
     ).dict()
 
     # when
     credential_definition = (
         await get_created_credential_definitions(
             schema_id=schema_definition_result_2["schema_id"],
-            aries_controller=yoma_agent_mock,
+            aries_controller=yoma_acapy_client,
         )
     ).dict()
 
@@ -147,14 +132,15 @@ async def test_get_credential_definitions(setup_local_env, yoma_agent_mock):
 
 @pytest.mark.asyncio
 async def test_get_credential_definitions_via_web(
-    setup_local_env, yoma_agent_mock, async_client
+    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
 ):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_agent_mock)
-    print(f" created did:{public_did}")
-    schema_definition_result = (await create_schema(definition, yoma_agent_mock)).dict()
+    public_did = await create_public_did(yoma_acapy_client)
+    schema_definition_result = (
+        await create_schema(definition, yoma_acapy_client)
+    ).dict()
 
     credential_definition = CredentialDefinition(
         schema_id=schema_definition_result["schema_id"],
@@ -163,15 +149,14 @@ async def test_get_credential_definitions_via_web(
     )
 
     credential_definition_result = (
-        await create_credential_definition(credential_definition, yoma_agent_mock)
+        await create_credential_definition(credential_definition, yoma_acapy_client)
     ).dict()
 
     # when
     credential_definition = (
-        await async_client.get(
+        await yoma_client.get(
             f"{BASE_PATH}/created",
             params={"schema_id": schema_definition_result["schema_id"]},
-            headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
         )
     ).json()
 
@@ -182,13 +167,13 @@ async def test_get_credential_definitions_via_web(
 
 
 @pytest.mark.asyncio
-async def test_get_credential_definition(setup_local_env, yoma_agent_mock):
+async def test_get_credential_definition(yoma_acapy_client: AcaPyClient):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    await create_public_did(yoma_agent_mock)
+    await create_public_did(yoma_acapy_client)
     schema_definition_result_1 = (
-        await create_schema(definition1, yoma_agent_mock)
+        await create_schema(definition1, yoma_acapy_client)
     ).dict()
 
     credential_definition_1 = CredentialDefinition(
@@ -198,13 +183,13 @@ async def test_get_credential_definition(setup_local_env, yoma_agent_mock):
     )
 
     credential_definition_result = (
-        await create_credential_definition(credential_definition_1, yoma_agent_mock)
+        await create_credential_definition(credential_definition_1, yoma_acapy_client)
     ).dict()
 
     # when
     result = (
         await get_credential_definition(
-            credential_definition_result["credential_definition_id"], yoma_agent_mock
+            credential_definition_result["credential_definition_id"], yoma_acapy_client
         )
     ).dict()
 
@@ -218,13 +203,13 @@ async def test_get_credential_definition(setup_local_env, yoma_agent_mock):
 
 @pytest.mark.asyncio
 async def test_get_credential_definition_via_web(
-    setup_local_env, yoma_agent_mock, async_client
+    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
 ):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
-    await create_public_did(yoma_agent_mock)
+    await create_public_did(yoma_acapy_client)
     schema_definition_result_1 = (
-        await create_schema(definition1, yoma_agent_mock)
+        await create_schema(definition1, yoma_acapy_client)
     ).dict()
     credential_definition_1 = CredentialDefinition(
         schema_id=schema_definition_result_1["schema_id"],
@@ -232,13 +217,12 @@ async def test_get_credential_definition_via_web(
         support_revocation=False,
     )
     credential_definition_result = (
-        await create_credential_definition(credential_definition_1, yoma_agent_mock)
+        await create_credential_definition(credential_definition_1, yoma_acapy_client)
     ).dict()
     # when
     result_json = (
-        await async_client.get(
-            f"{BASE_PATH}/{credential_definition_result['credential_definition_id']}",
-            headers={"x-api-key": "adminApiKey", "x-role": "yoma"},
+        await yoma_client.get(
+            f"{BASE_PATH}/{credential_definition_result['credential_definition_id']}"
         )
     ).json()
     # then

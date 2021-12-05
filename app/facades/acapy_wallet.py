@@ -57,7 +57,7 @@ async def assign_pub_did(controller: AcaPyClient, did: str):
     return assign_pub_did_response
 
 
-async def get_pub_did(controller: AcaPyClient):
+async def get_public_did(controller: AcaPyClient):
     """
     Obtains the public DID
 
@@ -72,10 +72,12 @@ async def get_pub_did(controller: AcaPyClient):
         The response from getting the public DID from the ledger
     """
     get_pub_did_response = await controller.wallet.get_public_did()
+
     if not get_pub_did_response.result:
         logger.error("Failed to get public DID:\n %s", get_pub_did_response)
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not obtain public DID. {str(get_pub_did_response)}",
         )
+
     return get_pub_did_response

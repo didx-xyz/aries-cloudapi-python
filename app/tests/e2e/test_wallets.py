@@ -35,7 +35,7 @@ async def create_did_mock(yoma_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_list_dids(yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient):
-    response = await yoma_client.get(f"{WALLET_BASE_PATH}/list-dids")
+    response = await yoma_client.get(f"{WALLET_BASE_PATH}/dids")
 
     assert response.status_code == 200
     response = response.json()

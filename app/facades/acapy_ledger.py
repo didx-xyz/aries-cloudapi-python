@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -17,7 +17,7 @@ from app.schemas import DidCreationResponse
 logger = logging.getLogger(__name__)
 
 
-async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
+async def get_taa(controller: AcaPyClient) -> Tuple[bool, Union[TAARecord, None]]:
     """
     Obtains the TAA from the ledger
 
@@ -33,22 +33,19 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     """
     taa_response = await controller.ledger.fetch_taa()
     logger.info("taa_response:\n %s", taa_response)
-    if isinstance(taa_response, TAAInfo) or isinstance(taa_response.result, TAAInfo):
-        if taa_response.result:
-            taa_response = taa_response.result
-        mechanism = (
-            taa_response.taa_accepted.mechanism
-            if taa_response.taa_accepted
-            else "service_agreement"
-        )
-        if not taa_response.taa_record and taa_response.taa_required:
-            logger.error("Failed to get TAA:\n %s", taa_response)
-            raise HTTPException(
-                status_code=404,
-                detail=f"Something went wrong. Could not get TAA. {taa_response}",
-            )
-        return taa_response, mechanism
-    return taa_response, "service_agreement"
+
+    # No TAA, not required, or already accepted
+    if (
+        not taa_response.result
+        or not taa_response.result.taa_required
+        or taa_response.result.taa_accepted
+    ):
+        return False, None
+
+    if not taa_response.result.taa_record:
+        raise Exception("Could not get TAA")
+
+    return True, taa_response.result.taa_record
 
 
 async def accept_taa(
@@ -126,13 +123,13 @@ async def register_nym_on_ledger(
 
 
 async def accept_taa_if_required(aries_controller: AcaPyClient):
-    taa_response, mechanism = await get_taa(aries_controller)
+    should_accept, taa_record = await get_taa(aries_controller)
 
-    if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
+    if should_accept:
         await accept_taa(
             aries_controller,
-            taa_response.taa_record,
-            mechanism,
+            taa_record,
+            "service_agreement",
         )
 
 

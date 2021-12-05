@@ -1,7 +1,10 @@
 import io
 import logging
 import os
+import asyncio
+import threading
 from distutils.util import strtobool
+from aries_cloudcontroller.acapy_client import AcaPyClient
 from fastapi.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
@@ -10,6 +13,9 @@ from fastapi import FastAPI, Request, Response
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
+from app.constants import YOMA_AGENT_URL
+from app.facades.acapy_ledger import accept_taa_if_required
+from app.facades.acapy_wallet import get_pub_did, get_public_did
 from app.generic import messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -51,3 +57,29 @@ async def client_response_error_exception_handler(
         return JSONResponse({"detail": f"Error processing request:"}, 500)
     else:
         return JSONResponse(exception.detail, exception.status_code, exception.headers)
+
+
+@app.on_event("startup")
+async def startup_event():
+    print("Setting up Yoma agent")
+    client = AcaPyClient(YOMA_AGENT_URL, api_key="adminApiKey")
+
+    for _ in range(5):
+        print("try")
+        try:
+            is_ready = await client.server.get_ready_state()
+
+            if is_ready.ready:
+                print("accept taa if required")
+                await accept_taa_if_required(client)
+                # FIXME: will throw
+                public_did = await get_public_did(client)
+                did = "d"
+                await client.wallet.set_public_did(did=did)
+                return
+        except:
+            pass
+
+        await asyncio.sleep(5)
+
+    raise Exception("Agent is not ready")

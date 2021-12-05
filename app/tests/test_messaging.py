@@ -8,8 +8,6 @@ from app.generic.messaging import Message, TrustPingMsg
 from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import (
     BobAliceConnect,
-    alice_member_client,
-    bob_and_alice_connection,
 )
 
 

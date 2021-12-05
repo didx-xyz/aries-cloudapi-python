@@ -7,9 +7,7 @@ from httpx import AsyncClient
 # This import is important for tests to run!
 from app.tests.util.member_personas import (
     BobAlicePublicDid,
-    alice_member_client,
     bob_and_alice_public_did,
-    bob_member_client,
 )
 from app.tests.util.event_loop import event_loop
 

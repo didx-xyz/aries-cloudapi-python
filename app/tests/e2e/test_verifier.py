@@ -12,8 +12,6 @@ from app.generic.verifier.verifier import (
 from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import (
     BobAliceConnect,
-    alice_member_client,
-    bob_and_alice_connection,
 )
 from app.tests.verifier.test_verifier_utils import indy_pres_spec, proof_dict
 

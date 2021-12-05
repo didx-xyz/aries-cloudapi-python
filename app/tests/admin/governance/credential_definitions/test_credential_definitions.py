@@ -11,7 +11,6 @@ from app.admin.governance.credential_definitions import (
 )
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.admin.governance.schemas.test_schemas import create_public_did
-from app.tests.util.client_fixtures import yoma_acapy_client, yoma_client
 from app.tests.util.event_loop import event_loop
 from app.tests.util.string import get_random_string
 

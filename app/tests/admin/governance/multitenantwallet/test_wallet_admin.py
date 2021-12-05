@@ -16,10 +16,6 @@ from app.admin.governance.multitenant_wallet.wallet_admin import (
 
 # These imports are important for tests to run!
 from app.tests.util.event_loop import event_loop
-from app.tests.util.client_fixtures import (
-    member_admin_acapy_client,
-    member_admin_client,
-)
 from app.tests.util.string import get_random_string
 
 WALLET_PATH = router.prefix

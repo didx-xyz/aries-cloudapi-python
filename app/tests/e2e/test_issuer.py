@@ -8,14 +8,9 @@ from httpx import AsyncClient
 
 # This import are important for tests to run!
 from app.tests.util.member_personas import (
-    alice_member_client,
-    bob_member_client,
-    bob_and_alice_connection,
-    bob_and_alice_public_did,
     BobAliceConnect,
 )
 from app.tests.util.event_loop import event_loop
-from app.tests.util.client_fixtures import yoma_acapy_client
 
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.e2e.test_fixtures import *  # NOQA

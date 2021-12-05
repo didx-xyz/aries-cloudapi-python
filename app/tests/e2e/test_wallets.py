@@ -15,7 +15,6 @@ from app.generic.wallet.wallets import (
 from assertpy import assert_that
 
 # This import are important for tests to run!
-from app.tests.util.client_fixtures import yoma_client, yoma_acapy_client
 from app.tests.util.event_loop import event_loop
 
 APPLICATION_JSON_CONTENT_TYPE = {"content-type": "application/json"}

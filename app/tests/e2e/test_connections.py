@@ -5,10 +5,7 @@ from assertpy import assert_that
 from httpx import AsyncClient
 
 # This import is important for tests to run!
-from app.tests.util.member_personas import (
-    BobAlicePublicDid,
-    bob_and_alice_public_did,
-)
+from app.tests.util.member_personas import BobAlicePublicDid
 from app.tests.util.event_loop import event_loop
 
 
@@ -186,6 +183,7 @@ async def test_oob_connect_via_public_did(
     alice_member_client: AsyncClient,
     bob_and_alice_public_did: BobAlicePublicDid,
 ):
+    time.sleep(5)
     connect_response = await bob_member_client.post(
         "/generic/connections/oob/connect-public-did",
         json={"public_did": bob_and_alice_public_did["alice_public_did"]},
@@ -198,7 +196,7 @@ async def test_oob_connect_via_public_did(
         bob_and_alice_public_did["alice_public_did"]
     )
 
-    public_did_response = await alice_member_client.get("/wallet/fetch-current-did")
+    public_did_response = await alice_member_client.get("/wallet/dids/public")
     alice_public_did = public_did_response.json()
 
     alice_connections_response = await alice_member_client.get("/generic/connections")
@@ -206,5 +204,5 @@ async def test_oob_connect_via_public_did(
 
     # Check that a connection exists where the invitation key is the verkey of alice's public did
     assert_that(alice_connections).extracting("invitation_key").contains(
-        alice_public_did["result"]["verkey"]
+        alice_public_did["verkey"]
     )

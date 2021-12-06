@@ -69,8 +69,8 @@ async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
-    bob_did = await create_public_did(alice_acapy_client)
-    alice_did = await create_public_did(bob_acapy_client)
+    bob_did = await create_public_did(bob_acapy_client)
+    alice_did = await create_public_did(alice_acapy_client)
 
     return {
         "bob_public_did": bob_did.did,

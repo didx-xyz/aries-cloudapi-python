@@ -6,10 +6,13 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from httpx import AsyncClient
 
-from app.tests.util.client import member_client
+from app.tests.util.client import (
+    member_acapy_client,
+    member_admin_client,
+    member_client,
+)
 from app.tests.util.ledger import create_public_did
 
-from .client import member_acapy_client, member_admin_client
 from .multitenant import create_member_wallet, delete_member_wallet
 
 

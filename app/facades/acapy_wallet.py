@@ -86,6 +86,6 @@ async def get_public_did(controller: AcaPyClient) -> DID:
     result = await controller.wallet.get_public_did()
 
     if not result.result:
-        raise CloudApiException(f"No public did found", 404)
+        raise CloudApiException("No public did found", 404)
 
     return result.result

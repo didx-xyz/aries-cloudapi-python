@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 import pytest
-from aries_cloudcontroller import DID, AcaPyClient, DIDResult
+from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
 
 import app.generic.issuer.issuer as test_module

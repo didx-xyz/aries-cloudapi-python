@@ -9,7 +9,6 @@ from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from starlette.responses import JSONResponse
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
@@ -55,4 +54,4 @@ async def client_response_error_exception_handler(
     if isinstance(exception, pydantic.error_wrappers.ValidationError):
         return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
-        return JSONResponse({"detail": f"Internal server error"}, 500)
+        return JSONResponse({"detail": "Internal server error"}, 500)

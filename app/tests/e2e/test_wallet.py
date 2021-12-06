@@ -90,9 +90,7 @@ async def test_set_public_did(yoma_client: AsyncClient, yoma_acapy_client: AcaPy
 
 
 @pytest.mark.asyncio
-async def test_set_did_endpoint(
-    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
-):
+async def test_set_did_endpoint(yoma_acapy_client: AcaPyClient):
     did = await create_public_did(yoma_acapy_client)
     endpoint = "https://ssi.com"
 

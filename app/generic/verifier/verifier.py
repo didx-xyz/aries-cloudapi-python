@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from typing import Container, List
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends
@@ -13,6 +14,7 @@ from app.generic.verifier.models import (
     CreateProofRequest,
     PresentationExchange,
     RejectProofRequest,
+    IndyCredPrecis,
     SendProofRequest,
 )
 
@@ -34,6 +36,124 @@ def __get_verifier_by_version(protocol_version: str) -> Verifier:
         return VerifierFacade.v20.value
     else:
         raise ValueError(f"Unknown protocol version {protocol_version}")
+
+
+@router.get("/credentials")
+async def get_credentials(
+    pres_ex_id: str, aries_controller: AcaPyClient = Depends(agent_selector)
+) -> List[IndyCredPrecis]:
+    """
+    Get matching credentials for  presentation exchange
+
+    Parameters:
+    ----------
+    pres_ex_id: str
+        The presentation exchange ID
+
+    Returns:
+    --------
+    presentation_exchange_list: [IndyCredPrecis]
+        The list of Indy presentation credentials
+    """
+    v1_creds = await VerifierFacade.v10.value.get_creds(
+        pres_ex_id=pres_ex_id, controller=aries_controller
+    )
+    v2_creds = await VerifierFacade.v20.value.get_creds(
+        pres_ex_id=pres_ex_id, controller=aries_controller
+    )
+    return [v1_creds, v2_creds]
+
+
+@router.get("/proofs/")
+async def get_all_proofs(
+    aries_controller: AcaPyClient = Depends(agent_selector),
+) -> List[PresentationExchange]:
+    """
+    Get all proofs for your wallet
+
+    Parameters:
+    ----------
+    None
+
+    Returns:
+    --------
+    presentation_exchange_list: [PresentationExchange]
+        The list of presentation exchange records
+    """
+    v1_records = await VerifierFacade.v10.value.get_proof(controller=aries_controller)
+    v2_records = await VerifierFacade.v20.value.get_proof(controller=aries_controller)
+    return [v1_records, v2_records]
+
+
+@router.get("/proofs")
+async def get_all_proofs(
+    aries_controller: AcaPyClient = Depends(agent_selector),
+) -> List[PresentationExchange]:
+    """
+    Get all proofs for your wallet
+
+    Parameters:
+    ----------
+    None
+
+    Returns:
+    --------
+    presentation_exchange_list: [PresentationExchange]
+        The list of presentation exchange records
+    """
+    v1_records = await VerifierFacade.v10.value.get_proof(controller=aries_controller)
+    v2_records = await VerifierFacade.v20.value.get_proof(controller=aries_controller)
+    return [v1_records, v2_records]
+
+
+@router.get("/proofs/{pres_ex_id}")
+async def get_proof(
+    pres_ex_id: str, aries_controller: AcaPyClient = Depends(agent_selector)
+) -> PresentationExchange:
+    """
+    Get proofs record for pres_ex_id
+
+    Parameters:
+    ----------
+    pres_ex_id: str
+        The presentation exchange ID
+
+    Returns:
+    --------
+    presentation_exchange_list: PresentationExchange
+        The of presentation exchange record for the proof ID
+    """
+    v1_records = await VerifierFacade.v10.value.get_proof(
+        controller=aries_controller, pres_ex_id=pres_ex_id
+    )
+    v2_records = await VerifierFacade.v20.value.get_proof(
+        controller=aries_controller, pres_ex_id=pres_ex_id
+    )
+    return [v1_records, v2_records]
+
+
+@router.delete("/proofs/{pres_ex_id}")
+async def delete_proof(
+    pres_ex_id: str, aries_controller: AcaPyClient = Depends(agent_selector)
+) -> List[None]:
+    """
+    Delete proofs record for pres_ex_id
+
+    Parameters:
+    ----------
+    pres_ex_id: str
+
+    Returns:
+    --------
+    None
+    """
+    v1_records = await VerifierFacade.v10.value.delete_proof(
+        controller=aries_controller, pres_ex_id=pres_ex_id
+    )
+    v2_records = await VerifierFacade.v20.value.delete_proof(
+        controller=aries_controller, pres_ex_id=pres_ex_id
+    )
+    return [v1_records, v2_records]
 
 
 @router.post("/send-request")

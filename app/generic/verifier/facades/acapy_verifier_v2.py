@@ -1,4 +1,5 @@
-from typing import Dict
+from typing import Dict, Optional
+import logging
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -23,8 +24,44 @@ from app.generic.verifier.models import (
     SendProofRequest,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class VerifierV2(Verifier):
+    @classmethod
+    async def get_proof(cls, controller: AcaPyClient, pres_ex_id: Optional[str] = None):
+        try:
+            if pres_ex_id:
+                proof_records = await controller.present_proof_v2_0.get_record(
+                    pres_ex_id=pres_ex_id
+                )
+            else:
+                proof_records = await controller.present_proof_v2_0.get_records()
+            return proof_records
+        except Exception as e:
+            logger.error(f"{e!r}")
+            raise e from e
+
+    @classmethod
+    async def get_creds(pres_ex_id: str, controller: AcaPyClient):
+        try:
+            return await controller.present_proof_v2_0.get_matching_credentials(
+                pres_ex_id=pres_ex_id
+            )
+        except Exception as e:
+            logger.error(f"{e!r}")
+            raise e from e
+
+    @classmethod
+    async def delete_proof(cls, controller: AcaPyClient, pres_ex_id: str):
+        try:
+            return await controller.present_proof_v2_0.delete_record(
+                pres_ex_id=pres_ex_id
+            )
+        except Exception as e:
+            logger.error(f"{e!r}")
+            raise e from e
+
     @classmethod
     async def create_proof_request(
         cls,

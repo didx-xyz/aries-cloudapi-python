@@ -121,6 +121,9 @@ async def actor_has_role(actor_id: str, role: Role) -> bool:
     """
     actor = await actor_by_id(actor_id)
 
+    if not actor:
+        raise TrustRegistryException(f"Actor with id {actor_id} not found", 404)
+
     return bool(role in actor["roles"])
 
 

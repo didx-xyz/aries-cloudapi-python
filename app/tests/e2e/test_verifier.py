@@ -1,5 +1,6 @@
 import pytest
 from aries_cloudcontroller import IndyProofRequest
+from assertpy import assert_that
 from httpx import AsyncClient
 
 from app.generic.verifier.models import ProofRequestProtocolVersion
@@ -136,11 +137,12 @@ async def test_accept_proof_request(
     )
     # TODO check for the correct response when state is request_received
     result = response.json()
-    assert result["error_message"]
-    assert ("Presentation exchange" and "state (must be request_received)") in result[
-        "error_message"
-    ]
+
     assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert ("Presentation exchange" and "state (must be request_received)") in result[
+        "detail"
+    ]
 
     # V2
     proof_request_v2 = proof_request_v1
@@ -163,11 +165,11 @@ async def test_accept_proof_request(
     )
     # TODO check for the correct response when state is request_received
     result = response.json()
-    assert result["error_message"]
-    assert ("Presentation exchange" and "state (must be request-received)") in result[
-        "error_message"
-    ]
     assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert ("Presentation exchange" and "state (must be request-received)") in result[
+        "detail"
+    ]
 
 
 @pytest.mark.asyncio

@@ -2,12 +2,14 @@ import io
 import logging
 import os
 from distutils.util import strtobool
-from fastapi.exceptions import HTTPException
-from starlette.responses import JSONResponse
 
+import pydantic
 import yaml
+from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
+from starlette.responses import JSONResponse
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
@@ -15,7 +17,7 @@ from app.generic import messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.verifier import verifier
-from app.generic.wallet import wallets
+from app.generic.wallet import wallet
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -24,7 +26,7 @@ app = FastAPI(debug=not prod)
 app.include_router(connections.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
-app.include_router(wallets.router)
+app.include_router(wallet.router)
 app.include_router(wallet_admin.router)
 app.include_router(verifier.router)
 app.include_router(schemas.router)
@@ -46,7 +48,11 @@ def read_openapi_yaml() -> Response:
 async def client_response_error_exception_handler(
     request: Request, exception: Exception
 ):
-    if not isinstance(exception, HTTPException):
-        return JSONResponse({"detail": f"Error processing request:"}, 500)
-    else:
+    if isinstance(exception, ClientResponseError):
+        return JSONResponse({"detail": exception.message}, exception.status or 500)
+    if isinstance(exception, HTTPException):
         return JSONResponse(exception.detail, exception.status_code, exception.headers)
+    if isinstance(exception, pydantic.error_wrappers.ValidationError):
+        return JSONResponse({"detail": exception.errors()}, status_code=422)
+    else:
+        return JSONResponse({"detail": f"Internal server error"}, 500)

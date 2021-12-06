@@ -1,13 +1,16 @@
-from typing import TypedDict
-import pytest
-from httpx import AsyncClient
 import time
-from app.tests.util.client import member_client
+from typing import TypedDict
 
-from .client import member_admin_client
-from .multitenant import create_member_wallet, delete_member_wallet
-from .wallet import create_and_set_public_did
+import pytest
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
+from httpx import AsyncClient
+
+from app.tests.util.client import member_client
+from app.tests.util.ledger import create_public_did
+
+from .client import member_acapy_client, member_admin_client
+from .multitenant import create_member_wallet, delete_member_wallet
 
 
 class BobAliceConnect(TypedDict):
@@ -22,34 +25,56 @@ class BobAlicePublicDid(TypedDict):
 
 @pytest.fixture(scope="module")
 async def bob_member_client():
-    client = member_admin_client()
-    wallet = await create_member_wallet(client, "bob")
+    async with member_admin_client() as client:
+        wallet = await create_member_wallet(client, "bob")
 
-    yield member_client(token=wallet["token"])
+        yield member_client(token=wallet["token"])
 
-    await delete_member_wallet(client, wallet["wallet_id"])
+        await delete_member_wallet(client, wallet["wallet_id"])
 
 
 @pytest.fixture(scope="module")
 async def alice_member_client():
-    client = member_admin_client()
-    wallet = await create_member_wallet(client, "alice")
+    async with member_admin_client() as client:
+        wallet = await create_member_wallet(client, "alice")
+        yield member_client(token=wallet["token"])
 
-    yield member_client(token=wallet["token"])
+        await delete_member_wallet(client, wallet["wallet_id"])
 
-    await delete_member_wallet(client, wallet["wallet_id"])
+
+@pytest.fixture(scope="module")
+async def bob_acapy_client(bob_member_client: AsyncClient):
+    # We extract the token from the x-api-key header as that's the easiest
+    # method to create an AcaPyClient from an AsyncClient
+    [_, token] = bob_member_client.headers.get("x-api-key").split(".", maxsplit=1)
+
+    client = member_acapy_client(token=token)
+    yield client
+
+    await client.close()
+
+
+@pytest.fixture(scope="module")
+async def alice_acapy_client(alice_member_client: AsyncClient):
+    [_, token] = alice_member_client.headers.get("x-api-key").split(".", maxsplit=1)
+
+    client = member_acapy_client(token=token)
+    yield client
+
+    await client.close()
 
 
 @pytest.fixture(scope="module")
 async def bob_and_alice_public_did(
-    alice_member_client: AsyncClient, bob_member_client: AsyncClient
+    alice_acapy_client: AcaPyClient,
+    bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
-    bob_did = await create_and_set_public_did(bob_member_client)
-    alice_did = await create_and_set_public_did(alice_member_client)
+    bob_did = await create_public_did(alice_acapy_client)
+    alice_did = await create_public_did(bob_acapy_client)
 
     return {
-        "bob_public_did": bob_did["did_object"]["did"],
-        "alice_public_did": alice_did["did_object"]["did"],
+        "bob_public_did": bob_did.did,
+        "alice_public_did": alice_did.did,
     }
 
 

@@ -1,18 +1,14 @@
 import pytest
-from aries_cloudcontroller import TAAAccept, TAAInfo, TAARecord, TAAResult
+from aries_cloudcontroller import AcaPyClient, TAAAccept, TAAInfo, TAARecord, TAAResult
 from fastapi import HTTPException
 from mockito import when
 
 from app.facades.acapy_ledger import accept_taa, get_did_endpoint, get_taa
-
-
-# need this to handle the async with the mock
-async def get(response):
-    return response
+from app.tests.util.event_loop import get
 
 
 @pytest.mark.asyncio
-async def test_error_on_get_taa(mock_agent_controller):
+async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).fetch_taa().thenReturn(
         get(TAAResult(result=TAAInfo(taa_required=True)))
     )
@@ -24,7 +20,7 @@ async def test_error_on_get_taa(mock_agent_controller):
 
 
 @pytest.mark.asyncio
-async def test_error_on_accept_taa(mock_agent_controller):
+async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     error_response = {"x": "y"}
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
@@ -41,7 +37,7 @@ async def test_error_on_accept_taa(mock_agent_controller):
 
 
 @pytest.mark.asyncio
-async def test_error_on_get_did_endpoint(mock_agent_controller):
+async def test_error_on_get_did_endpoint(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).get_did_endpoint(did="data").thenReturn(
         get(None)
     )

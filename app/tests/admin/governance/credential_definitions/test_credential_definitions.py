@@ -10,7 +10,7 @@ from app.admin.governance.credential_definitions import (
     router,
 )
 from app.admin.governance.schemas import SchemaDefinition, create_schema
-from app.tests.admin.governance.schemas.test_schemas import create_public_did
+from app.tests.util.ledger import create_public_did
 from app.tests.util.event_loop import event_loop
 from app.tests.util.string import get_random_string
 

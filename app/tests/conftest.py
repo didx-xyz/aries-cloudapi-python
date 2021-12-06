@@ -21,6 +21,8 @@ from app.tests.util.member_personas import (
     alice_member_client,
     bob_and_alice_connection,
     bob_member_client,
+    alice_acapy_client,
+    bob_acapy_client,
 )
 
 

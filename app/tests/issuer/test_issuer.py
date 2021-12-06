@@ -18,15 +18,13 @@ async def get(response: Optional[Any] = None):
 
 @pytest.mark.asyncio
 async def test_send_credential(mock_agent_controller: AcaPyClient):
-    did = "WgWxqztrNooG92RXvxSTWv"
+    did = "did:sov:WgWxqztrNooG92RXvxSTWv"
     cred_ex = mock(CredentialExchange)
 
     when(test_module).assert_valid_issuer(...).thenReturn(get(True))
     when(test_module).write_credential_def(...).thenReturn(get("cred_def_id"))
     when(IssuerV1).send_credential(...).thenReturn(get(cred_ex))
-    when(mock_agent_controller.wallet).get_public_did().thenReturn(
-        get(DIDResult(result=DID(did=did)))
-    )
+    when(test_module).assert_public_did(...).thenReturn(get(did))
 
     credential = test_module.SendCredential(
         protocol_version=IssueCredentialProtocolVersion.v1,
@@ -40,8 +38,8 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
     assert result is cred_ex
     verify(IssuerV1).send_credential(...)
     verify(test_module).write_credential_def(mock_agent_controller, "schema_id")
-    verify(mock_agent_controller.wallet).get_public_did()
-    verify(test_module).assert_valid_issuer(f"did:sov:{did}", "schema_id")
+    verify(test_module).assert_public_did(mock_agent_controller)
+    verify(test_module).assert_valid_issuer(did, "schema_id")
 
 
 @pytest.mark.asyncio

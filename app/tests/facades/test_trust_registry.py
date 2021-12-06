@@ -115,27 +115,6 @@ async def test_assert_valid_verifier():
 
 
 @pytest.mark.asyncio
-async def test_actor_has_schema():
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.text = "{}"
-
-        assert await trf.actor_has_schema("1", "2") is False
-
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 428
-        mock_request.return_value.text = "{}"
-
-        assert await trf.actor_has_schema("1", "2") is False
-
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.json.return_value = {"schemas": ["schema_id"]}
-
-        assert await trf.actor_has_schema("1", "schema_id") is True
-
-
-@pytest.mark.asyncio
 async def test_actor_has_role():
     with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
@@ -259,44 +238,6 @@ async def test_registry_has_schema():
         mock_request.return_value.status_code = 418
 
         assert await trf.registry_has_schema(schema_id) is False
-
-
-@pytest.mark.asyncio
-async def test_get_did_for_actor():
-    with patch("httpx.get") as mock_request:
-        actor = {
-            "id": "yoma",
-            "roles": ["verifier"],
-            "did": "actor_did",
-            "didcomm_invitation": "invitation",
-        }
-        mock_request.return_value.status_code = 418
-
-        assert await trf.get_did_for_actor("yoma") is None
-
-    with patch("httpx.get") as mock_request:
-        actor = {
-            "id": "yoma",
-            "roles": ["verifier"],
-            "did": "actor_did",
-            "didcomm_invitation": "invitation",
-        }
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.json.return_value = actor
-
-        assert await trf.get_did_for_actor("yoma") == ["actor_did", "invitation"]
-
-    with patch("httpx.get") as mock_request:
-        actor = {
-            "id": "yoma",
-            "roles": ["verifier"],
-            "did": None,
-            "didcomm_invitation": None,
-        }
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.json.return_value = actor
-
-        assert await trf.get_did_for_actor("yoma") == [None, None]
 
 
 @pytest.mark.asyncio

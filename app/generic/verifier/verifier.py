@@ -1,10 +1,11 @@
 import logging
 from enum import Enum
-from typing import Container, List
+from typing import List
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 from fastapi import APIRouter, Depends
 
+import app.generic.verifier.facades.acapy_verifier_utils as utils
 from app.dependencies import agent_selector
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
@@ -14,8 +15,8 @@ from app.generic.verifier.models import (
     CreateProofRequest,
     PresentationExchange,
     RejectProofRequest,
-    IndyCredPrecis,
     SendProofRequest,
+    ProofRequestGeneric,
 )
 
 logger = logging.getLogger(__name__)
@@ -38,122 +39,101 @@ def __get_verifier_by_version(protocol_version: str) -> Verifier:
         raise ValueError(f"Unknown protocol version {protocol_version}")
 
 
-@router.get("/credentials")
+@router.post("/credentials")
 async def get_credentials(
-    pres_ex_id: str, aries_controller: AcaPyClient = Depends(agent_selector)
+    proof_request: ProofRequestGeneric,
+    aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[IndyCredPrecis]:
     """
-    Get matching credentials for  presentation exchange
+     Get matching credentials for  presentation exchange
 
-    Parameters:
-    ----------
-    pres_ex_id: str
-        The presentation exchange ID
+     Parameters:
+     ----------
+    proof_request: ProofRequestGeneric
+         The proof request object
 
-    Returns:
-    --------
-    presentation_exchange_list: [IndyCredPrecis]
-        The list of Indy presentation credentials
+     Returns:
+     --------
+     presentation_exchange_list: [IndyCredPrecis]
+         The list of Indy presentation credentials
     """
-    v1_creds = await VerifierFacade.v10.value.get_creds(
-        pres_ex_id=pres_ex_id, controller=aries_controller
-    )
-    v2_creds = await VerifierFacade.v20.value.get_creds(
-        pres_ex_id=pres_ex_id, controller=aries_controller
-    )
-    return [v1_creds, v2_creds]
+    try:
+        prover = __get_verifier_by_version(
+            protocol_version=proof_request.protocol_version
+        )
+        return await prover.get_creds(
+            controller=aries_controller, pres_ex_id=proof_request.proof_id
+        )
+    except Exception as e:
+        logger.error(
+            f"Failed to get matching credentials: \n {proof_request.proof_id}\n \n{e!r}"
+        )
+        raise e from e
 
 
-@router.get("/proofs/")
-async def get_all_proofs(
+@router.post("/proofs")
+async def get_proofs(
+    proof_request: ProofRequestGeneric,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[PresentationExchange]:
     """
-    Get all proofs for your wallet
+    Get a specific proof record
 
     Parameters:
     ----------
-    None
-
-    Returns:
-    --------
-    presentation_exchange_list: [PresentationExchange]
-        The list of presentation exchange records
-    """
-    v1_records = await VerifierFacade.v10.value.get_proof(controller=aries_controller)
-    v2_records = await VerifierFacade.v20.value.get_proof(controller=aries_controller)
-    return [v1_records, v2_records]
-
-
-@router.get("/proofs")
-async def get_all_proofs(
-    aries_controller: AcaPyClient = Depends(agent_selector),
-) -> List[PresentationExchange]:
-    """
-    Get all proofs for your wallet
-
-    Parameters:
-    ----------
-    None
-
-    Returns:
-    --------
-    presentation_exchange_list: [PresentationExchange]
-        The list of presentation exchange records
-    """
-    v1_records = await VerifierFacade.v10.value.get_proof(controller=aries_controller)
-    v2_records = await VerifierFacade.v20.value.get_proof(controller=aries_controller)
-    return [v1_records, v2_records]
-
-
-@router.get("/proofs/{pres_ex_id}")
-async def get_proof(
-    pres_ex_id: str, aries_controller: AcaPyClient = Depends(agent_selector)
-) -> PresentationExchange:
-    """
-    Get proofs record for pres_ex_id
-
-    Parameters:
-    ----------
-    pres_ex_id: str
-        The presentation exchange ID
+    proof_request: ProofRequestGeneric
+        The proof request object
 
     Returns:
     --------
     presentation_exchange_list: PresentationExchange
         The of presentation exchange record for the proof ID
     """
-    v1_records = await VerifierFacade.v10.value.get_proof(
-        controller=aries_controller, pres_ex_id=pres_ex_id
-    )
-    v2_records = await VerifierFacade.v20.value.get_proof(
-        controller=aries_controller, pres_ex_id=pres_ex_id
-    )
-    return [v1_records, v2_records]
+    try:
+        prover = __get_verifier_by_version(
+            protocol_version=proof_request.protocol_version
+        )
+        # If a proof ID os provided fetch a single record for tht ID
+        if proof_request.proof_id:
+            return await prover.get_proofs(
+                controller=aries_controller, pres_ex_id=proof_request.proof_id
+            )
+        # Otherwise fecth all records for the wallet
+        else:
+            return await prover.get_proofs(controller=aries_controller)
+    except Exception as e:
+        logger.error(f"Failed to get proof(s): \n{e!r}")
+        raise e from e
 
 
-@router.delete("/proofs/{pres_ex_id}")
+@router.delete("/proofs/{proof_id}")
 async def delete_proof(
-    pres_ex_id: str, aries_controller: AcaPyClient = Depends(agent_selector)
-) -> List[None]:
+    proof_id: str,
+    aries_controller: AcaPyClient = Depends(agent_selector),
+) -> None:
     """
-    Delete proofs record for pres_ex_id
+    Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
 
     Parameters:
     ----------
-    pres_ex_id: str
+    proof_id: str
+        The proof ID - starting with v1- or v2-
 
     Returns:
     --------
     None
     """
-    v1_records = await VerifierFacade.v10.value.delete_proof(
-        controller=aries_controller, pres_ex_id=pres_ex_id
-    )
-    v2_records = await VerifierFacade.v20.value.delete_proof(
-        controller=aries_controller, pres_ex_id=pres_ex_id
-    )
-    return [v1_records, v2_records]
+    try:
+        # Currently proof_id[0:2] is required for otherwise the protocol version is unknown
+        # Maybe there is a better way to handle this?
+        # Possibly also handling proof-di not starting with v1- or v2-?
+        # Would it make sense to assume it is v1- by default/if none is supplied
+        prover = __get_verifier_by_version(protocol_version=proof_id[0:2])
+        pres_ex_id = utils.pres_id_no_version(proof_id)
+        await prover.delete_proof(controller=aries_controller, pres_ex_id=pres_ex_id)
+    except Exception as e:
+        logger.error(f"Failed to delete proof record: \n{e!r}")
+        raise e from e
 
 
 @router.post("/send-request")
@@ -167,7 +147,7 @@ async def send_proof_request(
     Parameters:
     -----------
     proof_request: SendProofRequest
-        The proof request
+        The proof request object
 
     Returns:
     --------
@@ -195,7 +175,7 @@ async def create_proof_request(
     Parameters:
     -----------
     proof_request: CreateProofRequest
-        The proof request
+        The proof request object
 
     Returns:
     --------
@@ -223,7 +203,7 @@ async def accept_proof_request(
     Parameters:
     -----------
     proof_request: AcceptProofRequest
-        The proof request
+        The proof request object
 
     Returns:
     --------
@@ -251,7 +231,7 @@ async def reject_proof_request(
     Parameters:
     -----------
     proof_request: RejectProofRequest
-        The proof request
+        The proof request object
 
     Returns:
     --------

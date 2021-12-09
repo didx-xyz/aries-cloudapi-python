@@ -173,3 +173,80 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
     assert result is None
     verify(VerifierV2).reject_proof_request(...)
+
+
+@pytest.mark.asyncio
+async def test_delete_proof(mock_agent_controller: AcaPyClient):
+    # V1
+    when(VerifierV1).delete_proof(...).thenReturn(get(None))
+
+    result = await test_module.delete_proof(
+        proof_id="v1-1234", aries_controller=mock_agent_controller
+    )
+
+    assert result is None
+    verify(VerifierV1).reject_proof_request(...)
+
+    # V2
+    when(VerifierV2).delete_proof(...).thenReturn(get(None))
+
+    result = await test_module.delete_proof(
+        proof_id="v2-1234", aries_controller=mock_agent_controller
+    )
+
+    assert result is None
+    verify(VerifierV2).reject_proof_request(...)
+
+
+@pytest.mark.asyncio
+async def test_get_proofs_single(mock_agent_controller: AcaPyClient):
+    # V1
+    when(VerifierV1).get_proofs(...).thenReturn(get([presentation_exchange_record_1]))
+
+    result = await test_module.get_proofs(
+        proof_request=test_module.ProofRequestGeneric(
+            protocol_version="v1", proof_id="1234"
+        ),
+        aries_controller=mock_agent_controller,
+    )
+
+    assert result == [presentation_exchange_record_1]
+    verify(VerifierV1).reject_proof_request(...)
+
+    # V2
+    when(VerifierV2).get_proofs(...).thenReturn(get([presentation_exchange_record_2]))
+
+    result = await test_module.get_proofs(
+        proof_request=test_module.ProofRequestGeneric(
+            protocol_version="v2", proof_id="1234"
+        ),
+        aries_controller=mock_agent_controller,
+    )
+
+    assert result == [presentation_exchange_record_2]
+    verify(VerifierV2).reject_proof_request(...)
+
+
+@pytest.mark.asyncio
+async def test_get_proofs_all(mock_agent_controller: AcaPyClient):
+    # V1
+    when(VerifierV1).get_proofs(...).thenReturn(get([presentation_exchange_record_1]))
+
+    result = await test_module.get_proofs(
+        proof_request=test_module.ProofRequestGeneric(protocol_version="v1"),
+        aries_controller=mock_agent_controller,
+    )
+
+    assert result == [presentation_exchange_record_1]
+    verify(VerifierV1).reject_proof_request(...)
+
+    # V2
+    when(VerifierV2).get_proofs(...).thenReturn(get([presentation_exchange_record_2]))
+
+    result = await test_module.get_proofs(
+        proof_request=test_module.ProofRequestGeneric(protocol_version="v2"),
+        aries_controller=mock_agent_controller,
+    )
+
+    assert result == [presentation_exchange_record_2]
+    verify(VerifierV2).reject_proof_request(...)

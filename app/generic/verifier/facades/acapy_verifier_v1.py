@@ -46,25 +46,36 @@ class VerifierV1(Verifier):
         return utils.record_to_model(presentation_exchange)
 
     @classmethod
-    async def get_creds(pres_ex_id: str, controller: AcaPyClient):
+    async def get_creds(cls, controller: AcaPyClient, pres_ex_id: str):
         try:
+            proof_id = utils.pres_id_no_version(proof_id=pres_ex_id)
             return await controller.present_proof_v1_0.get_matching_credentials(
-                pres_ex_id=pres_ex_id
+                pres_ex_id=proof_id
             )
         except Exception as e:
             logger.error(f"{e!r}")
             raise e from e
 
     @classmethod
-    async def get_proof(cls, controller: AcaPyClient, pres_ex_id: Optional[str] = None):
+    async def get_proofs(
+        cls, controller: AcaPyClient, pres_ex_id: Optional[str] = None
+    ):
         try:
             if pres_ex_id:
-                proof_records = await controller.present_proof_v1_0.get_record(
+                pres_ex_id = utils.pres_id_no_version(pres_ex_id)
+                presentation_exchange = await controller.present_proof_v1_0.get_record(
                     pres_ex_id=pres_ex_id
                 )
+                # This return only one item in a list.
+                # That is in this case handy to keep the return type the same as when fetching multiple records.
+                return [utils.record_to_model(presentation_exchange)]
             else:
-                proof_records = await controller.present_proof_v1_0.get_records()
-            return proof_records
+                presentation_exchange = (
+                    await controller.present_proof_v1_0.get_records()
+                )
+                return [
+                    utils.record_to_model(rec) for rec in presentation_exchange.results
+                ]
         except Exception as e:
             logger.error(f"{e!r}")
             raise e from e

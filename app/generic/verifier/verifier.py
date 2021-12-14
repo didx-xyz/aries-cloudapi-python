@@ -16,6 +16,7 @@ from app.generic.verifier.models import (
     PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
+    ProofRequestBase,
     ProofRequestGeneric,
 )
 
@@ -30,17 +31,17 @@ class VerifierFacade(Enum):
     v20 = VerifierV2
 
 
-def __get_verifier_by_version(protocol_version: str) -> Verifier:
-    if protocol_version == "v1":
+def __get_verifier_by_version(version_candidate: str) -> Verifier:
+    if version_candidate == "v1" or version_candidate.startswith("v1-"):
         return VerifierFacade.v10.value
-    elif protocol_version == "v2":
+    elif version_candidate == "v2" or version_candidate.startswith("v2-"):
         return VerifierFacade.v20.value
     else:
-        raise ValueError(f"Unknown protocol version {protocol_version}")
+        raise ValueError(f"Unknown protocol version {version_candidate}")
 
 
 @router.post("/credentials")
-async def get_credentials(
+async def get_credentials_for_request(
     proof_request: ProofRequestGeneric,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[IndyCredPrecis]:
@@ -59,9 +60,9 @@ async def get_credentials(
     """
     try:
         prover = __get_verifier_by_version(
-            protocol_version=proof_request.protocol_version
+            version_candidate=proof_request.protocol_version
         )
-        return await prover.get_creds(
+        return await prover.get_credentials_for_request(
             controller=aries_controller, pres_ex_id=proof_request.proof_id
         )
     except Exception as e:
@@ -71,11 +72,11 @@ async def get_credentials(
         raise e from e
 
 
-@router.post("/proofs")
-async def get_proofs(
-    proof_request: ProofRequestGeneric,
+@router.post("/get-records")
+async def get_proof_records(
+    proof_request: ProofRequestBase,
     aries_controller: AcaPyClient = Depends(agent_selector),
-) -> List[PresentationExchange]:
+) -> List[IndyCredPrecis]:
     """
     Get a specific proof record
 
@@ -91,16 +92,39 @@ async def get_proofs(
     """
     try:
         prover = __get_verifier_by_version(
-            protocol_version=proof_request.protocol_version
+            version_candidate=proof_request.protocol_version
         )
-        # If a proof ID os provided fetch a single record for tht ID
-        if proof_request.proof_id:
-            return await prover.get_proofs(
-                controller=aries_controller, pres_ex_id=proof_request.proof_id
-            )
-        # Otherwise fecth all records for the wallet
-        else:
-            return await prover.get_proofs(controller=aries_controller)
+        return await prover.get_proof_records(controller=aries_controller)
+    except Exception as e:
+        logger.error(f"Failed to get proof(s): \n{e!r}")
+        raise e from e
+
+
+@router.post("/get-record")
+async def get_proof_record(
+    proof_request: ProofRequestGeneric,
+    aries_controller: AcaPyClient = Depends(agent_selector),
+) -> PresentationExchange:
+    """
+    Get a specific proof record
+
+    Parameters:
+    ----------
+    proof_request: ProofRequestGeneric
+        The proof request object
+
+    Returns:
+    --------
+    presentation_exchange_list: PresentationExchange
+        The of presentation exchange record for the proof ID
+    """
+    try:
+        prover = __get_verifier_by_version(
+            version_candidate=proof_request.protocol_version
+        )
+        return await prover.get_proof_record(
+            controller=aries_controller, pres_ex_id=proof_request.proof_id
+        )
     except Exception as e:
         logger.error(f"Failed to get proof(s): \n{e!r}")
         raise e from e
@@ -124,11 +148,7 @@ async def delete_proof(
     None
     """
     try:
-        # Currently proof_id[0:2] is required for otherwise the protocol version is unknown
-        # Maybe there is a better way to handle this?
-        # Possibly also handling proof-di not starting with v1- or v2-?
-        # Would it make sense to assume it is v1- by default/if none is supplied
-        prover = __get_verifier_by_version(protocol_version=proof_id[0:2])
+        prover = __get_verifier_by_version(version_candidate=proof_id)
         pres_ex_id = utils.pres_id_no_version(proof_id)
         await prover.delete_proof(controller=aries_controller, pres_ex_id=pres_ex_id)
     except Exception as e:

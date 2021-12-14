@@ -40,7 +40,7 @@ class RejectProofRequest(ProofRequestBase):
 
 
 class ProofRequestGeneric(ProofRequestBase):
-    proof_id: Optional[str] = None
+    proof_id: str
 
 
 class PresentationExchange(BaseModel):

@@ -2,6 +2,7 @@ import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
     IndyProofRequest,
+    IndyCredPrecis,
 )
 from mockito import verify, when
 
@@ -199,14 +200,47 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.asyncio
-async def test_get_proofs_single(mock_agent_controller: AcaPyClient):
+async def test_get_proof_record_single(mock_agent_controller: AcaPyClient):
     # V1
-    when(VerifierV1).get_proofs(...).thenReturn(get([presentation_exchange_record_1]))
+    when(VerifierV1).get_proof_record(...).thenReturn(
+        get(presentation_exchange_record_1)
+    )
 
-    result = await test_module.get_proofs(
+    result = await test_module.get_proof_record(
         proof_request=test_module.ProofRequestGeneric(
             protocol_version="v1", proof_id="1234"
         ),
+        aries_controller=mock_agent_controller,
+    )
+
+    assert result == presentation_exchange_record_1
+    verify(VerifierV1).reject_proof_request(...)
+
+    # V2
+    when(VerifierV2).get_proof_record(...).thenReturn(
+        get(presentation_exchange_record_2)
+    )
+
+    result = await test_module.get_proof_record(
+        proof_request=test_module.ProofRequestGeneric(
+            protocol_version="v2", proof_id="1234"
+        ),
+        aries_controller=mock_agent_controller,
+    )
+
+    assert result == presentation_exchange_record_2
+    verify(VerifierV2).reject_proof_request(...)
+
+
+@pytest.mark.asyncio
+async def test_get_proof_records_all(mock_agent_controller: AcaPyClient):
+    # V1
+    when(VerifierV1).get_proof_records(...).thenReturn(
+        get([presentation_exchange_record_1])
+    )
+
+    result = await test_module.get_proof_records(
+        proof_request=test_module.ProofRequestBase(protocol_version="v1"),
         aries_controller=mock_agent_controller,
     )
 
@@ -214,12 +248,12 @@ async def test_get_proofs_single(mock_agent_controller: AcaPyClient):
     verify(VerifierV1).reject_proof_request(...)
 
     # V2
-    when(VerifierV2).get_proofs(...).thenReturn(get([presentation_exchange_record_2]))
+    when(VerifierV2).get_proof_records(...).thenReturn(
+        get([presentation_exchange_record_2])
+    )
 
-    result = await test_module.get_proofs(
-        proof_request=test_module.ProofRequestGeneric(
-            protocol_version="v2", proof_id="1234"
-        ),
+    result = await test_module.get_proof_records(
+        proof_request=test_module.ProofRequestBase(protocol_version="v2"),
         aries_controller=mock_agent_controller,
     )
 
@@ -228,25 +262,33 @@ async def test_get_proofs_single(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.asyncio
-async def test_get_proofs_all(mock_agent_controller: AcaPyClient):
+async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
     # V1
-    when(VerifierV1).get_proofs(...).thenReturn(get([presentation_exchange_record_1]))
+    when(VerifierV1).get_credentials_for_request(...).thenReturn(
+        get([IndyCredPrecis()])
+    )
 
-    result = await test_module.get_proofs(
-        proof_request=test_module.ProofRequestGeneric(protocol_version="v1"),
+    result = await test_module.get_credentials_for_request(
+        proof_request=test_module.ProofRequestGeneric(
+            protocol_version="v1", proof_id="v1-abc"
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result == [presentation_exchange_record_1]
-    verify(VerifierV1).reject_proof_request(...)
+    assert result == [IndyCredPrecis()]
+    verify(VerifierV1).get_credentials_for_request(...)
 
     # V2
-    when(VerifierV2).get_proofs(...).thenReturn(get([presentation_exchange_record_2]))
+    when(VerifierV2).get_credentials_for_request(...).thenReturn(
+        get([IndyCredPrecis()])
+    )
 
-    result = await test_module.get_proofs(
-        proof_request=test_module.ProofRequestGeneric(protocol_version="v2"),
+    result = await test_module.get_credentials_for_request(
+        proof_request=test_module.ProofRequestGeneric(
+            protocol_version="v2", proof_id="v2-abc"
+        ),
         aries_controller=mock_agent_controller,
     )
 
-    assert result == [presentation_exchange_record_2]
-    verify(VerifierV2).reject_proof_request(...)
+    assert result == [IndyCredPrecis()]
+    verify(VerifierV2).get_credentials_for_request(...)

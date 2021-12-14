@@ -6,6 +6,7 @@ from app.generic.verifier.models import ProofRequestProtocolVersion
 from app.generic.verifier.verifier import (
     AcceptProofRequest,
     ProofRequestGeneric,
+    ProofRequestBase,
     CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
@@ -198,7 +199,7 @@ async def test_reject_proof_request(
 
 
 @pytest.mark.asyncio
-async def test_get_proofs_single(
+async def test_get_proof_single(
     bob_and_alice_connection: BobAliceConnect,
     alice_member_client: AsyncClient,
 ):
@@ -220,10 +221,10 @@ async def test_get_proofs_single(
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/proofs",
+        BASE_PATH + "/get-record",
         json=get_proof_request_v1.dict(),
     )
-    result = response.json()[0]
+    result = response.json()
     assert "connection_id" in result
     assert "created_at" in result
     assert "updated_at" in result
@@ -245,11 +246,11 @@ async def test_get_proofs_single(
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/proofs",
+        BASE_PATH + "/get-record",
         json=get_proof_request_v2.dict(),
     )
 
-    result = response.json()[0]
+    result = response.json()
     assert "connection_id" in result
     assert "created_at" in result
     assert "updated_at" in result
@@ -275,12 +276,12 @@ async def test_get_proofs_multi(
         json=proof_request_v1.dict(),
     )
 
-    get_proof_request_v1 = ProofRequestGeneric(
+    get_proof_request_v1 = ProofRequestBase(
         protocol_version="v1",
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/proofs",
+        BASE_PATH + "/get-records",
         json=get_proof_request_v1.dict(),
     )
 
@@ -296,17 +297,17 @@ async def test_get_proofs_multi(
     proof_request_v2 = proof_request_v1
     proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
 
-    get_proof_request_v2 = ProofRequestGeneric(
-        protocol_version="v2",
-    )
-
     await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
     )
 
+    get_proof_request_v2 = ProofRequestBase(
+        protocol_version="v2",
+    )
+
     response = await alice_member_client.post(
-        BASE_PATH + "/proofs",
+        BASE_PATH + "/get-records",
         json=get_proof_request_v2.dict(),
     )
 
@@ -361,7 +362,7 @@ async def test_delete_proof(
 
 
 @pytest.mark.asyncio
-async def test_get_credentials(
+async def test_get_credentials_for_request(
     bob_and_alice_connection: BobAliceConnect,
     alice_member_client: AsyncClient,
 ):

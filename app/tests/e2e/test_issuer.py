@@ -45,12 +45,27 @@ async def test_send_credential(
         BASE_PATH,
         json=credential,
     )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_schema_id(schema_definition.schema_id)
 
     credential["protocol_version"] = "v2"
     response = await bob_member_client.post(
         BASE_PATH,
         json=credential,
     )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_schema_id(schema_definition.schema_id)
 
     time.sleep(5)
     response = await alice_member_client.get(
@@ -85,9 +100,9 @@ async def test_send_credential_request(
     # For this to return another response we'd have to have state offer_received
     result = response.json()
 
-    assert result["error_message"]
-    assert "Credential exchange" in result["error_message"]
     assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert "in offer_sent state (must be offer_received)" in result["detail"]
 
 
 @pytest.mark.asyncio
@@ -103,10 +118,6 @@ async def test_store_credential(
 
     result = response.json()
 
-    print(result)
-
-    assert result["error_message"]
-    assert ("Credential exchange" and "state (must be credential_received).") in result[
-        "error_message"
-    ]
     assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert "state (must be credential_received)." in result["detail"]

@@ -39,7 +39,5 @@ async def test_send_message(
     response = await alice_member_client.post(
         "/generic/messaging/send-message", json=message.dict()
     )
-    response_data = response.json()
 
-    assert_that(response.status_code).is_equal_to(200)
-    assert_that(response_data).is_equal_to({})
+    assert_that(response.status_code).is_equal_to(204)

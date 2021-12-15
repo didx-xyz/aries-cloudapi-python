@@ -186,8 +186,8 @@ async def request_credential(
 
     if not record.credential_definition_id or not record.schema_id:
         raise Exception(
-            "Record has no credential definition or schema associated. "
-            "This proably means you haven't received an offer yet."
+            "Record has no credential definition or schema associated. \n"
+            "This probably means you haven't received an offer yet."
         )
 
     cred_def_parts = record.credential_definition_id.split(":")

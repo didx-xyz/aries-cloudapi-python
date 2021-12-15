@@ -139,6 +139,10 @@ async def actor_has_schema(actor_id: str, schema_id: str) -> bool:
     return bool(schema_id in actor_res.json()["schemas"])
 
 
+async def get_schemas_list() -> List[str]:
+    schemas_list = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    if schemas_list.status_code != 200 
+
 async def registry_has_schema(schema_id: str) -> bool:
     schema_res = httpx.get(TRUST_REGISTRY_URL + "/registry/schemas")
     if schema_res.status_code != 200:

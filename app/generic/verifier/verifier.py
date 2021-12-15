@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 
 import app.generic.verifier.facades.acapy_verifier_utils as utils
 from app.dependencies import agent_selector
+from app.facades.trust_registry import assert_valid_verifier, actor_has_role
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
@@ -175,6 +176,16 @@ async def send_proof_request(
         The presentation exchange record
     """
     try:
+        # Assert the agent has a public did
+        # public_did = await aries_controller.wallet.get_public_did()
+        # if not public_did.result or not public_did.result.did:
+        #     raise Exception(
+        #         "Unable to issue credential without public did. Make sure to set the public did before issuing."
+        #     )
+        # # Make sure we are allowed to issue according to trust registry rules
+        # proof_request_name = proof_request.proof_request.name
+        # proof_request_version = proof_request.proof_request.version
+        # await assert_valid_verifier(f"did:sov:{public_did.result.did}", proof_request.proof_request)
         prover = __get_verifier_by_version(proof_request.protocol_version)
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request

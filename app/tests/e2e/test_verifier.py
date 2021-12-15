@@ -1,5 +1,7 @@
+import time
 import pytest
 from aries_cloudcontroller import IndyProofRequest
+from assertpy import assert_that
 from httpx import AsyncClient
 
 from app.generic.verifier.models import (
@@ -119,6 +121,7 @@ async def test_accept_proof_request(
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
+    time.sleep(3)
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
@@ -136,16 +139,18 @@ async def test_accept_proof_request(
     )
     # TODO check for the correct response when state is request_received
     result = response.json()
-    assert result["error_message"]
-    assert ("Presentation exchange" and "state (must be request_received)") in result[
-        "error_message"
-    ]
+
     assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert ("Presentation exchange" and "state (must be request_received)") in result[
+        "detail"
+    ]
 
     # V2
     proof_request_v2 = proof_request_v1
     proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
 
+    time.sleep(3)
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
@@ -163,11 +168,11 @@ async def test_accept_proof_request(
     )
     # TODO check for the correct response when state is request_received
     result = response.json()
-    assert result["error_message"]
-    assert ("Presentation exchange" and "state (must be request-received)") in result[
-        "error_message"
-    ]
     assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert ("Presentation exchange" and "state (must be request-received)") in result[
+        "detail"
+    ]
 
 
 @pytest.mark.asyncio

@@ -10,10 +10,6 @@ from aries_cloudcontroller import (
 )
 from fastapi import HTTPException
 
-import app.facades.acapy_wallet as wallet_facade
-import app.facades.ledger as ledger_facade
-from app.schemas import DidCreationResponse
-
 logger = logging.getLogger(__name__)
 
 
@@ -134,37 +130,6 @@ async def accept_taa_if_required(aries_controller: AcaPyClient):
             taa_response.taa_record,
             mechanism,
         )
-
-
-async def create_pub_did(
-    aries_controller: AcaPyClient,
-) -> DidCreationResponse:
-    """
-    Create a new public DID and
-    write it to the ledger and
-    receive its public info.
-    Returns:
-    * DID object (json)
-    * Issuer verkey (str)
-    * Issuer Endpoint (url)
-    """
-    did_object = await wallet_facade.create_did(aries_controller)
-    await ledger_facade.post_to_ledger(did_object=did_object)
-
-    await accept_taa_if_required(aries_controller)
-
-    await wallet_facade.assign_pub_did(aries_controller, did_object.did)
-    get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
-    issuer_nym = get_pub_did_response.result.did
-    issuer_verkey = get_pub_did_response.result.verkey
-    issuer_endpoint = await get_did_endpoint(aries_controller, issuer_nym)
-    issuer_endpoint_url = issuer_endpoint.endpoint
-    final_response = DidCreationResponse(
-        did_object=get_pub_did_response.result,
-        issuer_verkey=issuer_verkey,
-        issuer_endpoint=issuer_endpoint_url,
-    )
-    return final_response
 
 
 async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:

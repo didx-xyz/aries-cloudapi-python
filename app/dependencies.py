@@ -8,6 +8,7 @@ from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
 from app.constants import (
+    YOMA_AGENT_API_KEY,
     YOMA_AGENT_URL,
     ECOSYSTEM_AGENT_URL,
     ECOSYSTEM_AGENT_API_KEY,
@@ -114,7 +115,7 @@ class AgentType(NamedTuple):
 
 
 class Role(Enum):
-    YOMA = AgentType("yoma", YOMA_AGENT_URL, admin_agent, True, None)
+    YOMA = AgentType("yoma", YOMA_AGENT_URL, admin_agent, True, YOMA_AGENT_API_KEY)
     ECOSYSTEM = AgentType(
         "ecosystem",
         ECOSYSTEM_AGENT_URL,
@@ -123,12 +124,18 @@ class Role(Enum):
         ECOSYSTEM_AGENT_API_KEY,
     )
     ECOSYSTEM_ADMIN = AgentType(
-        "ecosystem-admin", ECOSYSTEM_AGENT_URL, admin_agent, True, None
+        "ecosystem-admin",
+        ECOSYSTEM_AGENT_URL,
+        admin_agent,
+        True,
+        ECOSYSTEM_AGENT_API_KEY,
     )
     MEMBER = AgentType(
         "member", MEMBER_AGENT_URL, multitenant_agent, False, MEMBER_AGENT_API_KEY
     )
-    MEMBER_ADMIN = AgentType("member-admin", MEMBER_AGENT_URL, admin_agent, True, None)
+    MEMBER_ADMIN = AgentType(
+        "member-admin", MEMBER_AGENT_URL, admin_agent, True, MEMBER_AGENT_API_KEY
+    )
 
     @staticmethod
     def from_str(role: str) -> Optional["Role"]:

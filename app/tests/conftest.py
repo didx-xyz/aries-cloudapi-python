@@ -20,7 +20,10 @@ from app.tests.util.client_fixtures import (
 from app.tests.util.member_personas import (
     alice_member_client,
     bob_and_alice_connection,
+    bob_and_alice_public_did,
     bob_member_client,
+    alice_acapy_client,
+    bob_acapy_client,
 )
 
 

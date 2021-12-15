@@ -5,7 +5,6 @@ from typing import List
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 from fastapi import APIRouter, Depends
 
-import app.generic.verifier.facades.acapy_verifier_utils as utils
 from app.dependencies import agent_selector
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1

@@ -6,7 +6,7 @@ import app.facades.trust_registry as trust_registry_facade
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/trust-registry", tags=["trust registry"])
+router = APIRouter(prefix="/trust-registry", tags=["trust-registry"])
 
 
 @router.get("/", response_model=trust_registry_facade.TrustRegistry)

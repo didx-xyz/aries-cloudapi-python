@@ -2,12 +2,10 @@ import pytest
 from aries_cloudcontroller import IndyProofRequest
 from httpx import AsyncClient
 
-from app.generic.verifier.models import ProofRequestProtocolVersion
-from app.generic.verifier.verifier import (
+from app.generic.verifier.models import (
     AcceptProofRequest,
-    ProofRequestGeneric,
-    ProofRequestBase,
     CreateProofRequest,
+    ProofRequestProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -211,18 +209,13 @@ async def test_get_proof_single(
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
     proof_req_res = await alice_member_client.post(
-        BASE_PATH + "/send-request",
+        f"{BASE_PATH}/send-request",
         json=proof_request_v1.dict(),
     )
 
-    get_proof_request_v1 = ProofRequestGeneric(
-        protocol_version="v1",
-        proof_id=proof_req_res.json()["proof_id"],
-    )
-
-    response = await alice_member_client.post(
-        BASE_PATH + "/get-record",
-        json=get_proof_request_v1.dict(),
+    proof_id = proof_req_res.json()["proof_id"]
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/proofs/{proof_id}",
     )
     result = response.json()
     assert "connection_id" in result
@@ -236,18 +229,14 @@ async def test_get_proof_single(
     proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
 
     proof_req_res = await alice_member_client.post(
-        BASE_PATH + "/send-request",
+        f"{BASE_PATH}/send-request",
         json=proof_request_v2.dict(),
     )
 
-    get_proof_request_v2 = ProofRequestGeneric(
-        protocol_version="v2",
-        proof_id=proof_req_res.json()["proof_id"],
-    )
+    proof_id = proof_req_res.json()["proof_id"]
 
-    response = await alice_member_client.post(
-        BASE_PATH + "/get-record",
-        json=get_proof_request_v2.dict(),
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/proofs/{proof_id}",
     )
 
     result = response.json()
@@ -272,17 +261,12 @@ async def test_get_proofs_multi(
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
     await alice_member_client.post(
-        BASE_PATH + "/send-request",
+        f"{BASE_PATH}/send-request",
         json=proof_request_v1.dict(),
     )
 
-    get_proof_request_v1 = ProofRequestBase(
-        protocol_version="v1",
-    )
-
-    response = await alice_member_client.post(
-        BASE_PATH + "/get-records",
-        json=get_proof_request_v1.dict(),
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/proofs",
     )
 
     result = response.json()[0]
@@ -298,20 +282,15 @@ async def test_get_proofs_multi(
     proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
 
     await alice_member_client.post(
-        BASE_PATH + "/send-request",
+        f"{BASE_PATH}/send-request",
         json=proof_request_v2.dict(),
     )
 
-    get_proof_request_v2 = ProofRequestBase(
-        protocol_version="v2",
+    response = await alice_member_client.get(
+        BASE_PATH + "/proofs",
     )
 
-    response = await alice_member_client.post(
-        BASE_PATH + "/get-records",
-        json=get_proof_request_v2.dict(),
-    )
-
-    result = response.json()[0]
+    result = response.json()[-1]
     assert "connection_id" in result
     assert "created_at" in result
     assert "updated_at" in result
@@ -380,15 +359,10 @@ async def test_get_credentials_for_request(
 
     proof_id = (proof_req_res.json())["proof_id"]
 
-    get_proof_request_v1 = ProofRequestGeneric(
-        protocol_version="v1",
-        proof_id=proof_id,
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/credentials/{proof_id}",
     )
 
-    response = await alice_member_client.post(
-        BASE_PATH + "/credentials",
-        json=get_proof_request_v1.dict(),
-    )
     result = response.json()
     assert result == []
 
@@ -403,14 +377,9 @@ async def test_get_credentials_for_request(
 
     proof_id = (proof_req_res.json())["proof_id"]
 
-    get_proof_request_v2 = ProofRequestGeneric(
-        protocol_version="v2",
-        proof_id=proof_id,
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/credentials/{proof_id}",
     )
 
-    response = await alice_member_client.post(
-        BASE_PATH + "/credentials",
-        json=get_proof_request_v2.dict(),
-    )
     result = response.json()
     assert result == []

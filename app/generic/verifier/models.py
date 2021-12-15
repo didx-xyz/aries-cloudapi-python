@@ -39,10 +39,6 @@ class RejectProofRequest(ProofRequestBase):
     problem_report: Optional[str] = None
 
 
-class ProofRequestGeneric(ProofRequestBase):
-    proof_id: str
-
-
 class PresentationExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str

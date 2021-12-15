@@ -110,6 +110,7 @@ async def test_bob_and_alice_connect(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
 ):
+    time.sleep(3)
     invitation_response = await bob_member_client.post(
         "/generic/connections/create-invitation"
     )

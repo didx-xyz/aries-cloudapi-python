@@ -185,6 +185,7 @@ async def test_reject_proof_request(
         bob_and_alice_connection["alice_connection_id"],
         protocol_version=ProofRequestProtocolVersion.v10.value,
     )
+    time.sleep(3)
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),

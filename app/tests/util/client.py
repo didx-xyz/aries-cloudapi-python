@@ -1,6 +1,6 @@
 from typing import Any, Optional
 from aries_cloudcontroller.acapy_client import AcaPyClient
-from httpx import AsyncClient
+from httpx import AsyncClient, AsyncHTTPTransport
 
 from .constants import (
     YOMA_FASTAPI_ENDPOINT,
@@ -22,6 +22,7 @@ def yoma_client(*, app: Optional[Any] = None):
             "x-api-key": f"yoma.{YOMA_ACAPY_API_KEY}",
             "content-type": "application/json",
         },
+        transport=AsyncHTTPTransport(retries=3),
     )
 
 
@@ -44,6 +45,7 @@ def member_admin_client(*, app: Optional[Any] = None):
             "x-api-key": f"member-admin.{YOMA_ACAPY_API_KEY}",
             "content-type": "application/json",
         },
+        transport=AsyncHTTPTransport(retries=3),
     )
 
 

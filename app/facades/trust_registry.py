@@ -11,10 +11,15 @@ logger = logging.getLogger(__name__)
 Role = Literal["issuer", "verifier"]
 
 
-class TrustRegistryException(Exception):
+class TrustRegistryException(HTTPException):
     """Class that represents a trust registry error"""
 
-    pass
+    def __init__(
+        self,
+        detail: str,
+        status_code: int = 403,
+    ) -> None:
+        super().__init__(status_code=status_code, detail=detail)
 
 
 class Actor(TypedDict):
@@ -105,80 +110,175 @@ async def assert_valid_verifier(did: str, schema_id: str):
 
 
 async def actor_has_role(actor_id: str, role: Role) -> bool:
-    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
-    if actor_res.status_code != 200:
-        raise HTTPException(404, detail="Actor does not exist")
-    return bool(role in actor_res.json()["roles"])
+    """Check whether the actor has specified role.
+
+    Args:
+        actor_id (str): identifier of the actor to check the role for
+        role (Role): role of the actor
+
+    Returns:
+        bool: Whether the actor with specified id has specified role
+    """
+    actor = await actor_by_id(actor_id)
+
+    if not actor:
+        raise TrustRegistryException(f"Actor with id {actor_id} not found", 404)
+
+    return bool(role in actor["roles"])
 
 
 async def actor_by_did(did: str) -> Optional[Actor]:
-    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/did/{did}")
+    """Retrieve actor by did from trust registry
+
+    Args:
+        actor_id (str): did of the actor to retrieve
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actor.
+
+    Returns:
+        Actor: The actor with specified did.
+    """
+    actor_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
 
     if actor_res.status_code == 404:
         return None
-    if actor_res.status_code != 200:
-        raise HTTPException(500, f"Error fetching actor by did: {actor_res.text}")
+    elif actor_res.is_error:
+        raise TrustRegistryException(
+            f"Error fetching actor by did: {actor_res.text}", actor_res.status_code
+        )
+
+    return actor_res.json()
+
+
+async def actor_by_id(actor_id: str) -> Optional[Actor]:
+    """Retrieve actor by id from trust registry
+
+    Args:
+        actor_id (str): Identifier of the actor to retrieve
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actor.
+
+    Returns:
+        Actor: The actor with specified id.
+    """
+    actor_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
+
+    if actor_res.status_code == 404:
+        return None
+    elif actor_res.is_error:
+        raise TrustRegistryException(
+            f"Error fetching actor by did: {actor_res.text}", actor_res.status_code
+        )
 
     return actor_res.json()
 
 
 async def actors_with_role(role: Role) -> List[Actor]:
-    actors = httpx.get(TRUST_REGISTRY_URL + "/registry/actors")
-    if actors.status_code != 200:
-        return []
+    """Get all actors from the trust registry by role
+
+    Args:
+        role (Role): The role to filter actors by
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actors
+
+    Returns:
+        List[Actor]: List of actors with specified role
+    """
+    actors_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+
+    if actors_res.is_error:
+        raise TrustRegistryException(
+            f"Unable to retrieve actors from registry: {actors_res.text}",
+        )
+
+    actors = actors_res.json()
     actors_with_role_list = [
-        actor for actor in actors.json()["actors"] if role in actor["roles"]
+        actor for actor in actors["actors"] if role in actor["roles"]
     ]
+
     return actors_with_role_list
 
 
-async def actor_has_schema(actor_id: str, schema_id: str) -> bool:
-    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
-    if actor_res.status_code != 200:
-        return False
-    return bool(schema_id in actor_res.json()["schemas"])
-
-
-async def get_schemas_list() -> List[str]:
-    schemas_list = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
-    if schemas_list.status_code != 200 
-
 async def registry_has_schema(schema_id: str) -> bool:
-    schema_res = httpx.get(TRUST_REGISTRY_URL + "/registry/schemas")
-    if schema_res.status_code != 200:
+    """Check whether the trust registry has a schema registered
+
+    Args:
+        schema_id (str): the schema id to check
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the schemas
+
+    Returns:
+        bool: whether the schema exists in the trust registry
+    """
+    schema_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+
+    if schema_res.status_code == 404:
         return False
-    return bool(schema_id in schema_res.json()["schemas"])
+    elif schema_res.is_error:
+        raise TrustRegistryException(
+            f"Unable to retrieve schema {schema_id} from registry: {schema_res.text}",
+            schema_res.status_code,
+        )
 
-
-async def get_did_for_actor(actor_id: str) -> List[str]:
-    actor_res = httpx.get(TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}")
-    if actor_res.status_code != 200:
-        return None
-    did = actor_res.json()["did"]
-    didcomm_invitation = actor_res.json()["didcomm_invitation"]
-    return [did, didcomm_invitation]
+    schema = schema_res.json()
+    return bool(schema_id in schema["schemas"])
 
 
 async def get_trust_registry() -> TrustRegistry:
+    """Retrieve the complete trust registry
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the trust registry.
+
+    Returns:
+        TrustRegistry: the trust registry.s
+    """
     trust_registry_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry")
 
-    if trust_registry_res.status_code != 200:
-        raise HTTPException(500, detail=trust_registry_res.content)
+    if trust_registry_res.is_error:
+        raise TrustRegistryException(
+            trust_registry_res.text, trust_registry_res.status_code
+        )
 
     return trust_registry_res.json()
 
 
 async def register_schema(schema_id: str) -> None:
+    """Register a schema in the trust registry
+
+    Args:
+        schema_id (str): the schema id to register
+
+    Raises:
+        TrustRegistryException: If an error ocurred while registering the schema
+    """
     schema_res = httpx.post(
-        TRUST_REGISTRY_URL + "/registry/schemas", json={"schema_id": schema_id}
+        f"{TRUST_REGISTRY_URL}/registry/schemas", json={"schema_id": schema_id}
     )
 
-    if schema_res.status_code != 200:
-        raise Exception(f"Error registering schema {schema_id}: {schema_res.text}")
+    if schema_res.is_error:
+        raise TrustRegistryException(
+            f"Error registering schema {schema_id}: {schema_res.text}",
+            schema_res.status_code,
+        )
 
 
 async def register_actor(actor: Actor) -> None:
-    actor_res = httpx.post(TRUST_REGISTRY_URL + "/registry/actors", json=actor)
+    """Register an actor in the trust registry
 
-    if actor_res.status_code != 200:
-        raise Exception(f"Error registering actor: {actor_res.text}")
+    Args:
+        actor (Actor): the actor to register
+
+    Raises:
+        TrustRegistryException: If an error ocurred while registering the schema
+    """
+    actor_res = httpx.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
+
+    if actor_res.is_error:
+        raise TrustRegistryException(
+            f"Error registering actor: {actor_res.text}", actor_res.status_code
+        )

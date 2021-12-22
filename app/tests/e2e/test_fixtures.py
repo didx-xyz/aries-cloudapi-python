@@ -3,7 +3,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient, SchemaSendResult
 from httpx import AsyncClient
 from app.admin.governance.schemas import SchemaDefinition, create_schema
-from app.facades.acapy_ledger import create_pub_did
+from app.tests.util.ledger import create_public_did
 from app.generic.issuer.issuer import router
 
 from app.tests.util.trust_registry import register_issuer
@@ -31,7 +31,7 @@ async def schema_definition(
         name="test_schema", version="0.3", attributes=["speed"]
     )
 
-    await create_pub_did(yoma_acapy_client)
+    await create_public_did(yoma_acapy_client)
 
     schema_definition_result = await create_schema(definition, yoma_acapy_client)
 

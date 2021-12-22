@@ -1,6 +1,7 @@
 import logging
 
 from aries_cloudcontroller import AcaPyClient, PingRequest, SendMessage
+from aries_cloudcontroller.model.ping_request_response import PingRequestResponse
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -21,7 +22,7 @@ class TrustPingMsg(BaseModel):
     comment: str
 
 
-@router.post("/send-message")
+@router.post("/send-message", status_code=204)
 async def send_messages(
     message: Message,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -38,13 +39,12 @@ async def send_messages(
     ---------
     The response object obtained when sending a message.
     """
-    send = await aries_controller.basicmessage.send_message(
+    await aries_controller.basicmessage.send_message(
         conn_id=message.connection_id, body=SendMessage(content=message.content)
     )
-    return send
 
 
-@router.post("/trust-ping")
+@router.post("/trust-ping", response_model=PingRequestResponse)
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
     aries_controller: AcaPyClient = Depends(agent_selector),

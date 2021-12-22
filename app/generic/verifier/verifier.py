@@ -41,69 +41,62 @@ def __get_verifier_by_version(version_candidate: str) -> Verifier:
         raise ValueError(f"Unknown protocol version {version_candidate}")
 
 
-@router.post("/credentials")
+@router.get("/credentials/{proof_id}")
 async def get_credentials_for_request(
-    proof_request: ProofRequestGeneric,
+    proof_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[IndyCredPrecis]:
     """
-     Get matching credentials for  presentation exchange
-
-     Parameters:
-     ----------
-    proof_request: ProofRequestGeneric
-         The proof request object
-
-     Returns:
-     --------
-     presentation_exchange_list: [IndyCredPrecis]
-         The list of Indy presentation credentials
-    """
-    try:
-        prover = __get_verifier_by_version(
-            version_candidate=proof_request.protocol_version
-        )
-        return await prover.get_credentials_for_request(
-            controller=aries_controller, pres_ex_id=proof_request.proof_id
-        )
-    except Exception as e:
-        logger.error(
-            f"Failed to get matching credentials: \n {proof_request.proof_id}\n \n{e!r}"
-        )
-        raise e from e
-
-
-@router.post("/get-records")
-async def get_proof_records(
-    proof_request: ProofRequestBase,
-    aries_controller: AcaPyClient = Depends(agent_selector),
-) -> List[IndyCredPrecis]:
-    """
-    Get a specific proof record
+    Get matching credentials for presentation exchange
 
     Parameters:
     ----------
-    proof_request: ProofRequestGeneric
-        The proof request object
+    proof_id: str
+         The proof ID
 
     Returns:
     --------
-    presentation_exchange_list: PresentationExchange
-        The of presentation exchange record for the proof ID
+    presentation_exchange_list: [IndyCredPrecis]
+        The list of Indy presentation credentials
     """
     try:
-        prover = __get_verifier_by_version(
-            version_candidate=proof_request.protocol_version
+        prover = __get_verifier_by_version(version_candidate=proof_id)
+        return await prover.get_credentials_for_request(
+            controller=aries_controller, proof_id=proof_id
         )
-        return await prover.get_proof_records(controller=aries_controller)
     except Exception as e:
-        logger.error(f"Failed to get proof(s): \n{e!r}")
+        logger.error(f"Failed to get matching credentials: {proof_id} \n{e!r}")
         raise e from e
 
 
-@router.post("/get-record")
+@router.get("/proofs")
+async def get_proof_records(
+    aries_controller: AcaPyClient = Depends(agent_selector),
+) -> List[PresentationExchange]:
+    """
+    Get all proof records
+
+    Returns:
+    --------
+    presentation_exchange_list: [PresentationExchange]
+        The list of presentation exchange records
+    """
+    try:
+        v1_records = await VerifierFacade.v10.value.get_proof_records(
+            controller=aries_controller
+        )
+        v2_records = await VerifierFacade.v20.value.get_proof_records(
+            controller=aries_controller
+        )
+        return v1_records + v2_records
+    except Exception as e:
+        logger.error(f"Failed to get proof records: \n{e!r}")
+        raise e from e
+
+
+@router.get("/proofs/{proof_id}")
 async def get_proof_record(
-    proof_request: ProofRequestGeneric,
+    proof_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> PresentationExchange:
     """
@@ -111,23 +104,21 @@ async def get_proof_record(
 
     Parameters:
     ----------
-    proof_request: ProofRequestGeneric
-        The proof request object
+    proof_id: str
+        The proof ID
 
     Returns:
     --------
-    presentation_exchange_list: PresentationExchange
+    presentation_exchange_record: PresentationExchange
         The of presentation exchange record for the proof ID
     """
     try:
-        prover = __get_verifier_by_version(
-            version_candidate=proof_request.protocol_version
-        )
+        prover = __get_verifier_by_version(version_candidate=proof_id)
         return await prover.get_proof_record(
-            controller=aries_controller, pres_ex_id=proof_request.proof_id
+            controller=aries_controller, proof_id=proof_id
         )
     except Exception as e:
-        logger.error(f"Failed to get proof(s): \n{e!r}")
+        logger.error(f"Failed to get proof records: \n{e!r}")
         raise e from e
 
 
@@ -150,8 +141,7 @@ async def delete_proof(
     """
     try:
         prover = __get_verifier_by_version(version_candidate=proof_id)
-        pres_ex_id = utils.pres_id_no_version(proof_id)
-        await prover.delete_proof(controller=aries_controller, pres_ex_id=pres_ex_id)
+        await prover.delete_proof(controller=aries_controller, proof_id=proof_id)
     except Exception as e:
         logger.error(f"Failed to delete proof record: \n{e!r}")
         raise e from e
@@ -191,7 +181,7 @@ async def send_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
     except Exception as e:
-        logger.error(f"Failed to create presentation record: \n{e!r}")
+        logger.error(f"Failed to send proof request: \n{e!r}")
         raise e from e
 
 
@@ -247,7 +237,7 @@ async def accept_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
     except Exception as e:
-        logger.error(f"Failed to create presentation record: \n{e!r}")
+        logger.error(f"Failed to accept proof request: \n{e!r}")
         raise e from e
 
 
@@ -266,8 +256,7 @@ async def reject_proof_request(
 
     Returns:
     --------
-    presentation_exchange: PresentationExchange
-        The presentation exchange record
+    None
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)

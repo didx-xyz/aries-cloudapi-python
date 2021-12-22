@@ -186,7 +186,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     )
 
     assert result is None
-    verify(VerifierV1).reject_proof_request(...)
+    verify(VerifierV1).delete_proof(...)
 
     # V2
     when(VerifierV2).delete_proof(...).thenReturn(get(None))
@@ -196,25 +196,23 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     )
 
     assert result is None
-    verify(VerifierV2).reject_proof_request(...)
+    verify(VerifierV2).delete_proof(...)
 
 
 @pytest.mark.asyncio
-async def test_get_proof_record_single(mock_agent_controller: AcaPyClient):
+async def test_get_proof_record(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).get_proof_record(...).thenReturn(
         get(presentation_exchange_record_1)
     )
 
     result = await test_module.get_proof_record(
-        proof_request=test_module.ProofRequestGeneric(
-            protocol_version="v1", proof_id="1234"
-        ),
+        proof_id="v1-abcd",
         aries_controller=mock_agent_controller,
     )
 
     assert result == presentation_exchange_record_1
-    verify(VerifierV1).reject_proof_request(...)
+    verify(VerifierV1).get_proof_record(...)
 
     # V2
     when(VerifierV2).get_proof_record(...).thenReturn(
@@ -222,43 +220,32 @@ async def test_get_proof_record_single(mock_agent_controller: AcaPyClient):
     )
 
     result = await test_module.get_proof_record(
-        proof_request=test_module.ProofRequestGeneric(
-            protocol_version="v2", proof_id="1234"
-        ),
+        proof_id="v2-abcd",
         aries_controller=mock_agent_controller,
     )
 
     assert result == presentation_exchange_record_2
-    verify(VerifierV2).reject_proof_request(...)
+    verify(VerifierV2).get_proof_record(...)
 
 
 @pytest.mark.asyncio
-async def test_get_proof_records_all(mock_agent_controller: AcaPyClient):
-    # V1
-    when(VerifierV1).get_proof_records(...).thenReturn(
+async def test_get_proof_records(mock_agent_controller: AcaPyClient):
+    # V1 and V2
+    with when(VerifierV1).get_proof_records(...).thenReturn(
         get([presentation_exchange_record_1])
-    )
-
-    result = await test_module.get_proof_records(
-        proof_request=test_module.ProofRequestBase(protocol_version="v1"),
-        aries_controller=mock_agent_controller,
-    )
-
-    assert result == [presentation_exchange_record_1]
-    verify(VerifierV1).reject_proof_request(...)
-
-    # V2
-    when(VerifierV2).get_proof_records(...).thenReturn(
+    ), when(VerifierV2).get_proof_records(...).thenReturn(
         get([presentation_exchange_record_2])
-    )
+    ):
 
-    result = await test_module.get_proof_records(
-        proof_request=test_module.ProofRequestBase(protocol_version="v2"),
-        aries_controller=mock_agent_controller,
-    )
+        result = await test_module.get_proof_records(
+            aries_controller=mock_agent_controller
+        )
 
-    assert result == [presentation_exchange_record_2]
-    verify(VerifierV2).reject_proof_request(...)
+        assert result == [
+            presentation_exchange_record_1,
+            presentation_exchange_record_2,
+        ]
+        verify(VerifierV1).get_proof_records(...)
 
 
 @pytest.mark.asyncio
@@ -269,9 +256,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
     )
 
     result = await test_module.get_credentials_for_request(
-        proof_request=test_module.ProofRequestGeneric(
-            protocol_version="v1", proof_id="v1-abc"
-        ),
+        proof_id="v1-abcd",
         aries_controller=mock_agent_controller,
     )
 
@@ -284,9 +269,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
     )
 
     result = await test_module.get_credentials_for_request(
-        proof_request=test_module.ProofRequestGeneric(
-            protocol_version="v2", proof_id="v2-abc"
-        ),
+        proof_id="v2-abcd",
         aries_controller=mock_agent_controller,
     )
 

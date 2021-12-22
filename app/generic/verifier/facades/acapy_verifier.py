@@ -130,7 +130,7 @@ class Verifier(ABC):
     @abstractmethod
     async def get_proof_records(cls, controller: AcaPyClient) -> None:
         """
-        Accept proof request
+        Get all proof records
 
         Parameters:
         -----------
@@ -145,27 +145,27 @@ class Verifier(ABC):
 
     @classmethod
     @abstractmethod
-    async def get_proof_record(
-        cls, controller: AcaPyClient, proof_request: ProofRequestGeneric
-    ) -> None:
+    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str) -> None:
         """
-        Accept proof request
+        Get a specific proof record
 
         Parameters:
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
+        proof_id: str
+            The presentation exchange ID
 
         Returns:
         --------
-        [PresentationExchange]
-            A list of presentation exchange records
+        PresentationExchange
+            A presentation exchange records
         """
 
     @classmethod
     @abstractmethod
     async def get_credentials_for_request(
-        cls, controller: AcaPyClient, proof_request: ProofRequestGeneric
+        cls, controller: AcaPyClient, proof_id: str
     ) -> List[IndyCredPrecis]:
         """
         Retrieve the credentials for a proof
@@ -174,6 +174,8 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
+         proof_id: str
+            The proof id
 
         Returns:
         --------

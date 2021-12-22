@@ -46,13 +46,11 @@ class VerifierV1(Verifier):
         return utils.record_to_model(presentation_exchange)
 
     @classmethod
-    async def get_credentials_for_request(
-        cls, controller: AcaPyClient, pres_ex_id: str
-    ):
+    async def get_credentials_for_request(cls, controller: AcaPyClient, proof_id: str):
         try:
-            proof_id = utils.pres_id_no_version(proof_id=pres_ex_id)
+            pres_ex_id = utils.pres_id_no_version(proof_id=proof_id)
             return await controller.present_proof_v1_0.get_matching_credentials(
-                pres_ex_id=proof_id
+                pres_ex_id=pres_ex_id
             )
         except Exception as e:
             logger.error(f"{e!r}")
@@ -68,9 +66,9 @@ class VerifierV1(Verifier):
             raise e from e
 
     @classmethod
-    async def get_proof_record(cls, controller: AcaPyClient, pres_ex_id: str):
+    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str):
         try:
-            pres_ex_id = utils.pres_id_no_version(pres_ex_id)
+            pres_ex_id = utils.pres_id_no_version(proof_id)
             presentation_exchange = await controller.present_proof_v1_0.get_record(
                 pres_ex_id=pres_ex_id
             )
@@ -80,8 +78,9 @@ class VerifierV1(Verifier):
             raise e from e
 
     @classmethod
-    async def delete_proof(cls, controller: AcaPyClient, pres_ex_id: str):
+    async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
         try:
+            pres_ex_id = utils.pres_id_no_version(proof_id=proof_id)
             return await controller.present_proof_v1_0.delete_record(
                 pres_ex_id=pres_ex_id
             )

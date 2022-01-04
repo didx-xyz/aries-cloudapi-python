@@ -6,8 +6,6 @@ from httpx import AsyncClient
 
 from app.generic.verifier.models import (
     AcceptProofRequest,
-    ProofRequestGeneric,
-    ProofRequestBase,
     CreateProofRequest,
     ProofRequestProtocolVersion,
     RejectProofRequest,

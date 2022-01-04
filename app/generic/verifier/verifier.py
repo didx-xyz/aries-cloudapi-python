@@ -5,9 +5,9 @@ from typing import List
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 from fastapi import APIRouter, Depends
 
-import app.generic.verifier.facades.acapy_verifier_utils as utils
 from app.dependencies import agent_selector
-from app.facades.trust_registry import assert_valid_verifier, actor_has_role
+
+from .verifier_utils import check_tr_for_verifier
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
@@ -17,8 +17,6 @@ from app.generic.verifier.models import (
     PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
-    ProofRequestBase,
-    ProofRequestGeneric,
 )
 
 logger = logging.getLogger(__name__)
@@ -166,16 +164,6 @@ async def send_proof_request(
         The presentation exchange record
     """
     try:
-        # Assert the agent has a public did
-        # public_did = await aries_controller.wallet.get_public_did()
-        # if not public_did.result or not public_did.result.did:
-        #     raise Exception(
-        #         "Unable to issue credential without public did. Make sure to set the public did before issuing."
-        #     )
-        # # Make sure we are allowed to issue according to trust registry rules
-        # proof_request_name = proof_request.proof_request.name
-        # proof_request_version = proof_request.proof_request.version
-        # await assert_valid_verifier(f"did:sov:{public_did.result.did}", proof_request.proof_request)
         prover = __get_verifier_by_version(proof_request.protocol_version)
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request
@@ -233,9 +221,15 @@ async def accept_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-        return await prover.accept_proof_request(
-            controller=aries_controller, proof_request=proof_request
-        )
+
+        if await check_tr_for_verifier(
+            aries_controller=aries_controller,
+            prover=prover,
+            proof_request=proof_request,
+        ):
+            return await prover.accept_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
     except Exception as e:
         logger.error(f"Failed to accept proof request: \n{e!r}")
         raise e from e

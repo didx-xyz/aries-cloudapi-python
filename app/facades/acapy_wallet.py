@@ -8,6 +8,22 @@ from app.error import CloudApiException
 logger = logging.getLogger(__name__)
 
 
+async def has_public_did(aries_controller: AcaPyClient) -> bool:
+    """Check whether the agent has a public DID
+
+    Args:
+        aries_controller (AcaPyClient): the aca-py client.
+
+    Returns:
+        bool: the public did formatted as fully qualified did
+    """
+    try:
+        await assert_public_did(aries_controller=aries_controller)
+        return True
+    except CloudApiException:
+        return False
+
+
 async def assert_public_did(aries_controller: AcaPyClient) -> str:
     """assert the agent has a public did, throwing an error otherwise.
 

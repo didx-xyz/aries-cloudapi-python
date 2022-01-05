@@ -44,7 +44,8 @@ async def test_send_proof_request(
     )
 
     result = response.json()
-
+    print(result)
+    assert result == ""
     assert "presentation" in result.keys()
     assert "presentation_request" in result.keys()
     assert "created_at" in result.keys()

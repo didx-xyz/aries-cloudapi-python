@@ -25,7 +25,7 @@ class TrustRegistryException(HTTPException):
 class Actor(TypedDict):
     id: str
     name: str
-    roles: List[str]
+    roles: List[Literal["issuer", "verifier"]]
     did: str
     didcomm_invitation: Optional[str]
 

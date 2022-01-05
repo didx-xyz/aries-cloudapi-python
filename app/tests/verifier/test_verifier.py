@@ -1,11 +1,17 @@
+from aries_cloudcontroller.model.did import DID
+from aries_cloudcontroller.model.did_result import DIDResult
+
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
+    ConnRecord,
     IndyProofRequest,
     IndyCredPrecis,
 )
 from mockito import verify, when
+from unittest.mock import patch as patch
 
+from app.facades.trust_registry import Actor
 import app.generic.verifier.verifier as test_module
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
@@ -39,6 +45,17 @@ presentation_exchange_record_2 = PresentationExchange(
     verified=False,
 )
 
+actor = Actor(
+    id="abcde",
+    name="Flint",
+    roles=["verifier"],
+    did="did:sov:2cpBmR3FqGKWi5EyUbpRY8",
+)
+conn_record = ConnRecord(
+    connection_id="abcde",
+    invitation_key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
+)
+
 
 @pytest.mark.asyncio
 async def test_send_proof_request(mock_agent_controller: AcaPyClient):
@@ -46,35 +63,67 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV1).send_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
     )
-
-    result = await test_module.send_proof_request(
-        proof_request=test_module.SendProofRequest(
-            connection_id="abcde",
-            proof_request=IndyProofRequest(**proof_dict),
-            protocol_version="v1",
-        ),
-        aries_controller=mock_agent_controller,
+    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
+        get(DIDResult(result=DID(did=actor["did"])))
     )
+    with patch(
+        "app.generic.verifier.verifier_utils.get_connection_record",
+        return_value=conn_record,
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
+    ):
+        result = await test_module.send_proof_request(
+            proof_request=test_module.SendProofRequest(
+                connection_id="abcde",
+                proof_request=IndyProofRequest(**proof_dict),
+                protocol_version="v1",
+            ),
+            aries_controller=mock_agent_controller,
+        )
 
-    assert result is presentation_exchange_record_1
-    verify(VerifierV1).send_proof_request(...)
+        assert result is presentation_exchange_record_1
+        verify(VerifierV1).send_proof_request(...)
 
     # V2
     when(VerifierV2).send_proof_request(...).thenReturn(
         get(presentation_exchange_record_2)
     )
-
-    result = await test_module.send_proof_request(
-        proof_request=test_module.SendProofRequest(
-            connection_id="abcde",
-            proof_request=IndyProofRequest(**proof_dict),
-            protocol_version="v2",
-        ),
-        aries_controller=mock_agent_controller,
+    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
+        get(DIDResult(result=DID(did=actor["did"])))
     )
+    with patch(
+        "app.generic.verifier.verifier_utils.get_connection_record",
+        return_value=conn_record,
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
+    ):
+        result = await test_module.send_proof_request(
+            proof_request=test_module.SendProofRequest(
+                connection_id="abcde",
+                proof_request=IndyProofRequest(**proof_dict),
+                protocol_version="v2",
+            ),
+            aries_controller=mock_agent_controller,
+        )
 
-    assert result is presentation_exchange_record_2
-    verify(VerifierV2).send_proof_request(...)
+        assert result is presentation_exchange_record_2
+        verify(VerifierV2).send_proof_request(...)
 
 
 @pytest.mark.asyncio
@@ -83,31 +132,67 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV1).create_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
     )
-
-    result = await test_module.create_proof_request(
-        proof_request=test_module.CreateProofRequest(
-            protocol_version="v1", proof_request=IndyProofRequest(**proof_dict)
-        ),
-        aries_controller=mock_agent_controller,
+    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
+        get(DIDResult(result=DID(did=actor["did"])))
     )
+    with patch(
+        "app.generic.verifier.verifier_utils.get_connection_record",
+        return_value=conn_record,
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
+    ):
+        result = await test_module.create_proof_request(
+            proof_request=test_module.CreateProofRequest(
+                protocol_version="v1", proof_request=IndyProofRequest(**proof_dict)
+            ),
+            aries_controller=mock_agent_controller,
+        )
 
-    assert result is presentation_exchange_record_1
-    verify(VerifierV1).create_proof_request(...)
+        assert result is presentation_exchange_record_1
+        verify(VerifierV1).create_proof_request(...)
 
     # V2
+    when(VerifierV2).accept_proof_request(...).thenReturn(
+        get(presentation_exchange_record_2)
+    )
+    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
+        get(DIDResult(result=DID(did=actor["did"])))
+    )
     when(VerifierV2).create_proof_request(...).thenReturn(
         get(presentation_exchange_record_2)
     )
 
-    result = await test_module.create_proof_request(
-        proof_request=test_module.CreateProofRequest(
-            protocol_version="v2", proof_request=IndyProofRequest(**proof_dict)
-        ),
-        aries_controller=mock_agent_controller,
-    )
+    with patch(
+        "app.generic.verifier.verifier_utils.get_connection_record",
+        return_value=conn_record,
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
+    ):
+        result = await test_module.create_proof_request(
+            proof_request=test_module.CreateProofRequest(
+                protocol_version="v2", proof_request=IndyProofRequest(**proof_dict)
+            ),
+            aries_controller=mock_agent_controller,
+        )
 
-    assert result is presentation_exchange_record_2
-    verify(VerifierV2).create_proof_request(...)
+        assert result is presentation_exchange_record_2
+        verify(VerifierV2).create_proof_request(...)
 
 
 @pytest.mark.asyncio
@@ -116,35 +201,68 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV1).accept_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
     )
-
-    result = await test_module.accept_proof_request(
-        proof_request=test_module.AcceptProofRequest(
-            proof_id="1234",
-            presentation_spec=indy_pres_spec,
-            protocol_version="v1",
-        ),
-        aries_controller=mock_agent_controller,
+    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
+        get(DIDResult(result=DID(did=actor["did"])))
     )
+    with patch(
+        "app.generic.verifier.verifier_utils.get_connection_record",
+        return_value=conn_record,
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
+    ):
+        result = await test_module.accept_proof_request(
+            proof_request=test_module.AcceptProofRequest(
+                proof_id="1234",
+                presentation_spec=indy_pres_spec,
+                protocol_version="v1",
+            ),
+            aries_controller=mock_agent_controller,
+        )
 
-    assert result is presentation_exchange_record_1
-    verify(VerifierV1).accept_proof_request(...)
+        assert result is presentation_exchange_record_1
+        verify(VerifierV1).accept_proof_request(...)
 
     # V2
     when(VerifierV2).accept_proof_request(...).thenReturn(
         get(presentation_exchange_record_2)
     )
-
-    result = await test_module.accept_proof_request(
-        proof_request=test_module.AcceptProofRequest(
-            proof_id="1234",
-            presentation_spec=indy_pres_spec,
-            protocol_version="v2",
-        ),
-        aries_controller=mock_agent_controller,
+    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
+        get(DIDResult(result=DID(did=actor["did"])))
     )
 
-    assert result is presentation_exchange_record_2
-    verify(VerifierV2).accept_proof_request(...)
+    with patch(
+        "app.generic.verifier.verifier_utils.get_connection_record",
+        return_value=conn_record,
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
+    ), patch(
+        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
+    ):
+        result = await test_module.accept_proof_request(
+            proof_request=test_module.AcceptProofRequest(
+                proof_id="v2-1234",
+                presentation_spec=indy_pres_spec,
+                protocol_version="v2",
+            ),
+            aries_controller=mock_agent_controller,
+        )
+
+        assert result is presentation_exchange_record_2
+        verify(VerifierV2).accept_proof_request(...)
 
 
 @pytest.mark.asyncio

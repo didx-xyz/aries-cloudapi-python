@@ -12,7 +12,7 @@ from app.facades.trust_registry import (
 )
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.error.cloud_api_error import CloudApiException
-from app.facades.acapy_wallet import assert_public_did, has_public_did
+from app.facades.acapy_wallet import assert_public_did
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +23,11 @@ async def check_tr_for_verifier(
 ) -> Optional[bool]:
     """Check transaction requirements against trust registry for verifier"""
     # 1. Check agent has public did
-    agent_has_public_did = await has_public_did(aries_controller=aries_controller)
     # CASE: Agent has public DID
-    if agent_has_public_did:
-        # Verify actor is registered in trust registry
+    try:
         pub_did = await assert_public_did(aries_controller=aries_controller)
-    # CASE: Agent has NO public DID
-    else:
+    except CloudApiException:
+        # CASE: Agent has NO public DID
         ## check via connection -> invitation key
         # get connection record
         connection_record = await get_connection_record(
@@ -45,7 +43,7 @@ async def check_tr_for_verifier(
     actor = await get_actor(did=pub_did)
 
     # 2. Check actor has role verifier
-    await check_is_verifier(actor_id=actor.id)
+    await is_verifier(actor_id=actor["id"])
 
     # 3. Verify schema ID(s) are registered in trust registry
     # unique credential_ids of revealed attrs
@@ -56,7 +54,7 @@ async def check_tr_for_verifier(
     )
 
     # # Verify the schemas are actually in the list from TR
-    if check_schemas_valid(aries_controller=aries_controller, schema_ids=schema_ids):
+    if await is_valid_schemas(aries_controller=aries_controller, schema_ids=schema_ids):
         return True
 
 
@@ -92,7 +90,7 @@ async def check_tr_for_prover(
     actor = await get_actor(did=pub_did)
 
     # 2. Check actor has role verifier
-    await check_is_verifier(actor_id=actor.id)
+    await is_verifier(actor_id=actor["id"])
 
     # unique credential_ids of revealed attrs
     credential_ids = get_credential_ids(proof_request=proof_request)
@@ -102,18 +100,19 @@ async def check_tr_for_prover(
     )
 
     # # Verify the schemas are actually in the list from TR
-    if check_schemas_valid(aries_controller=aries_controller, schema_ids=schema_ids):
+    if await is_valid_schemas(aries_controller=aries_controller, schema_ids=schema_ids):
         return True
 
 
-async def check_schemas_valid(aries_controller: AcaPyClient, schema_ids: list) -> bool:
+async def is_valid_schemas(schema_ids: list) -> Optional[bool]:
     schemas_from_tr = (await get_trust_registry())["schemas"]
     # Verify the schemas are actually in the list from TR
     schemas_valid_list = [id in schemas_from_tr for id in schema_ids]
     if not all(schemas_valid_list):
         # Could additionally return the schema ID(s) that aren't found.
         # Not sure that's any useful, though
-        raise CloudApiException("schema(s) unknown to trust registrty", 400)
+        raise CloudApiException("Found schema unknown to trust registrty", 400)
+    return True
 
 
 async def get_schema_ids(aries_controller: AcaPyClient, credential_ids: list) -> list:
@@ -124,10 +123,10 @@ async def get_schema_ids(aries_controller: AcaPyClient, credential_ids: list) ->
     return schema_ids
 
 
-async def check_is_verifier(actor_id: str) -> bool:
+async def is_verifier(actor_id: str) -> bool:
     is_verifier = await actor_has_role(actor_id=actor_id, role="verifier")
     if not is_verifier:
-        raise CloudApiException("Insufficient priviliges: Actor not a verifier", 401)
+        raise CloudApiException("Insufficient priviliges: Actor not a verifier.", 401)
     return is_verifier
 
 
@@ -135,7 +134,7 @@ async def get_actor(did: str) -> Optional[Actor]:
     actor = await actor_by_did(did)
     # Verify actor was in TR
     if not actor:
-        raise CloudApiException(f"No actor with DID {did}", 404)
+        raise CloudApiException(f"No actor with DID {did}.", 404)
     return actor
 
 
@@ -153,8 +152,10 @@ def attrs_generator(
 
     The requested_attributes and requested_predicates to under different paths for different models.
     """
-    proof_request_dict = proof_request.dict()
-    for k, v in proof_request_dict.items():
+    # If the proof_request in not a dict already make it one
+    if not isinstance(proof_request, dict):
+        proof_request = proof_request.dict()
+    for k, v in proof_request.items():
         if k == search_term:
             yield v
         elif isinstance(v, dict):
@@ -169,8 +170,16 @@ def get_credential_ids(proof_request: ProofRequestBase) -> List:
         requested_terms = [
             x for x in attrs_generator(proof_request=proof_request, search_term=term)
         ]
-        req_terms = [requested for term in requested_terms for requested in term]
-        credential_ids.append(req_terms)
+        if None in requested_terms:
+            credential_ids.extend([None])
+        else:
+            req_terms = [
+                requested
+                for term in requested_terms
+                for requested in term
+                if term != None
+            ]
+            credential_ids.extend(req_terms)
     return list(set(credential_ids))
 
 

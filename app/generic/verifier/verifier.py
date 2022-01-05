@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies import agent_selector
 
-from .verifier_utils import check_tr_for_verifier
+from .verifier_utils import check_tr_for_prover, check_tr_for_verifier
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
@@ -165,6 +165,11 @@ async def send_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
+        # if await check_tr_for_verifier(
+        #     aries_controller=aries_controller,
+        #     prover=prover,
+        #     proof_request=proof_request,
+        # ):
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -193,9 +198,14 @@ async def create_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-        return await prover.create_proof_request(
-            controller=aries_controller, proof_request=proof_request
-        )
+        if await check_tr_for_verifier(
+            aries_controller=aries_controller,
+            prover=prover,
+            proof_request=proof_request,
+        ):
+            return await prover.create_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
     except Exception as e:
         logger.error(f"Failed to create presentation record: \n{e!r}")
         raise e from e
@@ -222,7 +232,7 @@ async def accept_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
 
-        if await check_tr_for_verifier(
+        if await check_tr_for_prover(
             aries_controller=aries_controller,
             prover=prover,
             proof_request=proof_request,

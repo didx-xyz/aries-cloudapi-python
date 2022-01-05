@@ -8,6 +8,7 @@ from aries_cloudcontroller import (
     PresentProofV10Api,
     PresentProofV20Api,
     WalletApi,
+    ConnectionApi,
 )
 from mockito import mock
 
@@ -32,6 +33,7 @@ def mock_agent_controller():
     controller = mock(AcaPyClient)
     controller.wallet = mock(WalletApi)
     controller.ledger = mock(LedgerApi)
+    controller.connection = mock(ConnectionApi)
     controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
     controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
     controller.present_proof_v1_0 = mock(PresentProofV10Api)

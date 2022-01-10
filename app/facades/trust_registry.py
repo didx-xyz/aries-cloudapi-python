@@ -282,3 +282,4 @@ async def register_actor(actor: Actor) -> None:
         raise TrustRegistryException(
             f"Error registering actor: {actor_res.text}", actor_res.status_code
         )
+    return actor_res

@@ -34,5 +34,6 @@ async def register_issuer(client: AsyncClient, schema_id: str):
             )
         )
 
+
 async def register_verifier(client: AsyncClient, schema_id: str):
     return await register_issuer(client=client, schema_id=schema_id)

@@ -165,14 +165,14 @@ async def send_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-        # if await check_tr_for_verifier(
-        #     aries_controller=aries_controller,
-        #     prover=prover,
-        #     proof_request=proof_request,
-        # ):
-        return await prover.send_proof_request(
-            controller=aries_controller, proof_request=proof_request
-        )
+        if await check_tr_for_verifier(
+            aries_controller=aries_controller,
+            prover=prover,
+            proof_request=proof_request,
+        ):
+            return await prover.send_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
     except Exception as e:
         logger.error(f"Failed to send proof request: \n{e!r}")
         raise e from e
@@ -232,6 +232,11 @@ async def accept_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
 
+        # return await check_tr_for_prover(
+        #     aries_controller=aries_controller,
+        #     prover=prover,
+        #     proof_request=proof_request,
+        # )
         if await check_tr_for_prover(
             aries_controller=aries_controller,
             prover=prover,
@@ -240,6 +245,9 @@ async def accept_proof_request(
             return await prover.accept_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
+        return await prover.accept_proof_request(
+            controller=aries_controller, proof_request=proof_request
+        )
     except Exception as e:
         logger.error(f"Failed to accept proof request: \n{e!r}")
         raise e from e

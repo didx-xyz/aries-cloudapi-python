@@ -1,4 +1,5 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+# Must be version 3.7 for now - bug in higher versions similar to https://github.com/tiangolo/fastapi/issues/2123
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7 
 
 COPY webhooks /webhooks
 

@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Request, Depends, APIRouter
 from dependency_injector.wiring import inject, Provide
 from containers import Container
@@ -5,7 +6,7 @@ from fastapi_websocket_pubsub import PubSubEndpoint
 from starlette.websockets import WebSocket
 
 from containers import Container as RedisContainer
-from services import Service
+from services import Service, TopicItem
 
 import logging
 from pprint import pformat
@@ -27,9 +28,8 @@ app.include_router(router)
 @inject
 async def index(
     topic: str, service: Service = Depends(Provide[Container.service])
-) -> dict:
-    value = await service.get_all_by_topic(f"{topic}")
-    return {f"{topic}": value}
+) -> List[TopicItem]:
+    return await service.get_all_by_topic(topic)
 
 
 @app.api_route("/{wallet_id}}")
@@ -79,6 +79,14 @@ async def websocket_rpc_endpoint(websocket: WebSocket):
 #     while True:
 #         data = websocket.receive_text()
 #         getattr(log, LOG_LEVEL)(f"\n{data}")
+
+
+@app.api_route("/")
+@inject
+async def index(service: Service = Depends(Provide[Container.service])):
+    value = await service.process()
+    return {"result": value}
+
 
 app.include_router(router)
 

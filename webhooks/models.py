@@ -88,6 +88,48 @@ class ProofsHookV2(BaseModel):
     updated_at: str
 
 
+class ProofsHook(BaseModel):
+    connection_id: Optional[str]
+    created_at: str
+    initiator: Literal["self", "external"]
+    role: Literal["prover", "verifier"]
+    protocol_version: Literal["v1", "v2"]
+    presentation_exchange_id: str
+    presentation_request: Optional[dict]
+    presentation_request_dict: Optional[dict]
+    state: Literal[
+        "proposal-sent",
+        "proposal-received",
+        "request-sent",
+        "request-received",
+        "presentation-sent",
+        "presentation-received",
+        "verified",
+    ]
+    thread_id: str
+    trace: bool
+    updated_at: str
+
+
+def to_proof_hook_model(item: dict) -> ProofsHook:
+    if "presentation_exchange_id" in item:
+        item["protocol_version"] = "v1"
+        item["presentation_exchange_id"] = "v1-" + item["presentation_exchange_id"]
+        try:
+            item["state"] = item["state"].replace("_", "-")
+        except KeyError:
+            pass
+        item["presentation_exchange_id"] = "v1-" + item["presentation_exchange_id"]
+        item = ProofsHook(**item)
+    elif "pres_ex_id" in item:
+        item["pres_ex_id"] = "v2-" + item["pres_ex_id"]
+        item["presentation_exchange_id"] = item.pop("pres_ex_id")
+        item["protocol_version"] = "v2"
+        item["presentation_request"] = item.pop("pres_request")
+        item = ProofsHook(**item)
+    return item
+
+
 class CredentialHookV2(BaseModel):
     auto_issue: Optional[bool]
     auto_offer: Optional[bool]
@@ -216,7 +258,7 @@ def to_credentential_hook_model(item: dict) -> CredentialHooks:
         except KeyError:
             pass
         item = CredentialHooks(**item)
-    else:
+    elif "cred_ex_id" in item:
         item["protocol_version"] = "v2"
         item["cred_ex_id"] = "v2-" + item["cred_ex_id"]
         item["credential_exchange_id"] = item.pop("cred_ex_id")

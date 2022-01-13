@@ -9,13 +9,10 @@ from aioredis import Redis
 
 from models import (
     ConnectionsHook,
-    CredentialHookV2,
-    CredentialHookV1,
-    ProofsHookV1,
-    ProofsHookV2,
     BasicMessagesHook,
     TopicItem,
     to_credentential_hook_model,
+    to_proof_hook_model,
 )
 
 
@@ -32,13 +29,7 @@ class Service:
         return topic in credential_identifiers
 
     def _proof_hook_versioned(self, item: dict) -> dict:
-        if "pres_ex_id" in item:
-            item["pres_ex_id"] = "v2-" + item["pres_ex_id"]
-            item = ProofsHookV2(**item)
-        elif "presentation_exchange_id" in item:
-            item["presentation_exchange_id"] = "v1-" + item["presentation_exchange_id"]
-            item = ProofsHookV1(**item)
-        return item
+        return to_proof_hook_model(item=item)
 
     def _credential_hook_versioned(self, item: dict) -> dict:
         return to_credentential_hook_model(item=item)

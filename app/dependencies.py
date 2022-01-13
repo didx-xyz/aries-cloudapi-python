@@ -1,20 +1,13 @@
-from enum import Enum
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Callable, List, NamedTuple, Optional, Union
+from typing import List, Optional, Union
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
-from app.constants import (
-    YOMA_AGENT_API_KEY,
-    YOMA_AGENT_URL,
-    ECOSYSTEM_AGENT_URL,
-    ECOSYSTEM_AGENT_API_KEY,
-    MEMBER_AGENT_URL,
-    MEMBER_AGENT_API_KEY,
-)
+
+from app.role import Role
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +17,7 @@ x_api_key_scheme = APIKeyHeader(name="x-api-key")
 
 class AcaPyAuth:
     token: str
-    role: "Role"
+    role: Role
 
     def __init__(self, *, role: "Role", token: str) -> None:
         self.role = role
@@ -32,6 +25,9 @@ class AcaPyAuth:
 
 
 def acapy_auth(auth: str = Depends(x_api_key_scheme)):
+    if not "." in auth:
+        raise HTTPException(401, "Unauthorized")
+
     [role_str, token] = auth.split(".", maxsplit=1)
 
     role = Role.from_str(role_str)
@@ -42,16 +38,11 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)):
     return AcaPyAuth(role=role, token=token)
 
 
-async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
-    async with asynccontextmanager(auth.role.agent_type.agent_selector)(auth) as x:
-        yield x
-
-
 async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
-    if not auth.role.agent_type.is_admin:
+    if not auth.role.is_admin:
         raise HTTPException(403, "Unauthorized")
 
-    async with asynccontextmanager(auth.role.agent_type.agent_selector)(auth) as x:
+    async with asynccontextmanager(agent_selector)(auth) as x:
         yield x
 
 
@@ -62,23 +53,56 @@ def agent_role(role: Union["Role", List["Role"]]):
         if auth.role not in roles:
             raise HTTPException(403, "Unauthorized")
 
-        async with asynccontextmanager(auth.role.agent_type.agent_selector)(auth) as x:
+        async with asynccontextmanager(agent_selector)(auth) as x:
             yield x
 
     return run
 
 
-async def multitenant_agent(auth: AcaPyAuth = Depends(acapy_auth)):
+@asynccontextmanager
+async def get_yoma_controller():
+    # TODO: would be good to support his natively in AcaPyClient
+    client = AcaPyClient(
+        Role.YOMA.agent_type.base_url, api_key=Role.YOMA.agent_type.x_api_key
+    )
+
+    yield client
+    await client.close()
+
+
+@asynccontextmanager
+async def get_tenant_controller(role: "Role", auth_token: str):
+    client = AcaPyClient(
+        role.agent_type.base_url,
+        api_key=role.agent_type.x_api_key,
+        tenant_jwt=auth_token,
+    )
+
+    yield client
+    await client.close()
+
+
+async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     if not auth.token or auth.token == "":
         raise HTTPException(403, "Missing authorization key")
+
+    tenant_jwt: Optional[str] = None
+    x_api_key: Optional[str] = None
+
+    # Tenant of multitenant agent
+    if auth.role.is_multitenant and not auth.role.is_admin:
+        tenant_jwt = auth.token
+        x_api_key = auth.role.agent_type.x_api_key
+    else:
+        x_api_key = auth.token
 
     agent = None
     try:
         # yield the controller
         agent = AcaPyClient(
             base_url=auth.role.agent_type.base_url,
-            api_key=auth.role.agent_type.x_api_key,
-            tenant_jwt=auth.token,
+            api_key=x_api_key,
+            tenant_jwt=tenant_jwt,
         )
         yield agent
     except Exception as e:
@@ -89,66 +113,3 @@ async def multitenant_agent(auth: AcaPyAuth = Depends(acapy_auth)):
     finally:
         if agent:
             await agent.close()
-
-
-async def admin_agent(auth: AcaPyAuth = Depends(acapy_auth)):
-    agent = None
-    try:
-        agent = AcaPyClient(auth.role.agent_type.base_url, api_key=auth.token)
-        yield agent
-    except Exception as e:
-        # We can only log this here and not raise an HTTPException as
-        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        logger.error("%s", e, exc_info=e)
-        raise e
-    finally:
-        if agent:
-            await agent.close()
-
-
-class AgentType(NamedTuple):
-    name: str
-    base_url: str
-    agent_selector: Callable[["AcaPyAuth"], AsyncGenerator[AcaPyClient, None]]
-    is_admin: bool
-    x_api_key: Optional[str]
-
-
-class Role(Enum):
-    YOMA = AgentType("yoma", YOMA_AGENT_URL, admin_agent, True, YOMA_AGENT_API_KEY)
-    ECOSYSTEM = AgentType(
-        "ecosystem",
-        ECOSYSTEM_AGENT_URL,
-        multitenant_agent,
-        False,
-        ECOSYSTEM_AGENT_API_KEY,
-    )
-    ECOSYSTEM_ADMIN = AgentType(
-        "ecosystem-admin",
-        ECOSYSTEM_AGENT_URL,
-        admin_agent,
-        True,
-        ECOSYSTEM_AGENT_API_KEY,
-    )
-    MEMBER = AgentType(
-        "member", MEMBER_AGENT_URL, multitenant_agent, False, MEMBER_AGENT_API_KEY
-    )
-    MEMBER_ADMIN = AgentType(
-        "member-admin", MEMBER_AGENT_URL, admin_agent, True, MEMBER_AGENT_API_KEY
-    )
-
-    @staticmethod
-    def from_str(role: str) -> Optional["Role"]:
-        for item in Role:
-            if item.role_name == role:
-                return item
-
-        return None
-
-    @property
-    def role_name(self) -> str:
-        return self.value.name
-
-    @property
-    def agent_type(self) -> AgentType:
-        return self.value

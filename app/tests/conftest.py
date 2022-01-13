@@ -16,6 +16,8 @@ from app.tests.util.client_fixtures import (
     member_admin_client,
     yoma_acapy_client,
     yoma_client,
+    ecosystem_admin_acapy_client,
+    ecosystem_admin_client,
 )
 from app.tests.util.member_personas import (
     alice_member_client,

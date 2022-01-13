@@ -54,7 +54,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="yoma-trust-registry yoma-multitenant-wallets-db yoma-multitenant-agent tails-server ledger-nodes ledger-browser
+DEFAULT_CONTAINERS="yoma-trust-registry yoma-multitenant-wallets-db yoma-multitenant-agent tails-server
                     yoma-ga-wallets-db yoma-ga-agent yoma-multitenant-web yoma-ga-web"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
@@ -105,7 +105,7 @@ configureEnvironment() {
 
   # global
   export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:controller}"
-  export GENESIS_URL="http://localhost:9000/genesis"
+  export GENESIS_URL="http://testnet.didx.xyz/genesis"
   export WALLET_TYPE="indy"
 
 }

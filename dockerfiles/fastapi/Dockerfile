@@ -4,7 +4,8 @@ COPY app /app
 
 WORKDIR /app
 
-RUN cd /app && pip install -r requirements.txt
+RUN cd /app && pip install -r requirements.txt --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/
+# RUN cd /app && pip install -r requirements.txt
 
 EXPOSE 8000
 

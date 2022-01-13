@@ -13,6 +13,10 @@ def get_actor_by_did(db: Session, actor_did: str):
     return db.query(models.Actor).filter(models.Actor.did == actor_did).first()
 
 
+def get_actor_by_id(db: Session, actor_id: str):
+    return db.query(models.Actor).filter(models.Actor.id == actor_id).first()
+
+
 def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
     if db_actor is not None:

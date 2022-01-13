@@ -69,9 +69,9 @@ class Service:
             data = [json.loads(d) for d in data]
         return data
 
-    def _to_topic_item(self, topic: str, data: List[dict]) -> List[TopicItem]:
-        data = self._to_json(data=data)
+    def _to_item(self, topic: str, data: List[dict]) -> List[dict]:
         # Transform the data to the appropriate model
+        data = self._to_json(data=data)
         if self._is_proof(topic):
             data = [self._proof_hook_versioned(d) for d in data]
         elif self._is_credential(topic):
@@ -80,6 +80,10 @@ class Service:
             data = [self._version_connections(d) for d in data]
         elif topic == "basicmessages":
             data = [BasicMessagesHook(**d) for d in data]
+        return data
+
+    def _to_topic_item(self, topic: str, data: List[bytes]) -> List[TopicItem]:
+        data = self._to_item(topic=topic, data=data)
         return (
             [TopicItem(topic=topic, payload=payload) for payload in data]
             if data
@@ -95,3 +99,15 @@ class Service:
         # Transform it to TopicItems
         items = self._to_topic_item(topic=topic, data=data)
         return items
+
+    async def get_all_for_topic_by_wallet_id(
+        self, topic: str, wallet_id: str
+    ) -> List[TopicItem]:
+        data = await self._redis.smembers(topic)
+        data = self._to_item(topic=topic, data=data)
+        data = [d for d in data if d.wallet_id == f"{wallet_id}"]
+        return (
+            [TopicItem(topic=topic, payload=payload) for payload in data]
+            if data
+            else []
+        )

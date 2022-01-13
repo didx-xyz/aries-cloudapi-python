@@ -32,6 +32,16 @@ async def index(
     return await service.get_all_by_topic(topic)
 
 
+@app.api_route("/{topic}/{wallet_id}")
+@inject
+async def wallet_hooks(
+    topic: str, wallet_id: str, service=Depends(Provide[Container.service])
+) -> List[TopicItem]:
+    return await service.get_all_for_topic_by_wallet_id(
+        topic=topic, wallet_id=wallet_id
+    )
+
+
 @app.api_route("/{wallet_id}}")
 @inject
 async def wallet_root(
@@ -47,8 +57,7 @@ async def topic_root(
     topic, request: Request, service: Service = Depends(Provide[Container.service])
 ):
     payload = await request.json()
-    wallet_id = {}
-    wallet_id["wallet_id"] = (request.headers)["x-wallet-id"]
+    wallet_id = {"wallet_id": (request.headers)["x-wallet-id"]}
     payload.update(wallet_id)
     payload = pformat(payload)
     await service.add_topic_entry(str(topic), str(payload))

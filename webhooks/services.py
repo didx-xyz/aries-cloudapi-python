@@ -9,12 +9,13 @@ from aioredis import Redis
 
 from models import (
     ConnectionsHook,
-    CredententialHookV2,
+    CredentialHookV2,
     CredentialHookV1,
     ProofsHookV1,
     ProofsHookV2,
     BasicMessagesHook,
     TopicItem,
+    to_credentential_hook_model,
 )
 
 
@@ -40,13 +41,7 @@ class Service:
         return item
 
     def _credential_hook_versioned(self, item: dict) -> dict:
-        if "cred_ex_id" in item:
-            item["cred_ex_id"] = "v2-" + item["cred_ex_id"]
-            item = CredententialHookV2(**item)
-        elif "credential_exchange_id" in item:
-            item["credential_exchange_id"] = "v1-" + item["credential_exchange_id"]
-            item = CredentialHookV1(**item)
-        return item
+        return to_credentential_hook_model(item=item)
 
     def _version_connections(self, item: dict) -> dict:
         if item["connection_protocol"] == "didexchange/1.0":
@@ -58,16 +53,17 @@ class Service:
         return item
 
     def _deserialise(self, data: bytes) -> Union[str, dict]:
+        # Turn bytes from redis into str
         try:
             return (
                 data.decode("utf-8")
-                .replace("\\\\", "\\")
-                .replace("\n", "")
                 .replace("'", '"')
                 .replace("False", json.dumps(False))
                 .replace("True", json.dumps(True))
             )
         except JSONDecodeError:
+            # Don't raise an error here. It's probably more valuable to
+            # Return the data anyway than breaking the retrieval
             return {"invalid JSON data": data}
 
     def _to_json(self, data: List[bytes]) -> List[dict]:
@@ -82,15 +78,15 @@ class Service:
             # turn off black formatter here because it replaces the regex
             # fmt: off
             data = [re.sub('\s+',' ', d) for d in data]
-            # Remove \" \" from the multiline error message because that is invalid json
+            # Remove [..\" \"..] from the multiline error message because that is invalid json
             data = [d.replace('\" \"', ' ') for d in data]
             # fmt: on
             data = [json.loads(d) for d in data]
         return data
 
-    def _to_model(self, topic: str, data: List[dict]) -> List[TopicItem]:
+    def _to_topic_item(self, topic: str, data: List[dict]) -> List[TopicItem]:
         data = self._to_json(data=data)
-
+        # Transform the data to the appropriate model
         if self._is_proof(topic):
             data = [self._proof_hook_versioned(d) for d in data]
         elif self._is_credential(topic):
@@ -105,12 +101,12 @@ class Service:
             else []
         )
 
-    async def add_topic_entry(self, topic: str, hook: bytes):
+    async def add_topic_entry(self, topic: str, hook: bytes) -> List[TopicItem]:
         return await self._redis.sadd(topic, hook)
 
     async def get_all_by_topic(self, topic: str) -> List[TopicItem]:
-
+        # Get the data from redis queue
         data = await self._redis.smembers(topic)
-
-        items = self._to_model(topic=topic, data=data)
+        # Transform it to TopicItems
+        items = self._to_topic_item(topic=topic, data=data)
         return items

@@ -105,7 +105,7 @@ class Service:
     ) -> List[TopicItem]:
         data = await self._redis.smembers(topic)
         data = self._to_item(topic=topic, data=data)
-        data = [d for d in data if d.wallet_id == f"{wallet_id}"]
+        data = [d for d in data if d.wallet_id == wallet_id]
         return (
             [TopicItem(topic=topic, payload=payload) for payload in data]
             if data

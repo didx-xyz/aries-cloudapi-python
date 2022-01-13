@@ -1,7 +1,10 @@
 from enum import Enum
 import logging
+import os
+import sys
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Callable, List, NamedTuple, Optional, Union
+from typing import AsyncGenerator, Callable, List, NamedTuple, Optional, Union, final
+from fastapi_websocket_pubsub import PubSubClient
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
@@ -20,6 +23,66 @@ logger = logging.getLogger(__name__)
 
 
 x_api_key_scheme = APIKeyHeader(name="x-api-key")
+
+sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
+
+PORT = os.getenv("PORT", "3010")
+URL = os.getenv("BROADCAST_URL", "yoma-webhooks-web")
+
+
+async def webhook_listener(topics: list = None, wallet_id: str = None):
+    if not topics:
+        topics = [
+            "connections",
+            "issue_credential",
+            "forward",
+            "ping",
+            "basicmessages",
+            "issuer_cred_rev",
+            "issue_credential_v2_0",
+            "issue_credential_v2_0_indy",
+            "issue_credential_v2_0_dif",
+            "present_proof",
+            "revocation_registry",
+        ]
+    if wallet_id:
+        topics.append(wallet_id)
+
+    hooks = []
+    # You can also register it using the commented code below
+    async def on_data(data, topic):
+        pass
+        # print(f"{topic}:\n", data)
+        # nonlocal hooks
+        # hooks.append({topic: data})
+        # print(f"INSIDE HOOKS {hooks}")
+        # yield hooks
+        # return data
+
+    client = PubSubClient(
+        [*topics], callback=on_data, server_uri=f"ws://{URL}:{PORT}/pubsub"
+    )
+    # client.start_client(f"ws://{URL}:{3010}/pubsub")
+    # client = PubSubClient(
+    #     topics=[*topics], server_uri="ws://yoma-webhooks-web:3010/pubsub"
+    # )
+
+    try:
+        print("starting webhooks connections")
+        # client.start_client(f"ws://{URL}:{3010}/pubsub")
+        async with client as c:
+            #     # yield hooks
+            #     # yield hooks
+            yield c
+        # yield hooks
+        # client.start_client(f"ws://{URL}:{3010}/pubsub")
+        # yield hooks
+    except Exception:
+        print("closing webhook exception")
+        await client.disconnect()
+    finally:
+        print("closing webhook finally")
+        await client.disconnect()
 
 
 class AcaPyAuth:

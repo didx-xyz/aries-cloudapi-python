@@ -40,7 +40,7 @@ class ConnectionsHook(HookBase):
     updated_at: str
 
 
-def to_connections_model(item: dict):
+def to_connections_model(item: dict) -> ConnectionsHook:
     if item["connection_protocol"] == "didexchange/1.0":
         item["connection_id"] = "0023-" + item["connection_id"]
     elif item["connection_protocol"] == "connections/1.0":
@@ -102,7 +102,7 @@ def to_proof_hook_model(item: dict) -> ProofsHook:
     return item
 
 
-class CredentialHooks(HookBase):
+class CredentialsHooks(HookBase):
     auto_issue: Optional[bool]
     auto_offer: Optional[bool]
     auto_remove: Optional[bool]
@@ -133,7 +133,7 @@ class CredentialHooks(HookBase):
     credential_offer: Optional[dict]
 
 
-def to_credentential_hook_model(item: dict) -> CredentialHooks:
+def to_credentential_hook_model(item: dict) -> CredentialsHooks:
     if "credential_exchange_id" in item:
         item["protocol_version"] = "v1"
         item["credential_exchange_id"] = "v1-" + item["credential_exchange_id"]
@@ -142,7 +142,7 @@ def to_credentential_hook_model(item: dict) -> CredentialHooks:
             item["state"] = item["state"].replace("_", "-")
         except KeyError:
             pass
-        item = CredentialHooks(**item)
+        item = CredentialsHooks(**item)
     elif "cred_ex_id" in item:
         item["protocol_version"] = "v2"
         item["cred_ex_id"] = "v2-" + item["cred_ex_id"]
@@ -161,7 +161,7 @@ def to_credentential_hook_model(item: dict) -> CredentialHooks:
             item["credential_proposal"] = item["cred_proposal"]
         except KeyError:
             pass
-        item = CredentialHooks(**item)
+        item = CredentialsHooks(**item)
 
     return item
 

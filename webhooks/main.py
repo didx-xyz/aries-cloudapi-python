@@ -1,4 +1,6 @@
 from typing import List
+from pprint import pformat
+
 from fastapi import FastAPI, Request, Depends, APIRouter
 from dependency_injector.wiring import inject, Provide
 from containers import Container
@@ -9,7 +11,6 @@ from containers import Container as RedisContainer
 from services import Service, TopicItem
 
 import logging
-from pprint import pformat
 import os
 import sys
 
@@ -20,7 +21,7 @@ log = logging.getLogger(__name__)
 app = FastAPI()
 router = APIRouter()
 endpoint = PubSubEndpoint()
-endpoint.register_route(router)
+endpoint.register_route(router, "/pubsub")
 app.include_router(router)
 
 
@@ -37,9 +38,11 @@ async def index(
 async def wallet_hooks(
     topic: str, wallet_id: str, service=Depends(Provide[Container.service])
 ) -> List[TopicItem]:
-    return await service.get_all_for_topic_by_wallet_id(
+    data = await service.get_all_for_topic_by_wallet_id(
         topic=topic, wallet_id=wallet_id
     )
+    await endpoint.publish(topics=[topic, wallet_id], data=data)
+    return data
 
 
 @app.api_route("/{wallet_id}}")
@@ -60,8 +63,13 @@ async def topic_root(
     wallet_id = {"wallet_id": (request.headers)["x-wallet-id"]}
     payload.update(wallet_id)
     payload = pformat(payload)
-    await service.add_topic_entry(str(topic), str(payload))
+    # redistribute by topic
     await endpoint.publish(topics=[topic], data=payload)
+    # Add data to redis
+    await service.add_topic_entry(str(topic), str(payload))
+    # redistribute per wallet
+    wallet_data = service.get_all_for_topic_by_wallet_id
+    await endpoint.publish(topics=[wallet_id["wallet_id"]], data=wallet_data)
     getattr(log, LOG_LEVEL)(f"{topic}:\n{payload}")
 
 
@@ -78,28 +86,11 @@ async def topic_wallet(
     getattr(log, LOG_LEVEL)(f"Wallet {wallet_id}\n{topic}:\n{payload}")
 
 
-@router.websocket("/pubsub")
-async def websocket_rpc_endpoint(websocket: WebSocket):
-    async with endpoint.broadcaster:
-        await endpoint.main_loop(websocket)
-
-
-# TODO: Figure out how this can possibly work using webhooks
-# According to the docs this is supported
-# @app.websocket("/")
-# async def websocket_topics(websocket: WebSocket):
-#     await websocket.accept()
-#     while True:
-#         data = websocket.receive_text()
-#         getattr(log, LOG_LEVEL)(f"\n{data}")
-
-
-@app.api_route("/")
-@inject
-async def index(service: Service = Depends(Provide[Container.service])):
-    value = await service.process()
-    return {"result": value}
-
+# # Example for broadcasting from eg Redis
+# @router.websocket("/pubsub")
+# async def websocket_rpc_endpoint(websocket: WebSocket):
+#     async with endpoint.broadcaster:
+#         await endpoint.main_loop(websocket)
 
 app.include_router(router)
 

@@ -1,12 +1,17 @@
 import time
+import json
+import time
 
 import pytest
+import httpx
 from assertpy import assert_that
 from httpx import AsyncClient
 
 # This import is important for tests to run!
-from app.tests.util.member_personas import BobAlicePublicDid
+from app.tests.util.member_personas import BobAliceConnect, BobAlicePublicDid
 from app.tests.util.event_loop import event_loop
+
+from app.tests.util.string import get_wallet_id_from_JWT
 
 
 @pytest.mark.asyncio
@@ -38,6 +43,23 @@ async def test_accept_invitation(
         json={"invitation": invitation["invitation"]},
     )
     connection_record = accept_response.json()
+    state = connection_record["state"]
+
+    wallet_id = get_wallet_id_from_JWT(alice_member_client)
+
+    t_end = time.time() + 10
+    while time.time() < t_end:
+        conns = (httpx.get(f"http://localhost:3010/connections/{wallet_id}")).json()
+        states = [
+            d["payload"]["state"]
+            for d in conns
+            # if d["payload"]["connection_id"] == connection_record["connection_id"]
+        ]
+        time.sleep(1)
+        if "active" in states:
+            break
+        # state = conns[-1]["payload"]["state"]
+        # print(conns)
 
     assert_that(connection_record).contains(
         "connection_id", "state", "created_at", "updated_at", "invitation_key"
@@ -49,17 +71,8 @@ async def test_accept_invitation(
 async def test_get_connections(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
 ):
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation"
-    )
-    invitation = invitation_response.json()
-
-    await alice_member_client.post(
-        "/generic/connections/accept-invitation",
-        json={"invitation": invitation["invitation"]},
-    )
-
     alice_connections = (await alice_member_client.get("/generic/connections")).json()
     bob_connections = (await bob_member_client.get("/generic/connections")).json()
 
@@ -109,32 +122,12 @@ async def test_delete_connection(
 async def test_bob_and_alice_connect(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
 ):
-    time.sleep(3)
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation"
-    )
-    invitation = invitation_response.json()
-
-    accept_response = await alice_member_client.post(
-        "/generic/connections/accept-invitation",
-        json={"invitation": invitation["invitation"]},
-    )
-    alice_connection = accept_response.json()
-
-    bob_connection_id = invitation["connection_id"]
-    alice_connection_id = alice_connection["connection_id"]
-
-    # wait for events to be exchanged
-    # FIXME: listen to webhooks once available
-    time.sleep(5)
-
-    bob_connection = (
-        await bob_member_client.get(f"/generic/connections/{bob_connection_id}")
-    ).json()
-    alice_connection = (
-        await alice_member_client.get(f"/generic/connections/{alice_connection_id}")
-    ).json()
+    bob_connection = (await bob_member_client.get(f"/generic/connections")).json()[0]
+    alice_connection = (await alice_member_client.get(f"/generic/connections")).json()[
+        0
+    ]
 
     assert_that(bob_connection).has_state("completed")
     assert_that(alice_connection).has_state("completed")

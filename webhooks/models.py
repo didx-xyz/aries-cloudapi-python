@@ -1,10 +1,13 @@
 from typing import Any, Optional
-from enum import Enum
 from typing_extensions import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 
-class ConnectionsHook(BaseModel):
+class HookBase(BaseModel):
+    wallet_id: Optional[str]
+
+
+class ConnectionsHook(HookBase):
     accept: Literal["manual", "auto"]
     connection_id: str
     connection_protocol: Literal["connections/1.0", "didexchange/1.0"]
@@ -37,7 +40,19 @@ class ConnectionsHook(BaseModel):
     updated_at: str
 
 
-class BasicMessagesHook(BaseModel):
+def to_connections_model(item: dict):
+    if item["connection_protocol"] == "didexchange/1.0":
+        item["connection_id"] = "0023-" + item["connection_id"]
+    elif item["connection_protocol"] == "connections/1.0":
+        item["connection_id"] = "0016-" + item["connection_id"]
+    try:
+        item = ConnectionsHook(**item)
+    except ValidationError:
+        pass
+    return item
+
+
+class BasicMessagesHook(HookBase):
     connection_id: str
     content: str
     message_id: str
@@ -45,50 +60,7 @@ class BasicMessagesHook(BaseModel):
     state: Literal["received"]
 
 
-class ProofsHookV1(BaseModel):
-    connection_id: Optional[str]
-    created_at: str
-    initiator: Literal["self", "external"]
-    presentation_exchange_id: str
-    presentation_request: dict
-    presentation_request_dict: dict
-    role: Literal["prover", "verifier"]
-    state: Literal[
-        "proposal_sent",
-        "proposal_received",
-        "request_sent",
-        "request_received",
-        "presentation_sent",
-        "presentation_received",
-        "verified",
-    ]
-    thread_id: str
-    trace: bool
-    updated_at: str
-
-
-class ProofsHookV2(BaseModel):
-    connection_id: Optional[str]
-    created_at: str
-    initiator: Literal["self", "external"]
-    pres_ex_id: str
-    pres_request: Optional[dict]
-    role: Literal["prover", "verifier"]
-    state: Literal[
-        "proposal-sent",
-        "proposal-received",
-        "request-sent",
-        "request-received",
-        "presentation-sent",
-        "presentation-received",
-        "verified",
-    ]
-    thread_id: str
-    trace: bool
-    updated_at: str
-
-
-class ProofsHook(BaseModel):
+class ProofsHook(HookBase):
     connection_id: Optional[str]
     created_at: str
     initiator: Literal["self", "external"]
@@ -130,69 +102,7 @@ def to_proof_hook_model(item: dict) -> ProofsHook:
     return item
 
 
-class CredentialHookV2(BaseModel):
-    auto_issue: Optional[bool]
-    auto_offer: Optional[bool]
-    auto_remove: Optional[bool]
-    by_format: dict
-    connection_id: Optional[str]
-    created_at: str
-    cred_ex_id: str
-    cred_offer: Optional[dict]
-    cred_preview: Optional[dict]
-    cred_proposal: Optional[dict]
-    initiator: Literal["self", "external"]
-    role: Literal["issuer", "holder"]
-    state: Optional[
-        Literal[
-            "proposal-sent",
-            "proposal-received",
-            "offer-sent",
-            "offer-received",
-            "request-sent",
-            "request-received",
-            "credential-issued",
-            "credential-received",
-            "done",
-        ]
-    ]
-    thread_id: Optional[str]
-    trace: bool
-    updated_at: str
-
-
-class CredentialHookV1(BaseModel):
-    auto_issue: Optional[bool]
-    auto_offer: Optional[bool]
-    auto_remove: Optional[bool]
-    connection_id: Optional[str]
-    created_at: str
-    credential_definition_id: str
-    credential_exchange_id: Optional[str]
-    credential_offer: Optional[dict]
-    credential_proposal_dict: Optional[dict]
-    initiator: Literal["self", "external"]
-    role: Literal["issuer", "holder"]
-    schema_id: Optional[str]
-    state: Optional[
-        Literal[
-            "proposal_sent",
-            "proposal_received",
-            "offer_sent",
-            "offer_received",
-            "request_sent",
-            "request_received",
-            "credential_issued",
-            "credential_received",
-            "done",
-        ]
-    ]
-    thread_id: Optional[str]
-    trace: bool
-    updated_at: str
-
-
-class CredentialHooks(BaseModel):
+class CredentialHooks(HookBase):
     auto_issue: Optional[bool]
     auto_offer: Optional[bool]
     auto_remove: Optional[bool]
@@ -221,31 +131,6 @@ class CredentialHooks(BaseModel):
     credential_definition_id: Optional[str]
     credential_proposal: Optional[dict]
     credential_offer: Optional[dict]
-
-    # # v1
-    # credential_offer: Optional[dict]
-    # credential_proposal_dict: Optional[dict]
-    # schema_id: Optional[str]
-    # state: Optional[
-    #     Literal[
-    #         "proposal_sent",
-    #         "proposal_received",
-    #         "offer_sent",
-    #         "offer_received",
-    #         "request_sent",
-    #         "request_received",
-    #         "credential_issued",
-    #         "credential_received",
-    #         "done",
-    #     ]
-    # ]
-    # # v2
-    # by_format: dict
-    # created_at: str
-    # cred_ex_id: str
-    # cred_offer: Optional[dict]
-    # cred_preview: Optional[dict]
-    # cred_proposal: Optional[dict]
 
 
 def to_credentential_hook_model(item: dict) -> CredentialHooks:

@@ -8,11 +8,11 @@ import re
 from aioredis import Redis
 
 from models import (
-    ConnectionsHook,
     BasicMessagesHook,
     TopicItem,
     to_credentential_hook_model,
     to_proof_hook_model,
+    to_connections_model,
 )
 
 
@@ -35,13 +35,7 @@ class Service:
         return to_credentential_hook_model(item=item)
 
     def _version_connections(self, item: dict) -> dict:
-        if item["connection_protocol"] == "didexchange/1.0":
-            item["connection_id"] = "0023-" + item["connection_id"]
-        elif item["connection_protocol"] == "connections/1.0":
-            item["connection_id"] = "0016-" + item["connection_id"]
-            print(item["connection_id"])
-        item = ConnectionsHook(**item)
-        return item
+        return to_connections_model(item=item)
 
     def _deserialise(self, data: bytes) -> Union[str, dict]:
         # Turn bytes from redis into str

@@ -46,7 +46,11 @@ async def wallet_root(
 async def topic_root(
     topic, request: Request, service: Service = Depends(Provide[Container.service])
 ):
-    payload = pformat(await request.json())
+    payload = await request.json()
+    wallet_id = {}
+    wallet_id["wallet_id"] = (request.headers)["x-wallet-id"]
+    payload.update(wallet_id)
+    payload = pformat(payload)
     await service.add_topic_entry(str(topic), str(payload))
     await endpoint.publish(topics=[topic], data=payload)
     getattr(log, LOG_LEVEL)(f"{topic}:\n{payload}")

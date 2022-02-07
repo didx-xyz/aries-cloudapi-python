@@ -4,6 +4,7 @@ from aries_cloudcontroller import AcaPyClient, SchemaSendResult
 from httpx import AsyncClient
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.util.ledger import create_public_did
+from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
 
 from app.tests.util.trust_registry import register_issuer
@@ -85,7 +86,12 @@ async def credential_exchange_id(
     credential_exchange_id = credential_exchange["credential_id"]
     assert credential_exchange["protocol_version"] == "v1"
 
-    time.sleep(5)
+    assert check_webhook_state(
+        client=bob_member_client,
+        desired_state={"state": "offer-sent"},
+        topic="issue_credential",
+    )
+
     response = await alice_member_client.get(
         BASE_PATH,
         params={"connection_id": bob_and_alice_connection["alice_connection_id"]},

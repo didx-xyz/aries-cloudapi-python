@@ -1,6 +1,4 @@
 import time
-import json
-import time
 
 import pytest
 import httpx
@@ -10,6 +8,7 @@ from httpx import AsyncClient
 # This import is important for tests to run!
 from app.tests.util.member_personas import BobAliceConnect, BobAlicePublicDid
 from app.tests.util.event_loop import event_loop
+from app.tests.util.webhooks import check_webhook_state
 
 from app.tests.util.string import get_wallet_id_from_JWT
 
@@ -43,23 +42,10 @@ async def test_accept_invitation(
         json={"invitation": invitation["invitation"]},
     )
     connection_record = accept_response.json()
-    state = connection_record["state"]
 
-    wallet_id = get_wallet_id_from_JWT(alice_member_client)
-
-    t_end = time.time() + 10
-    while time.time() < t_end:
-        conns = (httpx.get(f"http://localhost:3010/connections/{wallet_id}")).json()
-        states = [
-            d["payload"]["state"]
-            for d in conns
-            # if d["payload"]["connection_id"] == connection_record["connection_id"]
-        ]
-        time.sleep(1)
-        if "active" in states:
-            break
-        # state = conns[-1]["payload"]["state"]
-        # print(conns)
+    assert check_webhook_state(
+        client=alice_member_client, desired_state={"state": "active"}
+    )
 
     assert_that(connection_record).contains(
         "connection_id", "state", "created_at", "updated_at", "invitation_key"
@@ -124,6 +110,7 @@ async def test_bob_and_alice_connect(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
+    time.sleep(2)
     bob_connection = (await bob_member_client.get(f"/generic/connections")).json()[0]
     alice_connection = (await alice_member_client.get(f"/generic/connections")).json()[
         0
@@ -177,14 +164,15 @@ async def test_oob_connect_via_public_did(
     alice_member_client: AsyncClient,
     bob_and_alice_public_did: BobAlicePublicDid,
 ):
-    time.sleep(5)
     connect_response = await bob_member_client.post(
         "/generic/connections/oob/connect-public-did",
         json={"public_did": bob_and_alice_public_did["alice_public_did"]},
     )
     connection_record = connect_response.json()
 
-    time.sleep(5)
+    assert check_webhook_state(
+        client=bob_member_client, desired_state={"state": "request"}
+    )
 
     assert_that(connection_record).has_their_public_did(
         bob_and_alice_public_did["alice_public_did"]

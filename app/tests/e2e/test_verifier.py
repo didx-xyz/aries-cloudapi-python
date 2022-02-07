@@ -12,6 +12,7 @@ from app.generic.verifier.models import (
     SendProofRequest,
 )
 from app.tests.util.event_loop import event_loop
+from app.tests.util.webhooks import check_webhook_state
 from app.tests.util.member_personas import (
     BobAliceConnect,
 )
@@ -121,10 +122,16 @@ async def test_accept_proof_request(
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
-    time.sleep(3)
+
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "request-sent"},
+        topic="present_proof",
     )
 
     accept_proof_request_v1 = AcceptProofRequest(
@@ -140,6 +147,12 @@ async def test_accept_proof_request(
     # TODO check for the correct response when state is request_received
     result = response.json()
 
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "request-sent"},
+        topic="present_proof",
+    )
+
     assert response.status_code == 400
     assert_that(result).contains("detail")
     assert ("Presentation exchange" and "state (must be request_received)") in result[
@@ -150,10 +163,15 @@ async def test_accept_proof_request(
     proof_request_v2 = proof_request_v1
     proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
 
-    time.sleep(3)
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "request-sent"},
+        topic="present_proof",
     )
 
     accept_proof_request_v2 = AcceptProofRequest(
@@ -166,6 +184,13 @@ async def test_accept_proof_request(
         BASE_PATH + "/accept-request",
         json=accept_proof_request_v2.dict(),
     )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "request-sent"},
+        topic="present_proof",
+    )
+
     # TODO check for the correct response when state is request_received
     result = response.json()
     assert response.status_code == 400
@@ -185,10 +210,15 @@ async def test_reject_proof_request(
         bob_and_alice_connection["alice_connection_id"],
         protocol_version=ProofRequestProtocolVersion.v10.value,
     )
-    time.sleep(3)
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "request-sent"},
+        topic="present_proof",
     )
 
     reject_proof_request_v1 = RejectProofRequest(

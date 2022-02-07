@@ -67,13 +67,22 @@ async def test_send_credential(
     assert_that(data).has_attributes({"speed": "average"})
     assert_that(data).has_schema_id(schema_definition.schema_id)
 
-    time.sleep(5)
+    assert check_webhook_state(
+        client=bob_member_client,
+        desired_state={"state": "offer-sent"},
+        topic="issue_credential",
+    )
     response = await alice_member_client.get(
         BASE_PATH,
         params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "offer-received"},
+        topic="issue_credential",
+    )
     assert len(records) == 2
 
     # Expect one v1 record, one v2 record
@@ -91,7 +100,11 @@ async def test_get_records(alice_member_client: AsyncClient):
 async def test_send_credential_request(
     bob_member_client: AsyncClient, credential_exchange_id: str
 ):
-    time.sleep(10)
+    assert check_webhook_state(
+        client=bob_member_client,
+        desired_state={"state": "offer-sent"},
+        topic="issue_credential",
+    )
     response = await bob_member_client.post(
         f"{BASE_PATH}/{credential_exchange_id}/request"
     )
@@ -111,7 +124,11 @@ async def test_store_credential(
 ):
     # TODO check for the correct response when state is credential_received
     # We can't complete this with auto accept enabled
-    time.sleep(5)
+    assert check_webhook_state(
+        client=bob_member_client,
+        desired_state={"state": "offer-sent"},
+        topic="issue_credential",
+    )
     response = await bob_member_client.post(
         f"{BASE_PATH}/{credential_exchange_id}/store"
     )

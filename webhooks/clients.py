@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
 
 PORT = os.getenv("PORT", "3010")
-URL = os.getenv("BROADCAST_URL", "127.0.0.1")
+URL = os.getenv("WEBHOOKS_URL", "127.0.0.1")
 
 
 async def on_events(data, topic):

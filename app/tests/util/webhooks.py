@@ -7,7 +7,7 @@ import httpx
 
 from app.tests.util.string import get_wallet_id_from_JWT
 
-BROADCAST_URL = os.getenv("BROADCAST_URL", "http://localhost:3010")
+WEBHOOKS_URL = os.getenv("WEBHOOKS_URL", "http://localhost:3010")
 
 topics = Literal[
     "connections",
@@ -38,7 +38,7 @@ def check_webhook_state(
 
     t_end = time.time() + max_duration
     while time.time() < t_end:
-        hooks = (httpx.get(f"{BROADCAST_URL}/{topic}/{wallet_id}")).json()
+        hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         states = [d["payload"][list(desired_state.keys())[0]] for d in hooks]
         time.sleep(poll_intervall)
         if list(desired_state.values())[0] in states:
@@ -49,7 +49,7 @@ def check_webhook_state(
 def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: topics) -> List:
     wallet_id = get_wallet_id_from_JWT(client)
     try:
-        hooks = (httpx.get(f"{BROADCAST_URL}/{topic}/{wallet_id}")).json()
+        hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e

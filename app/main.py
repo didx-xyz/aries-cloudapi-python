@@ -2,7 +2,6 @@ import io
 import logging
 import os
 from distutils.util import strtobool
-import sys
 
 import pydantic
 import yaml
@@ -10,7 +9,6 @@ from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-from fastapi_websocket_pubsub import PubSubClient
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
@@ -34,23 +32,6 @@ app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
 app.include_router(trust_registry.router)
 app.include_router(webhooks.router)
-
-sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
-
-PORT = os.getenv("PORT", "3010")
-URL = os.getenv("BROADCAST_URL", "yoma-webhooks-web")
-
-
-# Callback to be called upon event being published on server
-async def on_event(topic, data):
-    print("Trigger URL was accessed")
-    print(f"{topic}: {data}")
-
-
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
 
 
 # add endpoints

@@ -1,13 +1,14 @@
 import json
 import base64
+from typing import Union
 import os
 from typing import List, Literal
 from aries_cloudcontroller import AcaPyClient
 
-import httpx
+from httpx import AsyncClient, get, HTTPError
 
 
-BROADCAST_URL = os.getenv("BROADCAST_URL", "http://yoma-webhooks-web:3010")
+WEBHOOKS_URL = os.getenv("WEBHOOKS_URL", "http://yoma-webhooks-web:3010")
 ADMIN_API_KEY = os.getenv("ACAPY_ADMIN_API_KEY", "adminApiKey")
 
 topics = Literal[
@@ -25,23 +26,32 @@ topics = Literal[
 ]
 
 
-def get_wallet_id_from_client(client: AcaPyClient) -> str:
+def get_wallet_id_from_client(client: Union[AcaPyClient, AsyncClient]) -> str:
 
-    jwt = client.tenant_jwt
+    # eg tenenat_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
+    if isinstance(client, AcaPyClient):
+        jwt = client.client.headers["authorization"].split(" ")[1].split(".")[1]
+    elif isinstance(client, AsyncClient):
+        jwt = client.headers.get("x-api-key").split(".")[2]
+    else:
+        jwt = client.tenant_jwt
+
+    # Add padding if required
+    # b64 needs lengths divisible by 4
     if len(jwt) % 4 != 0:
-        n_missing = len(jwt) % 4
-        jwt_64 = jwt + n_missing * "="
+        n_missing = 4 - (len(jwt) % 4)
+        jwt = jwt + (n_missing * "=")
 
-    wallet = json.loads(base64.b64decode(jwt_64))
+    wallet = json.loads(base64.b64decode(jwt))
     return wallet["wallet_id"]
 
 
 def get_hooks_per_topic_per_wallet(client: AcaPyClient, topic: topics) -> List:
     wallet_id = get_wallet_id_from_client(client)
     try:
-        hooks = (httpx.get(f"{BROADCAST_URL}/{topic}/{wallet_id}")).json()
+        hooks = (get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         return hooks if hooks else []
-    except httpx.HTTPError as e:
+    except HTTPError as e:
         raise e from e
 
 
@@ -50,9 +60,12 @@ def get_hooks_per_topic_admin(client: AcaPyClient, topic: topics) -> List:
     Gets all webhooks for all wallets by topic (default="connections")
     """
     try:
+        # Ensure admin key is present
         assert client.client.headers["x-api-key"] == ADMIN_API_KEY
-        hooks = (httpx.get(f"{BROADCAST_URL}/connections")).json()
+        # Ensure it's not a wallet/tenant
+        assert "authorization" not in client.client.headers
+        hooks = (get(f"{WEBHOOKS_URL}/{topic}")).json()
         # Only return the first 100 hooks to prevent OpenAPI interface from crashing
         return hooks[:100] if hooks else []
-    except httpx.HTTPError as e:
+    except HTTPError as e:
         raise e from e

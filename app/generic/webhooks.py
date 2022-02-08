@@ -32,7 +32,7 @@ async def get_webhooks_for_wallet_by_topic(
     ---------
     List of webhooks belonging to the wallet
     """
-    if not hasattr(aries_controller, "tenant_jwt"):
+    if "authorization" not in aries_controller.client.headers:
         hooks = get_hooks_per_topic_admin(client=aries_controller, topic=topic)
     else:
         hooks = get_hooks_per_topic_per_wallet(client=aries_controller, topic=topic)

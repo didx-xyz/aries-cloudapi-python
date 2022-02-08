@@ -18,7 +18,6 @@ class ConnectionsHook(HookBase):
     my_did: Optional[str]
     request_id: Optional[str]
     rfc23_state: Literal[
-        "start",
         "invitation-received",
         "request-sent",
         "response-received",

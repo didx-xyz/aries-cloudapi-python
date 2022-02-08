@@ -1,27 +1,20 @@
-import http
-import time
-import fastapi
-
-from httpx import AsyncClient, HTTPError
+from httpx import AsyncClient
 import pytest
 
 from app.generic.webhooks import router
 from app.generic.models import ConnectionsHook
 
-from app.tests.util.member_personas import (
-    BobAliceConnect,
-)
-
 # This import are important for tests to run!
 from app.tests.util.event_loop import event_loop
+from app.tests.util.member_personas import BobAliceConnect
 
 WALLET_BASE_PATH = router.prefix
 
 
 @pytest.mark.asyncio
 async def test_get_webhooks_for_wallet_by_topic_tenant(
-    # bob_and_alice_connection: BobAliceConnect,
     alice_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
 ):
     result = (await alice_member_client.get(WALLET_BASE_PATH + "/connections")).json()
 
@@ -36,6 +29,7 @@ async def test_get_webhooks_for_wallet_by_topic_tenant(
 @pytest.mark.asyncio
 async def test_get_webhooks_for_wallet_by_topic_tenant_error(
     alice_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
 ):
 
     alice_member_client.headers.pop("x-api-key")
@@ -46,7 +40,9 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
 
 
 @pytest.mark.asyncio
-async def test_get_webhooks_for_wallet_by_topic_admin(yoma_client: AsyncClient):
+async def test_get_webhooks_for_wallet_by_topic_admin(
+    yoma_client: AsyncClient,
+):
     result = (await yoma_client.get(WALLET_BASE_PATH + "/connections")).json()
 
     assert len(result) >= 1
@@ -58,7 +54,9 @@ async def test_get_webhooks_for_wallet_by_topic_admin(yoma_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_webhooks_for_wallet_by_topic_admin_error(yoma_client: AsyncClient):
+async def test_get_webhooks_for_wallet_by_topic_admin_error(
+    yoma_client: AsyncClient,
+):
     yoma_client.headers.pop("x-api-key")
     result = await yoma_client.get(WALLET_BASE_PATH + "/connections")
 

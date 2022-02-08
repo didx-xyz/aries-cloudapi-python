@@ -5,7 +5,6 @@ from fastapi import FastAPI, Request, Depends, APIRouter
 from dependency_injector.wiring import inject, Provide
 from containers import Container
 from fastapi_websocket_pubsub import PubSubEndpoint
-from starlette.websockets import WebSocket
 
 from containers import Container as RedisContainer
 from services import Service, TopicItem

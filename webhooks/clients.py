@@ -33,12 +33,13 @@ async def main():
     ]
     client = PubSubClient([*topics], callback=on_events)
 
+    """
     # You can also register it using the commented code below
-    # async def on_data(data, topic):
-    #     print(f"{topic}:\n", data)
+    async def on_data(data, topic):
+        print(f"{topic}:\n", data)
 
-    # [client.subscribe(topic, on_data) for topic in topics]
-    # client.subscribe("connections", on_data)
+    [client.subscribe(topic, on_data) for topic in topics]
+    """
 
     client.start_client(f"ws://{URL}:{3010}/pubsub")
     await client.wait_until_done()

@@ -45,6 +45,7 @@ class Service:
                 .replace("'", '"')
                 .replace("False", json.dumps(False))
                 .replace("True", json.dumps(True))
+                .replace("None", json.dumps(None))
             )
         except JSONDecodeError:
             # Don't raise an error here. It's probably more valuable to

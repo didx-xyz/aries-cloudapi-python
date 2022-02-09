@@ -19,7 +19,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 @router.get("/{topic}")
 async def get_webhooks_for_wallet_by_topic(
-    topic: topics = "connections",
+    topic: topics,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[Union[ProofsHook, ConnectionsHook, CredentialsHooks, TopicItem]]:
     """

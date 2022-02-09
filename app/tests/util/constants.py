@@ -6,3 +6,5 @@ MEMBER_ACAPY_API_KEY = "adminApiKey"
 
 LEDGER_REGISTRATION_URL = "http://localhost:9000/register"
 LEDGER_TYPE: str = "von"
+
+WEBHOOKS_URL = "http://localhost:3010"

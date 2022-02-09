@@ -19,7 +19,6 @@ async def test_get_webhooks_for_wallet_by_topic_tenant(
     result = (await alice_member_client.get(WALLET_BASE_PATH + "/connections")).json()
 
     assert len(result) >= 1
-    assert len(result) <= 100
     assert isinstance(result, list)
     assert [k in result[0].keys() for k in ["topic", "payload"]]
     hook_modelled = ConnectionsHook(**result[0]["payload"])
@@ -46,7 +45,6 @@ async def test_get_webhooks_for_wallet_by_topic_admin(
     result = (await yoma_client.get(WALLET_BASE_PATH + "/connections")).json()
 
     assert len(result) >= 1
-    assert len(result) <= 100
     assert isinstance(result, list)
     assert [k in result[0].keys() for k in ["topic", "payload"]]
     hook_modelled = ConnectionsHook(**result[0]["payload"])

@@ -120,11 +120,12 @@ class CredentialsHooks(HookBase):
             "request-received",
             "credential-issued",
             "credential-received",
+            "credential-acked",
             "done",
         ]
-    ]
+    ] = None
     thread_id: Optional[str]
-    trace: bool
+    trace: Optional[bool] = None
     updated_at: str
     credential_exchange_id: Optional[str]
     credential_definition_id: Optional[str]

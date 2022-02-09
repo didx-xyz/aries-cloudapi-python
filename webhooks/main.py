@@ -59,7 +59,7 @@ async def topic_root(
     topic, request: Request, service: Service = Depends(Provide[Container.service])
 ):
     payload = await request.json()
-    wallet_id = {"wallet_id": (request.headers)["x-wallet-id"]}
+    wallet_id = {"wallet_id": request.headers["x-wallet-id"]}
     payload.update(wallet_id)
     payload = pformat(payload)
     # redistribute by topic

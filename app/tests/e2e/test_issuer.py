@@ -1,10 +1,9 @@
-import time
-
 import pytest
 from aries_cloudcontroller import SchemaSendResult
 from assertpy import assert_that
 from httpx import AsyncClient
 
+from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
 # This import are important for tests to run!
 from app.tests.util.member_personas import (
@@ -98,43 +97,121 @@ async def test_get_records(alice_member_client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_send_credential_request(
-    bob_member_client: AsyncClient, credential_exchange_id: str
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+    schema_definition: SchemaSendResult,
 ):
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "schema_id": schema_definition.schema_id,
+        "attributes": {"speed": "average"},
+    }
+
+    await register_issuer(bob_member_client, schema_definition.schema_id)
+
+    response = await bob_member_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v1"
+
     assert check_webhook_state(
         client=bob_member_client,
+        filter_map=FilterMap(
+            filter_key="credential_exchange_id",
+            filter_value=credential_exchange["credential_id"],
+        ),
         desired_state={"state": "offer-sent"},
         topic="issue_credential",
     )
-    response = await bob_member_client.post(
-        f"{BASE_PATH}/{credential_exchange_id}/request"
+
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
     )
-
-    # This returns an error - the correct one because the credential is in state received.
-    # For this to return another response we'd have to have state offer_received
-    result = response.json()
-
-    assert response.status_code == 400
-    assert_that(result).contains("detail")
-    assert "in offer_sent state (must be offer_received)" in result["detail"]
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "offer-received"},
+        topic="issue_credential",
+    )
 
 
 @pytest.mark.asyncio
 async def test_store_credential(
-    bob_member_client: AsyncClient, credential_exchange_id: str
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    credential_exchange_id: str,
+    bob_and_alice_connection: BobAliceConnect,
+    schema_definition: SchemaSendResult,
 ):
-    # TODO check for the correct response when state is credential_received
-    # We can't complete this with auto accept enabled
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "schema_id": schema_definition.schema_id,
+        "attributes": {"speed": "average"},
+    }
+
+    await register_issuer(bob_member_client, schema_definition.schema_id)
+
+    response = await bob_member_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v1"
+
     assert check_webhook_state(
         client=bob_member_client,
+        filter_map=FilterMap(
+            filter_key="credential_exchange_id",
+            filter_value=credential_exchange["credential_id"],
+        ),
         desired_state={"state": "offer-sent"},
         topic="issue_credential",
     )
-    response = await bob_member_client.post(
+
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+    )
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "offer-received"},
+        topic="issue_credential",
+    )
+
+    cred_hooks = get_hooks_per_topic_per_wallet(
+        client=alice_member_client, topic="issue_credential"
+    )
+
+    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
+    credential_exchange_id = cred_hook["payload"]["credential_exchange_id"]
+
+    response = await alice_member_client.post(
+        f"{BASE_PATH}/{credential_exchange_id}/request"
+    )
+
+    assert check_webhook_state(
+        client=bob_member_client,
+        desired_state={"state": "request-received"},
+        topic="issue_credential",
+    )
+
+    response = await alice_member_client.post(
         f"{BASE_PATH}/{credential_exchange_id}/store"
     )
 
-    result = response.json()
+    assert check_webhook_state(
+        client=alice_member_client,
+        desired_state={"state": "credential-received"},
+        topic="issue_credential",
+    )
 
-    assert response.status_code == 400
-    assert_that(result).contains("detail")
-    assert "state (must be credential_received)." in result["detail"]
+    # result = response.json()
+
+    # assert response.status_code == 400
+    # assert_that(result).contains("detail")
+    # assert "state (must be credential_received)." in result["detail"]

@@ -98,7 +98,9 @@ async def bob_and_alice_connection(
         )
     ).json()
 
-    assert check_webhook_state(alice_member_client, desired_state={"state": "active"})
+    assert check_webhook_state(
+        alice_member_client, topic="connections", desired_state={"state": "active"}
+    )
 
     bob_connection_id = invitation["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
@@ -106,10 +108,14 @@ async def bob_and_alice_connection(
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
     assert check_webhook_state(
-        alice_member_client, desired_state={"rfc23_state": "completed"}
+        alice_member_client,
+        topic="connections",
+        desired_state={"rfc23_state": "completed"},
     )
     assert check_webhook_state(
-        bob_member_client, desired_state={"rfc23_state": "completed"}
+        bob_member_client,
+        topic="connections",
+        desired_state={"rfc23_state": "completed"},
     )
 
     return {

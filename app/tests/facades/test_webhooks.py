@@ -49,10 +49,6 @@ async def test_get_hooks_per_topic_per_wallet():
 
 @pytest.mark.asyncio
 async def test_get_hooks_per_topic_admin():
-    admin_client = AcaPyClient(
-        base_url="xyz",
-        api_key="adminApiKey",
-    )
     with patch.object(
         whf, "get_hooks_per_topic_admin"
     ) as mock_get_hooks_per_topic_admin:

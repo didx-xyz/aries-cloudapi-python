@@ -1,15 +1,14 @@
 import json
 import base64
 from typing import Union
-import os
 from typing import List, Literal
 from aries_cloudcontroller import AcaPyClient
 
 from httpx import AsyncClient, get, HTTPError
 
+from app.constants import WEBHOOKS_URL
+from app.constants import YOMA_AGENT_API_KEY as ADMIN_API_KEY
 
-WEBHOOKS_URL = os.getenv("WEBHOOKS_URL", "http://yoma-webhooks-web:3010")
-ADMIN_API_KEY = os.getenv("ACAPY_ADMIN_API_KEY", "adminApiKey")
 
 topics = Literal[
     "connections",
@@ -66,6 +65,6 @@ def get_hooks_per_topic_admin(client: AcaPyClient, topic: topics) -> List:
         assert "authorization" not in client.client.headers
         hooks = (get(f"{WEBHOOKS_URL}/{topic}")).json()
         # Only return the first 100 hooks to prevent OpenAPI interface from crashing
-        return hooks[:100] if hooks else []
+        return hooks if hooks else []
     except HTTPError as e:
         raise e from e

@@ -11,7 +11,7 @@ def get_random_string(length: int):
     return "".join(random.choice(letters) for _ in range(length))
 
 
-def get_wallet_id_from_JWT(client: AsyncClient) -> str:
+def get_wallet_id_from_jwt(client: AsyncClient) -> str:
 
     api_key = client.headers["x-api-key"]
     payload = api_key.split(".")

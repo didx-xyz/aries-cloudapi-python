@@ -121,7 +121,7 @@ async def test_send_credential_request(
     assert check_webhook_state(
         client=bob_member_client,
         filter_map=FilterMap(
-            filter_key="credential_exchange_id",
+            filter_key="credential_id",
             filter_value=credential_exchange["credential_id"],
         ),
         desired_state={"state": "offer-sent"},
@@ -166,7 +166,7 @@ async def test_store_credential(
     assert check_webhook_state(
         client=bob_member_client,
         filter_map=FilterMap(
-            filter_key="credential_exchange_id",
+            filter_key="credential_id",
             filter_value=credential_exchange["credential_id"],
         ),
         desired_state={"state": "offer-sent"},
@@ -188,11 +188,9 @@ async def test_store_credential(
     )
 
     cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
-    credential_exchange_id = cred_hook["payload"]["credential_exchange_id"]
+    credential_id = cred_hook["payload"]["credential_id"]
 
-    response = await alice_member_client.post(
-        f"{BASE_PATH}/{credential_exchange_id}/request"
-    )
+    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/request")
 
     assert check_webhook_state(
         client=bob_member_client,
@@ -200,9 +198,7 @@ async def test_store_credential(
         topic="issue_credential",
     )
 
-    response = await alice_member_client.post(
-        f"{BASE_PATH}/{credential_exchange_id}/store"
-    )
+    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/store")
 
     assert check_webhook_state(
         client=alice_member_client,

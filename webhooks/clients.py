@@ -29,6 +29,7 @@ async def main():
         "issue_credential_v2_0_indy",
         "issue_credential_v2_0_dif",
         "present_proof",
+        "present_proof_v2",
         "revocation_registry",
     ]
     client = PubSubClient([*topics], callback=on_events)

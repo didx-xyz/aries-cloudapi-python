@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, List, Dict
 from typing_extensions import Literal
 from pydantic import BaseModel
 
@@ -50,12 +50,11 @@ class BasicMessagesHook(HookBase):
 class ProofsHook(HookBase):
     connection_id: Optional[str]
     created_at: str
-    initiator: Literal["self", "external"]
-    role: Literal["prover", "verifier"]
-    protocol_version: Literal["v1", "v2"]
-    presentation_exchange_id: str
+    proof_id: str
+    presentation: Optional[dict]
     presentation_request: Optional[dict]
-    presentation_request_dict: Optional[dict]
+    protocol_version: Literal["v1", "v2"]
+    role: Literal["prover", "verifier"]
     state: Literal[
         "proposal-sent",
         "proposal-received",
@@ -64,21 +63,21 @@ class ProofsHook(HookBase):
         "presentation-sent",
         "presentation-received",
         "verified",
+        "done",
+        "abandoned",
     ]
-    thread_id: str
-    trace: bool
     updated_at: str
+    verified: Optional[bool] = None
 
 
 class CredentialsHooks(HookBase):
-    auto_issue: Optional[bool]
-    auto_offer: Optional[bool]
-    auto_remove: Optional[bool]
-    connection_id: Optional[str]
-    created_at: str
-    protocol_version: Literal["v1", "v2"]
-    initiator: Literal["self", "external"]
+    credential_id: Optional[str]
     role: Literal["issuer", "holder"]
+    created_at: str
+    updated_at: str
+    protocol_version: Literal["v1", "v2"]
+    schema_id: Optional[str]
+    credential_definition_id: Optional[str]
     state: Optional[
         Literal[
             "proposal-sent",
@@ -89,16 +88,13 @@ class CredentialsHooks(HookBase):
             "request-received",
             "credential-issued",
             "credential-received",
+            "credential-acked",
             "done",
         ]
-    ]
-    thread_id: Optional[str]
-    trace: bool
-    updated_at: str
-    credential_exchange_id: Optional[str]
-    credential_definition_id: Optional[str]
+    ] = None
+    attributes: Optional[List[Dict]]
+    connection_id: Optional[str]
     credential_proposal: Optional[dict]
-    credential_offer: Optional[dict]
 
 
 class TopicItem(BaseModel):

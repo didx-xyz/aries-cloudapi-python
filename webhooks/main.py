@@ -67,7 +67,9 @@ async def topic_root(
     # Add data to redis
     await service.add_topic_entry(str(topic), str(payload))
     # redistribute per wallet
-    wallet_data = service.get_all_for_topic_by_wallet_id
+    wallet_data = service.get_all_for_topic_by_wallet_id(
+        topic=topic, wallet_id=wallet_id
+    )
     await endpoint.publish(topics=[wallet_id["wallet_id"]], data=wallet_data)
     getattr(log, LOG_LEVEL)(f"{topic}:\n{payload}")
 

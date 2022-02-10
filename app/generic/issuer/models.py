@@ -32,6 +32,7 @@ class CredentialExchange(BaseModel):
         "request-received",
         "credential-issued",
         "credential-received",
+        "credential-acked",
         "done",
     ]
     # Attributes can be None in proposed state

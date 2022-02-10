@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Dict, List
 from typing_extensions import Literal
 from pydantic import BaseModel, ValidationError
 
@@ -62,12 +62,11 @@ class BasicMessagesHook(HookBase):
 class ProofsHook(HookBase):
     connection_id: Optional[str]
     created_at: str
-    initiator: Literal["self", "external"]
-    role: Literal["prover", "verifier"]
-    protocol_version: Literal["v1", "v2"]
-    presentation_exchange_id: str
+    proof_id: str
+    presentation: Optional[dict]
     presentation_request: Optional[dict]
-    presentation_request_dict: Optional[dict]
+    protocol_version: Literal["v1", "v2"]
+    role: Literal["prover", "verifier"]
     state: Literal[
         "proposal-sent",
         "proposal-received",
@@ -76,40 +75,41 @@ class ProofsHook(HookBase):
         "presentation-sent",
         "presentation-received",
         "verified",
+        "done",
+        "abandoned",
     ]
-    thread_id: str
-    trace: bool
     updated_at: str
+    verified: Optional[bool] = None
 
 
 def to_proof_hook_model(item: dict) -> ProofsHook:
     if "presentation_exchange_id" in item:
         item["protocol_version"] = "v1"
-        item["presentation_exchange_id"] = "v1-" + item["presentation_exchange_id"]
+        item["proof_id"] = "v1-" + item["presentation_exchange_id"]
         try:
             item["state"] = item["state"].replace("_", "-")
         except KeyError:
             pass
-        item["presentation_exchange_id"] = "v1-" + item["presentation_exchange_id"]
-        item = ProofsHook(**item)
     elif "pres_ex_id" in item:
-        item["pres_ex_id"] = "v2-" + item["pres_ex_id"]
+        item["proof_id"] = "v2-" + item["pres_ex_id"]
         item["presentation_exchange_id"] = item.pop("pres_ex_id")
         item["protocol_version"] = "v2"
-        item["presentation_request"] = item.pop("pres_request")
-        item = ProofsHook(**item)
-    return item
+        item["presentation"] = item.pop("pres_request")
+    try:
+        item["presentation_request"] = item.pop("presentation_request_dict")
+    except KeyError:
+        pass
+    return ProofsHook(**item)
 
 
 class CredentialsHooks(HookBase):
-    auto_issue: Optional[bool]
-    auto_offer: Optional[bool]
-    auto_remove: Optional[bool]
-    connection_id: Optional[str]
-    created_at: str
-    protocol_version: Literal["v1", "v2"]
-    initiator: Literal["self", "external"]
+    credential_id: Optional[str]
     role: Literal["issuer", "holder"]
+    created_at: str
+    updated_at: str
+    protocol_version: Literal["v1", "v2"]
+    schema_id: Optional[str]
+    credential_definition_id: Optional[str]
     state: Optional[
         Literal[
             "proposal-sent",
@@ -124,29 +124,24 @@ class CredentialsHooks(HookBase):
             "done",
         ]
     ] = None
-    thread_id: Optional[str]
-    trace: Optional[bool] = None
-    updated_at: str
-    credential_exchange_id: Optional[str]
-    credential_definition_id: Optional[str]
+    attributes: Optional[List[Dict]]
+    connection_id: Optional[str]
     credential_proposal: Optional[dict]
-    credential_offer: Optional[dict]
 
 
 def to_credentential_hook_model(item: dict) -> CredentialsHooks:
     if "credential_exchange_id" in item:
         item["protocol_version"] = "v1"
-        item["credential_exchange_id"] = "v1-" + item["credential_exchange_id"]
+        item["credential_id"] = "v1-" + item["credential_exchange_id"]
         item["credential_proposal"] = item["credential_proposal_dict"]
         try:
             item["state"] = item["state"].replace("_", "-")
         except KeyError:
             pass
-        item = CredentialsHooks(**item)
     elif "cred_ex_id" in item:
         item["protocol_version"] = "v2"
         item["cred_ex_id"] = "v2-" + item["cred_ex_id"]
-        item["credential_exchange_id"] = item.pop("cred_ex_id")
+        item["credential_id"] = item.pop("cred_ex_id")
         try:
             item["credential_definition_id"] = item["by_format"]["cred_offer"]["indy"][
                 "cred_def_id"
@@ -161,9 +156,13 @@ def to_credentential_hook_model(item: dict) -> CredentialsHooks:
             item["credential_proposal"] = item["cred_proposal"]
         except KeyError:
             pass
-        item = CredentialsHooks(**item)
-
-    return item
+    try:
+        item["attributes"] = item["credential_proposal"]["credential_proposal"][
+            "attributes"
+        ]
+    except (KeyError, TypeError):
+        pass
+    return CredentialsHooks(**item)
 
 
 class TopicItem(BaseModel):

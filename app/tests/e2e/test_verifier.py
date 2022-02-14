@@ -1,4 +1,3 @@
-import time
 import pytest
 from aries_cloudcontroller import IndyProofRequest
 from assertpy import assert_that

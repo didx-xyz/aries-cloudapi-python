@@ -2,11 +2,11 @@ from httpx import AsyncClient
 import pytest
 
 from app.generic.webhooks import router
-from app.generic.models import ConnectionsHook
 
 # This import are important for tests to run!
 from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import BobAliceConnect
+from shared_models import Connection
 
 WALLET_BASE_PATH = router.prefix
 
@@ -21,8 +21,8 @@ async def test_get_webhooks_for_wallet_by_topic_tenant(
     assert len(result) >= 1
     assert isinstance(result, list)
     assert [k in result[0].keys() for k in ["topic", "payload"]]
-    hook_modelled = ConnectionsHook(**result[0]["payload"])
-    assert isinstance(hook_modelled, ConnectionsHook)
+    hook_modelled = Connection(**result[0]["payload"])
+    assert isinstance(hook_modelled, Connection)
 
 
 @pytest.mark.asyncio
@@ -47,8 +47,8 @@ async def test_get_webhooks_for_wallet_by_topic_admin(
     assert len(result) >= 1
     assert isinstance(result, list)
     assert [k in result[0].keys() for k in ["topic", "payload"]]
-    hook_modelled = ConnectionsHook(**result[0]["payload"])
-    assert isinstance(hook_modelled, ConnectionsHook)
+    hook_modelled = Connection(**result[0]["payload"])
+    assert isinstance(hook_modelled, Connection)
 
 
 @pytest.mark.asyncio

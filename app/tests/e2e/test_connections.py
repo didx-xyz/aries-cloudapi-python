@@ -1,4 +1,5 @@
 import pytest
+import time
 from assertpy import assert_that
 from httpx import AsyncClient
 
@@ -43,7 +44,7 @@ async def test_accept_invitation(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "active"},
+        desired_state={"state": "completed"},
         topic="connections",
         filter_map=FilterMap(
             filter_key="connection_id",
@@ -113,8 +114,9 @@ async def test_bob_and_alice_connect(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
 ):
+    time.sleep(1)
     invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation"
+        "/generic/connections/create-invitation",
     )
     invitation = invitation_response.json()
 
@@ -126,7 +128,7 @@ async def test_bob_and_alice_connect(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "active"},
+        desired_state={"state": "completed"},
         topic="connections",
         filter_map=FilterMap(
             filter_key="connection_id",
@@ -201,7 +203,7 @@ async def test_oob_connect_via_public_did(
 
     assert check_webhook_state(
         client=bob_member_client,
-        desired_state={"state": "request"},
+        desired_state={"state": "request-sent"},
         topic="connections",
     )
 

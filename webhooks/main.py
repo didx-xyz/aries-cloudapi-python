@@ -7,7 +7,8 @@ from containers import Container
 from fastapi_websocket_pubsub import PubSubEndpoint
 
 from containers import Container as RedisContainer
-from services import Service, TopicItem
+from services import Service
+from shared_models import TopicItem
 
 import logging
 import os
@@ -53,14 +54,21 @@ async def wallet_root(
     return {f"{wallet_id}": value}
 
 
-@app.post("/topic/{topic}")
+# 'origin' helps to distinguish where a hook is from
+# eg the admin, tenant or OP agent respectively
+@app.post("/{origin}/topic/{topic}")
 @inject
 async def topic_root(
-    topic, request: Request, service: Service = Depends(Provide[Container.service])
+    topic,
+    origin,
+    request: Request,
+    service: Service = Depends(Provide[Container.service]),
 ):
     payload = await request.json()
     wallet_id = {"wallet_id": request.headers["x-wallet-id"]}
     payload.update(wallet_id)
+    origin_id = {"origin": origin}
+    payload.update(origin_id)
     payload = pformat(payload)
     # redistribute by topic
     await endpoint.publish(topics=[topic], data=payload)
@@ -74,14 +82,20 @@ async def topic_root(
     getattr(log, LOG_LEVEL)(f"{topic}:\n{payload}")
 
 
-@app.post("/{wallet_id}/topic/{topic}")
+# 'origin' helps to distinguish where a hook is from
+# eg the admin aka yoma, tenant or OP agent respectively
+@app.post("/{origin}/{wallet_id}/topic/{topic}")
 async def topic_wallet(
-    wallet_id,
+    wallet_id: str,
     topic,
+    origin,
     request: Request,
     service: Service = Depends(Provide[Container.service]),
 ):
+    origin_id = {"origin": origin}
+    payload = await request.json()
     payload = pformat(await request.json())
+    payload.update(origin_id)
     await service.add_topic_entry(wallet_id, str(payload))
     await endpoint.publish(topics=[topic, wallet_id], data=payload)
     getattr(log, LOG_LEVEL)(f"Wallet {wallet_id}\n{topic}:\n{payload}")

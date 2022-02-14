@@ -1,13 +1,11 @@
 from typing import Optional, Union
 
-from aries_cloudcontroller import V10PresentationExchange, V20PresExRecord
+from aries_cloudcontroller import V10PresentationExchange, V20PresExRecord, IndyProof
 
 from app.generic.verifier.models import (
-    IndyProof,
     IndyProofRequest,
-    PresentationExchange,
-    ProofRequestProtocolVersion,
 )
+from shared_models import PresentationExchange, ProofRequestProtocolVersion
 
 
 def pres_id_no_version(proof_id: str) -> str:

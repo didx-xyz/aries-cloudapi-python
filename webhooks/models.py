@@ -1,42 +1,16 @@
-from typing import Any, Optional, Dict, List
 from typing_extensions import Literal
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
+
+from shared_models import (
+    Connection,
+    PresentationExchange,
+    CredentialExchange,
+    HookBase,
+)
 
 
-class HookBase(BaseModel):
-    wallet_id: Optional[str]
-
-
-class ConnectionsHook(HookBase):
-    accept: Literal["manual", "auto"]
-    connection_id: str
-    connection_protocol: Literal["connections/1.0", "didexchange/1.0"]
-    created_at: str
-    invitation_key: Optional[str]
-    invitation_mode: Literal["once", "multi", "static"]
-    invitation_msg_id: Optional[str] = None
-    my_did: Optional[str]
-    request_id: Optional[str]
-    rfc23_state: Literal[
-        "invitation-received",
-        "request-sent",
-        "response-received",
-        "abandoned",
-        "completed",
-        "start",
-        "invitation-sent",
-        "request-received",
-        "response-sent",
-        "abandoned",
-        "completed",
-    ]
-    routing_state: Optional[str]
-    state: Literal[
-        "init", "invitation", "request", "response", "active", "inactive", "error"
-    ]
-    their_label: Optional[str] = None
-    their_role: Literal["invitee", "requester", "inviter", "responder"]
-    updated_at: str
+class ConnectionsHook(HookBase, Connection):
+    pass
 
 
 def to_connections_model(item: dict) -> ConnectionsHook:
@@ -44,6 +18,7 @@ def to_connections_model(item: dict) -> ConnectionsHook:
         item["connection_id"] = "0023-" + item["connection_id"]
     elif item["connection_protocol"] == "connections/1.0":
         item["connection_id"] = "0016-" + item["connection_id"]
+    item["state"] = item.pop("rfc23_state")
     try:
         item = ConnectionsHook(**item)
     except ValidationError:
@@ -59,27 +34,8 @@ class BasicMessagesHook(HookBase):
     state: Literal["received"]
 
 
-class ProofsHook(HookBase):
-    connection_id: Optional[str]
-    created_at: str
-    proof_id: str
-    presentation: Optional[dict]
-    presentation_request: Optional[dict]
-    protocol_version: Literal["v1", "v2"]
-    role: Literal["prover", "verifier"]
-    state: Literal[
-        "proposal-sent",
-        "proposal-received",
-        "request-sent",
-        "request-received",
-        "presentation-sent",
-        "presentation-received",
-        "verified",
-        "done",
-        "abandoned",
-    ]
-    updated_at: str
-    verified: Optional[bool] = None
+class ProofsHook(HookBase, PresentationExchange):
+    pass
 
 
 def to_proof_hook_model(item: dict) -> ProofsHook:
@@ -102,31 +58,8 @@ def to_proof_hook_model(item: dict) -> ProofsHook:
     return ProofsHook(**item)
 
 
-class CredentialsHooks(HookBase):
-    credential_id: Optional[str]
-    role: Literal["issuer", "holder"]
-    created_at: str
-    updated_at: str
-    protocol_version: Literal["v1", "v2"]
-    schema_id: Optional[str]
-    credential_definition_id: Optional[str]
-    state: Optional[
-        Literal[
-            "proposal-sent",
-            "proposal-received",
-            "offer-sent",
-            "offer-received",
-            "request-sent",
-            "request-received",
-            "credential-issued",
-            "credential-received",
-            "credential-acked",
-            "done",
-        ]
-    ] = None
-    attributes: Optional[List[Dict]]
-    connection_id: Optional[str]
-    credential_proposal: Optional[dict]
+class CredentialsHooks(HookBase, CredentialExchange):
+    pass
 
 
 def to_credentential_hook_model(item: dict) -> CredentialsHooks:
@@ -163,8 +96,3 @@ def to_credentential_hook_model(item: dict) -> CredentialsHooks:
     except (KeyError, TypeError):
         pass
     return CredentialsHooks(**item)
-
-
-class TopicItem(BaseModel):
-    topic: str
-    payload: Any

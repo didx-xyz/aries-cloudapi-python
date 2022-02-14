@@ -1,5 +1,6 @@
 import json
 import base64
+from enum import Enum
 from typing import Union
 from typing import List, Literal
 from aries_cloudcontroller import AcaPyClient
@@ -7,7 +8,9 @@ from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient, get, HTTPError
 
 from app.constants import WEBHOOKS_URL
-from app.constants import YOMA_AGENT_API_KEY as ADMIN_API_KEY
+from app.constants import YOMA_AGENT_API_KEY as YOMA_ADMIN_API_KEY
+from app.constants import YOMA_AGENT_API_KEY as OOB_ADMIN_API_KEY
+from app.constants import MEMBER_AGENT_API_KEY as MEMBER_ADMIN_API_KEY
 
 
 topics = Literal[
@@ -24,6 +27,18 @@ topics = Literal[
     "present_proof_v2",
     "revocation_registry",
 ]
+
+
+class AdminAgentType(Enum):
+    yoma = "yoma"
+    oob = "oob"
+    tenant = "tenant"
+
+
+class AdminKeyMappings(Enum):
+    yoma = YOMA_ADMIN_API_KEY
+    oob = OOB_ADMIN_API_KEY
+    tenant = MEMBER_ADMIN_API_KEY
 
 
 def get_wallet_id_from_client(client: Union[AcaPyClient, AsyncClient]) -> str:
@@ -55,13 +70,19 @@ def get_hooks_per_topic_per_wallet(client: AcaPyClient, topic: topics) -> List:
         raise e from e
 
 
-def get_hooks_per_topic_admin(client: AcaPyClient, topic: topics) -> List:
+def get_hooks_per_topic_admin(
+    client: AcaPyClient, topic: topics, agent_type: AdminAgentType = AdminAgentType.yoma
+) -> List:
     """
     Gets all webhooks for all wallets by topic (default="connections")
     """
+
     try:
         # Ensure admin key is present
-        assert client.client.headers["x-api-key"] == ADMIN_API_KEY
+        assert (
+            client.client.headers["x-api-key"]
+            == AdminKeyMappings[agent_type.value].value
+        )
         # Ensure it's not a wallet/tenant
         assert "authorization" not in client.client.headers
         hooks = (get(f"{WEBHOOKS_URL}/{topic}")).json()

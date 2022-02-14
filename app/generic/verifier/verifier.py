@@ -12,10 +12,10 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-    PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
 )
+from shared_models import PresentationExchange
 
 logger = logging.getLogger(__name__)
 

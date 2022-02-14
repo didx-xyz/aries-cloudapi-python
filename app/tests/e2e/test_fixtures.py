@@ -1,4 +1,3 @@
-import time
 import pytest
 from aries_cloudcontroller import AcaPyClient, SchemaSendResult
 from httpx import AsyncClient

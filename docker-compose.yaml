@@ -8,6 +8,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./shared_models/shared_models.py:/app/shared_models.py
+      # - ./shared_models:/app/shared_models
       - ./app:/app
       - ./environments/yoma-ga/fastapi.default.env:/app/.env
     depends_on:
@@ -81,6 +83,8 @@ services:
     ports:
       - "8100:8000"
     volumes:
+      - ./shared_models/shared_models.py:/app/shared_models.py
+      # - ./shared_models:/app/shared_models
       - ./app:/app
       - ./environments/yoma-multitenant/fastapi.default.env:/app/.env
     depends_on:
@@ -99,6 +103,7 @@ services:
     ports:
       - "3010:3010"
     volumes:
+      - ./shared_models/shared_models.py:/webhooks/shared_models.py
       - ./webhooks:/webhooks
     networks:
       - yoma-multitenant

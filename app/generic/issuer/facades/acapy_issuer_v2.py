@@ -16,10 +16,9 @@ from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreReque
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import (
     Credential,
-    CredentialExchange,
-    IssueCredentialProtocolVersion,
 )
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
+from shared_models import CredentialExchange, IssueCredentialProtocolVersion
 
 logger = logging.getLogger(__name__)
 

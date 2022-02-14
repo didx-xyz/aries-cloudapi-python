@@ -10,10 +10,10 @@ import app.generic.verifier.verifier as test_module
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
-    PresentationExchange,
     ProofRequestProtocolVersion,
 )
 from app.tests.verifier.test_verifier_utils import proof_dict, get, indy_pres_spec
+from shared_models import PresentationExchange
 
 presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",

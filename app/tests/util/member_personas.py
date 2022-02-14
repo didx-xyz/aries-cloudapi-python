@@ -99,7 +99,7 @@ async def bob_and_alice_connection(
     ).json()
 
     assert check_webhook_state(
-        alice_member_client, topic="connections", desired_state={"state": "active"}
+        alice_member_client, topic="connections", desired_state={"state": "completed"}
     )
 
     bob_connection_id = invitation["connection_id"]
@@ -110,12 +110,12 @@ async def bob_and_alice_connection(
     assert check_webhook_state(
         alice_member_client,
         topic="connections",
-        desired_state={"rfc23_state": "completed"},
+        desired_state={"state": "completed"},
     )
     assert check_webhook_state(
         bob_member_client,
         topic="connections",
-        desired_state={"rfc23_state": "completed"},
+        desired_state={"state": "completed"},
     )
 
     return {

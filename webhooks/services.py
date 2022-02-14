@@ -9,11 +9,11 @@ from aioredis import Redis
 
 from models import (
     BasicMessagesHook,
-    TopicItem,
     to_credentential_hook_model,
     to_proof_hook_model,
     to_connections_model,
 )
+from shared_models import TopicItem
 
 
 class Service:
@@ -86,7 +86,15 @@ class Service:
     def _to_topic_item(self, topic: str, data: List[bytes]) -> List[TopicItem]:
         data = self._to_item(topic=topic, data=data)
         return (
-            [TopicItem(topic=topic, payload=payload) for payload in data]
+            [
+                TopicItem(
+                    topic=topic,
+                    wallet_id=payload.wallet_id,
+                    origin=payload.origin,
+                    payload=payload.dict(),
+                )
+                for payload in data
+            ]
             if data
             else []
         )
@@ -99,6 +107,9 @@ class Service:
         data = await self._redis.smembers(topic)
         # Transform it to TopicItems
         items = self._to_topic_item(topic=topic, data=data)
+        for d in items:
+            del d.payload["wallet_id"]
+            del d.payload["origin"]
         return items
 
     async def get_all_for_topic_by_wallet_id(
@@ -107,8 +118,20 @@ class Service:
         data = await self._redis.smembers(topic)
         data = self._to_item(topic=topic, data=data)
         data = [d for d in data if d.wallet_id == wallet_id]
-        return (
-            [TopicItem(topic=topic, payload=payload) for payload in data]
+        topic_data = (
+            [
+                TopicItem(
+                    topic=topic,
+                    wallet_id=payload.wallet_id,
+                    origin=payload.origin,
+                    payload=payload.dict(),
+                )
+                for payload in data
+            ]
             if data
             else []
         )
+        for d in topic_data:
+            del d.payload["wallet_id"]
+            del d.payload["origin"]
+        return topic_data

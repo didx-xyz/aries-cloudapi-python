@@ -19,10 +19,10 @@ from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-    PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
 )
+from shared_models import PresentationExchange
 
 logger = logging.getLogger(__name__)
 

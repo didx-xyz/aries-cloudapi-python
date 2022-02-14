@@ -3,7 +3,8 @@ from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient
 
-from app.generic.issuer.models import Credential, CredentialExchange
+from app.generic.issuer.models import Credential  # , CredentialExchange
+from shared_models import CredentialExchange
 
 
 class Issuer(ABC):

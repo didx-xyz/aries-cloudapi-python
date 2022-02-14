@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import List
 from aries_cloudcontroller import AcaPyClient
 
 from fastapi import APIRouter, Depends
@@ -10,7 +10,7 @@ from app.facades.webhooks import (
     get_hooks_per_topic_per_wallet,
     topics,
 )
-from app.generic.models import ProofsHook, ConnectionsHook, CredentialsHooks, TopicItem
+from shared_models import TopicItem
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 async def get_webhooks_for_wallet_by_topic(
     topic: topics,
     aries_controller: AcaPyClient = Depends(agent_selector),
-) -> List[Union[ProofsHook, ConnectionsHook, CredentialsHooks, TopicItem]]:
+) -> List[TopicItem]:
     """
     Returns the webhooks per wallet per topic
 

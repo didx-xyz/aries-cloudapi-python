@@ -4,7 +4,12 @@ from unittest.mock import patch
 from aries_cloudcontroller import AcaPyClient
 
 import app.facades.webhooks as whf
-from app.generic.models import ConnectionsHook
+from shared_models import HookBase, Connection
+
+
+class ConnectionsHook(HookBase, Connection):
+    pass
+
 
 client = AcaPyClient(
     base_url="xyz",
@@ -18,8 +23,8 @@ conn_record = ConnectionsHook(
     connection_protocol="connections/1.0",
     created_at="abcd",
     invitation_mode="once",
-    rfc23_state="start",
-    state="request",
+    # state="start",
+    state="active",
     their_role="inviter",
     updated_at="now",
 )

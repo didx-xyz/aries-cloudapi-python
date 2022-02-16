@@ -129,7 +129,7 @@ async def test_accept_proof_request(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "request-sent"},
+        filter_map={"state": "request-sent"},
         topic="present_proof",
     )
 
@@ -148,7 +148,7 @@ async def test_accept_proof_request(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "request-sent"},
+        filter_map={"state": "request-sent"},
         topic="present_proof",
     )
 
@@ -169,7 +169,7 @@ async def test_accept_proof_request(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "request-sent"},
+        filter_map={"state": "request-sent"},
         topic="present_proof",
     )
 
@@ -186,7 +186,7 @@ async def test_accept_proof_request(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "request-sent"},
+        filter_map={"state": "request-sent"},
         topic="present_proof",
     )
 
@@ -216,7 +216,7 @@ async def test_reject_proof_request(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "request-sent"},
+        filter_map={"state": "request-sent"},
         topic="present_proof",
     )
 

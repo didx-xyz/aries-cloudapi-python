@@ -68,7 +68,7 @@ async def test_send_credential(
 
     assert check_webhook_state(
         client=bob_member_client,
-        desired_state={"state": "offer-sent"},
+        filter_map={"state": "offer-sent"},
         topic="issue_credential",
     )
     response = await alice_member_client.get(
@@ -79,7 +79,7 @@ async def test_send_credential(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "offer-received"},
+        filter_map={"state": "offer-received"},
         topic="issue_credential",
     )
     assert len(records) == 2
@@ -120,11 +120,10 @@ async def test_send_credential_request(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map=FilterMap(
-            filter_key="credential_id",
-            filter_value=credential_exchange["credential_id"],
-        ),
-        desired_state={"state": "offer-sent"},
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
         topic="issue_credential",
     )
 
@@ -134,7 +133,7 @@ async def test_send_credential_request(
     )
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "offer-received"},
+        filter_map={"state": "offer-received"},
         topic="issue_credential",
     )
 
@@ -165,11 +164,10 @@ async def test_store_credential(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map=FilterMap(
-            filter_key="credential_id",
-            filter_value=credential_exchange["credential_id"],
-        ),
-        desired_state={"state": "offer-sent"},
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
         topic="issue_credential",
     )
 
@@ -179,7 +177,7 @@ async def test_store_credential(
     )
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "offer-received"},
+        filter_map={"state": "offer-received"},
         topic="issue_credential",
     )
 
@@ -194,7 +192,7 @@ async def test_store_credential(
 
     assert check_webhook_state(
         client=bob_member_client,
-        desired_state={"state": "request-received"},
+        filter_map={"state": "request-received"},
         topic="issue_credential",
     )
 
@@ -202,12 +200,6 @@ async def test_store_credential(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "credential-received"},
+        filter_map={"state": "credential-received"},
         topic="issue_credential",
     )
-
-    # result = response.json()
-
-    # assert response.status_code == 400
-    # assert_that(result).contains("detail")
-    # assert "state (must be credential_received)." in result["detail"]

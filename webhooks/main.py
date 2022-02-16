@@ -1,3 +1,4 @@
+import json
 from typing import List
 from pprint import pformat
 
@@ -23,14 +24,6 @@ router = APIRouter()
 endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")
 app.include_router(router)
-
-
-@app.api_route("/{topic}")
-@inject
-async def index(
-    topic: str, service: Service = Depends(Provide[Container.service])
-) -> List[TopicItem]:
-    return await service.get_all_by_topic(topic)
 
 
 @app.api_route("/{topic}/{wallet_id}")
@@ -69,17 +62,19 @@ async def topic_root(
     payload.update(wallet_id)
     origin_id = {"origin": origin}
     payload.update(origin_id)
-    payload = pformat(payload)
+    topic_id = {"topic": topic}
+    payload.update(topic_id)
+    payload_str = json.dumps(payload)
     # redistribute by topic
-    await endpoint.publish(topics=[topic], data=payload)
-    # Add data to redis
-    await service.add_topic_entry(str(topic), str(payload))
+    await endpoint.publish(topics=[topic], data=payload_str)
+    # # Add data to redis
+    await service.add_topic_entry(wallet_id["wallet_id"], payload_str)
     # redistribute per wallet
     wallet_data = service.get_all_for_topic_by_wallet_id(
         topic=topic, wallet_id=wallet_id
     )
     await endpoint.publish(topics=[wallet_id["wallet_id"]], data=wallet_data)
-    getattr(log, LOG_LEVEL)(f"{topic}:\n{payload}")
+    getattr(log, LOG_LEVEL)(f"{topic}:\n{pformat(payload)}")
 
 
 # 'origin' helps to distinguish where a hook is from
@@ -94,14 +89,14 @@ async def topic_wallet(
 ):
     origin_id = {"origin": origin}
     payload = await request.json()
-    payload = pformat(await request.json())
+    payload_str = json.dumps(payload)
     payload.update(origin_id)
-    await service.add_topic_entry(wallet_id, str(payload))
-    await endpoint.publish(topics=[topic, wallet_id], data=payload)
-    getattr(log, LOG_LEVEL)(f"Wallet {wallet_id}\n{topic}:\n{payload}")
+    await service.add_topic_entry(wallet_id, payload_str)
+    await endpoint.publish(topics=[topic, wallet_id], data=payload_str)
+    getattr(log, LOG_LEVEL)(f"Wallet {wallet_id}\n{topic}:\n{pformat(payload)}")
 
 
-# # Example for broadcasting from eg Redis
+# Example for broadcasting from eg Redis
 # @router.websocket("/pubsub")
 # async def websocket_rpc_endpoint(websocket: WebSocket):
 #     async with endpoint.broadcaster:

@@ -8,7 +8,6 @@ from app.tests.util.member_personas import BobAliceConnect, BobAlicePublicDid
 from app.tests.util.event_loop import event_loop
 from app.tests.util.webhooks import (
     check_webhook_state,
-    FilterMap,
 )
 
 
@@ -44,12 +43,11 @@ async def test_accept_invitation(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "completed"},
         topic="connections",
-        filter_map=FilterMap(
-            filter_key="connection_id",
-            filter_value=connection_record["connection_id"],
-        ),
+        filter_map={
+            "state": "completed",
+            "connection_id": connection_record["connection_id"],
+        },
     )
 
     assert_that(connection_record).contains(
@@ -128,27 +126,25 @@ async def test_bob_and_alice_connect(
 
     assert check_webhook_state(
         client=alice_member_client,
-        desired_state={"state": "completed"},
         topic="connections",
-        filter_map=FilterMap(
-            filter_key="connection_id",
-            filter_value=connection_record["connection_id"],
-        ),
+        filter_map={
+            "state": "completed",
+            "connection_id": connection_record["connection_id"],
+        },
     )
 
-    bob_connections = (await bob_member_client.get(f"/generic/connections")).json()
-    alice_connections = (await alice_member_client.get(f"/generic/connections")).json()
-    bob_connection = [
-        b for b in bob_connections if b["connection_id"] == invitation["connection_id"]
-    ]
-    alice_connection = [
-        a
-        for a in alice_connections
-        if a["connection_id"] == connection_record["connection_id"]
-    ]
+    alice_connection_id = connection_record["connection_id"]
+    bob_connection_id = invitation["connection_id"]
 
-    assert ["completed" in a["state"] for a in alice_connection]
-    assert ["completed" in b["state"] for b in bob_connection]
+    bob_connection = (
+        await bob_member_client.get(f"/generic/connections/{bob_connection_id}")
+    ).json()
+    alice_connection = (
+        await alice_member_client.get(f"/generic/connections/{alice_connection_id}")
+    ).json()
+
+    assert "completed" in alice_connection["state"]
+    assert "completed" in bob_connection["state"]
 
 
 @pytest.mark.asyncio
@@ -203,8 +199,11 @@ async def test_oob_connect_via_public_did(
 
     assert check_webhook_state(
         client=bob_member_client,
-        desired_state={"state": "request-sent"},
         topic="connections",
+        filter_map={
+            "state": "request-sent",
+            "connection_id": connection_record["connection_id"],
+        },
     )
 
     assert_that(connection_record).has_their_public_did(

@@ -18,8 +18,7 @@ class FilterMap(BaseModel):
 def check_webhook_state(
     client: AsyncClient,
     topic: topics,
-    filter_map: FilterMap = None,
-    desired_state: dict = None,
+    filter_map: dict = None,
     max_duration: int = 10,
     poll_interval: int = 1,
 ) -> bool:
@@ -32,20 +31,21 @@ def check_webhook_state(
     while time.time() < t_end:
         hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         if filter_map:
-            hooks = [
-                h
-                for h in hooks
-                # strip the protocol identifier that was added 0016- and 0023-
-                if (h["payload"][filter_map.filter_key])
-                .replace("0016-", "")
-                .replace("0023-", "")
-                == filter_map.filter_value
-            ]
-        states = [d["payload"][list(desired_state.keys())[0]] for d in hooks]
-        time.sleep(poll_interval)
-        if list(desired_state.values())[0] in states:
-            return True
-    raise Exception(f"Cannot satify {desired_state}. \nFound {states}")
+            for filter_key, filter_value in filter_map.items():
+                hooks = [
+                    h
+                    for h in hooks
+                    # strip the protocol identifier that was added 0016- and 0023-
+                    if (h["payload"][filter_key])
+                    .replace("0016-", "")
+                    .replace("0023-", "")
+                    == filter_value
+                ]
+            states = [d["payload"]["state"] for d in hooks]
+            time.sleep(poll_interval)
+            if filter_map["state"] in states:
+                return True
+    raise Exception(f"Cannot satify state {filter_map['state']}. \nFound {states}")
 
 
 def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: topics) -> List:

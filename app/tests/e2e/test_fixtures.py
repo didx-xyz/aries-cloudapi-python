@@ -3,7 +3,7 @@ from aries_cloudcontroller import AcaPyClient, SchemaSendResult
 from httpx import AsyncClient
 from app.admin.governance.schemas import SchemaDefinition, create_schema
 from app.tests.util.ledger import create_public_did
-from app.tests.util.webhooks import FilterMap, check_webhook_state
+from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
 
 from app.tests.util.trust_registry import register_issuer
@@ -87,11 +87,10 @@ async def credential_exchange_id(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map=FilterMap(
-            filter_key="credential_id",
-            filter_value=credential_exchange["credential_id"],
-        ),
-        desired_state={"state": "offer-sent"},
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
         topic="issue_credential",
     )
 

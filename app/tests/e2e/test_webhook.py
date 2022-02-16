@@ -38,17 +38,17 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
     assert result.json()["detail"] == "Not authenticated"
 
 
-@pytest.mark.asyncio
-async def test_get_webhooks_for_wallet_by_topic_admin(
-    yoma_client: AsyncClient,
-):
-    result = (await yoma_client.get(WALLET_BASE_PATH + "/connections")).json()
+# @pytest.mark.asyncio
+# async def test_get_webhooks_for_wallet_by_topic_admin(
+#     yoma_client: AsyncClient,
+# ):
+#     result = (await yoma_client.get(WALLET_BASE_PATH + "/connections")).json()
 
-    assert len(result) >= 1
-    assert isinstance(result, list)
-    assert [k in result[0].keys() for k in ["topic", "payload"]]
-    hook_modelled = Connection(**result[0]["payload"])
-    assert isinstance(hook_modelled, Connection)
+#     assert len(result) >= 1
+#     assert isinstance(result, list)
+#     assert [k in result[0].keys() for k in ["topic", "payload"]]
+#     hook_modelled = Connection(**result[0]["payload"])
+#     assert isinstance(hook_modelled, Connection)
 
 
 @pytest.mark.asyncio

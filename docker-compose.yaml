@@ -9,7 +9,6 @@ services:
       - "8000:8000"
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
-      # - ./shared_models:/app/shared_models
       - ./app:/app
       - ./environments/yoma-ga/fastapi.default.env:/app/.env
     depends_on:
@@ -84,7 +83,6 @@ services:
       - "8100:8000"
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
-      # - ./shared_models:/app/shared_models
       - ./app:/app
       - ./environments/yoma-multitenant/fastapi.default.env:/app/.env
     depends_on:

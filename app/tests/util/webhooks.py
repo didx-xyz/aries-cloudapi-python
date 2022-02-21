@@ -6,7 +6,7 @@ import httpx
 from pydantic import BaseModel
 
 from app.facades.webhooks import topics
-from app.tests.util.string import get_wallet_id_from_jwt
+from app.facades.webhooks import get_wallet_id_from_client
 from app.tests.util.constants import WEBHOOKS_URL
 
 
@@ -25,7 +25,7 @@ def check_webhook_state(
     assert poll_interval >= 0, "Poll interval cannot be negative"
     assert max_duration >= 0, "Poll duration cannot be negative"
 
-    wallet_id = get_wallet_id_from_jwt(client)
+    wallet_id = get_wallet_id_from_client(client)
 
     t_end = time.time() + max_duration
     while time.time() < t_end:
@@ -49,7 +49,7 @@ def check_webhook_state(
 
 
 def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: topics) -> List:
-    wallet_id = get_wallet_id_from_jwt(client)
+    wallet_id = get_wallet_id_from_client(client)
     try:
         hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         return hooks if hooks else []

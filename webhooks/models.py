@@ -1,3 +1,5 @@
+import json
+
 from typing_extensions import Literal
 from pydantic import ValidationError
 
@@ -14,10 +16,6 @@ class ConnectionsHook(HookBase, Connection):
 
 
 def to_connections_model(item: dict) -> ConnectionsHook:
-    if item["connection_protocol"] == "didexchange/1.0":
-        item["connection_id"] = "0023-" + item["connection_id"]
-    elif item["connection_protocol"] == "connections/1.0":
-        item["connection_id"] = "0016-" + item["connection_id"]
     item["state"] = item.pop("rfc23_state")
     try:
         item = ConnectionsHook(**item)
@@ -39,6 +37,7 @@ class ProofsHook(HookBase, PresentationExchange):
 
 
 def to_proof_hook_model(item: dict) -> ProofsHook:
+    # v1
     if "presentation_exchange_id" in item:
         item["protocol_version"] = "v1"
         item["proof_id"] = "v1-" + item["presentation_exchange_id"]
@@ -46,13 +45,23 @@ def to_proof_hook_model(item: dict) -> ProofsHook:
             item["state"] = item["state"].replace("_", "-")
         except KeyError:
             pass
+    # v2
     elif "pres_ex_id" in item:
         item["proof_id"] = "v2-" + item["pres_ex_id"]
-        item["presentation_exchange_id"] = item.pop("pres_ex_id")
         item["protocol_version"] = "v2"
-        item["presentation"] = item.pop("pres_request")
+        try:
+            item["presentation_request"] = item["by_format"]["pres_request"]["indy"]
+        except KeyError:
+            pass
+        try:
+            item["presentation"] = item["by_format"]["pres"]["indy"]
+        except KeyError:
+            pass
+    # error msg instead - request abandoned
+    if "state" not in item:
+        item["state"] = "abandoned"
     try:
-        item["presentation_request"] = item.pop("presentation_request_dict")
+        item["verified"] = json.loads(item["verified"])
     except KeyError:
         pass
     return ProofsHook(**item)

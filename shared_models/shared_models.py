@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 
 class ProofRequestProtocolVersion(Enum):
-    v10 = "v1"
-    v20 = "v2"
+    v1 = "v1"
+    v2 = "v2"
 
 
 class IssueCredentialProtocolVersion(Enum):
@@ -34,7 +34,6 @@ class Connection(BaseModel):
     error_msg: Optional[str] = None
     invitation_key: Optional[str] = None
     invitation_msg_id: Optional[str] = None
-    invitation_msg_id: Optional[str] = None
 
 
 class CredentialExchange(BaseModel):
@@ -56,6 +55,7 @@ class CredentialExchange(BaseModel):
         "credential-received",
         "credential-acked",
         "done",
+        "credential-acked",
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None

@@ -10,12 +10,12 @@ from pydantic import BaseModel
 
 
 class ProofRequestProtocolVersion(Enum):
-    v10 = "v1"
-    v20 = "v2"
+    v1 = "v1"
+    v2 = "v2"
 
 
 class ProofRequestBase(BaseModel):
-    protocol_version: Optional[str] = ProofRequestProtocolVersion.v10.value
+    protocol_version: Optional[str] = ProofRequestProtocolVersion.v1.value
 
 
 class SendProofRequest(ProofRequestBase):

@@ -23,7 +23,6 @@ conn_record = ConnectionsHook(
     connection_protocol="connections/1.0",
     created_at="abcd",
     invitation_mode="once",
-    # state="start",
     state="active",
     their_role="inviter",
     updated_at="now",
@@ -53,13 +52,9 @@ async def test_get_hooks_per_topic_per_wallet():
 
 
 @pytest.mark.asyncio
-async def test_get_hooks_per_topic_admin():
-    with patch.object(
-        whf, "get_hooks_per_topic_admin"
-    ) as mock_get_hooks_per_topic_admin:
-        whf.get_hooks_per_topic_admin.return_value = [conn_record]
-        whf.get_hooks_per_topic_admin(client=client, topic="connections")
+async def test_get_hooks_per_wallet():
+    with patch.object(whf, "get_hooks_per_wallet") as mock_get_hooks_per_wallet:
+        whf.get_hooks_per_wallet.return_value = [conn_record]
+        whf.get_hooks_per_wallet(client=client)
 
-        mock_get_hooks_per_topic_admin.assert_called_once_with(
-            client=client, topic="connections"
-        )
+        mock_get_hooks_per_wallet.assert_called_once_with(client=client)

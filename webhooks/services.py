@@ -13,6 +13,21 @@ from models import (
 )
 from shared_models import TopicItem
 
+topics = [
+    "connections",
+    "issue_credential",
+    "forward",
+    "ping",
+    "basicmessages",
+    "issuer_cred_rev",
+    "issue_credential_v2_0",
+    "issue_credential_v2_0_indy",
+    "issue_credential_v2_0_dif",
+    "present_proof",
+    "present_proof_v2_0",
+    "revocation_registry",
+]
+
 
 class Service:
     def __init__(self, redis: Redis) -> None:
@@ -66,17 +81,18 @@ class Service:
     async def add_topic_entry(self, topic: str, hook: str) -> List[TopicItem]:
         return await self._redis.sadd(topic, hook)
 
-    async def get_all_by_topic(self, topic: str) -> List[TopicItem]:
+    async def get_all_by_wallet(self, wallet_id: str) -> List[TopicItem]:
         # Get the data from redis queue
-        data = await self._redis.smembers(topic)
+        data_list = []
+        data = await self._redis.smembers(wallet_id)
         data = [json.loads(d) for d in data]
-        # Transform it to TopicItems
-        data = self._to_item(topic=topic, data=data)
-        items = self._to_topic_item(topic=topic, data=data)
-        for d in items:
-            del d.payload["wallet_id"]
-            del d.payload["origin"]
-        return items
+        for topic in topics:
+            topic_data = [d for d in data if d["topic"] == topic]
+            topic_data = self._to_item(topic=topic, data=topic_data)
+            topic_data = self._to_topic_item(topic=topic, data=topic_data)
+            if topic_data:
+                data_list.extend(topic_data)
+        return data_list
 
     async def get_all_for_topic_by_wallet_id(
         self, topic: str, wallet_id: str

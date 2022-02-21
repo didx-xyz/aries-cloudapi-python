@@ -38,13 +38,14 @@ async def wallet_hooks(
     return data
 
 
-@app.api_route("/{wallet_id}}")
+@app.api_route("/{wallet_id}")
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
-) -> dict:
-    value = await service.get_all_by_topic(f"{wallet_id}")
-    return {f"{wallet_id}": value}
+):
+    data = await service.get_all_by_wallet(wallet_id)
+    await endpoint.publish(topics=wallet_id, data=data)
+    return data
 
 
 # 'origin' helps to distinguish where a hook is from
@@ -58,7 +59,10 @@ async def topic_root(
     service: Service = Depends(Provide[Container.service]),
 ):
     payload = await request.json()
-    wallet_id = {"wallet_id": request.headers["x-wallet-id"]}
+    try:
+        wallet_id = {"wallet_id": request.headers["x-wallet-id"]}
+    except KeyError:
+        wallet_id = {"wallet_id": "admin"}
     payload.update(wallet_id)
     origin_id = {"origin": origin}
     payload.update(origin_id)

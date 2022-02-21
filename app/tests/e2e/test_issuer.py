@@ -68,8 +68,11 @@ async def test_send_credential(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "offer-sent"},
-        topic="issue_credential",
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": data["credential_id"],
+        },
+        topic="issue_credential_v2_0",
     )
     response = await alice_member_client.get(
         BASE_PATH,
@@ -79,8 +82,11 @@ async def test_send_credential(
 
     assert check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
-        topic="issue_credential",
+        filter_map={
+            "state": "offer-received",
+            "credential_id": records[-1]["credential_id"],
+        },
+        topic="issue_credential_v2_0",
     )
     assert len(records) == 2
 
@@ -155,6 +161,7 @@ async def test_store_credential(
 
     await register_issuer(bob_member_client, schema_definition.schema_id)
 
+    # Bob send offer
     response = await bob_member_client.post(
         BASE_PATH,
         json=credential,
@@ -175,6 +182,7 @@ async def test_store_credential(
         BASE_PATH,
         params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
     )
+    # Check alice received the credential offer from Bob
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
@@ -188,18 +196,31 @@ async def test_store_credential(
     cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
     credential_id = cred_hook["payload"]["credential_id"]
 
+    # alice send request for that credential
     response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/request")
 
+    # Bob check he received the request; Credential is send because of using
+    # 'automating the entire flow' send credential earlier.
+    # See also: app/generic/issuer/issuer.py::send_credential
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-received"},
         topic="issue_credential",
     )
 
-    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/store")
-
+    # Check alice has received the credential
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "credential-received"},
+        topic="issue_credential",
+    )
+
+    # Alice stores crdeential
+    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/store")
+
+    # Check alice has received the credential
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "credential-acked"},
         topic="issue_credential",
     )

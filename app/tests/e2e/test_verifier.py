@@ -36,7 +36,7 @@ async def test_send_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         connection_id=bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -54,7 +54,7 @@ async def test_send_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
@@ -77,7 +77,7 @@ async def test_create_proof_request(
     # V1
     proof_request_v1 = CreateProofRequest(
         proof_request=IndyProofRequest(**proof_dict["proof_request"]),
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     response = await alice_member_client.post(
         BASE_PATH + "/create-request",
@@ -94,7 +94,7 @@ async def test_create_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
     response = await alice_member_client.post(
         BASE_PATH + "/create-request",
         json=proof_request_v2.dict(),
@@ -117,7 +117,7 @@ async def test_accept_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -160,7 +160,7 @@ async def test_accept_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -207,7 +207,7 @@ async def test_reject_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -239,7 +239,7 @@ async def test_get_proof_single(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -261,7 +261,7 @@ async def test_get_proof_single(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         f"{BASE_PATH}/send-request",
@@ -291,7 +291,7 @@ async def test_get_proofs_multi(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -314,7 +314,7 @@ async def test_get_proofs_multi(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     await alice_member_client.post(
         f"{BASE_PATH}/send-request",
@@ -342,7 +342,7 @@ async def test_delete_proof(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -360,7 +360,7 @@ async def test_delete_proof(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -383,7 +383,7 @@ async def test_get_credentials_for_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -403,7 +403,7 @@ async def test_get_credentials_for_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",

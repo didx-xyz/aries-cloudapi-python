@@ -12,7 +12,7 @@ WALLET_BASE_PATH = router.prefix
 
 
 @pytest.mark.asyncio
-async def test_get_webhooks_for_wallet_by_topic_tenant(
+async def test_get_webhooks_for_wallet_by_topic(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
@@ -20,7 +20,21 @@ async def test_get_webhooks_for_wallet_by_topic_tenant(
 
     assert len(result) >= 1
     assert isinstance(result, list)
-    assert [k in result[0].keys() for k in ["topic", "payload"]]
+    assert [k in result[0].keys() for k in ["topic", "payload", "wallet_id"]]
+    hook_modelled = Connection(**result[0]["payload"])
+    assert isinstance(hook_modelled, Connection)
+
+
+@pytest.mark.asyncio
+async def test_get_webhooks_for_wallet(
+    alice_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+):
+    result = (await alice_member_client.get(WALLET_BASE_PATH + "/")).json()
+
+    assert len(result) >= 1
+    assert isinstance(result, list)
+    assert [k in result[0].keys() for k in ["topic", "payload", "wallet_id"]]
     hook_modelled = Connection(**result[0]["payload"])
     assert isinstance(hook_modelled, Connection)
 
@@ -36,19 +50,6 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
 
     assert result.status_code == 403
     assert result.json()["detail"] == "Not authenticated"
-
-
-# @pytest.mark.asyncio
-# async def test_get_webhooks_for_wallet_by_topic_admin(
-#     yoma_client: AsyncClient,
-# ):
-#     result = (await yoma_client.get(WALLET_BASE_PATH + "/connections")).json()
-
-#     assert len(result) >= 1
-#     assert isinstance(result, list)
-#     assert [k in result[0].keys() for k in ["topic", "payload"]]
-#     hook_modelled = Connection(**result[0]["payload"])
-#     assert isinstance(hook_modelled, Connection)
 
 
 @pytest.mark.asyncio

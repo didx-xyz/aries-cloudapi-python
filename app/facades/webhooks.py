@@ -24,7 +24,7 @@ topics = Literal[
     "issue_credential_v2_0_indy",
     "issue_credential_v2_0_dif",
     "present_proof",
-    "present_proof_v2",
+    "present_proof_v2_0",
     "revocation_registry",
 ]
 
@@ -41,16 +41,7 @@ class AdminKeyMappings(Enum):
     tenant = MEMBER_ADMIN_API_KEY
 
 
-def get_wallet_id_from_client(client: Union[AcaPyClient, AsyncClient]) -> str:
-
-    # eg tenenat_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
-    if isinstance(client, AcaPyClient):
-        jwt = client.client.headers["authorization"].split(" ")[1].split(".")[1]
-    elif isinstance(client, AsyncClient):
-        jwt = client.headers.get("x-api-key").split(".")[2]
-    else:
-        jwt = client.tenant_jwt
-
+def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
     # Add padding if required
     # b64 needs lengths divisible by 4
     if len(jwt) % 4 != 0:
@@ -61,8 +52,24 @@ def get_wallet_id_from_client(client: Union[AcaPyClient, AsyncClient]) -> str:
     return wallet["wallet_id"]
 
 
+def get_wallet_id_from_client(client: Union[AcaPyClient, AsyncClient]) -> str:
+
+    # eg tenenat_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
+    if isinstance(client, AcaPyClient):
+        jwt = client.client.headers["authorization"].split(" ")[1].split(".")[1]
+    elif isinstance(client, AsyncClient):
+        jwt = client.headers.get("x-api-key").split(".")[2]
+    else:
+        jwt = client.tenant_jwt
+
+    return get_wallet_id_from_b64encoded_jwt(jwt)
+
+
 def get_hooks_per_topic_per_wallet(client: AcaPyClient, topic: topics) -> List:
-    wallet_id = get_wallet_id_from_client(client)
+    if not is_tenant(client=client):
+        wallet_id = "admin"
+    else:
+        wallet_id = get_wallet_id_from_client(client)
     try:
         hooks = (get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         return hooks if hooks else []
@@ -70,23 +77,23 @@ def get_hooks_per_topic_per_wallet(client: AcaPyClient, topic: topics) -> List:
         raise e from e
 
 
-def get_hooks_per_topic_admin(
-    client: AcaPyClient, topic: topics, agent_type: AdminAgentType = AdminAgentType.yoma
+def get_hooks_per_wallet(
+    client: AcaPyClient,
 ) -> List:
     """
     Gets all webhooks for all wallets by topic (default="connections")
     """
-
+    if not is_tenant(client=client):
+        wallet_id = "admin"
+    else:
+        wallet_id = get_wallet_id_from_client(client)
     try:
-        # Ensure admin key is present
-        assert (
-            client.client.headers["x-api-key"]
-            == AdminKeyMappings[agent_type.value].value
-        )
-        # Ensure it's not a wallet/tenant
-        assert "authorization" not in client.client.headers
-        hooks = (get(f"{WEBHOOKS_URL}/{topic}")).json()
+        hooks = (get(f"{WEBHOOKS_URL}/{wallet_id}")).json()
         # Only return the first 100 hooks to prevent OpenAPI interface from crashing
         return hooks if hooks else []
     except HTTPError as e:
         raise e from e
+
+
+def is_tenant(client: AcaPyClient):
+    return "authorization" in client.client.headers

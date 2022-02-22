@@ -1,29 +1,22 @@
-import json
-
 from typing_extensions import Literal
-from aries_cloudcontroller import V10PresentationExchange, V20PresExRecord
-from pydantic import ValidationError
+from aries_cloudcontroller import ConnRecord, V10PresentationExchange, V20PresExRecord
 
 from shared_models import (
-    Connection,
+    ConnectionsHook,
     PresentationExchange,
     CredentialExchange,
     HookBase,
     presentation_record_to_model,
+    conn_record_to_connection,
 )
 
 
-class ConnectionsHook(HookBase, Connection):
-    pass
-
-
 def to_connections_model(item: dict) -> ConnectionsHook:
-    item["state"] = item.pop("rfc23_state")
-    try:
-        item = ConnectionsHook(**item)
-    except ValidationError:
-        pass
-    return item
+    conn_record = ConnRecord(**item)
+    conn_record = conn_record_to_connection(connection_record=conn_record)
+
+    merged_dicts = {**item, **conn_record.dict()}
+    return ConnectionsHook(**merged_dicts)
 
 
 class BasicMessagesHook(HookBase):

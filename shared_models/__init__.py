@@ -1,6 +1,8 @@
 from .shared_models import (
     TopicItem,
     Connection,
+    ConnectionsHook,
+    conn_record_to_connection,
     PresentationExchange,
     HookBase,
     ProofRequestProtocolVersion,

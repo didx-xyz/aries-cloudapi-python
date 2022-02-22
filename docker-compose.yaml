@@ -12,6 +12,8 @@ services:
       - ./environments/yoma-ga/fastapi.default.env:/app/.env
     depends_on:
       - yoma-ga-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-ga
       - host
@@ -37,6 +39,9 @@ services:
   #   networks:
   #     - yoma-ga
   #     - host
+  #   depends_on:
+  #     - ledger-nodes
+  #     - ledger-browser
   yoma-ga-agent:
     build:
       context: .
@@ -48,6 +53,8 @@ services:
       - 3021:3021
     depends_on:
       - yoma-ga-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-ga
       - host
@@ -78,6 +85,8 @@ services:
       - ./environments/yoma-multitenant/fastapi.default.env:/app/.env
     depends_on:
       - yoma-multitenant-wallets-db
+      - ledger-nodes
+      - ledger-browser
     networks:
       - yoma-multitenant
       - host
@@ -130,6 +139,9 @@ services:
     networks:
       - yoma-multitenant
       - host
+    depends_on:
+      - ledger-nodes
+      - ledger-browser
   yoma-multitenant-agent:
     build:
       context: .
@@ -141,6 +153,52 @@ services:
       - 4021:3021
     depends_on:
       - yoma-multitenant-wallets-db
+      - ledger-nodes
+      - ledger-browser
+    networks:
+      - yoma-multitenant
+      - yoma-ga
+      - host
+  ledger-browser:
+    build:
+      context: https://github.com/didx-xyz/von-network.git
+      dockerfile: Dockerfile
+    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh; sleep 60'"
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
+      - MAX_FETCH=50000
+      - RESYNC_TIME=120
+      - REGISTER_NEW_DIDS=True
+      - LEDGER_INSTANCE_NAME=localhost
+    ports:
+      - ${WEB_SERVER_HOST_PORT:-9000}:8000
+    volumes:
+      - webserver-cli:/home/indy/.indy-cli
+      - webserver-ledger:/home/indy/ledger
+    networks:
+      - yoma-multitenant
+      - yoma-ga
+      - host
+    depends_on:
+      - ledger-nodes
+  ledger-nodes:
+    build:
+      context: https://github.com/didx-xyz/von-network.git
+      dockerfile: Dockerfile
+    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh; sleep 60'"
+    ports:
+      - 9701:9701
+      - 9702:9702
+      - 9703:9703
+      - 9704:9704
+      - 9705:9705
+      - 9706:9706
+      - 9707:9707
+      - 9708:9708
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
+    volumes:
+      - nodes-data:/home/indy/ledger
     networks:
       - yoma-multitenant
       - yoma-ga

@@ -6,4 +6,6 @@ from .shared_models import (
     ProofRequestProtocolVersion,
     CredentialExchange,
     IssueCredentialProtocolVersion,
+    presentation_record_to_model,
+    pres_id_no_version,
 )

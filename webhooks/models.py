@@ -1,6 +1,7 @@
 import json
 
 from typing_extensions import Literal
+from aries_cloudcontroller import V10PresentationExchange, V20PresExRecord
 from pydantic import ValidationError
 
 from shared_models import (
@@ -8,6 +9,7 @@ from shared_models import (
     PresentationExchange,
     CredentialExchange,
     HookBase,
+    presentation_record_to_model,
 )
 
 
@@ -39,32 +41,14 @@ class ProofsHook(HookBase, PresentationExchange):
 def to_proof_hook_model(item: dict) -> ProofsHook:
     # v1
     if "presentation_exchange_id" in item:
-        item["protocol_version"] = "v1"
-        item["proof_id"] = "v1-" + item["presentation_exchange_id"]
-        try:
-            item["state"] = item["state"].replace("_", "-")
-        except KeyError:
-            pass
+        presentation_exchange = V10PresentationExchange(**item)
+        presentation_exchange = presentation_record_to_model(presentation_exchange)
     # v2
     elif "pres_ex_id" in item:
-        item["proof_id"] = "v2-" + item["pres_ex_id"]
-        item["protocol_version"] = "v2"
-        try:
-            item["presentation_request"] = item["by_format"]["pres_request"]["indy"]
-        except KeyError:
-            pass
-        try:
-            item["presentation"] = item["by_format"]["pres"]["indy"]
-        except KeyError:
-            pass
-    # error msg instead - request abandoned
-    if "state" not in item:
-        item["state"] = "abandoned"
-    try:
-        item["verified"] = json.loads(item["verified"])
-    except KeyError:
-        pass
-    return ProofsHook(**item)
+        presentation_exchange = V20PresExRecord(**item)
+        presentation_exchange = presentation_record_to_model(presentation_exchange)
+    merged_dicts = {**item, **presentation_exchange.dict()}
+    return ProofsHook(**merged_dicts)
 
 
 class CredentialsHooks(HookBase, CredentialExchange):

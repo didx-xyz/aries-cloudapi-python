@@ -326,6 +326,59 @@ async def test_register_actor():
 
         await trf.register_actor(actor=actor)
 
+    with patch("httpx.post") as mock_request, pytest.raises(trf.TrustRegistryException):
+        mock_request.return_value.status_code = 422
+
+        await trf.register_actor(actor=actor)
+
+
+@pytest.mark.asyncio
+async def test_remove_actor_by_id():
+    with patch("httpx.delete") as mock_request:
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.is_error = False
+
+        actor_id = "actor_id"
+        await trf.remove_actor_by_id(actor_id=actor_id)
+
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}"
+        )
+
+    with patch("httpx.delete") as mock_request, pytest.raises(
+        trf.TrustRegistryException,
+        match="Error removing actor from trust registry: The error",
+    ):
+        mock_request.return_value.status_code = 500
+        mock_request.return_value.is_error = True
+        mock_request.return_value.text = "The error"
+
+        await trf.remove_actor_by_id(actor_id="actor_id")
+
+
+@pytest.mark.asyncio
+async def test_remove_schema_by_id():
+    with patch("httpx.delete") as mock_request:
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.is_error = False
+
+        schema_id = "schema_id"
+        await trf.remove_schema_by_id(schema_id=schema_id)
+
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
+        )
+
+    with patch("httpx.delete") as mock_request, pytest.raises(
+        trf.TrustRegistryException,
+        match="Error removing schema from trust registry: The error",
+    ):
+        mock_request.return_value.status_code = 500
+        mock_request.return_value.is_error = True
+        mock_request.return_value.text = "The error"
+
+        await trf.remove_schema_by_id(schema_id="schema_id")
+
 
 @pytest.mark.asyncio
 async def test_get_actor_by_did():
@@ -361,3 +414,40 @@ async def test_get_actor_by_did():
         mock_request.return_value.json.return_value = {}
 
         tr = await trf.get_trust_registry()
+
+
+@pytest.mark.asyncio
+async def test_update_actor():
+    actor_id = "actor_id"
+    actor = trf.Actor(
+        id=actor_id,
+        name="actor-name",
+        roles=["issuer", "verifier"],
+        did="actor-did",
+        didcomm_invitation="actor-didcomm-invitation",
+    )
+
+    with patch("httpx.post") as mock_request:
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.is_error = False
+
+        await trf.update_actor(actor=actor)
+
+        mock_request.assert_called_once_with(
+            trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}", json=actor
+        )
+
+    with patch("httpx.post") as mock_request, pytest.raises(
+        trf.TrustRegistryException,
+        match="Error updating actor in trust registry: The error",
+    ):
+        mock_request.return_value.status_code = 500
+        mock_request.return_value.is_error = True
+        mock_request.return_value.text = "The error"
+
+        await trf.update_actor(actor=actor)
+
+    with patch("httpx.post") as mock_request, pytest.raises(trf.TrustRegistryException):
+        mock_request.return_value.status_code = 422
+
+        await trf.update_actor(actor=actor)

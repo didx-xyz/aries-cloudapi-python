@@ -1,6 +1,18 @@
 from typing import Any, Optional
-from aries_cloudcontroller.acapy_client import AcaPyClient
+from aries_cloudcontroller import (
+    LedgerApi,
+    OutOfBandApi,
+    WalletApi,
+    AcaPyClient,
+    IssueCredentialV10Api,
+    IssueCredentialV20Api,
+    PresentProofV20Api,
+    PresentProofV10Api,
+    CredentialsApi,
+    EndorseTransactionApi,
+)
 from httpx import AsyncClient
+from mockito import mock
 
 from .constants import (
     ECOSYSTEM_FASTAPI_ENDPOINT,
@@ -17,6 +29,20 @@ from app.constants import (
 )
 
 # YOMA
+
+
+def get_mock_agent_controller() -> AcaPyClient:
+    controller = mock(AcaPyClient)
+    controller.wallet = mock(WalletApi)
+    controller.ledger = mock(LedgerApi)
+    controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
+    controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
+    controller.present_proof_v1_0 = mock(PresentProofV10Api)
+    controller.present_proof_v2_0 = mock(PresentProofV20Api)
+    controller.credentials = mock(CredentialsApi)
+    controller.out_of_band = mock(OutOfBandApi)
+    controller.endorse_transaction = mock(EndorseTransactionApi)
+    return controller
 
 
 def yoma_client(*, app: Optional[Any] = None):
@@ -69,7 +95,7 @@ def member_client(*, token: str, app: Optional[Any] = None):
         timeout=60.0,
         app=app,
         headers={
-            "x-api-key": f"member.{token}",
+            "x-api-key": token,
             "content-type": "application/json",
         },
     )

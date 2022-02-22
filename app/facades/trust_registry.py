@@ -1,7 +1,5 @@
-from enum import Enum
 import logging
-from typing import List, Optional, Set
-import json
+from typing import List, Literal, Optional
 import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
@@ -9,19 +7,7 @@ from app.constants import TRUST_REGISTRY_URL
 
 logger = logging.getLogger(__name__)
 
-
-class SetEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, set):
-            return list(obj)
-        if isinstance(obj, Enum):
-            return obj.value
-        return json.JSONEncoder.default(self, obj)
-
-
-class TrustRegistryRole(Enum):
-    ISSUER = "issuer"
-    VERIFIER = "verifier"
+TrustRegistryRole = Literal["issuer", "verifier"]
 
 
 class TrustRegistryException(HTTPException):
@@ -73,7 +59,7 @@ async def assert_valid_issuer(did: str, schema_id: str):
         raise TrustRegistryException(f"Did {did} not registered in the trust registry")
 
     actor_id = actor["id"]
-    if not TrustRegistryRole.ISSUER.value in actor["roles"]:
+    if not "issuer" in actor["roles"]:
         raise TrustRegistryException(
             f"Actor {actor_id} does not have required role 'issuer'"
         )
@@ -110,7 +96,7 @@ async def assert_valid_verifier(did: str, schema_id: str):
         raise TrustRegistryException(f"Did {did} not registered in the trust registry")
 
     actor_id = actor["id"]
-    if not TrustRegistryRole.VERIFIER.value in actor["roles"]:
+    if not "verifier" in actor["roles"]:
         raise TrustRegistryException(
             f"Actor {actor_id} does not have required role 'verifier'"
         )
@@ -137,7 +123,7 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
     if not actor:
         raise TrustRegistryException(f"Actor with id {actor_id} not found", 404)
 
-    return bool(role.value in actor["roles"])
+    return bool(role in actor["roles"])
 
 
 async def actor_by_did(did: str) -> Optional[Actor]:
@@ -209,7 +195,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
 
     actors = actors_res.json()
     actors_with_role_list = [
-        actor for actor in actors["actors"] if role.value in actor["roles"]
+        actor for actor in actors["actors"] if role in actor["roles"]
     ]
 
     return actors_with_role_list
@@ -289,13 +275,7 @@ async def register_actor(actor: Actor) -> None:
     Raises:
         TrustRegistryException: If an error ocurred while registering the schema
     """
-    # FIXME: can't use json= as we use enums and sets. Maybe just create models?
-    # Or even better reuse the models from the trust registry...
-    actor_res = httpx.post(
-        f"{TRUST_REGISTRY_URL}/registry/actors",
-        data=json.dumps(actor, cls=SetEncoder),
-        headers={"Content-Type": "application/json"},
-    )
+    actor_res = httpx.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
 
     if actor_res.status_code == 422:
         raise TrustRegistryException(actor_res.json(), 422)
@@ -348,7 +328,9 @@ async def update_actor(actor: Actor) -> None:
         f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}", json=actor
     )
 
-    if update_response.is_error:
+    if update_response.status_code == 422:
+        raise TrustRegistryException(update_response.json(), 422)
+    elif update_response.is_error:
         raise TrustRegistryException(
             f"Error updating actor in trust registry: {update_response.text}"
         )

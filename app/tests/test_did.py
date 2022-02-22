@@ -8,7 +8,7 @@ def test_ed25519_verkey_to_did_key():
     assert ed25519_verkey_to_did_key(verkey) == did_key
 
 
-def test_qualified_did_sov(did: str):
+def test_qualified_did_sov():
     unqualified_did = "8HH5gYEeNc3z7PYX"
     qualified_did = f"did:sov:{unqualified_did}"
 

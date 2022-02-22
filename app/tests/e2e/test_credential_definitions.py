@@ -2,14 +2,14 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from httpx import AsyncClient
-from app.admin.governance.credential_definitions import (
+from app.admin.credential_definitions import (
     CredentialDefinition,
     create_credential_definition,
     get_created_credential_definitions,
     get_credential_definition,
     router,
 )
-from app.admin.governance.schemas import SchemaDefinition, create_schema
+from app.admin.schemas import SchemaDefinition, create_schema
 from app.tests.util.ledger import create_public_did
 from app.tests.util.event_loop import event_loop
 from app.tests.util.string import get_random_string

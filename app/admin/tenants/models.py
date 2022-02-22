@@ -1,4 +1,4 @@
-from typing import Any, Optional, Set
+from typing import List, Optional
 from aries_cloudcontroller.model.wallet_record import WalletRecord
 from pydantic import BaseModel, Field, HttpUrl
 
@@ -13,19 +13,16 @@ class TenantRequestBase(BaseModel):
 
 class CreateTenantRequest(TenantRequestBase):
     name: str = Field(..., example="Yoma")  # used as label and trust registry name
-    roles: Optional[Set[TrustRegistryRole]] = Field(
-        None, example=["issuer"], min_items=1
-    )
+    roles: Optional[List[TrustRegistryRole]] = None
 
 
 class UpdateTenantRequest(TenantRequestBase):
     name: Optional[str] = Field(
         None, example="Yoma"
     )  # used as label and trust registry name
-    roles: Optional[Set[TrustRegistryRole]] = Field(None, example=["issuer"])
+    roles: Optional[List[TrustRegistryRole]] = None
 
 
-# TODO: add important settings properties
 class Tenant(BaseModel):
     tenant_id: str = Field(..., example="545135a4-ecbc-4400-8594-bdb74c51c88d")
     tenant_name: str = Field(..., example="Alice")

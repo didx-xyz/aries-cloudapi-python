@@ -86,9 +86,9 @@ async def get_tenant_for_admin_role(
 def wallet_is_for_admin_role(wallet: WalletRecord, role: Role):
     wallet_name: str = wallet.settings.get("wallet.name")
 
-    agent_type = role.agent_type.tenant_role
+    tenant_agent_type = role.agent_type.tenant_role
 
-    return wallet_name.startswith(f"{agent_type.name}.")
+    return wallet_name.startswith(f"{tenant_agent_type.name}.")
 
 
 def get_wallet_name_for_role(agent_type: AgentType) -> str:
@@ -108,8 +108,12 @@ async def create_tenant(
             403,
         )
 
-    # FIXME: tenant role could be None
     tenant_role = auth.role.agent_type.tenant_role
+
+    if not tenant_role:
+        raise CloudApiException(
+            f"Unable to create tenant for agent type ${auth.role}, as it has no admin rights over tenants"
+        )
 
     wallet_response = await aries_controller.multitenancy.create_wallet(
         body=CreateWalletRequest(
@@ -131,7 +135,7 @@ async def create_tenant(
             actor=Actor(
                 id=wallet_response.wallet_id,
                 name=body.name,
-                roles=body.roles,
+                roles=list(body.roles),
                 did=onboard_result.did,
                 didcomm_invitation=onboard_result.didcomm_invitation,
             )

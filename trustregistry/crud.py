@@ -43,7 +43,7 @@ def update_actor(db: Session, actor: schemas.Actor, actor_id=str) -> models.Acto
         return None
 
     for var, value in vars(actor).items():
-        setattr(db_actor, var, value) if value else None
+        setattr(db_actor, var, value)
 
     db.add(db_actor)
     db.commit()

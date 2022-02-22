@@ -13,7 +13,7 @@ from app.tests.util.client import (
 )
 from app.tests.util.ledger import create_public_did
 
-from .multitenant import create_member_wallet, delete_member_wallet
+from .tenants import create_tenant, delete_tenant
 
 
 class BobAliceConnect(TypedDict):
@@ -29,20 +29,21 @@ class BobAlicePublicDid(TypedDict):
 @pytest.fixture(scope="module")
 async def bob_member_client():
     async with member_admin_client() as client:
-        wallet = await create_member_wallet(client, "bob")
+        tenant = await create_tenant(client, "bob")
 
-        yield member_client(token=wallet["token"])
+        yield member_client(token=tenant["access_token"])
 
-        await delete_member_wallet(client, wallet["wallet_id"])
+        await delete_tenant(client, tenant["tenant_id"])
 
 
 @pytest.fixture(scope="module")
 async def alice_member_client():
     async with member_admin_client() as client:
-        wallet = await create_member_wallet(client, "alice")
-        yield member_client(token=wallet["token"])
+        tenant = await create_tenant(client, "alice")
 
-        await delete_member_wallet(client, wallet["wallet_id"])
+        yield member_client(token=tenant["access_token"])
+
+        await delete_tenant(client, tenant["tenant_id"])
 
 
 @pytest.fixture(scope="module")

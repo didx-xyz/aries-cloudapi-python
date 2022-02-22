@@ -1,4 +1,4 @@
-from typing import Optional, Set
+from typing import Optional, List
 from aries_cloudcontroller import (
     AcaPyClient,
     InvitationCreateRequest,
@@ -18,7 +18,7 @@ from app.facades.trust_registry import (
 )
 
 from app.error import CloudApiException
-from app.facades import acapy_ledger, acapy_wallet, acapy_connections
+from app.facades import acapy_ledger, acapy_wallet
 from app.util.did import qualified_did_sov
 
 
@@ -47,14 +47,14 @@ async def handle_ecosystem_tenant_update(
         updated_actor = actor.copy()
 
         if update.name:
-            actor["name"] = update.name
+            updated_actor["name"] = update.name
 
         if update.roles:
 
             # We only care about the added roles, as that's what needs the setup.
             # Teardown is not required at the moment, besides from removing it from
             # the trust registry
-            added_roles = update.roles - set(actor["roles"])
+            added_roles = set(update.roles) - set(actor["roles"])
 
             # We need to pose as the tenant to onboard for the specified role
             token_response = await admin_controller.multitenancy.get_auth_token(
@@ -62,22 +62,23 @@ async def handle_ecosystem_tenant_update(
             )
 
             onboard_result = await onboard_ecosystem_tenant(
-                name=actor["name"],
+                name=updated_actor["name"],
                 roles=added_roles,
                 tenant_auth_token=token_response.token,
             )
 
-            actor["roles"] = list(update.roles)
-            actor["did"] = onboard_result.did
-            actor["didcomm_invitation"] = onboard_result.didcomm_invitation
+            # Remove duplicates from the role list
+            updated_actor["roles"] = list(set(update.roles))
+            updated_actor["did"] = onboard_result.did
+            updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
 
         await update_actor(updated_actor)
 
 
 async def onboard_ecosystem_tenant(
-    *, name: str, roles: Set[TrustRegistryRole], tenant_auth_token: str
+    *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str
 ) -> OnboardResult:
-    if TrustRegistryRole.ISSUER in roles:
+    if "issuer" in roles:
         # Get yoma and tenant controllers, onboard issuer
         async with get_yoma_controller() as yoma_controller, get_tenant_controller(
             Role.ECOSYSTEM, tenant_auth_token
@@ -88,7 +89,7 @@ async def onboard_ecosystem_tenant(
                 endorser_controller=yoma_controller,
             )
 
-    elif TrustRegistryRole.VERIFIER in roles:
+    elif "verifier" in roles:
         async with get_tenant_controller(
             Role.ECOSYSTEM, tenant_auth_token
         ) as tenant_controller:
@@ -116,7 +117,7 @@ async def onboard_issuer(
     """
     # Make sure the issuer has a public did
     try:
-        issuer_did = await acapy_wallet.get_public_did(issuer_controller)
+        issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
     except CloudApiException:
         # no public did
         issuer_did = await acapy_wallet.create_did(issuer_controller)
@@ -129,45 +130,33 @@ async def onboard_issuer(
         await acapy_ledger.accept_taa_if_required(issuer_controller)
         await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
 
-    endorser_did = await acapy_wallet.get_public_did(endorser_controller)
+    endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
 
     # Make sure the issuer has a connection with the endorser
-    connections = await acapy_connections.get_connections_by_invitation_key(
-        issuer_controller, endorser_did.verkey
+    invitation = await endorser_controller.out_of_band.create_invitation(
+        auto_accept=True,
+        body=InvitationCreateRequest(
+            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+            use_public_did=True,
+        ),
     )
 
-    if connections and len(connections) > 0:
-        connection_record = connections[0]
-    else:
-        # Make sure the issuer has a connection with the endorser
-        invitation = await endorser_controller.out_of_band.create_invitation(
-            auto_accept=True,
-            body=InvitationCreateRequest(
-                alias=name,
-                handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-                use_public_did=True,
-            ),
-        )
-
-        connection_record = await issuer_controller.out_of_band.receive_invitation(
-            # FIXME: remove hardcoded yoma here
-            alias="Yoma",
-            auto_accept=True,
-            body=invitation.invitation,
-        )
+    # FIXME: Wait for the connection to be completed here once the webhooks PR is merged
+    connection_record = await issuer_controller.out_of_band.receive_invitation(
+        auto_accept=True,
+        use_existing_connection=True,
+        body=invitation.invitation,
+    )
 
     await issuer_controller.endorse_transaction.set_endorser_role(
         conn_id=connection_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
     )
 
-    # FIXME: do we need to wait for the connection to complete?
     # Make sure endorsement has been configured
     # There is currently no way to retrieve endorser info. We'll just set it
     # to make sure the endorser info is set.
     await issuer_controller.endorse_transaction.set_endorser_info(
         conn_id=connection_record.connection_id,
-        # FIXME: remove hardcoded yoma here
-        endorser_name="Yoma",
         endorser_did=endorser_did.did,
     )
 
@@ -187,7 +176,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
     # If the verifier already has a public did it doesn't need an invitation. The invitation
     # is just to bypass having to pay for a public did for every verifier
     try:
-        public_did = await acapy_wallet.get_public_did(verifier_controller)
+        public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
 
         return OnboardResult(did=qualified_did_sov(public_did.did))
     except CloudApiException:
@@ -204,7 +193,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
 
         try:
             did_key = invitation.invitation.services[0]["recipientKeys"][0]
-        except KeyError as e:
+        except (KeyError, IndexError) as e:
             # FIXME: more verbose error
             raise CloudApiException(f"Error creating invitation: {e}")
 

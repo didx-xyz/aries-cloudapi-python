@@ -4,7 +4,7 @@ from assertpy import assert_that
 from fastapi.exceptions import HTTPException
 from httpx import AsyncClient
 
-from app.admin.governance.schemas import (
+from app.admin.schemas import (
     SchemaDefinition,
     create_schema,
     get_schemas,

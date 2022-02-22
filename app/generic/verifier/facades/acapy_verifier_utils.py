@@ -1,13 +1,11 @@
 from typing import Optional, Union
 
-from aries_cloudcontroller import V10PresentationExchange, V20PresExRecord
+from aries_cloudcontroller import V10PresentationExchange, V20PresExRecord, IndyProof
 
 from app.generic.verifier.models import (
-    IndyProof,
     IndyProofRequest,
-    PresentationExchange,
-    ProofRequestProtocolVersion,
 )
+from shared_models import PresentationExchange, ProofRequestProtocolVersion
 
 
 def pres_id_no_version(proof_id: str) -> str:
@@ -24,7 +22,7 @@ def record_to_model(
         return PresentationExchange(
             connection_id=record.connection_id,
             created_at=record.created_at,
-            protocol_version=ProofRequestProtocolVersion.v20.value,
+            protocol_version=ProofRequestProtocolVersion.v2.value,
             presentation=IndyProof(**record.by_format.pres["indy"])
             if record.by_format.pres
             else None,
@@ -43,7 +41,7 @@ def record_to_model(
             created_at=record.created_at,
             presentation=record.presentation,
             presentation_request=record.presentation_request,
-            protocol_version=ProofRequestProtocolVersion.v10.value,
+            protocol_version=ProofRequestProtocolVersion.v1.value,
             proof_id="v1-" + str(record.presentation_exchange_id),
             role=record.role,
             state=state_to_rfc_state(record.state),

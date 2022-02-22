@@ -1,26 +1,6 @@
-from typing import Literal, Optional
-
 from aries_cloudcontroller import ConnRecord
-from pydantic import BaseModel
 
-
-class Connection(BaseModel):
-    connection_id: str
-    connection_protocol: Literal["connections/1.0", "didexchange/1.0"]
-    created_at: str
-    invitation_mode: Literal["once", "multi", "static"]
-    their_role: Literal["invitee", "requester", "inviter", "responder"]
-    state: str  # did-exchange state
-
-    my_did: Optional[str]
-    alias: Optional[str] = None
-    their_did: Optional[str] = None
-    their_label: Optional[str] = None
-    their_public_did: Optional[str] = None
-    updated_at: Optional[str] = None
-    error_msg: Optional[str] = None
-    invitation_key: Optional[str] = None
-    invitation_msg_id: Optional[str] = None
+from shared_models import Connection
 
 
 def conn_record_to_connection(connection_record: ConnRecord):

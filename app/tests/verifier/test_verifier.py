@@ -10,17 +10,17 @@ import app.generic.verifier.verifier as test_module
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
-    PresentationExchange,
     ProofRequestProtocolVersion,
 )
 from app.tests.verifier.test_verifier_utils import proof_dict, get, indy_pres_spec
+from shared_models import PresentationExchange
 
 presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
     proof_id="abcde",
-    protocol_version=ProofRequestProtocolVersion.v10.value,
+    protocol_version=ProofRequestProtocolVersion.v1.value,
     presentation={},
     role="prover",
     state="presentation-sent",
@@ -32,7 +32,7 @@ presentation_exchange_record_2 = PresentationExchange(
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
     proof_id="abcde",
-    protocol_version=ProofRequestProtocolVersion.v20.value,
+    protocol_version=ProofRequestProtocolVersion.v2.value,
     presentation={},
     role="prover",
     state="presentation-sent",

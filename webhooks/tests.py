@@ -18,7 +18,7 @@ def client(event_loop):
 async def test_index(client):
     service_mock = mock.AsyncMock(spec=Service)
     service_mock.add_topic_entry.return_value = None
-    service_mock.get_all_by_topic.return_value = "Foo"
+    service_mock.get_all_by_wallet.return_value = "Foo"
 
     with container.service.override(service_mock):
         response = await client.get("/test")

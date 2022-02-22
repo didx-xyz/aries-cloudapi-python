@@ -1,13 +1,21 @@
 from typing_extensions import Literal
-from aries_cloudcontroller import ConnRecord, V10PresentationExchange, V20PresExRecord
+from aries_cloudcontroller import (
+    ConnRecord,
+    V10PresentationExchange,
+    V20PresExRecord,
+    V10CredentialExchange,
+    V20CredExRecord,
+)
 
 from shared_models import (
     ConnectionsHook,
+    credential_record_to_model_v1,
     PresentationExchange,
     CredentialExchange,
     HookBase,
     presentation_record_to_model,
     conn_record_to_connection,
+    credential_record_to_model_v2,
 )
 
 
@@ -49,36 +57,13 @@ class CredentialsHooks(HookBase, CredentialExchange):
 
 
 def to_credentential_hook_model(item: dict) -> CredentialsHooks:
+    # v1
     if "credential_exchange_id" in item:
-        item["protocol_version"] = "v1"
-        item["credential_id"] = "v1-" + item["credential_exchange_id"]
-        item["credential_proposal"] = item["credential_proposal_dict"]
-        try:
-            item["state"] = item["state"].replace("_", "-")
-        except KeyError:
-            pass
+        cred_exchange = V10CredentialExchange(**item)
+        cred_model = credential_record_to_model_v1(cred_exchange)
+    # v2
     elif "cred_ex_id" in item:
-        item["protocol_version"] = "v2"
-        item["cred_ex_id"] = "v2-" + item["cred_ex_id"]
-        item["credential_id"] = item.pop("cred_ex_id")
-        try:
-            item["credential_definition_id"] = item["by_format"]["cred_offer"]["indy"][
-                "cred_def_id"
-            ]
-        except KeyError:
-            pass
-        try:
-            item["credential_offer"] = item["by_format"]["cred_offer"]
-        except KeyError:
-            pass
-        try:
-            item["credential_proposal"] = item["cred_proposal"]
-        except KeyError:
-            pass
-    try:
-        item["attributes"] = item["credential_proposal"]["credential_proposal"][
-            "attributes"
-        ]
-    except (KeyError, TypeError):
-        pass
-    return CredentialsHooks(**item)
+        cred_exchange = V20CredExRecord(**item)
+        cred_model = credential_record_to_model_v2(cred_exchange)
+    merged_dicts = {**item, **cred_model.dict()}
+    return CredentialsHooks(**merged_dicts)

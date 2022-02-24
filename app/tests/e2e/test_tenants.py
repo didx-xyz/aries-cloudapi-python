@@ -98,14 +98,18 @@ async def test_create_tenant_ecosystem_issuer(
     async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
-        connections = await tenant_controller.connection.get_connections(
-            invitation_key=endorser_did.verkey
-        )
+        connections = await tenant_controller.connection.get_connections()
+
+        connections = [
+            connection
+            for connection in connections.results
+            if connection.their_public_did == endorser_did.did
+        ]
 
     if not actor:
         raise Exception("Missing actor")
 
-    connection = connections.results[0]
+    connection = connections[0]
 
     # Actor
     assert_that(actor).has_name(tenant["tenant_name"])

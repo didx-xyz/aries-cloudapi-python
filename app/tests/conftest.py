@@ -1,4 +1,5 @@
 import pytest
+import mockito
 from app.tests.util.client_fixtures import (
     member_admin_acapy_client,
     member_admin_client,
@@ -21,3 +22,11 @@ from app.tests.util.member_personas import (
 @pytest.fixture
 def mock_agent_controller():
     return get_mock_agent_controller()
+
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    yield
+
+    # After each test, unstub all stubbed methods
+    mockito.unstub()

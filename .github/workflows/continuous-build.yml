@@ -24,7 +24,7 @@ jobs:
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
-          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/
+          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
       - name: Install docker-compose with pip
         run: pip install docker-compose
       - name: Start Test Harness

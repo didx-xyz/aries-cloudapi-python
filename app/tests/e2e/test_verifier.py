@@ -14,7 +14,7 @@ from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import (
     BobAliceConnect,
 )
-from app.tests.verifier.test_verifier_utils import indy_pres_spec, proof_dict
+from app.tests.verifier.test_verifier_utils import indy_pres_spec, indy_proof_request
 
 BASE_PATH = "/generic/verifier"
 
@@ -23,7 +23,7 @@ def create_send_request(connection_id: str, protocol_version: str) -> SendProofR
     return SendProofRequest(
         protocol_version=protocol_version,
         connection_id=connection_id,
-        proof_request=IndyProofRequest(**proof_dict["proof_request"]),
+        proof_request=indy_proof_request,
     )
 
 
@@ -75,7 +75,7 @@ async def test_create_proof_request(
 ):
     # V1
     proof_request_v1 = CreateProofRequest(
-        proof_request=IndyProofRequest(**proof_dict["proof_request"]),
+        proof_request=indy_proof_request,
         protocol_version=ProofRequestProtocolVersion.v10.value,
     )
     response = await alice_member_client.post(
@@ -119,7 +119,6 @@ async def test_accept_proof_request(
         protocol_version=ProofRequestProtocolVersion.v10.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
-    proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),

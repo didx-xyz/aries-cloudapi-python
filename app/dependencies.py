@@ -2,7 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from typing import List, Optional, Union
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, CreateInvitationRequest
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader

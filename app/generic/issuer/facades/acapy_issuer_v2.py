@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -16,10 +16,12 @@ from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreReque
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import (
     Credential,
-    CredentialExchange,
-    IssueCredentialProtocolVersion,
 )
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
+from shared_models import (
+    CredentialExchange,
+    credential_record_to_model_v2,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -121,40 +123,7 @@ class IssuerV2(Issuer):
 
     @classmethod
     def __record_to_model(cls, record: V20CredExRecord) -> CredentialExchange:
-        attributes = cls.__attributes_from_record(record)
-        schema_id, credential_definition_id = cls.__schema_cred_def_from_record(record)
-
-        return CredentialExchange(
-            credential_id=f"v2-{record.cred_ex_id}",
-            role=record.role,
-            created_at=record.created_at,
-            updated_at=record.updated_at,
-            attributes=attributes,
-            protocol_version=IssueCredentialProtocolVersion.v2,
-            schema_id=schema_id,
-            credential_definition_id=credential_definition_id,
-            state=record.state,
-            connection_id=record.connection_id,
-        )
-
-    @classmethod
-    def __schema_cred_def_from_record(
-        cls, record: V20CredExRecord
-    ) -> Tuple[Optional[str], Optional[str]]:
-        schema_id = None
-        credential_definition_id = None
-
-        if record.by_format and record.by_format.cred_offer:
-            indy = record.by_format.cred_offer.get("indy", {})
-            schema_id = indy.get("schema_id", None)
-            credential_definition_id = indy.get("cred_def_id", None)
-
-        elif record.by_format and record.by_format.cred_proposal:
-            indy = record.by_format.cred_proposal.get("indy", {})
-            schema_id = indy.get("schema_id", None)
-            credential_definition_id = indy.get("cred_def_id", None)
-
-        return schema_id, credential_definition_id
+        return credential_record_to_model_v2(record=record)
 
     @classmethod
     def __preview_from_attributes(
@@ -166,21 +135,4 @@ class IssuerV2(Issuer):
                 V20CredAttrSpec(name=name, value=value)
                 for name, value in attributes.items()
             ]
-        )
-
-    @classmethod
-    def __attributes_from_record(
-        cls, record: V20CredExRecord
-    ) -> Optional[Dict[str, str]]:
-        preview = None
-
-        if record.cred_preview:
-            preview = record.cred_preview
-        elif record.cred_offer and record.cred_offer.credential_preview:
-            preview = record.cred_offer.credential_preview
-        elif record.cred_proposal and record.cred_proposal.credential_preview:
-            preview = record.cred_proposal.credential_preview
-
-        return (
-            {attr.name: attr.value for attr in preview.attributes} if preview else None
         )

@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 import time
 import json
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from aries_cloudcontroller.model.indy_requested_creds_requested_pred import (
     IndyRequestedCredsRequestedPred,
 )
+=======
+>>>>>>> development
 import pytest
 from aries_cloudcontroller import (
     IndyProofRequest,
@@ -26,6 +29,7 @@ from app.facades.trust_registry import (
     register_actor,
 )
 from app.tests.util.event_loop import event_loop
+from app.tests.util.webhooks import check_webhook_state
 from app.tests.util.member_personas import (
     BobAliceConnect,
     MultiInvite,
@@ -55,7 +59,7 @@ async def test_send_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         connection_id=bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
 
     pred_keys = proof_request_v1.proof_request.requested_predicates.keys()
@@ -86,7 +90,7 @@ async def test_send_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
@@ -110,7 +114,7 @@ async def test_create_proof_request(
     # V1
     proof_request_v1 = CreateProofRequest(
         proof_request=IndyProofRequest(**proof_dict["proof_request"]),
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
 
     pred_keys = proof_request_v1.proof_request.requested_predicates.keys()
@@ -141,7 +145,7 @@ async def test_create_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
     response = await alice_member_client.post(
         BASE_PATH + "/create-request",
         json=proof_request_v2.dict(),
@@ -169,6 +173,7 @@ async def test_accept_proof_request(
 ):
     # V1
     proof_request_v1 = create_send_request(
+<<<<<<< HEAD
         alice_bob_connect_multi["alice_connection_id"],
         protocol_version=ProofRequestProtocolVersion.v10.value,
     )
@@ -188,12 +193,20 @@ async def test_accept_proof_request(
 
     await register_verifier(alice_member_client, schema_definition.schema_id)
     await register_verifier(bob_member_client, schema_definition.schema_id)
+=======
+        bob_and_alice_connection["alice_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
+    proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
+>>>>>>> development
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
     )
 
+<<<<<<< HEAD
     time.sleep(3)
     bob_credential_records = (
         await bob_member_client.get(f"/generic/verifier/proofs")
@@ -204,6 +217,14 @@ async def test_accept_proof_request(
 
     print(f"\n\n\n\nbob cred cred recs: {bob_credential_records}")
     print(f"\n\ncredential bob \n\n {issue_credential_to_bob}")
+=======
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
+    )
+
+>>>>>>> development
     accept_proof_request_v1 = AcceptProofRequest(
         protocol_version="v1",
         proof_id=bob_credential_records[0]["proof_id"],
@@ -231,6 +252,7 @@ async def test_accept_proof_request(
     result = response.json()
     print(json.dumps(result, indent=4))
 
+<<<<<<< HEAD
     assert result == True
 
     # V2
@@ -260,6 +282,59 @@ async def test_accept_proof_request(
     # assert ("Presentation exchange" and "state (must be request-received)") in result[
     #     "detail"
     # ]
+=======
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
+    )
+
+    assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert ("Presentation exchange" and "state (must be request_received)") in result[
+        "detail"
+    ]
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+
+    proof_req_res = await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v2.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
+    )
+
+    accept_proof_request_v2 = AcceptProofRequest(
+        protocol_version="v2",
+        proof_id=proof_req_res.json()["proof_id"],
+        presentation_spec=indy_pres_spec,
+    )
+
+    response = await alice_member_client.post(
+        BASE_PATH + "/accept-request",
+        json=accept_proof_request_v2.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
+    )
+
+    # TODO check for the correct response when state is request_received
+    result = response.json()
+    assert response.status_code == 400
+    assert_that(result).contains("detail")
+    assert ("Presentation exchange" and "state (must be request-received)") in result[
+        "detail"
+    ]
+>>>>>>> development
 
 
 @pytest.mark.asyncio
@@ -270,12 +345,17 @@ async def test_reject_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
-    time.sleep(3)
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
     )
 
     reject_proof_request_v1 = RejectProofRequest(
@@ -297,7 +377,7 @@ async def test_get_proof_single(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -319,7 +399,7 @@ async def test_get_proof_single(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         f"{BASE_PATH}/send-request",
@@ -349,7 +429,7 @@ async def test_get_proofs_multi(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -372,7 +452,7 @@ async def test_get_proofs_multi(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     await alice_member_client.post(
         f"{BASE_PATH}/send-request",
@@ -400,7 +480,7 @@ async def test_delete_proof(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -418,7 +498,7 @@ async def test_delete_proof(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -441,7 +521,7 @@ async def test_get_credentials_for_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_dict["connection_id"] = bob_and_alice_connection["alice_connection_id"]
@@ -461,7 +541,7 @@ async def test_get_credentials_for_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",

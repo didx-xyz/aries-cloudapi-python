@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
-from app.generic import messaging, trust_registry
+from app.generic import messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.verifier import verifier
@@ -31,6 +31,7 @@ app.include_router(verifier.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
 app.include_router(trust_registry.router)
+app.include_router(webhooks.router)
 
 
 # add endpoints

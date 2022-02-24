@@ -1,22 +1,21 @@
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Optional, Union
 
 from aries_cloudcontroller import (
     IndyPresPreview,
     IndyPresSpec,
     IndyProofRequest,
 )
-from aries_cloudcontroller.model.indy_proof import IndyProof
 from pydantic import BaseModel
 
 
 class ProofRequestProtocolVersion(Enum):
-    v10 = "v1"
-    v20 = "v2"
+    v1 = "v1"
+    v2 = "v2"
 
 
 class ProofRequestBase(BaseModel):
-    protocol_version: Optional[str] = ProofRequestProtocolVersion.v10.value
+    protocol_version: Optional[str] = ProofRequestProtocolVersion.v1.value
 
 
 class SendProofRequest(ProofRequestBase):
@@ -37,6 +36,7 @@ class AcceptProofRequest(ProofRequestBase):
 class RejectProofRequest(ProofRequestBase):
     proof_id: Optional[str] = None
     problem_report: Optional[str] = None
+<<<<<<< HEAD
 
 
 class ProofRequestGeneric(ProofRequestBase):
@@ -63,3 +63,5 @@ class PresentationExchange(BaseModel):
     ]
     updated_at: Optional[str] = None
     verified: Optional[bool] = None
+=======
+>>>>>>> development

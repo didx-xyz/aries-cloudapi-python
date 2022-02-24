@@ -14,10 +14,10 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-    PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
 )
+from shared_models import PresentationExchange
 
 logger = logging.getLogger(__name__)
 
@@ -26,15 +26,15 @@ router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 
 
 class VerifierFacade(Enum):
-    v10 = VerifierV1
-    v20 = VerifierV2
+    v1 = VerifierV1
+    v2 = VerifierV2
 
 
 def __get_verifier_by_version(version_candidate: str) -> Verifier:
     if version_candidate == "v1" or version_candidate.startswith("v1-"):
-        return VerifierFacade.v10.value
+        return VerifierFacade.v1.value
     elif version_candidate == "v2" or version_candidate.startswith("v2-"):
-        return VerifierFacade.v20.value
+        return VerifierFacade.v2.value
     else:
         raise ValueError(f"Unknown protocol version {version_candidate}")
 
@@ -80,10 +80,10 @@ async def get_proof_records(
         The list of presentation exchange records
     """
     try:
-        v1_records = await VerifierFacade.v10.value.get_proof_records(
+        v1_records = await VerifierFacade.v1.value.get_proof_records(
             controller=aries_controller
         )
-        v2_records = await VerifierFacade.v20.value.get_proof_records(
+        v2_records = await VerifierFacade.v2.value.get_proof_records(
             controller=aries_controller
         )
         return v1_records + v2_records

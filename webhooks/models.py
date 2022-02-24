@@ -1,27 +1,30 @@
-import json
-
 from typing_extensions import Literal
-from pydantic import ValidationError
+from aries_cloudcontroller import (
+    ConnRecord,
+    V10PresentationExchange,
+    V20PresExRecord,
+    V10CredentialExchange,
+    V20CredExRecord,
+)
 
 from shared_models import (
-    Connection,
+    ConnectionsHook,
+    credential_record_to_model_v1,
     PresentationExchange,
     CredentialExchange,
     HookBase,
+    presentation_record_to_model,
+    conn_record_to_connection,
+    credential_record_to_model_v2,
 )
 
 
-class ConnectionsHook(HookBase, Connection):
-    pass
-
-
 def to_connections_model(item: dict) -> ConnectionsHook:
-    item["state"] = item.pop("rfc23_state")
-    try:
-        item = ConnectionsHook(**item)
-    except ValidationError:
-        pass
-    return item
+    conn_record = ConnRecord(**item)
+    conn_record = conn_record_to_connection(connection_record=conn_record)
+
+    merged_dicts = {**item, **conn_record.dict()}
+    return ConnectionsHook(**merged_dicts)
 
 
 class BasicMessagesHook(HookBase):
@@ -39,32 +42,14 @@ class ProofsHook(HookBase, PresentationExchange):
 def to_proof_hook_model(item: dict) -> ProofsHook:
     # v1
     if "presentation_exchange_id" in item:
-        item["protocol_version"] = "v1"
-        item["proof_id"] = "v1-" + item["presentation_exchange_id"]
-        try:
-            item["state"] = item["state"].replace("_", "-")
-        except KeyError:
-            pass
+        presentation_exchange = V10PresentationExchange(**item)
+        presentation_exchange = presentation_record_to_model(presentation_exchange)
     # v2
     elif "pres_ex_id" in item:
-        item["proof_id"] = "v2-" + item["pres_ex_id"]
-        item["protocol_version"] = "v2"
-        try:
-            item["presentation_request"] = item["by_format"]["pres_request"]["indy"]
-        except KeyError:
-            pass
-        try:
-            item["presentation"] = item["by_format"]["pres"]["indy"]
-        except KeyError:
-            pass
-    # error msg instead - request abandoned
-    if "state" not in item:
-        item["state"] = "abandoned"
-    try:
-        item["verified"] = json.loads(item["verified"])
-    except KeyError:
-        pass
-    return ProofsHook(**item)
+        presentation_exchange = V20PresExRecord(**item)
+        presentation_exchange = presentation_record_to_model(presentation_exchange)
+    merged_dicts = {**item, **presentation_exchange.dict()}
+    return ProofsHook(**merged_dicts)
 
 
 class CredentialsHooks(HookBase, CredentialExchange):
@@ -72,36 +57,13 @@ class CredentialsHooks(HookBase, CredentialExchange):
 
 
 def to_credentential_hook_model(item: dict) -> CredentialsHooks:
+    # v1
     if "credential_exchange_id" in item:
-        item["protocol_version"] = "v1"
-        item["credential_id"] = "v1-" + item["credential_exchange_id"]
-        item["credential_proposal"] = item["credential_proposal_dict"]
-        try:
-            item["state"] = item["state"].replace("_", "-")
-        except KeyError:
-            pass
+        cred_exchange = V10CredentialExchange(**item)
+        cred_model = credential_record_to_model_v1(cred_exchange)
+    # v2
     elif "cred_ex_id" in item:
-        item["protocol_version"] = "v2"
-        item["cred_ex_id"] = "v2-" + item["cred_ex_id"]
-        item["credential_id"] = item.pop("cred_ex_id")
-        try:
-            item["credential_definition_id"] = item["by_format"]["cred_offer"]["indy"][
-                "cred_def_id"
-            ]
-        except KeyError:
-            pass
-        try:
-            item["credential_offer"] = item["by_format"]["cred_offer"]
-        except KeyError:
-            pass
-        try:
-            item["credential_proposal"] = item["cred_proposal"]
-        except KeyError:
-            pass
-    try:
-        item["attributes"] = item["credential_proposal"]["credential_proposal"][
-            "attributes"
-        ]
-    except (KeyError, TypeError):
-        pass
-    return CredentialsHooks(**item)
+        cred_exchange = V20CredExRecord(**item)
+        cred_model = credential_record_to_model_v2(cred_exchange)
+    merged_dicts = {**item, **cred_model.dict()}
+    return CredentialsHooks(**merged_dicts)

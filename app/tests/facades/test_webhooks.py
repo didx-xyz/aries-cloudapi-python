@@ -4,11 +4,7 @@ from unittest.mock import patch
 from aries_cloudcontroller import AcaPyClient
 
 import app.facades.webhooks as whf
-from shared_models import HookBase, Connection
-
-
-class ConnectionsHook(HookBase, Connection):
-    pass
+from shared_models import ConnectionsHook
 
 
 client = AcaPyClient(

@@ -1,3 +1,4 @@
+import asyncio
 from uuid import uuid4
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
@@ -8,7 +9,14 @@ from app.dependencies import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.role import Role
 
-from app.tests.util.event_loop import event_loop
+# Tests are broken if we import the event_loop...
+@pytest.yield_fixture(scope="session")
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
 
 from app.tests.util.webhooks import (
     check_webhook_state,

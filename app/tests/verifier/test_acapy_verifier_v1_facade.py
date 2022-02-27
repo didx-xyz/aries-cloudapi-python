@@ -6,7 +6,6 @@ from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-    PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -17,6 +16,8 @@ from .test_verifier_utils import (
     v10_presentation_exchange_records,
     v10_presentation_proposal_request,
 )
+
+from shared_models import PresentationExchange
 
 
 @pytest.mark.asyncio

@@ -1,14 +1,18 @@
 from abc import ABC, abstractmethod
+from typing import List
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import (
+    AcaPyClient,
+    IndyCredPrecis,
+)
 
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-    PresentationExchange,
     RejectProofRequest,
     SendProofRequest,
 )
+from shared_models import PresentationExchange
 
 
 class Verifier(ABC):
@@ -87,17 +91,93 @@ class Verifier(ABC):
         cls, controller: AcaPyClient, proof_request: RejectProofRequest
     ) -> None:
         """
-        Accept proof request
+        Reject proof request
 
         Parameters:
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: AcceptProofRequet
+        proof_request: RejectProofRequet
             The proof request object
 
         Returns:
         --------
         None
+            Returns None on successful request rejection.
+        """
+
+    @classmethod
+    @abstractmethod
+    async def delete_proof(cls, controller: AcaPyClient, proof_id: str) -> None:
+        """
+        Delete proof request
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+        proof_id: str
+            The proof record exchange id
+
+        Returns:
+        --------
+        None
             Returns None on successful record deletion.
+        """
+
+    @classmethod
+    @abstractmethod
+    async def get_proof_records(cls, controller: AcaPyClient) -> None:
+        """
+        Get all proof records
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+
+        Returns:
+        --------
+        [PresentationExchange]
+            A list of presentation exchange records
+        """
+
+    @classmethod
+    @abstractmethod
+    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str) -> None:
+        """
+        Get a specific proof record
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+        proof_id: str
+            The presentation exchange ID
+
+        Returns:
+        --------
+        PresentationExchange
+            A presentation exchange records
+        """
+
+    @classmethod
+    @abstractmethod
+    async def get_credentials_for_request(
+        cls, controller: AcaPyClient, proof_id: str
+    ) -> List[IndyCredPrecis]:
+        """
+        Retrieve the credentials for a proof
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+         proof_id: str
+            The proof id
+
+        Returns:
+        --------
+        [IndyCredPrecis]
+            A list of presentation exchange records
         """

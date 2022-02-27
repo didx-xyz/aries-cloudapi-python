@@ -11,7 +11,7 @@ from aries_cloudcontroller import (
     CredentialsApi,
     EndorseTransactionApi,
 )
-from httpx import AsyncClient
+from httpx import AsyncClient, AsyncHTTPTransport
 from mockito import mock
 
 from .constants import (
@@ -54,6 +54,7 @@ def yoma_client(*, app: Optional[Any] = None):
             "x-api-key": f"yoma.{YOMA_ACAPY_API_KEY}",
             "content-type": "application/json",
         },
+        transport=AsyncHTTPTransport(retries=3),
     )
 
 
@@ -76,6 +77,7 @@ def member_admin_client(*, app: Optional[Any] = None):
             "x-api-key": f"member-admin.{MEMBER_ACAPY_API_KEY}",
             "content-type": "application/json",
         },
+        transport=AsyncHTTPTransport(retries=3),
     )
 
 

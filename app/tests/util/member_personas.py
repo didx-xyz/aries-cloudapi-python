@@ -1,9 +1,7 @@
-import time
 from typing import TypedDict
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from assertpy import assert_that
 from httpx import AsyncClient
 
 from app.tests.util.client import (
@@ -14,6 +12,7 @@ from app.tests.util.client import (
 from app.tests.util.ledger import create_public_did
 
 from .tenants import create_tenant, delete_tenant
+from app.tests.util.webhooks import check_webhook_state
 
 
 class BobAliceConnect(TypedDict):
@@ -100,22 +99,25 @@ async def bob_and_alice_connection(
         )
     ).json()
 
-    time.sleep(15)
+    assert check_webhook_state(
+        alice_member_client, topic="connections", filter_map={"state": "completed"}
+    )
 
     bob_connection_id = invitation["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
 
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
-    bob_connection = (
-        await bob_member_client.get(f"/generic/connections/{bob_connection_id}")
-    ).json()
-    alice_connection = (
-        await alice_member_client.get(f"/generic/connections/{alice_connection_id}")
-    ).json()
-
-    assert_that(bob_connection).has_state("completed")
-    assert_that(alice_connection).has_state("completed")
+    assert check_webhook_state(
+        alice_member_client,
+        topic="connections",
+        filter_map={"state": "completed"},
+    )
+    assert check_webhook_state(
+        bob_member_client,
+        topic="connections",
+        filter_map={"state": "completed"},
+    )
 
     return {
         "alice_connection_id": alice_connection_id,

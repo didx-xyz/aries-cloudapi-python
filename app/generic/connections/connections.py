@@ -16,8 +16,8 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from shared_models import conn_record_to_connection, Connection
 from app.dependencies import agent_selector
-from app.generic.connections.models import Connection, conn_record_to_connection
 
 logger = logging.getLogger(__name__)
 

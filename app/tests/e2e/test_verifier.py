@@ -1,16 +1,16 @@
 import pytest
-from aries_cloudcontroller import IndyProofRequest
 from assertpy import assert_that
 from httpx import AsyncClient
 
-from app.generic.verifier.models import ProofRequestProtocolVersion
-from app.generic.verifier.verifier import (
+from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
+    ProofRequestProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
 )
 from app.tests.util.event_loop import event_loop
+from app.tests.util.webhooks import check_webhook_state
 from app.tests.util.member_personas import (
     BobAliceConnect,
 )
@@ -35,7 +35,7 @@ async def test_send_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         connection_id=bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -53,7 +53,7 @@ async def test_send_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
@@ -76,7 +76,7 @@ async def test_create_proof_request(
     # V1
     proof_request_v1 = CreateProofRequest(
         proof_request=indy_proof_request,
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     response = await alice_member_client.post(
         BASE_PATH + "/create-request",
@@ -93,7 +93,7 @@ async def test_create_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
     response = await alice_member_client.post(
         BASE_PATH + "/create-request",
         json=proof_request_v2.dict(),
@@ -116,12 +116,18 @@ async def test_accept_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
     )
 
     accept_proof_request_v1 = AcceptProofRequest(
@@ -146,11 +152,17 @@ async def test_accept_proof_request(
 
     # V2
     proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v20.value
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
 
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v2.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
     )
 
     accept_proof_request_v2 = AcceptProofRequest(
@@ -163,6 +175,13 @@ async def test_accept_proof_request(
         BASE_PATH + "/accept-request",
         json=accept_proof_request_v2.dict(),
     )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
+    )
+
     # TODO check for the correct response when state is request_received
     result = response.json()
     assert response.status_code == 400
@@ -180,11 +199,17 @@ async def test_reject_proof_request(
     # V1
     proof_request_v1 = create_send_request(
         bob_and_alice_connection["alice_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v10.value,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
     )
     response = await alice_member_client.post(
         BASE_PATH + "/send-request",
         json=proof_request_v1.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
     )
 
     reject_proof_request_v1 = RejectProofRequest(
@@ -196,3 +221,188 @@ async def test_reject_proof_request(
     )
     result = response.json()
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_get_proof_single(
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    # V1
+    proof_request_v1 = create_send_request(
+        bob_and_alice_connection["alice_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
+    proof_req_res = await alice_member_client.post(
+        f"{BASE_PATH}/send-request",
+        json=proof_request_v1.dict(),
+    )
+
+    proof_id = proof_req_res.json()["proof_id"]
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/proofs/{proof_id}",
+    )
+    result = response.json()
+    assert "connection_id" in result
+    assert "created_at" in result
+    assert "updated_at" in result
+    assert "presentation" in result
+    assert "presentation_request" in result
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+
+    proof_req_res = await alice_member_client.post(
+        f"{BASE_PATH}/send-request",
+        json=proof_request_v2.dict(),
+    )
+
+    proof_id = proof_req_res.json()["proof_id"]
+
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/proofs/{proof_id}",
+    )
+
+    result = response.json()
+    assert "connection_id" in result
+    assert "created_at" in result
+    assert "updated_at" in result
+    assert "presentation" in result
+    assert "v2-" in result["proof_id"]
+    assert "presentation_request" in result
+
+
+@pytest.mark.asyncio
+async def test_get_proofs_multi(
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    # V1
+    proof_request_v1 = create_send_request(
+        bob_and_alice_connection["alice_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
+    await alice_member_client.post(
+        f"{BASE_PATH}/send-request",
+        json=proof_request_v1.dict(),
+    )
+
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/proofs",
+    )
+
+    result = response.json()[0]
+    assert "connection_id" in result
+    assert "created_at" in result
+    assert "updated_at" in result
+    assert "presentation" in result
+    assert "v1-" in result["proof_id"]
+    assert "presentation_request" in result
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+
+    await alice_member_client.post(
+        f"{BASE_PATH}/send-request",
+        json=proof_request_v2.dict(),
+    )
+
+    response = await alice_member_client.get(
+        BASE_PATH + "/proofs",
+    )
+
+    result = response.json()[-1]
+    assert "connection_id" in result
+    assert "created_at" in result
+    assert "updated_at" in result
+    assert "presentation" in result
+    assert "v2-" in result["proof_id"]
+    assert "presentation_request" in result
+
+
+@pytest.mark.asyncio
+async def test_delete_proof(
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    # V1
+    proof_request_v1 = create_send_request(
+        bob_and_alice_connection["alice_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
+    proof_req_res = await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v1.dict(),
+    )
+
+    proof_id = (proof_req_res.json())["proof_id"]
+
+    response = await alice_member_client.delete(
+        BASE_PATH + f"/proofs/{proof_id}",
+    )
+    assert response.json() == None
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+
+    proof_req_res = await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v2.dict(),
+    )
+
+    proof_id = (proof_req_res.json())["proof_id"]
+
+    response = await alice_member_client.delete(
+        BASE_PATH + f"/proofs/{proof_id}",
+    )
+    assert response.json() == None
+
+
+@pytest.mark.asyncio
+async def test_get_credentials_for_request(
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    # V1
+    proof_request_v1 = create_send_request(
+        bob_and_alice_connection["alice_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
+    proof_req_res = await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v1.dict(),
+    )
+
+    proof_id = (proof_req_res.json())["proof_id"]
+
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/credentials/{proof_id}",
+    )
+
+    result = response.json()
+    assert result == []
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+
+    proof_req_res = await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v2.dict(),
+    )
+
+    proof_id = (proof_req_res.json())["proof_id"]
+
+    response = await alice_member_client.get(
+        f"{BASE_PATH}/credentials/{proof_id}",
+    )
+
+    result = response.json()
+    assert result == []

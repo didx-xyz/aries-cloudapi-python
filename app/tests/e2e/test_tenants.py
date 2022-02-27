@@ -10,6 +10,12 @@ from app.role import Role
 
 from app.tests.util.event_loop import event_loop
 
+from app.tests.util.webhooks import (
+    check_webhook_state,
+)
+
+from app.tests.util.client import ecosystem_client
+
 from app.admin.tenants import tenants
 from app.util.did import ed25519_verkey_to_did_key
 
@@ -111,13 +117,23 @@ async def test_create_tenant_ecosystem_issuer(
 
     connection = connections[0]
 
+    async with ecosystem_client(token=tenant["access_token"]) as client:
+        # Wait for connection to be completed
+        assert check_webhook_state(
+            client,
+            "connections",
+            {
+                "state": "completed",
+                "connection_id": connection.connection_id,
+            },
+        )
+
     # Actor
     assert_that(actor).has_name(tenant["tenant_name"])
     assert_that(actor).has_did(f"did:sov:{public_did.did}")
     assert_that(actor).has_roles(["issuer"])
 
     # Connection with endorser
-    assert_that(connection).has_state("active")
     assert_that(connection).has_their_public_did(endorser_did.did)
 
     # Tenant
@@ -261,8 +277,18 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     endorser_connection = connections[0]
 
+    async with ecosystem_client(token=tenant["access_token"]) as client:
+        # Wait for connection to be completed
+        assert check_webhook_state(
+            client,
+            "connections",
+            {
+                "state": "completed",
+                "connection_id": endorser_connection.connection_id,
+            },
+        )
+
     # Connection invitation
-    assert_that(endorser_connection).has_state("active")
     assert_that(endorser_connection).has_their_public_did(endorser_did.did)
 
     assert new_actor

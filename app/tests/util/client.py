@@ -129,3 +129,15 @@ def ecosystem_admin_acapy_client():
         base_url=ECOSYSTEM_AGENT_URL,
         api_key=ECOSYSTEM_AGENT_API_KEY,
     )
+
+
+def ecosystem_client(*, token: str, app: Optional[Any] = None):
+    return AsyncClient(
+        base_url=ECOSYSTEM_FASTAPI_ENDPOINT,
+        timeout=60.0,
+        app=app,
+        headers={
+            "x-api-key": token,
+            "content-type": "application/json",
+        },
+    )

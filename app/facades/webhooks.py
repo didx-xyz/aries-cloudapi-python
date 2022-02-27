@@ -52,15 +52,12 @@ def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
     return wallet["wallet_id"]
 
 
-def get_wallet_id_from_client(client: Union[AcaPyClient, AsyncClient]) -> str:
+def get_wallet_id_from_client(client: AcaPyClient) -> str:
+    if not is_tenant(client=client):
+        return "admin"
 
     # eg tenenat_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
-    if isinstance(client, AcaPyClient):
-        jwt = client.client.headers["authorization"].split(" ")[1].split(".")[1]
-    elif isinstance(client, AsyncClient):
-        jwt = client.headers.get("x-api-key").split(".")[2]
-    else:
-        jwt = client.tenant_jwt
+    jwt = client.client.headers["authorization"].split(" ")[1].split(".")[1]
 
     return get_wallet_id_from_b64encoded_jwt(jwt)
 

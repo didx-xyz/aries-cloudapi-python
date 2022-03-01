@@ -1,20 +1,24 @@
+import traceback
 import io
 import logging
 import os
 from distutils.util import strtobool
 
+import pydantic
 import yaml
 from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
-from app.admin.governance import credential_definitions, schemas
-from app.admin.governance.multitenant_wallet import wallet_admin
-from app.generic import messaging, trust_registry
+from app.admin import credential_definitions, schemas
+from app.admin.tenants import tenants
+from app.generic import messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.definitions import definitions
 from app.generic.issuer import issuer
-from app.generic.wallet import wallets
+from app.generic.verifier import verifier
+from app.generic.wallet import wallet
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -23,12 +27,14 @@ app = FastAPI(debug=not prod)
 app.include_router(connections.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
-app.include_router(wallets.router)
-app.include_router(wallet_admin.router)
+app.include_router(wallet.router)
+app.include_router(tenants.router)
+app.include_router(verifier.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
 app.include_router(trust_registry.router)
 app.include_router(definitions.router)
+app.include_router(webhooks.router)
 
 
 # add endpoints
@@ -41,23 +47,25 @@ def read_openapi_yaml() -> Response:
     return Response(content=yaml_s.getvalue(), media_type="text/yaml")
 
 
-@app.exception_handler(ClientResponseError)
+@app.exception_handler(Exception)
 async def client_response_error_exception_handler(
-    request: Request, exc: ClientResponseError
+    request: Request, exception: Exception
 ):
-    """This is the handler for handling the ClientResponseError
+    stacktrace = traceback.format_exc()
 
-    that is the error fired by the aries cloud controller.
-    It converts this erro into a nice json response which indicates the status and the
-    message
-    """
-    if exc.status == 401:
+    if isinstance(exception, ClientResponseError):
         return JSONResponse(
-            status_code=exc.status,
-            content={"error_message": "401 Unauthorized"},
+            {"detail": exception.message, "stack": stacktrace}, exception.status or 500
         )
+    if isinstance(exception, HTTPException):
+        return JSONResponse(
+            {**exception.detail, "stack": stacktrace},
+            exception.status_code,
+            exception.headers,
+        )
+    if isinstance(exception, pydantic.error_wrappers.ValidationError):
+        return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
         return JSONResponse(
-            status_code=exc.status,
-            content={"error_message": exc.message},
+            {"detail": "Internal server error", "stack": stacktrace}, 500
         )

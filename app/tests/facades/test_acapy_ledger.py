@@ -1,18 +1,16 @@
-from typing import Any
-
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    ModelSchema,
-    SchemaGetResult,
     TAAAccept,
     TAAInfo,
     TAARecord,
     TAAResult,
+    SchemaGetResult,
+    ModelSchema,
 )
-from assertpy import assert_that
 from fastapi import HTTPException
 from mockito import verify, when
+from assertpy import assert_that
 
 from app.facades.acapy_ledger import (
     accept_taa,
@@ -20,11 +18,7 @@ from app.facades.acapy_ledger import (
     get_taa,
     schema_id_from_credential_definition_id,
 )
-
-
-# need this to handle the async with the mock
-async def get(response: Any):
-    return response
+from app.tests.util.event_loop import get
 
 
 @pytest.mark.asyncio

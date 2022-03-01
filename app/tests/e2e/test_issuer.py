@@ -1,177 +1,94 @@
-import asyncio
-import time
-from random import random
-from typing import Any, Dict
-from app.generic.issuer.issuer import router
-
 import pytest
-from aries_cloudcontroller import AcaPyClient
-from assertpy.assertpy import assert_that
+from aries_cloudcontroller import SchemaSendResult
+from assertpy import assert_that
 from httpx import AsyncClient
 
-import app.facades.acapy_ledger as acapy_ledger_facade
-from app.admin.governance.schemas import SchemaDefinition, create_schema
-from app.dependencies import MEMBER_AGENT_URL
-from app.tests.utils_test import get_random_string
-from app.facades.trust_registry import (
-    Actor,
-    actor_by_did,
-    register_actor,
-    register_schema,
-    registry_has_schema,
+from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
+
+from app.tests.util.member_personas import (
+    BobAliceConnect,
 )
 
-BASE_PATH = router.prefix + "/credentials"
+# This import are important for tests to run!
+from app.tests.util.event_loop import event_loop
 
-
-# need this to handle the async with the mock
-async def get(response):
-    return response
-
-
-async def register_issuer(client: AsyncClient, schema_id: str):
-    pub_did_res = await client.get("/wallet/fetch-current-did")
-    pub_did = pub_did_res.json()["result"]["did"]
-
-    if not await registry_has_schema(schema_id=schema_id):
-        await register_schema(schema_id)
-
-    if not await actor_by_did(f"did:sov:{pub_did}"):
-        rand = random()
-        await register_actor(
-            Actor(
-                id=f"test-actor-{rand}",
-                name=f"Test Actor-{rand}",
-                roles=["issuer", "verifier"],
-                did=f"did:sov:{pub_did}",
-                didcomm_invitation=None,
-            )
-        )
-
-
-@pytest.yield_fixture(scope="module")
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="module")
-async def schema_definition(yoma_agent_module_scope: AcaPyClient) -> Dict[str, Any]:
-    definition = SchemaDefinition(
-        name="test_schema", version="0.3", attributes=["speed"]
-    )
-
-    public_did = await acapy_ledger_facade.create_pub_did(yoma_agent_module_scope)
-    print(f"created did: {public_did}")
-
-    schema_definition_result = await create_schema(definition, yoma_agent_module_scope)
-    print(schema_definition_result)
-
-    print(f"created schema {str(schema_definition_result)}")
-    return (schema_definition_result).dict()
-
-
-@pytest.fixture(scope="module")
-async def credential_definition_id(
-    async_client_bob_module_scope: AsyncClient, schema_definition: Dict[str, Any]
-) -> str:
-    # when
-    response = await async_client_bob_module_scope.post(
-        MEMBER_AGENT_URL + "/admin/governance/credential-definitions",
-        json={
-            "support_revocation": False,
-            "schema_id": schema_definition["schema_id"],
-            "tag": get_random_string(5),
-        },
-    )
-    result = response.json()
-
-    print(f"created definition {str(result)}")
-    return result["credential_definition_id"]
-
-
-@pytest.fixture(scope="module")
-async def credential_exchange_id(
-    async_client_bob_module_scope: AsyncClient,
-    alice_connection_id: str,
-    schema_definition: Dict[str, Any],
-    credential_definition_id: str,
-    bob_connection_id: str,
-    async_client_alice_module_scope: AsyncClient,
-):
-    """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
-    then this fixture just returns it..."""
-    credential = {
-        "protocol_version": "v1",
-        "connection_id": bob_connection_id,
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "average"},
-    }
-
-    await register_issuer(async_client_bob_module_scope, schema_definition["schema_id"])
-
-    response = await async_client_bob_module_scope.post(
-        BASE_PATH,
-        json=credential,
-    )
-    credential_exchange = response.json()
-    credential_exchange_id = credential_exchange["credential_id"]
-    assert credential_exchange["protocol_version"] == "v1"
-
-    time.sleep(5)
-    response = await async_client_alice_module_scope.get(
-        BASE_PATH, params={"connection_id": alice_connection_id}
-    )
-    records = response.json()
-    assert len(records) > 0
-
-    return credential_exchange_id
+from app.tests.e2e.test_fixtures import BASE_PATH
+from app.tests.e2e.test_fixtures import *  # NOQA
 
 
 @pytest.mark.asyncio
 async def test_send_credential(
-    async_client_bob_module_scope: AsyncClient,
-    schema_definition: Dict[str, Any],
-    credential_definition_id: str,
-    bob_connection_id: str,
-    alice_connection_id: str,
-    async_client_alice_module_scope: AsyncClient,
+    bob_member_client: AsyncClient,
+    schema_definition: SchemaSendResult,
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": bob_connection_id,
-        "credential_definition_id": credential_definition_id,
+        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "schema_id": schema_definition.schema_id,
         "attributes": {"speed": "average"},
     }
 
-    await register_issuer(async_client_bob_module_scope, schema_definition["schema_id"])
+    await register_issuer(bob_member_client, schema_definition.schema_id)
 
-    response = await async_client_alice_module_scope.get(
-        BASE_PATH, params={"connection_id": alice_connection_id}
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
     # nothing currently in alice's records
     assert len(records) == 0
 
-    response = await async_client_bob_module_scope.post(
+    response = await bob_member_client.post(
         BASE_PATH,
         json=credential,
     )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_schema_id(schema_definition.schema_id)
 
     credential["protocol_version"] = "v2"
-    response = await async_client_bob_module_scope.post(
+    response = await bob_member_client.post(
         BASE_PATH,
         json=credential,
     )
+    response.raise_for_status()
 
-    time.sleep(5)
-    response = await async_client_alice_module_scope.get(
-        BASE_PATH, params={"connection_id": alice_connection_id}
+    data = response.json()
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_schema_id(schema_definition.schema_id)
+
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": data["credential_id"],
+        },
+        topic="issue_credential_v2_0",
+    )
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={
+            "state": "offer-received",
+            "credential_id": records[-1]["credential_id"],
+        },
+        topic="issue_credential_v2_0",
+    )
     assert len(records) == 2
 
     # Expect one v1 record, one v2 record
@@ -179,47 +96,134 @@ async def test_send_credential(
 
 
 @pytest.mark.asyncio
-async def test_get_records(async_client_alice_module_scope: AsyncClient):
-    records = (await async_client_alice_module_scope.get(BASE_PATH)).json()
+async def test_get_records(alice_member_client: AsyncClient):
+    records = (await alice_member_client.get(BASE_PATH)).json()
     assert records
     assert len(records) >= 1
 
 
 @pytest.mark.asyncio
 async def test_send_credential_request(
-    async_client_bob_module_scope: AsyncClient, credential_exchange_id: str
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+    schema_definition: SchemaSendResult,
+    credential_definition_id: str,
 ):
-    time.sleep(10)
-    response = await async_client_bob_module_scope.post(
-        f"{BASE_PATH}/{credential_exchange_id}/request"
+    credential = {
+        "protocol_version": "v1",
+        "credential_definition_id": credential_definition_id,
+        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "attributes": {"speed": "average"},
+    }
+
+    await register_issuer(bob_member_client, schema_definition.schema_id)
+
+    response = await bob_member_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v1"
+
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
+        topic="issue_credential",
     )
 
-    # This returns an error - the correct one because the credential is in state received.
-    # For this to return another response we'd have to have state offer_received
-    result = response.json()
-
-    assert result["error_message"]
-    assert "Credential exchange" in result["error_message"]
-    assert response.status_code == 400
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+    )
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="issue_credential",
+    )
 
 
 @pytest.mark.asyncio
 async def test_store_credential(
-    async_client_bob_module_scope: AsyncClient, credential_exchange_id: str
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    credential_exchange_id: str,
+    credential_definition_id: str,
+    bob_and_alice_connection: BobAliceConnect,
+    schema_definition: SchemaSendResult,
 ):
-    # TODO check for the correct response when state is credential_received
-    # We can't complete this with auto accept enabled
-    time.sleep(5)
-    response = await async_client_bob_module_scope.post(
-        f"{BASE_PATH}/{credential_exchange_id}/store"
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "credential_definition_id": credential_definition_id,
+        "attributes": {"speed": "average"},
+    }
+
+    await register_issuer(bob_member_client, schema_definition.schema_id)
+
+    # Bob send offer
+    response = await bob_member_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v1"
+
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
+        topic="issue_credential",
     )
 
-    result = response.json()
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+    )
+    # Check alice received the credential offer from Bob
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="issue_credential",
+    )
 
-    print(result)
+    cred_hooks = get_hooks_per_topic_per_wallet(
+        client=alice_member_client, topic="issue_credential"
+    )
 
-    assert result["error_message"]
-    assert ("Credential exchange" and "state (must be credential_received).") in result[
-        "error_message"
-    ]
-    assert response.status_code == 400
+    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
+    credential_id = cred_hook["payload"]["credential_id"]
+
+    # alice send request for that credential
+    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/request")
+
+    # Bob check he received the request; Credential is send because of using
+    # 'automating the entire flow' send credential earlier.
+    # See also: app/generic/issuer/issuer.py::send_credential
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "request-received"},
+        topic="issue_credential",
+    )
+
+    # Check alice has received the credential
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "credential-received"},
+        topic="issue_credential",
+    )
+
+    # Alice stores crdeential
+    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/store")
+
+    # Check alice has received the credential
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "credential-acked"},
+        topic="issue_credential",
+    )

@@ -1,18 +1,14 @@
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    TAAAccept,
-    TAARecord,
     CredentialDefinitionSendRequest,
+    TAAAccept,
     TAAInfo,
+    TAARecord,
 )
 from fastapi import HTTPException
-
-import app.facades.acapy_wallet as wallet_facade
-import app.facades.ledger as ledger_facade
-from app.schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +47,9 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     return taa_response, "service_agreement"
 
 
-async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
+async def accept_taa(
+    controller: AcaPyClient, taa: TAARecord, mechanism: Optional[str] = None
+):
     """
     Accept the TAA
 
@@ -107,40 +105,31 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     return issuer_endpoint_response
 
 
-async def create_pub_did(
+async def register_nym_on_ledger(
     aries_controller: AcaPyClient,
-) -> DidCreationResponse:
-    """
-    Create a new public DID and
-    write it to the ledger and
-    receive its public info.
-    Returns:
-    * DID object (json)
-    * Issuer verkey (str)
-    * Issuer Endpoint (url)
-    """
-    did_object = await wallet_facade.create_did(aries_controller)
-    await ledger_facade.post_to_ledger(did_object=did_object)
+    *,
+    did: str,
+    verkey: str,
+    alias: Optional[str] = None,
+    role: Optional[str] = None,
+):
+    nym_response = await aries_controller.ledger.register_nym(
+        did=did, verkey=verkey, alias=alias, role=role
+    )
 
+    if not nym_response.success:
+        raise HTTPException(500, "Error registering nym on ledger")
+
+
+async def accept_taa_if_required(aries_controller: AcaPyClient):
     taa_response, mechanism = await get_taa(aries_controller)
+
     if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
         await accept_taa(
             aries_controller,
             taa_response.taa_record,
             mechanism,
         )
-    await wallet_facade.assign_pub_did(aries_controller, did_object.did)
-    get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
-    issuer_nym = get_pub_did_response.result.did
-    issuer_verkey = get_pub_did_response.result.verkey
-    issuer_endpoint = await get_did_endpoint(aries_controller, issuer_nym)
-    issuer_endpoint_url = issuer_endpoint.endpoint
-    final_response = DidCreationResponse(
-        did_object=get_pub_did_response.result,
-        issuer_verkey=issuer_verkey,
-        issuer_endpoint=issuer_endpoint_url,
-    )
-    return final_response
 
 
 async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:

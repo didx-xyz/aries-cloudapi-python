@@ -8,7 +8,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
+      - ./environments/yoma-ga/fastapi.default.env:/app/.env
     depends_on:
       - yoma-ga-wallets-db
       - ledger-nodes
@@ -80,7 +82,9 @@ services:
     ports:
       - "8100:8000"
     volumes:
+      - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
+      - ./environments/yoma-multitenant/fastapi.default.env:/app/.env
     depends_on:
       - yoma-multitenant-wallets-db
       - ledger-nodes
@@ -90,33 +94,34 @@ services:
       - host
     env_file:
       - environments/yoma-multitenant/fastapi.default.env
-  # yoma-webhooks-web:
-  #   build:
-  #     context: .
-  #     dockerfile: ./dockerfiles/webhooks/Dockerfile
-  #   ports:
-  #     - "3010:3010"
-  #   volumes:
-  #     - ./webhooks:/webhooks
-  #   networks:
-  #     - yoma-multitenant
-  #     - yoma-ga
-  #     - host
-  #   env_file:
-  #     - environments/webhooks/fastapi.webhooks.env
-  #   environment:
-  #     - REDIS_URL=redis://wh-redis
-  # wh-redis:
-  #   image: redis:latest
-  #   restart: always
-  #   ports:
-  #     - "6379:6379"
-  #   volumes:
-  #     - $PWD/data:/data
-  #   networks:
-  #     - host
-  #   env_file:
-  #     - environments/webhooks/redis.env
+  yoma-webhooks-web:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/webhooks/Dockerfile
+    ports:
+      - "3010:3010"
+    volumes:
+      - ./shared_models/shared_models.py:/webhooks/shared_models.py
+      - ./webhooks:/webhooks
+    networks:
+      - yoma-multitenant
+      - yoma-ga
+      - host
+    env_file:
+      - environments/webhooks/fastapi.webhooks.env
+    environment:
+      - REDIS_URL=redis://wh-redis
+  wh-redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - $PWD/data:/data
+    networks:
+      - host
+    env_file:
+      - environments/webhooks/redis.env
   yoma-multitenant-wallets-db:
     image: postgres:11
     container_name: yoma-multitenant-wallets-db
@@ -173,8 +178,6 @@ services:
     volumes:
       - webserver-cli:/home/indy/.indy-cli
       - webserver-ledger:/home/indy/ledger
-    environment:
-      - DOCKERHOST=${DOCKERHOST}
     networks:
       - yoma-multitenant
       - yoma-ga
@@ -227,6 +230,7 @@ volumes:
   webserver-cli:
   webserver-ledger:
   nodes-data:
+  data:
 
 networks:
   yoma-multitenant:

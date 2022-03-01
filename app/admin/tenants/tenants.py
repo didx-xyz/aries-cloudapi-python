@@ -77,8 +77,10 @@ async def get_tenant_for_admin_role(
     # We retrieve the wallet to make sure it exists
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
+    # This checks if the role of the wallet is in the current context. It would be possible
+    # to retrieve a member wallet while authorized as an ecosystem admin.
     if not wallet_is_for_admin_role(wallet, role):
-        raise CloudApiException(f"Tenant with id {tenant_id} not found", 404)
+        raise CloudApiException(f"Unauthorized", 401)
 
     return wallet
 

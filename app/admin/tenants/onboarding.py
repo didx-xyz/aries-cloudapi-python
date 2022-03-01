@@ -173,12 +173,14 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
     """
 
+    onboarding_result = {}
+
     # If the verifier already has a public did it doesn't need an invitation. The invitation
     # is just to bypass having to pay for a public did for every verifier
     try:
         public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
 
-        return OnboardResult(did=qualified_did_sov(public_did.did))
+        onboarding_result["did"] = qualified_did_sov(public_did.did)
     except CloudApiException:
         # create a multi_use invitation from the did
         invitation = await verifier_controller.out_of_band.create_invitation(
@@ -192,12 +194,14 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         )
 
         try:
-            did_key = invitation.invitation.services[0]["recipientKeys"][0]
+            # Because we're not creating an invitation with a public did the invitation will always
+            # contain a did:key as the first recipientKey in the first service
+            onboarding_result["did"] = invitation.invitation.services[0][
+                "recipientKeys"
+            ][0]
+            onboarding_result["didcomm_invitation"] = invitation.invitation_url
         except (KeyError, IndexError) as e:
             # FIXME: more verbose error
             raise CloudApiException(f"Error creating invitation: {e}")
 
-        return OnboardResult(
-            did=did_key,
-            didcomm_invitation=invitation.invitation_url,
-        )
+        return OnboardResult(**onboarding_result)

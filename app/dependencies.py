@@ -61,7 +61,7 @@ def agent_role(role: Union["Role", List["Role"]]):
 
 @asynccontextmanager
 async def get_yoma_controller():
-    # TODO: would be good to support his natively in AcaPyClient
+    # TODO: would be good to support this natively in AcaPyClient
     client = AcaPyClient(
         Role.YOMA.agent_type.base_url, api_key=Role.YOMA.agent_type.x_api_key
     )

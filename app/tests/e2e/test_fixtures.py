@@ -1,7 +1,7 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient, SchemaSendResult
 from httpx import AsyncClient
-from app.admin.governance.schemas import SchemaDefinition, create_schema
+from app.admin.schemas import SchemaDefinition, create_schema
 from app.tests.util.ledger import create_public_did
 from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router

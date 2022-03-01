@@ -3,8 +3,10 @@ import time
 from assertpy import assert_that
 from httpx import AsyncClient
 
-# This import is important for tests to run!
+from app.tests.util.member_personas import BobAlicePublicDid
 from app.tests.util.member_personas import BobAliceConnect, BobAlicePublicDid
+
+# This import is important for tests to run!
 from app.tests.util.event_loop import event_loop
 from app.tests.util.webhooks import (
     check_webhook_state,
@@ -191,32 +193,23 @@ async def test_oob_connect_via_public_did(
     alice_member_client: AsyncClient,
     bob_and_alice_public_did: BobAlicePublicDid,
 ):
+    time.sleep(5)
     connect_response = await bob_member_client.post(
         "/generic/connections/oob/connect-public-did",
         json={"public_did": bob_and_alice_public_did["alice_public_did"]},
     )
-    connection_record = connect_response.json()
+    bob_connection_record = connect_response.json()
 
     assert check_webhook_state(
         client=bob_member_client,
         topic="connections",
         filter_map={
             "state": "request-sent",
-            "connection_id": connection_record["connection_id"],
+            "connection_id": bob_connection_record["connection_id"],
         },
-    )
-
-    assert_that(connection_record).has_their_public_did(
-        bob_and_alice_public_did["alice_public_did"]
     )
 
     public_did_response = await alice_member_client.get("/wallet/dids/public")
     alice_public_did = public_did_response.json()
 
-    alice_connections_response = await alice_member_client.get("/generic/connections")
-    alice_connections = alice_connections_response.json()
-
-    # Check that a connection exists where the invitation key is the verkey of alice's public did
-    assert_that(alice_connections).extracting("invitation_key").contains(
-        alice_public_did["verkey"]
-    )
+    assert_that(bob_connection_record).has_their_public_did(alice_public_did["did"])

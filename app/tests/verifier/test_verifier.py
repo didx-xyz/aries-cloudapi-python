@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    IndyProofRequest,
     IndyCredPrecis,
 )
 from mockito import verify, when
@@ -12,7 +11,11 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     ProofRequestProtocolVersion,
 )
-from app.tests.verifier.test_verifier_utils import proof_dict, get, indy_pres_spec
+from app.tests.verifier.test_verifier_utils import (
+    indy_proof_request,
+    indy_pres_spec,
+)
+from app.tests.util.mock import get
 from shared_models import PresentationExchange
 
 presentation_exchange_record_1 = PresentationExchange(
@@ -50,7 +53,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     result = await test_module.send_proof_request(
         proof_request=test_module.SendProofRequest(
             connection_id="abcde",
-            proof_request=IndyProofRequest(**proof_dict),
+            proof_request=indy_proof_request,
             protocol_version="v1",
         ),
         aries_controller=mock_agent_controller,
@@ -67,7 +70,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     result = await test_module.send_proof_request(
         proof_request=test_module.SendProofRequest(
             connection_id="abcde",
-            proof_request=IndyProofRequest(**proof_dict),
+            proof_request=indy_proof_request,
             protocol_version="v2",
         ),
         aries_controller=mock_agent_controller,
@@ -86,7 +89,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.create_proof_request(
         proof_request=test_module.CreateProofRequest(
-            protocol_version="v1", proof_request=IndyProofRequest(**proof_dict)
+            protocol_version="v1", proof_request=indy_proof_request
         ),
         aries_controller=mock_agent_controller,
     )
@@ -101,7 +104,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.create_proof_request(
         proof_request=test_module.CreateProofRequest(
-            protocol_version="v2", proof_request=IndyProofRequest(**proof_dict)
+            protocol_version="v2", proof_request=indy_proof_request
         ),
         aries_controller=mock_agent_controller,
     )

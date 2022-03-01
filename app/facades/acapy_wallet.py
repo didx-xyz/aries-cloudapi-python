@@ -3,9 +3,15 @@ import logging
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
+from pydantic import BaseModel
 from app.error import CloudApiException
 
 logger = logging.getLogger(__name__)
+
+
+class Did(BaseModel):
+    did: str
+    verkey: str
 
 
 async def assert_public_did(aries_controller: AcaPyClient) -> str:
@@ -29,7 +35,7 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
     return f"did:sov:{public_did.result.did}"
 
 
-async def create_did(controller: AcaPyClient) -> DID:
+async def create_did(controller: AcaPyClient) -> Did:
     """Create a local did
 
     Args:
@@ -39,15 +45,19 @@ async def create_did(controller: AcaPyClient) -> DID:
         HTTPException: If the creation of the did failed
 
     Returns:
-        DID: The created did
+        Did: The created did
     """
-    generate_did_res = await controller.wallet.create_did(body=DIDCreate())
+    did_result = await controller.wallet.create_did(body=DIDCreate())
 
-    if not generate_did_res.result:
-        logger.error("Failed to create DID:\n %s", generate_did_res)
-        raise CloudApiException(f"Error creating did: {generate_did_res.dict()}", 500)
+    if (
+        not did_result.result
+        or not did_result.result.did
+        or not did_result.result.verkey
+    ):
+        logger.error("Failed to create DID:\n %s", did_result)
+        raise CloudApiException(f"Error creating did: {did_result.dict()}", 500)
 
-    return generate_did_res.result
+    return Did(did=did_result.result.did, verkey=did_result.result.verkey)
 
 
 async def set_public_did(controller: AcaPyClient, did: str) -> DID:
@@ -71,7 +81,7 @@ async def set_public_did(controller: AcaPyClient, did: str) -> DID:
     return result.result
 
 
-async def get_public_did(controller: AcaPyClient) -> DID:
+async def get_public_did(controller: AcaPyClient) -> Did:
     """Get the public did.
 
     Args:
@@ -81,11 +91,11 @@ async def get_public_did(controller: AcaPyClient) -> DID:
         CloudApiException: if retrieving the public did failed.
 
     Returns:
-        DID: the public did
+        Did: the public did
     """
     result = await controller.wallet.get_public_did()
 
     if not result.result:
         raise CloudApiException("No public did found", 404)
 
-    return result.result
+    return Did(did=result.result.did, verkey=result.result.verkey)

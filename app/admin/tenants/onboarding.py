@@ -204,4 +204,4 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
             # FIXME: more verbose error
             raise CloudApiException(f"Error creating invitation: {e}")
 
-        return OnboardResult(**onboarding_result)
+    return OnboardResult(**onboarding_result)

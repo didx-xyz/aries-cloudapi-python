@@ -12,6 +12,7 @@ from app.admin.governance import credential_definitions, schemas
 from app.admin.governance.multitenant_wallet import wallet_admin
 from app.generic import messaging, trust_registry
 from app.generic.connections import connections
+from app.generic.definitions import definitions
 from app.generic.issuer import issuer
 from app.generic.wallet import wallets
 
@@ -27,6 +28,7 @@ app.include_router(wallet_admin.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
 app.include_router(trust_registry.router)
+app.include_router(definitions.router)
 
 
 # add endpoints

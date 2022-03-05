@@ -5,7 +5,7 @@ name: Continuous Build
 
 on:
   push:
-    branches: [development, feature/*, main]
+    branches: [development, main]
   pull_request:
     branches: [development]
   workflow_dispatch:
@@ -89,4 +89,3 @@ jobs:
             git pull
             make stop_n_clean
             ./manage up-as-daemon
-

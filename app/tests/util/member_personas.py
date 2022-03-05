@@ -1,19 +1,8 @@
-<<<<<<< HEAD
-import time
-import json
-=======
->>>>>>> development
 from typing import TypedDict
 from random import random
 
 import pytest
-<<<<<<< HEAD
-from app.tests.util.trust_registry import register_issuer
-from aries_cloudcontroller import AcaPyClient, InvitationResult, SchemaSendResult
-from assertpy import assert_that
-=======
 from aries_cloudcontroller import AcaPyClient
->>>>>>> development
 from httpx import AsyncClient
 from app.facades.trust_registry import (
     Actor,
@@ -33,9 +22,9 @@ from app.tests.util.client import (
     member_client,
 )
 from app.tests.util.ledger import create_public_did
-from app.tests.util.webhooks import check_webhook_state
 
-from .multitenant import create_member_wallet, delete_member_wallet
+from .tenants import create_tenant, delete_tenant
+from app.tests.util.webhooks import check_webhook_state
 
 
 class BobAliceConnect(TypedDict):
@@ -57,20 +46,21 @@ class MultiInvite(TypedDict):
 @pytest.fixture(scope="module")
 async def bob_member_client():
     async with member_admin_client() as client:
-        wallet = await create_member_wallet(client, "bob")
+        tenant = await create_tenant(client, "bob")
 
-        yield member_client(token=wallet["token"])
+        yield member_client(token=tenant["access_token"])
 
-        await delete_member_wallet(client, wallet["wallet_id"])
+        await delete_tenant(client, tenant["tenant_id"])
 
 
 @pytest.fixture(scope="module")
 async def alice_member_client():
     async with member_admin_client() as client:
-        wallet = await create_member_wallet(client, "alice")
-        yield member_client(token=wallet["token"])
+        tenant = await create_tenant(client, "alice")
 
-        await delete_member_wallet(client, wallet["wallet_id"])
+        yield member_client(token=tenant["access_token"])
+
+        await delete_tenant(client, tenant["tenant_id"])
 
 
 @pytest.fixture(scope="module")

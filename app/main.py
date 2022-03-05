@@ -1,3 +1,4 @@
+import traceback
 import io
 import logging
 import os
@@ -10,8 +11,8 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
-from app.admin.governance import credential_definitions, schemas
-from app.admin.governance.multitenant_wallet import wallet_admin
+from app.admin import credential_definitions, schemas
+from app.admin.tenants import tenants
 from app.generic import messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -26,7 +27,7 @@ app.include_router(connections.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
 app.include_router(wallet.router)
-app.include_router(wallet_admin.router)
+app.include_router(tenants.router)
 app.include_router(verifier.router)
 app.include_router(schemas.router)
 app.include_router(credential_definitions.router)
@@ -48,11 +49,21 @@ def read_openapi_yaml() -> Response:
 async def client_response_error_exception_handler(
     request: Request, exception: Exception
 ):
+    stacktrace = traceback.format_exc()
+
     if isinstance(exception, ClientResponseError):
-        return JSONResponse({"detail": exception.message}, exception.status or 500)
+        return JSONResponse(
+            {"detail": exception.message, "stack": stacktrace}, exception.status or 500
+        )
     if isinstance(exception, HTTPException):
-        return JSONResponse(exception.detail, exception.status_code, exception.headers)
+        return JSONResponse(
+            {**exception.detail, "stack": stacktrace},
+            exception.status_code,
+            exception.headers,
+        )
     if isinstance(exception, pydantic.error_wrappers.ValidationError):
         return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
-        return JSONResponse({"detail": "Internal server error"}, 500)
+        return JSONResponse(
+            {"detail": "Internal server error", "stack": stacktrace}, 500
+        )

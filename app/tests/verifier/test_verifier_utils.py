@@ -37,9 +37,14 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyProof,
     IndyProofProof,
+    IndyProofReqAttrSpec,
+    IndyProofReqPredSpec,
     IndyProofRequest,
+    IndyProofRequestNonRevoked,
     IndyProofRequestedProof,
     IndyRequestedCredsRequestedPred,
+    IndyProofReqAttrSpecNonRevoked,
+    IndyProofReqPredSpecNonRevoked,
     IndyRequestedCredsRequestedAttr,
     V10PresentationExchange,
     V10PresentationProposalRequest,
@@ -372,8 +377,8 @@ indy_proof_request = IndyProofRequest(
     name=None,
     non_revoked=None,
     nonce=None,
-    requested_attributes=None,
-    requested_predicates=None,
+    requested_attributes={},
+    requested_predicates={},
     version="0.0.1",
 )
 
@@ -407,35 +412,29 @@ v10_presentation_proposal_request = V10PresentationProposalRequest(
     auto_present=True,
 )
 
-proof_dict = dict(
-    {
-        "connection_id": "string",
-        "proof_request": {
-            "name": "string",
-            "non_revoked": {"from_": 0, "to": 0},
-            "nonce": "12345",
-            "requested_attributes": {
-                "0_string_uuid": {
-                    "name": "string",
-                    "non_revoked": {"from_": 0, "to": 0},
-                    "restrictions": None,
-                },
-            },
-            "requested_predicates": {
-                "0_string_GE_uuid": {
-                    "name": "string",
-                    "p_type": "<",
-                    "p_value": 0,
-                    "non_revoked": {"from_": 0, "to": 0},
-                    "restrictions": None,
-                },
-            },
-            "version": "0.1",
-        },
-        "comment": "string",
-        "trace": True,
-    }
+indy_proof_request = IndyProofRequest(
+    name="string",
+    non_revoked=IndyProofRequestNonRevoked(from_=0, to=0),
+    nonce="12345",
+    requested_attributes={
+        "0_string_uuid": IndyProofReqAttrSpec(
+            name="string",
+            non_revoked=IndyProofReqAttrSpecNonRevoked(from_=0, to=0),
+            restrictions=None,
+        )
+    },
+    requested_predicates={
+        "0_string_GE_uuid": IndyProofReqPredSpec(
+            name="string",
+            p_type="<",
+            p_value=0,
+            non_revoked=IndyProofReqPredSpecNonRevoked(from_=0, to=0),
+            restrictions=None,
+        )
+    },
+    version="1.0",
 )
+
 
 v20_presentation_exchange_records = [
     V20PresExRecord(
@@ -443,7 +442,7 @@ v20_presentation_exchange_records = [
         by_format=V20PresExRecordByFormat(
             pres={"indy": {"hello": "world"}},
             pres_proposal={"indy": {"hello": "world"}},
-            pres_request={"indy": {"hello": "world"}},
+            pres_request={"indy": indy_proof_request.dict()},
         ),
         connection_id="abc",
         created_at="2021-09-15 13:49:47Z",
@@ -475,11 +474,6 @@ v20_presentation_exchange_records = [
         verified="false",
     ),
 ]
-
-proof_request_indy = V20PresRequestByFormat(
-    dif=None,
-    indy=IndyProofRequest(**proof_dict),
-)
 
 
 indy_pres_spec = IndyPresSpec(

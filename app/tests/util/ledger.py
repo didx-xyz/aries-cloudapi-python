@@ -55,7 +55,7 @@ async def post_to_ledger(
 
 
 async def create_public_did(
-    aries_controller: AcaPyClient,
+    aries_controller: AcaPyClient, set_public: bool = True
 ) -> DID:
     did_object = await acapy_wallet.create_did(aries_controller)
 
@@ -64,6 +64,7 @@ async def create_public_did(
 
     await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
     await accept_taa_if_required(aries_controller)
-    await acapy_wallet.set_public_did(aries_controller, did_object.did)
+    if set_public:
+        await acapy_wallet.set_public_did(aries_controller, did_object.did)
 
     return did_object

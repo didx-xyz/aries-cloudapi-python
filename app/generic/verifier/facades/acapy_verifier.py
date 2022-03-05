@@ -9,11 +9,6 @@ from aries_cloudcontroller import (
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-<<<<<<< HEAD
-    PresentationExchange,
-    ProofRequestGeneric,
-=======
->>>>>>> development
     RejectProofRequest,
     SendProofRequest,
 )

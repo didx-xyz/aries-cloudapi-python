@@ -4,8 +4,6 @@ from aries_cloudcontroller.model.did_result import DIDResult
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    ConnRecord,
-    IndyProofRequest,
     IndyCredPrecis,
 )
 from mockito import verify, when
@@ -18,7 +16,11 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     ProofRequestProtocolVersion,
 )
-from app.tests.verifier.test_verifier_utils import proof_dict, get, indy_pres_spec
+from app.tests.verifier.test_verifier_utils import (
+    indy_proof_request,
+    indy_pres_spec,
+)
+from app.tests.util.mock import get
 from shared_models import PresentationExchange
 
 presentation_exchange_record_1 = PresentationExchange(
@@ -63,8 +65,14 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV1).send_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
     )
-    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
-        get(DIDResult(result=DID(did=actor["did"])))
+
+    result = await test_module.send_proof_request(
+        proof_request=test_module.SendProofRequest(
+            connection_id="abcde",
+            proof_request=indy_proof_request,
+            protocol_version="v1",
+        ),
+        aries_controller=mock_agent_controller,
     )
     with patch(
         "app.generic.verifier.verifier_utils.get_connection_record",
@@ -96,8 +104,14 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV2).send_proof_request(...).thenReturn(
         get(presentation_exchange_record_2)
     )
-    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
-        get(DIDResult(result=DID(did=actor["did"])))
+
+    result = await test_module.send_proof_request(
+        proof_request=test_module.SendProofRequest(
+            connection_id="abcde",
+            proof_request=indy_proof_request,
+            protocol_version="v2",
+        ),
+        aries_controller=mock_agent_controller,
     )
     with patch(
         "app.generic.verifier.verifier_utils.get_connection_record",
@@ -132,8 +146,12 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV1).create_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
     )
-    when(mock_agent_controller.wallet).get_public_did(...).thenReturn(
-        get(DIDResult(result=DID(did=actor["did"])))
+
+    result = await test_module.create_proof_request(
+        proof_request=test_module.CreateProofRequest(
+            protocol_version="v1", proof_request=indy_proof_request
+        ),
+        aries_controller=mock_agent_controller,
     )
     with patch(
         "app.generic.verifier.verifier_utils.get_connection_record",
@@ -170,26 +188,12 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
         get(presentation_exchange_record_2)
     )
 
-    with patch(
-        "app.generic.verifier.verifier_utils.get_connection_record",
-        return_value=conn_record,
-    ), patch(
-        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
-    ), patch(
-        "app.generic.verifier.verifier_utils.is_verifier", return_value=True
-    ), patch(
-        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
-    ), patch(
-        "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
-    ), patch(
-        "app.generic.verifier.verifier_utils.is_valid_schemas", return_value=True
-    ):
-        result = await test_module.create_proof_request(
-            proof_request=test_module.CreateProofRequest(
-                protocol_version="v2", proof_request=IndyProofRequest(**proof_dict)
-            ),
-            aries_controller=mock_agent_controller,
-        )
+    result = await test_module.create_proof_request(
+        proof_request=test_module.CreateProofRequest(
+            protocol_version="v2", proof_request=indy_proof_request
+        ),
+        aries_controller=mock_agent_controller,
+    )
 
         assert result is presentation_exchange_record_2
         verify(VerifierV2).create_proof_request(...)

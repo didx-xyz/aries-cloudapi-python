@@ -44,11 +44,10 @@ def test_register_actor():
 
 
 def test_update_actor():
-    payload = json.dumps(new_actor)
     response = client.post(
         "/registry/actors/darth-vader",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=new_actor,
     )
     assert response.status_code == 200
     assert response.json() == new_actor
@@ -61,10 +60,31 @@ def test_update_actor():
     response = client.post(
         "/registry/actors/idonotexist",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=new_actor,
     )
     assert response.status_code == 404
     assert "Actor not found" in response.json()["detail"]
+
+
+def test_update_actor_x():
+    updated_actor = new_actor.copy()
+    updated_actor["did"] = None
+
+    response = client.post(
+        "/registry/actors/darth-vader",
+        headers={"content-type": "application/json", "accept": "application/json"},
+        json=updated_actor,
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [
+            {
+                "loc": ["body", "did"],
+                "msg": "none is not an allowed value",
+                "type": "type_error.none.not_allowed",
+            }
+        ]
+    }
 
 
 def test_remove_schema():

@@ -1,5 +1,5 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, IndyProofRequest
+from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
 
@@ -13,8 +13,7 @@ from app.generic.verifier.models import (
 
 from .test_verifier_utils import (
     get,
-    proof_dict,
-    proof_request_indy,
+    indy_proof_request,
     v20_presentation_exchange_records,
 )
 
@@ -30,7 +29,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     created_proof_request = await VerifierV2.create_proof_request(
         controller=mock_agent_controller,
         proof_request=CreateProofRequest(
-            protocol_version="v2", roof_request=proof_request_indy
+            protocol_version="v2", proof_request=indy_proof_request
         ),
     )
 
@@ -57,7 +56,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         proof_request=SendProofRequest(
             protocol_version="v2",
             connection_id="abcde",
-            proof_request=IndyProofRequest(**proof_dict),
+            proof_request=indy_proof_request,
         ),
     )
 

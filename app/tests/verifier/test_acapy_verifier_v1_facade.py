@@ -12,7 +12,7 @@ from app.generic.verifier.models import (
 
 from .test_verifier_utils import (
     get,
-    proof_dict,
+    indy_proof_request,
     v10_presentation_exchange_records,
     v10_presentation_proposal_request,
 )
@@ -29,7 +29,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     created_proof_request = await VerifierV1.create_proof_request(
         controller=mock_agent_controller,
         proof_request=CreateProofRequest(
-            proof_request=IndyProofRequest(**proof_dict), comment=None
+            proof_request=indy_proof_request, comment=None
         ),
     )
 
@@ -59,7 +59,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         proof_request=SendProofRequest(
             connection_id="abcde",
             proof_id=None,
-            proof_request=v10_presentation_proposal_request,
+            proof_request=indy_proof_request,
         ),
     )
 

@@ -91,7 +91,8 @@ async def test_set_public_did(yoma_client: AsyncClient, yoma_acapy_client: AcaPy
 
 @pytest.mark.asyncio
 async def test_set_did_endpoint(yoma_acapy_client: AcaPyClient):
-    did = await create_public_did(yoma_acapy_client)
+    # Don't want us overwriting the real endpoint, so not setting as public did
+    did = await create_public_did(yoma_acapy_client, set_public=False)
     endpoint = "https://ssi.com"
 
     await set_did_endpoint(
@@ -100,4 +101,8 @@ async def test_set_did_endpoint(yoma_acapy_client: AcaPyClient):
         aries_controller=yoma_acapy_client,
     )
 
-    endpoint = await get_did_endpoint(did.did, aries_controller=yoma_acapy_client)
+    retrieved_endpoint = await get_did_endpoint(
+        did.did, aries_controller=yoma_acapy_client
+    )
+
+    assert_that(endpoint).is_equal_to(retrieved_endpoint.endpoint)

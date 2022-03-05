@@ -1,6 +1,5 @@
 import logging
 from typing import List, Literal, Optional
-
 import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
@@ -8,7 +7,7 @@ from app.constants import TRUST_REGISTRY_URL
 
 logger = logging.getLogger(__name__)
 
-Role = Literal["issuer", "verifier"]
+TrustRegistryRole = Literal["issuer", "verifier"]
 
 
 class TrustRegistryException(HTTPException):
@@ -25,7 +24,7 @@ class TrustRegistryException(HTTPException):
 class Actor(TypedDict):
     id: str
     name: str
-    roles: List[Literal["issuer", "verifier"]]
+    roles: List[TrustRegistryRole]
     did: str
     didcomm_invitation: Optional[str]
 
@@ -109,7 +108,7 @@ async def assert_valid_verifier(did: str, schema_id: str):
         )
 
 
-async def actor_has_role(actor_id: str, role: Role) -> bool:
+async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
     """Check whether the actor has specified role.
 
     Args:
@@ -169,13 +168,13 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
         return None
     elif actor_res.is_error:
         raise TrustRegistryException(
-            f"Error fetching actor by did: {actor_res.text}", actor_res.status_code
+            f"Error fetching actor by id: {actor_res.text}", actor_res.status_code
         )
 
     return actor_res.json()
 
 
-async def actors_with_role(role: Role) -> List[Actor]:
+async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     """Get all actors from the trust registry by role
 
     Args:
@@ -278,8 +277,60 @@ async def register_actor(actor: Actor) -> None:
     """
     actor_res = httpx.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
 
+    if actor_res.status_code == 422:
+        raise TrustRegistryException(actor_res.json(), 422)
     if actor_res.is_error:
         raise TrustRegistryException(
             f"Error registering actor: {actor_res.text}", actor_res.status_code
         )
-    return actor_res
+
+
+async def remove_actor_by_id(actor_id: str) -> None:
+    """Remove actor from trust registry by id
+
+    Args:
+        actor_id (str): identifier of the actor to remove
+
+    Raises:
+        TrustRegistryException: If an error occurred while removing the actor
+    """
+    remove_response = httpx.delete(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
+
+    if remove_response.is_error:
+        raise TrustRegistryException(
+            f"Error removing actor from trust registry: {remove_response.text}",
+            remove_response.status_code,
+        )
+
+
+async def remove_schema_by_id(schema_id: str) -> None:
+    """Remove schema from trust registry by id
+
+    Args:
+        actor_id (str): identifier of the schema to remove
+
+    Raises:
+        TrustRegistryException: If an error occurred while removing the schema
+    """
+    remove_response = httpx.delete(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+
+    if remove_response.is_error:
+        raise TrustRegistryException(
+            f"Error removing schema from trust registry: {remove_response.text}",
+            remove_response.status_code,
+        )
+
+
+async def update_actor(actor: Actor) -> None:
+    actor_id = actor["id"]
+
+    update_response = httpx.post(
+        f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}", json=actor
+    )
+
+    if update_response.status_code == 422:
+        raise TrustRegistryException(update_response.json(), 422)
+    elif update_response.is_error:
+        raise TrustRegistryException(
+            f"Error updating actor in trust registry: {update_response.text}"
+        )

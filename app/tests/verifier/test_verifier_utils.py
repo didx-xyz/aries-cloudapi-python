@@ -4,9 +4,9 @@ from app.error.cloud_api_error import CloudApiException
 
 from app.generic.verifier.models import (
     AcceptProofRequest,
-    PresentationExchange,
     SendProofRequest,
 )
+from shared_models import PresentationExchange
 from unittest.mock import patch
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.facades.trust_registry import Actor

@@ -1,8 +1,19 @@
 from typing import TypedDict
 from random import random
+import time
+import json
 
 import pytest
-from aries_cloudcontroller import AcaPyClient
+from assertpy import assert_that
+from aries_cloudcontroller import (
+    AcaPyClient,
+    SchemaSendResult,
+    InvitationResult,
+)
+from shared_models import (
+    CredentialExchange,
+)
+from app.tests.util.trust_registry import register_issuer
 from httpx import AsyncClient
 from app.facades.trust_registry import (
     Actor,
@@ -11,7 +22,6 @@ from app.facades.trust_registry import (
     register_schema,
     register_actor,
 )
-from app.generic.issuer.models import CredentialExchange
 from app.generic.connections.connections import CreateInvitation
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 

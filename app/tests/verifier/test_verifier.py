@@ -4,6 +4,7 @@ from aries_cloudcontroller.model.did_result import DIDResult
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
+    ConnRecord,
     IndyCredPrecis,
 )
 from mockito import verify, when
@@ -195,8 +196,8 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
         aries_controller=mock_agent_controller,
     )
 
-        assert result is presentation_exchange_record_2
-        verify(VerifierV2).create_proof_request(...)
+    assert result is presentation_exchange_record_2
+    verify(VerifierV2).create_proof_request(...)
 
 
 @pytest.mark.asyncio

@@ -231,12 +231,6 @@ async def accept_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-
-        # return await check_tr_for_prover(
-        #     aries_controller=aries_controller,
-        #     prover=prover,
-        #     proof_request=proof_request,
-        # )
         if await check_tr_for_prover(
             aries_controller=aries_controller,
             prover=prover,

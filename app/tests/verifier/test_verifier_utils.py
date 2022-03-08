@@ -82,21 +82,21 @@ v10_presentation_proposal_request = V10PresentationProposalRequest(
 
 indy_proof_request = IndyProofRequest(
     name="string",
-    non_revoked=IndyProofRequestNonRevoked(from_=0, to=0),
+    non_revoked=IndyProofRequestNonRevoked(from_=0, to=20),
     nonce="12345",
     requested_attributes={
-        "0_string_uuid": IndyProofReqAttrSpec(
-            name="string",
-            non_revoked=IndyProofReqAttrSpecNonRevoked(from_=0, to=0),
+        "0_speed_uuid": IndyProofReqAttrSpec(
+            name="speed",
+            non_revoked=IndyProofReqAttrSpecNonRevoked(from_=0, to=20),
             restrictions=None,
         )
     },
     requested_predicates={
-        "0_string_GE_uuid": IndyProofReqPredSpec(
+        "0_speed_GE_uuid": IndyProofReqPredSpec(
             name="string",
-            p_type="<",
+            p_type=">",
             p_value=0,
-            non_revoked=IndyProofReqPredSpecNonRevoked(from_=0, to=0),
+            non_revoked=IndyProofReqPredSpecNonRevoked(from_=0, to=20),
             restrictions=None,
         )
     },

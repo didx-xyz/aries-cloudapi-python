@@ -26,7 +26,7 @@ async def test_send_credential(
         "protocol_version": "v1",
         "connection_id": bob_and_alice_connection["bob_connection_id"],
         "schema_id": schema_definition.schema_id,
-        "attributes": {"speed": "average"},
+        "attributes": {"speed": "10"},
     }
 
     await register_issuer(bob_member_client, schema_definition.schema_id)
@@ -50,7 +50,7 @@ async def test_send_credential(
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.schema_id)
 
     credential["protocol_version"] = "v2"
@@ -63,7 +63,7 @@ async def test_send_credential(
     data = response.json()
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
-    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.schema_id)
 
     assert check_webhook_state(
@@ -112,7 +112,7 @@ async def test_send_credential_request(
         "protocol_version": "v1",
         "connection_id": bob_and_alice_connection["bob_connection_id"],
         "schema_id": schema_definition.schema_id,
-        "attributes": {"speed": "average"},
+        "attributes": {"speed": "10"},
     }
 
     await register_issuer(bob_member_client, schema_definition.schema_id)
@@ -156,7 +156,7 @@ async def test_store_credential(
         "protocol_version": "v1",
         "connection_id": bob_and_alice_connection["bob_connection_id"],
         "schema_id": schema_definition.schema_id,
-        "attributes": {"speed": "average"},
+        "attributes": {"speed": "10"},
     }
 
     await register_issuer(bob_member_client, schema_definition.schema_id)

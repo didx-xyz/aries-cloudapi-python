@@ -111,15 +111,18 @@ class PresentationExchange(BaseModel):
     presentation_request: Optional[IndyProofRequest] = None
     protocol_version: ProofRequestProtocolVersion
     role: Literal["prover", "verifier"]
-    state: Literal[
-        "proposal-sent",
-        "proposal-received",
-        "request-sent",
-        "request-received",
-        "presentation-sent",
-        "presentation-received",
-        "done",
-        "abandoned",
+    state: Union[
+        None,
+        Literal[
+            "proposal-sent",
+            "proposal-received",
+            "request-sent",
+            "request-received",
+            "presentation-sent",
+            "presentation-received",
+            "done",
+            "abandoned",
+        ],
     ]
     updated_at: Optional[str] = None
     verified: Optional[bool] = None

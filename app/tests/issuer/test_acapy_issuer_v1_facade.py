@@ -34,7 +34,7 @@ v1_credential_exchange_records = [
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afb9",
         credential_proposal_dict=CredentialProposal(
             credential_proposal=CredentialPreview(
-                attributes=[CredAttrSpec(name="speed", value="fast")]
+                attributes=[CredAttrSpec(name="speed", value="10")]
             )
         ),
         credential_exchange_id="db9d7025-b276-4c32-ae38-fbad41864112",
@@ -49,7 +49,7 @@ v1_credential_exchange_records = [
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
         credential_proposal_dict=CredentialProposal(
             credential_proposal=CredentialPreview(
-                attributes=[CredAttrSpec(name="speed", value="average")]
+                attributes=[CredAttrSpec(name="speed", value="10")]
             )
         ),
         credential_exchange_id="dabc8f4e-164a-410f-bd10-471b090f65a5",

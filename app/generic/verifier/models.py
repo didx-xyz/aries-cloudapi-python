@@ -32,6 +32,7 @@ class CreateProofRequest(ProofRequestBase):
 class AcceptProofRequest(ProofRequestBase):
     proof_id: Optional[str] = None
     presentation_spec: Optional[IndyPresSpec] = None
+    connection_id: Optional[str] = None
 
 
 class RejectProofRequest(ProofRequestBase):

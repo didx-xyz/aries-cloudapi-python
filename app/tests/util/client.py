@@ -1,5 +1,6 @@
 from typing import Any, Optional
 from aries_cloudcontroller import (
+    ConnectionApi,
     LedgerApi,
     OutOfBandApi,
     WalletApi,
@@ -13,6 +14,8 @@ from aries_cloudcontroller import (
 )
 from httpx import AsyncClient, AsyncHTTPTransport
 from mockito import mock
+
+from shared_models.shared_models import Connection
 
 from .constants import (
     ECOSYSTEM_FASTAPI_ENDPOINT,
@@ -35,6 +38,7 @@ def get_mock_agent_controller() -> AcaPyClient:
     controller = mock(AcaPyClient)
     controller.wallet = mock(WalletApi)
     controller.ledger = mock(LedgerApi)
+    controller.connection = mock(ConnectionApi)
     controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
     controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
     controller.present_proof_v1_0 = mock(PresentProofV10Api)

@@ -98,8 +98,6 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 
 @pytest.mark.asyncio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
-    v1_connecions = [mock(Connection)]
-    v2_connecions = [mock(Connection)]
     # V1
     when(VerifierV1).create_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
@@ -160,8 +158,6 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
         "app.generic.verifier.verifier_utils.get_actor", return_value=actor
     ), patch(
         "app.generic.verifier.verifier_utils.is_verifier", return_value=True
-    ), patch(
-        "app.generic.verifier.verifier_utils.get_credential_ids", return_value=["abcde"]
     ), patch(
         "app.generic.verifier.verifier_utils.get_schema_ids", return_value=["abcde"]
     ), patch(

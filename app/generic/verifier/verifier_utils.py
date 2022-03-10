@@ -1,5 +1,4 @@
 import base58
-import json
 from typing import List, Literal, Optional
 import logging
 
@@ -42,7 +41,7 @@ async def check_tr_for_verifier(
     # 2. Check actor has role verifier, raise exception otherwise
     if not is_verifier(actor=actor):
         raise CloudApiException(
-            f"{actor} is not a valid verifier in the trust registry."
+            f"{actor['name']} is not a valid verifier in the trust registry."
         )
     else:
         return True
@@ -141,29 +140,9 @@ def attrs_generator(
 
 
 async def get_schema_ids(aries_controller: AcaPyClient) -> list:
-    cred_records = json.loads((await aries_controller.credentials.get_records()).json())
-    schema_ids = [rec["schema_id"] for rec in cred_records["results"]]
+    cred_records = await aries_controller.credentials.get_records()
+    schema_ids = [rec.schema_id for rec in cred_records.results]
     return schema_ids
-
-
-def get_credential_ids(proof_request: ProofRequestBase) -> List:
-    """Get a list of unique credential ids"""
-    credential_ids = []
-    for term in ["requested_attributes", "requested_predicates"]:
-        requested_terms = [
-            x for x in attrs_generator(proof_request=proof_request, search_term=term)
-        ]
-        if None in requested_terms:
-            credential_ids.extend([None])
-        else:
-            req_terms = [
-                requested
-                for term in requested_terms
-                for requested in term
-                if term != None
-            ]
-            credential_ids.extend(req_terms)
-    return list(set(credential_ids))
 
 
 async def get_connection_from_proof(

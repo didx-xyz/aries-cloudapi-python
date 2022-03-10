@@ -251,7 +251,8 @@ async def issue_credential_to_bob(
     response.raise_for_status()
     response = response.json()
 
-    time.sleep(5)
+    # give aca-py some time to process
+    time.sleep(3)
 
     # get cred offer record - holder
     response = await bob_member_client.get("/generic/issuer/credentials")
@@ -270,12 +271,9 @@ async def issue_credential_to_bob(
     )
     response.raise_for_status()
 
-    time.sleep(5)
+    # give aca-py some time to process
+    time.sleep(3)
 
-    # response = await bob_member_client.get("/generic/issuer/credentials")
-    # records = response.json()
-    # cred_id = records[0]["credential_id"]
-    # store credential - holder
     response = await bob_member_client.post(
         f"/generic/issuer/credentials/{cred_id}/store", json={}
     )

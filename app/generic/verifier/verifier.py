@@ -5,7 +5,6 @@ from typing import List
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 from fastapi import APIRouter, Depends
 
-from app.facades import trust_registry
 from app.dependencies import agent_selector
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
@@ -168,12 +167,9 @@ async def send_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-        if await check_tr_for_verifier(
-            aries_controller=aries_controller, proof_request=proof_request
-        ):
-            return await prover.send_proof_request(
-                controller=aries_controller, proof_request=proof_request
-            )
+        return await prover.send_proof_request(
+            controller=aries_controller, proof_request=proof_request
+        )
     except Exception as e:
         logger.error(f"Failed to send proof request: \n{e!r}")
         raise e from e
@@ -200,7 +196,8 @@ async def create_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
         if await check_tr_for_verifier(
-            aries_controller=aries_controller, proof_request=proof_request
+            aries_controller=aries_controller,
+            proof_request=proof_request,
         ):
             return await prover.create_proof_request(
                 controller=aries_controller, proof_request=proof_request

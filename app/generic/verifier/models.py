@@ -26,6 +26,7 @@ class SendProofRequest(ProofRequestBase):
 class CreateProofRequest(ProofRequestBase):
     proof_request: Optional[IndyProofRequest] = None
     comment: Optional[str] = None
+    connection_id: Optional[str] = None
 
 
 class AcceptProofRequest(ProofRequestBase):

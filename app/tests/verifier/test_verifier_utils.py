@@ -10,13 +10,11 @@ from aries_cloudcontroller import (
     IndyProof,
     IndyProofProof,
     IndyProofReqAttrSpec,
-    IndyProofReqPredSpec,
     IndyProofRequest,
     IndyProofRequestNonRevoked,
     IndyProofRequestedProof,
     IndyRequestedCredsRequestedPred,
     IndyProofReqAttrSpecNonRevoked,
-    IndyProofReqPredSpecNonRevoked,
     IndyRequestedCredsRequestedAttr,
     V10PresentationExchange,
     V10PresentationProposalRequest,
@@ -25,7 +23,6 @@ from aries_cloudcontroller import (
     V20PresExRecordByFormat,
     V20PresFormat,
     V20PresProposal,
-    V20PresRequestByFormat,
 )
 
 
@@ -91,15 +88,7 @@ indy_proof_request = IndyProofRequest(
             restrictions=None,
         )
     },
-    requested_predicates={
-        "0_speed_GE_uuid": IndyProofReqPredSpec(
-            name="string",
-            p_type=">",
-            p_value=0,
-            non_revoked=IndyProofReqPredSpecNonRevoked(from_=0, to=20),
-            restrictions=None,
-        )
-    },
+    requested_predicates={},
     version="1.0",
 )
 

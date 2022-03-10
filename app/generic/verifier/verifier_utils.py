@@ -1,11 +1,10 @@
-from aries_cloudcontroller.api import connection
 import base58
 import json
 from typing import List, Literal, Optional
 import logging
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord
-from .models import ProofRequestBase, SendProofRequest
+from .models import ProofRequestBase
 from app.facades.trust_registry import (
     Actor,
     actor_by_did,
@@ -21,7 +20,6 @@ logger = logging.getLogger(__name__)
 # VERIFIER
 async def check_tr_for_verifier(
     aries_controller: AcaPyClient,
-    # prover: Verifier,
     proof_request,
 ) -> Optional[bool]:
     """Check transaction requirements against trust registry for verifier"""
@@ -34,7 +32,7 @@ async def check_tr_for_verifier(
         ## check via connection -> invitation key
         connection_record = await get_connection_record(
             aries_controller=aries_controller,
-            connection_id=proof_request["connection_id"],
+            connection_id=proof_request.connection_id,
         )
         # get invitation key
         invitation_key = connection_record.invitation_key
@@ -42,14 +40,12 @@ async def check_tr_for_verifier(
     # Try get actor from TR
     actor = await get_actor(did=pub_did)
     # 2. Check actor has role verifier, raise exception otherwise
-    return is_verifier(actor=actor)
-    # 3. Verify schema ID(s) are registered in trust registry
-    # schema_ids = get_schema_ids_from_proof_request(proof_request=proof_request)
-    # # # Verify the schemas are actually in the list from TR
-    # if await is_valid_schemas(schema_ids=schema_ids):
-    #     return True
-    # else:
-    #     raise CloudApiException("Could not verify prover against trust registry", 401)
+    if not is_verifier(actor=actor):
+        raise CloudApiException(
+            f"{actor} is not a valid verifier in the trust registry."
+        )
+    else:
+        return True
 
 
 # PROVER
@@ -62,39 +58,32 @@ async def check_tr_for_prover(
     connection_id = await get_connection_from_proof(
         aries_controller=aries_controller, proof_id=proof_id, prover=prover
     )
-    # return connection_id
     connection_record = await get_connection_record(
         aries_controller=aries_controller,
-        # prover=prover,
         connection_id=connection_id,
-        # proof_id=proof_request.proof_id,
     )
-    # return connection_record
-    connection_record = json.loads(connection_record)
     # TODO: (In other PR) handle case where no conneciton id exists
     # instead of simply rejecting the request
-    if not connection_record["connection_id"]:
+    if not connection_record.connection_id:
         raise CloudApiException(f"Cannot proceed. No connection ID", 404)
 
     # Case 1: connection NOT made with publid DID
-    if (
-        connection_record["their_public_did"]
-        and connection_record["their_public_did"] != ""
-    ):
-        pub_did = f"did:sov:{connection_record['their_public_did']}"
+    if connection_record.their_public_did and connection_record.their_public_did != "":
+        pub_did = f"did:sov:{connection_record.their_public_did}"
     # Case 2: connection made with public DID
     else:
-        invitation_key = connection_record["invitation_key"]
+        invitation_key = connection_record.invitation_key
         pub_did = ed25519_verkey_to_did_key(key=invitation_key)
 
     # Try get actor from TR
-    # actor = await get_actor(did=pub_did)
+    actor = await get_actor(did=pub_did)
     # 2. Check actor has role verifier
-    # is_verifier(actor=actor)
+    if not is_verifier(actor=actor):
+        raise CloudApiException("Could not verify prover against trust registry", 401)
 
     # Get schema ids
     schema_ids = await get_schema_ids(aries_controller=aries_controller, prover=prover)
-    # return schema_ids
+
     # Verify the schemas are actually in the list from TR
     if await is_valid_schemas(schema_ids=schema_ids):
         return True
@@ -151,7 +140,7 @@ def attrs_generator(
                 yield val
 
 
-async def get_schema_ids(aries_controller: AcaPyClient, prover: Verifier) -> list:
+async def get_schema_ids(aries_controller: AcaPyClient) -> list:
     cred_records = json.loads((await aries_controller.credentials.get_records()).json())
     schema_ids = [rec["schema_id"] for rec in cred_records["results"]]
     return schema_ids
@@ -177,30 +166,20 @@ def get_credential_ids(proof_request: ProofRequestBase) -> List:
     return list(set(credential_ids))
 
 
-def get_schema_ids_from_proof_request(proof_request: SendProofRequest):
-    # return proof_request
-    return list(proof_request.proof_request.requested_predicates.keys()) + list(
-        proof_request.proof_request.requested_attributes.keys()
-    )
-
-
 async def get_connection_from_proof(
     aries_controller: AcaPyClient, prover: Verifier, proof_id: str
 ) -> str:
-    return ((await prover.get_proof_records(aries_controller))[0]).connection_id
-    cred_recs = (await aries_controller.present_proof_v1_0.get_records()).json()
-    return json.loads(cred_recs)  # ["results"]  # [0]["connection_id"]
+    proof_records = await prover.get_proof_records(aries_controller)
+    associated_proofs = [p for p in proof_records if p.proof_id == proof_id]
+    return associated_proofs[0].connection_id
 
 
 async def get_connection_record(
     aries_controller: AcaPyClient,
-    # prover: Verifier,
     connection_id: str,
 ) -> ConnRecord:
     """Retrieve the connection record"""
-    return (
-        await aries_controller.connection.get_connection(conn_id=connection_id)
-    ).json()
+    return await aries_controller.connection.get_connection(conn_id=connection_id)
 
 
 def ed25519_verkey_to_did_key(key: str) -> str:

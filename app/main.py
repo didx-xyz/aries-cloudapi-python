@@ -19,9 +19,17 @@ from app.generic.issuer import issuer
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
 
+OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
+
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
-app = FastAPI(debug=not prod)
+app = FastAPI(
+    debug=not prod,
+    title=OPENAPI_NAME,
+    description="Welcome to the Aries CloudAPI Python project",
+    version=PROJECT_VERSION,
+)
 
 app.include_router(connections.router)
 app.include_router(issuer.router)

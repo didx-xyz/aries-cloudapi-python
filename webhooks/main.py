@@ -15,11 +15,17 @@ import logging
 import os
 import sys
 
+OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Webhooks")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "error")
 log = logging.getLogger(__name__)
 
 
-app = FastAPI()
+app = FastAPI(
+    title=OPENAPI_NAME,
+    description="Welcome to the OpenAPI interface for the AriesCloudAPI webhooks handler",
+    version=PROJECT_VERSION,
+)
 router = APIRouter()
 endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")

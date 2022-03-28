@@ -18,7 +18,6 @@ from app.generic.verifier.verifier_utils import (
     is_verifier,
     check_tr_for_prover,
     check_tr_for_verifier,
-    attrs_generator,
     get_actor,
 )
 
@@ -172,44 +171,6 @@ indy_pres_spec = IndyPresSpec(
 )
 
 
-def test_attrs_generator():
-    # Test with accept proof request
-    proof_request_1 = AcceptProofRequest(
-        proof_id="12345", presentation_spec=indy_pres_spec
-    )
-
-    attrs_got = attrs_generator(
-        proof_request=proof_request_1, search_term="requested_attributes"
-    )
-    attrs_got = [x for x in attrs_got]
-    assert attrs_got == [
-        {"0_string_uuid": {"cred_id": "0_string_uuid", "revealed": None}}
-    ]
-
-    preds_got = attrs_generator(
-        proof_request=proof_request_1, search_term="requested_predicates"
-    )
-    preds_got = [x for x in preds_got]
-    assert preds_got == [
-        {"0_string_GE_uuid": {"cred_id": "0_string_GE_uuid", "timestamp": None}}
-    ]
-
-    # Test with empty
-    proof_request_2 = SendProofRequest(proof_id="12345", proof_request={})
-
-    attrs_got = attrs_generator(
-        proof_request=proof_request_2, search_term="requested_attributes"
-    )
-    attrs_got = [x for x in attrs_got]
-    assert attrs_got == [None]
-
-    preds_got = attrs_generator(
-        proof_request=proof_request_2, search_term="requested_predicates"
-    )
-    preds_got = [x for x in preds_got]
-    assert preds_got == [None]
-
-
 @pytest.mark.asyncio
 async def test_is_valid_schemas():
     # schemas are valid
@@ -286,7 +247,7 @@ async def test_ed25519_verkey_to_did_key():
     got_key = ed25519_verkey_to_did_key(
         key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
     )
-    assert got_key == "did:key:6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
+    assert got_key == "did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
 
 
 @pytest.mark.asyncio

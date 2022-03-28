@@ -146,15 +146,10 @@ async def test_accept_proof_request(
     )
 
     assert check_webhook_state(
-        client=alice_member_client,
+        client=bob_member_client,
         filter_map={"state": "request-sent"},
         topic="present_proof",
-    )
-
-    assert check_webhook_state(
-        client=bob_member_client,
-        filter_map={"state": "request-received"},
-        topic="present_proof",
+        max_duration=30,
     )
     proof_records_bob = await bob_member_client.get(BASE_PATH + "/proofs")
     proof_id = proof_records_bob.json()[0]["proof_id"]
@@ -182,7 +177,7 @@ async def test_accept_proof_request(
     )
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "presentation-sent"},
+        filter_map={"state": "request-sent"},
         topic="present_proof",
         max_duration=30,
     )
@@ -240,7 +235,7 @@ async def test_accept_proof_request(
     )
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "presentation-sent"},
+        filter_map={"state": "request-received"},
         topic="present_proof_v2_0",
         max_duration=30,
     )

@@ -227,6 +227,25 @@ async def registry_has_schema(schema_id: str) -> bool:
     return bool(schema_id in schema["schemas"])
 
 
+async def get_trust_registry_schemas() -> List:
+    """Retrieve all schemas from the trust registry
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the trust registry schemas.
+
+    Returns:
+        A list of schemas
+    """
+    trust_registry_schemas_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+
+    if trust_registry_schemas_res.is_error:
+        raise TrustRegistryException(
+            trust_registry_schemas_res.text, trust_registry_schemas_res.status_code
+        )
+
+    return trust_registry_schemas_res.json()["schemas"]
+
+
 async def get_trust_registry() -> TrustRegistry:
     """Retrieve the complete trust registry
 
@@ -234,7 +253,7 @@ async def get_trust_registry() -> TrustRegistry:
         TrustRegistryException: If an error occurred while retrieving the trust registry.
 
     Returns:
-        TrustRegistry: the trust registry.s
+        TrustRegistry: the trust registries
     """
     trust_registry_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry")
 

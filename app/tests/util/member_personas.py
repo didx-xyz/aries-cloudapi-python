@@ -301,8 +301,12 @@ async def alice_bob_connect_multi(
         )
     ).json()
 
-    print(f"\n\n\n\n Invitation: {invitation}\n\n\n")
-    time.sleep(10)
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="connections",
+        max_duration=30,
+    )
 
     bob_connection_id = bob_multi_use_invitation["multi_use_invitation"][
         "connection_id"
@@ -316,19 +320,20 @@ async def alice_bob_connect_multi(
     ).json()
     print(json.dumps(bob_connection_records, indent=2))
 
-    bob_connection = bob_connection_records[0]
     bob_connection_id = bob_connection_records[0]["connection_id"]
-    alice_connection = (
-        await alice_member_client.get(f"/generic/connections/{alice_connection_id}")
-    ).json()
-    conn = {
-        "alice_connection_id": alice_connection_id,
-        "bob_connection_id": bob_connection_id,
-    }
-    print(conn)
 
-    assert_that(bob_connection).has_state("completed")
-    assert_that(alice_connection).has_state("completed")
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "completed"},
+        topic="connections",
+        max_duration=30,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "completed"},
+        topic="connections",
+        max_duration=30,
+    )
 
     return {
         "alice_connection_id": alice_connection_id,

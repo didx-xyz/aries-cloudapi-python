@@ -1,6 +1,6 @@
 ### Quickstart
 
-Assuming you have all neccessary requirements installed you can start up the entire project using either GNU Make:
+Assuming you have all necessary requirements installed you can start up the entire project using either GNU Make:
 
 ```bash
 make start
@@ -53,6 +53,6 @@ The standard setup spins up the the entire infrastructure required with the foll
 - [Trust registry](http://localhost:8001/docs)
 
 In order to change specific variables and environment parameters for each container internally you likely want to do that in the respective `.env` files. Those are located in sub-folders named correspondingly to the containers within the `environments` folder. For example,
-if you want to set `auto-accept invites` for the aca-py multitenant instance form its default value `false` to `true` you can do so by changing `ACAPY_AUTO_ACCEPT_INVITES` to `true` within `environments/yoma-multitenant/aca-py-agent.default.env`. Corollary, you can do so for other vars and other containers. Stop the container(s) accordingly and start them back up using docker-compose.
+if you wanted to set `auto-provision` for the aca-py multitenant instance form its default value `true` to `false` you can do so by changing `ACAPY_AUTO_PROVISION` to `false` within `environments/yoma-multitenant/aca-py-agent.default.env`. Corollary, you can do so for other vars and other containers. Stop the container(s) accordingly and start them back up using docker-compose.
 
 However, a word of caution, watch out when changing things like ports. Here, you will also want to change port mappings within the `docker-compose.yaml` accordingly. For instance, if you change `ACAPY_ENDPOINT` or `ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the values withing the `docker-compose.yaml` to reflect these changes. That means ensure that other containers relying on the service you change params for are aware of these changes.

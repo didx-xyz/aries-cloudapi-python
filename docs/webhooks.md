@@ -8,6 +8,8 @@ Secondly, the webhooks are stored by topic and wallet ID. That way the hooks can
 
 There are also two ways to retrieve webhook data. The first way is tha classic http request and multiple thereof aka polling. Find the http endpoints via the [webhooks SwaggerUI](http://localhost:3010/docs) and roll your own polling mechanism. You can also subscribe to via PubSub mechanism (Websockets under the hood) under the [/pubsub endpoint](http://localhost:3010/pubsub) and specifying a, or several, topic(s). There is a short example of how to do that in python using the [`fastapi_websocket_pubsub`](https://github.com/permitio/fastapi_websocket_pubsub) package you can find in `webhooks/clients.example.py`.
 
+**_NOTE_**: The webhooks container is **NOT** intended to be exposed to the ww directly, especially not via pubsub/websocket as there is NO auth mechanism in place. Exposing the websocket will leave anyone on the www able to read any webhook.
+
 Valid topics are:
 
 ```python

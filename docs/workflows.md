@@ -20,23 +20,54 @@ A client can subscribe to the webhooks via the CloudAPI (as opposed to directly 
 
 Authentication is handled by the CloudAPI and, fom a client perspective, kept simple and convenient. Either, via the Swagger UI auth (padlock button in UI) or via the HEADER data of your client specifying an `x-api-key`. Regardless of whether ou use the UI or another client, the `x-api-key` value consists of two parts, separated by a dot:
 
-`{role}.{key/password}`
+`{role}.{key/token}`
 
-So, your header has the format `'x-api-key: {role}.{key/password}` which yields, for example, `'x-api-key: yoma.adminApiKey'`
+So, your header has the format `'x-api-key: {role}.{key/token}` which yields, for example, `'x-api-key: yoma.adminApiKey'`
 
 The first part `role` specifies the role on the surface and targets the correct endpoints under the hood and authentication mechanisms under the hood. The CloudAPI knows how to interpret the roles and will produce the correct target URLs for eg aca-py (`member` targets the multitenant agent) with the correct header expected by aca-py agent. For instance, `member` results in a `Bearer {TOKEN}` header against the multitenant agent whereas `member-admin` as role results in an `x-api-key` header for the multitenant agent (hence targeting the admin interface of the same multitennat agent). You may have noticed now that this mechanism also chooses which aca-py instance to target without having to know or specify the URL the agent resides under.
 
 Currently there are five options for `role`:
 
 - yoma
+  - is:
+    - endorser
+  - can:
+    - create schemas
+    - manage trust registry
+    - create/ manage wallets
+    - issue credential
 - ecosystem
+  - is:
+    - holder
+    - issuer/verifier
+    - automatically registered with the trust registry
+  - can:
+    - create schemas/ issue credential
+    - create/manage wallets
+    - issue credential
 - ecosystem-admin
+  - is:
+    - ecosystem admin
+  - can:
+    - only create new tenants/wallets for ecosystem
 - member
+  - is:
+    - member instance
+    - holder only
+  - can:
+    - manage own wallet (holder)
+    - receive and store credentials
+    - respond to/create proof request
+    - messaging etc. ...
 - member-admin
+  - is:
+    - member admin
+  - can:
+    - only create new tenants/wallets for members
 
 the `yoma` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the aca-py admin tasks nor any documented endpoints prefixed `admin:` in the CloudAPI.
 
-For admin roles pass the admin password as the second part of `{role}.{key/password}`. For member/ecosystem (non-admin roles) pass the wallets JWT as the second part of `{role}.{key/password}`.
+For admin roles pass the admin password as the second part of `{role}.{key/token}`. For member/ecosystem (non-admin roles) pass the wallets JWT as the second part of `{role}.{key/token}`.
 
 ### Creating schemas
 

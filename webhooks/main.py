@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import Any, Dict, List
 from pprint import pformat
 
 from fastapi import FastAPI, Request, Depends, APIRouter
@@ -9,7 +9,7 @@ from fastapi_websocket_pubsub import PubSubEndpoint
 
 from containers import Container as RedisContainer
 from services import Service
-from shared_models import TopicItem
+from shared_models import TopicItem, topic_mapping, RedisItem, WEBHOOK_TOPIC_ALL
 
 import logging
 import os
@@ -29,12 +29,11 @@ app.include_router(router)
 @app.api_route("/{topic}/{wallet_id}")
 @inject
 async def wallet_hooks(
-    topic: str, wallet_id: str, service=Depends(Provide[Container.service])
-) -> List[TopicItem]:
+    topic: str, wallet_id: str, service: Service = Depends(Provide[Container.service])
+) -> List[TopicItem[Any]]:
     data = await service.get_all_for_topic_by_wallet_id(
         topic=topic, wallet_id=wallet_id
     )
-    await endpoint.publish(topics=[topic, wallet_id], data=data)
     return data
 
 
@@ -44,60 +43,65 @@ async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
 ):
     data = await service.get_all_by_wallet(wallet_id)
-    await endpoint.publish(topics=wallet_id, data=data)
     return data
 
 
 # 'origin' helps to distinguish where a hook is from
 # eg the admin, tenant or OP agent respectively
-@app.post("/{origin}/topic/{topic}")
+@app.post("/{origin}/topic/{acapy_topic}", status_code=204)
 @inject
 async def topic_root(
-    topic,
-    origin,
+    acapy_topic: str,
+    origin: str,
+    body: Dict[str, Any],
     request: Request,
     service: Service = Depends(Provide[Container.service]),
 ):
-    payload = await request.json()
+
     try:
-        wallet_id = {"wallet_id": request.headers["x-wallet-id"]}
+        wallet_id = request.headers["x-wallet-id"]
     except KeyError:
-        wallet_id = {"wallet_id": "admin"}
-    payload.update(wallet_id)
-    origin_id = {"origin": origin}
-    payload.update(origin_id)
-    topic_id = {"topic": topic}
-    payload.update(topic_id)
-    payload_str = json.dumps(payload)
-    # redistribute by topic
-    await endpoint.publish(topics=[topic], data=payload_str)
-    # # Add data to redis
-    await service.add_topic_entry(wallet_id["wallet_id"], payload_str)
-    # redistribute per wallet
-    wallet_data = service.get_all_for_topic_by_wallet_id(
-        topic=topic, wallet_id=wallet_id
+        wallet_id = "admin"
+
+    # We need to map from the acapy webhook topic to a unified cloud api topic. If the topic doesn't exist in the topic
+    # mapping it means we don't support the webhook event yet and we will ignore it for now. This allows us to add more
+    # webhook events as needed, without needing to break any models
+    topic = topic_mapping.get(acapy_topic)
+    if not topic:
+        log.debug(
+            f"Not publishing webhook event for acapy_topic {acapy_topic} as it doesn't exist in the topic_mapping"
+        )
+        return
+
+    redis_item: RedisItem = RedisItem(
+        payload=body,
+        origin=origin,
+        topic=topic,
+        acapy_topic=acapy_topic,
+        wallet_id=wallet_id,
     )
-    await endpoint.publish(topics=[wallet_id["wallet_id"]], data=wallet_data)
-    getattr(log, LOG_LEVEL)(f"{topic}:\n{pformat(payload)}")
 
+    webhook_event = await service.transform_topic_entry(redis_item)
+    if not webhook_event:
+        log.debug(
+            f"Not publishing webhook event for topic {topic} as not transformer exists for the topic"
+        )
+        return
 
-# 'origin' helps to distinguish where a hook is from
-# eg the admin aka yoma, tenant or OP agent respectively
-@app.post("/{origin}/{wallet_id}/topic/{topic}")
-async def topic_wallet(
-    wallet_id: str,
-    topic,
-    origin,
-    request: Request,
-    service: Service = Depends(Provide[Container.service]),
-):
-    origin_id = {"origin": origin}
-    payload = await request.json()
-    payload_str = json.dumps(payload)
-    payload.update(origin_id)
-    await service.add_topic_entry(wallet_id, payload_str)
-    await endpoint.publish(topics=[topic, wallet_id], data=payload_str)
-    getattr(log, LOG_LEVEL)(f"Wallet {wallet_id}\n{topic}:\n{pformat(payload)}")
+    # publish the webhook to subscribers for the following topics
+    #  - current wallet id
+    #  - topic of the event
+    #  - 'all' topic, which allows to subscribe to all published events
+    # FIXME: wallet_id is admin for all admin wallets from different origins. We should make a difference on this
+    # Maybe the wallet id should be the role (yoma, ecosystem-admin, member-admin)?
+    await endpoint.publish(
+        topics=[topic, redis_item["wallet_id"], WEBHOOK_TOPIC_ALL],
+        data=webhook_event.json(),
+    )
+    # Add data to redis
+    await service.add_topic_entry(redis_item["wallet_id"], json.dumps(redis_item))
+
+    log.debug(f"{topic}:\n{pformat(webhook_event)}")
 
 
 # Example for broadcasting from eg Redis

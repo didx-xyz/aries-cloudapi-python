@@ -1,7 +1,7 @@
-import traceback
 import io
 import logging
 import os
+import traceback
 from distutils.util import strtobool
 
 import pydantic
@@ -11,14 +11,13 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
-from app.admin import credential_definitions, schemas
 from app.admin.tenants import tenants
-from app.generic import messaging, trust_registry, webhooks
+from app.generic import definitions, messaging, trust_registry, webhooks
 from app.generic.connections import connections
-from app.generic.definitions import definitions
 from app.generic.issuer import issuer
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
+from app.webhook_listener import Webhooks
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -30,11 +29,19 @@ app.include_router(messaging.router)
 app.include_router(wallet.router)
 app.include_router(tenants.router)
 app.include_router(verifier.router)
-app.include_router(schemas.router)
-app.include_router(credential_definitions.router)
 app.include_router(trust_registry.router)
 app.include_router(definitions.router)
 app.include_router(webhooks.router)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await Webhooks.shutdown()
+
+
+@app.on_event("startup")
+async def startup_event():
+    await Webhooks.listen_webhooks()
 
 
 # add endpoints

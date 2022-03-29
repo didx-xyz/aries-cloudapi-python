@@ -17,6 +17,11 @@ from app.tests.util.member_personas import (
     alice_acapy_client,
     bob_acapy_client,
 )
+from app.tests.util.ecosystem_personas import (
+    faber_client,
+    faber_and_alice_connection,
+    faber_acapy_client,
+)
 
 
 @pytest.fixture

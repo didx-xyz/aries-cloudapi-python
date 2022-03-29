@@ -17,6 +17,8 @@ from app.tests.util.client import get_mock_agent_controller
 from app.tests.util.mock import get
 import app.admin.tenants.onboarding as onboarding
 from app.admin.tenants.onboarding import acapy_wallet, acapy_ledger
+import app.admin.tenants.onboarding
+from app.tests.util.webhooks import mock_wait_for_event
 
 
 @pytest.mark.asyncio
@@ -52,10 +54,13 @@ async def test_onboard_issuer_public_did_exists(
         get()
     )
 
+    # Mock event listener
+    when(onboarding).start_listener(...).thenReturn(get(mock_wait_for_event))
     onboard_result = await onboarding.onboard_issuer(
         name="issuer_name",
-        issuer_controller=mock_agent_controller,
         endorser_controller=endorser_controller,
+        issuer_controller=mock_agent_controller,
+        issuer_wallet_id="issuer_wallet_id",
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
@@ -113,10 +118,13 @@ async def test_onboard_issuer_no_public_did(
         get()
     )
 
+    # Mock event listener
+    when(onboarding).start_listener(...).thenReturn(get(mock_wait_for_event))
     onboard_result = await onboarding.onboard_issuer(
         name="issuer_name",
-        issuer_controller=mock_agent_controller,
         endorser_controller=endorser_controller,
+        issuer_controller=mock_agent_controller,
+        issuer_wallet_id="issuer_wallet_id",
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")

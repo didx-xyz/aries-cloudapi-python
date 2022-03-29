@@ -10,6 +10,7 @@ from aries_cloudcontroller import (
     PresentProofV10Api,
     CredentialsApi,
     EndorseTransactionApi,
+    SchemaApi,
 )
 from httpx import AsyncClient, AsyncHTTPTransport
 from mockito import mock
@@ -42,6 +43,7 @@ def get_mock_agent_controller() -> AcaPyClient:
     controller.credentials = mock(CredentialsApi)
     controller.out_of_band = mock(OutOfBandApi)
     controller.endorse_transaction = mock(EndorseTransactionApi)
+    controller.schema = mock(SchemaApi)
     return controller
 
 
@@ -140,4 +142,9 @@ def ecosystem_client(*, token: str, app: Optional[Any] = None):
             "x-api-key": token,
             "content-type": "application/json",
         },
+    )
+
+def ecosystem_acapy_client(*, token: str):
+    return AcaPyClient(
+        base_url=ECOSYSTEM_AGENT_URL, api_key=ECOSYSTEM_AGENT_API_KEY, tenant_jwt=token
     )

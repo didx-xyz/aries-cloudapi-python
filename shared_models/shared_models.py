@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Optional, Dict, Literal, Union, Tuple
+from typing import Any, Generic, Optional, Dict, TypeVar, Union, Tuple
+
+from typing_extensions import TypedDict, Literal
 
 from aries_cloudcontroller import (
     ConnRecord,
@@ -9,9 +11,42 @@ from aries_cloudcontroller import (
     V10CredentialExchange,
     V20CredExRecord,
     V20PresExRecord,
-    IndyProof,
 )
 from pydantic import BaseModel
+from pydantic.generics import GenericModel
+
+WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
+
+AcaPyTopics = Literal[
+    "connections",
+    "issue_credential",
+    "forward",
+    "ping",
+    "basicmessages",
+    "issuer_cred_rev",
+    "issue_credential_v2_0",
+    "issue_credential_v2_0_indy",
+    "issue_credential_v2_0_dif",
+    "present_proof",
+    "present_proof_v2_0",
+    "revocation_registry",
+    "endorse_transaction",
+]
+
+CloudApiTopics = Literal[
+    "basic-messages", "connections", "proofs", "credentials", "endorsements"
+]
+
+# Mapping of acapy topic names to their respective cloud api topic names
+topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
+    "basicmessages": "basic-messages",
+    "connections": "connections",
+    "present_proof": "proofs",
+    "present_proof_v2_0": "proofs",
+    "issue_credential": "credentials",
+    "issue_credential_v2_0": "credentials",
+    "endorse_transaction": "endorsements",
+}
 
 
 class ProofRequestProtocolVersion(Enum):
@@ -57,6 +92,9 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 
     return translation_dict[state]
 
+class Endorsement(BaseModel):
+    transaction_id: str
+    state: str
 
 class Connection(BaseModel):
     connection_id: str
@@ -125,16 +163,30 @@ class PresentationExchange(BaseModel):
     verified: Optional[bool] = None
 
 
-class TopicItem(BaseModel):
+class BasicMessage(BaseModel):
+    connection_id: str
+    content: str
+    message_id: str
+    sent_time: str
+    state: Literal["received"]
+
+
+PayloadType = TypeVar("PayloadType", bound=BaseModel)
+
+
+class TopicItem(GenericModel, Generic[PayloadType]):
     topic: str
-    wallet_id: str = None
-    origin: str = None
-    payload: dict
+    wallet_id: str
+    origin: str
+    payload: PayloadType
 
 
-class HookBase(BaseModel):
-    wallet_id: Optional[str]
-    origin: Optional[str]
+class RedisItem(TypedDict):
+    acapy_topic: str
+    topic: str
+    wallet_id: str
+    origin: str
+    payload: Dict[str, Any]
 
 
 def presentation_record_to_model(
@@ -192,10 +244,6 @@ def conn_record_to_connection(connection_record: ConnRecord):
         invitation_key=connection_record.invitation_key,
         invitation_msg_id=connection_record.invitation_msg_id,
     )
-
-
-class ConnectionsHook(HookBase, Connection):
-    pass
 
 
 def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialExchange:

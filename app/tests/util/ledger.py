@@ -54,6 +54,14 @@ async def post_to_ledger(
         )
 
 
+async def has_public_did(aries_controller: AcaPyClient):
+    try:
+        await acapy_wallet.get_public_did(aries_controller)
+        return True
+    except Exception:
+        return False
+
+
 async def create_public_did(
     aries_controller: AcaPyClient, set_public: bool = True
 ) -> DID:

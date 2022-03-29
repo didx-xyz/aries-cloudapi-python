@@ -1,17 +1,30 @@
+import base64
+import json
 import time
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from httpx import AsyncClient
 import httpx
 from pydantic import BaseModel
 
-from app.facades.webhooks import get_wallet_id_from_b64encoded_jwt, topics
+from shared_models import CloudApiTopics
 from app.tests.util.constants import WEBHOOKS_URL
 
 
 class FilterMap(BaseModel):
     filter_key: str
     filter_value: str
+
+
+def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
+    # Add padding if required
+    # b64 needs lengths divisible by 4
+    if len(jwt) % 4 != 0:
+        n_missing = 4 - (len(jwt) % 4)
+        jwt = jwt + (n_missing * "=")
+
+    wallet = json.loads(base64.b64decode(jwt))
+    return wallet["wallet_id"]
 
 
 def get_wallet_id_from_async_client(client: AsyncClient) -> str:
@@ -27,7 +40,7 @@ def get_wallet_id_from_async_client(client: AsyncClient) -> str:
 
 def check_webhook_state(
     client: AsyncClient,
-    topic: topics,
+    topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]] = {},
     max_duration: int = 15,
     poll_interval: int = 1,
@@ -57,10 +70,14 @@ def check_webhook_state(
     raise Exception(f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
 
 
-def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: topics) -> List:
+def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: CloudApiTopics) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
         hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e
+
+
+async def mock_wait_for_event(*, filter_map: Dict[str, Any], timeout: float = 10):
+    pass

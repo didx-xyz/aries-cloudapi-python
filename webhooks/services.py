@@ -1,32 +1,25 @@
 """Services module."""
 
 import json
-from typing import List
+from typing import Any, List
 
 from aioredis import Redis
 
 from models import (
-    BasicMessagesHook,
-    to_credentential_hook_model,
+    to_credential_hook_model,
     to_proof_hook_model,
     to_connections_model,
 )
-from shared_models import TopicItem
-
-topics = [
-    "connections",
-    "issue_credential",
-    "forward",
-    "ping",
-    "basicmessages",
-    "issuer_cred_rev",
-    "issue_credential_v2_0",
-    "issue_credential_v2_0_indy",
-    "issue_credential_v2_0_dif",
-    "present_proof",
-    "present_proof_v2_0",
-    "revocation_registry",
-]
+from shared_models import (
+    TopicItem,
+    RedisItem,
+    Connection,
+    CredentialExchange,
+    PresentationExchange,
+    BasicMessage,
+    PayloadType,
+    Endorsement,
+)
 
 
 class Service:
@@ -41,65 +34,92 @@ class Service:
         credential_identifiers = ["issue_credential", "issue_credential_v2_0"]
         return topic in credential_identifiers
 
-    def _proof_hook_versioned(self, item: dict) -> dict:
+    def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:
         return to_proof_hook_model(item=item)
 
-    def _credential_hook_versioned(self, item: dict) -> dict:
-        return to_credentential_hook_model(item=item)
+    def _credential_hook_versioned(self, item: RedisItem) -> CredentialExchange:
+        return to_credential_hook_model(item=item)
 
-    def _version_connections(self, item: dict) -> dict:
+    def _version_connections(self, item: RedisItem) -> Connection:
         return to_connections_model(item=item)
 
-    def _to_item(self, topic: str, data: List[dict]) -> List[dict]:
+    def _basic_messages(self, item: RedisItem) -> BasicMessage:
+        basic_message = BasicMessage(**item["payload"])
+
+        return basic_message
+
+    def _endorsements(self, item: RedisItem):
+        endorsement = Endorsement(**item["payload"])
+
+        return endorsement
+
+    def _to_item(self, data: RedisItem):
+        item = None
+
         # Transform the data to the appropriate model
-        if self._is_proof(topic):
-            data = [self._proof_hook_versioned(d) for d in data]
-        elif self._is_credential(topic):
-            data = [self._credential_hook_versioned(d) for d in data]
-        elif topic == "connections":
-            data = [self._version_connections(d) for d in data]
-        elif topic == "basicmessages":
-            data = [BasicMessagesHook(**d) for d in data]
-        return data
+        if data["topic"] == "proofs":
+            item = self._proof_hook_versioned(data)
+        elif data["topic"] == "credentials":
+            item = self._credential_hook_versioned(data)
+        elif data["topic"] == "connections":
+            item = self._version_connections(data)
+        elif data["topic"] == "basic-messages":
+            item = self._basic_messages(data)
+        elif data["topic"] == "endorsements":
+            item = self._endorsements(data)
 
-    def _to_topic_item(self, topic: str, data: List[dict]) -> List[TopicItem]:
-        topic_data = (
-            [
-                TopicItem(
-                    topic=topic,
-                    wallet_id=payload.wallet_id,
-                    origin=payload.origin,
-                    payload=payload,
-                )
-                for payload in data
-            ]
-            if data
-            else []
+        return item
+
+    def _to_topic_item(
+        self, data: RedisItem, payload: PayloadType
+    ) -> TopicItem[PayloadType]:
+        return TopicItem[PayloadType](
+            topic=data["topic"],
+            wallet_id=data["wallet_id"],
+            origin=data["origin"],
+            payload=payload,
         )
-        return topic_data
 
-    async def add_topic_entry(self, topic: str, hook: str) -> List[TopicItem]:
-        return await self._redis.sadd(topic, hook)
+    async def add_topic_entry(self, topic: str, hook: str):
+        await self._redis.sadd(topic, hook)
 
-    async def get_all_by_wallet(self, wallet_id: str) -> List[TopicItem]:
+    async def transform_topic_entry(self, data: RedisItem):
+        """Transfroms an entry from the redis cache into model."""
+        payload = self._to_item(data=data)
+
+        # Only return payload if recognized event
+        if payload:
+            return self._to_topic_item(data=data, payload=payload)
+
+    async def get_all_by_wallet(self, wallet_id: str):
         # Get the data from redis queue
-        data_list = []
-        data = await self._redis.smembers(wallet_id)
-        data = [json.loads(d) for d in data]
-        for topic in topics:
-            topic_data = [d for d in data if d["topic"] == topic]
-            topic_data = self._to_item(topic=topic, data=topic_data)
-            topic_data = self._to_topic_item(topic=topic, data=topic_data)
-            if topic_data:
-                data_list.extend(topic_data)
+        data_list: List[TopicItem[Any]] = []
+        entries = await self._redis.smembers(wallet_id)
+
+        for entry in entries:
+            data: RedisItem = json.loads(entry)
+            webhook = await self.transform_topic_entry(data)
+
+            if webhook:
+                data_list.append(webhook)
+
         return data_list
 
     async def get_all_for_topic_by_wallet_id(
         self, topic: str, wallet_id: str
-    ) -> List[TopicItem]:
-        data = await self._redis.smembers(wallet_id)
-        data = [json.loads(d) for d in data]
-        data = [d for d in data if d["topic"] == topic]
-        data = self._to_item(topic=topic, data=data)
-        topic_data = self._to_topic_item(topic=topic, data=data)
-        return topic_data
+    ) -> List[TopicItem[Any]]:
+        data_list: List[TopicItem[Any]] = []
+        entries = await self._redis.smembers(wallet_id)
+
+        for entry in entries:
+            data: RedisItem = json.loads(entry)
+            # Only take current topic
+            if data["topic"] != topic:
+                continue
+
+            webhook = await self.transform_topic_entry(data)
+
+            if webhook:
+                data_list.append(webhook)
+
+        return data_list

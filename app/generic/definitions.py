@@ -1,18 +1,31 @@
 import asyncio
+import json
 from typing import List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinition as AcaPyCredentialDefinition,
     ModelSchema,
+    SchemaSendRequest,
+    SchemaSendResult,
+    TxnOrCredentialDefinitionSendResult,
 )
+from app.error.cloud_api_error import CloudApiException
 from aries_cloudcontroller.model.credential_definition_send_request import (
     CredentialDefinitionSendRequest,
 )
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.dependencies import agent_selector
+from app.dependencies import (
+    AcaPyAuthVerified,
+    acapy_auth_verified,
+    agent_role,
+    agent_selector,
+)
+from app.role import Role
+from app.facades import trust_registry, acapy_wallet
+from app.webhook_listener import start_listener
 
 router = APIRouter(
     prefix="/generic/definitions",
@@ -31,6 +44,12 @@ class CredentialDefinition(BaseModel):
     id: str = Field(..., example="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:default")
     tag: str = Field(..., example="default")
     schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+
+
+class CreateSchema(BaseModel):
+    name: str = Field(..., example="test_schema")
+    version: str = Field(..., example="0.3.0")
+    attribute_names: List[str] = Field(..., example=["speed"])
 
 
 class CredentialSchema(BaseModel):
@@ -139,15 +158,28 @@ async def get_credential_definition_by_id(
             404, f"Credential Definition with id {credential_definition_id} not found"
         )
 
-    return _credential_definition_from_acapy(
+    cloudapi_credential_definition = _credential_definition_from_acapy(
         credential_definition.credential_definition
     )
 
+    # We need to update the schema_id on the returned credential definition as
+    # ACA-Py returns the schema_id as the seq_no
+    schema = await get_schema(
+        schema_id=cloudapi_credential_definition.schema_id,
+        aries_controller=aries_controller,
+    )
+    cloudapi_credential_definition.schema_id = schema.id
 
-@router.post("/")
+    return cloudapi_credential_definition
+
+
+@router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    # Only Yoma and ecosystem issuers can create credential definitions. Further validation
+    # done inside the endpoint implementation.
+    aries_controller: AcaPyClient = Depends(agent_role([Role.YOMA, Role.ECOSYSTEM])),
+    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
     Create a credential definition.
@@ -161,13 +193,88 @@ async def create_credential_definition(
     --------
     Credential Definition
     """
-    return await aries_controller.credential_definition.publish_cred_def(
+
+    # Assert the agent has a public did
+    public_did = await acapy_wallet.assert_public_did(aries_controller)
+
+    # Make sure we are allowed to issue this schema according to trust registry rules
+    await trust_registry.assert_valid_issuer(
+        public_did, credential_definition.schema_id
+    )
+
+    wait_for_event, stop_listener = await start_listener(
+        topic="endorsements", wallet_id=auth.wallet_id, a=True
+    )
+
+    result = await aries_controller.credential_definition.publish_cred_def(
         body=CredentialDefinitionSendRequest(
             schema_id=credential_definition.schema_id,
             # Revocation not supported yet
             support_revocation=False,
             tag=credential_definition.tag,
         )
+    )
+
+    if isinstance(result, TxnOrCredentialDefinitionSendResult):
+        try:
+            # Wait for transaction to be acknowledged and written to the ledger
+            await wait_for_event(
+                filter_map={
+                    "state": "transaction_acked",
+                    "transaction_id": result.txn.transaction_id,
+                },
+                timeout=20,
+            )
+        except asyncio.TimeoutError:
+            raise CloudApiException(
+                "Timeout waiting for endorser to accept the endorsement request"
+            )
+
+        try:
+            transaction = await aries_controller.endorse_transaction.get_transaction(
+                tran_id=result.txn.transaction_id
+            )
+
+            # Based on
+            # https://github.com/bcgov/traction/blob/6c86d35f3e8b8ca0b88a198876155ba820fb34ea/services/traction/api/services/SchemaWorkflow.py#L276-L280
+            signatures = transaction.signature_response[0]["signature"]
+            endorser_public_did = list(signatures.keys())[0]
+            signature = json.loads(signatures[endorser_public_did])
+
+            public_did = signature["identifier"]
+            sig_type = signature["operation"]["signature_type"]
+            schema_ref = signature["operation"]["ref"]
+            tag = signature["operation"]["tag"]
+            credential_definition_id = f"{public_did}:3:{sig_type}:{schema_ref}:{tag}"
+        except Exception as e:
+            raise CloudApiException(
+                "Unable to construct credential definition id from signature response"
+            ) from e
+
+        # FIXME: ACA-Py 0.7.3 has no way to associate the credential definition id with a transaction record
+        # This methods find the created credential definition for a schema and tag (which is always unique)
+        # credential_definition_id = (
+        #     await get_credential_definition_id_for_schema_and_tag(
+        #         aries_controller,
+        #         credential_definition.schema_id,
+        #         credential_definition.tag,
+        #     )
+        # )
+        # if not credential_definition_id:
+        #     raise CloudApiException(
+        #         f"Could not find any created credential definitions for schema_id {credential_definition.schema_id} and tag {credential_definition.tag}",
+        #         500,
+        #     )
+
+    else:
+        await stop_listener()
+        credential_definition_id = result.credential_definition_id
+
+    # ACA-Py only returns the id after creating a credential definition
+    # We want consistent return types across all endpoints, so retrieving the credential
+    # definition here.
+    return await get_credential_definition_by_id(
+        credential_definition_id, aries_controller
     )
 
 
@@ -238,3 +345,36 @@ async def get_schema(
         raise HTTPException(404, f"Schema with id {schema_id} not found")
 
     return _credential_schema_from_acapy(schema.schema_)
+
+
+@router.post("/", response_model=CredentialSchema)
+async def create_schema(
+    schema: CreateSchema,
+    # Only yoma can create schemas
+    aries_controller: AcaPyClient = Depends(agent_role(Role.YOMA)),
+) -> CredentialSchema:
+    """
+    Create a new schema.
+
+    Parameters:
+    ------------
+    schema: CreateSchema
+        Payload for creating a schema.
+
+    Returns:
+    --------
+    The response object from creating a schema.
+    """
+    schema_send_request = SchemaSendRequest(
+        attributes=schema.attribute_names,
+        schema_name=schema.name,
+        schema_version=schema.version,
+    )
+    result = await aries_controller.schema.publish_schema(
+        body=schema_send_request, create_transaction_for_endorser=False
+    )
+
+    if not isinstance(result, SchemaSendResult) or not result.schema_:
+        raise CloudApiException("Error creating schema", 500)
+
+    return _credential_schema_from_acapy(result.schema_)

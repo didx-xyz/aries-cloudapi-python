@@ -6,7 +6,9 @@ from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
+from app.constants import ACAPY_MULTITENANT_JWT_SECRET
 
+import jwt
 from app.role import Role
 
 logger = logging.getLogger(__name__)
@@ -19,23 +21,63 @@ class AcaPyAuth:
     token: str
     role: Role
 
+    wallet_id: Optional[str]
+
     def __init__(self, *, role: "Role", token: str) -> None:
         self.role = role
         self.token = token
+
+
+class AcaPyAuthVerified(AcaPyAuth):
+    token: str
+    role: Role
+
+    wallet_id: str
+
+    def __init__(self, *, role: "Role", token: str, wallet_id: str) -> None:
+        self.role = role
+        self.token = token
+        self.wallet_id = wallet_id
 
 
 def acapy_auth(auth: str = Depends(x_api_key_scheme)):
     if not "." in auth:
         raise HTTPException(401, "Unauthorized")
 
-    [role_str, token] = auth.split(".", maxsplit=1)
+    try:
+        [role_str, token] = auth.split(".", maxsplit=1)
 
-    role = Role.from_str(role_str)
+        role = Role.from_str(role_str)
+    except:
+        raise HTTPException(401, "Unauthorized")
 
     if not role:
         raise HTTPException(401, "Unauthorized")
 
     return AcaPyAuth(role=role, token=token)
+
+
+def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
+    if auth.role.is_admin:
+        if auth.token != auth.role.agent_type.x_api_key:
+            raise HTTPException(403, "Unauthorized")
+
+        wallet_id = "admin"
+    else:
+        try:
+            # Decode JWT
+            token_body = jwt.decode(
+                auth.token, ACAPY_MULTITENANT_JWT_SECRET, algorithms=["HS256"]
+            )
+        except jwt.InvalidTokenError:
+            raise HTTPException(403, "Unauthorized")
+
+        wallet_id = token_body.get("wallet_id")
+
+        if not wallet_id:
+            raise HTTPException(403, "Unauthorized")
+
+    return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id=wallet_id)
 
 
 async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):

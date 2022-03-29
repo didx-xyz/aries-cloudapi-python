@@ -1,3 +1,4 @@
+from aries_cloudcontroller import AcaPyClient
 import pytest
 
 from app.tests.util.client import (
@@ -13,17 +14,17 @@ from app.tests.util.client import (
 
 
 @pytest.yield_fixture(scope="module")
-async def yoma_client():
-    async with _yoma_client() as client:
-        yield client
-
-
-@pytest.yield_fixture(scope="module")
 async def yoma_acapy_client():
     client = _yoma_acapy_client()
     yield client
 
     await client.close()
+
+
+@pytest.yield_fixture(scope="module")
+async def yoma_client():
+    async with _yoma_client() as client:
+        yield client
 
 
 # MEMBER ADMIN

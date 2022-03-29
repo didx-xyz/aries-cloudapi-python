@@ -1,7 +1,13 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, SchemaSendResult
+from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
-from app.admin.schemas import SchemaDefinition, create_schema
+from app.generic.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialSchema,
+    create_schema,
+    create_credential_definition,
+)
 from app.tests.util.ledger import create_public_did
 from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
@@ -11,11 +17,11 @@ from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import (
     BobAliceConnect,
     alice_member_client,
+    bob_acapy_client,
     bob_and_alice_connection,
     bob_and_alice_public_did,
     bob_member_client,
 )
-from app.tests.util.string import get_random_string
 
 BASE_PATH = router.prefix + "/credentials"
 
@@ -24,11 +30,9 @@ BASE_PATH = router.prefix + "/credentials"
 
 
 @pytest.fixture(scope="module")
-async def schema_definition(
-    yoma_acapy_client: AcaPyClient, bob_and_alice_public_did: None
-) -> SchemaSendResult:
-    definition = SchemaDefinition(
-        name="test_schema", version="0.3", attributes=["speed"]
+async def schema_definition(yoma_acapy_client: AcaPyClient) -> CredentialSchema:
+    definition = CreateSchema(
+        name="test_schema", version="0.3", attribute_names=["speed"]
     )
 
     await create_public_did(yoma_acapy_client)
@@ -40,30 +44,24 @@ async def schema_definition(
 
 @pytest.fixture(scope="module")
 async def credential_definition_id(
-    bob_member_client: AsyncClient, schema_definition: SchemaSendResult
+    schema_definition: CredentialSchema,
+    faber_client: AsyncClient,
+    faber_acapy_client: AcaPyClient,
 ) -> str:
-    # when
-    response = await bob_member_client.post(
-        "/admin/governance/credential-definitions",
-        json={
-            "support_revocation": False,
-            "schema_id": schema_definition.schema_id,
-            "tag": get_random_string(5),
-        },
-    )
+    await register_issuer(faber_client, schema_definition.id)
 
-    if response.status_code != 200:
-        raise Exception(f"Error creating credential definition: {response.text}")
+    definition = CreateCredentialDefinition(tag="tag", schema_id=schema_definition.id)
+    result = await create_credential_definition(definition, faber_acapy_client)
 
-    result = response.json()
-    return result["credential_definition_id"]
+    return result.id
 
 
 @pytest.fixture(scope="module")
 async def credential_exchange_id(
     bob_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
     alice_member_client: AsyncClient,
 ):
     """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
@@ -71,11 +69,9 @@ async def credential_exchange_id(
     credential = {
         "protocol_version": "v1",
         "connection_id": bob_and_alice_connection["bob_connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
-
-    await register_issuer(bob_member_client, schema_definition.schema_id)
 
     response = await bob_member_client.post(
         BASE_PATH,
@@ -91,7 +87,7 @@ async def credential_exchange_id(
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="issue_credential",
+        topic="credentials",
     )
 
     response = await alice_member_client.get(

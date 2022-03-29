@@ -10,15 +10,15 @@ NOTE: Regardless of the multitude of containers and mechanisms running, [the Clo
 
 #### Trust registry
 
-As a client you can retrieve the trust registry (and NOT alter it). That is intential and all a consumer/client should and is able to do. Altering the trust registry is baked into admin actions and only possible with admin role.
+As a client you can retrieve the trust registry (and NOT alter it). That is intentional and all a consumer/client should and is able to do. Altering the trust registry is baked into admin actions and only possible with admin role.
 
 #### Webhooks
 
-A client can subscribe to the webhooks via the cloudapi (as opposed to directly via the webhooks container). This requires only targetting the `/webhooks` endpoint and optionally targetting the `/webhooks/{topic}` subroute by suffixing a topic. Using the auth mechanism (see section below), the app automatically extracts the required info about the wallet (i.e the wallet id and JWT) and retrieves only the associated webhooks with a particular wallet. Failing to authenticate will return a 403 HTTP Error.
+A client can subscribe to the webhooks via the CloudAPI (as opposed to directly via the webhooks container). This requires only targeting the `/webhooks` endpoint and optionally targeting the `/webhooks/{topic}` sub-route by suffixing a topic. Using the auth mechanism (see section below), the app automatically extracts the required info about the wallet (i.e the wallet id and JWT) and retrieves only the associated webhooks with a particular wallet. Failing to authenticate will return a 403 HTTP Error.
 
 ### Authentication
 
-Authentication is handled by the CloudAPI and, fom a client perspective, kept simple and convenient. Either, via the Swagger UI auth (padlock butten in UI) or via the HEADER data of your client specifying an `x-api-key`. Regardless of whether ou use the UI or another client, the `x-api-key` value consists of two parts, separated by a dot:
+Authentication is handled by the CloudAPI and, fom a client perspective, kept simple and convenient. Either, via the Swagger UI auth (padlock button in UI) or via the HEADER data of your client specifying an `x-api-key`. Regardless of whether ou use the UI or another client, the `x-api-key` value consists of two parts, separated by a dot:
 
 `{role}.{key/password}`
 
@@ -34,7 +34,7 @@ Currently there are five options for `role`:
 - member
 - member-admin
 
-the `yoma` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the aca-py admin tasks nor any documented endpoints prefixed `admin:` in the cloudapi.
+the `yoma` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the aca-py admin tasks nor any documented endpoints prefixed `admin:` in the CloudAPI.
 
 For admin roles pass the admin password as the second part of `{role}.{key/password}`. For member/ecosystem (non-admin roles) pass the wallets JWT as the second part of `{role}.{key/password}`.
 
@@ -46,11 +46,11 @@ The ledger is also a useful place to look at what schemas you have at your dispo
 
 ### User management/Creating wallets
 
-Using the admin role(s) you can create wallets for tenant or ecossytem partners. These are all sub wallets. Successful creation return the wallet creation resposne includign the wallet id and JWT for authentication.
+Using the admin role(s) you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation return the wallet creation response including the wallet id and JWT for authentication.
 
 ### Using the swagger UI
 
-The Swagger UI is documented. It shows you enpoints, expected parameters and what example requests and resposnes look like. At the bottom of the UI you can also find a list of all types used that includes definition and exmaple values.
+The Swagger UI is documented. It shows you endpoints, expected parameters and what example requests and responses look like. At the bottom of the UI you can also find a list of all types used that includes definition and example values.
 
 ### Following logs
 

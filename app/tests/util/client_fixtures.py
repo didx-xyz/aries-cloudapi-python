@@ -1,4 +1,3 @@
-from aries_cloudcontroller import AcaPyClient
 import pytest
 
 from app.tests.util.client import (

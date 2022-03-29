@@ -16,8 +16,7 @@ from app.generic.verifier.models import (
     SendProofRequest,
 )
 from app.generic.verifier.verifier_utils import (
-    check_tr_for_prover,
-    check_tr_for_verifier,
+    assert_valid_verifier,
 )
 from shared_models import PresentationExchange
 
@@ -195,7 +194,7 @@ async def create_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-        if await check_tr_for_verifier(
+        if await assert_valid_verifier(
             aries_controller=aries_controller,
             proof_request=proof_request,
         ):
@@ -227,7 +226,7 @@ async def accept_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
-        if await check_tr_for_prover(
+        if await assert_valid_verifier(
             aries_controller=aries_controller,
             prover=prover,
             proof_request=proof_request,

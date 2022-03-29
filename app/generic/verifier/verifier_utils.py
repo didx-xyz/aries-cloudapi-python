@@ -16,6 +16,23 @@ from app.facades.acapy_wallet import assert_public_did
 logger = logging.getLogger(__name__)
 
 
+async def assert_valid_verifier(
+    aries_controller: AcaPyClient,
+    proof_request,
+    prover: Verifier = None,
+):
+    if prover:
+        return check_tr_for_prover(
+            aries_controller=aries_controller,
+            proof_request=proof_request,
+            prover=prover,
+        )
+    else:
+        return check_tr_for_verifier(
+            proof_request=proof_request, aries_controller=aries_controller
+        )
+
+
 # VERIFIER
 async def check_tr_for_verifier(
     aries_controller: AcaPyClient,
@@ -68,7 +85,8 @@ async def check_tr_for_prover(
 
     # Case 1: connection NOT made with publid DID
     if connection_record.their_public_did:
-        pub_did = f"did:sov:{connection_record.their_public_did}"
+        # pub_did = f"did:sov:{connection_record.their_public_did}"
+        pub_did = ed25519_verkey_to_did_key(key=invitation_key)
     # Case 2: connection made with public DID
     else:
         invitation_key = connection_record.invitation_key

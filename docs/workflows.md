@@ -175,6 +175,52 @@ Using the admin role(s) you can create and register schemas. Successful schema c
 
 The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed for use.
 
+### Credentials
+
+(One of) the main feature(s) evolves around issuing credentials and proofs based-on these credentials.
+
+#### Creating and issuing credentials
+
+In order to issue a credential one must first:
+
+- create a schema and
+- register the schema with the trust registry.
+
+via the YOMA agent.
+
+Then:
+
+- Register an issuer (on the trust registry) via the yoma agent
+
+The registered issuer can now issue a credential a related schema on the trust registry.
+
+Now:
+
+- Create a connection between the issuer and some other entity that you want to hold a credential
+- using the connection ID create and issue a credential (have a look at the models in Swagger - it will tell you what data you need to provide and will receive back)
+- Holder accepts credential issuance
+- Holder stores credential in wallet
+
+Hooray 🥳 🎉. What has happened? We have:
+
+- Created a schema (using the yoma admin)
+- Registered a schema on the ledger (via the yoma admin)
+- Create (a wallet for) an issuer and future holder using the admin agent
+- registered an issuer (for a schema)
+- Created a connection between an issuer and a prospective holder (using connections/invitations API)
+- proposed a credential to a prospective holder from an issuer
+- accepted and stored an offered credential
+
+Please, note, that when creating/issuing a credential, endorsing and verifying credentials the CloudAPI checks whether the requested instructions are valid against the trust registry.
+
+#### Requesting a proof/using a credential
+
+Now that we have an entity holding a credential (having a stored credential in their wallet) the next step is to use this credential. What we need to do:
+
+- Register a verifier on the trust registry (using the admin agent).
+- Establish a connection between a holder (of a credential) and a verifier (using connections/invitations API).
+- Using the data models and the ['dance' described in the aca-py docs](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof) you can now arrange for negotiating a proof exchange
+
 ### User management/Creating wallets
 
 Using the admin role(s) you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation return the wallet creation response including the wallet id and JWT for authentication.

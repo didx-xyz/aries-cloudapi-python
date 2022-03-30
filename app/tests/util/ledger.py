@@ -64,7 +64,7 @@ async def has_public_did(aries_controller: AcaPyClient):
 
 async def create_public_did(
     aries_controller: AcaPyClient, set_public: bool = True
-) -> DID:
+) -> acapy_wallet.Did:
     did_object = await acapy_wallet.create_did(aries_controller)
 
     if not did_object.did or not did_object.verkey:

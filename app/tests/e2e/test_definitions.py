@@ -5,6 +5,7 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from app.dependencies import acapy_auth, acapy_auth_verified
 from app.facades.acapy_wallet import get_public_did
+from app.facades import trust_registry
 
 from app.generic import definitions
 from app.generic.definitions import (
@@ -71,10 +72,15 @@ async def test_create_schema(yoma_acapy_client: AcaPyClient):
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    if not await has_public_did(yoma_acapy_client):
-        await create_public_did(yoma_acapy_client, set_public=True)
+    try:
+        did = await get_public_did(yoma_acapy_client)
+    except:
+        did = await create_public_did(yoma_acapy_client, set_public=True)
+
     result = (await definitions.create_schema(schema_send, yoma_acapy_client)).dict()
 
+    # Assert schemas has been registered in the trust registry
+    assert await trust_registry.registry_has_schema(result["id"])
     assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
     assert_that(result).has_name(schema_send.name)
     assert_that(result).has_version(schema_send.version)
@@ -88,13 +94,17 @@ async def test_get_schema(yoma_acapy_client: AcaPyClient):
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    if not await has_public_did(yoma_acapy_client):
-        await create_public_did(yoma_acapy_client, set_public=True)
+    try:
+        did = await get_public_did(yoma_acapy_client)
+    except:
+        did = await create_public_did(yoma_acapy_client, set_public=True)
+
     create_result = (
         await definitions.create_schema(schema_send, yoma_acapy_client)
     ).dict()
     result = await definitions.get_schema(create_result["id"], yoma_acapy_client)
 
+    assert await trust_registry.registry_has_schema(result.id)
     assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
     assert_that(result).has_name(schema_send.name)
     assert_that(result).has_version(schema_send.version)
@@ -148,9 +158,6 @@ async def test_create_credential_definition_issuer_tenant(
     faber_acapy_client: AcaPyClient,
     faber_client: AsyncClient,
 ):
-    # This can go away once the schema integration with trust registry is merged
-    await register_issuer(faber_client, schema_definition.id)
-
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id, tag=get_random_string(5)
     )

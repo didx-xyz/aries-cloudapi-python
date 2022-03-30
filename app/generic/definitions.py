@@ -377,4 +377,14 @@ async def create_schema(
     if not isinstance(result, SchemaSendResult) or not result.schema_:
         raise CloudApiException("Error creating schema", 500)
 
+    # Register the schema in the trust registry
+    try:
+        await trust_registry.register_schema(schema_id=result.schema_id)
+    except trust_registry.TrustRegistryException as error:
+        # If status_code is 405 it means the schema already exists in the trust registry
+        # That's okay, because we've achieved our intended result:
+        #   make sure the schema is registered in the trust registry
+        if error.status_code != 405:
+            raise error
+
     return _credential_schema_from_acapy(result.schema_)

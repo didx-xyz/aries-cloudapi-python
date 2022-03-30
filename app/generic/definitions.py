@@ -203,7 +203,7 @@ async def create_credential_definition(
     )
 
     wait_for_event, stop_listener = await start_listener(
-        topic="endorsements", wallet_id=auth.wallet_id, a=True
+        topic="endorsements", wallet_id=auth.wallet_id
     )
 
     result = await aries_controller.credential_definition.publish_cred_def(

@@ -1,97 +1,198 @@
 import pytest
-from assertpy import assert_that
 from httpx import AsyncClient
-from app.generic.definitions import CredentialSchema
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
-
-from app.tests.util.member_personas import (
-    BobAliceConnect,
-)
+from app.tests.util.webhooks import get_wallet_id_from_async_client
 
 # This import are important for tests to run!
 from app.tests.util.event_loop import event_loop
 
 from app.tests.e2e.test_fixtures import BASE_PATH
-from app.tests.e2e.test_fixtures import *  # NOQA
+from app.tests.e2e.test_fixtures import *
+from app.webhook_listener import start_listener  # NOQA
 
 
 @pytest.mark.asyncio
-async def test_send_credential(
+async def test_credential_exchange_v1(
+    alice_member_client: AsyncClient,
     faber_client: AsyncClient,
-    schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "credential_definition_id": credential_definition_id,
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "attributes": {"speed": "average"},
     }
 
-    response = await alice_member_client.get(
-        BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+    faber_wallet_id = get_wallet_id_from_async_client(faber_client)
+    wait_for_faber_event, stop_faber_listener = await start_listener(
+        topic="credentials", wallet_id=faber_wallet_id, auto_close_after_success=False
     )
-    records = response.json()
 
-    # nothing currently in alice's records
-    assert len(records) == 0
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    wait_for_alice_event, stop_alice_listener = await start_listener(
+        topic="credentials", wallet_id=alice_wallet_id, auto_close_after_success=False
+    )
 
     response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
-    response.raise_for_status()
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v1"
 
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "average"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    credential["protocol_version"] = "v2"
-    response = await faber_client.post(
-        BASE_PATH,
-        json=credential,
-    )
-    response.raise_for_status()
-
-    data = response.json()
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-    assert_that(data).has_attributes({"speed": "average"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    assert check_webhook_state(
-        client=faber_client,
+    await wait_for_faber_event(
         filter_map={
             "state": "offer-sent",
-            "credential_id": data["credential_id"],
-        },
-        topic="credentials",
+            "credential_id": credential_exchange["credential_id"],
+        }
     )
+
+    await wait_for_alice_event(
+        filter_map={"state": "offer-received"},
+    )
+
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={},
     )
     records = response.json()
+    alice_credential_id = records[-1]["credential_id"]
 
-    assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={
-            "state": "offer-received",
-            "credential_id": records[-1]["credential_id"],
-        },
-        topic="credentials",
+    # alice send request for that credential
+    response = await alice_member_client.post(
+        f"{BASE_PATH}/{alice_credential_id}/request"
     )
-    assert len(records) == 2
+    response.raise_for_status()
 
-    # Expect one v1 record, one v2 record
-    assert_that(records).extracting("protocol_version").contains("v1", "v2")
+    # Faber check he received the request; Credential is send because of using
+    # 'automating the entire flow' send credential earlier.
+    # See also: app/generic/issuer/issuer.py::send_credential
+    await wait_for_faber_event(
+        filter_map={
+            "state": "request-received",
+            "credential_id": credential_exchange["credential_id"],
+        }
+    )
+
+    await wait_for_alice_event(
+        filter_map={
+            "state": "credential-received",
+            "credential_id": alice_credential_id,
+        },
+    )
+
+    # Alice stores credential
+    response = await alice_member_client.post(
+        f"{BASE_PATH}/{alice_credential_id}/store"
+    )
+
+    # Check alice and faber have acked the credential
+    await wait_for_faber_event(
+        filter_map={
+            "state": "done",
+            "credential_id": credential_exchange["credential_id"],
+        },
+    )
+    await wait_for_alice_event(
+        filter_map={"state": "done", "credential_id": alice_credential_id},
+    )
+
+    await stop_faber_listener()
+    await stop_alice_listener()
+
+
+@pytest.mark.asyncio
+async def test_credential_exchange_v2(
+    alice_member_client: AsyncClient,
+    faber_client: AsyncClient,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+):
+    credential = {
+        "protocol_version": "v2",
+        "credential_definition_id": credential_definition_id,
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "attributes": {"speed": "average"},
+    }
+
+    faber_wallet_id = get_wallet_id_from_async_client(faber_client)
+    wait_for_faber_event, stop_faber_listener = await start_listener(
+        topic="credentials", wallet_id=faber_wallet_id, auto_close_after_success=False
+    )
+
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    wait_for_alice_event, stop_alice_listener = await start_listener(
+        topic="credentials", wallet_id=alice_wallet_id, auto_close_after_success=False
+    )
+
+    response = await faber_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v2"
+
+    await wait_for_faber_event(
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        }
+    )
+
+    await wait_for_alice_event(
+        filter_map={"state": "offer-received"},
+    )
+
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={},
+    )
+    records = response.json()
+    alice_credential_id = records[-1]["credential_id"]
+
+    # alice send request for that credential
+    response = await alice_member_client.post(
+        f"{BASE_PATH}/{alice_credential_id}/request"
+    )
+    response.raise_for_status()
+
+    # Faber check he received the request; Credential is send because of using
+    # 'automating the entire flow' send credential earlier.
+    # See also: app/generic/issuer/issuer.py::send_credential
+    await wait_for_faber_event(
+        filter_map={
+            "state": "request-received",
+            "credential_id": credential_exchange["credential_id"],
+        }
+    )
+
+    await wait_for_alice_event(
+        filter_map={
+            "state": "credential-received",
+            "credential_id": alice_credential_id,
+        },
+    )
+
+    # Alice stores credential
+    response = await alice_member_client.post(
+        f"{BASE_PATH}/{alice_credential_id}/store"
+    )
+
+    # Check alice and faber have acked the credential
+    await wait_for_faber_event(
+        filter_map={
+            "state": "done",
+            "credential_id": credential_exchange["credential_id"],
+        },
+    )
+    await wait_for_alice_event(
+        filter_map={"state": "done", "credential_id": alice_credential_id},
+    )
+
+    await stop_faber_listener()
+    await stop_alice_listener()
 
 
 @pytest.mark.asyncio
@@ -99,122 +200,3 @@ async def test_get_records(alice_member_client: AsyncClient):
     records = (await alice_member_client.get(BASE_PATH)).json()
     assert records
     assert len(records) >= 1
-
-
-@pytest.mark.asyncio
-async def test_send_credential_request(
-    alice_member_client: AsyncClient,
-    faber_client: AsyncClient,
-    faber_and_alice_connection: FaberAliceConnect,
-    credential_definition_id: str,
-):
-    credential = {
-        "protocol_version": "v1",
-        "credential_definition_id": credential_definition_id,
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
-        "attributes": {"speed": "average"},
-    }
-
-    response = await faber_client.post(
-        BASE_PATH,
-        json=credential,
-    )
-    credential_exchange = response.json()
-    assert credential_exchange["protocol_version"] == "v1"
-
-    assert check_webhook_state(
-        client=faber_client,
-        filter_map={
-            "state": "offer-sent",
-            "credential_id": credential_exchange["credential_id"],
-        },
-        topic="credentials",
-    )
-
-    response = await alice_member_client.get(
-        BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
-    )
-    assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "offer-received"},
-        topic="credentials",
-    )
-
-
-@pytest.mark.asyncio
-async def test_store_credential(
-    alice_member_client: AsyncClient,
-    faber_client: AsyncClient,
-    credential_definition_id: str,
-    faber_and_alice_connection: FaberAliceConnect,
-):
-    credential = {
-        "protocol_version": "v1",
-        "credential_definition_id": credential_definition_id,
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
-        "attributes": {"speed": "average"},
-    }
-
-    response = await faber_client.post(
-        BASE_PATH,
-        json=credential,
-    )
-    credential_exchange = response.json()
-    assert credential_exchange["protocol_version"] == "v1"
-
-    assert check_webhook_state(
-        client=faber_client,
-        filter_map={
-            "state": "offer-sent",
-            "credential_id": credential_exchange["credential_id"],
-        },
-        topic="credentials",
-    )
-
-    response = await alice_member_client.get(
-        BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
-    )
-    assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "offer-received"},
-        topic="credentials",
-    )
-
-    cred_hooks = get_hooks_per_topic_per_wallet(
-        client=alice_member_client, topic="credentials"
-    )
-
-    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
-    credential_id = cred_hook["payload"]["credential_id"]
-
-    # alice send request for that credential
-    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/request")
-    response.raise_for_status()
-
-    # Bob check he received the request; Credential is send because of using
-    # 'automating the entire flow' send credential earlier.
-    # See also: app/generic/issuer/issuer.py::send_credential
-    assert check_webhook_state(
-        client=faber_client,
-        filter_map={"state": "request-received"},
-        topic="credentials",
-    )
-
-    # Check alice has received the credential
-    assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "credential-received"},
-        topic="credentials",
-    )
-
-    # Alice stores credential
-    response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/store")
-
-    # Check alice has received the credential
-    assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "credential-acked"},
-        topic="credentials",
-    )

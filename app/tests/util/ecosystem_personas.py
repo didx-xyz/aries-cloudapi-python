@@ -8,9 +8,10 @@ from app.tests.util.client import (
     ecosystem_client,
     ecosystem_acapy_client,
 )
+from app.webhook_listener import start_listener
 
 from .tenants import create_issuer_tenant, delete_tenant
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import get_wallet_id_from_async_client
 
 
 class FaberAliceConnect(TypedDict):
@@ -53,6 +54,11 @@ async def faber_and_alice_connection(
         await faber_client.post("/generic/connections/create-invitation")
     ).json()
 
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    wait_for_event, _ = await start_listener(
+        topic="connections", wallet_id=alice_wallet_id
+    )
+
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
@@ -64,17 +70,8 @@ async def faber_and_alice_connection(
     faber_connection_id = invitation["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
 
-    # fetch and validate
-    # both connections should be active - we have waited long enough for events to be exchanged
-    assert check_webhook_state(
-        alice_member_client,
-        topic="connections",
-        filter_map={"state": "completed", "connection_id": alice_connection_id},
-    )
-    assert check_webhook_state(
-        faber_client,
-        topic="connections",
-        filter_map={"state": "completed", "connection_id": faber_connection_id},
+    await wait_for_event(
+        filter_map={"connection_id": alice_connection_id, "state": "completed"}
     )
 
     return {

@@ -69,7 +69,9 @@ class Webhooks:
             sys.exit()
 
 
-async def start_listener(*, topic: str, wallet_id: str, a: bool = False):
+async def start_listener(
+    *, topic: str, wallet_id: str, auto_close_after_success: bool = True
+):
     queue = asyncio.Queue()
 
     async def on_webhook(data: Dict[str, Any]):
@@ -98,11 +100,15 @@ async def start_listener(*, topic: str, wallet_id: str, a: bool = False):
         try:
             await asyncio.wait_for(wait_for_event(filter_map), timeout=timeout)
         except Exception as e:
-            # Always unsubscribe
+            # Always close on exception
             Webhooks.off(on_webhook)
-            raise e from e
+            raise TimeoutError(
+                f"Timeout expired. Could not find event that matches {filter_map}"
+            ) from e
+
         else:
-            Webhooks.off(on_webhook)
+            if auto_close_after_success:
+                Webhooks.off(on_webhook)
 
     async def stop_listener():
         Webhooks.off(on_webhook)

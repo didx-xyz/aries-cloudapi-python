@@ -42,7 +42,7 @@ def check_webhook_state(
     client: AsyncClient,
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]] = {},
-    max_duration: int = 60,
+    max_duration: int = 15,
     poll_interval: int = 1,
 ) -> bool:
     assert poll_interval >= 0, "Poll interval cannot be negative"

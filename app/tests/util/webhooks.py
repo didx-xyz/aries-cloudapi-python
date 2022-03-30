@@ -81,3 +81,13 @@ def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: CloudApiTopics) -
 
 async def mock_wait_for_event(*, filter_map: Dict[str, Any], timeout: float = 10):
     pass
+
+
+def mock_stop_listener():
+    pass
+
+
+mock_start_listener = (
+    mock_wait_for_event,
+    mock_stop_listener,
+)

@@ -104,19 +104,18 @@ async def test_get_records(alice_member_client: AsyncClient):
 @pytest.mark.asyncio
 async def test_send_credential_request(
     alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
-    schema_definition: CredentialSchema,
+    faber_client: AsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
     credential_definition_id: str,
 ):
     credential = {
         "protocol_version": "v1",
         "credential_definition_id": credential_definition_id,
-        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "attributes": {"speed": "average"},
     }
 
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
@@ -124,7 +123,7 @@ async def test_send_credential_request(
     assert credential_exchange["protocol_version"] == "v1"
 
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
@@ -134,7 +133,7 @@ async def test_send_credential_request(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     assert check_webhook_state(
         client=alice_member_client,
@@ -146,21 +145,18 @@ async def test_send_credential_request(
 @pytest.mark.asyncio
 async def test_store_credential(
     alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    credential_exchange_id: str,
+    faber_client: AsyncClient,
     credential_definition_id: str,
-    bob_and_alice_connection: BobAliceConnect,
-    schema_definition: CredentialSchema,
+    faber_and_alice_connection: FaberAliceConnect,
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": bob_and_alice_connection["bob_connection_id"],
         "credential_definition_id": credential_definition_id,
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "attributes": {"speed": "average"},
     }
 
-    # Bob send offer
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
@@ -168,7 +164,7 @@ async def test_store_credential(
     assert credential_exchange["protocol_version"] == "v1"
 
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
@@ -178,9 +174,8 @@ async def test_store_credential(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
-    # Check alice received the credential offer from Bob
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
@@ -196,12 +191,13 @@ async def test_store_credential(
 
     # alice send request for that credential
     response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/request")
+    response.raise_for_status()
 
     # Bob check he received the request; Credential is send because of using
     # 'automating the entire flow' send credential earlier.
     # See also: app/generic/issuer/issuer.py::send_credential
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={"state": "request-received"},
         topic="credentials",
     )

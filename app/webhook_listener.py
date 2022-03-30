@@ -42,14 +42,12 @@ class Webhooks:
             ws_url = WEBHOOKS_URL
             if ws_url.startswith("http"):
                 ws_url = "ws" + ws_url[4:]
-            print(ws_url)
 
             Webhooks.client.start_client(ws_url + "/pubsub")
             await Webhooks.client.wait_until_ready()
 
         try:
             await asyncio.wait_for(wait_for_ready(), timeout=5)
-            print("READY")
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()
@@ -67,7 +65,6 @@ class Webhooks:
 
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=5)
-            print("SHUTDOWN READY")
         except asyncio.TimeoutError:
             sys.exit()
 

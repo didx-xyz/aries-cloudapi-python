@@ -1,6 +1,7 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
+from app.dependencies import acapy_auth, acapy_auth_verified
 from app.generic.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -8,7 +9,8 @@ from app.generic.definitions import (
     create_schema,
     create_credential_definition,
 )
-from app.tests.util.ledger import create_public_did
+from app.tests.util.ecosystem_personas import FaberAliceConnect
+from app.tests.util.ledger import create_public_did, has_public_did
 from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
 
@@ -35,7 +37,8 @@ async def schema_definition(yoma_acapy_client: AcaPyClient) -> CredentialSchema:
         name="test_schema", version="0.3", attribute_names=["speed"]
     )
 
-    await create_public_did(yoma_acapy_client)
+    if not await has_public_did(yoma_acapy_client):
+        await create_public_did(yoma_acapy_client, set_public=True)
 
     schema_definition_result = await create_schema(definition, yoma_acapy_client)
 
@@ -51,38 +54,40 @@ async def credential_definition_id(
     await register_issuer(faber_client, schema_definition.id)
 
     definition = CreateCredentialDefinition(tag="tag", schema_id=schema_definition.id)
-    result = await create_credential_definition(definition, faber_acapy_client)
+
+    auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
+    result = await create_credential_definition(definition, faber_acapy_client, auth)
 
     return result.id
 
 
 @pytest.fixture(scope="module")
 async def credential_exchange_id(
-    bob_member_client: AsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
-    schema_definition: CredentialSchema,
+    faber_client: AsyncClient,
     credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: AsyncClient,
 ):
     """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
     then this fixture just returns it..."""
     credential = {
         "protocol_version": "v1",
-        "connection_id": bob_and_alice_connection["bob_connection_id"],
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
 
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
+    response.raise_for_status()
     credential_exchange = response.json()
     credential_exchange_id = credential_exchange["credential_id"]
     assert credential_exchange["protocol_version"] == "v1"
 
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
@@ -92,8 +97,9 @@ async def credential_exchange_id(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
+    response.raise_for_status()
     records = response.json()
     assert len(records) > 0
 

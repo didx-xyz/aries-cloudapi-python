@@ -35,7 +35,9 @@ async def test_create_credential_definition(
     schema_send = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
-    await create_public_did(yoma_acapy_client)
+
+    if not await has_public_did(yoma_acapy_client):
+        await create_public_did(yoma_acapy_client, set_public=True)
 
     schema_result = (
         await definitions.create_schema(schema_send, yoma_acapy_client)
@@ -47,11 +49,12 @@ async def test_create_credential_definition(
         schema_id=schema_result["id"], tag=get_random_string(5)
     )
 
+    auth = acapy_auth_verified(acapy_auth(yoma_client.headers["x-api-key"]))
+
     # when
     result = (
         await definitions.create_credential_definition(
-            credential_definition,
-            yoma_acapy_client,
+            credential_definition, yoma_acapy_client, auth
         )
     ).dict()
 
@@ -68,7 +71,8 @@ async def test_create_schema(yoma_acapy_client: AcaPyClient):
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    did = await create_public_did(yoma_acapy_client)
+    if not await has_public_did(yoma_acapy_client):
+        await create_public_did(yoma_acapy_client, set_public=True)
     result = (await definitions.create_schema(schema_send, yoma_acapy_client)).dict()
 
     assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
@@ -84,7 +88,8 @@ async def test_get_schema(yoma_acapy_client: AcaPyClient):
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    did = await create_public_did(yoma_acapy_client)
+    if not await has_public_did(yoma_acapy_client):
+        await create_public_did(yoma_acapy_client, set_public=True)
     create_result = (
         await definitions.create_schema(schema_send, yoma_acapy_client)
     ).dict()
@@ -105,7 +110,8 @@ async def test_get_credential_definition(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    await create_public_did(yoma_acapy_client)
+    if not await has_public_did(yoma_acapy_client):
+        await create_public_did(yoma_acapy_client, set_public=True)
     schema_result = (
         await definitions.create_schema(schema_send, yoma_acapy_client)
     ).dict()
@@ -115,10 +121,12 @@ async def test_get_credential_definition(
         schema_id=schema_result["id"], tag=get_random_string(5)
     )
 
+    auth = acapy_auth_verified(acapy_auth(yoma_client.headers["x-api-key"]))
+
     # when
     create_result = (
         await definitions.create_credential_definition(
-            credential_definition, yoma_acapy_client
+            credential_definition, yoma_acapy_client, auth
         )
     ).dict()
 

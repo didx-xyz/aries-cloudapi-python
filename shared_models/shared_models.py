@@ -48,6 +48,8 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "request_received": "request-received",
         "presentation_sent": "presentation-sent",
         "presentation_received": "presentation-received",
+        "verified": "verified",
+        "presentation_acked": "presentation-acked",
         "done": "done",
         "abandoned": "abandoned",
     }
@@ -84,18 +86,22 @@ class CredentialExchange(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     schema_id: Optional[str]
     credential_definition_id: Optional[str]
-    state: Literal[
-        "proposal-sent",
-        "proposal-received",
-        "offer-sent",
-        "offer-received",
-        "request-sent",
-        "request-received",
-        "credential-issued",
-        "credential-received",
-        "credential-acked",
-        "done",
-        "credential-acked",
+    state: Union[
+        None,
+        Literal[
+            "proposal-sent",
+            "proposal-received",
+            "offer-sent",
+            "offer-received",
+            "request-sent",
+            "request-received",
+            "credential-issued",
+            "credential-received",
+            "credential-acked",
+            "done",
+            "abandoned",
+            "verified",
+        ],
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
@@ -120,6 +126,8 @@ class PresentationExchange(BaseModel):
             "request-received",
             "presentation-sent",
             "presentation-received",
+            "presentation-acked",
+            "verified",
             "done",
             "abandoned",
         ],

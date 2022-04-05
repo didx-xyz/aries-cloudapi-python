@@ -149,7 +149,7 @@ async def test_accept_proof_request(
         client=bob_member_client,
         filter_map={"state": "request-received"},
         topic="present_proof",
-        max_duration=30,
+        max_duration=60,
     )
     proof_records_bob = await bob_member_client.get(BASE_PATH + "/proofs")
     proof_id = proof_records_bob.json()[0]["proof_id"]
@@ -171,15 +171,27 @@ async def test_accept_proof_request(
         ),
     )
 
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "request-received"},
+        topic="present_proof",
+        max_duration=60,
+    )
     response = await bob_member_client.post(
         BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
     assert check_webhook_state(
-        client=bob_member_client,
-        filter_map={"state": "presentation-sent"},
+        client=alice_member_client,
+        filter_map={"state": "presentation-received"},
         topic="present_proof",
-        max_duration=30,
+        max_duration=60,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "presentation-acked"},
+        topic="present_proof",
+        max_duration=60,
     )
 
     result = response.json()
@@ -203,7 +215,10 @@ async def test_accept_proof_request(
         topic="present_proof_v2_0",
     )
     proof_records_bob = (await bob_member_client.get(BASE_PATH + "/proofs")).json()
-    proof_id = proof_records_bob[0]["proof_id"]
+    proofs_v2 = [
+        proof for proof in proof_records_bob if proof["protocol_version"] == "v2"
+    ]
+    proof_id = proofs_v2[-1]["proof_id"]
 
     requested_credentials = (
         await bob_member_client.get(f"/generic/verifier/credentials/{proof_id}")
@@ -227,50 +242,64 @@ async def test_accept_proof_request(
         BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof_v2_0",
+        max_duration=60,
+    )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "presentation-sent"},
         topic="present_proof_v2_0",
-        max_duration=30,
+        max_duration=60,
     )
+
+    # assert check_webhook_state(
+    #     client=alice_member_client,
+    #     filter_map={"state": "request-sent"},
+    #     topic="present_proof_v2_0",
+    #     max_duration=60,
+    # )
 
     result = response.json()
 
-    pres_excheange_result = PresentationExchange(**result)
-    assert isinstance(pres_excheange_result, PresentationExchange)
+    pres_exchange_result = PresentationExchange(**result)
+    assert isinstance(pres_exchange_result, PresentationExchange)
     assert response.status_code == 200
 
 
-# @pytest.mark.asyncio
-# async def test_reject_proof_request(
-#     bob_and_alice_connection: BobAliceConnect,
-#     alice_member_client: AsyncClient,
-# ):
-#     # V1
-#     proof_request_v1 = create_send_request(
-#         bob_and_alice_connection["alice_connection_id"],
-#         protocol_version=ProofRequestProtocolVersion.v1.value,
-#     )
-#     response = await alice_member_client.post(
-#         BASE_PATH + "/send-request",
-#         json=proof_request_v1.dict(),
-#     )
+@pytest.mark.asyncio
+async def test_reject_proof_request(
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    # V1
+    proof_request_v1 = create_send_request(
+        bob_and_alice_connection["alice_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    response = await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v1.dict(),
+    )
 
-#     assert check_webhook_state(
-#         client=alice_member_client,
-#         filter_map={"state": "request-sent"},
-#         topic="present_proof",
-#     )
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="present_proof",
+    )
 
-#     reject_proof_request_v1 = RejectProofRequest(
-#         proof_id=response.json()["proof_id"], problem_report=None
-#     )
+    reject_proof_request_v1 = RejectProofRequest(
+        proof_id=response.json()["proof_id"], problem_report=None
+    )
 
-#     response = await alice_member_client.post(
-#         BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
-#     )
-#     result = response.json()
-#     assert result is None
+    response = await alice_member_client.post(
+        BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
+    )
+    result = response.json()
+    assert result is None
 
 
 @pytest.mark.asyncio

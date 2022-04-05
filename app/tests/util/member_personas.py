@@ -2,7 +2,6 @@ import json
 from random import random
 import time
 from typing import TypedDict
-from assertpy import assert_that
 
 import pytest
 from aries_cloudcontroller import AcaPyClient, InvitationResult, SchemaSendResult
@@ -219,7 +218,7 @@ async def issue_credential_to_bob(
     ).json()
 
     bob_connection_records = (
-        await bob_member_client.get(f"/generic/connections")
+        await bob_member_client.get("/generic/connections")
     ).json()
     print(json.dumps(bob_connection_records, indent=2))
 
@@ -316,7 +315,7 @@ async def alice_bob_connect_multi(
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
     bob_connection_records = (
-        await bob_member_client.get(f"/generic/connections")
+        await bob_member_client.get("/generic/connections")
     ).json()
     print(json.dumps(bob_connection_records, indent=2))
 

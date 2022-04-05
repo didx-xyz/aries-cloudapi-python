@@ -4,7 +4,7 @@ from aries_cloudcontroller import (
     ConnRecord,
     IndyCredPrecis,
 )
-from mockito import mock, verify, when
+from mockito import verify, when
 
 import app.generic.verifier.verifier as test_module
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
@@ -18,8 +18,7 @@ from app.tests.verifier.test_verifier_utils import (
 )
 from app.tests.util.mock import get
 from shared_models import PresentationExchange
-from shared_models.shared_models import Connection
-from unittest.mock import patch as patch
+from unittest.mock import patch
 
 from app.facades.trust_registry import Actor
 

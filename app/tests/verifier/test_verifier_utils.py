@@ -4,7 +4,6 @@ from app.error.cloud_api_error import CloudApiException
 
 from app.generic.verifier.models import (
     AcceptProofRequest,
-    SendProofRequest,
 )
 from shared_models import PresentationExchange
 from unittest.mock import patch
@@ -186,7 +185,7 @@ async def test_is_valid_schemas():
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = schemas
 
-        assert await is_valid_schemas(schema_ids=schemas["schemas"]) == True
+        assert await is_valid_schemas(schema_ids=schemas["schemas"]) is True
 
     # has invalid schema
     with patch("httpx.get") as mock_request:
@@ -233,7 +232,6 @@ async def test_get_connection_record(mock_agent_controller: AcaPyClient):
 @pytest.mark.asyncio
 async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
     schemas = {"schemas": ["NR6Y28AiZ893utPSfoQRrz:2:test_schema:0.3"]}
-    credential_ids = ["NR6Y28AiZ893utPSfoQRrz"]
     cred_ex_record = IndyCredInfo(schema_id="NR6Y28AiZ893utPSfoQRrz:2:test_schema:0.3")
     with when(mock_agent_controller.credentials).get_records(...).thenReturn(
         get(CredInfoList(results=[cred_ex_record]))

@@ -81,8 +81,9 @@ async def check_tr_for_prover(
     # TODO: (In other PR) handle case where no conneciton id exists
     # instead of simply rejecting the request
     if not connection_record.connection_id:
-        raise CloudApiException(f"Cannot proceed. No connection ID", 404)
+        raise CloudApiException("Cannot proceed. No connection ID", 404)
 
+    invitation_key = connection_record.invitation_key
     # Case 1: connection NOT made with publid DID
     if connection_record.their_public_did:
         # pub_did = f"did:sov:{connection_record.their_public_did}"

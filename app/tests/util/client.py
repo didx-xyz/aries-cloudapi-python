@@ -15,8 +15,6 @@ from aries_cloudcontroller import (
 from httpx import AsyncClient, AsyncHTTPTransport
 from mockito import mock
 
-from shared_models.shared_models import Connection
-
 from .constants import (
     ECOSYSTEM_FASTAPI_ENDPOINT,
     YOMA_FASTAPI_ENDPOINT,

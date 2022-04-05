@@ -1,3 +1,4 @@
+import time
 from aries_cloudcontroller import (
     IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
@@ -35,95 +36,6 @@ def create_send_request(connection_id: str, protocol_version: str) -> SendProofR
 
 
 @pytest.mark.asyncio
-async def test_send_proof_request(
-    bob_and_alice_connection: BobAliceConnect,
-    alice_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
-    bob_member_client: AsyncClient,
-):
-    # V1
-    proof_request_v1 = create_send_request(
-        connection_id=bob_and_alice_connection["bob_connection_id"],
-        protocol_version=ProofRequestProtocolVersion.v1.value,
-    )
-
-    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
-
-    response = await bob_member_client.post(
-        BASE_PATH + "/send-request",
-        json=proof_request_v1.dict(),
-    )
-
-    result = response.json()
-
-    assert "presentation" in result.keys()
-    assert "presentation_request" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert result["role"] == "verifier"
-    assert result["state"]
-
-    # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
-    response = await bob_member_client.post(
-        BASE_PATH + "/send-request",
-        json=proof_request_v2.dict(),
-    )
-
-    result = response.json()
-    assert "presentation" in result.keys()
-    assert "presentation_request" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert "v2-" in result["proof_id"]
-    assert result["role"] == "verifier"
-    assert result["state"]
-
-
-@pytest.mark.asyncio
-async def test_create_proof_request(
-    bob_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
-):
-    # V1
-    proof_request_v1 = CreateProofRequest(
-        proof_request=indy_proof_request,
-        protocol_version=ProofRequestProtocolVersion.v1.value,
-    )
-    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
-
-    response = await bob_member_client.post(
-        BASE_PATH + "/create-request",
-        json=proof_request_v1.dict(),
-    )
-
-    result = response.json()
-    assert "presentation" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert "v1-" in result["proof_id"]
-    assert result["role"] == "verifier"
-    assert result["state"]
-
-    # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
-    response = await bob_member_client.post(
-        BASE_PATH + "/create-request",
-        json=proof_request_v2.dict(),
-    )
-
-    result = response.json()
-    assert "presentation" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert "v2-" in result["proof_id"]
-    assert result["role"] == "verifier"
-    assert result["state"]
-
-
-@pytest.mark.asyncio
 async def test_accept_proof_request(
     issue_credential_to_bob: CredentialExchange,
     alice_bob_connect_multi: BobAliceConnect,
@@ -149,7 +61,7 @@ async def test_accept_proof_request(
         client=bob_member_client,
         filter_map={"state": "request-received"},
         topic="present_proof",
-        max_duration=60,
+        max_duration=120,
     )
     proof_records_bob = await bob_member_client.get(BASE_PATH + "/proofs")
     proof_id = proof_records_bob.json()[0]["proof_id"]
@@ -175,7 +87,7 @@ async def test_accept_proof_request(
         client=bob_member_client,
         filter_map={"state": "request-received"},
         topic="present_proof",
-        max_duration=60,
+        max_duration=120,
     )
     response = await bob_member_client.post(
         BASE_PATH + "/accept-request",
@@ -185,13 +97,13 @@ async def test_accept_proof_request(
         client=alice_member_client,
         filter_map={"state": "presentation-received"},
         topic="present_proof",
-        max_duration=60,
+        max_duration=120,
     )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "presentation-acked"},
         topic="present_proof",
-        max_duration=60,
+        max_duration=120,
     )
 
     result = response.json()
@@ -268,6 +180,98 @@ async def test_accept_proof_request(
     pres_exchange_result = PresentationExchange(**result)
     assert isinstance(pres_exchange_result, PresentationExchange)
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_send_proof_request(
+    bob_and_alice_connection: BobAliceConnect,
+    alice_member_client: AsyncClient,
+    schema_definition: SchemaSendResult,
+    bob_member_client: AsyncClient,
+):
+    # V1
+    proof_request_v1 = create_send_request(
+        connection_id=bob_and_alice_connection["bob_connection_id"],
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+
+    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
+
+    # wait for connection to be ready (aca-py being slow)
+    time.sleep(5)
+    response = await bob_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v1.dict(),
+    )
+
+    result = response.json()
+
+    # assert result.keys() == ""
+    assert "presentation" in result.keys()
+    assert "presentation_request" in result.keys()
+    assert "created_at" in result.keys()
+    assert "proof_id" in result.keys()
+    assert result["role"] == "verifier"
+    assert result["state"]
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+    response = await bob_member_client.post(
+        BASE_PATH + "/send-request",
+        json=proof_request_v2.dict(),
+    )
+
+    result = response.json()
+    assert "presentation" in result.keys()
+    assert "presentation_request" in result.keys()
+    assert "created_at" in result.keys()
+    assert "proof_id" in result.keys()
+    assert "v2-" in result["proof_id"]
+    assert result["role"] == "verifier"
+    assert result["state"]
+
+
+@pytest.mark.asyncio
+async def test_create_proof_request(
+    bob_member_client: AsyncClient,
+    schema_definition: SchemaSendResult,
+):
+    # V1
+    proof_request_v1 = CreateProofRequest(
+        proof_request=indy_proof_request,
+        protocol_version=ProofRequestProtocolVersion.v1.value,
+    )
+    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
+
+    response = await bob_member_client.post(
+        BASE_PATH + "/create-request",
+        json=proof_request_v1.dict(),
+    )
+
+    result = response.json()
+    assert "presentation" in result.keys()
+    assert "created_at" in result.keys()
+    assert "proof_id" in result.keys()
+    assert "v1-" in result["proof_id"]
+    assert result["role"] == "verifier"
+    assert result["state"]
+
+    # V2
+    proof_request_v2 = proof_request_v1
+    proof_request_v2.protocol_version = ProofRequestProtocolVersion.v2.value
+    response = await bob_member_client.post(
+        BASE_PATH + "/create-request",
+        json=proof_request_v2.dict(),
+    )
+
+    result = response.json()
+    assert "presentation" in result.keys()
+    assert "created_at" in result.keys()
+    assert "proof_id" in result.keys()
+    assert "v2-" in result["proof_id"]
+    assert result["role"] == "verifier"
+    assert result["state"]
 
 
 @pytest.mark.asyncio

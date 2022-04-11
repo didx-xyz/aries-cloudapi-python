@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
@@ -5,14 +6,20 @@ from sqlalchemy.orm import Session
 from trustregistry import crud
 from trustregistry.db import get_db
 from trustregistry.schemas import Actor
+from trustregistry.utils import get_data_slice
 
 router = APIRouter(prefix="/registry/actors", tags=["actor"])
 
 
 @router.get("/")
-async def get_actors(db: Session = Depends(get_db)):
+async def get_actors(
+    start: Optional[int] = None,
+    end: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
     db_actors = crud.get_actors(db)
-    return {"actors": db_actors}
+    data = get_data_slice(db_actors, start, end)
+    return {"actors": data}
 
 
 @router.post("/")

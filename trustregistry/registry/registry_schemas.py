@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from trustregistry import crud
 from trustregistry.db import get_db
 from trustregistry.schemas import Schema
+from trustregistry.utils import get_data_slice
 
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
@@ -20,10 +21,15 @@ class SchemaID(BaseModel):
 
 
 @router.get("/", response_model=GetSchemasResponse)
-async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
+async def get_schemas(
+    start: Optional[int] = None,
+    end: Optional[int] = None,
+    db: Session = Depends(get_db),
+) -> GetSchemasResponse:
     db_schemas = crud.get_schemas(db)
     schemas_repr = [schema.id for schema in db_schemas]
-    return GetSchemasResponse(schemas=schemas_repr)
+    data = get_data_slice(schemas_repr, start, end)
+    return GetSchemasResponse(schemas=data)
 
 
 @router.post("/")

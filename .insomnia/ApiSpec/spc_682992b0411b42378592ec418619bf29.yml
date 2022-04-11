@@ -347,9 +347,9 @@ contents: >-
           \ dict\n    The payload for creating the wallet\n\n\nReturns:\n--------\n\
           The response object from creating a wallet on the ledger\n\nExample Request\
           \ Body:\n{\n        \"image_url\": \"https://aries.ca/images/sample.png\"\
-          ,\n        \"key_management_mode\": \"managed\",\n        \"label\": \"YOMA\"\
+          ,\n        \"key_management_mode\": \"managed\",\n        \"label\": \"EcosystemGovernor\"\
           ,\n        \"wallet_dispatch_type\": \"default\",\n        \"wallet_key\"\
-          : \"MySecretKey1234\",\n        \"wallet_name\": \"YOMAsWallet\",\n      \
+          : \"MySecretKey1234\",\n        \"wallet_name\": \"GovernanceWallet\",\n      \
           \  \"wallet_type\": \"indy\"\n    }"
         operationId: create_wallet_wallets_create_wallet_post
         parameters:
@@ -774,7 +774,7 @@ contents: >-
         tags:
         - 'Legacy: Schemas'
         summary: Get Schema
-        description: "Get all valid schemas from YOMA\n\nParameters:\n-----------\n\
+        description: "Get all valid schemas from Governance\n\nParameters:\n-----------\n\
           api_key: Header(None)\n    The request header object api_key\nwallet_id: Header(None)\n\
           \    The request header object wallet_id\ntenant_jwt: Header(None)\n    The\
           \ request header object tenant_jwt\n\nReturns:\n--------\ncreated_schema:\

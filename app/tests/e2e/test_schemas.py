@@ -21,37 +21,37 @@ BASE_PATH = router.prefix
 
 @pytest.mark.asyncio
 async def test_create_schema_via_web(
-    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
+    governance_client: AsyncClient, governance_acapy_client: AcaPyClient
 ):
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    await create_public_did(yoma_acapy_client)
+    await create_public_did(governance_acapy_client)
 
-    response = await yoma_client.post(BASE_PATH, json=definition.dict())
+    response = await governance_client.post(BASE_PATH, json=definition.dict())
     assert response.status_code == 200
     result = response.json()
 
     response = await get_schemas(
-        schema_id=result["schema_id"], aries_controller=yoma_acapy_client
+        schema_id=result["schema_id"], aries_controller=governance_acapy_client
     )
     assert_that(response.schema_ids).is_length(1)
 
 
 @pytest.mark.asyncio
 async def test_get_schemas_via_web(
-    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
+    governance_client: AsyncClient, governance_acapy_client: AcaPyClient
 ):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
-    await create_public_did(yoma_acapy_client)
+    await create_public_did(governance_acapy_client)
 
     # when
-    response = await yoma_client.post(BASE_PATH, json=definition.dict())
+    response = await governance_client.post(BASE_PATH, json=definition.dict())
     assert response.status_code == 200
     result = response.json()
 
     # then
-    response = await yoma_client.get(
+    response = await governance_client.get(
         BASE_PATH,
         params={"schema_id": result["schema_id"]},
     )
@@ -60,13 +60,13 @@ async def test_get_schemas_via_web(
 
 @pytest.mark.asyncio
 async def test_get_schema_via_web(
-    yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient
+    governance_client: AsyncClient, governance_acapy_client: AcaPyClient
 ):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    await create_public_did(yoma_acapy_client)
-    response = await yoma_client.post(
+    await create_public_did(governance_acapy_client)
+    response = await governance_client.post(
         "/admin/governance/schemas",
         json=definition.dict(),
     )
@@ -74,7 +74,7 @@ async def test_get_schema_via_web(
     result = response.json()
 
     # when
-    response = await yoma_client.get(
+    response = await governance_client.get(
         f"{BASE_PATH}/{result['schema_id']}",
     )
 
@@ -83,17 +83,17 @@ async def test_get_schema_via_web(
 
 
 @pytest.mark.asyncio
-async def test_create_one_schema(yoma_acapy_client: AcaPyClient):
+async def test_create_one_schema(governance_acapy_client: AcaPyClient):
     # given
     definition = SchemaDefinition(name="x", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_acapy_client)
+    public_did = await create_public_did(governance_acapy_client)
 
     # when
-    schema_definition_result = await create_schema(definition, yoma_acapy_client)
+    schema_definition_result = await create_schema(definition, governance_acapy_client)
 
     # then
-    response = await yoma_acapy_client.schema.get_created_schemas(
+    response = await governance_acapy_client.schema.get_created_schemas(
         schema_issuer_did=public_did.did
     )
 
@@ -106,19 +106,19 @@ async def test_create_one_schema(yoma_acapy_client: AcaPyClient):
 
 
 @pytest.mark.asyncio
-async def test_create_two_schemas(yoma_acapy_client: AcaPyClient):
+async def test_create_two_schemas(governance_acapy_client: AcaPyClient):
     # given
     definition1 = SchemaDefinition(name="x", version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(name="y", version="0.1", attributes=["average"])
 
-    public_did = await create_public_did(yoma_acapy_client)
+    public_did = await create_public_did(governance_acapy_client)
 
     # when
-    schema_definition_result_1 = await create_schema(definition1, yoma_acapy_client)
-    schema_definition_result_2 = await create_schema(definition2, yoma_acapy_client)
+    schema_definition_result_1 = await create_schema(definition1, governance_acapy_client)
+    schema_definition_result_2 = await create_schema(definition2, governance_acapy_client)
 
     # then
-    response = await yoma_acapy_client.schema.get_created_schemas(
+    response = await governance_acapy_client.schema.get_created_schemas(
         schema_issuer_did=public_did.did
     )
 
@@ -137,21 +137,21 @@ async def test_create_two_schemas(yoma_acapy_client: AcaPyClient):
 
 
 @pytest.mark.asyncio
-async def test_get_schemas(yoma_acapy_client: AcaPyClient):
+async def test_get_schemas(governance_acapy_client: AcaPyClient):
     # when
     name = get_random_string(10)
     definition1 = SchemaDefinition(name=name, version="0.1", attributes=["average"])
     definition2 = SchemaDefinition(
         name=name, version="0.2", attributes=["average", "bitrate"]
     )
-    public_did = await create_public_did(yoma_acapy_client)
+    public_did = await create_public_did(governance_acapy_client)
 
-    schema_definition_result_1 = await create_schema(definition1, yoma_acapy_client)
-    schema_definition_result_2 = await create_schema(definition2, yoma_acapy_client)
+    schema_definition_result_1 = await create_schema(definition1, governance_acapy_client)
+    schema_definition_result_2 = await create_schema(definition2, governance_acapy_client)
 
     # when
     response = await get_schemas(
-        schema_issuer_did=public_did.did, aries_controller=yoma_acapy_client
+        schema_issuer_did=public_did.did, aries_controller=governance_acapy_client
     )
 
     # then
@@ -160,7 +160,7 @@ async def test_get_schemas(yoma_acapy_client: AcaPyClient):
         schema_definition_result_2.schema_id,
     )
     # when
-    response = await get_schemas(schema_name=name, aries_controller=yoma_acapy_client)
+    response = await get_schemas(schema_name=name, aries_controller=governance_acapy_client)
     # then
     assert_that(response.dict()["schema_ids"]).contains_only(
         schema_definition_result_1.schema_id,
@@ -169,7 +169,7 @@ async def test_get_schemas(yoma_acapy_client: AcaPyClient):
 
     # when
     response = await get_schemas(
-        schema_name=name, schema_version="0.2", aries_controller=yoma_acapy_client
+        schema_name=name, schema_version="0.2", aries_controller=governance_acapy_client
     )
     # then
     assert_that(response.dict()["schema_ids"]).contains_only(

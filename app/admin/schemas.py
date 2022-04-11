@@ -16,7 +16,7 @@ from app.dependencies import agent_role, Role
 
 router = APIRouter(prefix="/admin/governance/schemas", tags=["admin: schemas"])
 
-yoma_role = Depends(agent_role(Role.YOMA))
+governance_role = Depends(agent_role(Role.GOVERNANCE))
 
 
 class SchemaDefinition(BaseModel):
@@ -31,7 +31,7 @@ class UpdateSchema(BaseModel):
 
 
 @router.get("/{schema_id}", response_model=SchemaGetResult)
-async def get_schema(schema_id: str, aries_controller: AcaPyClient = yoma_role):
+async def get_schema(schema_id: str, aries_controller: AcaPyClient = governance_role):
     """
     Retrieve schemas by id.
 
@@ -49,7 +49,7 @@ async def get_schemas(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    aries_controller: AcaPyClient = yoma_role,
+    aries_controller: AcaPyClient = governance_role,
 ):
     """
     Retrieve schemas that the current agent created.
@@ -75,7 +75,7 @@ async def get_schemas(
 
 @router.post("/", response_model=SchemaSendResult)
 async def create_schema(
-    schema_definition: SchemaDefinition, aries_controller: AcaPyClient = yoma_role
+    schema_definition: SchemaDefinition, aries_controller: AcaPyClient = governance_role
 ) -> SchemaSendResult:
     """
     Create a new schema.

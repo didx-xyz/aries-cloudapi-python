@@ -22,7 +22,7 @@ from app.tests.util.webhooks import (
     check_webhook_state,
 )
 
-from app.tests.util.client import ecosystem_client
+from app.tests.util.client import ecosystem_partner_client
 
 from app.admin.tenants import tenants
 from app.util.did import ed25519_verkey_to_did_key
@@ -84,7 +84,7 @@ async def test_create_tenant_member(
 async def test_create_tenant_ecosystem_issuer(
     ecosystem_admin_client: AsyncClient,
     ecosystem_admin_acapy_client: AcaPyClient,
-    yoma_acapy_client: AcaPyClient,
+    governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
     response = await ecosystem_admin_client.post(
@@ -107,9 +107,9 @@ async def test_create_tenant_ecosystem_issuer(
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
     actor = await trust_registry.actor_by_id(tenant_id)
 
-    endorser_did = await acapy_wallet.get_public_did(yoma_acapy_client)
+    endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         connections = await tenant_controller.connection.get_connections()
@@ -125,7 +125,7 @@ async def test_create_tenant_ecosystem_issuer(
 
     connection = connections[0]
 
-    async with ecosystem_client(token=tenant["access_token"]) as client:
+    async with ecosystem_partner_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
         assert check_webhook_state(
             client,
@@ -181,7 +181,7 @@ async def test_create_tenant_ecosystem_verifier(
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -207,7 +207,7 @@ async def test_create_tenant_ecosystem_verifier(
 async def test_update_tenant_ecosystem_verifier_to_issuer(
     ecosystem_admin_client: AsyncClient,
     ecosystem_admin_acapy_client: AcaPyClient,
-    yoma_acapy_client: AcaPyClient,
+    governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
     response = await ecosystem_admin_client.post(
@@ -230,7 +230,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -270,9 +270,9 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     new_tenant = response.json()
     new_actor = await trust_registry.actor_by_id(tenant_id)
 
-    endorser_did = await acapy_wallet.get_public_did(yoma_acapy_client)
+    endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         _connections = (await tenant_controller.connection.get_connections()).results
@@ -285,7 +285,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     endorser_connection = connections[0]
 
-    async with ecosystem_client(token=tenant["access_token"]) as client:
+    async with ecosystem_partner_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
         assert check_webhook_state(
             client,

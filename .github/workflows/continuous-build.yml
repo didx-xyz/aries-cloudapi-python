@@ -35,7 +35,7 @@ jobs:
           echo echo waiting for dockers to startup
           while [ $i -le 2 ]
           do
-            if (docker logs $(docker ps -f name="yoma-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
+            if (docker logs $(docker ps -f name="governance-acapy-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
             :: Alice                                    ::
             ::                                          ::
             ::                                          ::
@@ -48,8 +48,8 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          docker-compose up --build -d yoma-ga-agent
-          docker-compose up --build -d yoma-multitenant-agent
+          docker-compose up --build -d governance-acapy-agent
+          docker-compose up --build -d ecosystem-multitenant-acapy-agent
           sleep 120
           pytest  --cov=trustregistry --cov=app trustregistry app
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
@@ -59,8 +59,8 @@ jobs:
       - name: Retry tests
         if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
         run: |
-          docker-compose up --build -d yoma-ga-agent
-          docker-compose up --build -d yoma-multitenant-agent
+          docker-compose up --build -d governance-acapy-agent
+          docker-compose up --build -d ecosystem-multitenant-acapy-agent
           sleep 120
           pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml

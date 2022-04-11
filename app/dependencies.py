@@ -60,10 +60,10 @@ def agent_role(role: Union["Role", List["Role"]]):
 
 
 @asynccontextmanager
-async def get_yoma_controller():
+async def get_governance_controller():
     # TODO: would be good to support this natively in AcaPyClient
     client = AcaPyClient(
-        Role.YOMA.agent_type.base_url, api_key=Role.YOMA.agent_type.x_api_key
+        Role.GOVERNANCE.agent_type.base_url, api_key=Role.GOVERNANCE.agent_type.x_api_key
     )
 
     yield client

@@ -8,8 +8,8 @@ from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient, get, HTTPError
 
 from app.constants import WEBHOOKS_URL
-from app.constants import YOMA_AGENT_API_KEY as YOMA_ADMIN_API_KEY
-from app.constants import YOMA_AGENT_API_KEY as OOB_ADMIN_API_KEY
+from app.constants import GOVERNANCE_AGENT_API_KEY
+from app.constants import GOVERNANCE_AGENT_API_KEY as OOB_ADMIN_API_KEY
 from app.constants import MEMBER_AGENT_API_KEY as MEMBER_ADMIN_API_KEY
 
 
@@ -30,13 +30,13 @@ topics = Literal[
 
 
 class AdminAgentType(Enum):
-    yoma = "yoma"
+    governance = "governance"
     oob = "oob"
     tenant = "tenant"
 
 
 class AdminKeyMappings(Enum):
-    yoma = YOMA_ADMIN_API_KEY
+    governance = GOVERNANCE_AGENT_API_KEY
     oob = OOB_ADMIN_API_KEY
     tenant = MEMBER_ADMIN_API_KEY
 

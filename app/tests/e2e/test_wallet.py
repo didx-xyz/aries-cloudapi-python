@@ -23,27 +23,27 @@ WALLET_BASE_PATH = router.prefix
 
 
 @pytest.fixture()
-async def create_did_mock(yoma_client: AsyncClient):
-    did_response = await yoma_client.post(WALLET_BASE_PATH)
+async def create_did_mock(governance_client: AsyncClient):
+    did_response = await governance_client.post(WALLET_BASE_PATH)
     did_response = did_response.json()
     did = did_response["did"]
     return did
 
 
 @pytest.mark.asyncio
-async def test_list_dids(yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient):
-    response = await yoma_client.get(WALLET_BASE_PATH)
+async def test_list_dids(governance_client: AsyncClient, governance_acapy_client: AcaPyClient):
+    response = await governance_client.get(WALLET_BASE_PATH)
 
     assert response.status_code == 200
     response = response.json()
 
-    res_method = await list_dids(aries_controller=yoma_acapy_client)
+    res_method = await list_dids(aries_controller=governance_acapy_client)
     assert res_method == response
 
 
 @pytest.mark.asyncio
-async def test_create_local_did(yoma_client: AsyncClient):
-    response = await yoma_client.post(WALLET_BASE_PATH)
+async def test_create_local_did(governance_client: AsyncClient):
+    response = await governance_client.post(WALLET_BASE_PATH)
 
     assert_that(response.status_code).is_equal_to(200)
     response = response.json()
@@ -52,22 +52,22 @@ async def test_create_local_did(yoma_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_public_did(yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient):
-    response = await yoma_client.get(f"{WALLET_BASE_PATH}/public")
+async def test_get_public_did(governance_client: AsyncClient, governance_acapy_client: AcaPyClient):
+    response = await governance_client.get(f"{WALLET_BASE_PATH}/public")
 
     assert_that(response.status_code).is_equal_to(200)
     response = response.json()
 
     assert_that(response).contains("did", "verkey")
 
-    res_method = await get_public_did(aries_controller=yoma_acapy_client)
+    res_method = await get_public_did(aries_controller=governance_acapy_client)
     assert res_method == response
 
 
 @pytest.mark.asyncio
-async def test_get_did_endpoint(yoma_client: AsyncClient, create_did_mock: Any):
+async def test_get_did_endpoint(governance_client: AsyncClient, create_did_mock: Any):
     did = create_did_mock
-    response = await yoma_client.get(f"{WALLET_BASE_PATH}/{did}/endpoint")
+    response = await governance_client.get(f"{WALLET_BASE_PATH}/{did}/endpoint")
     assert_that(response.status_code).is_equal_to(200)
 
     response = response.json()
@@ -75,12 +75,12 @@ async def test_get_did_endpoint(yoma_client: AsyncClient, create_did_mock: Any):
 
 
 @pytest.mark.asyncio
-async def test_set_public_did(yoma_client: AsyncClient, yoma_acapy_client: AcaPyClient):
-    did_object = await wallet_facade.create_did(yoma_acapy_client)
+async def test_set_public_did(governance_client: AsyncClient, governance_acapy_client: AcaPyClient):
+    did_object = await wallet_facade.create_did(governance_acapy_client)
     await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
 
     did = did_object.did
-    response = await yoma_client.put(f"{WALLET_BASE_PATH}/public?did={did}")
+    response = await governance_client.put(f"{WALLET_BASE_PATH}/public?did={did}")
 
     assert_that(response.status_code).is_equal_to(200)
     response = response.json()
@@ -90,19 +90,19 @@ async def test_set_public_did(yoma_client: AsyncClient, yoma_acapy_client: AcaPy
 
 
 @pytest.mark.asyncio
-async def test_set_did_endpoint(yoma_acapy_client: AcaPyClient):
+async def test_set_did_endpoint(governance_acapy_client: AcaPyClient):
     # Don't want us overwriting the real endpoint, so not setting as public did
-    did = await create_public_did(yoma_acapy_client, set_public=False)
+    did = await create_public_did(governance_acapy_client, set_public=False)
     endpoint = "https://ssi.com"
 
     await set_did_endpoint(
         did.did,
         SetDidEndpointRequest(endpoint=endpoint),
-        aries_controller=yoma_acapy_client,
+        aries_controller=governance_acapy_client,
     )
 
     retrieved_endpoint = await get_did_endpoint(
-        did.did, aries_controller=yoma_acapy_client
+        did.did, aries_controller=governance_acapy_client
     )
 
     assert_that(endpoint).is_equal_to(retrieved_endpoint.endpoint)

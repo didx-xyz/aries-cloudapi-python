@@ -54,10 +54,10 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
 
 @pytest.mark.asyncio
 async def test_get_webhooks_for_wallet_by_topic_admin_error(
-    yoma_client: AsyncClient,
+    governance_client: AsyncClient,
 ):
-    yoma_client.headers.pop("x-api-key")
-    result = await yoma_client.get(WALLET_BASE_PATH + "/connections")
+    governance_client.headers.pop("x-api-key")
+    result = await governance_client.get(WALLET_BASE_PATH + "/connections")
 
     assert result.status_code == 403
     assert result.json()["detail"] == "Not authenticated"

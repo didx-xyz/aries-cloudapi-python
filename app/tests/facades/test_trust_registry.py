@@ -120,35 +120,35 @@ async def test_actor_has_role():
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
-        assert await trf.actor_has_role("yoma", "issuer") is False
+        assert await trf.actor_has_role("governance", "issuer") is False
 
     with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         with pytest.raises(trf.TrustRegistryException):
-            await trf.actor_has_role("yoma", "issuer")
+            await trf.actor_has_role("governance", "issuer")
 
     with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
         with pytest.raises(trf.TrustRegistryException):
-            await trf.actor_has_role("yoma", "issuer")
+            await trf.actor_has_role("governance", "issuer")
 
     with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
-        assert await trf.actor_has_role("yoma", "issuer") is True
+        assert await trf.actor_has_role("governance", "issuer") is True
 
 
 @pytest.mark.asyncio
 async def test_actor_by_did():
     with patch("httpx.get") as mock_request:
         res = {
-            "id": "yoma",
+            "id": "governance",
             "roles": ["verifier"],
         }
 
@@ -164,7 +164,7 @@ async def test_actor_by_did():
 
     with patch("httpx.get") as mock_request:
         res = {
-            "id": "yoma",
+            "id": "governance",
             "roles": ["verifier"],
         }
 
@@ -194,8 +194,8 @@ async def test_actor_by_did():
 async def test_actor_with_role():
     with patch("httpx.get") as mock_request:
         actors = [
-            {"id": "yoma", "roles": ["issuer"]},
-            {"id": "yoma2", "roles": ["issuer"]},
+            {"id": "governance", "roles": ["issuer"]},
+            {"id": "governance2", "roles": ["issuer"]},
         ]
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
@@ -205,8 +205,8 @@ async def test_actor_with_role():
 
     with patch("httpx.get") as mock_request:
         actors = [
-            {"id": "yoma", "roles": ["issuer"]},
-            {"id": "yoma2", "roles": ["verifier"]},
+            {"id": "governance", "roles": ["issuer"]},
+            {"id": "governance2", "roles": ["verifier"]},
         ]
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
@@ -216,8 +216,8 @@ async def test_actor_with_role():
 
     with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
         actors = [
-            {"id": "yoma", "roles": ["issuer"]},
-            {"id": "yoma2", "roles": ["verifier"]},
+            {"id": "governance", "roles": ["issuer"]},
+            {"id": "governance2", "roles": ["verifier"]},
         ]
         mock_request.return_value.status_code = 428
         mock_request.return_value.is_error = True
@@ -227,8 +227,8 @@ async def test_actor_with_role():
 
     with patch("httpx.get") as mock_request:
         actors = [
-            {"id": "yoma", "roles": ["verifier"]},
-            {"id": "yoma2", "roles": ["verifier"]},
+            {"id": "governance", "roles": ["verifier"]},
+            {"id": "governance2", "roles": ["verifier"]},
         ]
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False

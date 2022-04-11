@@ -37,7 +37,7 @@ usage() {
 
             Examples:
             $0 start
-            $0 start faber-agent
+            $0 start governance-acapy-agent
 
       logs - Display the logs from the docker compose run (ctrl-c to exit).
 
@@ -54,8 +54,8 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="yoma-trust-registry yoma-multitenant-wallets-db yoma-multitenant-agent tails-server ledger-nodes ledger-browser
-                    yoma-ga-wallets-db yoma-ga-agent yoma-multitenant-web yoma-ga-web wh-redis yoma-webhooks-web"
+DEFAULT_CONTAINERS="ecosystem-trust-registry ecosystem-multitenant-wallets-db ecosystem-multitenant-acapy-agent tails-server ledger-nodes ledger-browser
+                    governance-wallet-db governance-acapy-agent ecosystem-multitenant-fastapi governance-fastapi wh-redis webhooks-web"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------------------------------------------

@@ -16,19 +16,19 @@ from mockito import mock
 
 from .constants import (
     ECOSYSTEM_FASTAPI_ENDPOINT,
-    YOMA_FASTAPI_ENDPOINT,
-    YOMA_ACAPY_API_KEY,
+    GOVERNANCE_FASTAPI_ENDPOINT,
+    GOVERNANCE_ACAPY_API_KEY,
     MEMBER_FASTAPI_ENDPOINT,
     MEMBER_ACAPY_API_KEY,
 )
 from app.constants import (
     ECOSYSTEM_AGENT_API_KEY,
     ECOSYSTEM_AGENT_URL,
-    YOMA_AGENT_URL,
+    GOVERNANCE_AGENT_URL,
     MEMBER_AGENT_URL,
 )
 
-# YOMA
+# Governance Agent Tests
 
 
 def get_mock_agent_controller() -> AcaPyClient:
@@ -45,23 +45,23 @@ def get_mock_agent_controller() -> AcaPyClient:
     return controller
 
 
-def yoma_client(*, app: Optional[Any] = None):
+def governance_client(*, app: Optional[Any] = None):
     return AsyncClient(
-        base_url=YOMA_FASTAPI_ENDPOINT,
+        base_url=GOVERNANCE_FASTAPI_ENDPOINT,
         timeout=60.0,
         app=app,
         headers={
-            "x-api-key": f"yoma.{YOMA_ACAPY_API_KEY}",
+            "x-api-key": f"governance.{GOVERNANCE_ACAPY_API_KEY}",
             "content-type": "application/json",
         },
         transport=AsyncHTTPTransport(retries=3),
     )
 
 
-def yoma_acapy_client():
+def governance_acapy_client():
     return AcaPyClient(
-        base_url=YOMA_AGENT_URL,
-        api_key=YOMA_ACAPY_API_KEY,
+        base_url=GOVERNANCE_AGENT_URL,
+        api_key=GOVERNANCE_ACAPY_API_KEY,
     )
 
 
@@ -131,7 +131,7 @@ def ecosystem_admin_acapy_client():
     )
 
 
-def ecosystem_client(*, token: str, app: Optional[Any] = None):
+def ecosystem_partner_client(*, token: str, app: Optional[Any] = None):
     return AsyncClient(
         base_url=ECOSYSTEM_FASTAPI_ENDPOINT,
         timeout=60.0,
@@ -141,3 +141,5 @@ def ecosystem_client(*, token: str, app: Optional[Any] = None):
             "content-type": "application/json",
         },
     )
+
+# TODO? No ecosystem partner ACAPY Client?

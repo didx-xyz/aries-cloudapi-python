@@ -1,26 +1,24 @@
 import pytest
 
 from app.tests.util.client import (
-    yoma_client as _yoma_client,
-    yoma_acapy_client as _yoma_acapy_client,
+    governance_client as _governance_client,
+    governance_acapy_client as _governance_acapy_client,
     member_admin_client as _member_admin_client,
     member_admin_acapy_client as _member_admin_acapy_client,
     ecosystem_admin_client as _ecosystem_admin_client,
     ecosystem_admin_acapy_client as _ecosystem_admin_acapy_client,
 )
 
-# YOMA
-
 
 @pytest.yield_fixture(scope="module")
-async def yoma_client():
-    async with _yoma_client() as client:
+async def governance_client():
+    async with _governance_client() as client:
         yield client
 
 
 @pytest.yield_fixture(scope="module")
-async def yoma_acapy_client():
-    client = _yoma_acapy_client()
+async def governance_acapy_client():
+    client = _governance_acapy_client()
     yield client
 
     await client.close()

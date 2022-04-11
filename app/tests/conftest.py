@@ -3,8 +3,8 @@ import mockito
 from app.tests.util.client_fixtures import (
     member_admin_acapy_client,
     member_admin_client,
-    yoma_acapy_client,
-    yoma_client,
+    governance_acapy_client,
+    governance_client,
     ecosystem_admin_acapy_client,
     ecosystem_admin_client,
 )

@@ -10,7 +10,7 @@ from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 from app.admin.tenants.models import UpdateTenantRequest
-from app.dependencies import Role, get_tenant_controller, get_yoma_controller
+from app.dependencies import Role, get_tenant_controller, get_governance_controller
 from app.facades.trust_registry import (
     TrustRegistryRole,
     actor_by_id,
@@ -79,19 +79,19 @@ async def onboard_ecosystem_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str
 ) -> OnboardResult:
     if "issuer" in roles:
-        # Get yoma and tenant controllers, onboard issuer
-        async with get_yoma_controller() as yoma_controller, get_tenant_controller(
-            Role.ECOSYSTEM, tenant_auth_token
+        # Get governance and tenant controllers, onboard issuer
+        async with get_governance_controller() as governance_controller, get_tenant_controller(
+            Role.ECOSYSTEM_PARTNER, tenant_auth_token
         ) as tenant_controller:
             return await onboard_issuer(
                 name=name,
                 issuer_controller=tenant_controller,
-                endorser_controller=yoma_controller,
+                endorser_controller=governance_controller,
             )
 
     elif "verifier" in roles:
         async with get_tenant_controller(
-            Role.ECOSYSTEM, tenant_auth_token
+            Role.ECOSYSTEM_PARTNER, tenant_auth_token
         ) as tenant_controller:
             return await onboard_verifier(
                 name=name, verifier_controller=tenant_controller

@@ -88,7 +88,7 @@ async def topic_root(
 
 
 # 'origin' helps to distinguish where a hook is from
-# eg the admin aka yoma, tenant or OP agent respectively
+# eg the admin aka governance, tenant or OP agent respectively
 @app.post("/{origin}/{wallet_id}/topic/{topic}")
 async def topic_wallet(
     wallet_id: str,

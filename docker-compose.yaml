@@ -12,7 +12,7 @@ services:
       - ./app:/app
       - ./environments/governance-agent/fastapi.default.env:/app/.env
     depends_on:
-      - governance-wallet-db
+      - governance-wallets-db
       - ledger-nodes
       - ledger-browser
     networks:
@@ -20,7 +20,7 @@ services:
       - host
     env_file:
       - environments/governance-agent/fastapi.default.env
-  governance-wallet-db:
+  governance-wallets-db:
     image: postgres:11
     command: postgres -c listen_addresses='*'
     env_file:
@@ -52,7 +52,7 @@ services:
       - 3020:3020
       - 3021:3021
     depends_on:
-      - governance-wallet-db
+      - governance-wallets-db
       - ledger-nodes
       - ledger-browser
     networks:
@@ -136,7 +136,7 @@ services:
     image: wernight/ngrok
     env_file:
       - environments/multitenant-agent/aca-py-agent.default.env
-    command: ngrok http ecosystem-multitenant-agent:3020 --log stdout
+    command: ngrok http ecosystem-multitenant-acapy-agent:3020 --log stdout
     networks:
       - ecosystem
       - host

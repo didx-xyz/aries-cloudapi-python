@@ -55,7 +55,7 @@ EOF
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
 DEFAULT_CONTAINERS="ecosystem-trust-registry ecosystem-multitenant-wallets-db ecosystem-multitenant-acapy-agent tails-server ledger-nodes ledger-browser
-                    governance-wallet-db governance-acapy-agent ecosystem-multitenant-fastapi governance-fastapi wh-redis webhooks-web"
+                    governance-wallets-db governance-acapy-agent ecosystem-multitenant-fastapi governance-fastapi wh-redis webhooks-web"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------------------------------------------

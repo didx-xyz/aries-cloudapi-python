@@ -1,4 +1,3 @@
-from optparse import Option
 from fastapi import FastAPI, Depends
 from typing import Optional
 from sqlalchemy.orm import Session

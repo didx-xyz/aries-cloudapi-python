@@ -13,9 +13,7 @@ def get_data_slice(data: List, start: int = None, end: int = None):
     range_of_entries = abs(end - start)
     if start > end:
         # swap start and end
-        temp = end
-        end = start
-        start = temp
+        start, end = end, start
     if data_entries_total < start or data_entries_total < end:
         # get the last n entries if range out of bounce
         end = data_entries_total - 1

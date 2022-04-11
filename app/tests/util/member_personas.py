@@ -30,6 +30,7 @@ async def bob_member_client():
     async with member_admin_client() as client:
         tenant = await create_tenant(client, "bob")
 
+        print(f"\n\n\n{tenant} \n\n\n\n\n")
         yield member_client(token=tenant["access_token"])
 
         await delete_tenant(client, tenant["tenant_id"])

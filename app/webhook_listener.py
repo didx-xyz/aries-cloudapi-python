@@ -47,7 +47,7 @@ class Webhooks:
             await Webhooks.client.wait_until_ready()
 
         try:
-            await asyncio.wait_for(wait_for_ready(), timeout=5)
+            await asyncio.wait_for(wait_for_ready(), timeout=180)
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()
@@ -64,7 +64,7 @@ class Webhooks:
                 await Webhooks.client.disconnect()
 
         try:
-            await asyncio.wait_for(wait_for_shutdown(), timeout=5)
+            await asyncio.wait_for(wait_for_shutdown(), timeout=180)
         except asyncio.TimeoutError:
             sys.exit()
 
@@ -95,17 +95,15 @@ async def start_listener(
             )
 
     async def wait_for_event_with_timeout(
-        *, filter_map: Dict[str, Any], timeout: float = 10
+        *, filter_map: Dict[str, Any], timeout: float = 180
     ):
         try:
             await asyncio.wait_for(wait_for_event(filter_map), timeout=timeout)
         except Exception as e:
             # Always close on exception
             Webhooks.off(on_webhook)
-            raise TimeoutError(
-                f"Timeout expired. Could not find event that matches {filter_map}"
-            ) from e
-
+            # pass and recover. Don't raise and break
+            pass
         else:
             if auto_close_after_success:
                 Webhooks.off(on_webhook)

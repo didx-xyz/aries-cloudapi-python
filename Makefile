@@ -26,11 +26,7 @@ restart:
 
 .PHONY: unit-tests
 unit-tests:
-	pytest --cov=app --ignore=app/tests/bdd
-
-.PHONY: bdd-tests
-bdd-tests:
-	pytest --cov=app/tests/bdd app/tests/bdd
+	pytest --cov=app --ignore=app/tests/e2e
 
 .PHONY: tests
 tests:

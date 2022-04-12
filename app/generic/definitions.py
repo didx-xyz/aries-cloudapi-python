@@ -223,7 +223,7 @@ async def create_credential_definition(
                     "state": "transaction_acked",
                     "transaction_id": result.txn.transaction_id,
                 },
-                timeout=20,
+                timeout=300,
             )
         except asyncio.TimeoutError:
             raise CloudApiException(

@@ -47,7 +47,7 @@ class Webhooks:
             await Webhooks.client.wait_until_ready()
 
         try:
-            await asyncio.wait_for(wait_for_ready(), timeout=5)
+            await asyncio.wait_for(wait_for_ready(), timeout=300)
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()
@@ -64,7 +64,7 @@ class Webhooks:
                 await Webhooks.client.disconnect()
 
         try:
-            await asyncio.wait_for(wait_for_shutdown(), timeout=5)
+            await asyncio.wait_for(wait_for_shutdown(), timeout=300)
         except asyncio.TimeoutError:
             sys.exit()
 
@@ -93,7 +93,7 @@ async def start_listener(*, topic: str, wallet_id: str, a: bool = False):
             )
 
     async def wait_for_event_with_timeout(
-        *, filter_map: Dict[str, Any], timeout: float = 10
+        *, filter_map: Dict[str, Any], timeout: float = 300
     ):
         try:
             await asyncio.wait_for(wait_for_event(filter_map), timeout=timeout)

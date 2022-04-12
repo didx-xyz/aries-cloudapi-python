@@ -36,7 +36,7 @@ jobs:
           while [ $i -le 2 ]
           do
             if (docker logs $(docker ps -f name="governance-acapy-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
-            :: Alice                                    ::
+            :: EcosystemGovernanceAuthority             ::
             ::                                          ::
             ::                                          ::
             :: Inbound Transports:                      ::

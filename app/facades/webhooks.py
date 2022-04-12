@@ -1,11 +1,10 @@
 import json
 import base64
 from enum import Enum
-from typing import Union
 from typing import List, Literal
 from aries_cloudcontroller import AcaPyClient
 
-from httpx import AsyncClient, get, HTTPError
+from httpx import get, HTTPError
 
 from app.constants import WEBHOOKS_URL
 from app.constants import GOVERNANCE_AGENT_API_KEY

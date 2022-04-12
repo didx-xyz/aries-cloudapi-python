@@ -19,6 +19,7 @@ class AgentType(NamedTuple):
     is_admin: bool
     x_api_key: Optional[str]
 
+
 # Governance Agent Can:
 # - Create Schema
 # - Manage Trust Registry
@@ -35,16 +36,15 @@ GOVERNANCE_AGENT_TYPE = AgentType(
 )
 
 
-
 # Ecosystem Partner is:
 # - holder
 # - issuer/verifier
 # automatically registered with the trust registry
 # can:
-# - create credential definitions from schemas in trust registry 
+# - create credential definitions from schemas in trust registry
 # - issue credential
 # - create/manage wallets
-ECOSYSTEM_PARTNER_AGENT_TYPE = AgentType(
+ECOSYSTEM_AGENT_TYPE = AgentType(
     name="ecosystem-partner",
     base_url=ECOSYSTEM_AGENT_URL,
     is_multitenant=True,
@@ -59,7 +59,7 @@ ECOSYSTEM_ADMIN_AGENT_TYPE = AgentType(
     name="ecosystem-admin",
     base_url=ECOSYSTEM_AGENT_URL,
     is_multitenant=True,
-    tenant_role=ECOSYSTEM_PARTNER_AGENT_TYPE,
+    tenant_role=ECOSYSTEM_AGENT_TYPE,
     is_admin=True,
     x_api_key=ECOSYSTEM_AGENT_API_KEY,
 )
@@ -93,11 +93,9 @@ MEMBER_ADMIN_AGENT_TYPE = AgentType(
 )
 
 
-
-
 class Role(Enum):
     GOVERNANCE = GOVERNANCE_AGENT_TYPE
-    ECOSYSTEM_PARTNER = ECOSYSTEM_PARTNER_AGENT_TYPE
+    ECOSYSTEM = ECOSYSTEM_AGENT_TYPE
     ECOSYSTEM_ADMIN = ECOSYSTEM_ADMIN_AGENT_TYPE
     MEMBER = MEMBER_AGENT_TYPE
     MEMBER_ADMIN = MEMBER_ADMIN_AGENT_TYPE

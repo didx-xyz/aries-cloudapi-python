@@ -81,7 +81,7 @@ async def onboard_ecosystem_tenant(
     if "issuer" in roles:
         # Get governance and tenant controllers, onboard issuer
         async with get_governance_controller() as governance_controller, get_tenant_controller(
-            Role.ECOSYSTEM_PARTNER, tenant_auth_token
+            Role.ECOSYSTEM, tenant_auth_token
         ) as tenant_controller:
             return await onboard_issuer(
                 name=name,
@@ -91,7 +91,7 @@ async def onboard_ecosystem_tenant(
 
     elif "verifier" in roles:
         async with get_tenant_controller(
-            Role.ECOSYSTEM_PARTNER, tenant_auth_token
+            Role.ECOSYSTEM, tenant_auth_token
         ) as tenant_controller:
             return await onboard_verifier(
                 name=name, verifier_controller=tenant_controller

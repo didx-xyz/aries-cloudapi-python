@@ -52,7 +52,7 @@ async def test_get_tenant_auth_token(ecosystem_admin_client: AsyncClient):
     token = response.json()
 
     assert token["access_token"]
-    assert token["access_token"].startswith("ecosystem.ey")
+    assert token["access_token"].startswith("ecosystem-partner.ey")
 
 
 @pytest.mark.asyncio
@@ -109,7 +109,7 @@ async def test_create_tenant_ecosystem_issuer(
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         connections = await tenant_controller.connection.get_connections()
@@ -149,7 +149,7 @@ async def test_create_tenant_ecosystem_issuer(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert wallet.settings["wallet.name"].startswith("ecosystem-partner.")
 
 
 @pytest.mark.asyncio
@@ -181,7 +181,7 @@ async def test_create_tenant_ecosystem_verifier(
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -200,7 +200,7 @@ async def test_create_tenant_ecosystem_verifier(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert wallet.settings["wallet.name"].startswith("ecosystem-partner.")
 
 
 @pytest.mark.asyncio
@@ -230,7 +230,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -251,7 +251,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert wallet.settings["wallet.name"].startswith("ecosystem-partner.")
 
     new_name = uuid4().hex
     new_image_url = "https://some-ssi-site.org/image.png"
@@ -272,7 +272,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.ECOSYSTEM_PARTNER, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         _connections = (await tenant_controller.connection.get_connections()).results
@@ -311,7 +311,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     assert_that(new_tenant).has_image_url(new_image_url)
     assert_that(new_tenant).has_tenant_name(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert wallet.settings["wallet.name"].startswith("ecosystem-partner.")
 
 
 @pytest.mark.asyncio

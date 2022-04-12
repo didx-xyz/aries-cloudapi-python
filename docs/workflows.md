@@ -136,7 +136,7 @@ Currently there are five options for `role`:
     - manage trust registry
     - create/ manage wallets
     - issue credential
-- ecosystem
+- ecosystem-partner
   - is:
     - holder
     - issuer/verifier

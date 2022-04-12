@@ -1,3 +1,4 @@
+import time
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
@@ -217,4 +218,5 @@ async def test_store_credential(
         client=alice_member_client,
         filter_map={"state": "credential-acked"},
         topic="credentials",
+        max_duration=300,
     )

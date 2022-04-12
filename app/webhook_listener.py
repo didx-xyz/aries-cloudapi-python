@@ -100,7 +100,8 @@ async def start_listener(*, topic: str, wallet_id: str, a: bool = False):
         except Exception as e:
             # Always unsubscribe
             Webhooks.off(on_webhook)
-            raise e from e
+            # pass and recover. Don't raise and break
+            pass
         else:
             Webhooks.off(on_webhook)
 

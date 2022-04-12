@@ -1,16 +1,17 @@
 import json
 import base64
 from enum import Enum
-from typing import Union
 from typing import List, Literal
 from aries_cloudcontroller import AcaPyClient
+from fastapi import Depends
 
-from httpx import AsyncClient, get, HTTPError
+from httpx import HTTPError, get
 
 from app.constants import WEBHOOKS_URL
 from app.constants import YOMA_AGENT_API_KEY as YOMA_ADMIN_API_KEY
 from app.constants import YOMA_AGENT_API_KEY as OOB_ADMIN_API_KEY
 from app.constants import MEMBER_AGENT_API_KEY as MEMBER_ADMIN_API_KEY
+from app.dependencies import agent_selector
 
 
 topics = Literal[
@@ -62,7 +63,9 @@ def get_wallet_id_from_client(client: AcaPyClient) -> str:
     return get_wallet_id_from_b64encoded_jwt(jwt)
 
 
-def get_hooks_per_topic_per_wallet(client: AcaPyClient, topic: topics) -> List:
+def get_hooks_per_topic_per_wallet(
+    topic: topics, client: AcaPyClient = Depends(agent_selector)
+) -> List:
     if not is_tenant(client=client):
         wallet_id = "admin"
     else:
@@ -75,7 +78,7 @@ def get_hooks_per_topic_per_wallet(client: AcaPyClient, topic: topics) -> List:
 
 
 def get_hooks_per_wallet(
-    client: AcaPyClient,
+    client: AcaPyClient = Depends(agent_selector),
 ) -> List:
     """
     Gets all webhooks for all wallets by topic (default="connections")
@@ -85,6 +88,7 @@ def get_hooks_per_wallet(
     else:
         wallet_id = get_wallet_id_from_client(client)
     try:
+
         hooks = (get(f"{WEBHOOKS_URL}/{wallet_id}")).json()
         # Only return the first 100 hooks to prevent OpenAPI interface from crashing
         return hooks if hooks else []

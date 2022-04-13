@@ -144,6 +144,7 @@ def ecosystem_client(*, token: str, app: Optional[Any] = None):
         },
     )
 
+
 def ecosystem_acapy_client(*, token: str):
     return AcaPyClient(
         base_url=ECOSYSTEM_AGENT_URL, api_key=ECOSYSTEM_AGENT_API_KEY, tenant_jwt=token

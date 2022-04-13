@@ -19,7 +19,7 @@ async def get(response: Optional[Any] = None):
 @pytest.mark.asyncio
 async def test_send_credential(mock_agent_controller: AcaPyClient):
     did = "did:sov:WgWxqztrNooG92RXvxSTWv"
-    cred_def_id = f"WgWxqztrNooG92RXvxSTWv:1:12345:tag"
+    cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
     cred_ex = mock(CredentialExchange)
 
     when(test_module).assert_valid_issuer(...).thenReturn(get(True))

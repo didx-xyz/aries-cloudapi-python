@@ -160,7 +160,7 @@ async def onboard_issuer(
         topic="connections", wallet_id=issuer_wallet_id
     )
 
-    logger.debug(f"Receiving connection invitation")
+    logger.debug("Receiving connection invitation")
 
     # FIXME: make sure the connection with this alias doesn't exist yet
     # Or does use_existing_connection take care of this?

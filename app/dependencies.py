@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import logging
 from contextlib import asynccontextmanager
 from typing import List, Optional, Union
@@ -17,27 +18,16 @@ logger = logging.getLogger(__name__)
 x_api_key_scheme = APIKeyHeader(name="x-api-key")
 
 
+@dataclass
 class AcaPyAuth:
     token: str
     role: Role
-
-    wallet_id: Optional[str]
-
-    def __init__(self, *, role: "Role", token: str) -> None:
-        self.role = role
-        self.token = token
+    wallet_id: str = None
 
 
+@dataclass
 class AcaPyAuthVerified(AcaPyAuth):
-    token: str
-    role: Role
-
     wallet_id: str
-
-    def __init__(self, *, role: "Role", token: str, wallet_id: str) -> None:
-        self.role = role
-        self.token = token
-        self.wallet_id = wallet_id
 
 
 def acapy_auth(auth: str = Depends(x_api_key_scheme)):

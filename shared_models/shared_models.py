@@ -288,7 +288,7 @@ def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "request_received": "request-received",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
-        "done": "done",
+        "credential_acked": "credential-acked",
     }
 
     if not state or state not in translation_dict:

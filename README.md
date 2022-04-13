@@ -34,3 +34,25 @@ You can find more detailed documentation in the [`./docs` folder](https://github
 ## Contributing
 
 Although this project is foremost developed to fit the needs of [YOMA](yoma.africa) it eventually is an open-source project that hopefully can get picked up and used for other aries-hyperledger projects as well. We do welcome contributions from anyone. Feel free to engage in discussions, create a PR against a ticket or open an issue yourself following the GitHub guidelines.
+
+## Running tests
+
+The tests use `pytest`. For convenience use GNU Make to run them. First ensure the project is running locally by running `make start`. In another shell you can now run `make tests` to run all tests or `make unit-tests` to run only the unit tests.
+
+Without using `make` you can run:
+
+```bash
+./manage up
+```
+
+to start the containers and run the tests with
+
+```bash
+pytest .
+```
+
+or only the unit tests with:
+
+```bash
+pytest --ignore=app/tests/e2e
+```

@@ -44,7 +44,7 @@ async def post_to_ledger(
             detail="Cannot resolve ledger type. Should be either von or sovrin",
         )
 
-    response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=180)
+    response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
 
     if response.is_error:
         logger.error("Failed to write to ledger:\n %s", response.text)

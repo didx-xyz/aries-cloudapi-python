@@ -92,11 +92,9 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 
     return translation_dict[state]
 
-
 class Endorsement(BaseModel):
     transaction_id: str
     state: str
-
 
 class Connection(BaseModel):
     connection_id: str
@@ -133,7 +131,9 @@ class CredentialExchange(BaseModel):
         "request-received",
         "credential-issued",
         "credential-received",
+        "credential-acked",
         "done",
+        "credential-acked",
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
@@ -287,9 +287,7 @@ def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "request_received": "request-received",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
-        # V1 uses credential_acked, while v2 uses done
-        "credential_acked": "done",
-        "credential_revoked": "credential-revoked",
+        "credential_acked": "credential-acked",
     }
 
     if not state or state not in translation_dict:

@@ -47,7 +47,7 @@ class Webhooks:
             await Webhooks.client.wait_until_ready()
 
         try:
-            await asyncio.wait_for(wait_for_ready(), timeout=180)
+            await asyncio.wait_for(wait_for_ready(), timeout=300)
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()
@@ -64,14 +64,12 @@ class Webhooks:
                 await Webhooks.client.disconnect()
 
         try:
-            await asyncio.wait_for(wait_for_shutdown(), timeout=180)
+            await asyncio.wait_for(wait_for_shutdown(), timeout=300)
         except asyncio.TimeoutError:
             sys.exit()
 
 
-async def start_listener(
-    *, topic: str, wallet_id: str, auto_close_after_success: bool = True
-):
+async def start_listener(*, topic: str, wallet_id: str, a: bool = False):
     queue = asyncio.Queue()
 
     async def on_webhook(data: Dict[str, Any]):
@@ -95,18 +93,17 @@ async def start_listener(
             )
 
     async def wait_for_event_with_timeout(
-        *, filter_map: Dict[str, Any], timeout: float = 180
+        *, filter_map: Dict[str, Any], timeout: float = 300
     ):
         try:
             await asyncio.wait_for(wait_for_event(filter_map), timeout=timeout)
         except Exception as e:
-            # Always close on exception
+            # Always unsubscribe
             Webhooks.off(on_webhook)
             # pass and recover. Don't raise and break
             pass
         else:
-            if auto_close_after_success:
-                Webhooks.off(on_webhook)
+            Webhooks.off(on_webhook)
 
     async def stop_listener():
         Webhooks.off(on_webhook)

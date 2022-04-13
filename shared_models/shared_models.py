@@ -92,9 +92,11 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 
     return translation_dict[state]
 
+
 class Endorsement(BaseModel):
     transaction_id: str
     state: str
+
 
 class Connection(BaseModel):
     connection_id: str
@@ -131,7 +133,6 @@ class CredentialExchange(BaseModel):
         "request-received",
         "credential-issued",
         "credential-received",
-        "credential-acked",
         "done",
         "credential-acked",
     ]
@@ -287,7 +288,7 @@ def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "request_received": "request-received",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
-        "credential_acked": "credential-acked",
+        "done": "done",
     }
 
     if not state or state not in translation_dict:

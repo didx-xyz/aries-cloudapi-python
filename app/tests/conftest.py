@@ -22,6 +22,7 @@ from app.tests.util.ecosystem_personas import (
     faber_and_alice_connection,
     faber_acapy_client,
 )
+from app.webhook_listener import Webhooks
 
 
 @pytest.fixture
@@ -35,3 +36,10 @@ def run_around_tests():
 
     # After each test, unstub all stubbed methods
     mockito.unstub()
+
+
+@pytest.fixture(autouse=True)
+async def shutdown_webhooks_listener():
+    yield
+
+    await Webhooks.shutdown()

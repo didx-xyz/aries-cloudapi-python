@@ -50,6 +50,7 @@ class Service:
 
     def _endorsements(self, item: RedisItem):
         endorsement = Endorsement(**item["payload"])
+        endorsement.state = endorsement.state.replace("_", "-")
 
         return endorsement
 

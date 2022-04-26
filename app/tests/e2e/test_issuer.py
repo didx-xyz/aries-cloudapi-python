@@ -213,6 +213,5 @@ async def test_store_credential(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "done"},
-        topic="credentials",
-        max_duration=300,
+        topic="credentials"
     )

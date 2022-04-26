@@ -221,10 +221,9 @@ async def create_credential_definition(
             # Wait for transaction to be acknowledged and written to the ledger
             await wait_for_event(
                 filter_map={
-                    "state": "transaction_acked",
+                    "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
-                },
-                timeout=300,
+                }
             )
         except asyncio.TimeoutError:
             raise CloudApiException(

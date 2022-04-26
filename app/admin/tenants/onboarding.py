@@ -181,8 +181,7 @@ async def onboard_issuer(
             filter_map={
                 "connection_id": connection_record.connection_id,
                 "state": "completed",
-            },
-            timeout=300,
+            }
         )
     except TimeoutError:
         raise CloudApiException("Error creating connection with endorser", 500)

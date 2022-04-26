@@ -97,11 +97,10 @@ async def start_listener(*, topic: str, wallet_id: str, a: bool = False):
     ):
         try:
             await asyncio.wait_for(wait_for_event(filter_map), timeout=timeout)
-        except Exception:
+        except Exception as e:
             # Always unsubscribe
             Webhooks.off(on_webhook)
-            # pass and recover. Don't raise and break
-            pass
+            raise e from e
         else:
             Webhooks.off(on_webhook)
 

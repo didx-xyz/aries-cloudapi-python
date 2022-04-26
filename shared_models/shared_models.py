@@ -75,7 +75,7 @@ def string_to_bool(verified: Optional[str]) -> Optional[bool]:
         return None
 
 
-def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
+def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "proposal_sent": "proposal-sent",
         "proposal_received": "proposal-received",
@@ -84,6 +84,7 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "presentation_sent": "presentation-sent",
         "presentation_received": "presentation-received",
         "done": "done",
+        "presentation_acked": "done",
         "abandoned": "abandoned",
     }
 
@@ -134,7 +135,6 @@ class CredentialExchange(BaseModel):
         "credential-issued",
         "credential-received",
         "done",
-        "credential-acked",
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
@@ -219,7 +219,7 @@ def presentation_record_to_model(
             protocol_version=ProofRequestProtocolVersion.v1.value,
             proof_id="v1-" + str(record.presentation_exchange_id),
             role=record.role,
-            state=state_to_rfc_state(record.state),
+            state=v1_presentation_state_to_rfc_state(record.state),
             updated_at=record.updated_at,
             verified=string_to_bool(record.verified),
         )
@@ -259,7 +259,7 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         protocol_version=IssueCredentialProtocolVersion.v1,
         schema_id=record.schema_id,
         credential_definition_id=record.credential_definition_id,
-        state=v1_state_to_rfc_state(record.state),
+        state=v1_credential_state_to_rfc_state(record.state),
         connection_id=record.connection_id,
     )
 
@@ -278,7 +278,7 @@ def attributes_from_record_v1(
     return {attr.name: attr.value for attr in preview.attributes} if preview else None
 
 
-def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
+def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "proposal_sent": "proposal-sent",
         "proposal_received": "proposal-received",
@@ -288,7 +288,8 @@ def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "request_received": "request-received",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
-        "credential_acked": "credential-acked",
+        "credential_acked": "done",
+        "done": "done",
     }
 
     if not state or state not in translation_dict:

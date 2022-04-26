@@ -5,9 +5,6 @@ from app.generic.definitions import CredentialSchema
 from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
-from app.tests.util.member_personas import (
-    BobAliceConnect,
-)
 
 # This import are important for tests to run!
 from app.tests.util.event_loop import event_loop
@@ -215,7 +212,7 @@ async def test_store_credential(
     # Check alice has received the credential
     assert check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "credential-acked"},
+        filter_map={"state": "done"},
         topic="credentials",
         max_duration=300,
     )

@@ -38,7 +38,6 @@ class Webhooks:
                 [WEBHOOK_TOPIC_ALL], callback=Webhooks._on_webhook
             )
 
-            # FIXME: use webhook url constant
             ws_url = WEBHOOKS_URL
             if ws_url.startswith("http"):
                 ws_url = "ws" + ws_url[4:]

@@ -251,21 +251,6 @@ async def create_credential_definition(
                 "Unable to construct credential definition id from signature response"
             ) from e
 
-        # FIXME: ACA-Py 0.7.3 has no way to associate the credential definition id with a transaction record
-        # This methods find the created credential definition for a schema and tag (which is always unique)
-        # credential_definition_id = (
-        #     await get_credential_definition_id_for_schema_and_tag(
-        #         aries_controller,
-        #         credential_definition.schema_id,
-        #         credential_definition.tag,
-        #     )
-        # )
-        # if not credential_definition_id:
-        #     raise CloudApiException(
-        #         f"Could not find any created credential definitions for schema_id {credential_definition.schema_id} and tag {credential_definition.tag}",
-        #         500,
-        #     )
-
     else:
         await stop_listener()
         credential_definition_id = result.credential_definition_id

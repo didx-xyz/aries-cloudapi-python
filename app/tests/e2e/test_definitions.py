@@ -60,8 +60,7 @@ async def test_create_credential_definition(
     ).dict()
 
     assert_that(result).has_tag(credential_definition.tag)
-    # FIXME: schema_is is seq_no. Should update to schema id instead
-    # assert_that(result).has_schema_id(credential_definition.schema_id)
+    assert_that(result).has_schema_id(credential_definition.schema_id)
     assert_that(result["id"]).is_not_empty()
 
 
@@ -147,8 +146,7 @@ async def test_get_credential_definition(
     ).dict()
 
     assert_that(result).has_tag(credential_definition.tag)
-    # FIXME: schema_is is seq_no. Should update to schema id instead
-    # assert_that(result).has_schema_id(credential_definition.schema_id)
+    assert_that(result).has_schema_id(credential_definition.schema_id)
     assert_that(result["id"]).is_not_empty()
 
 

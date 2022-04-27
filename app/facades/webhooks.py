@@ -1,75 +1,11 @@
-import json
-import base64
-from enum import Enum
-from typing import List, Literal
-from aries_cloudcontroller import AcaPyClient
-from fastapi import Depends
-
-from httpx import HTTPError, get
+from typing import List
+from shared_models import CloudApiTopics
+from httpx import get, HTTPError
 
 from app.constants import WEBHOOKS_URL
-from app.constants import YOMA_AGENT_API_KEY as YOMA_ADMIN_API_KEY
-from app.constants import YOMA_AGENT_API_KEY as OOB_ADMIN_API_KEY
-from app.constants import MEMBER_AGENT_API_KEY as MEMBER_ADMIN_API_KEY
-from app.dependencies import agent_selector
 
 
-topics = Literal[
-    "connections",
-    "issue_credential",
-    "forward",
-    "ping",
-    "basicmessages",
-    "issuer_cred_rev",
-    "issue_credential_v2_0",
-    "issue_credential_v2_0_indy",
-    "issue_credential_v2_0_dif",
-    "present_proof",
-    "present_proof_v2_0",
-    "revocation_registry",
-]
-
-
-class AdminAgentType(Enum):
-    yoma = "yoma"
-    oob = "oob"
-    tenant = "tenant"
-
-
-class AdminKeyMappings(Enum):
-    yoma = YOMA_ADMIN_API_KEY
-    oob = OOB_ADMIN_API_KEY
-    tenant = MEMBER_ADMIN_API_KEY
-
-
-def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
-    # Add padding if required
-    # b64 needs lengths divisible by 4
-    if len(jwt) % 4 != 0:
-        n_missing = 4 - (len(jwt) % 4)
-        jwt = jwt + (n_missing * "=")
-
-    wallet = json.loads(base64.b64decode(jwt))
-    return wallet["wallet_id"]
-
-
-def get_wallet_id_from_client(client: AcaPyClient) -> str:
-    if not is_tenant(client=client):
-        return "admin"
-
-    # eg tenenat_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
-    jwt = client.client.headers["authorization"].split(" ")[1].split(".")[1]
-
-    return get_wallet_id_from_b64encoded_jwt(jwt)
-
-
-def get_hooks_per_topic_per_wallet(
-    topic: topics, client: AcaPyClient = Depends(agent_selector)
-) -> List:
-    if not is_tenant(client=client):
-        wallet_id = "admin"
-    else:
-        wallet_id = get_wallet_id_from_client(client)
+def get_hooks_per_topic_per_wallet(wallet_id: str, topic: CloudApiTopics) -> List:
     try:
         hooks = (get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
         return hooks if hooks else []
@@ -77,16 +13,10 @@ def get_hooks_per_topic_per_wallet(
         raise e from e
 
 
-def get_hooks_per_wallet(
-    client: AcaPyClient = Depends(agent_selector),
-) -> List:
+def get_hooks_per_wallet(wallet_id: str) -> List:
     """
     Gets all webhooks for all wallets by topic (default="connections")
     """
-    if not is_tenant(client=client):
-        wallet_id = "admin"
-    else:
-        wallet_id = get_wallet_id_from_client(client)
     try:
 
         hooks = (get(f"{WEBHOOKS_URL}/{wallet_id}")).json()
@@ -94,7 +24,3 @@ def get_hooks_per_wallet(
         return hooks if hooks else []
     except HTTPError as e:
         raise e from e
-
-
-def is_tenant(client: AcaPyClient):
-    return "authorization" in client.client.headers

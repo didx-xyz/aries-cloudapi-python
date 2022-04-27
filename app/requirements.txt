@@ -7,3 +7,5 @@ typing-extensions==4.0.0
 uvicorn[standard]==0.15.0
 PyYAML==5.4.1
 base58~=2.1.0
+fastapi_websocket_pubsub~=0.1.21
+pyjwt~=1.7.1

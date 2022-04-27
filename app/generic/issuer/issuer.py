@@ -12,7 +12,7 @@ from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException
-from app.facades.acapy_ledger import write_credential_def
+from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
 from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
@@ -39,7 +39,7 @@ class ProblemReportExplanation(TypedDict):
 class SendCredential(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     connection_id: str
-    schema_id: str
+    credential_definition_id: str
     attributes: Dict[str, str]
 
 
@@ -127,16 +127,19 @@ async def send_credential(
     # Assert the agent has a public did
     public_did = await assert_public_did(aries_controller)
 
-    # Make sure we are allowed to issue according to trust registry rules
-    await assert_valid_issuer(public_did, credential.schema_id)
+    # Retrieve the schema_id based on the credential definition id
+    schema_id = await schema_id_from_credential_definition_id(
+        aries_controller, credential.credential_definition_id
+    )
 
-    cred_def_id = await write_credential_def(aries_controller, credential.schema_id)
+    # Make sure we are allowed to issue according to trust registry rules
+    await assert_valid_issuer(public_did, schema_id)
 
     return await issuer.send_credential(
         controller=aries_controller,
         credential=Credential(
             attributes=credential.attributes,
-            cred_def_id=cred_def_id,
+            cred_def_id=credential.credential_definition_id,
             connection_id=credential.connection_id,
         ),
     )

@@ -18,21 +18,7 @@ async def on_events(data, topic):
 
 async def main():
     # Create a client and subscribe to topics
-    topics = [
-        "connections",
-        "issue_credential",
-        "forward",
-        "ping",
-        "basicmessages",
-        "issuer_cred_rev",
-        "issue_credential_v2_0",
-        "issue_credential_v2_0_indy",
-        "issue_credential_v2_0_dif",
-        "present_proof",
-        "present_proof_v2",
-        "revocation_registry",
-    ]
-    client = PubSubClient([*topics], callback=on_events)
+    client = PubSubClient(["ALL_WEBHOOKS"], callback=on_events)
 
     """
     # You can also register it using the commented code below
@@ -43,6 +29,7 @@ async def main():
     """
 
     client.start_client(f"ws://{URL}:{3010}/pubsub")
+    print("Started")
     await client.wait_until_done()
 
 

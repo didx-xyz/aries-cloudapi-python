@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, List
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -16,10 +17,14 @@ from app.facades.trust_registry import (
     actor_by_id,
     update_actor,
 )
+from app.constants import ACAPY_ENDORSER_ALIAS
+from app.webhook_listener import start_listener
 
 from app.error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet
 from app.util.did import qualified_did_sov
+
+logger = logging.getLogger(__name__)
 
 
 class OnboardResult(BaseModel):
@@ -65,6 +70,7 @@ async def handle_ecosystem_tenant_update(
                 name=updated_actor["name"],
                 roles=added_roles,
                 tenant_auth_token=token_response.token,
+                tenant_id=tenant_id,
             )
 
             # Remove duplicates from the role list
@@ -76,7 +82,7 @@ async def handle_ecosystem_tenant_update(
 
 
 async def onboard_ecosystem_tenant(
-    *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str
+    *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
     if "issuer" in roles:
         # Get yoma and tenant controllers, onboard issuer
@@ -85,8 +91,9 @@ async def onboard_ecosystem_tenant(
         ) as tenant_controller:
             return await onboard_issuer(
                 name=name,
-                issuer_controller=tenant_controller,
                 endorser_controller=yoma_controller,
+                issuer_controller=tenant_controller,
+                issuer_wallet_id=tenant_id,
             )
 
     elif "verifier" in roles:
@@ -101,7 +108,11 @@ async def onboard_ecosystem_tenant(
 
 
 async def onboard_issuer(
-    *, name: str, issuer_controller: AcaPyClient, endorser_controller: AcaPyClient
+    *,
+    name: str,
+    endorser_controller: AcaPyClient,
+    issuer_controller: AcaPyClient,
+    issuer_wallet_id: str,
 ):
     """Onboard the controller as issuer.
 
@@ -141,12 +152,41 @@ async def onboard_issuer(
         ),
     )
 
-    # FIXME: Wait for the connection to be completed here once the webhooks PR is merged
+    logger.info(
+        f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
+    )
+
+    wait_for_event, _ = await start_listener(
+        topic="connections", wallet_id=issuer_wallet_id
+    )
+
+    logger.debug("Receiving connection invitation")
+
+    # FIXME: make sure the connection with this alias doesn't exist yet
+    # Or does use_existing_connection take care of this?
     connection_record = await issuer_controller.out_of_band.receive_invitation(
         auto_accept=True,
         use_existing_connection=True,
         body=invitation.invitation,
+        alias=ACAPY_ENDORSER_ALIAS,
     )
+
+    logger.debug(
+        f"Waiting for connection with id {connection_record.connection_id} to be completed"
+    )
+
+    # Wait for connection to be completed before continuing
+    try:
+        await wait_for_event(
+            filter_map={
+                "connection_id": connection_record.connection_id,
+                "state": "completed",
+            }
+        )
+    except TimeoutError:
+        raise CloudApiException("Error creating connection with endorser", 500)
+
+    logger.debug("Successfully created connection")
 
     await issuer_controller.endorse_transaction.set_endorser_role(
         conn_id=connection_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"

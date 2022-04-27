@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Optional, Dict, Literal, Union, Tuple
+from typing import Any, Generic, Optional, Dict, TypeVar, Union, Tuple
+
+from typing_extensions import TypedDict, Literal
 
 from aries_cloudcontroller import (
     ConnRecord,
@@ -9,9 +11,42 @@ from aries_cloudcontroller import (
     V10CredentialExchange,
     V20CredExRecord,
     V20PresExRecord,
-    IndyProof,
 )
 from pydantic import BaseModel
+from pydantic.generics import GenericModel
+
+WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
+
+AcaPyTopics = Literal[
+    "connections",
+    "issue_credential",
+    "forward",
+    "ping",
+    "basicmessages",
+    "issuer_cred_rev",
+    "issue_credential_v2_0",
+    "issue_credential_v2_0_indy",
+    "issue_credential_v2_0_dif",
+    "present_proof",
+    "present_proof_v2_0",
+    "revocation_registry",
+    "endorse_transaction",
+]
+
+CloudApiTopics = Literal[
+    "basic-messages", "connections", "proofs", "credentials", "endorsements"
+]
+
+# Mapping of acapy topic names to their respective cloud api topic names
+topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
+    "basicmessages": "basic-messages",
+    "connections": "connections",
+    "present_proof": "proofs",
+    "present_proof_v2_0": "proofs",
+    "issue_credential": "credentials",
+    "issue_credential_v2_0": "credentials",
+    "endorse_transaction": "endorsements",
+}
 
 
 class ProofRequestProtocolVersion(Enum):
@@ -40,7 +75,7 @@ def string_to_bool(verified: Optional[str]) -> Optional[bool]:
         return None
 
 
-def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
+def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "proposal_sent": "proposal-sent",
         "proposal_received": "proposal-received",
@@ -49,6 +84,7 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "presentation_sent": "presentation-sent",
         "presentation_received": "presentation-received",
         "done": "done",
+        "presentation_acked": "done",
         "abandoned": "abandoned",
     }
 
@@ -56,6 +92,11 @@ def state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         return None
 
     return translation_dict[state]
+
+
+class Endorsement(BaseModel):
+    transaction_id: str
+    state: str
 
 
 class Connection(BaseModel):
@@ -93,9 +134,7 @@ class CredentialExchange(BaseModel):
         "request-received",
         "credential-issued",
         "credential-received",
-        "credential-acked",
         "done",
-        "credential-acked",
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
@@ -125,16 +164,30 @@ class PresentationExchange(BaseModel):
     verified: Optional[bool] = None
 
 
-class TopicItem(BaseModel):
+class BasicMessage(BaseModel):
+    connection_id: str
+    content: str
+    message_id: str
+    sent_time: str
+    state: Literal["received"]
+
+
+PayloadType = TypeVar("PayloadType", bound=BaseModel)
+
+
+class TopicItem(GenericModel, Generic[PayloadType]):
     topic: str
-    wallet_id: str = None
-    origin: str = None
-    payload: dict
+    wallet_id: str
+    origin: str
+    payload: PayloadType
 
 
-class HookBase(BaseModel):
-    wallet_id: Optional[str]
-    origin: Optional[str]
+class RedisItem(TypedDict):
+    acapy_topic: str
+    topic: str
+    wallet_id: str
+    origin: str
+    payload: Dict[str, Any]
 
 
 def presentation_record_to_model(
@@ -166,7 +219,7 @@ def presentation_record_to_model(
             protocol_version=ProofRequestProtocolVersion.v1.value,
             proof_id="v1-" + str(record.presentation_exchange_id),
             role=record.role,
-            state=state_to_rfc_state(record.state),
+            state=v1_presentation_state_to_rfc_state(record.state),
             updated_at=record.updated_at,
             verified=string_to_bool(record.verified),
         )
@@ -194,10 +247,6 @@ def conn_record_to_connection(connection_record: ConnRecord):
     )
 
 
-class ConnectionsHook(HookBase, Connection):
-    pass
-
-
 def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialExchange:
     attributes = attributes_from_record_v1(record)
 
@@ -210,7 +259,7 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         protocol_version=IssueCredentialProtocolVersion.v1,
         schema_id=record.schema_id,
         credential_definition_id=record.credential_definition_id,
-        state=v1_state_to_rfc_state(record.state),
+        state=v1_credential_state_to_rfc_state(record.state),
         connection_id=record.connection_id,
     )
 
@@ -229,7 +278,7 @@ def attributes_from_record_v1(
     return {attr.name: attr.value for attr in preview.attributes} if preview else None
 
 
-def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
+def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "proposal_sent": "proposal-sent",
         "proposal_received": "proposal-received",
@@ -239,7 +288,8 @@ def v1_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "request_received": "request-received",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
-        "credential_acked": "credential-acked",
+        "credential_acked": "done",
+        "done": "done",
     }
 
     if not state or state not in translation_dict:

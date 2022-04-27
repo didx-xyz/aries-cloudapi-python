@@ -127,7 +127,7 @@ async def test_accept_proof_request(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof",
+        topic="proofs",
     )
 
     accept_proof_request_v1 = AcceptProofRequest(
@@ -162,7 +162,7 @@ async def test_accept_proof_request(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof",
+        topic="proofs",
     )
 
     accept_proof_request_v2 = AcceptProofRequest(
@@ -179,7 +179,7 @@ async def test_accept_proof_request(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof",
+        topic="proofs",
     )
 
     # TODO check for the correct response when state is request_received
@@ -209,7 +209,7 @@ async def test_reject_proof_request(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof",
+        topic="proofs",
     )
 
     reject_proof_request_v1 = RejectProofRequest(

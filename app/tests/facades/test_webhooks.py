@@ -1,19 +1,10 @@
 import pytest
 from unittest.mock import patch
 
-from aries_cloudcontroller import AcaPyClient
-
 import app.facades.webhooks as whf
-from shared_models import ConnectionsHook
+from shared_models import Connection
 
-
-client = AcaPyClient(
-    base_url="xyz",
-    api_key="abcd",
-    tenant_jwt="member.eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ",
-)
-
-conn_record = ConnectionsHook(
+conn_record = Connection(
     accept="auto",
     connection_id="abcd",
     connection_protocol="connections/1.0",
@@ -26,24 +17,16 @@ conn_record = ConnectionsHook(
 
 
 @pytest.mark.asyncio
-async def test_get_wallet_id_from_client(client: AcaPyClient = client):
-
-    result = whf.get_wallet_id_from_client(client)
-
-    assert result == "03889740-b488-4ff1-ab86-2934740f3c5c"
-
-
-@pytest.mark.asyncio
 async def test_get_hooks_per_topic_per_wallet():
 
     with patch.object(
         whf, "get_hooks_per_topic_per_wallet"
     ) as mock_hook_by_topic_wallet:
         mock_hook_by_topic_wallet.return_value = [conn_record]
-        whf.get_hooks_per_topic_per_wallet(client=client, topic="connections")
+        whf.get_hooks_per_topic_per_wallet(wallet_id="wallet_id", topic="connections")
 
         mock_hook_by_topic_wallet.assert_called_once_with(
-            client=client, topic="connections"
+            wallet_id="wallet_id", topic="connections"
         )
 
 
@@ -51,6 +34,6 @@ async def test_get_hooks_per_topic_per_wallet():
 async def test_get_hooks_per_wallet():
     with patch.object(whf, "get_hooks_per_wallet") as mock_get_hooks_per_wallet:
         whf.get_hooks_per_wallet.return_value = [conn_record]
-        whf.get_hooks_per_wallet(client=client)
+        whf.get_hooks_per_wallet(wallet_id="wallet_id")
 
-        mock_get_hooks_per_wallet.assert_called_once_with(client=client)
+        mock_get_hooks_per_wallet.assert_called_once_with(wallet_id="wallet_id")

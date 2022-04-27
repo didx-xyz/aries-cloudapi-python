@@ -18,100 +18,28 @@ A client can subscribe to the webhooks via the CloudAPI (as opposed to directly 
 
 ##### Rolling your webhook listener
 
-You can either implement a polling mechanism. Here is an example in python (see also `app/tests/util/webhooks.py`):
+You can (given you are within the docker network) use a pubsub client (see also `webhooks/clients.example.py`):
 
 ```python
-# For a wallet poll the webhooks until a state is satisfied - fail otherwise
-def check_webhook_state(
-    client: AsyncClient,
-    topic: topics,
-    filter_map: Dict[str, Optional[str]] = {},
-    max_duration: int = 15,
-    poll_interval: int = 1,
-) -> bool:
-    assert poll_interval >= 0, "Poll interval cannot be negative"
-    assert max_duration >= 0, "Poll duration cannot be negative"
-
-    wallet_id = get_wallet_id_from_async_client(client)
-
-    t_end = time.time() + max_duration
-    while time.time() < t_end:
-        hooks = httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}").json()
-
-        # Loop through all hooks
-        for hook in hooks:
-            payload = hook["payload"]
-            # Find the right hook
-            match = all(
-                payload.get(filter_key, None) == filter_value
-                for filter_key, filter_value in filter_map.items()
-            )
-
-            if match:
-                return True
-
-        time.sleep(poll_interval)
-    raise Exception(f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
-
-
-## Retrieve webhooks per topic
-def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: topics) -> List:
-    wallet_id = get_wallet_id_from_async_client(client)
-    try:
-        hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
-        return hooks if hooks else []
-    except httpx.HTTPError as e:
-        raise e from e
-```
-
-or you can (given you are within the docker-compose network or have expose the websockets - which you should NOT do) use a pubsub client (see also `webhooks/clients.example.py`):
-
-```python
-# Example ws client connecting to all topics for acapy
 from fastapi_websocket_pubsub import PubSubClient
 import asyncio
-import os
-import sys
-
-sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
-
-PORT = os.getenv("PORT", "3010")
-URL = os.getenv("WEBHOOKS_URL", "127.0.0.1")
-
 
 async def on_events(data, topic):
     print(f"{topic}:\n{data}")
-
 
 async def main():
     # Create a client and subscribe to topics
     topics = [
         "connections",
-        "issue_credential",
-        "forward",
-        "ping",
-        "basicmessages",
-        "issuer_cred_rev",
-        "issue_credential_v2_0",
-        "issue_credential_v2_0_indy",
-        "issue_credential_v2_0_dif",
-        "present_proof",
-        "present_proof_v2",
-        "revocation_registry",
+        "credentials",
+        "proofs",
+        "endorsements",
+        "basic-messages"
     ]
     client = PubSubClient([*topics], callback=on_events)
 
-    """
-    # You can also register it using the commented code below
-    async def on_data(data, topic):
-        print(f"{topic}:\n", data)
-
-    [client.subscribe(topic, on_data) for topic in topics]
-    """
-
-    client.start_client(f"ws://{URL}:{3010}/pubsub")
+    client.start_client(f"ws://127.0.0.1:3010/pubsub")
     await client.wait_until_done()
-
 
 asyncio.run(main())
 ```

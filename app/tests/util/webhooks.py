@@ -20,7 +20,7 @@ def get_wallet_id_from_async_client(client: AsyncClient) -> str:
     if is_non_jwt:
         return "admin"
 
-    # eg tenenat_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
+    # eg tenant_jwt: "eyJ3YWxsZXRfaWQiOiIwMzg4OTc0MC1iNDg4LTRmZjEtYWI4Ni0yOTM0NzQwZjNjNWMifQ"
     jwt = client.headers.get("x-api-key").split(".")[2]
     return get_wallet_id_from_b64encoded_jwt(jwt)
 

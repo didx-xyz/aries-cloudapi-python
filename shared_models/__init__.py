@@ -7,7 +7,7 @@ from .shared_models import (
     conn_record_to_connection,
     PresentationExchange,
     HookBase,
-    ProofRequestProtocolVersion,
+    PresentProofProtocolVersion,
     CredentialExchange,
     IssueCredentialProtocolVersion,
     presentation_record_to_model,

@@ -89,6 +89,9 @@ async def bob_and_alice_public_did(
     bob_did = await create_public_did(bob_acapy_client)
     alice_did = await create_public_did(alice_acapy_client)
 
+    if not bob_did.did or not alice_did.did:
+        raise Exception("Missing public did")
+
     return {
         "bob_public_did": bob_did.did,
         "alice_public_did": alice_did.did,
@@ -161,7 +164,6 @@ async def bob_multi_use_invitation(
             json=create_invite_json,
         )
     ).json()
-    print(invitation)
 
     recipient_key = invitation["invitation"]["recipientKeys"][0]
     bob_multi_invite = MultiInvite(
@@ -175,7 +177,7 @@ async def bob_multi_use_invitation(
 
 @pytest.fixture(scope="module")
 async def register_bob_multi(
-    bob_multi_use_invitation, schema_definition
+    bob_multi_use_invitation: MultiInvite, schema_definition: SchemaSendResult
 ) -> MultiInvite:
 
     if not await registry_has_schema(schema_id=schema_definition.schema_id):
@@ -190,7 +192,7 @@ async def register_bob_multi(
                 roles=["verifier"],
                 did=bob_multi_use_invitation["did_from_rec_key"],
                 didcomm_invitation=str(
-                    bob_multi_use_invitation["multi_use_invitation"]["invitation"]
+                    bob_multi_use_invitation["multi_use_invitation"].invitation
                 ),
             )
         )
@@ -201,7 +203,7 @@ async def register_bob_multi(
 async def issue_credential_to_bob(
     bob_member_client: AsyncClient,
     register_bob_multi: MultiInvite,
-    yoma_client: AcaPyClient,
+    yoma_client: AsyncClient,
     schema_definition: SchemaSendResult,
 ) -> CredentialExchange:
 
@@ -211,16 +213,13 @@ async def issue_credential_to_bob(
     invitation_response = (
         await yoma_client.post(
             "/generic/connections/accept-invitation",
-            json={
-                "invitation": register_bob_multi["multi_use_invitation"]["invitation"]
-            },
+            json={"invitation": register_bob_multi["multi_use_invitation"].invitation},
         )
     ).json()
 
     bob_connection_records = (
         await bob_member_client.get("/generic/connections")
     ).json()
-    print(json.dumps(bob_connection_records, indent=2))
 
     bob_connection_id = bob_connection_records[0]["connection_id"]
 
@@ -286,11 +285,11 @@ async def issue_credential_to_bob(
 
 @pytest.fixture(scope="module")
 async def alice_bob_connect_multi(
-    bob_member_client,
-    alice_member_client,
-    bob_multi_use_invitation,
+    bob_member_client: AsyncClient,
+    alice_member_client: AsyncClient,
+    bob_multi_use_invitation: MultiInvite,
 ) -> BobAliceConnect:
-    invitation = bob_multi_use_invitation["multi_use_invitation"]["invitation"]
+    invitation = bob_multi_use_invitation["multi_use_invitation"].invitation
 
     # accept invitation on alice side
     invitation_response = (
@@ -307,9 +306,7 @@ async def alice_bob_connect_multi(
         max_duration=30,
     )
 
-    bob_connection_id = bob_multi_use_invitation["multi_use_invitation"][
-        "connection_id"
-    ]
+    bob_connection_id = bob_multi_use_invitation["multi_use_invitation"].connection_id
     alice_connection_id = invitation_response["connection_id"]
 
     # fetch and validate

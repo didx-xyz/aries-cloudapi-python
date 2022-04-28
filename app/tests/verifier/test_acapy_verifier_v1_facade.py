@@ -1,11 +1,12 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, IndyPresSpec, IndyProofRequest
+from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
+    PresentProofProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -14,7 +15,6 @@ from .test_verifier_utils import (
     get,
     indy_proof_request,
     v10_presentation_exchange_records,
-    v10_presentation_proposal_request,
 )
 
 from shared_models import PresentationExchange
@@ -29,7 +29,9 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     created_proof_request = await VerifierV1.create_proof_request(
         controller=mock_agent_controller,
         proof_request=CreateProofRequest(
-            proof_request=indy_proof_request, comment=None
+            proof_request=indy_proof_request,
+            comment=None,
+            protocol_version=PresentProofProtocolVersion.v1,
         ),
     )
 
@@ -58,17 +60,12 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller,
         proof_request=SendProofRequest(
             connection_id="abcde",
-            proof_id=None,
             proof_request=indy_proof_request,
+            protocol_version=PresentProofProtocolVersion.v1,
         ),
     )
 
     assert isinstance(created_proof_send_proposal, PresentationExchange)
-
-    with pytest.raises(NotImplementedError):
-        await VerifierV1.send_proof_request(
-            mock_agent_controller, proof_request="I am invalid", free=False
-        )
 
 
 @pytest.mark.asyncio
@@ -82,9 +79,9 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
         proof_request=AcceptProofRequest(
             proof_id="v1-123",
             presentation_spec=IndyPresSpec(
-                requested_attributes=[],
-                requested_predicates=[],
-                self_attested_attributes=[],
+                requested_attributes={},
+                requested_predicates={},
+                self_attested_attributes={},
             ),
         ),
     )

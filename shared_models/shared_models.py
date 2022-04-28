@@ -9,12 +9,11 @@ from aries_cloudcontroller import (
     V10CredentialExchange,
     V20CredExRecord,
     V20PresExRecord,
-    IndyProof,
 )
 from pydantic import BaseModel
 
 
-class ProofRequestProtocolVersion(Enum):
+class PresentProofProtocolVersion(Enum):
     v1 = "v1"
     v2 = "v2"
 
@@ -115,7 +114,7 @@ class PresentationExchange(BaseModel):
     proof_id: str
     presentation: Optional[IndyProof] = None
     presentation_request: Optional[IndyProofRequest] = None
-    protocol_version: ProofRequestProtocolVersion
+    protocol_version: PresentProofProtocolVersion
     role: Literal["prover", "verifier"]
     state: Union[
         None,
@@ -155,7 +154,7 @@ def presentation_record_to_model(
         return PresentationExchange(
             connection_id=record.connection_id,
             created_at=record.created_at,
-            protocol_version=ProofRequestProtocolVersion.v2.value,
+            protocol_version=PresentProofProtocolVersion.v2.value,
             presentation=IndyProof(**record.by_format.pres["indy"])
             if record.by_format.pres
             else None,
@@ -174,7 +173,7 @@ def presentation_record_to_model(
             created_at=record.created_at,
             presentation=record.presentation,
             presentation_request=record.presentation_request,
-            protocol_version=ProofRequestProtocolVersion.v1.value,
+            protocol_version=PresentProofProtocolVersion.v1.value,
             proof_id="v1-" + str(record.presentation_exchange_id),
             role=record.role,
             state=state_to_rfc_state(record.state),

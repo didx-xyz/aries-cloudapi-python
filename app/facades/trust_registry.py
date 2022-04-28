@@ -190,7 +190,7 @@ async def registry_has_schema(schema_id: str) -> bool:
     return bool(schema_id in schema["schemas"])
 
 
-async def get_trust_registry_schemas() -> List:
+async def get_trust_registry_schemas() -> List[str]:
     """Retrieve all schemas from the trust registry
 
     Raises:

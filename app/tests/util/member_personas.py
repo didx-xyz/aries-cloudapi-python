@@ -284,8 +284,8 @@ async def issue_credential_to_bob(
     )
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "credential-acked"},
-        topic="issue_credential",
+        filter_map={"state": "done"},
+        topic="credentials",
     )
     return response.json()
 

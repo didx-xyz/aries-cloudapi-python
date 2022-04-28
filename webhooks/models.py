@@ -1,4 +1,3 @@
-from typing_extensions import Literal
 from aries_cloudcontroller import (
     ConnRecord,
     V10PresentationExchange,
@@ -8,62 +7,51 @@ from aries_cloudcontroller import (
 )
 
 from shared_models import (
-    ConnectionsHook,
     credential_record_to_model_v1,
     PresentationExchange,
     CredentialExchange,
-    HookBase,
+    Connection,
     presentation_record_to_model,
     conn_record_to_connection,
     credential_record_to_model_v2,
+    RedisItem,
 )
 
 
-def to_connections_model(item: dict) -> ConnectionsHook:
-    conn_record = ConnRecord(**item)
+def to_connections_model(item: RedisItem) -> Connection:
+    conn_record = ConnRecord(**item["payload"])
     conn_record = conn_record_to_connection(connection_record=conn_record)
 
-    merged_dicts = {**item, **conn_record.dict()}
-    return ConnectionsHook(**merged_dicts)
+    return conn_record
 
 
-class BasicMessagesHook(HookBase):
-    connection_id: str
-    content: str
-    message_id: str
-    sent_time: str
-    state: Literal["received"]
-
-
-class ProofsHook(HookBase, PresentationExchange):
-    pass
-
-
-def to_proof_hook_model(item: dict) -> ProofsHook:
+def to_proof_hook_model(item: RedisItem) -> PresentationExchange:
     # v1
-    if "presentation_exchange_id" in item:
-        presentation_exchange = V10PresentationExchange(**item)
+    if item["acapy_topic"] == "present_proof":
+        presentation_exchange = V10PresentationExchange(**item["payload"])
         presentation_exchange = presentation_record_to_model(presentation_exchange)
     # v2
-    elif "pres_ex_id" in item:
-        presentation_exchange = V20PresExRecord(**item)
+    elif item["acapy_topic"] == "present_proof_v2_0":
+        presentation_exchange = V20PresExRecord(**item["payload"])
         presentation_exchange = presentation_record_to_model(presentation_exchange)
-    merged_dicts = {**item, **presentation_exchange.dict()}
-    return ProofsHook(**merged_dicts)
+    else:
+        topic = item["acapy_topic"]
+        raise Exception(f"Unsupported proof acapy topic: {topic}")
+
+    return presentation_exchange
 
 
-class CredentialsHooks(HookBase, CredentialExchange):
-    pass
-
-
-def to_credentential_hook_model(item: dict) -> CredentialsHooks:
+def to_credential_hook_model(item: RedisItem) -> CredentialExchange:
     # v1
-    if "credential_exchange_id" in item:
-        cred_exchange = V10CredentialExchange(**item)
+    if item["acapy_topic"] == "issue_credential":
+        cred_exchange = V10CredentialExchange(**item["payload"])
         cred_model = credential_record_to_model_v1(cred_exchange)
     # v2
-    elif "cred_ex_id" in item:
-        cred_exchange = V20CredExRecord(**item)
+    elif item["acapy_topic"] == "issue_credential_v2_0":
+        cred_exchange = V20CredExRecord(**item["payload"])
         cred_model = credential_record_to_model_v2(cred_exchange)
-    merged_dicts = {**item, **cred_model.dict()}
-    return CredentialsHooks(**merged_dicts)
+    else:
+        topic = item["acapy_topic"]
+        raise Exception(f"Unsupported issue credential acapy topic: {topic}")
+
+    return cred_model

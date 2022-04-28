@@ -58,7 +58,7 @@ async def test_accept_proof_request_v1(
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-received"},
-        topic="present_proof",
+        topic="proofs",
         max_duration=120,
     )
     proof_records_bob = await bob_member_client.get(BASE_PATH + "/proofs")
@@ -84,7 +84,7 @@ async def test_accept_proof_request_v1(
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-received"},
-        topic="present_proof",
+        topic="proofs",
         max_duration=120,
     )
     response = await bob_member_client.post(
@@ -94,13 +94,13 @@ async def test_accept_proof_request_v1(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "presentation-received"},
-        topic="present_proof",
+        topic="proofs",
         max_duration=120,
     )
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "presentation-acked"},
-        topic="present_proof",
+        filter_map={"state": "done"},
+        topic="proofs",
         max_duration=120,
     )
 
@@ -134,7 +134,7 @@ async def test_accept_proof_request_v2(
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-received"},
-        topic="present_proof_v2_0",
+        topic="proofs",
     )
     proof_records_bob = (await bob_member_client.get(BASE_PATH + "/proofs")).json()
     proofs_v2 = [
@@ -167,13 +167,93 @@ async def test_accept_proof_request_v2(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof_v2_0",
+        topic="proofs",
         max_duration=60,
     )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "presentation-sent"},
-        topic="present_proof_v2_0",
+        topic="proofs",
+        max_duration=60,
+    )
+
+    # assert check_webhook_state(
+    #     client=alice_member_client,
+    #     filter_map={"state": "request-sent"},
+    #     topic="present_proof_v2_0",
+    #     max_duration=60,
+    # )
+
+    result = response.json()
+
+    pres_exchange_result = PresentationExchange(**result)
+    assert isinstance(pres_exchange_result, PresentationExchange)
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_accept_proof_request_verifier_no_public_did(
+    issue_credential_to_bob: CredentialExchange,
+    alice_bob_connect_multi: BobAliceConnect,
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    schema_definition: SchemaSendResult,
+):
+
+    await register_verifier(alice_member_client, schema_id=schema_definition.schema_id)
+
+    await alice_member_client.post(
+        BASE_PATH + "/send-request",
+        json={
+            "connection_id": alice_bob_connect_multi["alice_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
+    )
+
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+    )
+    proof_records_bob = (await bob_member_client.get(BASE_PATH + "/proofs")).json()
+    proofs_v2 = [
+        proof for proof in proof_records_bob if proof["protocol_version"] == "v2"
+    ]
+    proof_id = proofs_v2[-1]["proof_id"]
+
+    requested_credentials = (
+        await bob_member_client.get(f"/generic/verifier/proofs/{proof_id}/credentials")
+    ).json()
+
+    referent = requested_credentials[0]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+    proof_accept = AcceptProofRequest(
+        proof_id=proof_id,
+        presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    response = await bob_member_client.post(
+        BASE_PATH + "/accept-request",
+        json=proof_accept.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="proofs",
+        max_duration=60,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "presentation-sent"},
+        topic="proofs",
         max_duration=60,
     )
 
@@ -294,7 +374,7 @@ async def test_reject_proof_request(
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof",
+        topic="proofs",
     )
 
     reject_proof_request_v1 = RejectProofRequest(
@@ -470,13 +550,13 @@ async def test_get_credentials_for_request(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof",
+        topic="proofs",
     )
 
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-received"},
-        topic="present_proof",
+        topic="proofs",
     )
     proof_records_bob = await bob_member_client.get(BASE_PATH + "/proofs")
     proof_id = proof_records_bob.json()[0]["proof_id"]
@@ -506,13 +586,13 @@ async def test_get_credentials_for_request(
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
-        topic="present_proof_v2_0",
+        topic="proofs",
     )
 
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "request-received"},
-        topic="present_proof_v2_0",
+        topic="proofs",
     )
     proof_records_bob = await bob_member_client.get(BASE_PATH + "/proofs")
     proof_id = proof_records_bob.json()[-1]["proof_id"]

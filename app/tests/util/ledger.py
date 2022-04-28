@@ -44,7 +44,7 @@ async def post_to_ledger(
             detail="Cannot resolve ledger type. Should be either von or sovrin",
         )
 
-    response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=20)
+    response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
 
     if response.is_error:
         logger.error("Failed to write to ledger:\n %s", response.text)
@@ -54,9 +54,17 @@ async def post_to_ledger(
         )
 
 
+async def has_public_did(aries_controller: AcaPyClient):
+    try:
+        await acapy_wallet.get_public_did(aries_controller)
+        return True
+    except Exception:
+        return False
+
+
 async def create_public_did(
     aries_controller: AcaPyClient, set_public: bool = True
-) -> DID:
+) -> acapy_wallet.Did:
     did_object = await acapy_wallet.create_did(aries_controller)
 
     if not did_object.did or not did_object.verkey:

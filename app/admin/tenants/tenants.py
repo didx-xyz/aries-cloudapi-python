@@ -130,7 +130,10 @@ async def create_tenant(
 
     if auth.role == Role.ECOSYSTEM_ADMIN and body.roles and len(body.roles) > 0:
         onboard_result = await onboard_ecosystem_tenant(
-            name=body.name, roles=body.roles, tenant_auth_token=wallet_response.token
+            name=body.name,
+            roles=body.roles,
+            tenant_auth_token=wallet_response.token,
+            tenant_id=wallet_response.wallet_id,
         )
 
         await register_actor(

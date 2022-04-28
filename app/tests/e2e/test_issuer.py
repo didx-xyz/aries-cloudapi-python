@@ -1,14 +1,12 @@
 import pytest
-from aries_cloudcontroller import SchemaSendResult
 from assertpy import assert_that
 from httpx import AsyncClient
-
+from app.generic.definitions import CredentialSchema
+from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
+
 # This import are important for tests to run!
-from app.tests.util.member_personas import (
-    BobAliceConnect,
-)
 from app.tests.util.event_loop import event_loop
 
 from app.tests.e2e.test_fixtures import BASE_PATH
@@ -17,30 +15,29 @@ from app.tests.e2e.test_fixtures import *  # NOQA
 
 @pytest.mark.asyncio
 async def test_send_credential(
-    bob_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
-    bob_and_alice_connection: BobAliceConnect,
+    faber_client: AsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: AsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": bob_and_alice_connection["bob_connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "10"},
     }
 
-    await register_issuer(bob_member_client, schema_definition.schema_id)
-
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
     # nothing currently in alice's records
     assert len(records) == 0
 
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
@@ -54,7 +51,7 @@ async def test_send_credential(
     assert_that(data).has_schema_id(schema_definition.schema_id)
 
     credential["protocol_version"] = "v2"
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
@@ -67,16 +64,16 @@ async def test_send_credential(
     assert_that(data).has_schema_id(schema_definition.schema_id)
 
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={
             "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
-        topic="issue_credential_v2_0",
+        topic="credentials",
     )
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -86,7 +83,7 @@ async def test_send_credential(
             "state": "offer-received",
             "credential_id": records[-1]["credential_id"],
         },
-        topic="issue_credential_v2_0",
+        topic="credentials",
     )
     assert len(records) == 2
 
@@ -104,20 +101,18 @@ async def test_get_records(alice_member_client: AsyncClient):
 @pytest.mark.asyncio
 async def test_send_credential_request(
     alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
-    schema_definition: SchemaSendResult,
+    faber_client: AsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    credential_definition_id: str,
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": bob_and_alice_connection["bob_connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "credential_definition_id": credential_definition_id,
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "attributes": {"speed": "10"},
     }
 
-    await register_issuer(bob_member_client, schema_definition.schema_id)
-
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
@@ -125,44 +120,40 @@ async def test_send_credential_request(
     assert credential_exchange["protocol_version"] == "v1"
 
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="issue_credential",
+        topic="credentials",
     )
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
-        topic="issue_credential",
+        topic="credentials",
     )
 
 
 @pytest.mark.asyncio
 async def test_store_credential(
     alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    credential_exchange_id: str,
-    bob_and_alice_connection: BobAliceConnect,
-    schema_definition: SchemaSendResult,
+    faber_client: AsyncClient,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": bob_and_alice_connection["bob_connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "credential_definition_id": credential_definition_id,
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
         "attributes": {"speed": "10"},
     }
 
-    await register_issuer(bob_member_client, schema_definition.schema_id)
-
-    # Bob send offer
-    response = await bob_member_client.post(
+    response = await faber_client.post(
         BASE_PATH,
         json=credential,
     )
@@ -170,27 +161,26 @@ async def test_store_credential(
     assert credential_exchange["protocol_version"] == "v1"
 
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="issue_credential",
+        topic="credentials",
     )
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": bob_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
-    # Check alice received the credential offer from Bob
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
-        topic="issue_credential",
+        topic="credentials",
     )
 
     cred_hooks = get_hooks_per_topic_per_wallet(
-        client=alice_member_client, topic="issue_credential"
+        client=alice_member_client, topic="credentials"
     )
 
     cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
@@ -198,29 +188,28 @@ async def test_store_credential(
 
     # alice send request for that credential
     response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/request")
+    response.raise_for_status()
 
     # Bob check he received the request; Credential is send because of using
     # 'automating the entire flow' send credential earlier.
     # See also: app/generic/issuer/issuer.py::send_credential
     assert check_webhook_state(
-        client=bob_member_client,
+        client=faber_client,
         filter_map={"state": "request-received"},
-        topic="issue_credential",
+        topic="credentials",
     )
 
     # Check alice has received the credential
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "credential-received"},
-        topic="issue_credential",
+        topic="credentials",
     )
 
-    # Alice stores crdeential
+    # Alice stores credential
     response = await alice_member_client.post(f"{BASE_PATH}/{credential_id}/store")
 
     # Check alice has received the credential
     assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "credential-acked"},
-        topic="issue_credential",
+        client=alice_member_client, filter_map={"state": "done"}, topic="credentials"
     )

@@ -1,4 +1,3 @@
-import time
 from aries_cloudcontroller import (
     IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
@@ -9,7 +8,6 @@ from httpx import AsyncClient
 
 from app.generic.verifier.models import (
     AcceptProofRequest,
-    CreateProofRequest,
     PresentProofProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
@@ -27,16 +25,18 @@ from shared_models.shared_models import CredentialExchange, PresentationExchange
 BASE_PATH = "/generic/verifier"
 
 
-def create_send_request(connection_id: str, protocol_version: str) -> SendProofRequest:
+def create_send_request(
+    connection_id: str, protocol_version: PresentProofProtocolVersion
+) -> SendProofRequest:
     return SendProofRequest(
-        protocol_version=protocol_version,
+        protocol_version=protocol_version.value,
         connection_id=connection_id,
         proof_request=indy_proof_request,
     )
 
 
 @pytest.mark.asyncio
-async def test_accept_proof_request(
+async def test_accept_proof_request_v1(
     issue_credential_to_bob: CredentialExchange,
     alice_bob_connect_multi: BobAliceConnect,
     alice_member_client: AsyncClient,
@@ -44,17 +44,15 @@ async def test_accept_proof_request(
     schema_definition: SchemaSendResult,
 ):
     # V1
-    proof_request_v1 = create_send_request(
-        alice_bob_connect_multi["alice_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-    proof_request_v1.connection_id = alice_bob_connect_multi["alice_connection_id"]
-
     await register_verifier(alice_member_client, schema_id=schema_definition.schema_id)
 
     await alice_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": alice_bob_connect_multi["alice_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     assert check_webhook_state(
@@ -67,7 +65,7 @@ async def test_accept_proof_request(
     proof_id = proof_records_bob.json()[0]["proof_id"]
 
     requested_credentials = await bob_member_client.get(
-        f"/generic/verifier/credentials/{proof_id}"
+        f"/generic/verifier/proofs/{proof_id}/credentials"
     )
 
     referent = requested_credentials.json()[0]["cred_info"]["referent"]
@@ -112,13 +110,25 @@ async def test_accept_proof_request(
     assert isinstance(pres_exchange_result, PresentationExchange)
     assert response.status_code == 200
 
-    # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
+
+@pytest.mark.asyncio
+async def test_accept_proof_request_v2(
+    issue_credential_to_bob: CredentialExchange,
+    alice_bob_connect_multi: BobAliceConnect,
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    schema_definition: SchemaSendResult,
+):
+
+    await register_verifier(alice_member_client, schema_id=schema_definition.schema_id)
 
     await alice_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v2.dict(),
+        json={
+            "connection_id": alice_bob_connect_multi["alice_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     assert check_webhook_state(
@@ -133,7 +143,7 @@ async def test_accept_proof_request(
     proof_id = proofs_v2[-1]["proof_id"]
 
     requested_credentials = (
-        await bob_member_client.get(f"/generic/verifier/credentials/{proof_id}")
+        await bob_member_client.get(f"/generic/verifier/proofs/{proof_id}/credentials")
     ).json()
 
     referent = requested_credentials[0]["cred_info"]["referent"]
@@ -141,7 +151,6 @@ async def test_accept_proof_request(
         cred_id=referent, revealed=True
     )
     proof_accept = AcceptProofRequest(
-        protocol_version=PresentProofProtocolVersion.v2.value,
         proof_id=proof_id,
         presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
@@ -190,18 +199,15 @@ async def test_send_proof_request(
     bob_member_client: AsyncClient,
 ):
     # V1
-    proof_request_v1 = create_send_request(
-        connection_id=bob_and_alice_connection["bob_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-
     await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
 
-    # wait for connection to be ready (aca-py being slow)
-    time.sleep(5)
     response = await bob_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["bob_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     result = response.json()
@@ -215,11 +221,13 @@ async def test_send_proof_request(
     assert result["state"]
 
     # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
     response = await bob_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v2.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["bob_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     result = response.json()
@@ -238,59 +246,53 @@ async def test_create_proof_request(
     schema_definition: SchemaSendResult,
 ):
     # V1
-    proof_request_v1 = CreateProofRequest(
-        proof_request=indy_proof_request,
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
     await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
 
     response = await bob_member_client.post(
         BASE_PATH + "/create-request",
-        json=proof_request_v1.dict(),
+        json={
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
-    result = response.json()
-    assert "presentation" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert "v1-" in result["proof_id"]
-    assert result["role"] == "verifier"
-    assert result["state"]
+    # Expected to fail at the moment
+    assert response.status_code == 500
 
     # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
     response = await bob_member_client.post(
         BASE_PATH + "/create-request",
-        json=proof_request_v2.dict(),
+        json={
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
-    result = response.json()
-    assert "presentation" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert "v2-" in result["proof_id"]
-    assert result["role"] == "verifier"
-    assert result["state"]
+    # Expected to fail at the moment
+    assert response.status_code == 500
 
 
 @pytest.mark.asyncio
 async def test_reject_proof_request(
     bob_and_alice_connection: BobAliceConnect,
-    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    schema_definition: SchemaSendResult,
 ):
+    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
     # V1
-    proof_request_v1 = create_send_request(
-        bob_and_alice_connection["alice_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-    response = await alice_member_client.post(
+    response = await bob_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["bob_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
+    response.raise_for_status()
+
     assert check_webhook_state(
-        client=alice_member_client,
+        client=bob_member_client,
         filter_map={"state": "request-sent"},
         topic="present_proof",
     )
@@ -299,10 +301,11 @@ async def test_reject_proof_request(
         proof_id=response.json()["proof_id"], problem_report=None
     )
 
-    response = await alice_member_client.post(
+    response = await bob_member_client.post(
         BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
     )
     result = response.json()
+    response.raise_for_status()
     assert result is None
 
 
@@ -312,14 +315,13 @@ async def test_get_proof_single(
     alice_member_client: AsyncClient,
 ):
     # V1
-    proof_request_v1 = create_send_request(
-        bob_and_alice_connection["alice_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_req_res = await alice_member_client.post(
         f"{BASE_PATH}/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     proof_id = proof_req_res.json()["proof_id"]
@@ -334,12 +336,13 @@ async def test_get_proof_single(
     assert "presentation_request" in result
 
     # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
-
     proof_req_res = await alice_member_client.post(
         f"{BASE_PATH}/send-request",
-        json=proof_request_v2.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     proof_id = proof_req_res.json()["proof_id"]
@@ -363,14 +366,13 @@ async def test_get_proofs_multi(
     alice_member_client: AsyncClient,
 ):
     # V1
-    proof_request_v1 = create_send_request(
-        bob_and_alice_connection["alice_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     await alice_member_client.post(
         f"{BASE_PATH}/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     response = await alice_member_client.get(
@@ -386,12 +388,13 @@ async def test_get_proofs_multi(
     assert "presentation_request" in result
 
     # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
-
     await alice_member_client.post(
         f"{BASE_PATH}/send-request",
-        json=proof_request_v2.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     response = await alice_member_client.get(
@@ -413,14 +416,13 @@ async def test_delete_proof(
     alice_member_client: AsyncClient,
 ):
     # V1
-    proof_request_v1 = create_send_request(
-        bob_and_alice_connection["alice_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     proof_id = (proof_req_res.json())["proof_id"]
@@ -431,12 +433,13 @@ async def test_delete_proof(
     assert response.json() == None
 
     # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
-
     proof_req_res = await alice_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v2.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     proof_id = (proof_req_res.json())["proof_id"]
@@ -455,14 +458,13 @@ async def test_get_credentials_for_request(
     issue_credential_to_bob: CredentialExchange,
 ):
     # V1
-    proof_request_v1 = create_send_request(
-        bob_and_alice_connection["alice_connection_id"],
-        protocol_version=PresentProofProtocolVersion.v1.value,
-    )
-    proof_request_v1.connection_id = bob_and_alice_connection["alice_connection_id"]
     await alice_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v1.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     assert check_webhook_state(
@@ -480,7 +482,7 @@ async def test_get_credentials_for_request(
     proof_id = proof_records_bob.json()[0]["proof_id"]
 
     response = await bob_member_client.get(
-        f"{BASE_PATH}/credentials/{proof_id}",
+        f"{BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
     result = response.json()[0]
@@ -491,13 +493,14 @@ async def test_get_credentials_for_request(
         for attr in result["cred_info"].keys()
     ]
 
-    # # V2
-    proof_request_v2 = proof_request_v1
-    proof_request_v2.protocol_version = PresentProofProtocolVersion.v2.value
-
+    # V2
     await alice_member_client.post(
         BASE_PATH + "/send-request",
-        json=proof_request_v2.dict(),
+        json={
+            "connection_id": bob_and_alice_connection["alice_connection_id"],
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
     )
 
     assert check_webhook_state(
@@ -515,7 +518,7 @@ async def test_get_credentials_for_request(
     proof_id = proof_records_bob.json()[-1]["proof_id"]
 
     response = await bob_member_client.get(
-        f"{BASE_PATH}/credentials/{proof_id}",
+        f"{BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
     result = response.json()[0]

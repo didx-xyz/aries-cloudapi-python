@@ -1,10 +1,10 @@
 import json
 from random import random
 import time
-from typing import TypedDict
+from typing import Any, Dict, TypedDict
 
 import pytest
-from aries_cloudcontroller import AcaPyClient, InvitationResult, SchemaSendResult
+from aries_cloudcontroller import AcaPyClient, SchemaSendResult
 from httpx import AsyncClient
 from app.facades.trust_registry import (
     actor_by_did,
@@ -142,8 +142,13 @@ async def bob_and_alice_connection(
     }
 
 
+class InvitationResultDict(TypedDict):
+    invitation: Dict[str, Any]
+    connection_id: str
+
+
 class MultiInvite(TypedDict):
-    multi_use_invitation: InvitationResult
+    multi_use_invitation: InvitationResultDict
     invitation_key: str
     did_from_rec_key: str
 
@@ -192,7 +197,7 @@ async def register_bob_multi(
                 roles=["verifier"],
                 did=bob_multi_use_invitation["did_from_rec_key"],
                 didcomm_invitation=str(
-                    bob_multi_use_invitation["multi_use_invitation"].invitation
+                    bob_multi_use_invitation["multi_use_invitation"]["invitation"]
                 ),
             )
         )
@@ -213,7 +218,9 @@ async def issue_credential_to_bob(
     invitation_response = (
         await yoma_client.post(
             "/generic/connections/accept-invitation",
-            json={"invitation": register_bob_multi["multi_use_invitation"].invitation},
+            json={
+                "invitation": register_bob_multi["multi_use_invitation"]["invitation"]
+            },
         )
     ).json()
 
@@ -289,7 +296,7 @@ async def alice_bob_connect_multi(
     alice_member_client: AsyncClient,
     bob_multi_use_invitation: MultiInvite,
 ) -> BobAliceConnect:
-    invitation = bob_multi_use_invitation["multi_use_invitation"].invitation
+    invitation = bob_multi_use_invitation["multi_use_invitation"]["invitation"]
 
     # accept invitation on alice side
     invitation_response = (
@@ -306,7 +313,9 @@ async def alice_bob_connect_multi(
         max_duration=30,
     )
 
-    bob_connection_id = bob_multi_use_invitation["multi_use_invitation"].connection_id
+    bob_connection_id = bob_multi_use_invitation["multi_use_invitation"][
+        "connection_id"
+    ]
     alice_connection_id = invitation_response["connection_id"]
 
     # fetch and validate

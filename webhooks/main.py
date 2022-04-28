@@ -90,7 +90,7 @@ async def topic_root(
     webhook_event = await service.transform_topic_entry(redis_item)
     if not webhook_event:
         log.debug(
-            f"Not publishing webhook event for topic {topic} as not transformer exists for the topic"
+            f"Not publishing webhook event for topic {topic} as no transformer exists for the topic"
         )
         return
 

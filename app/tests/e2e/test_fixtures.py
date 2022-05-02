@@ -15,7 +15,6 @@ from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
 
 from app.tests.util.trust_registry import register_issuer
-from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import (
     BobAliceConnect,
     alice_member_client,

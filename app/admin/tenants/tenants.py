@@ -156,7 +156,7 @@ async def create_tenant(
     )
 
 
-@router.delete("/{tenant_id}", status_code=204)
+@router.delete("/{tenant_id}")
 async def delete_tenant_by_id(
     tenant_id: str,
     aries_controller: AcaPyClient = Depends(multitenant_admin),

@@ -3,8 +3,6 @@ import pytest
 
 from app.generic.webhooks import router
 
-# This import are important for tests to run!
-from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import BobAliceConnect
 from shared_models import Connection
 

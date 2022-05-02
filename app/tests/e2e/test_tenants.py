@@ -397,7 +397,7 @@ async def test_delete_tenant(
     assert actor
 
     response = await ecosystem_admin_client.delete(f"{BASE_PATH}/{tenant_id}")
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     # Actor doesn't exist anymore
     actor = await trust_registry.actor_by_id(tenant_id)

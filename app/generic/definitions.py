@@ -332,7 +332,7 @@ async def get_schema(
     return _credential_schema_from_acapy(schema.schema_)
 
 
-@router.post("/", response_model=CredentialSchema)
+@router.post("/schemas", response_model=CredentialSchema)
 async def create_schema(
     schema: CreateSchema,
     # Only yoma can create schemas

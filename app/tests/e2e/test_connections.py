@@ -6,8 +6,6 @@ from httpx import AsyncClient
 from app.tests.util.member_personas import BobAlicePublicDid
 from app.tests.util.member_personas import BobAliceConnect, BobAlicePublicDid
 
-# This import is important for tests to run!
-from app.tests.util.event_loop import event_loop
 from app.tests.util.webhooks import (
     check_webhook_state,
 )

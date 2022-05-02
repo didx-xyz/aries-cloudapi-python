@@ -45,7 +45,7 @@ async def test_send_credential(
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v1")
     assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.schema_id)
+    assert_that(data).has_schema_id(schema_definition.id)
 
     credential["protocol_version"] = "v2"
     response = await faber_client.post(
@@ -58,7 +58,7 @@ async def test_send_credential(
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.schema_id)
+    assert_that(data).has_schema_id(schema_definition.id)
 
     assert check_webhook_state(
         client=faber_client,

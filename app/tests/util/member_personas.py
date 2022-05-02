@@ -4,7 +4,7 @@ import time
 from typing import Any, Dict, TypedDict
 
 import pytest
-from aries_cloudcontroller import AcaPyClient, SchemaSendResult
+from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
 from app.facades.trust_registry import (
     actor_by_did,
@@ -12,6 +12,7 @@ from app.facades.trust_registry import (
     register_schema,
     registry_has_schema,
 )
+from app.generic.definitions import CredentialSchema
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
 from app.tests.util.client import (
@@ -182,11 +183,11 @@ async def bob_multi_use_invitation(
 
 @pytest.fixture(scope="module")
 async def register_bob_multi(
-    bob_multi_use_invitation: MultiInvite, schema_definition: SchemaSendResult
+    bob_multi_use_invitation: MultiInvite, schema_definition: CredentialSchema
 ) -> MultiInvite:
 
-    if not await registry_has_schema(schema_id=schema_definition.schema_id):
-        await register_schema(schema_definition.schema_id)
+    if not await registry_has_schema(schema_id=schema_definition.id):
+        await register_schema(schema_definition.id)
 
     if not await actor_by_did(did=bob_multi_use_invitation["did_from_rec_key"]):
         rand = random()
@@ -209,10 +210,10 @@ async def issue_credential_to_bob(
     bob_member_client: AsyncClient,
     register_bob_multi: MultiInvite,
     yoma_client: AsyncClient,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
 ) -> CredentialExchange:
 
-    await register_issuer(yoma_client, schema_definition.schema_id)
+    await register_issuer(yoma_client, schema_definition.id)
 
     # Create a conenction from yoma to bob
     invitation_response = (
@@ -244,7 +245,7 @@ async def issue_credential_to_bob(
     credential = {
         "protocol_version": "v1",
         "connection_id": invitation_response["connection_id"],
-        "schema_id": schema_definition.schema_id,
+        "schema_id": schema_definition.id,
         "attributes": {"speed": "10"},
     }
 

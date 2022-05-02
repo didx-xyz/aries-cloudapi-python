@@ -1,7 +1,6 @@
 from aries_cloudcontroller import (
     IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
-    SchemaSendResult,
 )
 import pytest
 from httpx import AsyncClient
@@ -40,10 +39,10 @@ async def test_accept_proof_request_v1(
     alice_bob_connect_multi: BobAliceConnect,
     alice_member_client: AsyncClient,
     bob_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
 ):
     # V1
-    await register_verifier(alice_member_client, schema_id=schema_definition.schema_id)
+    await register_verifier(alice_member_client, schema_id=schema_definition.id)
 
     await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -116,10 +115,10 @@ async def test_accept_proof_request_v2(
     alice_bob_connect_multi: BobAliceConnect,
     alice_member_client: AsyncClient,
     bob_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
 ):
 
-    await register_verifier(alice_member_client, schema_id=schema_definition.schema_id)
+    await register_verifier(alice_member_client, schema_id=schema_definition.id)
 
     await alice_member_client.post(
         BASE_PATH + "/send-request",
@@ -194,11 +193,11 @@ async def test_accept_proof_request_v2(
 async def test_send_proof_request(
     bob_and_alice_connection: BobAliceConnect,
     alice_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
     bob_member_client: AsyncClient,
 ):
     # V1
-    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
+    await register_verifier(bob_member_client, schema_id=schema_definition.id)
 
     response = await bob_member_client.post(
         BASE_PATH + "/send-request",
@@ -242,10 +241,10 @@ async def test_send_proof_request(
 @pytest.mark.asyncio
 async def test_create_proof_request(
     bob_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
 ):
     # V1
-    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
+    await register_verifier(bob_member_client, schema_id=schema_definition.id)
 
     response = await bob_member_client.post(
         BASE_PATH + "/create-request",
@@ -275,9 +274,9 @@ async def test_create_proof_request(
 async def test_reject_proof_request(
     bob_and_alice_connection: BobAliceConnect,
     bob_member_client: AsyncClient,
-    schema_definition: SchemaSendResult,
+    schema_definition: CredentialSchema,
 ):
-    await register_verifier(bob_member_client, schema_id=schema_definition.schema_id)
+    await register_verifier(bob_member_client, schema_id=schema_definition.id)
     # V1
     response = await bob_member_client.post(
         BASE_PATH + "/send-request",

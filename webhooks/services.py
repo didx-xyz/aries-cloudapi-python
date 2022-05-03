@@ -1,9 +1,11 @@
 """Services module."""
 
 import json
+import logging
 from typing import Any, List
 
 from aioredis import Redis
+from pydantic import ValidationError
 
 from models import (
     to_credential_hook_model,
@@ -20,6 +22,8 @@ from shared_models import (
     PayloadType,
     Endorsement,
 )
+
+log = logging.getLogger(__name__)
 
 
 class Service:
@@ -98,11 +102,19 @@ class Service:
         entries = await self._redis.smembers(wallet_id)
 
         for entry in entries:
-            data: RedisItem = json.loads(entry)
-            webhook = await self.transform_topic_entry(data)
+            try:
+                data: RedisItem = json.loads(entry)
+                webhook = await self.transform_topic_entry(data)
 
-            if webhook:
-                data_list.append(webhook)
+                if webhook:
+                    data_list.append(webhook)
+            # Log the data failing to create webhook, skip appending
+            # anything to the list, and continue to next item in entries
+            except (ValidationError, json.JSONDecodeError) as e:
+                log.error(f"Error creating formatted webhook for\n{data}\n{e!r}")
+            # Catch the general case if sth else/unknown occurs:
+            except Exception as e:
+                log.error(f"Unknown exception occurred:\n{e!r}")
 
         return data_list
 
@@ -113,14 +125,22 @@ class Service:
         entries = await self._redis.smembers(wallet_id)
 
         for entry in entries:
-            data: RedisItem = json.loads(entry)
-            # Only take current topic
-            if data["topic"] != topic:
-                continue
+            try:
+                data: RedisItem = json.loads(entry)
+                # Only take current topic
+                if data["topic"] != topic:
+                    continue
 
-            webhook = await self.transform_topic_entry(data)
+                webhook = await self.transform_topic_entry(data)
 
-            if webhook:
-                data_list.append(webhook)
+                if webhook:
+                    data_list.append(webhook)
+            # Log the data failing to create webhook, skip appending
+            # anything to the list, and continue to next item in entries
+            except (ValidationError, json.JSONDecodeError) as e:
+                log.error(f"Error creating formatted webhook for\n{data}\n{e!r}")
+            # Catch the general case if sth else/unknown occurs:
+            except Exception as e:
+                log.error(f"Unknown exception occurred:\n{e!r}")
 
         return data_list

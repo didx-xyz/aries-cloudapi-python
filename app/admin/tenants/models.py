@@ -41,7 +41,7 @@ class CreateTenantResponse(Tenant, TenantAuth):
 
 def tenant_from_wallet_record(wallet_record: WalletRecord) -> Tenant:
     label: str = wallet_record.settings["default_label"]
-    image_url: Optional[str] = wallet_record.settings["image_url"]
+    image_url: Optional[str] = wallet_record.settings.get("image_url")
 
     return Tenant(
         tenant_id=wallet_record.wallet_id,

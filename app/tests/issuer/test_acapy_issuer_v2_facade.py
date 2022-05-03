@@ -42,7 +42,7 @@ v2_credential_exchange_records = [
             state="offer-sent",
             connection_id="3fa85f64-5717-4562-b3fc-2c963f66afb9",
             cred_preview=V20CredPreview(
-                attributes=[V20CredAttrSpec(name="speed", value="fasts")]
+                attributes=[V20CredAttrSpec(name="speed", value="10")]
             ),
             cred_ex_id="db9d7025-b276-4c32-ae38-fbad41864112",
             by_format=V20CredExRecordByFormat(
@@ -68,7 +68,7 @@ v2_credential_exchange_records = [
             state="offer-sent",
             connection_id="3fa85f64-5717-4562-b3fc-2c963f6dafb9",
             cred_preview=V20CredPreview(
-                attributes=[V20CredAttrSpec(name="speed", value="average")]
+                attributes=[V20CredAttrSpec(name="speed", value="10")]
             ),
             cred_ex_id="db9d7025-b276-4c32-ae38-fbad41864133",
             by_format=V20CredExRecordByFormat(

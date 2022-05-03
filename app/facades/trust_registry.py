@@ -71,43 +71,6 @@ async def assert_valid_issuer(did: str, schema_id: str):
         )
 
 
-async def assert_valid_verifier(did: str, schema_id: str):
-    """Assert that an actor with the specified did is registered as verifier.
-
-    This method asserts that there is an actor registered in the trust registry
-    with the specified did. It verifies whether this actor has the `verifier` role
-    and will also make sure the specified schema_id is regsitred as a valid schema.
-    Raises an exception if one of the assertions fail.
-
-    NOTE: the dids in the registry are registered as fully qualified dids. This means
-    when passing a did to this method it must also be fully qualified (e.g. `did:sov:xxxx`)
-
-    Args:
-        did (str): the did of the verifier in fully qualified format.
-        schema_id (str): the schema_id of the credential being issued
-
-    Raises:
-        Exception: When the did is not registered, the actor doesn't have the verifier role
-            or the schema is not registered in the registry.
-    """
-    actor = await actor_by_did(did)
-
-    if not actor:
-        raise TrustRegistryException(f"Did {did} not registered in the trust registry")
-
-    actor_id = actor["id"]
-    if not "verifier" in actor["roles"]:
-        raise TrustRegistryException(
-            f"Actor {actor_id} does not have required role 'verifier'"
-        )
-
-    has_schema = await registry_has_schema(schema_id)
-    if not has_schema:
-        raise TrustRegistryException(
-            f"Schema with id {schema_id} is not registered in trust registry"
-        )
-
-
 async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
     """Check whether the actor has specified role.
 
@@ -227,6 +190,25 @@ async def registry_has_schema(schema_id: str) -> bool:
     return bool(schema_id in schema["schemas"])
 
 
+async def get_trust_registry_schemas() -> List[str]:
+    """Retrieve all schemas from the trust registry
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the trust registry schemas.
+
+    Returns:
+        A list of schemas
+    """
+    trust_registry_schemas_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+
+    if trust_registry_schemas_res.is_error:
+        raise TrustRegistryException(
+            trust_registry_schemas_res.text, trust_registry_schemas_res.status_code
+        )
+
+    return trust_registry_schemas_res.json()["schemas"]
+
+
 async def get_trust_registry() -> TrustRegistry:
     """Retrieve the complete trust registry
 
@@ -234,7 +216,7 @@ async def get_trust_registry() -> TrustRegistry:
         TrustRegistryException: If an error occurred while retrieving the trust registry.
 
     Returns:
-        TrustRegistry: the trust registry.s
+        TrustRegistry: the trust registries
     """
     trust_registry_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry")
 

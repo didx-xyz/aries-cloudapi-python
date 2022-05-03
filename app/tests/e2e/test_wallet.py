@@ -16,9 +16,6 @@ from app.generic.wallet.wallet import (
 
 from assertpy import assert_that
 
-# This import are important for tests to run!
-from app.tests.util.event_loop import event_loop
-
 WALLET_BASE_PATH = router.prefix
 
 

@@ -6,9 +6,6 @@ from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
 
-# This import are important for tests to run!
-from app.tests.util.event_loop import event_loop
-
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.e2e.test_fixtures import *  # NOQA
 
@@ -25,7 +22,7 @@ async def test_send_credential(
         "protocol_version": "v1",
         "connection_id": faber_and_alice_connection["faber_connection_id"],
         "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "average"},
+        "attributes": {"speed": "10"},
     }
 
     response = await alice_member_client.get(
@@ -47,7 +44,7 @@ async def test_send_credential(
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
     credential["protocol_version"] = "v2"
@@ -60,7 +57,7 @@ async def test_send_credential(
     data = response.json()
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
-    assert_that(data).has_attributes({"speed": "average"})
+    assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
     assert check_webhook_state(
@@ -109,7 +106,7 @@ async def test_send_credential_request(
         "protocol_version": "v1",
         "credential_definition_id": credential_definition_id,
         "connection_id": faber_and_alice_connection["faber_connection_id"],
-        "attributes": {"speed": "average"},
+        "attributes": {"speed": "10"},
     }
 
     response = await faber_client.post(
@@ -150,7 +147,7 @@ async def test_store_credential(
         "protocol_version": "v1",
         "credential_definition_id": credential_definition_id,
         "connection_id": faber_and_alice_connection["faber_connection_id"],
-        "attributes": {"speed": "average"},
+        "attributes": {"speed": "10"},
     }
 
     response = await faber_client.post(
@@ -211,7 +208,5 @@ async def test_store_credential(
 
     # Check alice has received the credential
     assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "done"},
-        topic="credentials"
+        client=alice_member_client, filter_map={"state": "done"}, topic="credentials"
     )

@@ -19,6 +19,22 @@ async def create_issuer_tenant(ecosystem_admin_client: AsyncClient, name: str):
     return wallet
 
 
+async def create_verifier_tenant(ecosystem_admin_client: AsyncClient, name: str):
+    full_name = f"{name}{get_random_string(3)}"
+    wallet_payload = {"name": full_name, "roles": ["verifier"]}
+
+    wallet_response = await ecosystem_admin_client.post(
+        "/admin/tenants", json=wallet_payload
+    )
+
+    if wallet_response.is_error:
+        raise Exception("Error creating verifier tenant", wallet_response.text)
+
+    wallet = wallet_response.json()
+
+    return wallet
+
+
 async def create_tenant(member_admin_client: AsyncClient, name: str):
     full_name = f"{name}{get_random_string(3)}"
     wallet_payload = {

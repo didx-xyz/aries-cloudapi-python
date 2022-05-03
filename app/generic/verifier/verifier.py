@@ -1,19 +1,25 @@
 import logging
 from enum import Enum
-from typing import List
+from typing import List, Union
 
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 from fastapi import APIRouter, Depends
 
 from app.dependencies import agent_selector
+from app.error.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
+    PresentProofProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
+)
+from app.generic.verifier.verifier_utils import (
+    assert_valid_prover,
+    assert_valid_verifier,
 )
 from shared_models import PresentationExchange
 
@@ -28,16 +34,23 @@ class VerifierFacade(Enum):
     v2 = VerifierV2
 
 
-def __get_verifier_by_version(version_candidate: str) -> Verifier:
-    if version_candidate == "v1" or version_candidate.startswith("v1-"):
+def __get_verifier_by_version(
+    version_candidate: Union[str, PresentProofProtocolVersion]
+) -> Verifier:
+    if version_candidate == PresentProofProtocolVersion.v1 or (
+        isinstance(version_candidate, str) and version_candidate.startswith("v1-")
+    ):
         return VerifierFacade.v1.value
-    elif version_candidate == "v2" or version_candidate.startswith("v2-"):
+    elif (
+        version_candidate == PresentProofProtocolVersion.v2
+        or version_candidate.startswith("v2-")
+    ):
         return VerifierFacade.v2.value
     else:
         raise ValueError(f"Unknown protocol version {version_candidate}")
 
 
-@router.get("/credentials/{proof_id}")
+@router.get("/proofs/{proof_id}/credentials")
 async def get_credentials_for_request(
     proof_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -163,6 +176,11 @@ async def send_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
+
+        await assert_valid_verifier(
+            aries_controller=aries_controller, proof_request=proof_request
+        )
+
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -191,6 +209,14 @@ async def create_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
+
+        # FIXME: this currently doesn't work with connectionless. Fix in future PR
+        # await assert_valid_verifier(
+        #     aries_controller=aries_controller,
+        #     proof_request=proof_request,
+        # )
+        raise CloudApiException("Could not verify proof request against trust registry")
+
         return await prover.create_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -201,7 +227,7 @@ async def create_proof_request(
 
 @router.post("/accept-request")
 async def accept_proof_request(
-    proof_request: AcceptProofRequest,
+    presentation: AcceptProofRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> PresentationExchange:
     """
@@ -218,9 +244,14 @@ async def accept_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_verifier_by_version(proof_request.protocol_version)
+        prover = __get_verifier_by_version(presentation.proof_id)
+
+        await assert_valid_prover(
+            aries_controller=aries_controller, prover=prover, presentation=presentation
+        )
+
         return await prover.accept_proof_request(
-            controller=aries_controller, proof_request=proof_request
+            controller=aries_controller, proof_request=presentation
         )
     except Exception as e:
         logger.error(f"Failed to accept proof request: \n{e!r}")
@@ -245,7 +276,16 @@ async def reject_proof_request(
     None
     """
     try:
-        prover = __get_verifier_by_version(proof_request.protocol_version)
+        prover = __get_verifier_by_version(proof_request.proof_id)
+        proof_record = await prover.get_proof_record(
+            controller=aries_controller, proof_id=proof_request.proof_id
+        )
+
+        if proof_record.state != "request-received":
+            raise CloudApiException(
+                "Record must be in state request-received to decline proof request", 400
+            )
+
         return await prover.reject_proof_request(
             controller=aries_controller, proof_request=proof_request
         )

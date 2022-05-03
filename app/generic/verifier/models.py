@@ -1,38 +1,35 @@
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional
 
 from aries_cloudcontroller import (
-    IndyPresPreview,
     IndyPresSpec,
     IndyProofRequest,
 )
 from pydantic import BaseModel
 
 
-class ProofRequestProtocolVersion(Enum):
+class PresentProofProtocolVersion(Enum):
     v1 = "v1"
     v2 = "v2"
 
 
-class ProofRequestBase(BaseModel):
-    protocol_version: Optional[str] = ProofRequestProtocolVersion.v1.value
+class SendProofRequest(BaseModel):
+    connection_id: str
+    proof_request: IndyProofRequest
+    protocol_version: PresentProofProtocolVersion
 
 
-class SendProofRequest(ProofRequestBase):
-    connection_id: Optional[str] = None
-    proof_request: Optional[Union[IndyProofRequest, IndyPresPreview]] = None
-
-
-class CreateProofRequest(ProofRequestBase):
-    proof_request: Optional[IndyProofRequest] = None
+class CreateProofRequest(BaseModel):
+    proof_request: IndyProofRequest
     comment: Optional[str] = None
+    protocol_version: PresentProofProtocolVersion
 
 
-class AcceptProofRequest(ProofRequestBase):
-    proof_id: Optional[str] = None
-    presentation_spec: Optional[IndyPresSpec] = None
+class AcceptProofRequest(BaseModel):
+    proof_id: str
+    presentation_spec: IndyPresSpec
 
 
-class RejectProofRequest(ProofRequestBase):
-    proof_id: Optional[str] = None
+class RejectProofRequest(BaseModel):
+    proof_id: str
     problem_report: Optional[str] = None

@@ -1,5 +1,4 @@
 import logging
-from typing import Dict
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -7,12 +6,7 @@ from aries_cloudcontroller import (
     V10PresentationProblemReportRequest,
     V10PresentationSendRequestRequest,
 )
-from aries_cloudcontroller.model.indy_proof_request import IndyProofRequest
-from aries_cloudcontroller.model.v10_presentation_exchange import (
-    V10PresentationExchange,
-)
 from fastapi.exceptions import HTTPException
-from pydantic.typing import NoneType
 
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (
@@ -63,7 +57,7 @@ class VerifierV1(Verifier):
     async def get_proof_records(cls, controller: AcaPyClient):
         try:
             presentation_exchange = await controller.present_proof_v1_0.get_records()
-            return [record_to_model(rec) for rec in presentation_exchange.results]
+            return [record_to_model(rec) for rec in presentation_exchange.results or []]
         except Exception as e:
             logger.error(f"{e!r}")
             raise e from e
@@ -84,9 +78,7 @@ class VerifierV1(Verifier):
     async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
         try:
             pres_ex_id = pres_id_no_version(proof_id=proof_id)
-            return await controller.present_proof_v1_0.delete_record(
-                pres_ex_id=pres_ex_id
-            )
+            await controller.present_proof_v1_0.delete_record(pres_ex_id=pres_ex_id)
         except Exception as e:
             logger.error(f"{e!r}")
             raise e from e
@@ -96,25 +88,19 @@ class VerifierV1(Verifier):
         cls,
         controller: AcaPyClient,
         proof_request: SendProofRequest,
-        free: bool = True,
     ) -> PresentationExchange:
         try:
-            # This "free" is de facto the only one we support right now
-            if free and isinstance(proof_request.proof_request, IndyProofRequest):
-                presentation_exchange = (
-                    await controller.present_proof_v1_0.send_request_free(
-                        body=V10PresentationSendRequestRequest(
-                            connection_id=proof_request.connection_id,
-                            proof_request=proof_request.proof_request,
-                        )
+            presentation_exchange = (
+                await controller.present_proof_v1_0.send_request_free(
+                    body=V10PresentationSendRequestRequest(
+                        connection_id=proof_request.connection_id,
+                        proof_request=proof_request.proof_request,
                     )
                 )
-            else:
-                raise NotImplementedError
+            )
             return record_to_model(presentation_exchange)
-        except (AttributeError, TypeError) as e:
-            raise NotImplementedError(f"{e!r}")
         except Exception as e:
+            logger.error(f"{e!r}")
             raise e from e
 
     @classmethod
@@ -133,9 +119,6 @@ class VerifierV1(Verifier):
     ) -> None:
         # get the record
         proof_id = pres_id_no_version(proof_id=proof_request.proof_id)
-        proof_request_res = await controller.present_proof_v1_0.get_record(
-            pres_ex_id=proof_id
-        )
         # Report problem if desired
         if proof_request.problem_report:
             try:
@@ -147,11 +130,9 @@ class VerifierV1(Verifier):
                 )
             except Exception as e:
                 raise e from e
-        # delete exchange record
-        delete_proof_request_res = await controller.present_proof_v1_0.delete_record(
-            pres_ex_id=proof_id
-        )
-        if not isinstance(proof_request_res, V10PresentationExchange) or not isinstance(
-            delete_proof_request_res, (Dict, NoneType)
-        ):
+
+        try:
+            # delete exchange record
+            await controller.present_proof_v1_0.delete_record(pres_ex_id=proof_id)
+        except:
             raise HTTPException(status_code=500, detail="Failed to delete record")

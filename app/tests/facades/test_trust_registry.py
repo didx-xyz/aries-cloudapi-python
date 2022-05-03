@@ -60,60 +60,6 @@ async def test_assert_valid_issuer():
 
 
 @pytest.mark.asyncio
-async def test_assert_valid_verifier():
-    did = "did:sov:xxxx"
-    actor = {"id": "actor-id", "roles": ["verifier"], "did": did}
-    schema_id = "a_schema_id"
-
-    # Success
-    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
-        trf, "registry_has_schema"
-    ) as mock_registry_has_schema:
-        mock_actor_by_did.return_value = actor
-        mock_registry_has_schema.return_value = True
-
-        await trf.assert_valid_verifier(did=did, schema_id=schema_id)
-
-        mock_actor_by_did.assert_called_once_with(did)
-        mock_registry_has_schema.assert_called_once_with(schema_id)
-
-    # No actor with specified did
-    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
-        trf, "registry_has_schema"
-    ) as mock_registry_has_schema:
-        mock_actor_by_did.return_value = None
-
-        with pytest.raises(
-            trf.TrustRegistryException,
-            match=f"Did {did} not registered in the trust registry",
-        ):
-            await trf.assert_valid_verifier(did=did, schema_id=schema_id)
-
-    # Actor does not have required role 'issuer'
-    with patch.object(trf, "actor_by_did") as mock_actor_by_did:
-        mock_actor_by_did.return_value = {**actor, "roles": ["issuer"]}
-
-        with pytest.raises(
-            trf.TrustRegistryException,
-            match="Actor actor-id does not have required role 'verifier'",
-        ):
-            await trf.assert_valid_verifier(did=did, schema_id=schema_id)
-
-    # Schema is not registered in registry
-    with patch.object(trf, "actor_by_did") as mock_actor_by_did, patch.object(
-        trf, "registry_has_schema"
-    ) as mock_registry_has_schema:
-        mock_actor_by_did.return_value = actor
-        mock_registry_has_schema.return_value = False
-
-        with pytest.raises(
-            trf.TrustRegistryException,
-            match=f"Schema with id {schema_id} is not registered in trust registry",
-        ):
-            await trf.assert_valid_verifier(did=did, schema_id=schema_id)
-
-
-@pytest.mark.asyncio
 async def test_actor_has_role():
     with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200

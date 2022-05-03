@@ -76,7 +76,7 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: AcceptProofRequet
+        proof_request: AcceptProofRequest
             The proof request object
 
         Returns:
@@ -97,7 +97,7 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: RejectProofRequet
+        proof_request: RejectProofRequest
             The proof request object
 
         Returns:
@@ -127,7 +127,9 @@ class Verifier(ABC):
 
     @classmethod
     @abstractmethod
-    async def get_proof_records(cls, controller: AcaPyClient) -> None:
+    async def get_proof_records(
+        cls, controller: AcaPyClient
+    ) -> List[PresentationExchange]:
         """
         Get all proof records
 
@@ -144,7 +146,9 @@ class Verifier(ABC):
 
     @classmethod
     @abstractmethod
-    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str) -> None:
+    async def get_proof_record(
+        cls, controller: AcaPyClient, proof_id: str
+    ) -> PresentationExchange:
         """
         Get a specific proof record
 

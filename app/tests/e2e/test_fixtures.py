@@ -1,3 +1,4 @@
+from typing import Any
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
@@ -15,7 +16,6 @@ from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
 
 from app.tests.util.trust_registry import register_issuer
-from app.tests.util.event_loop import event_loop
 from app.tests.util.member_personas import (
     BobAliceConnect,
     alice_member_client,
@@ -24,6 +24,8 @@ from app.tests.util.member_personas import (
     bob_and_alice_public_did,
     bob_member_client,
 )
+from app.webhook_listener import start_listener
+from shared_models.shared_models import CredentialExchange
 
 BASE_PATH = router.prefix + "/credentials"
 
@@ -104,3 +106,55 @@ async def credential_exchange_id(
     assert len(records) > 0
 
     return credential_exchange_id
+
+
+@pytest.fixture(scope="module")
+async def issue_credential_to_alice(
+    faber_client: AsyncClient,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: AsyncClient,
+    alice_tenant: Any,
+) -> CredentialExchange:
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "credential_definition_id": credential_definition_id,
+        "attributes": {"speed": "10"},
+    }
+
+    wait_for_event, _ = await start_listener(
+        topic="credentials", wallet_id=alice_tenant["tenant_id"]
+    )
+
+    # create and send credential offer- issuer
+    response = await faber_client.post(
+        "/generic/issuer/credentials",
+        json=credential,
+    )
+    credential_exchange = response.json()
+    if response.is_error:
+        print(credential_exchange)
+    response.raise_for_status()
+
+    payload = await wait_for_event(
+        filter_map={
+            "connection_id": faber_and_alice_connection["alice_connection_id"],
+            "state": "offer-received",
+        }
+    )
+
+    alice_credential_id = payload["credential_id"]
+    wait_for_event, _ = await start_listener(
+        topic="credentials", wallet_id=alice_tenant["tenant_id"]
+    )
+
+    # send credential request - holder
+    response = await alice_member_client.post(
+        f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
+    )
+
+    await wait_for_event(
+        filter_map={"credential_id": alice_credential_id, "state": "done"}
+    )
+    return response.json()

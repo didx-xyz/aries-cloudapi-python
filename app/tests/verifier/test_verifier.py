@@ -170,7 +170,7 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
 async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).accept_proof_request(...).thenReturn(
-        get(presentation_exchange_record_1)
+        get(presentation_exchange_record_2)
     )
 
     presentation = test_module.AcceptProofRequest(
@@ -188,7 +188,7 @@ async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
         aries_controller=mock_agent_controller,
     )
 
-    assert result is presentation_exchange_record_1
+    assert result is presentation_exchange_record_2
     verify(VerifierV2).accept_proof_request(...)
 
 

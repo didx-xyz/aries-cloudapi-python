@@ -277,6 +277,15 @@ async def reject_proof_request(
     """
     try:
         prover = __get_verifier_by_version(proof_request.proof_id)
+        proof_record = await prover.get_proof_record(
+            controller=aries_controller, proof_id=proof_request.proof_id
+        )
+
+        if proof_record.state != "request-received":
+            raise CloudApiException(
+                "Record must be in state request-received to decline proof request", 400
+            )
+
         return await prover.reject_proof_request(
             controller=aries_controller, proof_request=proof_request
         )

@@ -1,18 +1,9 @@
 import json
-from random import random
-import time
 from typing import Any, Dict, TypedDict
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
-from app.facades.trust_registry import (
-    actor_by_did,
-    register_actor,
-    register_schema,
-    registry_has_schema,
-)
-from app.generic.definitions import CredentialSchema
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
 from app.tests.util.client import (
@@ -22,9 +13,6 @@ from app.tests.util.client import (
 )
 from app.tests.util.ledger import create_public_did
 from app.generic.connections.connections import CreateInvitation
-from app.tests.util.trust_registry import register_issuer
-from shared_models.shared_models import CredentialExchange
-from app.facades.trust_registry import Actor
 
 from .tenants import create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
@@ -51,13 +39,18 @@ async def bob_member_client():
 
 
 @pytest.fixture(scope="module")
-async def alice_member_client():
+async def alice_tenant():
     async with member_admin_client() as client:
         tenant = await create_tenant(client, "alice")
 
-        yield member_client(token=tenant["access_token"])
+        yield tenant
 
         await delete_tenant(client, tenant["tenant_id"])
+
+
+@pytest.fixture(scope="module")
+async def alice_member_client(alice_tenant: Any):
+    yield member_client(token=alice_tenant["access_token"])
 
 
 @pytest.fixture(scope="module")
@@ -179,116 +172,6 @@ async def bob_multi_use_invitation(
     )
 
     return bob_multi_invite
-
-
-@pytest.fixture(scope="module")
-async def register_bob_multi(
-    bob_multi_use_invitation: MultiInvite, schema_definition: CredentialSchema
-) -> MultiInvite:
-
-    if not await registry_has_schema(schema_id=schema_definition.id):
-        await register_schema(schema_definition.id)
-
-    if not await actor_by_did(did=bob_multi_use_invitation["did_from_rec_key"]):
-        rand = random()
-        await register_actor(
-            Actor(
-                id=f"test-actor-{rand}",
-                name=f"Test Actor-{rand}",
-                roles=["verifier"],
-                did=bob_multi_use_invitation["did_from_rec_key"],
-                didcomm_invitation=str(
-                    bob_multi_use_invitation["multi_use_invitation"]["invitation"]
-                ),
-            )
-        )
-    return bob_multi_use_invitation
-
-
-@pytest.fixture(scope="module")
-async def issue_credential_to_bob(
-    bob_member_client: AsyncClient,
-    register_bob_multi: MultiInvite,
-    yoma_client: AsyncClient,
-    schema_definition: CredentialSchema,
-) -> CredentialExchange:
-
-    await register_issuer(yoma_client, schema_definition.id)
-
-    # Create a conenction from yoma to bob
-    invitation_response = (
-        await yoma_client.post(
-            "/generic/connections/accept-invitation",
-            json={
-                "invitation": register_bob_multi["multi_use_invitation"]["invitation"]
-            },
-        )
-    ).json()
-
-    bob_connection_records = (
-        await bob_member_client.get("/generic/connections")
-    ).json()
-
-    bob_connection_id = bob_connection_records[0]["connection_id"]
-
-    # send a credential to bob
-
-    response = await bob_member_client.get(
-        "/generic/issuer/credentials",
-        params={"connection_id": bob_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in bob's records
-    assert len(records) == 0
-
-    credential = {
-        "protocol_version": "v1",
-        "connection_id": invitation_response["connection_id"],
-        "schema_id": schema_definition.id,
-        "attributes": {"speed": "10"},
-    }
-
-    # create and send credential offer- issuer
-    response = await yoma_client.post(
-        "/generic/issuer/credentials",
-        json=credential,
-    )
-    response.raise_for_status()
-    response = response.json()
-
-    # give aca-py some time to process
-    time.sleep(3)
-
-    # get cred offer record - holder
-    response = await bob_member_client.get("/generic/issuer/credentials")
-    records = response.json()
-    cred_id = records[0]["credential_id"]
-
-    # send credential request - holder
-    response = await bob_member_client.post(
-        f"/generic/issuer/credentials/{cred_id}/request", json={}
-    )
-
-    # send credential - issuer
-    response = await yoma_client.post(
-        "/generic/issuer/credentials",
-        json=credential,
-    )
-    response.raise_for_status()
-
-    # give aca-py some time to process
-    time.sleep(3)
-
-    response = await bob_member_client.post(
-        f"/generic/issuer/credentials/{cred_id}/store", json={}
-    )
-    assert check_webhook_state(
-        client=bob_member_client,
-        filter_map={"state": "done"},
-        topic="credentials",
-    )
-    return response.json()
 
 
 @pytest.fixture(scope="module")

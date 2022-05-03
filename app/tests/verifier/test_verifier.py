@@ -199,6 +199,10 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV1).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v1
     ).thenReturn(get(None))
+    presentation_exchange_record_1.state = "request-received"
+    when(VerifierV1).get_proof_record(
+        controller=mock_agent_controller, proof_id=proof_request_v1.proof_id
+    ).thenReturn(get(presentation_exchange_record_1))
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
@@ -209,6 +213,9 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     verify(VerifierV1).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v1
     )
+    verify(VerifierV1).get_proof_record(
+        controller=mock_agent_controller, proof_id=proof_request_v1.proof_id
+    )
 
     proof_request_v2 = test_module.RejectProofRequest(proof_id="v2-1234")
 
@@ -216,6 +223,10 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     when(VerifierV2).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v2
     ).thenReturn(get(None))
+    presentation_exchange_record_2.state = "request-received"
+    when(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=proof_request_v2.proof_id
+    ).thenReturn(get(presentation_exchange_record_2))
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
@@ -225,6 +236,9 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     assert result is None
     verify(VerifierV2).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v2
+    )
+    verify(VerifierV2).get_proof_record(
+        controller=mock_agent_controller, proof_id=proof_request_v2.proof_id
     )
 
 

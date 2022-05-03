@@ -13,18 +13,21 @@ from app.tests.util.member_personas import (
     alice_member_client,
     bob_and_alice_connection,
     bob_multi_use_invitation,
-    register_bob_multi,
-    issue_credential_to_bob,
     alice_bob_connect_multi,
     bob_and_alice_public_did,
     bob_member_client,
     alice_acapy_client,
     bob_acapy_client,
+    alice_tenant,
 )
 from app.tests.util.ecosystem_personas import (
     faber_client,
     faber_and_alice_connection,
     faber_acapy_client,
+    acme_client,
+    acme_acapy_client,
+    acme_and_alice_connection,
+    acme_tenant,
 )
 from app.webhook_listener import Webhooks
 

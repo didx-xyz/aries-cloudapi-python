@@ -120,7 +120,6 @@ indy_proof_request = IndyProofRequest(
     requested_attributes={
         "0_speed_uuid": IndyProofReqAttrSpec(
             name="speed",
-            non_revoked=IndyProofReqAttrSpecNonRevoked(from_=0, to=20),
             restrictions=None,
         )
     },

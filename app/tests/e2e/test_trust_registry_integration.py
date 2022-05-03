@@ -205,7 +205,7 @@ async def test_accept_proof_request_verifier_no_public_did(yoma_client: AsyncCli
     )
 
     response = await holder_client.post(
-        f"/generic/verifier/accept-request",
+        "/generic/verifier/accept-request",
         json={
             "proof_id": holder_proof_exchange_id,
             "presentation_spec": {

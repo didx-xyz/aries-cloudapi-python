@@ -50,13 +50,13 @@ Authentication is handled by the CloudAPI and, fom a client perspective, kept si
 
 `{role}.{key/token}`
 
-So, your header has the format `'x-api-key: {role}.{key/token}` which yields, for example, `'x-api-key: yoma.adminApiKey'`
+So, your header has the format `'x-api-key: {role}.{key/token}` which yields, for example, `'x-api-key: governance.adminApiKey'`
 
 The first part `role` specifies the role on the surface and targets the correct endpoints under the hood and authentication mechanisms under the hood. The CloudAPI knows how to interpret the roles and will produce the correct target URLs for eg aca-py (`member` targets the multitenant agent) with the correct header expected by aca-py agent. For instance, `member` results in a `Bearer {TOKEN}` header against the multitenant agent whereas `member-admin` as role results in an `x-api-key` header for the multitenant agent (hence targeting the admin interface of the same multitenant agent). You may have noticed now that this mechanism also chooses which aca-py instance to target without having to know or specify the URL the agent resides under.
 
 Currently there are five options for `role`:
 
-- yoma
+- governance
   - is:
     - endorser
   - can:
@@ -93,7 +93,7 @@ Currently there are five options for `role`:
   - can:
     - only create new tenants/wallets for members
 
-the `yoma` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the aca-py admin tasks nor any documented endpoints prefixed `admin:` in the CloudAPI.
+the `governance` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the aca-py admin tasks nor any documented endpoints prefixed `admin:` in the CloudAPI.
 
 For admin roles pass the admin password as the second part of `{role}.{key/token}`. For member/ecosystem (non-admin roles) pass the wallets JWT as the second part of `{role}.{key/token}`.
 
@@ -114,11 +114,11 @@ In order to issue a credential one must first:
 - create a schema and
 - register the schema with the trust registry.
 
-via the YOMA agent.
+via the governance agent.
 
 Then:
 
-- Register an issuer (on the trust registry) via the yoma agent
+- Register an issuer (on the trust registry) via the governance agent
 
 The registered issuer can now issue a credential a related schema on the trust registry.
 
@@ -131,8 +131,8 @@ Now:
 
 Hooray 🥳 🎉. What has happened? We have:
 
-- Created a schema (using the yoma admin)
-- Registered a schema on the ledger (via the yoma admin)
+- Created a schema (using the governance admin)
+- Registered a schema on the ledger (via the governance admin)
 - Create (a wallet for) an issuer and future holder using the admin agent
 - registered an issuer (for a schema)
 - Created a connection between an issuer and a prospective holder (using connections/invitations API)
@@ -165,4 +165,4 @@ It can be handy to follow the logs of a specific container. A convenient way to 
 docker logs --follow $(docker ps -f name="YOUR_CONTAINER_NAME" | awk 'FNR == 2 {print $1}')
 ```
 
-and replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (eg yoma-webhooks-web). You can find the container name in the docker-compose.yaml.
+and replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (eg governance-webhooks-web). You can find the container name in the docker-compose.yaml.

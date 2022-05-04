@@ -10,7 +10,7 @@ import app.dependencies as dependencies
 from app.dependencies import Role, AcaPyAuth
 from app.main import app
 
-from app.tests.util.constants import YOMA_ACAPY_API_KEY
+from app.tests.util.constants import GOVERNANCE_ACAPY_API_KEY
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"
@@ -18,13 +18,13 @@ BEARER_TOKEN = "12345"
 
 
 @pytest.mark.asyncio
-async def test_yoma_agent():
+async def test_governance_agent():
     async with asynccontextmanager(dependencies.agent_selector)(
-        auth=AcaPyAuth(role=Role.YOMA, token=YOMA_ACAPY_API_KEY)
+        auth=AcaPyAuth(role=Role.GOVERNANCE, token=GOVERNANCE_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)
-        assert c.base_url == Role.YOMA.agent_type.base_url
-        assert c.client.headers["x-api-key"] == YOMA_ACAPY_API_KEY
+        assert c.base_url == Role.GOVERNANCE.agent_type.base_url
+        assert c.client.headers["x-api-key"] == GOVERNANCE_ACAPY_API_KEY
         assert "Authorization" not in c.client.headers
 
 
@@ -36,7 +36,7 @@ async def test_ecosystem_agent():
         assert isinstance(c, AcaPyClient)
         assert c.base_url == Role.ECOSYSTEM.agent_type.base_url
         assert c.client.headers["Authorization"] == f"Bearer {BEARER_TOKEN}"
-        assert c.client.headers["x-api-key"] == YOMA_ACAPY_API_KEY
+        assert c.client.headers["x-api-key"] == GOVERNANCE_ACAPY_API_KEY
 
 
 @pytest.mark.asyncio
@@ -47,16 +47,16 @@ async def test_member_agent():
         assert isinstance(c, AcaPyClient)
         assert c.base_url == Role.MEMBER.agent_type.base_url
         assert c.client.headers["Authorization"] == f"Bearer {BEARER_TOKEN}"
-        assert c.client.headers["x-api-key"] == YOMA_ACAPY_API_KEY
+        assert c.client.headers["x-api-key"] == GOVERNANCE_ACAPY_API_KEY
 
 
 @pytest.mark.asyncio
 async def test_member_admin_agent():
     async with asynccontextmanager(dependencies.agent_role(Role.MEMBER_ADMIN))(
-        AcaPyAuth(role=Role.MEMBER_ADMIN, token=YOMA_ACAPY_API_KEY)
+        AcaPyAuth(role=Role.MEMBER_ADMIN, token=GOVERNANCE_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)
-        assert c.client.headers["x-api-key"] == YOMA_ACAPY_API_KEY
+        assert c.client.headers["x-api-key"] == GOVERNANCE_ACAPY_API_KEY
         assert "Authorization" not in c.client.headers
 
 
@@ -88,10 +88,10 @@ async def test_agent_selector():
     assert c.base_url == Role.MEMBER.agent_type.base_url
 
     c = await async_next(
-        dependencies.agent_selector(AcaPyAuth(token="apiKey", role=Role.YOMA))
+        dependencies.agent_selector(AcaPyAuth(token="apiKey", role=Role.GOVERNANCE))
     )
     assert isinstance(c, AcaPyClient)
-    assert c.base_url == Role.YOMA.agent_type.base_url
+    assert c.base_url == Role.GOVERNANCE.agent_type.base_url
 
 
 @pytest.mark.asyncio
@@ -117,10 +117,12 @@ async def test_admin_agent_selector():
     assert "Authorization" not in c.client.headers
 
     c = await async_next(
-        dependencies.admin_agent_selector(AcaPyAuth(token="apiKey", role=Role.YOMA))
+        dependencies.admin_agent_selector(
+            AcaPyAuth(token="apiKey", role=Role.GOVERNANCE)
+        )
     )
     assert isinstance(c, AcaPyClient)
-    assert c.base_url == Role.YOMA.agent_type.base_url
+    assert c.base_url == Role.GOVERNANCE.agent_type.base_url
     assert c.client.headers["x-api-key"] == "apiKey"
     assert "Authorization" not in c.client.headers
 
@@ -177,11 +179,11 @@ async def test_web_ecosystem_or_member():
     # # when
     await make_call(
         headers={
-            "x-api-key": "yoma.ADDASDFDFF",
+            "x-api-key": "governance.ADDASDFDFF",
         }
     )
     # then
-    assert injected_controller.base_url == Role.YOMA.agent_type.base_url
+    assert injected_controller.base_url == Role.GOVERNANCE.agent_type.base_url
     assert injected_controller.client.headers["x-api-key"] == "ADDASDFDFF"
     assert isinstance(injected_controller, AcaPyClient)
 
@@ -232,10 +234,10 @@ async def test_web_ecosystem_or_member():
     # when
     await make_call(
         route_suffix="/admin",
-        headers={"x-api-key": "yoma.ADDASDFDFF"},
+        headers={"x-api-key": "governance.ADDASDFDFF"},
     )
     # then
-    assert injected_controller.base_url == Role.YOMA.agent_type.base_url
+    assert injected_controller.base_url == Role.GOVERNANCE.agent_type.base_url
     assert injected_controller.client.headers["x-api-key"] == "ADDASDFDFF"
     assert isinstance(injected_controller, AcaPyClient)
 
@@ -268,7 +270,7 @@ async def test_web_ecosystem_or_member():
 @pytest.mark.asyncio
 async def test_ecosystem_admin_agent():
     async with asynccontextmanager(dependencies.agent_role(role=Role.ECOSYSTEM_ADMIN))(
-        auth=AcaPyAuth(role=Role.ECOSYSTEM_ADMIN, token=YOMA_ACAPY_API_KEY)
+        auth=AcaPyAuth(role=Role.ECOSYSTEM_ADMIN, token=GOVERNANCE_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)
         assert c.client.headers["x-api-key"] == "adminApiKey"

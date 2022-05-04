@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  yoma-ga-web:
+  governance-ga-web:
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
@@ -10,58 +10,58 @@ services:
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
-      - ./environments/yoma-ga/fastapi.default.env:/app/.env
+      - ./environments/governance-ga/fastapi.default.env:/app/.env
     depends_on:
-      - yoma-ga-wallets-db
+      - governance-ga-wallets-db
       - ledger-nodes
       - ledger-browser
     networks:
-      - yoma-ga
+      - governance-ga
       - host
     env_file:
-      - environments/yoma-ga/fastapi.default.env
-  yoma-ga-wallets-db:
+      - environments/governance-ga/fastapi.default.env
+  governance-ga-wallets-db:
     image: postgres:11
-    container_name: yoma-ga-wallets-db
+    container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
-      - environments/yoma-ga/db.default.env
+      - environments/governance-ga/db.default.env
     volumes:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - yoma-ga
+      - governance-ga
       - host
     tty: true
-  # ngrok-yoma-ga:
+  # ngrok-governance-ga:
   #   image: wernight/ngrok
   #   env_file:
-  #     - environments/yoma-ga/aca-py-agent.default.env
-  #   command: ngrok http yoma-ga-agent:3020 --log stdout
+  #     - environments/governance-ga/aca-py-agent.default.env
+  #   command: ngrok http governance-ga-agent:3020 --log stdout
   #   networks:
-  #     - yoma-ga
+  #     - governance-ga
   #     - host
   #   depends_on:
   #     - ledger-nodes
   #     - ledger-browser
-  yoma-ga-agent:
+  governance-ga-agent:
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.agent
     env_file:
-      - environments/yoma-ga/aca-py-agent.default.env
+      - environments/governance-ga/aca-py-agent.default.env
     ports:
       - 3020:3020
       - 3021:3021
     depends_on:
-      - yoma-ga-wallets-db
+      - governance-ga-wallets-db
       - ledger-nodes
       - ledger-browser
     networks:
-      - yoma-ga
+      - governance-ga
       - host
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  yoma-trust-registry:
+  governance-trust-registry:
     build:
       context: .
       dockerfile: ./dockerfiles/trustregistry/Dockerfile
@@ -72,10 +72,10 @@ services:
     volumes:
       - ./trustregistry:/trustregistry
     networks:
-      - yoma-ga
-      - yoma-multitenant
+      - governance-ga
+      - governance-multitenant
       - host
-  yoma-multitenant-web:
+  governance-multitenant-web:
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
@@ -84,17 +84,17 @@ services:
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
-      - ./environments/yoma-multitenant/fastapi.default.env:/app/.env
+      - ./environments/governance-multitenant/fastapi.default.env:/app/.env
     depends_on:
-      - yoma-multitenant-wallets-db
+      - governance-multitenant-wallets-db
       - ledger-nodes
       - ledger-browser
     networks:
-      - yoma-multitenant
+      - governance-multitenant
       - host
     env_file:
-      - environments/yoma-multitenant/fastapi.default.env
-  yoma-webhooks-web:
+      - environments/governance-multitenant/fastapi.default.env
+  governance-webhooks-web:
     build:
       context: .
       dockerfile: ./dockerfiles/webhooks/Dockerfile
@@ -104,8 +104,8 @@ services:
       - ./shared_models/shared_models.py:/webhooks/shared_models.py
       - ./webhooks:/webhooks
     networks:
-      - yoma-multitenant
-      - yoma-ga
+      - governance-multitenant
+      - governance-ga
       - host
     env_file:
       - environments/webhooks/fastapi.webhooks.env
@@ -122,45 +122,45 @@ services:
       - host
     env_file:
       - environments/webhooks/redis.env
-  yoma-multitenant-wallets-db:
+  governance-multitenant-wallets-db:
     image: postgres:11
-    container_name: yoma-multitenant-wallets-db
+    container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
-      - environments/yoma-multitenant/db.default.env
+      - environments/governance-multitenant/db.default.env
     volumes:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - yoma-multitenant
+      - governance-multitenant
       - host
     tty: true
-  ngrok-yoma-multitenant:
+  ngrok-governance-multitenant:
     image: wernight/ngrok
     env_file:
-      - environments/yoma-multitenant/aca-py-agent.default.env
-    command: ngrok http yoma-multitenant-agent:3020 --log stdout
+      - environments/governance-multitenant/aca-py-agent.default.env
+    command: ngrok http governance-multitenant-agent:3020 --log stdout
     networks:
-      - yoma-multitenant
+      - governance-multitenant
       - host
     depends_on:
       - ledger-nodes
       - ledger-browser
-  yoma-multitenant-agent:
+  governance-multitenant-agent:
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.agent
     env_file:
-      - environments/yoma-multitenant/aca-py-agent.default.env
+      - environments/governance-multitenant/aca-py-agent.default.env
     ports:
       - 4020:3020
       - 4021:3021
     depends_on:
-      - yoma-multitenant-wallets-db
+      - governance-multitenant-wallets-db
       - ledger-nodes
       - ledger-browser
     networks:
-      - yoma-multitenant
-      - yoma-ga
+      - governance-multitenant
+      - governance-ga
       - host
   ledger-browser:
     build:
@@ -179,8 +179,8 @@ services:
       - webserver-cli:/home/indy/.indy-cli
       - webserver-ledger:/home/indy/ledger
     networks:
-      - yoma-multitenant
-      - yoma-ga
+      - governance-multitenant
+      - governance-ga
       - host
     depends_on:
       - ledger-nodes
@@ -203,16 +203,16 @@ services:
     volumes:
       - nodes-data:/home/indy/ledger
     networks:
-      - yoma-multitenant
-      - yoma-ga
+      - governance-multitenant
+      - governance-ga
       - host
   tails-server:
     image: ghcr.io/bcgov/tails-server:1.0.0
     ports:
       - 6543:6543
     networks:
-      - yoma-multitenant
-      - yoma-ga
+      - governance-multitenant
+      - governance-ga
       - host
     environment:
       - DOCKERHOST=${DOCKERHOST}
@@ -230,6 +230,6 @@ volumes:
   data:
 
 networks:
-  yoma-multitenant:
-  yoma-ga:
+  governance-multitenant:
+  governance-ga:
   host:

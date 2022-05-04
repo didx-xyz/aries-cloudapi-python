@@ -1,7 +1,7 @@
 import os
 
-YOMA_AGENT_URL = os.getenv("ACAPY_YOMA_AGENT_URL", "http://localhost:3021")
-YOMA_AGENT_API_KEY = os.getenv("ACAPY_YOMA_AGENT_API_KEY", "adminApiKey")
+GOVERNANCE_AGENT_URL = os.getenv("ACAPY_GOVERNANCE_AGENT_URL", "http://localhost:3021")
+GOVERNANCE_AGENT_API_KEY = os.getenv("ACAPY_GOVERNANCE_AGENT_API_KEY", "adminApiKey")
 
 ECOSYSTEM_AGENT_URL = os.getenv("ACAPY_ECOSYSTEM_AGENT_URL", "http://localhost:4021")
 ECOSYSTEM_AGENT_API_KEY = os.getenv("ACAPY_ECOSYSTEM_AGENT_API_KEY", "adminApiKey")

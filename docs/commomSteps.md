@@ -16,7 +16,7 @@ The admin "wallet" is already configured because it is not a subwallet on a mult
    ```json
    {
      "image_url": "https://yoma.africa/images/sample.png",
-     "name": "Yoma",
+     "name": "governance",
      "roles": ["issuer"]
    }
    ```
@@ -27,15 +27,15 @@ If you wish to later on update entities roles you will have to do that also via 
 
 ### Creating schemas
 
-In order to create schemas and effectively writing them to the ledger as well as registering it on the trustregistry use the yoma role by
+In order to create schemas and effectively writing them to the ledger as well as registering it on the trustregistry use the governance role by
 
 1. providing the following authentication header:
 
    ```bash
-     {"x-api-key": "yoma.ADMIN_API_KEY"}
+     {"x-api-key": "governance.ADMIN_API_KEY"}
    ```
 
-   and replace the `ADMIN_API_KEY` with the actual api key. As mentioned above keep the dot and the `yoma` is a keyword known to the CloudAPI as a role. It will resolve the correct endpoint and available actions based on the role and provided token. And:
+   and replace the `ADMIN_API_KEY` with the actual api key. As mentioned above keep the dot and the `governance` is a keyword known to the CloudAPI as a role. It will resolve the correct endpoint and available actions based on the role and provided token. And:
 
 2. Providing the information about the schema e.g. :
    ```json
@@ -45,7 +45,7 @@ In order to create schemas and effectively writing them to the ledger as well as
      "attributes": ["skill", "age"]
    }
    ```
-   Note that you will have to have a public DID to do so (if your agent lacks one you can use the yoma role and create one providing the same auth header as described in this step; see SWAGGER). Run the request with the header from 1. and the payload from 2. against the CloudAPI url and endpoint `/admin/governance/schemas/` (POST method). On success the created schema will be returned.
+   Note that you will have to have a public DID to do so (if your agent lacks one you can use the governance role and create one providing the same auth header as described in this step; see SWAGGER). Run the request with the header from 1. and the payload from 2. against the CloudAPI url and endpoint `/admin/governance/schemas/` (POST method). On success the created schema will be returned.
 
 ### Issuing a credential
 

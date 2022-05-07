@@ -6,8 +6,8 @@ from app.constants import (
     ECOSYSTEM_AGENT_URL,
     MEMBER_AGENT_API_KEY,
     MEMBER_AGENT_URL,
-    YOMA_AGENT_API_KEY,
-    YOMA_AGENT_URL,
+    GOVERNANCE_AGENT_API_KEY,
+    GOVERNANCE_AGENT_URL,
 )
 
 
@@ -20,13 +20,13 @@ class AgentType(NamedTuple):
     x_api_key: Optional[str]
 
 
-YOMA_AGENT_TYPE = AgentType(
-    name="yoma",
-    base_url=YOMA_AGENT_URL,
+GOVERNANCE_AGENT_TYPE = AgentType(
+    name="governance",
+    base_url=GOVERNANCE_AGENT_URL,
     is_multitenant=False,
     tenant_role=None,
     is_admin=True,
-    x_api_key=YOMA_AGENT_API_KEY,
+    x_api_key=GOVERNANCE_AGENT_API_KEY,
 )
 
 ECOSYSTEM_AGENT_TYPE = AgentType(
@@ -67,7 +67,7 @@ MEMBER_ADMIN_AGENT_TYPE = AgentType(
 
 
 class Role(Enum):
-    YOMA = YOMA_AGENT_TYPE
+    GOVERNANCE = GOVERNANCE_AGENT_TYPE
     ECOSYSTEM = ECOSYSTEM_AGENT_TYPE
     ECOSYSTEM_ADMIN = ECOSYSTEM_ADMIN_AGENT_TYPE
     MEMBER = MEMBER_AGENT_TYPE

@@ -177,9 +177,11 @@ async def get_credential_definition_by_id(
 @router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
-    # Only Yoma and ecosystem issuers can create credential definitions. Further validation
+    # Only governance and ecosystem issuers can create credential definitions. Further validation
     # done inside the endpoint implementation.
-    aries_controller: AcaPyClient = Depends(agent_role([Role.YOMA, Role.ECOSYSTEM])),
+    aries_controller: AcaPyClient = Depends(
+        agent_role([Role.GOVERNANCE, Role.ECOSYSTEM])
+    ),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
@@ -335,8 +337,8 @@ async def get_schema(
 @router.post("/schemas", response_model=CredentialSchema)
 async def create_schema(
     schema: CreateSchema,
-    # Only yoma can create schemas
-    aries_controller: AcaPyClient = Depends(agent_role(Role.YOMA)),
+    # Only governance can create schemas
+    aries_controller: AcaPyClient = Depends(agent_role(Role.GOVERNANCE)),
 ) -> CredentialSchema:
     """
     Create a new schema.

@@ -34,15 +34,15 @@ BASE_PATH = router.prefix + "/credentials"
 
 
 @pytest.fixture(scope="module")
-async def schema_definition(yoma_acapy_client: AcaPyClient) -> CredentialSchema:
+async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version="0.3", attribute_names=["speed"]
     )
 
-    if not await has_public_did(yoma_acapy_client):
-        await create_public_did(yoma_acapy_client, set_public=True)
+    if not await has_public_did(governance_acapy_client):
+        await create_public_did(governance_acapy_client, set_public=True)
 
-    schema_definition_result = await create_schema(definition, yoma_acapy_client)
+    schema_definition_result = await create_schema(definition, governance_acapy_client)
 
     return schema_definition_result
 

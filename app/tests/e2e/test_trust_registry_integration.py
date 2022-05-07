@@ -18,7 +18,9 @@ from app.webhook_listener import start_listener
 
 
 @pytest.mark.asyncio
-async def test_accept_proof_request_verifier_no_public_did(yoma_client: AsyncClient):
+async def test_accept_proof_request_verifier_no_public_did(
+    governance_client: AsyncClient,
+):
     ecosystem_admin = ecosystem_admin_client()
     member_admin = member_admin_client()
 
@@ -82,9 +84,9 @@ async def test_accept_proof_request_verifier_no_public_did(yoma_client: AsyncCli
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
 
-    # Create schema as Yoma
+    # Create schema as governance
     schema = (
-        await yoma_client.post(
+        await governance_client.post(
             "/generic/definitions/schemas",
             json={
                 "name": "e2e-flow",

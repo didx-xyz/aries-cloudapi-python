@@ -84,7 +84,7 @@ async def test_create_tenant_member(
 async def test_create_tenant_ecosystem_issuer(
     ecosystem_admin_client: AsyncClient,
     ecosystem_admin_acapy_client: AcaPyClient,
-    yoma_acapy_client: AcaPyClient,
+    governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
     response = await ecosystem_admin_client.post(
@@ -107,7 +107,7 @@ async def test_create_tenant_ecosystem_issuer(
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
     actor = await trust_registry.actor_by_id(tenant_id)
 
-    endorser_did = await acapy_wallet.get_public_did(yoma_acapy_client)
+    endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
     async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
@@ -207,7 +207,7 @@ async def test_create_tenant_ecosystem_verifier(
 async def test_update_tenant_ecosystem_verifier_to_issuer(
     ecosystem_admin_client: AsyncClient,
     ecosystem_admin_acapy_client: AcaPyClient,
-    yoma_acapy_client: AcaPyClient,
+    governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
     response = await ecosystem_admin_client.post(
@@ -270,7 +270,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     new_tenant = response.json()
     new_actor = await trust_registry.actor_by_id(tenant_id)
 
-    endorser_did = await acapy_wallet.get_public_did(yoma_acapy_client)
+    endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
     async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)

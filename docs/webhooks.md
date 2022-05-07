@@ -32,5 +32,5 @@ topics = Literal[
 All (and this can be handy for debugging or development as you just get all webhooks printed to stdout - you can also easily pipe then into a file, btw) webhooks are by default logged to the containers stdout. On a Unix machine you should be able to use this command to follow the webhook logs:
 
 ```bash
-docker logs --follow $(docker ps -f name="yoma-webhooks-web" | awk 'FNR == 2 {print $1}')
+docker logs --follow $(docker ps -f name="governance-webhooks-web" | awk 'FNR == 2 {print $1}')
 ```

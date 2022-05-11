@@ -7,9 +7,9 @@ from httpx import AsyncClient
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
 from app.tests.util.client import (
-    member_acapy_client,
-    member_admin_client,
-    member_client,
+    tenant_acapy_client,
+    tenant_admin_client,
+    tenant_client,
 )
 from app.tests.util.ledger import create_public_did
 from app.generic.connections.connections import CreateInvitation
@@ -30,17 +30,17 @@ class BobAlicePublicDid(TypedDict):
 
 @pytest.fixture(scope="module")
 async def bob_member_client():
-    async with member_admin_client() as client:
+    async with tenant_admin_client() as client:
         tenant = await create_tenant(client, "bob")
 
-        yield member_client(token=tenant["access_token"])
+        yield tenant_client(token=tenant["access_token"])
 
         await delete_tenant(client, tenant["tenant_id"])
 
 
 @pytest.fixture(scope="module")
 async def alice_tenant():
-    async with member_admin_client() as client:
+    async with tenant_admin_client() as client:
         tenant = await create_tenant(client, "alice")
 
         yield tenant
@@ -50,7 +50,7 @@ async def alice_tenant():
 
 @pytest.fixture(scope="module")
 async def alice_member_client(alice_tenant: Any):
-    yield member_client(token=alice_tenant["access_token"])
+    yield tenant_client(token=alice_tenant["access_token"])
 
 
 @pytest.fixture(scope="module")
@@ -59,7 +59,7 @@ async def bob_acapy_client(bob_member_client: AsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = bob_member_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = member_acapy_client(token=token)
+    client = tenant_acapy_client(token=token)
     yield client
 
     await client.close()
@@ -69,7 +69,7 @@ async def bob_acapy_client(bob_member_client: AsyncClient):
 async def alice_acapy_client(alice_member_client: AsyncClient):
     [_, token] = alice_member_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = member_acapy_client(token=token)
+    client = tenant_acapy_client(token=token)
     yield client
 
     await client.close()

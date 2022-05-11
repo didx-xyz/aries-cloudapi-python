@@ -1,12 +1,10 @@
 import pytest
 import mockito
 from app.tests.util.client_fixtures import (
-    member_admin_acapy_client,
-    member_admin_client,
+    tenant_admin_client,
+    tenant_admin_acapy_client,
     governance_acapy_client,
     governance_client,
-    ecosystem_admin_acapy_client,
-    ecosystem_admin_client,
 )
 from app.tests.util.client import get_mock_agent_controller
 from app.tests.util.member_personas import (

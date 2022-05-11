@@ -2,12 +2,10 @@ from enum import Enum
 from typing import NamedTuple, Optional
 
 from app.constants import (
-    ECOSYSTEM_AGENT_API_KEY,
-    ECOSYSTEM_AGENT_URL,
-    MEMBER_AGENT_API_KEY,
-    MEMBER_AGENT_URL,
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
+    TENANT_AGENT_API_KEY,
+    TENANT_AGENT_URL,
 )
 
 
@@ -29,49 +27,29 @@ GOVERNANCE_AGENT_TYPE = AgentType(
     x_api_key=GOVERNANCE_AGENT_API_KEY,
 )
 
-ECOSYSTEM_AGENT_TYPE = AgentType(
-    name="ecosystem",
-    base_url=ECOSYSTEM_AGENT_URL,
+TENANT_AGENT_TYPE = AgentType(
+    name="tenant",
+    base_url=TENANT_AGENT_URL,
     is_multitenant=True,
     tenant_role=None,
     is_admin=False,
-    x_api_key=ECOSYSTEM_AGENT_API_KEY,
+    x_api_key=TENANT_AGENT_API_KEY,
 )
 
-ECOSYSTEM_ADMIN_AGENT_TYPE = AgentType(
-    name="ecosystem-admin",
-    base_url=ECOSYSTEM_AGENT_URL,
+TENANT_ADMIN_AGENT_TYPE = AgentType(
+    name="tenant-admin",
+    base_url=TENANT_AGENT_URL,
     is_multitenant=True,
-    tenant_role=ECOSYSTEM_AGENT_TYPE,
+    tenant_role=TENANT_AGENT_TYPE,
     is_admin=True,
-    x_api_key=ECOSYSTEM_AGENT_API_KEY,
-)
-
-MEMBER_AGENT_TYPE = AgentType(
-    name="member",
-    base_url=MEMBER_AGENT_URL,
-    is_multitenant=True,
-    tenant_role=None,
-    is_admin=False,
-    x_api_key=MEMBER_AGENT_API_KEY,
-)
-
-MEMBER_ADMIN_AGENT_TYPE = AgentType(
-    name="member-admin",
-    base_url=MEMBER_AGENT_URL,
-    is_multitenant=True,
-    tenant_role=MEMBER_AGENT_TYPE,
-    is_admin=True,
-    x_api_key=MEMBER_AGENT_API_KEY,
+    x_api_key=TENANT_AGENT_API_KEY,
 )
 
 
 class Role(Enum):
     GOVERNANCE = GOVERNANCE_AGENT_TYPE
-    ECOSYSTEM = ECOSYSTEM_AGENT_TYPE
-    ECOSYSTEM_ADMIN = ECOSYSTEM_ADMIN_AGENT_TYPE
-    MEMBER = MEMBER_AGENT_TYPE
-    MEMBER_ADMIN = MEMBER_ADMIN_AGENT_TYPE
+    TENANT = TENANT_AGENT_TYPE
+    TENANT_ADMIN = TENANT_ADMIN_AGENT_TYPE
 
     @staticmethod
     def from_str(role: str) -> Optional["Role"]:

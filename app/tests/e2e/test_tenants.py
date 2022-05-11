@@ -22,7 +22,7 @@ from app.tests.util.webhooks import (
     check_webhook_state,
 )
 
-from app.tests.util.client import ecosystem_client
+from app.tests.util.client import tenant_client
 
 from app.admin.tenants import tenants
 from app.util.did import ed25519_verkey_to_did_key
@@ -31,9 +31,9 @@ BASE_PATH = tenants.router.prefix
 
 
 @pytest.mark.asyncio
-async def test_get_tenant_auth_token(ecosystem_admin_client: AsyncClient):
+async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -43,24 +43,25 @@ async def test_get_tenant_auth_token(ecosystem_admin_client: AsyncClient):
     )
 
     assert response.status_code == 200
+
     tenant = response.json()
     tenant_id = tenant["tenant_id"]
 
-    response = await ecosystem_admin_client.get(f"{BASE_PATH}/{tenant_id}/access-token")
+    response = await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}/access-token")
     assert response.status_code == 200
 
     token = response.json()
 
     assert token["access_token"]
-    assert token["access_token"].startswith("ecosystem.ey")
+    assert token["access_token"].startswith("tenant.ey")
 
 
 @pytest.mark.asyncio
 async def test_create_tenant_member(
-    member_admin_client: AsyncClient, member_admin_acapy_client: AcaPyClient
+    tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
-    response = await member_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={"image_url": "https://image.ca", "name": name},
     )
@@ -69,7 +70,7 @@ async def test_create_tenant_member(
 
     tenant = response.json()
 
-    wallet = await member_admin_acapy_client.multitenancy.get_wallet(
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=tenant["tenant_id"]
     )
 
@@ -77,17 +78,17 @@ async def test_create_tenant_member(
     assert tenant["tenant_name"] == name
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
-    assert wallet.settings["wallet.name"].startswith("member.")
+    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
 
 
 @pytest.mark.asyncio
-async def test_create_tenant_ecosystem_issuer(
-    ecosystem_admin_client: AsyncClient,
-    ecosystem_admin_acapy_client: AcaPyClient,
+async def test_create_tenant_issuer(
+    tenant_admin_client: AsyncClient,
+    tenant_admin_acapy_client: AcaPyClient,
     governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -100,7 +101,7 @@ async def test_create_tenant_ecosystem_issuer(
     tenant = response.json()
     tenant_id = tenant["tenant_id"]
 
-    wallet = await ecosystem_admin_acapy_client.multitenancy.get_wallet(
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=tenant_id
     )
 
@@ -109,7 +110,7 @@ async def test_create_tenant_ecosystem_issuer(
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         connections = await tenant_controller.connection.get_connections()
@@ -125,7 +126,7 @@ async def test_create_tenant_ecosystem_issuer(
 
     connection = connections[0]
 
-    async with ecosystem_client(token=tenant["access_token"]) as client:
+    async with tenant_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
         assert check_webhook_state(
             client,
@@ -149,15 +150,15 @@ async def test_create_tenant_ecosystem_issuer(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
 
 
 @pytest.mark.asyncio
-async def test_create_tenant_ecosystem_verifier(
-    ecosystem_admin_client: AsyncClient, ecosystem_admin_acapy_client: AcaPyClient
+async def test_create_tenant_verifier(
+    tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -170,7 +171,7 @@ async def test_create_tenant_ecosystem_verifier(
     tenant = response.json()
     tenant_id = tenant["tenant_id"]
 
-    wallet = await ecosystem_admin_acapy_client.multitenancy.get_wallet(
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=tenant_id
     )
 
@@ -181,7 +182,7 @@ async def test_create_tenant_ecosystem_verifier(
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -200,17 +201,17 @@ async def test_create_tenant_ecosystem_verifier(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
 
 
 @pytest.mark.asyncio
-async def test_update_tenant_ecosystem_verifier_to_issuer(
-    ecosystem_admin_client: AsyncClient,
-    ecosystem_admin_acapy_client: AcaPyClient,
+async def test_update_tenant_verifier_to_issuer(
+    tenant_admin_client: AsyncClient,
+    tenant_admin_acapy_client: AcaPyClient,
     governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -224,13 +225,13 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     tenant_id = tenant["tenant_id"]
     actor = await trust_registry.actor_by_id(tenant_id)
 
-    wallet = await ecosystem_admin_acapy_client.multitenancy.get_wallet(
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=tenant_id
     )
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -251,13 +252,13 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
 
     new_name = uuid4().hex
     new_image_url = "https://some-ssi-site.org/image.png"
     new_roles = ["issuer", "verifier"]
 
-    response = await ecosystem_admin_client.put(
+    response = await tenant_admin_client.put(
         f"{BASE_PATH}/{tenant_id}",
         json={
             "image_url": new_image_url,
@@ -272,7 +273,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.ECOSYSTEM, acapy_token) as tenant_controller:
+    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         _connections = (await tenant_controller.connection.get_connections()).results
@@ -285,7 +286,7 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
 
     endorser_connection = connections[0]
 
-    async with ecosystem_client(token=tenant["access_token"]) as client:
+    async with tenant_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
         assert check_webhook_state(
             client,
@@ -311,15 +312,13 @@ async def test_update_tenant_ecosystem_verifier_to_issuer(
     assert_that(new_tenant).has_image_url(new_image_url)
     assert_that(new_tenant).has_tenant_name(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
-    assert wallet.settings["wallet.name"].startswith("ecosystem.")
+    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
 
 
 @pytest.mark.asyncio
-async def test_get_tenant(
-    ecosystem_admin_client: AsyncClient, ecosystem_admin_acapy_client: AcaPyClient
-):
+async def test_get_tenant(tenant_admin_client: AsyncClient):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -332,7 +331,7 @@ async def test_get_tenant(
     created_tenant = response.json()
     tenant_id = created_tenant["tenant_id"]
 
-    response = await ecosystem_admin_client.get(f"{BASE_PATH}/{tenant_id}")
+    response = await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}")
 
     assert response.status_code == 200
     retrieved_tenant = response.json()
@@ -341,11 +340,9 @@ async def test_get_tenant(
 
 
 @pytest.mark.asyncio
-async def test_get_tenants(
-    ecosystem_admin_client: AsyncClient, member_admin_client: AsyncClient
-):
+async def test_get_tenants(tenant_admin_client: AsyncClient):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -358,7 +355,7 @@ async def test_get_tenants(
     created_tenant = response.json()
     tenant_id = created_tenant["tenant_id"]
 
-    response = await ecosystem_admin_client.get(BASE_PATH)
+    response = await tenant_admin_client.get(BASE_PATH)
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) >= 1
@@ -366,20 +363,13 @@ async def test_get_tenants(
     # Make sure created tenant is returned
     assert_that(tenants).extracting("tenant_id").contains(tenant_id)
 
-    # Make sure tenant is not returned when retrieving member tenants
-    response = await member_admin_client.get(BASE_PATH)
-    assert response.status_code == 200
-    member_tenants = response.json()
-
-    assert_that(member_tenants).extracting("tenant_id").does_not_contain(tenant_id)
-
 
 @pytest.mark.asyncio
 async def test_delete_tenant(
-    ecosystem_admin_client: AsyncClient, ecosystem_admin_acapy_client: AcaPyClient
+    tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
-    response = await ecosystem_admin_client.post(
+    response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
@@ -396,7 +386,7 @@ async def test_delete_tenant(
     actor = await trust_registry.actor_by_id(tenant_id)
     assert actor
 
-    response = await ecosystem_admin_client.delete(f"{BASE_PATH}/{tenant_id}")
+    response = await tenant_admin_client.delete(f"{BASE_PATH}/{tenant_id}")
     assert response.status_code == 200
 
     # Actor doesn't exist anymore
@@ -404,4 +394,4 @@ async def test_delete_tenant(
     assert not actor
 
     with pytest.raises(Exception):
-        await ecosystem_admin_acapy_client.multitenancy.get_wallet(wallet_id=tenant_id)
+        await tenant_admin_acapy_client.multitenancy.get_wallet(wallet_id=tenant_id)

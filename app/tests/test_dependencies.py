@@ -39,16 +39,6 @@ async def test_tenant_agent():
         assert c.client.headers["x-api-key"] == TENANT_ACAPY_API_KEY
 
 
-@pytest.mark.asyncio
-async def test_tenant_admin_agent():
-    async with asynccontextmanager(dependencies.agent_role(Role.TENANT_ADMIN))(
-        AcaPyAuth(role=Role.TENANT_ADMIN, token=TENANT_ACAPY_API_KEY)
-    ) as c:
-        assert isinstance(c, AcaPyClient)
-        assert c.client.headers["x-api-key"] == TENANT_ACAPY_API_KEY
-        assert "Authorization" not in c.client.headers
-
-
 async def async_next(param):
     async for item in param:
         return item
@@ -219,3 +209,4 @@ async def test_tenant_admin_agent():
     ) as c:
         assert isinstance(c, AcaPyClient)
         assert c.client.headers["x-api-key"] == "adminApiKey"
+        assert "Authorization" not in c.client.headers

@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, List
 from pprint import pformat
 
-from fastapi import FastAPI, Request, Depends, APIRouter
+from fastapi import FastAPI, Request, Depends, APIRouter, HTTPException
 from dependency_injector.wiring import inject, Provide
 from containers import Container
 from fastapi_websocket_pubsub import PubSubEndpoint
@@ -54,14 +54,26 @@ async def wallet_root(
     return data
 
 
-@app.api_route("/{wallet_id}/updates")
+@app.api_route("/{wallet_id}/updates/latest")
 @inject
-async def wallet_root(
+async def wallet_latest_update(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
 ):
-    has_new_entries = await service.wallet_has_new_entries(wallet_id)
-    return has_new_entries
+    try:
+        return await service.get_latest_wallet_entry_timestamp(wallet_id)
+    except:
+        raise HTTPException(400, f'Cannot retrieve timestamp for wallet. Is the wallet ID {wallet_id} valid/correct?')
 
+
+@app.api_route("/{wallet_id}/updates/{before}")
+@inject
+async def wallet_has_updates(
+    wallet_id: str, timestamp: str, service: Service = Depends(Provide[Container.service])
+):
+    try:
+        return await service.wallet_has_new_entries(wallet_id, timestamp)
+    except ValueError:
+        raise HTTPException(400, f'Cannot compare from provided timestamp {timestamp}. Please ensure format is 2022-05-25 14:10:39.127485')
 
 # 'origin' helps to distinguish where a hook is from
 # eg the admin, tenant or OP agent respectively
@@ -118,8 +130,7 @@ async def topic_root(
     # Add data to redis
     await service.add_topic_entry(redis_item["wallet_id"], json.dumps(redis_item))
     # Add wallet entry count
-    no_hooks = await service.get_number_entries_for_wallet(redis_item["wallet_id"])
-    await service.add_wallet_entry_count(redis_item["wallet_id"], no_hooks)
+    await service.add_latest_wallet_entry_timestamp(redis_item["wallet_id"])
 
     log.debug(f"{topic}:\n{pformat(webhook_event.dict())}")
 

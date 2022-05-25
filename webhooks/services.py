@@ -3,6 +3,7 @@
 import json
 import logging
 from typing import Any, List
+from datetime import datetime
 
 from aioredis import Redis
 from pydantic import ValidationError
@@ -85,8 +86,15 @@ class Service:
             payload=payload,
         )
 
-    async def add_wallet_entry_count(self, topic: str, entries: str):
-        await self._redis.sadd(f"{topic}-entries", entries)
+    async def get_latest_wallet_entry_timestamp(self, topic: str):
+        last_entry = await self._redis.smembers(f"{topic}-latest")
+        # There is only one entry
+        (timestamp,) = last_entry
+        timestamp = timestamp.decode("utf-8") 
+        return timestamp
+
+    async def add_latest_wallet_entry_timestamp(self, topic: str):
+        await self._redis.sadd(f"{topic}-latest", str(datetime.now()))
 
     async def add_topic_entry(self, topic: str, hook: str):
         await self._redis.sadd(topic, hook)
@@ -102,10 +110,9 @@ class Service:
     async def get_number_entries_for_wallet(self, wallet_id: str):
         return await self._redis.scard(wallet_id)
     
-    async def wallet_has_new_entries(self, wallet_id: str):
-        no_entries_now = await self._redis.scard(wallet_id)
-        no_entries_last_request = await self._redis.scard(f"{wallet_id}-entries")
-        return no_entries_now == no_entries_last_request 
+    async def wallet_has_new_entries(self, wallet_id: str, previos_check_timestamp: str):
+        timestamp_str = await self.get_latest_wallet_entry_timestamp(wallet_id)
+        return datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S.%f') > datetime.strptime(previos_check_timestamp, '%Y-%m-%d %H:%M:%S.%f') 
 
     async def get_all_by_wallet(self, wallet_id: str):
         # Get the data from redis queue

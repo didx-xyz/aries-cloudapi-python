@@ -17,8 +17,10 @@ import sys
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Webhooks")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
-LOG_LEVEL = os.getenv("LOG_LEVEL", "error")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "error").upper()
+logging.basicConfig()
 log = logging.getLogger(__name__)
+log.setLevel(LOG_LEVEL)
 
 
 app = FastAPI(
@@ -50,6 +52,15 @@ async def wallet_root(
 ):
     data = await service.get_all_by_wallet(wallet_id)
     return data
+
+
+@app.api_route("/{wallet_id}/updates")
+@inject
+async def wallet_root(
+    wallet_id: str, service: Service = Depends(Provide[Container.service])
+):
+    has_new_entries = await service.wallet_has_new_entries(wallet_id)
+    return has_new_entries
 
 
 # 'origin' helps to distinguish where a hook is from
@@ -106,8 +117,11 @@ async def topic_root(
     )
     # Add data to redis
     await service.add_topic_entry(redis_item["wallet_id"], json.dumps(redis_item))
+    # Add wallet entry count
+    no_hooks = await service.get_number_entries_for_wallet(redis_item["wallet_id"])
+    await service.add_wallet_entry_count(redis_item["wallet_id"], no_hooks)
 
-    log.debug(f"{topic}:\n{pformat(webhook_event)}")
+    log.debug(f"{topic}:\n{pformat(webhook_event.dict())}")
 
 
 # Example for broadcasting from eg Redis

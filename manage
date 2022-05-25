@@ -105,7 +105,7 @@ configureEnvironment() {
 
   # global
   export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:controller}"
-  export GENESIS_URL="http://localhost:9000/genesis"
+  export GENESIS_URL="http://dev.greenlight.bcovrin.vonx.io/genesis"
   export WALLET_TYPE="indy"
 
 }

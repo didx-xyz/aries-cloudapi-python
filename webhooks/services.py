@@ -85,6 +85,9 @@ class Service:
             payload=payload,
         )
 
+    async def add_wallet_entry_count(self, topic: str, entries: str):
+        await self._redis.sadd(f"{topic}-entries", entries)
+
     async def add_topic_entry(self, topic: str, hook: str):
         await self._redis.sadd(topic, hook)
 
@@ -95,6 +98,14 @@ class Service:
         # Only return payload if recognized event
         if payload:
             return self._to_topic_item(data=data, payload=payload)
+    
+    async def get_number_entries_for_wallet(self, wallet_id: str):
+        return await self._redis.scard(wallet_id)
+    
+    async def wallet_has_new_entries(self, wallet_id: str):
+        no_entries_now = await self._redis.scard(wallet_id)
+        no_entries_last_request = await self._redis.scard(f"{wallet_id}-entries")
+        return no_entries_now == no_entries_last_request 
 
     async def get_all_by_wallet(self, wallet_id: str):
         # Get the data from redis queue

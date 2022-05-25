@@ -136,6 +136,7 @@ class CredentialExchange(BaseModel):
         "credential-issued",
         "credential-received",
         "done",
+        None,
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None

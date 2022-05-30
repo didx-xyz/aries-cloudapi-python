@@ -124,7 +124,7 @@ async def create_tenant(
             label=body.name,
             wallet_key=token_urlsafe(48),
             wallet_name=get_wallet_name_for_role(tenant_role),
-            wallet_type="indy",
+            wallet_type="askar",
         )
     )
 

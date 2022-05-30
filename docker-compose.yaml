@@ -111,6 +111,19 @@ services:
       - environments/webhooks/fastapi.webhooks.env
     environment:
       - REDIS_URL=redis://wh-redis
+  governance-endorser:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/endorser/Dockerfile
+    volumes:
+      - ./shared_models/shared_models.py:/shared_models.py
+      - ./endorser:/endorser
+    networks:
+      - governance-multitenant
+      - governance-ga
+      - host
+    env_file:
+      - environments/endorser/endorser.env
   wh-redis:
     image: redis:latest
     restart: always

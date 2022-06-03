@@ -37,14 +37,14 @@ async def listen_endorsement_events():
     )
 
 
-async def process_endorsement_event(data: str, topic: str):
+async def process_endorsement_event(data: str):
     event: Event = json.loads(data)
     logger.debug(
         f"Processing endorsement event for agent {event['origin']} ({event['wallet_id']})"
     )
     # We're only interested in events from the governance agent
     if not is_governance_agent(event):
-        logger.debug(f"Endorsement request is not for governance agent.")
+        logger.debug("Endorsement request is not for governance agent.")
         return
 
     endorsement = Endorsement(**event["payload"])

@@ -51,7 +51,7 @@ def test_get_endorsement_request_attachment():
     assert get_endorsement_request_attachment(transaction) == json.loads(the_json)
 
     # no attachment
-    assert get_endorsement_request_attachment(MagicMock()) == None
+    assert get_endorsement_request_attachment(MagicMock()) is None
 
     # exception
     assert (
@@ -316,9 +316,7 @@ async def test_should_accept_endorsement_not_valid_issuer(
 
 
 @pytest.mark.asyncio
-async def test_process_endorsement_event(
-    mock_agent_controller: AcaPyClient,
-):
+async def test_process_endorsement_event():
     data = json.dumps(
         {
             "origin": "governance",

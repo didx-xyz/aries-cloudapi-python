@@ -17,17 +17,14 @@ from httpx import AsyncClient, AsyncHTTPTransport
 from mockito import mock
 
 from .constants import (
-    ECOSYSTEM_FASTAPI_ENDPOINT,
     GOVERNANCE_FASTAPI_ENDPOINT,
     GOVERNANCE_ACAPY_API_KEY,
-    MEMBER_FASTAPI_ENDPOINT,
-    MEMBER_ACAPY_API_KEY,
+    TENANT_ACAPY_API_KEY,
+    TENANT_FASTAPI_ENDPOINT,
 )
 from app.constants import (
-    ECOSYSTEM_AGENT_API_KEY,
-    ECOSYSTEM_AGENT_URL,
     GOVERNANCE_AGENT_URL,
-    MEMBER_AGENT_URL,
+    TENANT_AGENT_URL,
 )
 
 # GOVERNANCE
@@ -69,35 +66,35 @@ def governance_acapy_client():
     )
 
 
-# MEMBER ADMIN
+# TENANT ADMIN
 
 
-def member_admin_client(*, app: Optional[Any] = None):
+def tenant_admin_client(*, app: Optional[Any] = None):
     return AsyncClient(
-        base_url=MEMBER_FASTAPI_ENDPOINT,
+        base_url=TENANT_FASTAPI_ENDPOINT,
         timeout=60.0,
         app=app,
         headers={
-            "x-api-key": f"member-admin.{MEMBER_ACAPY_API_KEY}",
+            "x-api-key": f"tenant-admin.{TENANT_ACAPY_API_KEY}",
             "content-type": "application/json",
         },
         transport=AsyncHTTPTransport(retries=3),
     )
 
 
-def member_admin_acapy_client():
+def tenant_admin_acapy_client():
     return AcaPyClient(
-        base_url=MEMBER_AGENT_URL,
-        api_key=MEMBER_ACAPY_API_KEY,
+        base_url=TENANT_AGENT_URL,
+        api_key=TENANT_ACAPY_API_KEY,
     )
 
 
-# MEMBER
+# TENANT
 
 
-def member_client(*, token: str, app: Optional[Any] = None):
+def tenant_client(*, token: str, app: Optional[Any] = None):
     return AsyncClient(
-        base_url=MEMBER_FASTAPI_ENDPOINT,
+        base_url=TENANT_FASTAPI_ENDPOINT,
         timeout=60.0,
         app=app,
         headers={
@@ -107,47 +104,7 @@ def member_client(*, token: str, app: Optional[Any] = None):
     )
 
 
-def member_acapy_client(*, token: str):
+def tenant_acapy_client(*, token: str):
     return AcaPyClient(
-        base_url=MEMBER_AGENT_URL, api_key=MEMBER_ACAPY_API_KEY, tenant_jwt=token
-    )
-
-
-# ECOSYSTEM ADMIN
-
-
-def ecosystem_admin_client(*, app: Optional[Any] = None):
-    return AsyncClient(
-        base_url=ECOSYSTEM_FASTAPI_ENDPOINT,
-        timeout=60.0,
-        app=app,
-        headers={
-            "x-api-key": f"ecosystem-admin.{ECOSYSTEM_AGENT_API_KEY}",
-            "content-type": "application/json",
-        },
-    )
-
-
-def ecosystem_admin_acapy_client():
-    return AcaPyClient(
-        base_url=ECOSYSTEM_AGENT_URL,
-        api_key=ECOSYSTEM_AGENT_API_KEY,
-    )
-
-
-def ecosystem_client(*, token: str, app: Optional[Any] = None):
-    return AsyncClient(
-        base_url=ECOSYSTEM_FASTAPI_ENDPOINT,
-        timeout=60.0,
-        app=app,
-        headers={
-            "x-api-key": token,
-            "content-type": "application/json",
-        },
-    )
-
-
-def ecosystem_acapy_client(*, token: str):
-    return AcaPyClient(
-        base_url=ECOSYSTEM_AGENT_URL, api_key=ECOSYSTEM_AGENT_API_KEY, tenant_jwt=token
+        base_url=TENANT_AGENT_URL, api_key=TENANT_ACAPY_API_KEY, tenant_jwt=token
     )

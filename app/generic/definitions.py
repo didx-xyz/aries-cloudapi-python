@@ -177,11 +177,7 @@ async def get_credential_definition_by_id(
 @router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
-    # Only governance and ecosystem issuers can create credential definitions. Further validation
-    # done inside the endpoint implementation.
-    aries_controller: AcaPyClient = Depends(
-        agent_role([Role.GOVERNANCE, Role.ECOSYSTEM])
-    ),
+    aries_controller: AcaPyClient = Depends(agent_selector),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """

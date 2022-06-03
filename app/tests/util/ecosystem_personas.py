@@ -5,9 +5,9 @@ from httpx import AsyncClient
 from app.facades.trust_registry import actor_by_id
 
 from app.tests.util.client import (
-    ecosystem_admin_client,
-    ecosystem_client,
-    ecosystem_acapy_client,
+    tenant_admin_client,
+    tenant_acapy_client,
+    tenant_client,
 )
 from app.tests.util.string import base64_to_json
 from app.webhook_listener import start_listener
@@ -28,13 +28,13 @@ class AcmeAliceConnect(TypedDict):
 
 @pytest.fixture(scope="module")
 async def faber_client():
-    async with ecosystem_admin_client() as client:
+    async with tenant_admin_client() as client:
         tenant = await create_issuer_tenant(client, "faber")
 
         if "access_token" not in tenant:
             raise Exception("Error creating tenant", tenant)
 
-        yield ecosystem_client(token=tenant["access_token"])
+        yield tenant_client(token=tenant["access_token"])
 
         await delete_tenant(client, tenant["tenant_id"])
 
@@ -45,7 +45,7 @@ async def faber_acapy_client(faber_client: AsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = ecosystem_acapy_client(token=token)
+    client = tenant_acapy_client(token=token)
     yield client
 
     await client.close()
@@ -53,7 +53,7 @@ async def faber_acapy_client(faber_client: AsyncClient):
 
 @pytest.fixture(scope="module")
 async def acme_tenant():
-    async with ecosystem_admin_client() as client:
+    async with tenant_admin_client() as client:
         tenant = await create_verifier_tenant(client, "acme")
 
         if "access_token" not in tenant:
@@ -66,7 +66,7 @@ async def acme_tenant():
 
 @pytest.fixture(scope="module")
 async def acme_client(acme_tenant: Any):
-    yield ecosystem_client(token=acme_tenant["access_token"])
+    yield tenant_client(token=acme_tenant["access_token"])
 
 
 @pytest.fixture(scope="module")
@@ -75,7 +75,7 @@ async def acme_acapy_client(faber_client: AsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = ecosystem_acapy_client(token=token)
+    client = tenant_acapy_client(token=token)
     yield client
 
     await client.close()

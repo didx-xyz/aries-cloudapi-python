@@ -32,7 +32,7 @@ class OnboardResult(BaseModel):
     didcomm_invitation: Optional[AnyHttpUrl]
 
 
-async def handle_ecosystem_tenant_update(
+async def handle_tenant_update(
     admin_controller: AcaPyClient,
     tenant_id: str,
     update: UpdateTenantRequest,
@@ -66,7 +66,7 @@ async def handle_ecosystem_tenant_update(
                 wallet_id=tenant_id, body=CreateWalletTokenRequest()
             )
 
-            onboard_result = await onboard_ecosystem_tenant(
+            onboard_result = await onboard_tenant(
                 name=updated_actor["name"],
                 roles=added_roles,
                 tenant_auth_token=token_response.token,
@@ -81,13 +81,13 @@ async def handle_ecosystem_tenant_update(
         await update_actor(updated_actor)
 
 
-async def onboard_ecosystem_tenant(
+async def onboard_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
     if "issuer" in roles:
         # Get governance and tenant controllers, onboard issuer
         async with get_governance_controller() as governance_controller, get_tenant_controller(
-            Role.ECOSYSTEM, tenant_auth_token
+            Role.TENANT, tenant_auth_token
         ) as tenant_controller:
             return await onboard_issuer(
                 name=name,
@@ -98,7 +98,7 @@ async def onboard_ecosystem_tenant(
 
     elif "verifier" in roles:
         async with get_tenant_controller(
-            Role.ECOSYSTEM, tenant_auth_token
+            Role.TENANT, tenant_auth_token
         ) as tenant_controller:
             return await onboard_verifier(
                 name=name, verifier_controller=tenant_controller

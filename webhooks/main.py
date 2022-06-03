@@ -99,7 +99,7 @@ async def topic_root(
     #  - topic of the event
     #  - 'all' topic, which allows to subscribe to all published events
     # FIXME: wallet_id is admin for all admin wallets from different origins. We should make a difference on this
-    # Maybe the wallet id should be the role (governance, ecosystem-admin, member-admin)?
+    # Maybe the wallet id should be the role (governance, tenant-admin)?
     await endpoint.publish(
         topics=[topic, redis_item["wallet_id"], WEBHOOK_TOPIC_ALL],
         data=webhook_event.json(),

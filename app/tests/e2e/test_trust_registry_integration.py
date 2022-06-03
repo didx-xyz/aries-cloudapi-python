@@ -2,10 +2,8 @@ from httpx import AsyncClient
 import pytest
 from app.facades.trust_registry import actor_by_id
 from app.tests.util.client import (
-    ecosystem_admin_client,
-    ecosystem_client,
-    member_admin_client,
-    member_client,
+    tenant_client,
+    tenant_admin_client,
 )
 from app.tests.util.string import base64_to_json, get_random_string
 from app.tests.util.tenants import (
@@ -21,18 +19,17 @@ from app.webhook_listener import start_listener
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: AsyncClient,
 ):
-    ecosystem_admin = ecosystem_admin_client()
-    member_admin = member_admin_client()
+    tenant_admin = tenant_admin_client()
 
     # Create tenants
-    verifier_tenant = await create_verifier_tenant(ecosystem_admin, "acme")
-    issuer_tenant = await create_issuer_tenant(ecosystem_admin, "this-is-it")
-    holder_tenant = await create_tenant(member_admin, "alice")
+    verifier_tenant = await create_verifier_tenant(tenant_admin, "acme")
+    issuer_tenant = await create_issuer_tenant(tenant_admin, "this-is-it")
+    holder_tenant = await create_tenant(tenant_admin, "alice")
 
     # Get clients
-    verifier_client = ecosystem_client(token=verifier_tenant["access_token"])
-    issuer_client = ecosystem_client(token=issuer_tenant["access_token"])
-    holder_client = member_client(token=holder_tenant["access_token"])
+    verifier_client = tenant_client(token=verifier_tenant["access_token"])
+    issuer_client = tenant_client(token=issuer_tenant["access_token"])
+    holder_client = tenant_client(token=holder_tenant["access_token"])
 
     # Create connection between issuer and holder
     invitation = (
@@ -233,6 +230,6 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
 
     # Delete all tenants
-    await delete_tenant(ecosystem_admin, issuer_tenant["tenant_id"])
-    await delete_tenant(ecosystem_admin, verifier_tenant["tenant_id"])
-    await delete_tenant(member_admin, holder_tenant["tenant_id"])
+    await delete_tenant(tenant_admin, issuer_tenant["tenant_id"])
+    await delete_tenant(tenant_admin, verifier_tenant["tenant_id"])
+    await delete_tenant(tenant_admin, holder_tenant["tenant_id"])

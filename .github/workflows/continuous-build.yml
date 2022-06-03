@@ -48,6 +48,7 @@ jobs:
         id: test
         continue-on-error: true
         run: |
+          sudo chown -R $(id -u):$(id -g) data
           docker-compose up --build -d governance-ga-agent
           docker-compose up --build -d governance-multitenant-agent
           sleep 120

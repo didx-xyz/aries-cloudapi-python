@@ -70,7 +70,7 @@ async def create_tenant(
             label=body.name,
             wallet_key=token_urlsafe(48),
             wallet_name=uuid4().hex,
-            wallet_type="indy",
+            wallet_type="askar",
         )
     )
 

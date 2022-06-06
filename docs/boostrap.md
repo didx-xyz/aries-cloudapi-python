@@ -3,7 +3,7 @@
 1. `git clone https://github.com/didx-xyz/aries-cloudapi-python.git`
 2. OPTIONAL: Customise environment variables located [here](../environments/)
 3. Startup docker instances 
-   1. Follow the [README.MD](../README.md) guide
+   1. Follow the [README.MD](../README.md) guide or the [Intro Guide](intro.md)
 
 ## 2. Generate new DID
 1. Access the API through [Governance Cloud API](http://localhost:8000/docs)

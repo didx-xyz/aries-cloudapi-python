@@ -37,7 +37,8 @@ async def listen_endorsement_events():
     )
 
 
-async def process_endorsement_event(data: str, _topic: str):
+# topic is unused, but passed by the fastapi library.
+async def process_endorsement_event(data: str, topic: str):
     event: Event = json.loads(data)
     logger.debug(
         f"Processing endorsement event for agent {event['origin']} ({event['wallet_id']})"
@@ -146,8 +147,14 @@ def get_endorsement_request_attachment(
             return None
 
         attachment = transaction.messages_attach[0]
-        json_str = attachment["data"]["json"]
-        return json.loads(json_str)
+        json_payload = attachment["data"]["json"]
+
+        # Both dict and str encoding have ocurred for the attachment data
+        # Parse to dict if payload is of type str
+        if isinstance(json_payload, str):
+            json_payload = json.loads(json_payload)
+
+        return json_payload
     except:
         return None
 

@@ -45,13 +45,18 @@ def test_is_credential_definition_transaction():
 
 
 def test_get_endorsement_request_attachment():
-    # valid
-    the_json = '{"the": "json"}'
-    transaction = MagicMock(messages_attach=[{"data": {"json": the_json}}])
-    assert get_endorsement_request_attachment(transaction) == json.loads(the_json)
+    # valid string json data
+    the_json_string = '{"the": "json"}'
+    the_json_dict = {"the": "json"}
+    transaction = MagicMock(messages_attach=[{"data": {"json": the_json_string}}])
+    assert get_endorsement_request_attachment(transaction) == the_json_dict
+
+    # valid dict json data
+    transaction = MagicMock(messages_attach=[{"data": {"json": the_json_dict}}])
+    assert get_endorsement_request_attachment(transaction) == the_json_dict
 
     # no attachment
-    assert get_endorsement_request_attachment(MagicMock()) is None
+    assert get_endorsement_request_attachment(MagicMock(messages_attach=None)) is None
 
     # exception
     assert (

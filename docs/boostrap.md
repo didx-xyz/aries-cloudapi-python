@@ -1,15 +1,16 @@
 # Bootstrapping a Trust Ecosystem with Aries CloudAPI
-1. Clone the Github Repo
-   1. `git clone https://github.com/didx-xyz/aries-cloudapi-python.git`
+## 1. Clone the Github Repo
+1. `git clone https://github.com/didx-xyz/aries-cloudapi-python.git`
 2. OPTIONAL: Customise environment variables located [here](../environments/)
-3. Startup docker instances
+3. Startup docker instances 
    1. Follow the [README.MD](../README.md) guide
-4. Generate new DID
-   1. Access the API through [localhost](http://localhost:8000/docs)
-   2. Authenticate with `governance.`+`APIKEY` role
-   3. Generate a new DID with a `POST` to the following API endpoint `/wallet/dids/`
-   4. An example successful response to generate a DID
-      1. 
+
+## 2. Generate new DID
+1. Access the API through [localhost](http://localhost:8000/docs)
+2. Authenticate with `governance.`+`APIKEY` role 
+3. Generate a new DID with a `POST` to the following API endpoint `/wallet/dids/`
+4. An example successful response to generate a DID
+
 ```json
 {
   "did": "LESjYcQUBF2o3kFy5EUqTL",
@@ -19,23 +20,25 @@
   "verkey": "BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg"
 }
 ```
-   5. Copy `DID` and `Verkey`
-5. Anchor new DID to Indy Ledger
-   1. Go to [Ledger Web Interface](http://localhost:9000/)
-   2. Select `Register from DID`
-   3. Paste `DID` and `Verkey` and select Role `Endorser`
-   4. Click `Register DID`
-   5. DID should be successfully written to the Indy Ledger with a response as below
-      1. 
-```json
+5. Copy `DID` and `Verkey`
+
+## 3. Anchor new DID to Indy Ledger
+1. Go to [Ledger Web Interface](http://localhost:9000/)
+2. Select `Register from DID`
+3. Paste `DID` and `Verkey` and select Role `Endorser`
+4. Click `Register DID`
+5. DID should be successfully written to the Indy Ledger with a response as below
+```text
 Identity successfully registered:
 DID: LESjYcQUBF2o3kFy5EUqTL
 Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 ```
-6. Connect to AcaPy [Governance Agent API](http://localhost:3021/)
-   1. Authenticate by setting the `x-api-key` header with the API Key of the Governance Agent via Postman/Insomnia
-   2. Get the TAA from the following endpoint `/ledger/taa`. An example response below.
-       ```json
+
+## 4. Accept Transaction Author Agreement
+1. Connect to AcaPy [Governance Agent API](http://localhost:3021/)
+2. Authenticate by setting the `x-api-key` header with the API Key of the Governance Agent via Postman/Insomnia 
+3. Get the TAA from the following endpoint `/ledger/taa`. An example response below.
+```json
       {
          "result": {
            "aml_record": {
@@ -59,11 +62,14 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
            "taa_required": true,
            "taa_accepted": null
          }
-       }```
-   3. Copy the `text` and `version` from the API response.
-7. Accept TAA by POSTING to the following API endpoint `/ledger/taa/accept`.
-   1. Paste the `text` and `version` from the previous step into the POST body.
+       } 
+```
+        
+4. Copy the `text` and `version` from the API response. 
+5. Accept TAA by POSTING to the following API endpoint `/ledger/taa/accept`. 
+   1. Paste the `text` and `version` from the previous step into the POST body. 
    2. Set the `mechanism` to `service_agreement`. A complete POST JSON body example below.
+        
 ```json 
 {
   "mechanism": "service_agreement",
@@ -71,14 +77,19 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
   "version": "1.1"
 }
 ```
-   3. The JSON response should be `{}`
 
-8. Set Public DID
-   1. Go to the [Governance Agent Cloud API](http://localhost:8000/docs)
-   2. Execute the PUT endpoint to set a Public DID `/wallet/dids/public?did=`
-   3. Use the DID that you anchored to the ledger in step 5
-   4. A successful response should look like below. You can also query the Public DID Endpoint `/wallet/dids/public` of the Governance Agent to confirm that the public DID is now set.
-      1. 
+The JSON response should be
+
+```json
+{}
+```
+
+## 5. Set Public DID
+1. Go to the [Governance Agent Cloud API](http://localhost:8000/docs)
+2. Execute the PUT endpoint to set a Public DID `/wallet/dids/public?did=`
+3. Use the DID that you anchored to the ledger in step 5 
+4. A successful response should look like below. You can also query the Public DID Endpoint `/wallet/dids/public` of the Governance Agent to confirm that the public DID is now set.
+
 ```json
 {
   "did": "LESjYcQUBF2o3kFy5EUqTL",
@@ -89,6 +100,6 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 }
 ```
 
-10. Congratulations!
-    1. You have now successfully bootstrapped a Trust Ecosystem using the `Aries CloudAPI`.
-    2. You are now able to write schemas, credential definitions, create new tenants etc.
+## 6. Congratulations!
+1. You have now successfully bootstrapped a Trust Ecosystem using the `Aries CloudAPI`. 
+2. You are now able to write schemas, credential definitions, create new tenants etc.

@@ -37,7 +37,7 @@ async def listen_endorsement_events():
     )
 
 
-async def process_endorsement_event(data: str):
+async def process_endorsement_event(data: str, _topic: str):
     event: Event = json.loads(data)
     logger.debug(
         f"Processing endorsement event for agent {event['origin']} ({event['wallet_id']})"

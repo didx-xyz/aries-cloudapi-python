@@ -4,8 +4,8 @@
 ## Table of Contents
 
 1. [First Step and Overview](#First-Steps)
-2. [Cloud API Roles](##-CloudAPI-Roles)
-3. [Workflows and Roles Overview](##-Workflows-and-Roles-Overview)
+2. [Cloud API Roles](##CloudAPI-Roles)
+3. [Workflows and Roles Overview](##Workflows-and-Roles-Overview)
 4. [Boostrap a Trust Ecosystem using Aries Cloud API](Boostrap%20Trust%20Ecosystem.md)
 5. [Governance as Code](Governance%20as%20Code.md)
 6. [Common Steps](Common%20Flows.md)

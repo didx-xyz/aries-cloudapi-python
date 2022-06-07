@@ -4,13 +4,14 @@
 ## Table of Contents
 
 1. [First Step and Overview](#First-Steps)
-2. [Boostrap a Trust Ecosystem using Aries Cloud API](Boostrap%20Trust%20Ecosystem.md)
-3. [Governance as Code](Governance%20as%20Code.md)
-4. [Common Steps](Commom%20Steps.md)
-5. [Workflows Overview](Workflows%20Overview.md)
-6. [Webhooks](Webhooks.md)
-7. [Trust Registry](Trust%20Registry.md)
-8. [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
+2. [Cloud API Roles](##-CloudAPI-Roles)
+3. [Workflows and Roles Overview](##-Workflows-and-Roles-Overview)
+4. [Boostrap a Trust Ecosystem using Aries Cloud API](Boostrap%20Trust%20Ecosystem.md)
+5. [Governance as Code](Governance%20as%20Code.md)
+6. [Common Steps](Common%20Flows.md)
+7. [Webhooks](Webhooks.md)
+8. [Trust Registry](Trust%20Registry.md)
+9. [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
 
 ## First Steps
 
@@ -19,6 +20,20 @@ After spinning up the containers following the [README](../README.md) or [Quick 
 You see that there are `generic` endpoints for common actions, wallet specific actions and admin actions. On top of that, you find the trust registry and webhooks being exposed. These are the intended ways of client interactions with these two services.
 
 NOTE: Regardless of the multitude of containers and mechanisms running, [The CloudAPI](http://localhost:8000) and its [SwaggerUI](http://localhost:8000/docs) are the main interaction point intended between clients and the stack. This should be the only endpoint clients should (have to) interact with. There is no need (and no intention to allow that) for client to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+
+### Using the swagger UI
+
+The Swagger UI is documented. It shows you endpoints, expected parameters and what example requests and responses look like. At the bottom of the UI you can also find a list of all types used that includes definition and example values.
+
+### Following docker container logs
+
+It can be handy to follow the logs of a specific container. A convenient way to do so is using:
+
+```bash
+docker logs --follow $(docker ps -f name="YOUR_CONTAINER_NAME" | awk 'FNR == 2 {print $1}')
+```
+
+and replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (eg governance-webhooks-web). You can find the container name in the docker-compose.yaml.
 
 ### Authentication
 
@@ -87,6 +102,8 @@ Authentication header example `'x-api-key: tenant.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUz
       - respond to/create proof request
       - messaging etc.
       
+### Workflows and Roles Overview
+
 #### Creating schemas
 
 Using the admin role(s) you can create and register schemas. Successful schema creating will automatically write it to the ledger.
@@ -142,17 +159,3 @@ Now that we have an entity holding a credential (having a stored credential in t
 #### User management/Creating wallets
 
 Using the admin role(s) you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation return the wallet creation response including the wallet id and JWT for authentication.
-
-### Using the swagger UI
-
-The Swagger UI is documented. It shows you endpoints, expected parameters and what example requests and responses look like. At the bottom of the UI you can also find a list of all types used that includes definition and example values.
-
-### Following docker container logs
-
-It can be handy to follow the logs of a specific container. A convenient way to do so is using:
-
-```bash
-docker logs --follow $(docker ps -f name="YOUR_CONTAINER_NAME" | awk 'FNR == 2 {print $1}')
-```
-
-and replacing `YOUR_CONTAINER_NAME` with the name of the container you want to follow (eg governance-webhooks-web). You can find the container name in the docker-compose.yaml.

@@ -8,9 +8,9 @@ It is also recommended to set up a webhook listener (see also `webhooks.md`). Th
 
 ### Creating wallets
 
-The admin "wallet" is already configured because it is not a subwallet on a multitenant agent. In order to create subwallets for tenants you have to use the member admin role. The permissions to do so and routing to the correct aca-py instance are handled by the CLoudAPI under the hood. You have to provide two things here:
+The admin "wallet" is already configured because it is not a subwallet on a multitenant agent. In order to create subwallets for tenants you have to use the `tenant-admin` role. The permissions to do so and routing to the correct aca-py instance are handled by the CLoudAPI under the hood. You have to provide two things here:
 
-1. authorization in header `{"x-api-key": "member-admin.MEMBER_ACAPY_API_KEY"}` where `member-admin` is a fixed term representing the role and `MEMBER_ACAPY_API_KEY` is the auth token you have to know and provide. NOTE: This auth string is separated by a dot so keep that in there.
+1. authorization in header `{"x-api-key": "tenant-admin.TENANT_ADMIN_ACAPY_API_KEY"}` where `tenant-admin` is a fixed term representing the role and `TENANT_ADMIN_ACAPY_API_KEY` is the auth token you have to know and provide. NOTE: This auth string is separated by a dot so keep that in there.
 2. The wallet payload (body) of the wallet you want to create e.g.:
 
    ```json
@@ -32,10 +32,10 @@ In order to create schemas and effectively writing them to the ledger as well as
 1. providing the following authentication header:
 
    ```bash
-     {"x-api-key": "governance.ADMIN_API_KEY"}
+     {"x-api-key": "governance.GOVERNANCE_ACAPY_API_KEY"}
    ```
 
-   and replace the `ADMIN_API_KEY` with the actual api key. As mentioned above keep the dot and the `governance` is a keyword known to the CloudAPI as a role. It will resolve the correct endpoint and available actions based on the role and provided token. And:
+   and replace the `GOVERNANCE_ACAPY_API_KEY` with the actual api key. As mentioned above keep the dot and the `governance` is a keyword known to the CloudAPI as a role. It will resolve the correct endpoint and available actions based on the role and provided token. And:
 
 2. Providing the information about the schema e.g. :
    ```json
@@ -59,7 +59,7 @@ In order to create schemas and effectively writing them to the ledger as well as
     1. Create an invitation using either the issuer or the holder using the `/connections` endpoint of the CloudAPI. Here you will also need to authenticate via the header e.g. using
 
        ```json
-       { "x-api-key": "member.WALLET_TOKEN" }
+       { "x-api-key": "tenant.WALLET_TOKEN" }
        ```
 
        where the `WALLET_TOKEN` is the bearer token you get from the create wallet response for a tenant wallet.
@@ -95,7 +95,7 @@ In order to create schemas and effectively writing them to the ledger as well as
 
 1.  Ensure you followed **Issue credential** steps to have a wallet with a credential (prover)
 2.  Register an entity as a verifier (verifier)
-    1. In other words, cerate or update a passing the role "verifier"
+    1. In other words, create or update a passing the role "verifier"
 3.  Create a connection between 1. prover and 2. verifier the same way as in **Issue credential**
 4.  Create a proof request (`/generic/verifier/create-request`) using the verifier and send it to the prover. Here consult the Swagger `verifier` endpoints. POST to `/generic/verifier/send-request` with a payload of the following form replacing the values accordingly (and ensuring they can be covered by the previously created schema and issued credential):
 

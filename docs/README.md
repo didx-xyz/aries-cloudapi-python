@@ -2,13 +2,15 @@
 
 **Table of Contents**
 ## Table of Contents
-1. [Boostrap a Trust Ecosystem using Aries Cloud API](Boostrap%20Trust%20Ecosystem.md)
-2. [Governance as Code](Governance%20as%20Code.md)
-3. [Common Steps](Commom%20Steps.md)
-4. [Workflows Overview](Workflows%20Overview.md)
-5. [Webhooks](Webhooks.md)
-6. [Trust Registry](Trust%20Registry.md)
-7. [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
+
+1. [First Step and Overview](#First-Steps)
+2. [Boostrap a Trust Ecosystem using Aries Cloud API](Boostrap%20Trust%20Ecosystem.md)
+3. [Governance as Code](Governance%20as%20Code.md)
+4. [Common Steps](Commom%20Steps.md)
+5. [Workflows Overview](Workflows%20Overview.md)
+6. [Webhooks](Webhooks.md)
+7. [Trust Registry](Trust%20Registry.md)
+8. [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
 
 ## First Steps
 

@@ -104,4 +104,4 @@ The JSON response should be
 1. You have now successfully bootstrapped a Trust Ecosystem using the `Aries CloudAPI`. 
 2. You are now able to write schemas, credential definitions, create new tenants etc.
 
-Continue by establishing your [Trust Ecosystem Governance](Define%20Trust%20Ecosystem%20Governance.md)
+Continue by establishing your [Trust Ecosystem Governance](Governance%20as%20Code.md)

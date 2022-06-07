@@ -14,6 +14,12 @@ or bash
 
 in the root of the project.
 
+
+If you want to start the containers in daemon mode you can use
+```bash
+./manage up-as-daemon
+```
+
 You can stop the the project by running
 
 ```bash
@@ -45,10 +51,12 @@ You probably want at least 5GB of free disk space, 4GB of RAM and an average CPU
 
 ### Components and tweaking
 
-The standard setup spins up the the entire infrastructure required with the following containers having Swagger interfaces:
+The standard setup spins up the entire infrastructure required with the following containers having Swagger interfaces:
 
-- [Aca-Py Admin](http://localhost:8000/docs)
-- [Aca-Py Multitenant](http://localhost:8000/docs)
+- [Aca-Py CloudAPI Admin](http://localhost:8000/docs)
+- [Aca-Py Governance Agent Admin](http://localhost:3021)
+- [Aca-Py CloudAPI Multitenant](http://localhost:8000/docs)
+- [Aca-Py Multitenant Agent Admin](http://localhost:4021)
 - [Webhooks](http://localhost:3010/docs)
 - [Trust registry](http://localhost:8001/docs)
 

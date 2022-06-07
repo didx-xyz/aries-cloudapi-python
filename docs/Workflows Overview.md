@@ -2,15 +2,17 @@
 
 ### First Steps
 
-After spinning up the containers following the `README` or `intro.md` you are ready ot rumble. Navigating to the [swagger UI](http://localhost:8000/docs/) provides a good overview of the intended functionalities.
+After spinning up the containers following the [README](../README.md) or [Quick Start Guide](Quick%20Start%20Guide.md) you are ready to rumble. Navigating to the [swagger UI](http://localhost:8000/docs/) provides a good overview of the intended functionalities.
 
-You see that there are `generic` endpoints for common actions, wallet specific actions and admin actions. On top of that, you find th trust registry and webhooks being exposed. These are the intended ways of client interactions with these two services.
+You see that there are `generic` endpoints for common actions, wallet specific actions and admin actions. On top of that, you find the trust registry and webhooks being exposed. These are the intended ways of client interactions with these two services.
 
-NOTE: Regardless of the multitude of containers and mechanisms running, [the CloudAPI](http://localhost:8000) and its [SwaggerUI](http://localhost:8000/docs) are the main interaction point intended between clients and the stack. This should be the only endpoint clients should (have to) interact with. There is no need (and no intention to allow that) for client to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+NOTE: Regardless of the multitude of containers and mechanisms running, [The CloudAPI](http://localhost:8000) and its [SwaggerUI](http://localhost:8000/docs) are the main interaction point intended between clients and the stack. This should be the only endpoint clients should (have to) interact with. There is no need (and no intention to allow that) for client to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
 
 #### Trust registry
 
 As a client you can retrieve the trust registry (and NOT alter it). That is intentional and all a consumer/client should and is able to do. Altering the trust registry is baked into admin actions and only possible with admin role.
+
+> NOTE: The Trust Registry GET API endpoint is not protected
 
 #### Webhooks
 
@@ -52,50 +54,61 @@ Authentication is handled by the CloudAPI and, fom a client perspective, kept si
 
 So, your header has the format `'x-api-key: {role}.{key/token}` which yields, for example, `'x-api-key: governance.adminApiKey'`
 
-The first part `role` specifies the role on the surface and targets the correct endpoints under the hood and authentication mechanisms under the hood. The CloudAPI knows how to interpret the roles and will produce the correct target URLs for eg aca-py (`member` targets the multitenant agent) with the correct header expected by aca-py agent. For instance, `member` results in a `Bearer {TOKEN}` header against the multitenant agent whereas `member-admin` as role results in an `x-api-key` header for the multitenant agent (hence targeting the admin interface of the same multitenant agent). You may have noticed now that this mechanism also chooses which aca-py instance to target without having to know or specify the URL the agent resides under.
+The first part `role` specifies the role on the surface and targets the correct endpoints under the hood and authentication mechanisms under the hood. The CloudAPI knows how to interpret the roles and will produce the correct target URLs for eg aca-py (`tenant` targets the multitenant agent) with the correct header expected by aca-py agent. For instance, `tenant` results in a `Bearer {TOKEN}` header against the multitenant agent whereas `tenant-admin` as role results in an `x-api-key` header for the multitenant agent (hence targeting the admin interface of the same multitenant agent). You may have noticed now that this mechanism also chooses which aca-py instance to target without having to know or specify the URL the agent resides under.
 
-Currently there are five options for `role`:
+Currently there are three options for `role`:
 
+### CloudAPI Roles
+
+#### Governance Role
 - governance
   - is:
-    - endorser
+    - trust authority
+    - transaction endorser
   - can:
+    - make connections
     - create schemas
+    - create credential definitions
     - manage trust registry
-    - create/ manage wallets
     - issue credential
-- ecosystem
+    - verify credential
+    - send basic messages
+
+#### Tenant Administration Role
+- tenant-admin
+  - is:
+    - trust ecosystem admin
+    - is transaction author
+  - can:
+    - only create,update and delete tenants (_wallets_) for trust ecosystem issuers,verifiers and users
+
+#### Tenant Role (Trust Ecosystem Issuers, Verifiers and Holders)
+- tenant
   - is:
     - holder
     - issuer/verifier
+  - if is issuer or verifier
+    - issuers are transaction authors
+    - verifiers are not transaction authors
     - automatically registered with the trust registry
-  - can:
-    - create schemas/ issue credential
-    - create/manage wallets
-    - issue credential
-- ecosystem-admin
-  - is:
-    - ecosystem admin
-  - can:
-    - only create new tenants/wallets for ecosystem
-- member
-  - is:
-    - member instance
+    - can:
+      - make connections
+      - create credential definitions
+      - issue credential
+      - create/manage wallets
+      - all transactions written to ledger is counter-signed by governance transaction endorser role
+  - if is user (_holder_):
     - holder only
-  - can:
-    - manage own wallet (holder)
-    - receive and store credentials
-    - respond to/create proof request
-    - messaging etc. ...
-- member-admin
-  - is:
-    - member admin
-  - can:
-    - only create new tenants/wallets for members
+    - can:
+      - make connections
+      - manage own wallet (holder)
+      - receive and store credentials
+      - respond to/create proof request
+      - messaging etc. ...
 
 the `governance` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the aca-py admin tasks nor any documented endpoints prefixed `admin:` in the CloudAPI.
 
-For admin roles pass the admin password as the second part of `{role}.{key/token}`. For member/ecosystem (non-admin roles) pass the wallets JWT as the second part of `{role}.{key/token}`.
+For admin roles pass the admin password as the second part of `{role}.{key/token}`. For tenant (non-admin role) pass the wallets JWT as the second part of `{role}.{key/token}`.
 
 ### Creating schemas
 

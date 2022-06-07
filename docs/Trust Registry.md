@@ -1,5 +1,8 @@
 ### Trust registry
 
+As a client you can retrieve the trust registry (and NOT alter it). That is intentional and all a consumer/client should and is able to do. Altering the trust registry is baked into admin actions and only possible with admin role.
+> NOTE: The Trust Registry GET API endpoint is not protected and should not be public accessible.
+
 The [trust registry](http://localhost:8001/docs) is the gatekeeper interface for interactions in the sense that it keeps track of of truth states about actors, their respective roles as issuers and/or verifiers, and schemas.
 
 The [Swagger docs](http://localhost:8001/docs) consist of three main sections:

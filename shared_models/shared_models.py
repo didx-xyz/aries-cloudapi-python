@@ -106,7 +106,7 @@ class Connection(BaseModel):
     created_at: str
     invitation_mode: Literal["once", "multi", "static"]
     their_role: Literal["invitee", "requester", "inviter", "responder"]
-    state: str  # did-exchange state
+    state: Optional[str] = None # did-exchange state
     my_did: Optional[str]
     alias: Optional[str] = None
     their_did: Optional[str] = None
@@ -126,7 +126,9 @@ class CredentialExchange(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     schema_id: Optional[str]
     credential_definition_id: Optional[str]
-    state: Literal[
+    state: Union[
+        None,
+        Literal[
         "proposal-sent",
         "proposal-received",
         "offer-sent",
@@ -136,6 +138,7 @@ class CredentialExchange(BaseModel):
         "credential-issued",
         "credential-received",
         "done",
+        ]
     ]
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
@@ -162,7 +165,7 @@ class PresentationExchange(BaseModel):
             "presentation-received",
             "done",
             "abandoned",
-        ],
+        ]
     ]
     updated_at: Optional[str] = None
     verified: Optional[bool] = None
@@ -173,7 +176,7 @@ class BasicMessage(BaseModel):
     content: str
     message_id: str
     sent_time: str
-    state: Literal["received"]
+    state: Optional[Literal["received"]] = None
 
 
 PayloadType = TypeVar("PayloadType", bound=BaseModel)

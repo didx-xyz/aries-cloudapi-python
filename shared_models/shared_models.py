@@ -137,7 +137,6 @@ class CredentialExchange(BaseModel):
         "request-received",
         "credential-issued",
         "credential-received",
-        "credential-acked",
         "done",
         ]
     ] = None
@@ -301,6 +300,7 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "credential_received": "credential-received",
         "credential_acked": "done",
         "done": "done",
+        "abandoned": "abandoned",
     }
 
     if not state or state not in translation_dict:

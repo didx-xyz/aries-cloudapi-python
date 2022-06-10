@@ -1,4 +1,4 @@
-### Webhooks
+# Webhooks
 
 The webhooks container serves as a relay and storage for the webhooks. This way hooks can be retrieved at a later time. On top of that, the webhooks container processes the webhooks in two ways.
 
@@ -27,6 +27,36 @@ topics = Literal[
     "present_proof_v2_0",
     "revocation_registry",
 ]
+```
+
+A client can subscribe to the webhooks via the CloudAPI (as opposed to directly via the webhooks container). This requires only targeting the `/webhooks` endpoint and optionally targeting the `/webhooks/{topic}` sub-route by suffixing a topic. Using the auth mechanism (see section below), the app automatically extracts the required info about the wallet (i.e the wallet id and JWT) and retrieves only the associated webhooks with a particular wallet. Failing to authenticate will return a 403 HTTP Error.
+
+## Rolling your webhook listener
+
+You can (given you are within the docker network) use a pubsub client (see also `webhooks/clients.example.py`):
+
+```python
+from fastapi_websocket_pubsub import PubSubClient
+import asyncio
+
+async def on_events(data, topic):
+    print(f"{topic}:\n{data}")
+
+async def main():
+    # Create a client and subscribe to topics
+    topics = [
+        "connections",
+        "credentials",
+        "proofs",
+        "endorsements",
+        "basic-messages"
+    ]
+    client = PubSubClient([*topics], callback=on_events)
+
+    client.start_client(f"ws://127.0.0.1:3010/pubsub")
+    await client.wait_until_done()
+
+asyncio.run(main())
 ```
 
 All (and this can be handy for debugging or development as you just get all webhooks printed to stdout - you can also easily pipe then into a file, btw) webhooks are by default logged to the containers stdout. On a Unix machine you should be able to use this command to follow the webhook logs:

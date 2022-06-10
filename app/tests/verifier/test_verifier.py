@@ -19,7 +19,7 @@ from app.tests.verifier.test_verifier_utils import (
     indy_proof_request,
     indy_pres_spec,
 )
-from app.tests.util.mock import get
+from tests.util.mock import get
 from shared_models import PresentationExchange
 
 from app.facades.trust_registry import Actor

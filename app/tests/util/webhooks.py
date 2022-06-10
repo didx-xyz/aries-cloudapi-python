@@ -52,7 +52,12 @@ def check_webhook_state(
 
     t_end = time.time() + max_duration
     while time.time() < t_end:
-        hooks = httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}").json()
+        hooks_response = httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")
+
+        if hooks_response.is_error:
+            raise Exception(f"Error retrieving webhooks: {hooks_response.text}")
+
+        hooks = hooks_response.json()
 
         # Loop through all hooks
         for hook in hooks:

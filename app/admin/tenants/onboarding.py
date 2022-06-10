@@ -159,6 +159,9 @@ async def onboard_issuer(
     wait_for_event, _ = await start_listener(
         topic="connections", wallet_id=issuer_wallet_id
     )
+    endorser_wait_for_event, _ = await start_listener(
+        topic="connections", wallet_id="admin"
+    )
 
     logger.debug("Receiving connection invitation")
 
@@ -183,10 +186,22 @@ async def onboard_issuer(
                 "state": "completed",
             }
         )
+
+        endorser_connection = await endorser_wait_for_event(
+            filter_map={
+                "invitation_msg_id": invitation.invi_msg_id,
+                "state": "completed",
+            }
+        )
     except TimeoutError:
         raise CloudApiException("Error creating connection with endorser", 500)
 
     logger.debug("Successfully created connection")
+
+    await endorser_controller.endorse_transaction.set_endorser_role(
+        conn_id=endorser_connection["connection_id"],
+        transaction_my_job="TRANSACTION_ENDORSER",
+    )
 
     await issuer_controller.endorse_transaction.set_endorser_role(
         conn_id=connection_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"

@@ -18,7 +18,7 @@ from app.facades.acapy_ledger import (
     get_taa,
     schema_id_from_credential_definition_id,
 )
-from app.tests.util.event_loop import get
+from tests.util.mock import get
 
 
 @pytest.mark.asyncio

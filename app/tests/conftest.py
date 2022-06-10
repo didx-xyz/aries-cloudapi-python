@@ -6,7 +6,6 @@ from app.tests.util.client_fixtures import (
     governance_acapy_client,
     governance_client,
 )
-from app.tests.util.client import get_mock_agent_controller
 from app.tests.util.member_personas import (
     alice_member_client,
     bob_and_alice_connection,
@@ -28,11 +27,7 @@ from app.tests.util.ecosystem_personas import (
     acme_tenant,
 )
 from app.webhook_listener import Webhooks
-
-
-@pytest.fixture
-def mock_agent_controller():
-    return get_mock_agent_controller()
+from tests.fixtures import mock_agent_controller
 
 
 @pytest.fixture(autouse=True)

@@ -30,22 +30,6 @@ from app.constants import (
 # GOVERNANCE
 
 
-def get_mock_agent_controller() -> AcaPyClient:
-    controller = mock(AcaPyClient)
-    controller.wallet = mock(WalletApi)
-    controller.ledger = mock(LedgerApi)
-    controller.connection = mock(ConnectionApi)
-    controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
-    controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
-    controller.present_proof_v1_0 = mock(PresentProofV10Api)
-    controller.present_proof_v2_0 = mock(PresentProofV20Api)
-    controller.credentials = mock(CredentialsApi)
-    controller.out_of_band = mock(OutOfBandApi)
-    controller.endorse_transaction = mock(EndorseTransactionApi)
-    controller.schema = mock(SchemaApi)
-    return controller
-
-
 def governance_client(*, app: Optional[Any] = None):
     return AsyncClient(
         base_url=GOVERNANCE_FASTAPI_ENDPOINT,

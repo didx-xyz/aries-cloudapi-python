@@ -5,7 +5,7 @@ from mockito import when
 
 from app.error.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet
-from app.tests.util.event_loop import get
+from tests.util.mock import get
 
 
 @pytest.mark.asyncio

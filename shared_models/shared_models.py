@@ -106,7 +106,7 @@ class Connection(BaseModel):
     created_at: str
     invitation_mode: Literal["once", "multi", "static"]
     their_role: Literal["invitee", "requester", "inviter", "responder"]
-    state: str  # did-exchange state
+    state: Optional[str] = None # did-exchange state
     my_did: Optional[str]
     alias: Optional[str] = None
     their_did: Optional[str] = None
@@ -126,7 +126,9 @@ class CredentialExchange(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     schema_id: Optional[str]
     credential_definition_id: Optional[str]
-    state: Literal[
+    error_msg: Optional[str] = None
+    state: Optional[
+        Literal[
         "proposal-sent",
         "proposal-received",
         "offer-sent",
@@ -136,7 +138,8 @@ class CredentialExchange(BaseModel):
         "credential-issued",
         "credential-received",
         "done",
-    ]
+        ]
+    ] = None
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
     # Connetion id can be None in connectionless exchanges
@@ -147,12 +150,12 @@ class PresentationExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str
     proof_id: str
+    error_msg: Optional[str] = None
     presentation: Optional[IndyProof] = None
     presentation_request: Optional[IndyProofRequest] = None
     protocol_version: PresentProofProtocolVersion
     role: Literal["prover", "verifier"]
-    state: Union[
-        None,
+    state: Optional[
         Literal[
             "proposal-sent",
             "proposal-received",
@@ -162,8 +165,8 @@ class PresentationExchange(BaseModel):
             "presentation-received",
             "done",
             "abandoned",
-        ],
-    ]
+        ]
+    ] = None
     updated_at: Optional[str] = None
     verified: Optional[bool] = None
 
@@ -173,7 +176,7 @@ class BasicMessage(BaseModel):
     content: str
     message_id: str
     sent_time: str
-    state: Literal["received"]
+    state: Optional[Literal["received"]] = None
 
 
 PayloadType = TypeVar("PayloadType", bound=BaseModel)
@@ -201,6 +204,7 @@ def presentation_record_to_model(
         return PresentationExchange(
             connection_id=record.connection_id,
             created_at=record.created_at,
+            error_msg=record.error_msg,
             protocol_version=PresentProofProtocolVersion.v2.value,
             presentation=IndyProof(**record.by_format.pres["indy"])
             if record.by_format.pres
@@ -218,6 +222,7 @@ def presentation_record_to_model(
         return PresentationExchange(
             connection_id=record.connection_id,
             created_at=record.created_at,
+            error_msg=record.error_msg,
             presentation=record.presentation,
             presentation_request=record.presentation_request,
             protocol_version=PresentProofProtocolVersion.v1.value,
@@ -261,6 +266,7 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         updated_at=record.updated_at,
         attributes=attributes,
         protocol_version=IssueCredentialProtocolVersion.v1,
+        error_msg=record.error_msg,
         schema_id=record.schema_id,
         credential_definition_id=record.credential_definition_id,
         state=v1_credential_state_to_rfc_state(record.state),
@@ -294,6 +300,7 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "credential_received": "credential-received",
         "credential_acked": "done",
         "done": "done",
+        "abandoned": "abandoned",
     }
 
     if not state or state not in translation_dict:
@@ -311,6 +318,7 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
         role=record.role,
         created_at=record.created_at,
         updated_at=record.updated_at,
+        error_msg=record.error_msg,
         attributes=attributes,
         protocol_version=IssueCredentialProtocolVersion.v2,
         schema_id=schema_id,

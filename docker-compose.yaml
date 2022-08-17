@@ -23,8 +23,10 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
+    build: postgres:11
+    image: ${ECR_REGISTRY}/governance-ga-wallets-db
     container_name: governance-ga-wallets-db
-    image: postgres:11
+    #image: postgres:11
     command: postgres -c listen_addresses='*'
     env_file:
       - environments/governance-ga/db.default.env

@@ -2,6 +2,7 @@ version: "3"
 
 services:
   governance-ga-web:
+    image: ${ECR_REGISTRY}/governance-ga-web
     container_name: governance-ga-web
     build:
       context: .

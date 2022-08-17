@@ -39,7 +39,7 @@ jobs:
           #docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
           #bash ./scripts/git_update.sh -v minor
           bash ./scripts/install_latest_docker-compose.sh
-          bash /usr/local/bin/python -m pip install
+          bash python -m pip install
           bash ./scripts/create_ecr_repos.sh -v ${ECR_REGISTRY}
           
           docker-compose build

@@ -38,7 +38,7 @@ jobs:
           #docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           #docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
           #bash ./scripts/git_update.sh -v minor
-          bash ./scripts/git_update.sh -v ${ECR_REGISTRY}
+          bash ./scripts/create_ecr_repos.sh -v ${ECR_REGISTRY}
           
           docker-compose build
           docker-compose push

@@ -5,6 +5,7 @@ do
   #echo "$r"
   aws ecr create-repository --repository-name "$r"
 done
+
 #echo "XXXXX"
 #for r in $(grep 'image: \${ECR_REGISTRY}' docker-compose.yaml | sed -e 's/^.*\///' | sed 's/:.*//')
 #do

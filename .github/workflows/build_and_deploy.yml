@@ -5,7 +5,6 @@ on:
     branches: 
       - main
       - master
-      - devops-updateci
     # Publish semver tags as releases.
     tags: 
       - v*.*.*
@@ -25,7 +24,7 @@ env:
 
 jobs:
   docker_build_and_publish:
-    if: github.event.review.state == 'approved' || github.ref_name	== 'master' || github.ref_name	== 'main' || github.ref_name	== 'devops-updateci' 
+    if: github.event.review.state == 'approved' || github.ref_name	== 'master' || github.ref_name	== 'main'
     
     strategy:
       matrix:
@@ -65,8 +64,8 @@ jobs:
         name: AWS Login
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       -
         name: AWS ECR Login
@@ -82,7 +81,7 @@ jobs:
 
   Release:
     needs: docker_build_and_publish
-    if: github.ref_name	== 'master' || github.ref_name	== 'main' || github.ref_name	== 'devops-updateci' 
+    if: github.ref_name	== 'master' || github.ref_name	== 'main'
     
     strategy:
       matrix:
@@ -130,8 +129,8 @@ jobs:
         name: AWS Login
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - 
         name: Install Helm

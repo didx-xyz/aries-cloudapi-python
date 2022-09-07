@@ -1,0 +1,55 @@
+name: Docker Images CI
+on:
+  push:
+  pull_request:
+    branches: 
+      - main
+      - master
+      - devops-updateci
+
+env:
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  docker_build:
+    strategy:
+      matrix:
+        registry_image: [
+          324190738845.dkr.ecr.af-south-1.amazonaws.com/agent, 
+          324190738845.dkr.ecr.af-south-1.amazonaws.com/fastapi,
+          324190738845.dkr.ecr.af-south-1.amazonaws.com/trustregistry,
+          324190738845.dkr.ecr.af-south-1.amazonaws.com/webhooks
+        ]
+        include:
+          - 
+            registry_image: 324190738845.dkr.ecr.af-south-1.amazonaws.com/agent
+            file: ./dockerfiles/agents/Dockerfile.agent
+          - 
+            registry_image: 324190738845.dkr.ecr.af-south-1.amazonaws.com/fastapi
+            file: ./dockerfiles/fastapi/Dockerfile
+          - 
+            registry_image: 324190738845.dkr.ecr.af-south-1.amazonaws.com/trustregistry
+            file: ./dockerfiles/trustregistry/Dockerfile
+          - 
+            registry_image: 324190738845.dkr.ecr.af-south-1.amazonaws.com/webhooks
+            file: ./dockerfiles/webhooks/Dockerfile
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - 
+        name: Build the Docker image
+        uses: docker/build-push-action@v3 
+        with:
+          file: ${{ matrix.file }}
+          push: false
+          tags: ${{ matrix.registry_image }}:${{ env.IMAGE_TAG }}

@@ -1,0 +1,46 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/fastapi"
+  pullPolicy: Always
+  tag: "master"
+
+ingress:
+  enabled: false
+  tls_enabled: false
+
+service:
+  # if set, will run Pods on Node Network
+  hostNetwork: false
+  port: 8100
+  containerPort: 8000
+
+httpProbes: {}
+ # liveness:
+ #   path: /
+ # readiness:
+ #   path: /
+ # initialDelaySeconds: 2
+
+persistence:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+nodeSelector:
+  eks.amazonaws.com/nodegroup: application
+
+extraSecretNamesForEnvFrom:
+- acapy-env-variables
+
+env:
+  ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
+  ACAPY_TENANT_AGENT_URL: http://governance-multitenant-agent:4021
+  TRUST_REGISTRY_URL: http://governance-trust-registry:8001
+  OPENAPI_NAME: CloudAPI-Multitenant
+  WEBHOOKS_URL: http://governance-webhooks-web:3010
+  PYTHONPATH: /
+  ACAPY_ENDORSER_ALIAS: endorser

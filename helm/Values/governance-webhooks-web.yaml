@@ -1,0 +1,40 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/webhooks"
+  pullPolicy: Always
+  tag: "master"
+
+ingress:
+  enabled: false
+  tls_enabled: false
+
+service:
+  # if set, will run Pods on Node Network
+  hostNetwork: false
+  port: 3010
+  containerPort: 3010
+
+httpProbes: {}
+ # liveness:
+ #   path: /
+ # readiness:
+ #   path: /
+ # initialDelaySeconds: 2
+
+persistence:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+nodeSelector:
+  eks.amazonaws.com/nodegroup: application
+
+env:
+  REDIS_URL: redis://aries-default.gpip5x.0001.afs1.cache.amazonaws.com
+  ACAPY_WEBHOOK_PORT: 3010
+  LOG_LEVEL: error
+  OPENAPI_NAME: Webhooks

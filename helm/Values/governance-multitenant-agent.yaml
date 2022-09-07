@@ -1,0 +1,94 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/agent"
+  pullPolicy: Always
+  tag: "master"
+
+ingress:
+  enabled: false
+  tls_enabled: false
+
+service:
+  # if set, will run Pods on Node Network
+  hostNetwork: false
+  port: 4021
+  containerPort: 3021
+
+addPorts:
+  - port: 4020
+    containerPort: 3020
+    protocol: TCP
+
+httpProbes: {}
+ # liveness:
+ #   path: /
+ # readiness:
+ #   path: /
+ # initialDelaySeconds: 2
+
+persistence:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+nodeSelector:
+  eks.amazonaws.com/nodegroup: application
+
+extraSecretNamesForEnvFrom:
+- acapy-env-variables
+- multitenant-rds-credentials
+
+env:
+  WALLET_DB_HOST: aries-default-multitenant.ce5tswq1klfu.af-south-1.rds.amazonaws.com
+  WALLET_DB_PORT: 5432
+  # for aca-py
+  HTTP_PORT: 3020
+  WEBHOOK_PORT: 3010
+  ADMIN_PORT: 3021
+  ADMIN_URL: http://governance-multitenant-agent:4021
+  ACAPY_OUTBOUND_TRANSPORT: http
+  ACAPY_ADMIN: "[0.0.0.0,3021]"
+  ACAPY_ENDPOINT: http://governance-multitenant-agent:4020
+  ACAPY_WEBHOOK_URL: http://governance-webhooks-web:3010/multitenant
+  # Tails server
+  ACAPY_TAILS_SERVER_BASE_URL: http://tails-server:6543
+  ACAPY_LABEL: Alice
+  ACAPY_WALLET_NAME: Alice_Name
+  ACAPY_WALLET_KEY: alice_key
+  ACAPY_WALLET_TYPE: askar
+  ACAPY_WALLET_STORAGE_TYPE: postgres_storage
+  ACAPY_WALLET_STORAGE_CONFIG: '{"url":"aries-default-multitenant.ce5tswq1klfu.af-south-1.rds.amazonaws.com:5432","wallet_scheme":"MultiWalletSingleTable"}'
+  ACAPY_LOG_LEVEL: debug
+  ACAPY_AUTO_PROVISION: true
+  # Ledger
+  ACAPY_GENESIS_URL: https://testnet.didx.co.za/genesis
+  # Multi-tenant Configuration
+  ACAPY_MULTITENANT: true
+  ACAPY_MULTITENANT_ADMIN: true
+  ACAPY_PUBLIC_INVITES: true
+  AGENT_ENDPOINT: http://governance-multitenant-agent:4020
+  # ## DO NOT CHANGE VARIABLES BELOW
+  # ## Unless you know exactly what you are doing
+  # ## Changes will probably break CloudAPI
+  # Optional Helper Configurations - See https://github.com/hyperledger/aries-cloudagent-python/blob/main/aries_cloudagent/config/argparse.py
+  ACAPY_AUTO_ACCEPT_INVITES: false
+  ACAPY_AUTO_ACCEPT_REQUESTS: false
+  ACAPY_AUTO_PING_CONNECTION: true
+  ACAPY_AUTO_RESPOND_MESSAGES: false
+  ACAPY_AUTO_RESPOND_CREDENTIAL_PROPOSAL: false
+  ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER: false
+  ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST: false
+  ACAPY_AUTO_RESPOND_PRESENTATION_PROPOSAL: false
+  ACAPY_AUTO_RESPOND_PRESENTATION_REQUEST: false
+  ACAPY_AUTO_STORE_CREDENTIAL: true
+  ACAPY_AUTO_VERIFY_PRESENTATION: true
+  ACAPY_PRESERVE_EXCHANGE_RECORDS: false
+  # Endorser
+  ACAPY_ENDORSER_ROLE: author
+  ACAPY_AUTO_REQUEST_ENDORSEMENT: true
+  ACAPY_AUTO_WRITE_TRANSACTIONS: true
+  ACAPY_ENDORSER_ALIAS: endorser

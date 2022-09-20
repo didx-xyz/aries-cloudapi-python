@@ -8,6 +8,9 @@ from app.error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
+import pprint
+
+pp = pprint.PrettyPrinter(indent=4, width=80, compact=False)
 
 class Did(BaseModel):
     did: str
@@ -73,6 +76,10 @@ async def set_public_did(controller: AcaPyClient, did: str) -> DID:
     Returns:
         DID: the did
     """
+    conf = await controller.server.get_config()
+    # sesh = await controller.client.
+    pp.pprint(conf.dict())
+    # pp(f"\n\n\n\n {sesh} \n\n\n\n")
     result = await controller.wallet.set_public_did(did=did)
 
     if not result.result:

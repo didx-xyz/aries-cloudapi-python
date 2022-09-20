@@ -16,7 +16,7 @@ from aries_cloudcontroller import (
 from httpx import AsyncClient, AsyncHTTPTransport
 from mockito import mock
 
-from .constants import (
+from app.tests.util.constants import (
     GOVERNANCE_FASTAPI_ENDPOINT,
     GOVERNANCE_ACAPY_API_KEY,
     TENANT_ACAPY_API_KEY,

@@ -52,6 +52,9 @@ async def test_onboard_issuer_public_did_exists(
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
         get()
     )
+    when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
+        get(InvitationRecord(invitation=InvitationMessage()))
+    )
 
     # Mock event listener
     when(onboarding).start_listener(...).thenReturn(get(mock_start_listener))
@@ -118,6 +121,9 @@ async def test_onboard_issuer_no_public_did(
     )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
         get()
+    )
+    when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
+        get(InvitationRecord(invitation=InvitationMessage()))
     )
 
     # Mock event listener

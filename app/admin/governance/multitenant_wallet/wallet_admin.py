@@ -109,6 +109,7 @@ class CreateWalletRequest(BaseModel):
     wallet_dispatch_type: WalletDispatchType = WalletDispatchType.default
     wallet_type: WalletType = WalletType.indy
     wallet_webhook_urls: List[str] = []
+    group_id: Optional[str]
 
 
 """    "CreateWalletResponse": {
@@ -170,6 +171,7 @@ class CreateWalletResponse(BaseModel):
     updated_at: Optional[datetime]
     wallet_id: str
     state: Optional[str]
+    group_id: Optional[str]
 
 
 """
@@ -225,6 +227,7 @@ class WalletRecord(BaseModel):
     updated_at: Optional[datetime]
     wallet_id: str
     state: Optional[str]
+    group_id: Optional[str]
 
 
 class WalletList(BaseModel):
@@ -289,6 +292,7 @@ class UpdateWalletRequest(BaseModel):
     label: Optional[str]
     wallet_dispatch_type: Optional[WalletDispatchType] = WalletDispatchType.default
     wallet_webhook_urls: Optional[List[str]]
+    group_id: Optional[str]
 
 
 # TODO: This should be somehow restricted?!

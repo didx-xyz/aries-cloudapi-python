@@ -69,7 +69,7 @@ async def accept_taa(
         body=TAAAccept(**taa.dict(), mechanism=mechanism)
     )
     logger.info("accept_taa_response: %s", accept_taa_response)
-    if accept_taa_response.status_code != 200:
+    if accept_taa_response != {}:
         logger.error("Failed to accept TAA.\n %s", accept_taa_response)
         raise HTTPException(
             status_code=404,

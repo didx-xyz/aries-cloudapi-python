@@ -12,9 +12,6 @@ router = APIRouter(prefix="/registry/actors", tags=["actor"])
 @router.get("/")
 async def get_actors(db: Session = Depends(get_db)):
     db_actors = crud.get_actors(db)
-    if len(db_actors) > 0:
-        for actor in db_actors:
-            actor.roles = [x.strip() for x in actor.roles.split(",")]
     return {"actors": db_actors}
 
 
@@ -34,7 +31,23 @@ async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db
     return update_actor_result
 
 
-@router.delete("/{actor_id}")
+@router.get("/did/{actor_did}")
+async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
+    actor = crud.get_actor_by_did(db, actor_did=actor_did)
+    if actor is None:
+        raise HTTPException(status_code=404, detail="Actor not found.")
+    return actor
+
+
+@router.get("/{actor_id}")
+async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)):
+    actor = crud.get_actor_by_id(db, actor_id=actor_id)
+    if actor is None:
+        raise HTTPException(status_code=404, detail="Actor not found.")
+    return actor
+
+
+@router.delete("/{actor_id}", status_code=204)
 async def remove_actor(actor_id: str, db: Session = Depends(get_db)):
     delete_actor_result = crud.delete_actor(db, actor_id=actor_id)
     if delete_actor_result is None:

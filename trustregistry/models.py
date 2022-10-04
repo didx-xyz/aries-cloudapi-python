@@ -1,13 +1,15 @@
 from sqlalchemy import Column, String
 
+from trustregistry.list_type import StringList
 from trustregistry.database import Base
 
 
 def schema_id_gen(context):
-    did = context.get_current_parameters()["did"]
-    name = context.get_current_parameters()["name"]
-    version = context.get_current_parameters()["version"]
-    return f"{did}:{name}:{version}"
+    parameters = context.get_current_parameters()
+    did = parameters["did"]
+    name = parameters["name"]
+    version = parameters["version"]
+    return f"{did}:2:{name}:{version}"
 
 
 class Actor(Base):
@@ -15,7 +17,7 @@ class Actor(Base):
 
     id = Column(String, primary_key=True, index=True, unique=True)
     name = Column(String, unique=True, index=True)
-    roles = Column(String, index=True)
+    roles = Column(StringList, index=True)
     didcomm_invitation = Column(String, unique=True, index=True)
     did = Column(String, unique=True, index=True)
 

@@ -1,17 +1,13 @@
-import asyncio
-import json
-import time
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from assertpy.assertpy import assert_that
-from httpx import AsyncClient
+from mockito import mock, verify, when
 
-import app.facades.acapy_ledger as acapy_ledger_facade
-from app.admin.governance.schemas import SchemaDefinition, create_schema
-from app.dependencies import MEMBER_AGENT_URL
-from app.tests.utils_test import get_random_string
+import app.generic.issuer.issuer as test_module
+from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
+from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
+from shared_models import CredentialExchange, IssueCredentialProtocolVersion
 
 
 # need this to handle the async with the mock
@@ -20,181 +16,201 @@ async def get(response: Optional[Any] = None):
         return response
 
 
-BASE_PATH = "/generic/issuer/credentials"
+@pytest.mark.asyncio
+async def test_send_credential(mock_agent_controller: AcaPyClient):
+    did = "did:sov:WgWxqztrNooG92RXvxSTWv"
+    cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
+    cred_ex = mock(CredentialExchange)
 
+    when(test_module).assert_valid_issuer(...).thenReturn(get(True))
+    when(test_module).schema_id_from_credential_definition_id(
+        mock_agent_controller, cred_def_id
+    ).thenReturn(get("schema_id"))
+    when(IssuerV1).send_credential(...).thenReturn(get(cred_ex))
+    when(test_module).assert_public_did(...).thenReturn(get(did))
 
-# need this to handle the async with the mock
-async def get(response):
-    return response
-
-
-@pytest.yield_fixture(scope="module")
-def event_loop(request):
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="module")
-async def schema_definition(yoma_agent_module_scope: AcaPyClient) -> Dict[str, Any]:
-    definition = SchemaDefinition(
-        name="test_schema", version="0.3", attributes=["speed"]
+    credential = test_module.SendCredential(
+        protocol_version=IssueCredentialProtocolVersion.v1,
+        connection_id="conn_id",
+        credential_definition_id=cred_def_id,
+        attributes={"name": "John", "age": "23"},
     )
 
-    public_did = await acapy_ledger_facade.create_pub_did(yoma_agent_module_scope)
-    print(f"created did: {public_did}")
+    result = await test_module.send_credential(credential, mock_agent_controller)
 
-    schema_definition_result = await create_schema(definition, yoma_agent_module_scope)
-    print(schema_definition_result)
-
-    print(f"created schema {str(schema_definition_result)}")
-    return (schema_definition_result).dict()
-
-
-@pytest.fixture(scope="module")
-async def credential_definition_id(
-    async_client_bob_module_scope: AsyncClient, schema_definition: Dict[str, Any]
-) -> str:
-    # when
-    response = await async_client_bob_module_scope.post(
-        MEMBER_AGENT_URL + "/admin/governance/credential-definitions",
-        data=json.dumps(
-            {
-                "support_revocation": False,
-                "schema_id": schema_definition["schema_id"],
-                "tag": get_random_string(5),
-            }
-        ),
+    assert result is cred_ex
+    verify(IssuerV1).send_credential(...)
+    verify(test_module).schema_id_from_credential_definition_id(
+        mock_agent_controller, cred_def_id
     )
-    result = response.json()
-
-    print(f"created definition {str(result)}")
-    return result["credential_definition_id"]
-
-
-@pytest.fixture(scope="module")
-async def credential_exchange_id(
-    async_client_bob_module_scope: AsyncClient,
-    alice_connection_id: str,
-    schema_definition: Dict[str, Any],
-    bob_connection_id: str,
-    async_client_alice_module_scope: AsyncClient,
-):
-    """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
-    then this fixture just returns it..."""
-    credential = {
-        "protocol_version": "v1",
-        "connection_id": bob_connection_id,
-        "schema_id": schema_definition["schema_id"],
-        "attributes": {"speed": "average"},
-    }
-
-    response = await async_client_bob_module_scope.post(
-        BASE_PATH,
-        data=json.dumps(credential),
-    )
-    credential_exchange = response.json()
-    credential_exchange_id = credential_exchange["credential_id"]
-    assert credential_exchange["protocol_version"] == "v1"
-
-    time.sleep(5)
-    response = await async_client_alice_module_scope.get(
-        BASE_PATH, params={"connection_id": alice_connection_id}
-    )
-    records = response.json()
-    assert len(records) > 0
-
-    return credential_exchange_id
+    verify(test_module).assert_public_did(mock_agent_controller)
+    verify(test_module).assert_valid_issuer(did, "schema_id")
 
 
 @pytest.mark.asyncio
-async def test_send_credential(
-    async_client_bob_module_scope: AsyncClient,
-    schema_definition: Dict[str, Any],
-    bob_connection_id: str,
-    alice_connection_id: str,
-    async_client_alice_module_scope: AsyncClient,
-):
-    credential = {
-        "protocol_version": "v1",
-        "connection_id": bob_connection_id,
-        "schema_id": schema_definition["schema_id"],
-        "attributes": {"speed": "average"},
-    }
+async def test_get_credentials(mock_agent_controller: AcaPyClient):
+    v1_records_no_conn_id = [mock(CredentialExchange), mock(CredentialExchange)]
+    v2_records_no_conn_id = [mock(CredentialExchange), mock(CredentialExchange)]
 
-    response = await async_client_alice_module_scope.get(
-        BASE_PATH, params={"connection_id": alice_connection_id}
-    )
-    records = response.json()
+    v1_records = [mock(CredentialExchange)]
+    v2_records = [mock(CredentialExchange)]
 
-    # nothing currently in alice's records
-    assert len(records) == 0
+    with when(IssuerV1).get_records(...).thenReturn(get(v1_records_no_conn_id)), when(
+        IssuerV2
+    ).get_records(...).thenReturn(get(v2_records_no_conn_id)):
+        result = await test_module.get_credentials(None, mock_agent_controller)
 
-    response = await async_client_bob_module_scope.post(
-        BASE_PATH,
-        data=json.dumps(credential),
-    )
+        assert result == v1_records_no_conn_id + v2_records_no_conn_id
 
-    credential["protocol_version"] = "v2"
-    response = await async_client_bob_module_scope.post(
-        BASE_PATH,
-        data=json.dumps(credential),
-    )
+        verify(IssuerV1).get_records(
+            controller=mock_agent_controller, connection_id=None
+        )
+        verify(IssuerV2).get_records(
+            controller=mock_agent_controller, connection_id=None
+        )
 
-    time.sleep(5)
-    response = await async_client_alice_module_scope.get(
-        BASE_PATH, params={"connection_id": alice_connection_id}
-    )
-    records = response.json()
+    with when(IssuerV1).get_records(...).thenReturn(get(v1_records)), when(
+        IssuerV2
+    ).get_records(...).thenReturn(get(v2_records)):
+        result = await test_module.get_credentials("conn_id", mock_agent_controller)
 
-    assert len(records) == 2
-
-    # Expect one v1 record, one v2 record
-    assert_that(records).extracting("protocol_version").contains("v1", "v2")
+        assert result == v1_records + v2_records
+        verify(IssuerV1).get_records(
+            controller=mock_agent_controller, connection_id="conn_id"
+        )
+        verify(IssuerV2).get_records(
+            controller=mock_agent_controller, connection_id="conn_id"
+        )
 
 
 @pytest.mark.asyncio
-async def test_get_records(async_client_alice_module_scope: AsyncClient):
-    records = (await async_client_alice_module_scope.get(BASE_PATH)).json()
-    assert records
-    assert len(records) >= 1
+async def test_get_credential(mock_agent_controller: AcaPyClient):
+    v1_record = mock(CredentialExchange)
+    v2_record = mock(CredentialExchange)
+
+    with when(IssuerV1).get_record(...).thenReturn(get(v1_record)):
+        result = await test_module.get_credential(
+            "v1-credential_id", mock_agent_controller
+        )
+
+        assert result is v1_record
+
+        verify(IssuerV1).get_record(
+            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
+        )
+
+    with when(IssuerV2).get_record(...).thenReturn(get(v2_record)):
+        result = await test_module.get_credential(
+            "v2-credential_id", mock_agent_controller
+        )
+
+        assert result is v2_record
+        verify(IssuerV2).get_record(
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+        )
 
 
 @pytest.mark.asyncio
-async def test_send_credential_request(
-    async_client_bob_module_scope: AsyncClient, credential_exchange_id: str
-):
-    time.sleep(10)
-    response = await async_client_bob_module_scope.post(
-        f"{BASE_PATH}/{credential_exchange_id}/request"
-    )
+async def test_remove_credential(mock_agent_controller: AcaPyClient):
+    v1_record = mock(CredentialExchange)
+    v2_record = mock(CredentialExchange)
 
-    # This returns an error - the correct one because the credential is in state received.
-    # For this to return another response we'd have to have state offer_received
-    result = response.json()
+    with when(IssuerV1).delete_credential(...).thenReturn(get(v1_record)):
+        await test_module.remove_credential("v1-credential_id", mock_agent_controller)
 
-    assert result["error_message"]
-    assert "Credential exchange" in result["error_message"]
-    assert response.status_code == 400
+        verify(IssuerV1).delete_credential(
+            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
+        )
+    with when(IssuerV2).delete_credential(...).thenReturn(get(v2_record)):
+        await test_module.remove_credential("v2-credential_id", mock_agent_controller)
+
+        verify(IssuerV2).delete_credential(
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+        )
 
 
 @pytest.mark.asyncio
-async def test_store_credential(
-    async_client_bob_module_scope: AsyncClient, credential_exchange_id: str
+async def test_request_credential(
+    mock_agent_controller: AcaPyClient,
 ):
-    # TODO check for the correct response when state is credential_received
-    # We can't complete this with auto accept enabled
-    time.sleep(5)
-    response = await async_client_bob_module_scope.post(
-        f"{BASE_PATH}/{credential_exchange_id}/store"
+    v1_record = mock(CredentialExchange)
+    v2_record = mock(CredentialExchange)
+
+    v1_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
+    v1_record.schema_id = "schema_id1"
+
+    v2_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
+    v2_record.schema_id = "schema_id2"
+
+    with when(IssuerV1).request_credential(...).thenReturn(get(v1_record)), when(
+        test_module
+    ).assert_valid_issuer(...).thenReturn(get(True)), when(IssuerV1).get_record(
+        ...
+    ).thenReturn(
+        get(v1_record)
+    ):
+        await test_module.request_credential("v1-credential_id", mock_agent_controller)
+
+        verify(IssuerV1).request_credential(
+            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
+        )
+        verify(test_module).assert_valid_issuer(
+            "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id1"
+        )
+
+    with when(IssuerV2).request_credential(...).thenReturn(get(v2_record)), when(
+        IssuerV2
+    ).get_record(...).thenReturn(get(v2_record)), when(test_module).assert_valid_issuer(
+        ...
+    ).thenReturn(
+        get(True)
+    ):
+        await test_module.request_credential("v2-credential_id", mock_agent_controller)
+
+        verify(IssuerV2).request_credential(
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+        )
+        verify(test_module).assert_valid_issuer(
+            "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id2"
+        )
+
+
+@pytest.mark.asyncio
+async def test_request_credential_x_no_schema_cred_def(
+    mock_agent_controller: AcaPyClient,
+):
+    v1_record = mock(CredentialExchange)
+
+    v1_record.credential_definition_id = None
+    v1_record.schema_id = None
+
+    with when(IssuerV1).get_record(...).thenReturn(get(v1_record)), pytest.raises(
+        Exception, match="Record has no credential definition or schema associated."
+    ):
+        await test_module.request_credential("v1-credential_id", mock_agent_controller)
+
+        verify(IssuerV1, times=0).request_credential(
+            controller=mock_agent_controller, credential_exchange_id="credential_id"
+        )
+        verify(test_module, times=0).assert_valid_issuer(
+            "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id1"
+        )
+
+
+@pytest.mark.asyncio
+async def test_store_credential(mock_agent_controller: AcaPyClient):
+    v1_record = mock(CredentialExchange)
+    v2_record = mock(CredentialExchange)
+
+    when(IssuerV1).store_credential(...).thenReturn(get(v1_record))
+    when(IssuerV2).store_credential(...).thenReturn(get(v2_record))
+
+    await test_module.store_credential("v1-credential_id1", mock_agent_controller)
+    await test_module.store_credential("v2-credential_id2", mock_agent_controller)
+
+    verify(IssuerV1).store_credential(
+        controller=mock_agent_controller, credential_exchange_id="v1-credential_id1"
     )
-
-    result = response.json()
-
-    print(result)
-
-    assert result["error_message"]
-    assert ("Credential exchange" and "state (must be credential_received).") in result[
-        "error_message"
-    ]
-    assert response.status_code == 400
+    verify(IssuerV2).store_credential(
+        controller=mock_agent_controller, credential_exchange_id="v2-credential_id2"
+    )

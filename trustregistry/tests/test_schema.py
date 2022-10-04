@@ -13,16 +13,21 @@ def test_get_schemas():
 
 
 def test_register_schema():
-    schema_dict = {"did": "string:2", "name": "string", "version": "string"}
-    schema_id = ":".join(schema_dict.values())
-    payload = json.dumps({"schema_id": schema_id})
+    schema_id = "string:2:string:string"
+    schema_dict = {
+        "id": schema_id,
+        "did": "string",
+        "name": "string",
+        "version": "string",
+    }
+    payload = {"schema_id": schema_id}
+
     response = client.post(
         "/registry/schemas/",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=payload,
     )
-    schema_dict["id"] = schema_id
-    schema_dict["did"] = "string"
+
     assert response.json() == schema_dict
     assert response.status_code == 200
 
@@ -34,27 +39,27 @@ def test_register_schema():
     response = client.post(
         "/registry/schemas/",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=payload,
     )
     assert response.status_code == 405
     assert "Schema already exists" in response.json()["detail"]
 
 
 def test_update_schema():
+    schema_id = "string_updated:2:string_updated:string_updated"
     schema_dict = {
-        "did": "string_updated:2",
+        "id": schema_id,
+        "did": "string_updated",
         "name": "string_updated",
         "version": "string_updated",
     }
-    schema_id = ":".join(schema_dict.values())
-    payload = json.dumps({"schema_id": schema_id})
-    response = client.post(
+    payload = {"schema_id": schema_id}
+
+    response = client.put(
         "/registry/schemas/string:2:string:string",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=payload,
     )
-    schema_dict["id"] = schema_id
-    schema_dict["did"] = "string_updated"
     assert response.json() == schema_dict
     assert response.status_code == 200
 
@@ -63,10 +68,10 @@ def test_update_schema():
     new_schemas = new_schemas_resp.json()
     assert schema_id in new_schemas["schemas"]
 
-    response = client.post(
+    response = client.put(
         "/registry/schemas/i:donot:exist",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=payload,
     )
     assert response.status_code == 405
     assert "Schema not found" in response.json()["detail"]
@@ -76,7 +81,7 @@ def test_remove_schema():
     response = client.delete(
         "/registry/schemas/string_updated:2:string_updated:string_updated"
     )
-    assert response.status_code == 200
+    assert response.status_code == 204
     assert response.json() is None
 
     response = client.delete(
@@ -90,8 +95,4 @@ def test_remove_schema():
 def test__get_schema_attrs():
     res = _get_schema_attrs(schema_id=SchemaID(schema_id="abc:2:Peter Parker:0.4.20"))
 
-    assert res == ["abc:2", "Peter Parker", "0.4.20"]
-
-    res = _get_schema_attrs(schema_id=SchemaID(schema_id="abc:Peter Parker:0.4.20"))
-
-    assert res == ["abc", "Peter Parker", "0.4.20"]
+    assert res == ["abc", "2", "Peter Parker", "0.4.20"]

@@ -1,0 +1,9 @@
+assertpy==1.1
+asyncio~=3.4.3
+black==22.8.0
+httpx==0.18.1
+mockito==1.2.2
+pylint==2.11.1
+pytest==6.2.4
+pytest-asyncio==0.15.1
+pytest-cov==2.12.1

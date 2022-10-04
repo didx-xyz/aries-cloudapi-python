@@ -2,12 +2,19 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from trustregistry import models
-from trustregistry import schemas
+from trustregistry import models, schemas
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Actor]:
     return db.query(models.Actor).offset(skip).limit(limit).all()
+
+
+def get_actor_by_did(db: Session, actor_did: str):
+    return db.query(models.Actor).filter(models.Actor.did == actor_did).first()
+
+
+def get_actor_by_id(db: Session, actor_id: str):
+    return db.query(models.Actor).filter(models.Actor.id == actor_id).first()
 
 
 def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
@@ -36,7 +43,7 @@ def update_actor(db: Session, actor: schemas.Actor, actor_id=str) -> models.Acto
         return None
 
     for var, value in vars(actor).items():
-        setattr(db_actor, var, value) if value else None
+        setattr(db_actor, var, value)
 
     db.add(db_actor)
     db.commit()

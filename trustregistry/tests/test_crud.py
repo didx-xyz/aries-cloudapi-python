@@ -8,17 +8,17 @@ from .test_main import override_get_db
 actor_model = schemas.Actor(
     id="mickey-mouse",
     name="Mickey Mouse",
-    roles="verifier, issuer",
+    roles=["verifier", "issuer"],
     didcomm_invitation="xyz",
-    did="abc",
+    did="did:sov:abc",
 )
 
 actor_model_update = schemas.Actor(
     id="mickey-mouse-2",
     name="Mickey Mouse 2",
-    roles="verifier, issuer",
+    roles=["verifier", "issuer"],
     didcomm_invitation="xyz",
-    did="abc",
+    did="did:key:123",
 )
 
 

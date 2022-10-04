@@ -1,18 +1,14 @@
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    TAAAccept,
-    TAARecord,
     CredentialDefinitionSendRequest,
+    TAAAccept,
     TAAInfo,
+    TAARecord,
 )
 from fastapi import HTTPException
-
-import app.facades.acapy_wallet as wallet_facade
-import app.facades.ledger as ledger_facade
-from app.schemas import DidCreationResponse
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +47,9 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     return taa_response, "service_agreement"
 
 
-async def accept_taa(controller: AcaPyClient, taa: TAARecord, mechanism: str = None):
+async def accept_taa(
+    controller: AcaPyClient, taa: TAARecord, mechanism: Optional[str] = None
+):
     """
     Accept the TAA
 
@@ -107,40 +105,31 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     return issuer_endpoint_response
 
 
-async def create_pub_did(
+async def register_nym_on_ledger(
     aries_controller: AcaPyClient,
-) -> DidCreationResponse:
-    """
-    Create a new public DID and
-    write it to the ledger and
-    receive its public info.
-    Returns:
-    * DID object (json)
-    * Issuer verkey (str)
-    * Issuer Endpoint (url)
-    """
-    did_object = await wallet_facade.create_did(aries_controller)
-    await ledger_facade.post_to_ledger(did_object=did_object)
+    *,
+    did: str,
+    verkey: str,
+    alias: Optional[str] = None,
+    role: Optional[str] = None,
+):
+    nym_response = await aries_controller.ledger.register_nym(
+        did=did, verkey=verkey, alias=alias, role=role
+    )
 
+    if not nym_response.success:
+        raise HTTPException(500, "Error registering nym on ledger")
+
+
+async def accept_taa_if_required(aries_controller: AcaPyClient):
     taa_response, mechanism = await get_taa(aries_controller)
+
     if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
         await accept_taa(
             aries_controller,
             taa_response.taa_record,
             mechanism,
         )
-    await wallet_facade.assign_pub_did(aries_controller, did_object.did)
-    get_pub_did_response = await wallet_facade.get_pub_did(aries_controller)
-    issuer_nym = get_pub_did_response.result.did
-    issuer_verkey = get_pub_did_response.result.verkey
-    issuer_endpoint = await get_did_endpoint(aries_controller, issuer_nym)
-    issuer_endpoint_url = issuer_endpoint.endpoint
-    final_response = DidCreationResponse(
-        did_object=get_pub_did_response.result,
-        issuer_verkey=issuer_verkey,
-        issuer_endpoint=issuer_endpoint_url,
-    )
-    return final_response
 
 
 async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
@@ -170,3 +159,37 @@ async def write_credential_def(controller: AcaPyClient, schema_id: str) -> str:
             detail="Something went wrong. Could not write credential definition to the ledger",
         )
     return write_cred_response.credential_definition_id
+
+
+async def schema_id_from_credential_definition_id(
+    controller: AcaPyClient, credential_definition_id: str
+):
+    """
+    From a credential definition, get the identifier for its schema.
+
+    Taken from ACA-Py implementation:
+    https://github.com/hyperledger/aries-cloudagent-python/blob/f9506df755e46c5be93b228c8811276b743a1adc/aries_cloudagent/ledger/indy.py#L790
+
+    Parameters:
+    ----------
+    credential_definition_id: The identifier of the credential definition
+            from which to identify a schema
+
+    Returns:
+    -------
+    schema_id : string
+    """
+    # scrape schema id or sequence number from cred def id
+    tokens = credential_definition_id.split(":")
+    if len(tokens) == 8:  # node protocol >= 1.4: cred def id has 5 or 8 tokens
+        return ":".join(tokens[3:7])  # schema id spans 0-based positions 3-6
+
+    # get txn by sequence number, retrieve schema identifier components
+    seq_no = tokens[3]
+
+    schema = await controller.schema.get_schema(schema_id=seq_no)
+
+    if not schema.schema_ or not schema.schema_.id:
+        raise Exception(f"Schema with transaction number {seq_no} not found")
+
+    return schema.schema_.id

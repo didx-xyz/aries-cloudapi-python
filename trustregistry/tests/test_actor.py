@@ -1,15 +1,15 @@
 import json
 
-from . import test_main
+from trustregistry.tests import test_main
 
 client = test_main.client
 
 new_actor = {
     "id": "darth-vader",
     "name": "Darth Vader",
-    "roles": "issuer, verifier",
+    "roles": ["issuer", "verifier"],
     "didcomm_invitation": "string",
-    "did": "string",
+    "did": "did:key:string",
 }
 
 
@@ -44,11 +44,10 @@ def test_register_actor():
 
 
 def test_update_actor():
-    payload = json.dumps(new_actor)
     response = client.post(
         "/registry/actors/darth-vader",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=new_actor,
     )
     assert response.status_code == 200
     assert response.json() == new_actor
@@ -56,21 +55,41 @@ def test_update_actor():
     new_actors_resp = client.get("/registry/actors")
     assert new_actors_resp.status_code == 200
     new_actors_list = new_actors_resp.json()
-    new_actor["roles"] = [x.strip() for x in new_actor["roles"].split(",")]
     assert new_actor in new_actors_list["actors"]
 
     response = client.post(
         "/registry/actors/idonotexist",
         headers={"content-type": "application/json", "accept": "application/json"},
-        data=payload,
+        json=new_actor,
     )
     assert response.status_code == 404
     assert "Actor not found" in response.json()["detail"]
 
 
+def test_update_actor_x():
+    updated_actor = new_actor.copy()
+    updated_actor["did"] = None
+
+    response = client.post(
+        "/registry/actors/darth-vader",
+        headers={"content-type": "application/json", "accept": "application/json"},
+        json=updated_actor,
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": [
+            {
+                "loc": ["body", "did"],
+                "msg": "none is not an allowed value",
+                "type": "type_error.none.not_allowed",
+            }
+        ]
+    }
+
+
 def test_remove_schema():
     response = client.delete("/registry/actors/darth-vader")
-    assert response.status_code == 200
+    assert response.status_code == 204
     assert response.json() is None
 
     response = client.delete(

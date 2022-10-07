@@ -11,7 +11,9 @@ ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 ./jq
 RUN chmod +x ./jq
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
+# COPY scripts/ngrok-wait.sh wait.sh
+# RUN chmod +x ./wait.sh
 
 USER $user
 
-CMD ./startup.sh --wallet-type askar
+CMD ./startup.sh --wallet-type askar --auto-promote-author-did

@@ -1,5 +1,6 @@
 import logging
 from typing import Optional, Tuple
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -7,6 +8,7 @@ from aries_cloudcontroller import (
     TAAAccept,
     TAAInfo,
     TAARecord,
+    TxnOrRegisterLedgerNymResponse,
 )
 from fastapi import HTTPException
 
@@ -112,13 +114,15 @@ async def register_nym_on_ledger(
     verkey: str,
     alias: Optional[str] = None,
     role: Optional[str] = None,
-):
-    nym_response = await aries_controller.ledger.register_nym(
-        did=did, verkey=verkey, alias=alias, role=role
-    )
-
-    if not nym_response.success:
-        raise HTTPException(500, "Error registering nym on ledger")
+) -> TxnOrRegisterLedgerNymResponse:
+    # return the result so we can extract the transaction data
+    try:
+        return await aries_controller.ledger.register_nym(
+            did=did, verkey=verkey, alias=alias, role=role
+        )
+    except ClientResponseError as e:       
+    # if not nym_response.success:
+        raise HTTPException(500, f"Error registering nym on ledger: %s", e)
 
 
 async def accept_taa_if_required(aries_controller: AcaPyClient):

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="0" failures="1" hostname="felurian" name="pytest" skipped="0" tests="5" time="58.987" timestamp="2022-10-07T16:47:00.669684"><testcase classname="tests.e2e.test_definitions" name="test_create_credential_definition" time="13.190"></testcase><testcase classname="tests.e2e.test_definitions" name="test_create_schema" time="3.021"></testcase><testcase classname="tests.e2e.test_definitions" name="test_get_schema" time="3.197"></testcase><testcase classname="tests.e2e.test_definitions" name="test_get_credential_definition" time="8.330"></testcase><testcase classname="tests.e2e.test_definitions" name="test_create_credential_definition_issuer_tenant" time="31.165"><failure message="app.error.cloud_api_error.CloudApiException: Timeout waiting for endorser to accept the endorsement request">credential_definition = CreateCredentialDefinition(tag=&apos;ROPXE&apos;, schema_id=&apos;KaDn3CRicDvoaS2Y56Mf8n:2:test_schema:0.3&apos;)
+aries_controller = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x103d928e0&gt;
+auth = AcaPyAuthVerified(token=&apos;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiI4M2ViOWY0MS01ZTIxLTQ3MmItYWVlOC1mOGQz...nt=True, tenant_role=None, is_admin=False, x_api_key=&apos;adminApiKey&apos;)&gt;, wallet_id=&apos;83eb9f41-5e21-472b-aee8-f8d3523f84ba&apos;)
+
+    @router.post(&quot;/credentials&quot;, response_model=CredentialDefinition)
+    async def create_credential_definition(
+        credential_definition: CreateCredentialDefinition,
+        aries_controller: AcaPyClient = Depends(agent_selector),
+        auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+    ):
+        &quot;&quot;&quot;
+        Create a credential definition.
+    
+        Parameters:
+        -----------
+        credential_definition: CreateCredentialDefinition
+            Payload for creating a credential definition.
+    
+        Returns:
+        --------
+        Credential Definition
+        &quot;&quot;&quot;
+    
+        # Assert the agent has a public did
+        public_did = await acapy_wallet.assert_public_did(aries_controller)
+    
+        # Make sure we are allowed to issue this schema according to trust registry rules
+        await trust_registry.assert_valid_issuer(
+            public_did, credential_definition.schema_id
+        )
+    
+        wait_for_event, stop_listener = await start_listener(
+            topic=&quot;endorsements&quot;, wallet_id=auth.wallet_id
+        )
+    
+        result = await aries_controller.credential_definition.publish_cred_def(
+            body=CredentialDefinitionSendRequest(
+                schema_id=credential_definition.schema_id,
+                # Revocation not supported yet
+                support_revocation=False,
+                tag=credential_definition.tag,
+            )
+        )
+    
+        if isinstance(result, TxnOrCredentialDefinitionSendResult):
+            try:
+                # Wait for transaction to be acknowledged and written to the ledger
+&gt;               await wait_for_event(
+                    filter_map={
+                        &quot;state&quot;: &quot;transaction-acked&quot;,
+                        &quot;transaction_id&quot;: result.txn.transaction_id,
+                    }
+                )
+
+app/generic/definitions.py:220: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def wait_for_event_with_timeout(
+        *, filter_map: Dict[str, Any], timeout: float = 10
+    ):
+        try:
+            payload = await asyncio.wait_for(
+                wait_for_event(filter_map), timeout=timeout
+            )
+            Webhooks.off(on_webhook)
+            return payload
+        except Exception as e:
+            # Always unsubscribe
+            Webhooks.off(on_webhook)
+&gt;           raise e from e
+
+app/webhook_listener.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    async def wait_for_event_with_timeout(
+        *, filter_map: Dict[str, Any], timeout: float = 10
+    ):
+        try:
+&gt;           payload = await asyncio.wait_for(
+                wait_for_event(filter_map), timeout=timeout
+            )
+
+app/webhook_listener.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+fut = &lt;Task cancelled name=&apos;Task-128&apos; coro=&lt;start_listener.&lt;locals&gt;.wait_for_event() done, defined at /Users/moriarty/Projects/aries-cloudapi-python/app/webhook_listener.py:82&gt;&gt;
+timeout = 10
+
+    async def wait_for(fut, timeout, *, loop=None):
+        &quot;&quot;&quot;Wait for the single Future or coroutine to complete, with timeout.
+    
+        Coroutine will be wrapped in Task.
+    
+        Returns result of the Future or coroutine.  When a timeout occurs,
+        it cancels the task and raises TimeoutError.  To avoid the task
+        cancellation, wrap it in shield().
+    
+        If the wait is cancelled, the task is also cancelled.
+    
+        This function is a coroutine.
+        &quot;&quot;&quot;
+        if loop is None:
+            loop = events.get_running_loop()
+        else:
+            warnings.warn(&quot;The loop argument is deprecated since Python 3.8, &quot;
+                          &quot;and scheduled for removal in Python 3.10.&quot;,
+                          DeprecationWarning, stacklevel=2)
+    
+        if timeout is None:
+            return await fut
+    
+        if timeout &lt;= 0:
+            fut = ensure_future(fut, loop=loop)
+    
+            if fut.done():
+                return fut.result()
+    
+            await _cancel_and_wait(fut, loop=loop)
+            try:
+                fut.result()
+            except exceptions.CancelledError as exc:
+                raise exceptions.TimeoutError() from exc
+            else:
+                raise exceptions.TimeoutError()
+    
+        waiter = loop.create_future()
+        timeout_handle = loop.call_later(timeout, _release_waiter, waiter)
+        cb = functools.partial(_release_waiter, waiter)
+    
+        fut = ensure_future(fut, loop=loop)
+        fut.add_done_callback(cb)
+    
+        try:
+            # wait until the future completes or the timeout
+            try:
+                await waiter
+            except exceptions.CancelledError:
+                if fut.done():
+                    return fut.result()
+                else:
+                    fut.remove_done_callback(cb)
+                    # We must ensure that the task is not running
+                    # after wait_for() returns.
+                    # See https://bugs.python.org/issue32751
+                    await _cancel_and_wait(fut, loop=loop)
+                    raise
+    
+            if fut.done():
+                return fut.result()
+            else:
+                fut.remove_done_callback(cb)
+                # We must ensure that the task is not running
+                # after wait_for() returns.
+                # See https://bugs.python.org/issue32751
+                await _cancel_and_wait(fut, loop=loop)
+&gt;               raise exceptions.TimeoutError()
+E               asyncio.exceptions.TimeoutError
+
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/tasks.py:501: TimeoutError
+
+During handling of the above exception, another exception occurred:
+
+schema_definition = CredentialSchema(id=&apos;KaDn3CRicDvoaS2Y56Mf8n:2:test_schema:0.3&apos;, name=&apos;test_schema&apos;, version=&apos;0.3&apos;, attribute_names=[&apos;speed&apos;])
+faber_acapy_client = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x103d928e0&gt;
+faber_client = &lt;httpx.AsyncClient object at 0x103d96880&gt;
+
+    @pytest.mark.asyncio
+    async def test_create_credential_definition_issuer_tenant(
+        schema_definition: CredentialSchema,
+        faber_acapy_client: AcaPyClient,
+        faber_client: AsyncClient,
+    ):
+        credential_definition = CreateCredentialDefinition(
+            schema_id=schema_definition.id, tag=get_random_string(5)
+        )
+    
+        auth = acapy_auth_verified(acapy_auth(faber_client.headers[&quot;x-api-key&quot;]))
+    
+        # when
+        result = (
+&gt;           await definitions.create_credential_definition(
+                credential_definition, faber_acapy_client, auth
+            )
+        ).dict()
+
+app/tests/e2e/test_definitions.py:169: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+credential_definition = CreateCredentialDefinition(tag=&apos;ROPXE&apos;, schema_id=&apos;KaDn3CRicDvoaS2Y56Mf8n:2:test_schema:0.3&apos;)
+aries_controller = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x103d928e0&gt;
+auth = AcaPyAuthVerified(token=&apos;eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiI4M2ViOWY0MS01ZTIxLTQ3MmItYWVlOC1mOGQz...nt=True, tenant_role=None, is_admin=False, x_api_key=&apos;adminApiKey&apos;)&gt;, wallet_id=&apos;83eb9f41-5e21-472b-aee8-f8d3523f84ba&apos;)
+
+    @router.post(&quot;/credentials&quot;, response_model=CredentialDefinition)
+    async def create_credential_definition(
+        credential_definition: CreateCredentialDefinition,
+        aries_controller: AcaPyClient = Depends(agent_selector),
+        auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+    ):
+        &quot;&quot;&quot;
+        Create a credential definition.
+    
+        Parameters:
+        -----------
+        credential_definition: CreateCredentialDefinition
+            Payload for creating a credential definition.
+    
+        Returns:
+        --------
+        Credential Definition
+        &quot;&quot;&quot;
+    
+        # Assert the agent has a public did
+        public_did = await acapy_wallet.assert_public_did(aries_controller)
+    
+        # Make sure we are allowed to issue this schema according to trust registry rules
+        await trust_registry.assert_valid_issuer(
+            public_did, credential_definition.schema_id
+        )
+    
+        wait_for_event, stop_listener = await start_listener(
+            topic=&quot;endorsements&quot;, wallet_id=auth.wallet_id
+        )
+    
+        result = await aries_controller.credential_definition.publish_cred_def(
+            body=CredentialDefinitionSendRequest(
+                schema_id=credential_definition.schema_id,
+                # Revocation not supported yet
+                support_revocation=False,
+                tag=credential_definition.tag,
+            )
+        )
+    
+        if isinstance(result, TxnOrCredentialDefinitionSendResult):
+            try:
+                # Wait for transaction to be acknowledged and written to the ledger
+                await wait_for_event(
+                    filter_map={
+                        &quot;state&quot;: &quot;transaction-acked&quot;,
+                        &quot;transaction_id&quot;: result.txn.transaction_id,
+                    }
+                )
+            except asyncio.TimeoutError:
+&gt;               raise CloudApiException(
+                    &quot;Timeout waiting for endorser to accept the endorsement request&quot;
+                )
+E               app.error.cloud_api_error.CloudApiException: Timeout waiting for endorser to accept the endorsement request
+
+app/generic/definitions.py:227: CloudApiException</failure></testcase></testsuite></testsuites>

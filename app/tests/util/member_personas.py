@@ -2,11 +2,12 @@ import json
 from typing import Any, Dict, TypedDict
 
 import pytest
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, CreateInvitationRequest
 from httpx import AsyncClient
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
 from app.tests.util.client import (
+    governance_acapy_client,
     tenant_acapy_client,
     tenant_admin_client,
     tenant_client,
@@ -14,7 +15,7 @@ from app.tests.util.client import (
 from app.tests.util.ledger import create_public_did
 from app.generic.connections.connections import CreateInvitation
 
-from .tenants import create_tenant, delete_tenant
+from app.tests.util.tenants import create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -80,6 +81,64 @@ async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
+    tenant_admin = tenant_admin_client()
+    tenant_admin_acapy = governance_acapy_client()
+
+    # invite = await tenant_admin_acapy.out_of_band.create_invitation(
+    #     auto_accept=True,
+    #     multi_use=True,
+    #     body=InvitationCreateRequest(
+    #         handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+    #         use_public_did=True,
+    #     ),
+    # )
+    invite = await tenant_admin_acapy.connection.create_invitation(
+        alias='endorser',
+        auto_accept=True,
+        multi_use=False,
+        public=True,
+        body=CreateInvitationRequest(),
+    )
+    
+    #create did
+    set_public_did_result = await create_public_did(tenant_admin_acapy) 
+    
+    
+    bob_conn = await bob_acapy_client.connection.receive_invitation(alias="endorser", auto_accept=True, body=invite.invitation)
+    alice_conn = await alice_acapy_client.connection.receive_invitation(alias="endorser", auto_accept=True, body=invite.invitation)
+
+    bob_records = await bob_acapy_client.connection.get_connections()
+    alice_records = await alice_acapy_client.connection.get_connections()
+
+    # Get connection record for admin
+    admin_conn_records = await tenant_admin_acapy.connection.get_connections()
+
+    
+    # set_endorser_role_result = await tenant_admin_acapy.endorse_transaction.set_endorser_role(conn_id=invite.connection_id, transaction_my_job="endorser")
+    print('\n\n\n\n\n')
+    print(invite)
+    print('\n\n\n\n\n')
+    # set_endorser_role_result = await tenant_admin_acapy.endorse_transaction.set_endorser_role(conn_id=admin_conn_records.results[-1].connection_id, transaction_my_job="TRANSACTION_ENDORSER")
+    # set_endorser_info_result = await tenant_admin_acapy.endorse_transaction.set_endorser_info(conn_id=admin_conn_records.results[-1].connection_id, endorser_did=set_public_did_result.did, endorser_name='TRANSACTION_ENDORSER')
+
+    set_endorser_role_result_bob = await bob_acapy_client.endorse_transaction.set_endorser_role(conn_id=bob_conn.connection_id, transaction_my_job='TRANSACTION_AUTHOR')
+    set_endorser_info_result_bob = await bob_acapy_client.endorse_transaction.set_endorser_info(conn_id=bob_conn.connection_id, endorser_did=set_public_did_result.did, endorser_name='endorser')
+    set_endorser_role_result_alice = await alice_acapy_client.endorse_transaction.set_endorser_role(conn_id=alice_conn.connection_id, transaction_my_job='TRANSACTION_AUTHOR')
+    set_endorser_info_result_alice = await alice_acapy_client.endorse_transaction.set_endorser_info(conn_id=alice_conn.connection_id, endorser_did=set_public_did_result.did, endorser_name='endorser')
+
+    await bob_acapy_client.connection.accept_invitation(conn_id=bob_records.results[-1].connection_id)
+    await alice_acapy_client.connection.accept_invitation(conn_id=alice_records.results[-1].connection_id)
+
+    bob_records = await bob_acapy_client.connection.get_connections()
+    alice_records = await alice_acapy_client.connection.get_connections()
+
+    print('\n\n\n\n\n')
+    print(bob_records)
+    print('\n\n\n\n\n')
+    print('\n\n\n\n\n')
+    print(alice_records)
+    print('\n\n\n\n\n')
+    
     bob_did = await create_public_did(bob_acapy_client)
     alice_did = await create_public_did(alice_acapy_client)
 

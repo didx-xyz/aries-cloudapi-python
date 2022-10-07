@@ -148,7 +148,7 @@ services:
   governance-multitenant-agent:
     build:
       context: .
-      dockerfile: dockerfiles/agents/Dockerfile.agent
+      dockerfile: dockerfiles/agents/Dockerfile.author.agent
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     ports:

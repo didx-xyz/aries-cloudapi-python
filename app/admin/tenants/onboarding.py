@@ -18,11 +18,11 @@ from app.facades.trust_registry import (
     update_actor,
 )
 from app.constants import ACAPY_ENDORSER_ALIAS
+from app.util.did import qualified_did_sov
 from app.webhook_listener import start_listener
 
 from app.error import CloudApiException
-from app.facades import acapy_ledger, acapy_wallet
-from app.util.did import qualified_did_sov
+from app.facades import acapy_wallet, acapy_ledger
 
 logger = logging.getLogger(__name__)
 
@@ -126,23 +126,7 @@ async def onboard_issuer(
         issuer_controller (AcaPyClient): authenticated ACA-Py client for issuer
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
     """
-    # Make sure the issuer has a public did
-    try:
-        issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
-    except CloudApiException:
-        # no public did
-        issuer_did = await acapy_wallet.create_did(issuer_controller)
-        await acapy_ledger.register_nym_on_ledger(
-            endorser_controller,
-            did=issuer_did.did,
-            verkey=issuer_did.verkey,
-            alias=name,
-        )
-        await acapy_ledger.accept_taa_if_required(issuer_controller)
-        await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
-
-    endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
-
+    
     # Make sure the issuer has a connection with the endorser
     invitation = await endorser_controller.out_of_band.create_invitation(
         auto_accept=True,
@@ -192,6 +176,16 @@ async def onboard_issuer(
         conn_id=connection_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
     )
 
+    # endorser_conns = await endorser_controller.connection.get_connections()
+    # await endorser_controller.endorse_transaction.set_endorser_role(
+    #     conn_id=endorser_conns.results[0].connection_id, transaction_my_job="TRANSACTION_ENDORSER"
+    # )
+
+    endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
+    print('\n\n\n\n')
+    print(f"ENDORSER PUBDID {endorser_did}")
+    print(f"CONNECTION_ID {connection_record.connection_id}")
+    print('\n\n\n\n')
     # Make sure endorsement has been configured
     # There is currently no way to retrieve endorser info. We'll just set it
     # to make sure the endorser info is set.
@@ -199,8 +193,76 @@ async def onboard_issuer(
         conn_id=connection_record.connection_id,
         endorser_did=endorser_did.did,
     )
+    
+    wait_for_event, stop_listener = await start_listener(
+        topic="endorsements", wallet_id=issuer_wallet_id
+    )
+    
+    # did_result = await endorser_controller.wallet.create_did(body=DIDCreate())  #  issuer_controller.endorse_transaction.create_request(tran_id='create_pub_pid', endorser_write_txn=True)
+    # nym_result = await endorser_controller.ledger.write(did=did_result.result.did)
 
-    return OnboardResult(did=qualified_did_sov(issuer_did.did))
+    # if isinstance(nym_result, )
+    
+    # Make sure the issuer has a public did
+    try:
+        issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
+    except:
+        # no public did
+        print('\n\n\n\n')
+        print(f"IM IN")
+        print('\n\n\n\n')
+        issuer_did = await acapy_wallet.create_did(controller=issuer_controller)
+        # set_pub_did = await issuer_controller.wallet.set_public_did(did=issuer_did.did, create_transaction_for_endorser=True)
+        print('\n\n\n\n')
+        # print(f"pub did  DID: {set_pub_did}")
+        print('\n\n\n\n')
+        print('\n\n\n\n')
+        print(f"ISSUER DID: {issuer_did}")
+        print('\n\n\n\n')
+        # trans_recs = await endorser_controller.endorse_transaction.get_records()
+        did = await endorser_controller.wallet.get_public_did()
+        endorser_endpoint = await endorser_controller.wallet.get_did_endpoint(did=did.result.did)
+        print('\n\n\n\n')
+        print(f"ENDORSER_ENDPOINT: {endorser_endpoint}")
+        print('\n\n\n\n')
+        # await issuer_controller.endorse_transaction.
+        # endorser_controller.endorse_transaction.
+        # nym_result_author = await issuer_controller.ledger.register_nym(did=issuer_did.did, verkey=issuer_did.verkey, create_transaction_for_endorser=True, alias=name)
+        nym_result = await acapy_ledger.register_nym_on_ledger(
+            endorser_controller,
+            did=issuer_did.did,
+            verkey=issuer_did.verkey,
+            alias=name,
+            # role='ENDORSER'
+        )
+        print('\n\n\n\n')
+        print(f"NYM_RESULT: {nym_result}")
+        print('\n\n\n\n')
+        public_did_result = await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
+        
+        # public_did_endpoint = await issuer_controller.wallet.set_did_endpoint(conn_id=connection_record.connection_id, create_transaction_for_endorser=True, body=DIDEndpointWithType(did=issuer_did.did, endpoint=endorser_endpoint.endpoint))
+        # await acapy_ledger.accept_taa_if_required(issuer_controller)
+        # print('\n\n\n\n')
+        # print(f"PUB_DID_ENDPOINT: {public_did_endpoint}")
+        # print('\n\n\n\n')
+        # return issuer_did
+
+    # if isinstance(nym_result, acapy_wallet.Did):
+    #     try: 
+    #         await wait_for_event(
+    #             filter_map={
+    #                 "state": "transaction-acked",
+    #                 "transaction_id": nym_result.txn.transaction_id,
+    #             }
+    #         )
+    #     except:
+    #         await stop_listener()
+    print('\n\n\n\n')
+    print(f"ISSUER DID RESULT: {public_did_result}")
+    print('\n\n\n\n')
+    return OnboardResult(did=qualified_did_sov(public_did_result.did))
+    # else:
+    #     await stop_listener()
 
 
 async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):

@@ -1,6 +1,6 @@
 from httpx import AsyncClient
 
-from .string import get_random_string
+from app.tests.util.string import get_random_string
 
 
 async def create_issuer_tenant(tenant_admin_client: AsyncClient, name: str):
@@ -16,6 +16,7 @@ async def create_issuer_tenant(tenant_admin_client: AsyncClient, name: str):
 
     wallet = wallet_response.json()
 
+    print(wallet)
     return wallet
 
 
@@ -32,6 +33,7 @@ async def create_verifier_tenant(tenant_admin_client: AsyncClient, name: str):
 
     wallet = wallet_response.json()
 
+    print(wallet)
     return wallet
 
 
@@ -47,6 +49,9 @@ async def create_tenant(tenant_admin_client: AsyncClient, name: str):
     )
     wallet = wallet_response.json()
 
+    print("\n\n\n\n")
+    print(wallet)
+    print("\n\n\n\n")
     return wallet
 
 

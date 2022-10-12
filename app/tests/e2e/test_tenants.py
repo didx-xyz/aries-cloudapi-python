@@ -141,6 +141,9 @@ async def test_create_tenant_issuer(
     assert_that(actor).has_name(tenant["tenant_name"])
     assert_that(actor).has_did(f"did:sov:{public_did.did}")
     assert_that(actor).has_roles(["issuer"])
+    assert_that(
+        actor["didcomm_invitation"]
+    ).is_not_empty().is_not_none().is_instance_of(str)
 
     # Connection with endorser
     assert_that(connection).has_their_public_did(endorser_did.did)
@@ -304,8 +307,9 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(new_actor).has_name(new_name)
     assert_that(new_actor).has_did(f"did:sov:{public_did.did}")
     assert_that(new_actor["roles"]).contains_only("issuer", "verifier")
-
-    assert new_actor["didcomm_invitation"] is None
+    assert_that(
+        new_actor["didcomm_invitation"]
+    ).is_not_empty().is_not_none().is_instance_of(str)
 
     # Tenant
     assert_that(new_tenant).has_tenant_id(wallet.wallet_id)

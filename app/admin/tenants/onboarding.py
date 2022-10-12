@@ -120,6 +120,7 @@ async def onboard_issuer(
       - make sure the issuer has a public did
       - make sure the issuer has a connection with the endorser
       - make sure the issuer has set up endorsement with the endorser connection
+      - make sure the issuer has an entry in the trust registry with a multi-use invitation
 
     Args:
         name (str): name of the issuer
@@ -153,6 +154,16 @@ async def onboard_issuer(
         use_existing_connection=True,
         body=invitation.invitation,
         alias=ACAPY_ENDORSER_ALIAS,
+    )
+
+    multi_use_invitation = await issuer_controller.out_of_band.create_invitation(
+        auto_accept=True,
+        multi_use=True,
+        body=InvitationCreateRequest(
+            use_public_did=False,
+            alias=f"Trust Registry {name}",
+            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+        ),
     )
 
     logger.debug(
@@ -263,6 +274,10 @@ async def onboard_issuer(
     return OnboardResult(did=qualified_did_sov(public_did_result.did))
     # else:
     #     await stop_listener()
+    # return OnboardResult(
+    #     did=qualified_did_sov(issuer_did.did),
+    #     didcomm_invitation=multi_use_invitation.invitation_url,
+    # )
 
 
 async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):

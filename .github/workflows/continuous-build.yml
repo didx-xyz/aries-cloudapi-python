@@ -31,22 +31,24 @@ jobs:
         run: |
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
+          sudo apt-get install curl
           chmod u+x manage
           chmod u+x Makefile
           make start &>/dev/null &
           sleep 180
           i=0
-          echo echo waiting for dockers to startup
-          while [ $i -le 2 ]
+          echo waiting for dockers to startup
+          ./manage up-daemon-usecache
+          while [ $i -le 240 ]
           do
-            if (docker logs $(docker ps -f name="governance-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
-            :: Alice                                    ::
-            ::                                          ::
-            ::                                          ::
-            :: Inbound Transports:                      ::
-            ::                                          ::
-            :: "); echo wait over; exit 0; then ((i++)); fi
+            STATUS1=$(curl -X 'GET' 'http://localhost:3021/status/live'  -H 'accept: application/json' 2>/dev/null || true | jq .alive)
+            STATUS2=$(curl -X 'GET' 'http://localhost:4021/status/live'  -H 'accept: application/json' 2>/dev/null || true | jq .alive)
+            if [[ $STATUS1 == 'true' && $STATUS2 == 'true'  ]]; then ((i=241)); fi  
+            sleep 1
+            echo waiting for container startup ${i}/240 ${STATUS1} ${STATUS2}
+            ((i++))
           done
+          echo wait over
         shell: bash
       - name: Test with pytest
         id: test

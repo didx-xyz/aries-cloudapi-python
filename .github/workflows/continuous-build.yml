@@ -29,8 +29,12 @@ jobs:
         run: pip install docker-compose
       - name: Start Test Harness
         run: |
+          mkdir ./data
+          sudo chown -R $(id -u):$(id -g) ./data
           chmod u+x manage
-          ./manage up-daemon-usecache
+          chmod u+x Makefile
+          make start &>/dev/null &
+          sleep 180
           i=0
           echo echo waiting for dockers to startup
           while [ $i -le 2 ]
@@ -48,10 +52,6 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          sudo chown -R $(id -u):$(id -g) data
-          docker-compose up --build -d governance-ga-agent
-          docker-compose up --build -d governance-multitenant-agent
-          sleep 120
           pytest  --cov=trustregistry --cov=app trustregistry app
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
@@ -60,9 +60,8 @@ jobs:
       - name: Retry tests
         if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
         run: |
-          docker-compose up --build -d governance-ga-agent
-          docker-compose up --build -d governance-multitenant-agent
-          sleep 120
+          make start &>/dev/null &
+          sleep 180
           pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done

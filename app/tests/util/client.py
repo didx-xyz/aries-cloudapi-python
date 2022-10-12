@@ -1,22 +1,10 @@
 from typing import Any, Optional
 from aries_cloudcontroller import (
-    ConnectionApi,
-    LedgerApi,
-    OutOfBandApi,
-    WalletApi,
     AcaPyClient,
-    IssueCredentialV10Api,
-    IssueCredentialV20Api,
-    PresentProofV20Api,
-    PresentProofV10Api,
-    CredentialsApi,
-    EndorseTransactionApi,
-    SchemaApi,
 )
 from httpx import AsyncClient, AsyncHTTPTransport
-from mockito import mock
 
-from .constants import (
+from app.tests.util.constants import (
     GOVERNANCE_FASTAPI_ENDPOINT,
     GOVERNANCE_ACAPY_API_KEY,
     TENANT_ACAPY_API_KEY,
@@ -33,7 +21,7 @@ from app.constants import (
 def governance_client(*, app: Optional[Any] = None):
     return AsyncClient(
         base_url=GOVERNANCE_FASTAPI_ENDPOINT,
-        timeout=60.0,
+        timeout=120.0,
         app=app,
         headers={
             "x-api-key": f"governance.{GOVERNANCE_ACAPY_API_KEY}",
@@ -56,7 +44,7 @@ def governance_acapy_client():
 def tenant_admin_client(*, app: Optional[Any] = None):
     return AsyncClient(
         base_url=TENANT_FASTAPI_ENDPOINT,
-        timeout=60.0,
+        timeout=120.0,
         app=app,
         headers={
             "x-api-key": f"tenant-admin.{TENANT_ACAPY_API_KEY}",
@@ -79,7 +67,7 @@ def tenant_admin_acapy_client():
 def tenant_client(*, token: str, app: Optional[Any] = None):
     return AsyncClient(
         base_url=TENANT_FASTAPI_ENDPOINT,
-        timeout=60.0,
+        timeout=120.0,
         app=app,
         headers={
             "x-api-key": token,

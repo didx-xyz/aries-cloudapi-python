@@ -14,7 +14,7 @@ from app.tests.util.client import (
 from app.tests.util.ledger import create_public_did
 from app.generic.connections.connections import CreateInvitation
 
-from .tenants import create_tenant, delete_tenant
+from app.tests.util.tenants import create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -215,13 +215,13 @@ async def alice_bob_connect_multi(
         client=alice_member_client,
         filter_map={"state": "completed"},
         topic="connections",
-        max_duration=30,
+        max_duration=120,
     )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "completed"},
         topic="connections",
-        max_duration=30,
+        max_duration=120,
     )
 
     return {

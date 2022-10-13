@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
-      - "8000:8000"
+      - 0.0.0.0:8000:8000
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
@@ -50,8 +50,8 @@ services:
     env_file:
       - environments/governance-ga/aca-py-agent.default.env
     ports:
-      - 3020:3020
-      - 3021:3021
+      - 0.0.0.0:3020:3020
+      - 0.0.0.0:3021:3021
     depends_on:
       - governance-ga-wallets-db
       - ledger-nodes
@@ -68,7 +68,7 @@ services:
     env_file:
       - environments/trustregistry/trustregistry.default.env
     ports:
-      - "8001:8001"
+      - 0.0.0.0:8001:8001
     volumes:
       - ./trustregistry:/trustregistry
     networks:
@@ -80,7 +80,7 @@ services:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
-      - "8100:8000"
+      - 0.0.0.0:8100:8000
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
@@ -99,7 +99,7 @@ services:
       context: .
       dockerfile: ./dockerfiles/webhooks/Dockerfile
     ports:
-      - "3010:3010"
+      - 0.0.0.0:3010:3010
     volumes:
       - ./shared_models/shared_models.py:/webhooks/shared_models.py
       - ./webhooks:/webhooks
@@ -128,7 +128,7 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6379:6379"
+      - 0.0.0.0:6379:6379
     volumes:
       - $PWD/data:/data
     networks:
@@ -165,8 +165,8 @@ services:
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     ports:
-      - 4020:3020
-      - 4021:3021
+      - 0.0.0.0:4020:3020
+      - 0.0.0.0:4021:3021
     depends_on:
       - governance-multitenant-wallets-db
       - ledger-nodes
@@ -203,14 +203,14 @@ services:
       dockerfile: Dockerfile
     command: "bash -c 'sleep 15; ./scripts/start_nodes.sh; sleep 60'"
     ports:
-      - 9701:9701
-      - 9702:9702
-      - 9703:9703
-      - 9704:9704
-      - 9705:9705
-      - 9706:9706
-      - 9707:9707
-      - 9708:9708
+      - 0.0.0.0:9701:9701
+      - 0.0.0.0:9702:9702
+      - 0.0.0.0:9703:9703
+      - 0.0.0.0:9704:9704
+      - 0.0.0.0:9705:9705
+      - 0.0.0.0:9706:9706
+      - 0.0.0.0:9707:9707
+      - 0.0.0.0:9708:9708
     environment:
       - DOCKERHOST=${DOCKERHOST}
     volumes:
@@ -222,7 +222,7 @@ services:
   tails-server:
     image: ghcr.io/bcgov/tails-server:1.0.0
     ports:
-      - 6543:6543
+      - 0.0.0.0:6543:6543
     networks:
       - governance-multitenant
       - governance-ga

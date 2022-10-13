@@ -1,7 +1,7 @@
 aiohttp~=3.8.1
 aries-cloudcontroller~=0.5.3
 fastapi==0.65.2
-httpx==0.18.1
+httpx==0.23.0
 pydantic~=1.8.2
 typing-extensions==4.0.0
 uvicorn[standard]==0.15.0

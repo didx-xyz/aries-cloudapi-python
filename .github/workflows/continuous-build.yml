@@ -29,11 +29,14 @@ jobs:
         run: pip install docker-compose
       - name: Start Test Harness
         run: |
+          mkdir ./data
+          sudo chown -R $(id -u):$(id -g) ./data
           chmod u+x manage
-          ./manage up-daemon-usecache
           i=0
-          echo echo waiting for dockers to startup
-          while [ $i -le 2 ]
+          echo waiting for aca-py container to startup
+          ./manage up-daemon-usecache
+          sleep 150
+          while [ $i -le 240 ]
           do
             if (docker logs $(docker ps -f name="governance-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
             :: Alice                                    ::
@@ -48,9 +51,6 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          docker-compose up --build -d governance-ga-agent
-          docker-compose up --build -d governance-multitenant-agent
-          sleep 120
           pytest  --cov=trustregistry --cov=app trustregistry app
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done

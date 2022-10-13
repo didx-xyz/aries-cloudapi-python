@@ -120,7 +120,6 @@ async def onboard_issuer(
       - make sure the issuer has a public did
       - make sure the issuer has a connection with the endorser
       - make sure the issuer has set up endorsement with the endorser connection
-      - make sure the issuer has an entry in the trust registry with a multi-use invitation
 
     Args:
         name (str): name of the issuer
@@ -160,6 +159,9 @@ async def onboard_issuer(
     wait_for_event, _ = await start_listener(
         topic="connections", wallet_id=issuer_wallet_id
     )
+    endorser_wait_for_event, _ = await start_listener(
+        topic="connections", wallet_id="admin"
+    )
 
     logger.debug("Receiving connection invitation")
 
@@ -170,16 +172,6 @@ async def onboard_issuer(
         use_existing_connection=True,
         body=invitation.invitation,
         alias=ACAPY_ENDORSER_ALIAS,
-    )
-
-    multi_use_invitation = await issuer_controller.out_of_band.create_invitation(
-        auto_accept=True,
-        multi_use=True,
-        body=InvitationCreateRequest(
-            use_public_did=False,
-            alias=f"Trust Registry {name}",
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-        ),
     )
 
     logger.debug(
@@ -194,10 +186,22 @@ async def onboard_issuer(
                 "state": "completed",
             }
         )
+
+        endorser_connection = await endorser_wait_for_event(
+            filter_map={
+                "invitation_msg_id": invitation.invi_msg_id,
+                "state": "completed",
+            }
+        )
     except TimeoutError:
         raise CloudApiException("Error creating connection with endorser", 500)
 
     logger.debug("Successfully created connection")
+
+    await endorser_controller.endorse_transaction.set_endorser_role(
+        conn_id=endorser_connection["connection_id"],
+        transaction_my_job="TRANSACTION_ENDORSER",
+    )
 
     await issuer_controller.endorse_transaction.set_endorser_role(
         conn_id=connection_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
@@ -211,10 +215,7 @@ async def onboard_issuer(
         endorser_did=endorser_did.did,
     )
 
-    return OnboardResult(
-        did=qualified_did_sov(issuer_did.did),
-        didcomm_invitation=multi_use_invitation.invitation_url,
-    )
+    return OnboardResult(did=qualified_did_sov(issuer_did.did))
 
 
 async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):

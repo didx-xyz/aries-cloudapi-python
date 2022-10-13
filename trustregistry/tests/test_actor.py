@@ -1,6 +1,6 @@
 import json
 
-from trustregistry.tests import test_main
+from . import test_main
 
 client = test_main.client
 

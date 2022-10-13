@@ -38,13 +38,13 @@ jobs:
           sleep 60
           while [ $i -le 240 ]
           do
-            STATUS1=$(curl -X 'GET' 'http://0.0.0.0:3021/status/live'  -H 'accept: application/json' | jq .alive)
-            STATUS2=$(curl -X 'GET' 'http://0.0.0.0:4021/status/live'  -H 'accept: application/json' | jq .alive)
+            STATUS1=$(curl -X 'GET' 'http://0.0.0.0:3021/status/ready'  -H 'accept: application/json' | jq .ready)
+            STATUS2=$(curl -X 'GET' 'http://0.0.0.0:4021/status/ready'  -H 'accept: application/json' | jq .ready)
             sleep 1
             echo
-            echo Waiting for Aca-py containers to be live ${i}/240
-            echo Agent 1 is live: ${STATUS1}
-            echo Agent 2 is live: ${STATUS2}
+            echo Waiting for Aca-py containers to be ready ${i}/240
+            echo Agent 1 is ready: ${STATUS1}
+            echo Agent 2 is ready: ${STATUS2}
             echo 
             if [[ $STATUS1 == 'true' && $STATUS2 == 'true'  ]]; then ((i=241)); fi  
             ((i++))

@@ -1,4 +1,4 @@
-from .shared_models import (
+from shared_models.shared_models import (
     TopicItem,
     Connection,
     credential_record_to_model_v1,
@@ -14,6 +14,7 @@ from .shared_models import (
     BasicMessage,
     PayloadType,
     topic_mapping,
+    Oob,
     WEBHOOK_TOPIC_ALL,
     CloudApiTopics,
     Endorsement,

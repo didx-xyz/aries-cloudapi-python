@@ -16,7 +16,7 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from shared_models import conn_record_to_connection, Connection
+from shared_models import conn_record_to_connection, Connection, Oob
 from app.dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ async def create_oob_invitation(
     return invitation
 
 
-@router.post("/oob/accept-invitation", response_model=Connection)
+@router.post("/oob/accept-invitation", response_model=Oob)
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -103,13 +103,15 @@ async def accept_oob_invitation(
     Receive out-of-band invitation.
     """
 
-    conn_record = await aries_controller.out_of_band.receive_invitation(
+    # FIXME: wrong return type: OobRecord instead of connection record
+    oob_record = await aries_controller.out_of_band.receive_invitation(
         auto_accept=True,
         use_existing_connection=body.use_existing_connection,
         alias=body.alias,
         body=body.invitation,
     )
-    return conn_record_to_connection(conn_record)
+    # FIXME: This is on OutOfBandRecord and not a connection record
+    return Oob(**oob_record.dict())
 
 
 @router.post("/oob/connect-public-did", response_model=Connection)
@@ -158,7 +160,7 @@ async def create_invitation(
     return invitation
 
 
-@router.post("/accept-invitation", response_model=Connection)
+@router.post("/accept-invitation")
 async def accept_invitation(
     body: AcceptInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -172,12 +174,12 @@ async def accept_invitation(
         the invitation object obtained from create_invitation.
     """
 
-    conn_record = await aries_controller.connection.receive_invitation(
+    oob_record = await aries_controller.connection.receive_invitation(
         body=body.invitation,
         auto_accept=True,
         alias=body.alias,
     )
-    return conn_record_to_connection(conn_record)
+    return oob_record
 
 
 @router.get("/", response_model=List[Connection])

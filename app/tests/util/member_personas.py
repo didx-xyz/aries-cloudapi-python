@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, TypedDict
 
 import pytest
@@ -93,19 +92,22 @@ async def bob_and_alice_public_did(
     #     ),
     # )
     invite = await tenant_admin_acapy.connection.create_invitation(
-        alias='endorser',
+        alias="endorser",
         auto_accept=True,
         multi_use=False,
         public=True,
         body=CreateInvitationRequest(),
     )
-    
-    #create did
-    set_public_did_result = await create_public_did(tenant_admin_acapy) 
-    
-    
-    bob_conn = await bob_acapy_client.connection.receive_invitation(alias="endorser", auto_accept=True, body=invite.invitation)
-    alice_conn = await alice_acapy_client.connection.receive_invitation(alias="endorser", auto_accept=True, body=invite.invitation)
+
+    # create did
+    set_public_did_result = await create_public_did(tenant_admin_acapy)
+
+    bob_conn = await bob_acapy_client.connection.receive_invitation(
+        alias="endorser", auto_accept=True, body=invite.invitation
+    )
+    alice_conn = await alice_acapy_client.connection.receive_invitation(
+        alias="endorser", auto_accept=True, body=invite.invitation
+    )
 
     bob_records = await bob_acapy_client.connection.get_connections()
     alice_records = await alice_acapy_client.connection.get_connections()
@@ -113,32 +115,41 @@ async def bob_and_alice_public_did(
     # Get connection record for admin
     admin_conn_records = await tenant_admin_acapy.connection.get_connections()
 
-    
-    # set_endorser_role_result = await tenant_admin_acapy.endorse_transaction.set_endorser_role(conn_id=invite.connection_id, transaction_my_job="endorser")
-    print('\n\n\n\n\n')
-    print(invite)
-    print('\n\n\n\n\n')
-    # set_endorser_role_result = await tenant_admin_acapy.endorse_transaction.set_endorser_role(conn_id=admin_conn_records.results[-1].connection_id, transaction_my_job="TRANSACTION_ENDORSER")
-    # set_endorser_info_result = await tenant_admin_acapy.endorse_transaction.set_endorser_info(conn_id=admin_conn_records.results[-1].connection_id, endorser_did=set_public_did_result.did, endorser_name='TRANSACTION_ENDORSER')
+    set_endorser_role_result_bob = (
+        await bob_acapy_client.endorse_transaction.set_endorser_role(
+            conn_id=bob_conn.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
+        )
+    )
+    set_endorser_info_result_bob = (
+        await bob_acapy_client.endorse_transaction.set_endorser_info(
+            conn_id=bob_conn.connection_id,
+            endorser_did=set_public_did_result.did,
+            endorser_name="endorser",
+        )
+    )
+    set_endorser_role_result_alice = (
+        await alice_acapy_client.endorse_transaction.set_endorser_role(
+            conn_id=alice_conn.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
+        )
+    )
+    set_endorser_info_result_alice = (
+        await alice_acapy_client.endorse_transaction.set_endorser_info(
+            conn_id=alice_conn.connection_id,
+            endorser_did=set_public_did_result.did,
+            endorser_name="endorser",
+        )
+    )
 
-    set_endorser_role_result_bob = await bob_acapy_client.endorse_transaction.set_endorser_role(conn_id=bob_conn.connection_id, transaction_my_job='TRANSACTION_AUTHOR')
-    set_endorser_info_result_bob = await bob_acapy_client.endorse_transaction.set_endorser_info(conn_id=bob_conn.connection_id, endorser_did=set_public_did_result.did, endorser_name='endorser')
-    set_endorser_role_result_alice = await alice_acapy_client.endorse_transaction.set_endorser_role(conn_id=alice_conn.connection_id, transaction_my_job='TRANSACTION_AUTHOR')
-    set_endorser_info_result_alice = await alice_acapy_client.endorse_transaction.set_endorser_info(conn_id=alice_conn.connection_id, endorser_did=set_public_did_result.did, endorser_name='endorser')
-
-    await bob_acapy_client.connection.accept_invitation(conn_id=bob_records.results[-1].connection_id)
-    await alice_acapy_client.connection.accept_invitation(conn_id=alice_records.results[-1].connection_id)
+    await bob_acapy_client.connection.accept_invitation(
+        conn_id=bob_records.results[-1].connection_id
+    )
+    await alice_acapy_client.connection.accept_invitation(
+        conn_id=alice_records.results[-1].connection_id
+    )
 
     bob_records = await bob_acapy_client.connection.get_connections()
     alice_records = await alice_acapy_client.connection.get_connections()
 
-    print('\n\n\n\n\n')
-    print(bob_records)
-    print('\n\n\n\n\n')
-    print('\n\n\n\n\n')
-    print(alice_records)
-    print('\n\n\n\n\n')
-    
     bob_did = await create_public_did(bob_acapy_client)
     alice_did = await create_public_did(alice_acapy_client)
 
@@ -266,7 +277,6 @@ async def alice_bob_connect_multi(
     bob_connection_records = (
         await bob_member_client.get("/generic/connections")
     ).json()
-    print(json.dumps(bob_connection_records, indent=2))
 
     bob_connection_id = bob_connection_records[0]["connection_id"]
 

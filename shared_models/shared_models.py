@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Generic, Optional, Dict, TypeVar, Union, Tuple
+from typing import Any, Generic, List, Mapping, Optional, Dict, TypeVar, Union, Tuple
 
 from typing_extensions import TypedDict, Literal
 
@@ -7,6 +7,7 @@ from aries_cloudcontroller import (
     ConnRecord,
     IndyProof,
     IndyProofRequest,
+    InvitationMessage,
     V10PresentationExchange,
     V10CredentialExchange,
     V20CredExRecord,
@@ -28,13 +29,14 @@ AcaPyTopics = Literal[
     "issue_credential_v2_0_indy",
     "issue_credential_v2_0_dif",
     "present_proof",
+    "out_of_band",
     "present_proof_v2_0",
     "revocation_registry",
     "endorse_transaction",
 ]
 
 CloudApiTopics = Literal[
-    "basic-messages", "connections", "proofs", "credentials", "endorsements"
+    "basic-messages", "connections", "proofs", "credentials", "endorsements", "oob"
 ]
 
 # Mapping of acapy topic names to their respective cloud api topic names
@@ -43,6 +45,7 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "connections": "connections",
     "present_proof": "proofs",
     "present_proof_v2_0": "proofs",
+    "out_of_band": "oob",
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
     "endorse_transaction": "endorsements",
@@ -100,13 +103,39 @@ class Endorsement(BaseModel):
     state: str
 
 
+class ServiceDecorator(TypedDict):
+    endpoint: str
+    recipient_keys: List[str]
+    routing_keys: Optional[List[str]]
+
+
+class Oob(BaseModel):
+    role: str
+    invi_msg_id: str
+    state: str
+    trace: Optional[str] = None
+    our_recipient_key: Optional[str] = None
+    oob_id: Optional[str] = None
+    invitation: Union[InvitationMessage, Mapping[str, Any]] = None
+    created_at: Optional[str] = None
+    connection_id: Optional[str] = None
+    updated_at: Optional[str] = None
+    attach_thread_id: Optional[str] = None
+    multi_use: Optional[bool] = False
+    our_recipient_key: Optional[str] = None
+    their_service: Optional[Union[ServiceDecorator, Any]] = None
+    our_service: Optional[Union[ServiceDecorator, Any]] = None
+
+
 class Connection(BaseModel):
-    connection_id: str
-    connection_protocol: Literal["connections/1.0", "didexchange/1.0"]
-    created_at: str
-    invitation_mode: Literal["once", "multi", "static"]
-    their_role: Literal["invitee", "requester", "inviter", "responder"]
-    state: Optional[str] = None # did-exchange state
+    connection_id: Optional[str] = None
+    connection_protocol: Optional[
+        str
+    ] = None  # Optional[Literal["connections/1.0", "didexchange/1.0"]] = None
+    created_at: Optional[str] = None
+    invitation_mode: Optional[Literal["once", "multi", "static"]] = None
+    their_role: Optional[Literal["invitee", "requester", "inviter", "responder"]] = None
+    state: Optional[str] = None  # did-exchange state
     my_did: Optional[str]
     alias: Optional[str] = None
     their_did: Optional[str] = None
@@ -129,15 +158,15 @@ class CredentialExchange(BaseModel):
     error_msg: Optional[str] = None
     state: Optional[
         Literal[
-        "proposal-sent",
-        "proposal-received",
-        "offer-sent",
-        "offer-received",
-        "request-sent",
-        "request-received",
-        "credential-issued",
-        "credential-received",
-        "done",
+            "proposal-sent",
+            "proposal-received",
+            "offer-sent",
+            "offer-received",
+            "request-sent",
+            "request-received",
+            "credential-issued",
+            "credential-received",
+            "done",
         ]
     ] = None
     # Attributes can be None in proposed state

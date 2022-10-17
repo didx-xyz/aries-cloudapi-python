@@ -16,7 +16,7 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from shared_models import conn_record_to_connection, Connection
+from shared_models import conn_record_to_connection, Connection, Oob
 from app.dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ async def create_oob_invitation(
     return invitation
 
 
-@router.post("/oob/accept-invitation", response_model=Connection)
+@router.post("/oob/accept-invitation", response_model=Oob)
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -103,13 +103,13 @@ async def accept_oob_invitation(
     Receive out-of-band invitation.
     """
 
-    conn_record = await aries_controller.out_of_band.receive_invitation(
+    oob_record = await aries_controller.out_of_band.receive_invitation(
         auto_accept=True,
         use_existing_connection=body.use_existing_connection,
         alias=body.alias,
         body=body.invitation,
     )
-    return conn_record_to_connection(conn_record)
+    return Oob(**oob_record)
 
 
 @router.post("/oob/connect-public-did", response_model=Connection)

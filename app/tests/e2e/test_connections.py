@@ -199,12 +199,18 @@ async def test_oob_connect_via_public_did(
     # FIXME: I'm currently broken due to endorsement not working with aca-py0.7.4 onward
     # This fails already at the onboarding of the issuer
     faber_public_did = await faber_acapy_client.wallet.get_public_did()
+    print('\n\n\n\n\n\n')
+    print(f"FABER_PUB_DID: {faber_public_did}")
+    print('\n\n\n\n\n\n')
     connect_response = await bob_member_client.post(
         "/generic/connections/oob/connect-public-did",
         json={"public_did": faber_public_did.result.did},
     )
     bob_oob_record = connect_response.json()
 
+    print('\n\n\n\n\n\n')
+    print(f"FABER_PUB_DID: {bob_oob_record}")
+    print('\n\n\n\n\n\n')
 
     assert check_webhook_state(
         client=bob_member_client,

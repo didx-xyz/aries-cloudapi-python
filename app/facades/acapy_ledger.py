@@ -114,11 +114,12 @@ async def register_nym_on_ledger(
     verkey: str,
     alias: Optional[str] = None,
     role: Optional[str] = None,
+    connection_id: Optional[str] = None,
 ) -> TxnOrRegisterLedgerNymResponse:
     # return the result so we can extract the transaction data
     try:
         return await aries_controller.ledger.register_nym(
-            did=did, verkey=verkey, alias=alias, role=role
+            did=did, verkey=verkey, alias=alias, role=role, conn_id=connection_id
         )
     except ClientResponseError as e:       
     # if not nym_response.success:

@@ -156,3 +156,4 @@ junit.xml
 
 *.db
 **aries-cloudcontroller-python/
+**aries-cloudagent-python/

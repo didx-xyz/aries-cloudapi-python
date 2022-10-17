@@ -18,6 +18,7 @@ topics = Literal[
     "issue_credential",
     "forward",
     "ping",
+    "oob",
     "basicmessages",
     "issuer_cred_rev",
     "issue_credential_v2_0",

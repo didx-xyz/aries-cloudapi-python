@@ -18,11 +18,11 @@ from app.facades.trust_registry import (
     update_actor,
 )
 from app.constants import ACAPY_ENDORSER_ALIAS
-from app.util.did import qualified_did_sov
 from app.webhook_listener import start_listener
 
 from app.error import CloudApiException
-from app.facades import acapy_wallet, acapy_ledger
+from app.facades import acapy_ledger, acapy_wallet
+from app.util.did import qualified_did_sov
 
 logger = logging.getLogger(__name__)
 
@@ -120,13 +120,26 @@ async def onboard_issuer(
       - make sure the issuer has a public did
       - make sure the issuer has a connection with the endorser
       - make sure the issuer has set up endorsement with the endorser connection
-      - make sure the issuer has an entry in the trust registry with a multi-use invitation
 
     Args:
         name (str): name of the issuer
         issuer_controller (AcaPyClient): authenticated ACA-Py client for issuer
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
     """
+    # Make sure the issuer has a public did
+    # try:
+    #     issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
+    # except CloudApiException:
+    #     # no public did
+    #     issuer_did = await acapy_wallet.create_did(issuer_controller)
+    #     await acapy_ledger.register_nym_on_ledger(
+    #         endorser_controller,
+    #         did=issuer_did.did,
+    #         verkey=issuer_did.verkey,
+    #         alias=name,
+    #     )
+    #     await acapy_ledger.accept_taa_if_required(issuer_controller)
+    #     await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
 
     endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
 
@@ -134,7 +147,6 @@ async def onboard_issuer(
     invitation = await endorser_controller.out_of_band.create_invitation(
         auto_accept=True,
         body=InvitationCreateRequest(
-            alias="endorser",
             handshake_protocols=["https://didcomm.org/didexchange/1.0"],
             use_public_did=True,
         ),
@@ -147,91 +159,80 @@ async def onboard_issuer(
     wait_for_event, _ = await start_listener(
         topic="connections", wallet_id=issuer_wallet_id
     )
+    endorser_wait_for_event, _ = await start_listener(
+        topic="connections", wallet_id="admin"
+    )
 
     logger.debug("Receiving connection invitation")
 
     # FIXME: make sure the connection with this alias doesn't exist yet
     # Or does use_existing_connection take care of this?
-    oob_record = await issuer_controller.out_of_band.receive_invitation(
+    connection_record = await issuer_controller.out_of_band.receive_invitation(
         auto_accept=True,
         use_existing_connection=True,
         body=invitation.invitation,
         alias=ACAPY_ENDORSER_ALIAS,
     )
 
-    # multi_use_invitation = await endorser_controller.out_of_band.create_invitation(
-    #     auto_accept=True,
-    #     # multi_use=True,
-    #     body=InvitationCreateRequest(
-    #         use_public_did=True,
-    #         alias=f"Trust Registry {name}",
-    #         handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-    #     ),
-    # )
-
     logger.debug(
-        f"Waiting for connection with id {oob_record.connection_id} to be completed"
+        f"Waiting for connection with id {connection_record.connection_id} to be completed"
     )
 
     # Wait for connection to be completed before continuing
     try:
         await wait_for_event(
             filter_map={
-                "connection_id": oob_record.connection_id,
+                "connection_id": connection_record.connection_id,
                 "state": "completed",
-            },
-            timeout=90
+            }
+        )
+
+        endorser_connection = await endorser_wait_for_event(
+            filter_map={
+                "invitation_msg_id": invitation.invi_msg_id,
+                "state": "completed",
+            }
         )
     except TimeoutError:
         raise CloudApiException("Error creating connection with endorser", 500)
 
     logger.debug("Successfully created connection")
 
-    await issuer_controller.endorse_transaction.set_endorser_role(
-        conn_id=oob_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
+    await endorser_controller.endorse_transaction.set_endorser_role(
+        conn_id=endorser_connection["connection_id"],
+        transaction_my_job="TRANSACTION_ENDORSER",
     )
 
-    endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
+    await issuer_controller.endorse_transaction.set_endorser_role(
+        conn_id=connection_record.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
+    )
 
     # Make sure endorsement has been configured
     # There is currently no way to retrieve endorser info. We'll just set it
     # to make sure the endorser info is set.
     await issuer_controller.endorse_transaction.set_endorser_info(
-        conn_id=oob_record.connection_id,
+        conn_id=connection_record.connection_id,
         endorser_did=endorser_did.did,
     )
 
-    wait_for_event, stop_listener = await start_listener(
-        topic="endorsements", wallet_id=issuer_wallet_id
-    )
-
-    # Make sure the issuer has a public did
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
-    except:
+    except CloudApiException:
         # no public did
-        issuer_did = await acapy_wallet.create_did(controller=issuer_controller)
-        # did = await endorser_controller.wallet.get_public_did()
-        # endorser_endpoint = await endorser_controller.wallet.get_did_endpoint(
-        #     did=did.result.did
-        # )
-
-        print('\n\n\n\n\n\n')
-        print(f"issuer did onboarding: {issuer_did}")
-        print('\n\n\n\n\n\n')
-        nym_result = await acapy_ledger.register_nym_on_ledger(
+        issuer_did = await acapy_wallet.create_did(issuer_controller)
+        await acapy_ledger.register_nym_on_ledger(
             endorser_controller,
             did=issuer_did.did,
             verkey=issuer_did.verkey,
             alias=name,
-            # connection_id=oob_record.connection_id
-            role='ENDORSER'
+            create_transaction_for_endorser=True
+            # role="ENDORSER"
         )
-        public_did_result = await acapy_wallet.set_public_did(
-            endorser_controller, issuer_did.did
-        )
+        await acapy_ledger.accept_taa_if_required(issuer_controller)
+        await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
 
-    return OnboardResult(did=qualified_did_sov(public_did_result.did))
+    # await endorser_controller.ledger.
+    return OnboardResult(did=qualified_did_sov(issuer_did.did))
 
 
 async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):

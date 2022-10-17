@@ -59,7 +59,7 @@ class Service:
         endorsement.state = endorsement.state.replace("_", "-")
 
         return endorsement
-   
+
     def _oob(self, item: RedisItem):
         oob = Oob(**item["payload"])
 

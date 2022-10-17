@@ -165,24 +165,27 @@ async def test_create_invitation_oob(
 @pytest.mark.asyncio
 async def test_accept_invitation_oob(
     bob_member_client: AsyncClient,
+    alice_member_client: AsyncClient,
 ):
     invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation", json={"create_connection": True}
+        "/generic/connections/oob/create-invitation", json={"create_connection": True, "use_public_did": False}
     )
     assert_that(invitation_response.status_code).is_equal_to(200)
-    invitation = invitation_response.json()
+    invitation = (invitation_response.json())["invitation"]
 
-    accept_response = await bob_member_client.post(
+    invitation["id"] = invitation.pop("@id")
+    invitation["type"] = invitation.pop("@type")
+    accept_response = await alice_member_client.post(
         "/generic/connections/oob/accept-invitation",
-        json={"invitation": invitation["invitation"]},
+        json={"invitation": invitation},
     )
     connection_record = accept_response.json()
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+        "role", "state", "created_at", "invi_msg_id", "oob_id", "invitation"
     )
-    assert_that(connection_record).has_connection_protocol("didexchange/1.0")
+    assert any("didexchange/1.0" in proto for proto in connection_record['invitation']['handshake_protocols'])
 
 
 @pytest.mark.asyncio

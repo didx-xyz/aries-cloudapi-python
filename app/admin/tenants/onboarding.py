@@ -214,20 +214,28 @@ async def onboard_issuer(
         conn_id=connection_record.connection_id,
         endorser_did=endorser_did.did,
     )
+    
+    # await endorser_controller.endorse_transaction.set_endorser_info(
+    #     conn_id=endorser_connection["connection_id"],
+    #     endorser_did=endorser_did.did
+    # )
 
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
     except CloudApiException:
         # no public did
         issuer_did = await acapy_wallet.create_did(issuer_controller)
-        await acapy_ledger.register_nym_on_ledger(
+        txn = await acapy_ledger.register_nym_on_ledger(
             endorser_controller,
+            # connection_id=endorser_connection["connection_id"],
             did=issuer_did.did,
             verkey=issuer_did.verkey,
             alias=name,
-            create_transaction_for_endorser=True
-            # role="ENDORSER"
+            # create_transaction_for_endorser=True
+            role="ENDORSER"
         )
+        assert txn == ''
+        await endorser_controller.endorse_transaction.endorse_transaction(tran_id=txn.txn.transaction_id)
         await acapy_ledger.accept_taa_if_required(issuer_controller)
         await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
 

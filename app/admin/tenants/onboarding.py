@@ -226,17 +226,20 @@ async def onboard_issuer(
         # no public did
         issuer_did = await acapy_wallet.create_did(issuer_controller)
         txn = await acapy_ledger.register_nym_on_ledger(
-            endorser_controller,
-            # connection_id=endorser_connection["connection_id"],
+            issuer_controller,
+            connection_id=connection_record.connection_id,
             did=issuer_did.did,
             verkey=issuer_did.verkey,
             alias=name,
-            # create_transaction_for_endorser=True
-            role="ENDORSER"
+            create_transaction_for_endorser=True
+            # role="STEWARD"
         )
-        assert txn == ''
-        await endorser_controller.endorse_transaction.endorse_transaction(tran_id=txn.txn.transaction_id)
+        endorser_txns = await endorser_controller.endorse_transaction.get_records()
+        end_txn = endorser_txns.results[0]
         await acapy_ledger.accept_taa_if_required(issuer_controller)
+        await endorser_controller.endorse_transaction.endorse_transaction(tran_id=end_txn.transaction_id)
+        await endorser_controller.endorse_transaction.write_transaction(tran_id=end_txn.transaction_id)
+        # await endorser_controller.endorse_transaction.endorse_transaction(tran_id=txn.txn.transaction_id)
         await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
 
     # await endorser_controller.ledger.

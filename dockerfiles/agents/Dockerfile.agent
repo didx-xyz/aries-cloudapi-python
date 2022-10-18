@@ -4,7 +4,7 @@ USER root
 RUN apt-get update
 RUN apt-get update && apt-get install -y gcc
 
-RUN pip3 install "aries-cloudagent[askar,indy] @ git+https://github.com/hyperledger/aries-cloudagent-python.git@0.7.5-rc0"
+RUN pip3 install "aries-cloudagent[askar,indy] @ git+https://github.com/morrieinmaas/aries-cloudagent-python.git@feat/1980/bump-nacl-dep"
 
 ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 ./jq
 RUN chmod +x ./jq

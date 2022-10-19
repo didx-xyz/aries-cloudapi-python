@@ -110,9 +110,9 @@ class ServiceDecorator(TypedDict):
 
 
 class Oob(BaseModel):
-    role: str
-    invi_msg_id: str
-    state: str
+    role: Optional[str] = str
+    invi_msg_id: Optional[str] = None
+    state: Optional[str] = str
     trace: Optional[str] = None
     our_recipient_key: Optional[str] = None
     oob_id: Optional[str] = None

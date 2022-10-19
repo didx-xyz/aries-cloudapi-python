@@ -147,6 +147,7 @@ async def onboard_issuer(
     invitation = await endorser_controller.out_of_band.create_invitation(
         auto_accept=True,
         body=InvitationCreateRequest(
+            alias=ACAPY_ENDORSER_ALIAS,
             handshake_protocols=["https://didcomm.org/didexchange/1.0"],
             use_public_did=True,
         ),
@@ -226,21 +227,23 @@ async def onboard_issuer(
         # no public did
         issuer_did = await acapy_wallet.create_did(issuer_controller)
         txn = await acapy_ledger.register_nym_on_ledger(
-            issuer_controller,
-            connection_id=connection_record.connection_id,
+            endorser_controller,
+            # connection_id=endorser_connection["connection_id"],
             did=issuer_did.did,
-            verkey=issuer_did.verkey,
-            alias=name,
-            create_transaction_for_endorser=True
+            verkey=issuer_did.verkey
+            # alias=name
+            # create_transaction_for_endorser=True
             # role="STEWARD"
         )
-        endorser_txns = await endorser_controller.endorse_transaction.get_records()
-        end_txn = endorser_txns.results[0]
+        # endorser_txns = await endorser_controller.endorse_transaction.get_records()
+        # end_txn = endorser_txns.results[0]
         await acapy_ledger.accept_taa_if_required(issuer_controller)
-        await endorser_controller.endorse_transaction.endorse_transaction(tran_id=end_txn.transaction_id)
-        await endorser_controller.endorse_transaction.write_transaction(tran_id=end_txn.transaction_id)
+        # await endorser_controller.endorse_transaction.endorse_transaction(tran_id=end_txn.transaction_id)
+        # await endorser_controller.endorse_transaction.write_transaction(tran_id=end_txn.transaction_id)
         # await endorser_controller.endorse_transaction.endorse_transaction(tran_id=txn.txn.transaction_id)
-        await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
+        res = await issuer_controller.wallet.set_public_did(did=issuer_did.did, create_transaction_for_endorser=False) # acapy_wallet.set_public_did(issuer_controller, did=issuer_did.did, create_transaction_for_endorser=True)
+        # res = await acapy_wallet.set_public_did(issuer_controller, did=issuer_did.did, create_transaction_for_endorser=True)
+        logger.error(f'RES: {res}')
 
     # await endorser_controller.ledger.
     return OnboardResult(did=qualified_did_sov(issuer_did.did))

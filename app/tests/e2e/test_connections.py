@@ -180,10 +180,13 @@ async def test_accept_invitation_oob(
         json={"invitation": invitation},
     )
     connection_record = accept_response.json()
+    print('\n\n\n\n')
+    print(connection_record)
+    print('\n\n\n\n')
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(connection_record).contains(
-        "role", "state", "created_at", "invi_msg_id", "oob_id", "invitation"
+        "created_at", "invi_msg_id", "oob_id", "invitation"
     )
     assert any("didexchange/1.0" in proto for proto in connection_record['invitation']['handshake_protocols'])
 

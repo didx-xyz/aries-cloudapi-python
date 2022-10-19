@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 from typing import Optional, List
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -214,7 +215,7 @@ async def onboard_issuer(
         conn_id=connection_record.connection_id,
         endorser_did=endorser_did.did,
     )
-    
+
     # await endorser_controller.endorse_transaction.set_endorser_info(
     #     conn_id=endorser_connection["connection_id"],
     #     endorser_did=endorser_did.did
@@ -234,13 +235,63 @@ async def onboard_issuer(
             create_transaction_for_endorser=True
             # role="STEWARD"
         )
+        sleep(5)
         endorser_txns = await endorser_controller.endorse_transaction.get_records()
-        end_txn = endorser_txns.results[0]
+        logger.error(f"ENDORSER_TRANSACTION_RECS: {endorser_txns}")
+        # print(f"ENDORSER_TRANSACTION_RECS: {endorser_txns}")
+        txn_rec = [txn for txn in endorser_txns.results if txn.state == 'request_received'][-1]
+        # end_txn = endorser_txns.results[-1]
         await acapy_ledger.accept_taa_if_required(issuer_controller)
-        await endorser_controller.endorse_transaction.endorse_transaction(tran_id=end_txn.transaction_id)
-        await endorser_controller.endorse_transaction.write_transaction(tran_id=end_txn.transaction_id)
+        await endorser_controller.endorse_transaction.endorse_transaction(
+            tran_id=txn_rec.transaction_id
+        )
+        sleep(10)
+        iss_txns = await endorser_controller.endorse_transaction.get_records()
+        txn_rec = [txn for txn in iss_txns.results if txn.state == 'transaction_acked'][0]
+        await endorser_controller.endorse_transaction.write_transaction(
+            tran_id=txn_rec.transaction_id
+        )
+        # iss_txns = await issuer_controller.endorse_transaction.get_records()
+        # iss_txn_rec = [txn for txn in iss_txns.results if txn.state == 'request_received'][-1]
+        # await issuer_controller.endorse_transaction.write_transaction(
+        #     tran_id=iss_txn_rec.transaction_id
+        # )
         # await endorser_controller.endorse_transaction.endorse_transaction(tran_id=txn.txn.transaction_id)
-        await acapy_wallet.set_public_did(issuer_controller, issuer_did.did)
+        # create txn for pub did write
+        # await issuer_controller.wallet.set_public_did(did=issuer_did.did)
+        logger.error('\n\n\n\n')
+        logger.error('ABOUT TO SET PUB DID')
+        logger.error('\n\n\n\n')
+        sleep(5)
+        # txn_send = [txn for txn in endorser_txns.results if txn.state == 'request_received'][-1]
+        # await endorser_controller.endorse_transaction.endorse_transaction(
+        #     tran_id=txn_send.transaction_id
+        # )
+        # await endorser_controller.endorse_transaction.write_transaction(
+        #     tran_id=txn_send.transaction_id
+        # )
+        sleep(10)
+        txn_did = await acapy_wallet.set_public_did(
+            issuer_controller,
+            did=issuer_did.did,
+            connection_id=connection_record.connection_id,
+            create_transaction_for_endorser=True,
+        )
+        logger.error('\n\n\n\n')
+        logger.error('SET_PUB DID DONE')
+        logger.error('\n\n\n\n')
+        # endorse it
+        sleep(10)
+        endorser_txns = await endorser_controller.endorse_transaction.get_records()
+        # logger.info(f"ENDORSER_TRANSACTION_RECS: {endorser_txns}")
+        txn_rec = [txn for txn in endorser_txns.results if txn.state == 'request_received'][-1]
+        end_txn = endorser_txns.results[-1]
+        await endorser_controller.endorse_transaction.endorse_transaction(
+            tran_id=txn_rec.transaction_id
+        )
+        await endorser_controller.endorse_transaction.write_transaction(
+            tran_id=txn_rec.transaction_id
+        )
 
     # await endorser_controller.ledger.
     return OnboardResult(did=qualified_did_sov(issuer_did.did))

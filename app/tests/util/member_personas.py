@@ -2,7 +2,7 @@ import json
 from typing import Any, Dict, TypedDict
 
 import pytest
-from aries_cloudcontroller import AcaPyClient, CreateInvitationRequest
+from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
@@ -13,9 +13,9 @@ from app.tests.util.client import (
     tenant_client,
 )
 from app.tests.util.ledger import create_public_did
-from app.generic.connections.connections import CreateInvitation
+from app.generic.connections.connections import CreateInvitation, InvitationCreateRequest
 
-from app.tests.util.tenants import create_tenant, delete_tenant
+from app.tests.util.tenants import create_issuer_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -32,7 +32,7 @@ class BobAlicePublicDid(TypedDict):
 @pytest.fixture(scope="module")
 async def bob_member_client():
     async with tenant_admin_client() as client:
-        tenant = await create_tenant(client, "bob")
+        tenant = await create_issuer_tenant(client, "bob")
 
         yield tenant_client(token=tenant["access_token"])
 
@@ -42,7 +42,7 @@ async def bob_member_client():
 @pytest.fixture(scope="module")
 async def alice_tenant():
     async with tenant_admin_client() as client:
-        tenant = await create_tenant(client, "alice")
+        tenant = await create_issuer_tenant(client, "alice")
 
         yield tenant
 
@@ -95,9 +95,12 @@ async def bob_and_alice_public_did(
     invite = await tenant_admin_acapy.connection.create_invitation(
         alias='endorser',
         auto_accept=True,
-        multi_use=False,
+        # multi_use=False,
         public=True,
-        body=CreateInvitationRequest(),
+        body=InvitationCreateRequest(
+            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+            use_public_did=True,
+        ),
     )
     
     #create did
@@ -113,14 +116,6 @@ async def bob_and_alice_public_did(
     # Get connection record for admin
     admin_conn_records = await tenant_admin_acapy.connection.get_connections()
 
-    
-    # set_endorser_role_result = await tenant_admin_acapy.endorse_transaction.set_endorser_role(conn_id=invite.connection_id, transaction_my_job="endorser")
-    print('\n\n\n\n\n')
-    print(invite)
-    print('\n\n\n\n\n')
-    # set_endorser_role_result = await tenant_admin_acapy.endorse_transaction.set_endorser_role(conn_id=admin_conn_records.results[-1].connection_id, transaction_my_job="TRANSACTION_ENDORSER")
-    # set_endorser_info_result = await tenant_admin_acapy.endorse_transaction.set_endorser_info(conn_id=admin_conn_records.results[-1].connection_id, endorser_did=set_public_did_result.did, endorser_name='TRANSACTION_ENDORSER')
-
     set_endorser_role_result_bob = await bob_acapy_client.endorse_transaction.set_endorser_role(conn_id=bob_conn.connection_id, transaction_my_job='TRANSACTION_AUTHOR')
     set_endorser_info_result_bob = await bob_acapy_client.endorse_transaction.set_endorser_info(conn_id=bob_conn.connection_id, endorser_did=set_public_did_result.did, endorser_name='endorser')
     set_endorser_role_result_alice = await alice_acapy_client.endorse_transaction.set_endorser_role(conn_id=alice_conn.connection_id, transaction_my_job='TRANSACTION_AUTHOR')
@@ -132,13 +127,6 @@ async def bob_and_alice_public_did(
     bob_records = await bob_acapy_client.connection.get_connections()
     alice_records = await alice_acapy_client.connection.get_connections()
 
-    print('\n\n\n\n\n')
-    print(bob_records)
-    print('\n\n\n\n\n')
-    print('\n\n\n\n\n')
-    print(alice_records)
-    print('\n\n\n\n\n')
-    
     bob_did = await create_public_did(bob_acapy_client)
     alice_did = await create_public_did(alice_acapy_client)
 

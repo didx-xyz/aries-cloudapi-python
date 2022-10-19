@@ -74,8 +74,9 @@ async def set_public_did(controller: AcaPyClient, did: str) -> DID:
     """
     result = await controller.wallet.set_public_did(did=did)
 
-    if not result.result:
-        raise CloudApiException(f"Error setting public did: {did}")
+    # FIXME: This is not true (anymore). Returns null for an endorsed DID so let's skip this check
+    # if not result.result:
+    #     raise CloudApiException(f"Error setting public did: {did}")
 
     return result.result
 

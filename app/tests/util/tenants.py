@@ -49,9 +49,6 @@ async def create_tenant(tenant_admin_client: AsyncClient, name: str):
     )
     wallet = wallet_response.json()
 
-    print("\n\n\n\n")
-    print(wallet)
-    print("\n\n\n\n")
     return wallet
 
 

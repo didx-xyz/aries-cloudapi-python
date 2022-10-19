@@ -1,389 +1,62 @@
-<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite errors="1" failures="4" hostname="felurian" name="pytest" skipped="0" tests="5" time="2.720" timestamp="2022-10-07T17:09:30.053101"><testcase classname="tests.e2e.test_definitions" name="test_create_credential_definition" time="0.962"><failure message="aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)">governance_acapy_client = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1065e18b0&gt;
-governance_client = &lt;httpx.AsyncClient object at 0x10670ac10&gt;
-
-    @pytest.mark.asyncio
-    async def test_create_credential_definition(
-        governance_acapy_client: AcaPyClient, governance_client: AsyncClient
-    ):
-        # given
-        schema_send = CreateSchema(
-            name=get_random_string(15), version=&quot;0.1&quot;, attribute_names=[&quot;average&quot;]
-        )
-    
-        if not await has_public_did(governance_acapy_client):
-            await create_public_did(governance_acapy_client, set_public=True)
-    
-        schema_result = (
-&gt;           await definitions.create_schema(schema_send, governance_acapy_client)
-        ).dict()
-
-app/tests/e2e/test_definitions.py:44: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-app/generic/definitions.py:356: in create_schema
-    result = await aries_controller.schema.publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aries_cloudcontroller/api/schema.py:58: in publish_schema
-    return await self.__publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:38: in execute
-    response = yield from executable.execute()
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:108: in on_failure
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:128: in fail
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/interfaces.py:303: in fail
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/aiohttp_.py:135: in send
-    response = yield from session.request(method, url, **extras)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client.py:643: in _request
-    resp.raise_for_status()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;ClientResponse(http://localhost:3021/schemas?create_transaction_for_endorser=false) [400 Ledger request error. Reques...arset=utf-8&apos;, &apos;Content-Length&apos;: &apos;141&apos;, &apos;Date&apos;: &apos;Fri, 07 Oct 2022 15:09:31 GMT&apos;, &apos;Server&apos;: &apos;Python/3.6 aiohttp/3.8.3&apos;)&gt;
-
-
-    def raise_for_status(self) -&gt; None:
-        if not self.ok:
-            # reason should always be not None for a started response
-            assert self.reason is not None
-            self.release()
-&gt;           raise ClientResponseError(
-                self.request_info,
-                self.history,
-                status=self.status,
-                message=self.reason,
-                headers=self.headers,
-            )
-E           aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)
-
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client_reqrep.py:1005: ClientResponseError</failure></testcase><testcase classname="tests.e2e.test_definitions" name="test_create_schema" time="0.294"><failure message="aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)">governance_acapy_client = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1065e18b0&gt;
-
-    @pytest.mark.asyncio
-    async def test_create_schema(governance_acapy_client: AcaPyClient):
-        # given
-        schema_send = CreateSchema(
-            name=get_random_string(15), version=&quot;0.1&quot;, attribute_names=[&quot;average&quot;]
-        )
-    
-        try:
-            did = await get_public_did(governance_acapy_client)
-        except:
-            did = await create_public_did(governance_acapy_client, set_public=True)
-    
-        result = (
-&gt;           await definitions.create_schema(schema_send, governance_acapy_client)
-        ).dict()
-
-app/tests/e2e/test_definitions.py:80: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-app/generic/definitions.py:356: in create_schema
-    result = await aries_controller.schema.publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aries_cloudcontroller/api/schema.py:58: in publish_schema
-    return await self.__publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:38: in execute
-    response = yield from executable.execute()
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:108: in on_failure
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:128: in fail
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/interfaces.py:303: in fail
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/aiohttp_.py:135: in send
-    response = yield from session.request(method, url, **extras)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client.py:643: in _request
-    resp.raise_for_status()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;ClientResponse(http://localhost:3021/schemas?create_transaction_for_endorser=false) [400 Ledger request error. Reques...arset=utf-8&apos;, &apos;Content-Length&apos;: &apos;141&apos;, &apos;Date&apos;: &apos;Fri, 07 Oct 2022 15:09:31 GMT&apos;, &apos;Server&apos;: &apos;Python/3.6 aiohttp/3.8.3&apos;)&gt;
-
-
-    def raise_for_status(self) -&gt; None:
-        if not self.ok:
-            # reason should always be not None for a started response
-            assert self.reason is not None
-            self.release()
-&gt;           raise ClientResponseError(
-                self.request_info,
-                self.history,
-                status=self.status,
-                message=self.reason,
-                headers=self.headers,
-            )
-E           aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)
-
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client_reqrep.py:1005: ClientResponseError</failure></testcase><testcase classname="tests.e2e.test_definitions" name="test_get_schema" time="0.353"><failure message="aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)">governance_acapy_client = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1065e18b0&gt;
-
-    @pytest.mark.asyncio
-    async def test_get_schema(governance_acapy_client: AcaPyClient):
-        # given
-        schema_send = CreateSchema(
-            name=get_random_string(15), version=&quot;0.1&quot;, attribute_names=[&quot;average&quot;]
-        )
-    
-        try:
-            did = await get_public_did(governance_acapy_client)
-        except:
-            did = await create_public_did(governance_acapy_client, set_public=True)
-    
-        create_result = (
-&gt;           await definitions.create_schema(schema_send, governance_acapy_client)
-        ).dict()
-
-app/tests/e2e/test_definitions.py:104: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-app/generic/definitions.py:356: in create_schema
-    result = await aries_controller.schema.publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aries_cloudcontroller/api/schema.py:58: in publish_schema
-    return await self.__publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:38: in execute
-    response = yield from executable.execute()
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:108: in on_failure
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:128: in fail
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/interfaces.py:303: in fail
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/aiohttp_.py:135: in send
-    response = yield from session.request(method, url, **extras)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client.py:643: in _request
-    resp.raise_for_status()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;ClientResponse(http://localhost:3021/schemas?create_transaction_for_endorser=false) [400 Ledger request error. Reques...arset=utf-8&apos;, &apos;Content-Length&apos;: &apos;141&apos;, &apos;Date&apos;: &apos;Fri, 07 Oct 2022 15:09:31 GMT&apos;, &apos;Server&apos;: &apos;Python/3.6 aiohttp/3.8.3&apos;)&gt;
-
-
-    def raise_for_status(self) -&gt; None:
-        if not self.ok:
-            # reason should always be not None for a started response
-            assert self.reason is not None
-            self.release()
-&gt;           raise ClientResponseError(
-                self.request_info,
-                self.history,
-                status=self.status,
-                message=self.reason,
-                headers=self.headers,
-            )
-E           aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)
-
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client_reqrep.py:1005: ClientResponseError</failure></testcase><testcase classname="tests.e2e.test_definitions" name="test_get_credential_definition" time="0.257"><failure message="aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)">governance_acapy_client = &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1065e18b0&gt;
-governance_client = &lt;httpx.AsyncClient object at 0x10670ac10&gt;
-
-    @pytest.mark.asyncio
-    async def test_get_credential_definition(
-        governance_acapy_client: AcaPyClient, governance_client: AsyncClient
-    ):
-        # given
-        schema_send = CreateSchema(
-            name=get_random_string(15), version=&quot;0.1&quot;, attribute_names=[&quot;average&quot;]
-        )
-    
-        if not await has_public_did(governance_acapy_client):
-            await create_public_did(governance_acapy_client, set_public=True)
-        schema_result = (
-&gt;           await definitions.create_schema(schema_send, governance_acapy_client)
-        ).dict()
-
-app/tests/e2e/test_definitions.py:127: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-app/generic/definitions.py:356: in create_schema
-    result = await aries_controller.schema.publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aries_cloudcontroller/api/schema.py:58: in publish_schema
-    return await self.__publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:38: in execute
-    response = yield from executable.execute()
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:108: in on_failure
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:128: in fail
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/interfaces.py:303: in fail
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/aiohttp_.py:135: in send
-    response = yield from session.request(method, url, **extras)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client.py:643: in _request
-    resp.raise_for_status()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-
-self = &lt;ClientResponse(http://localhost:3021/schemas?create_transaction_for_endorser=false) [400 Ledger request error. Reques...arset=utf-8&apos;, &apos;Content-Length&apos;: &apos;141&apos;, &apos;Date&apos;: &apos;Fri, 07 Oct 2022 15:09:32 GMT&apos;, &apos;Server&apos;: &apos;Python/3.6 aiohttp/3.8.3&apos;)&gt;
-
-
-    def raise_for_status(self) -&gt; None:
-        if not self.ok:
-            # reason should always be not None for a started response
-            assert self.reason is not None
-            self.release()
-&gt;           raise ClientResponseError(
-                self.request_info,
-                self.history,
-                status=self.status,
-                message=self.reason,
-                headers=self.headers,
-            )
-E           aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)
-
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client_reqrep.py:1005: ClientResponseError</failure></testcase><testcase classname="tests.e2e.test_definitions" name="test_create_credential_definition_issuer_tenant" time="0.498"><error message="test setup failure">args = ()
-kwargs = {&apos;governance_acapy_client&apos;: &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1065e18b0&gt;}
-loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
-setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x10670c8b0&gt;
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="12.170" timestamp="2022-10-19T14:57:53.277241" hostname="felurian"><testcase classname="tests.e2e.test_connections" name="test_oob_connect_via_public_did" time="12.081"><error message="failed on setup with &quot;Exception: ('Error creating issuer tenant', '{&quot;detail&quot;:&quot;Internal Server Error&quot;,&quot;stack&quot;:&quot;Traceback (most recent call last):\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/starlette/middleware/errors.py\\&quot;, line 159, in __call__\\n    await self.app(scope, receive, _send)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/starlette/exceptions.py\\&quot;, line 82, in __call__\\n    raise exc from None\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/starlette/exceptions.py\\&quot;, line 71, in __call__\\n    await self.app(scope, receive, sender)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/starlette/routing.py\\&quot;, line 580, in __call__\\n    await route.handle(scope, receive, send)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/starlette/routing.py\\&quot;, line 241, in handle\\n    await self.app(scope, receive, send)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/starlette/routing.py\\&quot;, line 52, in app\\n    response = await func(request)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/fastapi/routing.py\\&quot;, line 214, in app\\n    raw_response = await run_endpoint_function(\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/fastapi/routing.py\\&quot;, line 149, in run_endpoint_function\\n    return await dependant.call(**values)\\n  File \\&quot;/app/admin/tenants/tenants.py\\&quot;, line 78, in create_tenant\\n    onboard_result = await onboard_tenant(\\n  File \\&quot;/app/admin/tenants/onboarding.py\\&quot;, line 92, in onboard_tenant\\n    return await onboard_issuer(\\n  File \\&quot;/app/admin/tenants/onboarding.py\\&quot;, line 134, in onboard_issuer\\n    invitation = await endorser_controller.out_of_band.create_invitation(\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/aries_cloudcontroller/api/out_of_band.py\\&quot;, line 37, in create_invitation\\n    return await self.__create_invitation(\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 38, in execute\\n    response = yield from executable.execute()\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 20, in invoke\\n    response = yield from callback.on_failure(type(error), error, tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 20, in invoke\\n    response = yield from callback.on_failure(type(error), error, tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 20, in invoke\\n    response = yield from callback.on_failure(type(error), error, tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/execution.py\\&quot;, line 108, in on_failure\\n    return self._io.fail(exc_type, exc_val, exc_tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/execution.py\\&quot;, line 128, in fail\\n    return self._io.fail(exc_type, exc_val, exc_tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/interfaces.py\\&quot;, line 303, in fail\\n    compat.reraise(exc_type, exc_val, exc_tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/six.py\\&quot;, line 719, in reraise\\n    raise value\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 17, in invoke\\n    response = yield from func(*args, **kwargs)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/hooks.py\\&quot;, line 109, in handle_exception\\n    compat.reraise(exc_type, exc_val, exc_tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/six.py\\&quot;, line 719, in reraise\\n    raise value\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 17, in invoke\\n    response = yield from func(*args, **kwargs)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/hooks.py\\&quot;, line 109, in handle_exception\\n    compat.reraise(exc_type, exc_val, exc_tb)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/six.py\\&quot;, line 719, in reraise\\n    raise value\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\&quot;, line 17, in invoke\\n    response = yield from func(*args, **kwargs)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/uplink/clients/aiohttp_.py\\&quot;, line 135, in send\\n    response = yield from session.request(method, url, **extras)\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/aiohttp/client.py\\&quot;, line 643, in _request\\n    resp.raise_for_status()\\n  File \\&quot;/usr/local/lib/python3.8/site-packages/aiohttp/client_reqrep.py\\&quot;, line 1005, in raise_for_status\\n    raise ClientResponseError(\\naiohttp.client_exceptions.ClientResponseError: 500, message=\'Internal Server Error\', url=URL(\'http://governance-ga-agent:3021/out-of-band/create-invitation?auto_accept=true\')\\n&quot;}')&quot;">args = (), kwargs = {}
+request = &lt;SubRequest 'bob_member_client' for &lt;Function test_oob_connect_via_public_did&gt;&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1081a3700&gt;
+finalizer = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.finalizer at 0x1081a3b80&gt;
 
     def wrapper(*args, **kwargs):
-        loop = fixture_stripper.get_and_strip_from(FixtureStripper.EVENT_LOOP, kwargs)
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+        request = fixture_stripper.get_and_strip_from(
+            FixtureStripper.REQUEST, kwargs
+        )
+    
+        gen_obj = generator(*args, **kwargs)
     
         async def setup():
-            res = await coro(*args, **kwargs)
+            res = await gen_obj.__anext__()
             return res
     
+        def finalizer():
+            """Yield again, to finalize."""
+    
+            async def async_finalizer():
+                try:
+                    await gen_obj.__anext__()
+                except StopAsyncIteration:
+                    pass
+                else:
+                    msg = "Async generator fixture didn't stop."
+                    msg += "Yield only once."
+                    raise ValueError(msg)
+    
+            loop.run_until_complete(async_finalizer())
+    
+        request.addfinalizer(finalizer)
 &gt;       return loop.run_until_complete(setup())
 
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:143: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 ../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
     return future.result()
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:140: in setup
-    res = await coro(*args, **kwargs)
-app/tests/e2e/test_fixtures.py:45: in schema_definition
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
-app/generic/definitions.py:356: in create_schema
-    result = await aries_controller.schema.publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aries_cloudcontroller/api/schema.py:58: in publish_schema
-    return await self.__publish_schema(
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:38: in execute
-    response = yield from executable.execute()
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:20: in invoke
-    response = yield from callback.on_failure(type(error), error, tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:108: in on_failure
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/execution.py:128: in fail
-    return self._io.fail(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/interfaces.py:303: in fail
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/hooks.py:109: in handle_exception
-    compat.reraise(exc_type, exc_val, exc_tb)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/six.py:719: in reraise
-    raise value
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py:17: in invoke
-    response = yield from func(*args, **kwargs)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/uplink/clients/aiohttp_.py:135: in send
-    response = yield from session.request(method, url, **extras)
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client.py:643: in _request
-    resp.raise_for_status()
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:123: in setup
+    res = await gen_obj.__anext__()
+app/tests/util/member_personas.py:35: in bob_member_client
+    tenant = await create_issuer_tenant(client, "bob")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = &lt;ClientResponse(http://localhost:3021/schemas?create_transaction_for_endorser=false) [400 Ledger request error. Reques...arset=utf-8&apos;, &apos;Content-Length&apos;: &apos;141&apos;, &apos;Date&apos;: &apos;Fri, 07 Oct 2022 15:09:32 GMT&apos;, &apos;Server&apos;: &apos;Python/3.6 aiohttp/3.8.3&apos;)&gt;
+tenant_admin_client = &lt;httpx.AsyncClient object at 0x1081a63a0&gt;, name = 'bob'
 
+    async def create_issuer_tenant(tenant_admin_client: AsyncClient, name: str):
+        full_name = f"{name}{get_random_string(3)}"
+        wallet_payload = {"name": full_name, "roles": ["issuer"]}
+    
+        wallet_response = await tenant_admin_client.post(
+            "/admin/tenants", json=wallet_payload
+        )
+    
+        if wallet_response.is_error:
+&gt;           raise Exception("Error creating issuer tenant", wallet_response.text)
+E           Exception: ('Error creating issuer tenant', '{"detail":"Internal Server Error","stack":"Traceback (most recent call last):\\n  File \\"/usr/local/lib/python3.8/site-packages/starlette/middleware/errors.py\\", line 159, in __call__\\n    await self.app(scope, receive, _send)\\n  File \\"/usr/local/lib/python3.8/site-packages/starlette/exceptions.py\\", line 82, in __call__\\n    raise exc from None\\n  File \\"/usr/local/lib/python3.8/site-packages/starlette/exceptions.py\\", line 71, in __call__\\n    await self.app(scope, receive, sender)\\n  File \\"/usr/local/lib/python3.8/site-packages/starlette/routing.py\\", line 580, in __call__\\n    await route.handle(scope, receive, send)\\n  File \\"/usr/local/lib/python3.8/site-packages/starlette/routing.py\\", line 241, in handle\\n    await self.app(scope, receive, send)\\n  File \\"/usr/local/lib/python3.8/site-packages/starlette/routing.py\\", line 52, in app\\n    response = await func(request)\\n  File \\"/usr/local/lib/python3.8/site-packages/fastapi/routing.py\\", line 214, in app\\n    raw_response = await run_endpoint_function(\\n  File \\"/usr/local/lib/python3.8/site-packages/fastapi/routing.py\\", line 149, in run_endpoint_function\\n    return await dependant.call(**values)\\n  File \\"/app/admin/tenants/tenants.py\\", line 78, in create_tenant\\n    onboard_result = await onboard_tenant(\\n  File \\"/app/admin/tenants/onboarding.py\\", line 92, in onboard_tenant\\n    return await onboard_issuer(\\n  File \\"/app/admin/tenants/onboarding.py\\", line 134, in onboard_issuer\\n    invitation = await endorser_controller.out_of_band.create_invitation(\\n  File \\"/usr/local/lib/python3.8/site-packages/aries_cloudcontroller/api/out_of_band.py\\", line 37, in create_invitation\\n    return await self.__create_invitation(\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 38, in execute\\n    response = yield from executable.execute()\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 20, in invoke\\n    response = yield from callback.on_failure(type(error), error, tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 20, in invoke\\n    response = yield from callback.on_failure(type(error), error, tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 20, in invoke\\n    response = yield from callback.on_failure(type(error), error, tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/execution.py\\", line 108, in on_failure\\n    return self._io.fail(exc_type, exc_val, exc_tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/execution.py\\", line 128, in fail\\n    return self._io.fail(exc_type, exc_val, exc_tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/interfaces.py\\", line 303, in fail\\n    compat.reraise(exc_type, exc_val, exc_tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/six.py\\", line 719, in reraise\\n    raise value\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 17, in invoke\\n    response = yield from func(*args, **kwargs)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/hooks.py\\", line 109, in handle_exception\\n    compat.reraise(exc_type, exc_val, exc_tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/six.py\\", line 719, in reraise\\n    raise value\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 17, in invoke\\n    response = yield from func(*args, **kwargs)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/hooks.py\\", line 109, in handle_exception\\n    compat.reraise(exc_type, exc_val, exc_tb)\\n  File \\"/usr/local/lib/python3.8/site-packages/six.py\\", line 719, in reraise\\n    raise value\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/io/asyncio_strategy.py\\", line 17, in invoke\\n    response = yield from func(*args, **kwargs)\\n  File \\"/usr/local/lib/python3.8/site-packages/uplink/clients/aiohttp_.py\\", line 135, in send\\n    response = yield from session.request(method, url, **extras)\\n  File \\"/usr/local/lib/python3.8/site-packages/aiohttp/client.py\\", line 643, in _request\\n    resp.raise_for_status()\\n  File \\"/usr/local/lib/python3.8/site-packages/aiohttp/client_reqrep.py\\", line 1005, in raise_for_status\\n    raise ClientResponseError(\\naiohttp.client_exceptions.ClientResponseError: 500, message=\'Internal Server Error\', url=URL(\'http://governance-ga-agent:3021/out-of-band/create-invitation?auto_accept=true\')\\n"}')
 
-    def raise_for_status(self) -&gt; None:
-        if not self.ok:
-            # reason should always be not None for a started response
-            assert self.reason is not None
-            self.release()
-&gt;           raise ClientResponseError(
-                self.request_info,
-                self.history,
-                status=self.status,
-                message=self.reason,
-                headers=self.headers,
-            )
-E           aiohttp.client_exceptions.ClientResponseError: 400, message=&apos;Ledger request error. Request failed: client request invalid: could not authenticate, verkey for C7U2avTW97gQy8TyMtcPjn cannot be found.&apos;, url=URL(&apos;http://localhost:3021/schemas?create_transaction_for_endorser=false&apos;)
-
-../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/aiohttp/client_reqrep.py:1005: ClientResponseError</error></testcase></testsuite></testsuites>
+app/tests/util/tenants.py:15: Exception</error></testcase></testsuite></testsuites>

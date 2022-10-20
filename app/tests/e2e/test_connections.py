@@ -166,9 +166,10 @@ async def test_create_invitation_oob(
 async def test_accept_invitation_oob(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
+    alice_acapy_client: AcaPyClient,
 ):
     invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation", json={"create_connection": True, "use_public_did": False}
+        "/generic/connections/oob/create-invitation", json={"create_connection": True, "use_public_did": False, "handshake_protocols": ["https://didcomm.org/didexchange/1.0"]}
     )
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
@@ -179,22 +180,22 @@ async def test_accept_invitation_oob(
         "/generic/connections/oob/accept-invitation",
         json={"invitation": invitation},
     )
-    connection_record = accept_response.json()
-    print('\n\n\n\n')
-    print(connection_record)
-    print('\n\n\n\n')
+    # FIXME: This should be an oob record but there are many fields None instead of data
+    oob_record = accept_response.json()
+
+    connection_record = await alice_acapy_client.connection.get_connection(conn_id=oob_record['connection_id'])
 
     assert_that(accept_response.status_code).is_equal_to(200)
-    assert_that(connection_record).contains(
-        "created_at", "invi_msg_id", "oob_id", "invitation"
+    assert_that(oob_record).contains(
+        "created_at", "oob_id", "invitation"
     )
-    assert any("didexchange/1.0" in proto for proto in connection_record['invitation']['handshake_protocols'])
+    assert_that(connection_record.connection_protocol).contains('didexchange/1.0')
 
 
 @pytest.mark.asyncio
 async def test_oob_connect_via_public_did(
     bob_member_client: AsyncClient,
-    faber_client: AsyncClient,
+    faber_member_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
 ):
     time.sleep(5)
@@ -205,6 +206,9 @@ async def test_oob_connect_via_public_did(
         json={"public_did": faber_public_did.result.did},
     )
     bob_oob_record = connect_response.json()
+    print('\n\n\n\n\n')
+    print(bob_oob_record)
+    print('\n\n\n\n\n')
 
     assert check_webhook_state(
         client=bob_member_client,

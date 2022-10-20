@@ -16,7 +16,7 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from shared_models import conn_record_to_connection, Connection, Oob
+from shared_models import conn_record_to_connection, Connection, OobRecord
 from app.dependencies import agent_selector
 
 logger = logging.getLogger(__name__)
@@ -94,7 +94,7 @@ async def create_oob_invitation(
     return invitation
 
 
-@router.post("/oob/accept-invitation", response_model=Oob)
+@router.post("/oob/accept-invitation", response_model=OobRecord)
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -111,7 +111,7 @@ async def accept_oob_invitation(
         body=body.invitation,
     )
     # FIXME: This is on OutOfBandRecord and not a connection record
-    return Oob(**oob_record.dict())
+    return oob_record
 
 
 @router.post("/oob/connect-public-did", response_model=Connection)
@@ -139,7 +139,8 @@ async def connect_to_public_did(
         their_public_did=body.public_did
     )
 
-    return conn_record_to_connection(conn_record)
+    # return conn_record_to_connection(conn_record)
+    return conn_record
 
 
 @router.post("/create-invitation", response_model=InvitationResult)
@@ -164,7 +165,7 @@ async def create_invitation(
 async def accept_invitation(
     body: AcceptInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> Connection:
     """
     Accept connection invitation.
 
@@ -174,18 +175,18 @@ async def accept_invitation(
         the invitation object obtained from create_invitation.
     """
 
-    oob_record = await aries_controller.connection.receive_invitation(
+    connection_record = await aries_controller.connection.receive_invitation(
         body=body.invitation,
         auto_accept=True,
         alias=body.alias,
     )
-    return oob_record
+    return conn_record_to_connection(connection_record)
 
 
 @router.get("/", response_model=List[Connection])
 async def get_connections(
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[Optional[Connection]]:
     """
     Retrieve list of connections.
 

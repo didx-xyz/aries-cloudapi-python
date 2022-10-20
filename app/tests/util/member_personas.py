@@ -284,13 +284,13 @@ async def alice_bob_connect_multi(
         client=alice_member_client,
         filter_map={"state": "completed"},
         topic="connections",
-        max_duration=30,
+        max_duration=120,
     )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "completed"},
         topic="connections",
-        max_duration=30,
+        max_duration=120,
     )
 
     return {

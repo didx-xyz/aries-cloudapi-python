@@ -126,6 +126,20 @@ class Oob(BaseModel):
     their_service: Optional[Union[ServiceDecorator, Any]] = None
     our_service: Optional[Union[ServiceDecorator, Any]] = None
 
+class OobRecord(BaseModel):
+    nvi_msg_id: Optional[str]
+    invitation: Union[InvitationMessage, Mapping[str, Any]] = None
+    oob_id: Optional[str] = None
+    state: Optional[str] = None
+    attach_thread_id: Optional[str] = None
+    connection_id: Optional[str] = None
+    created_at: Optional[str] = None
+    our_recipient_key: Optional[str] = None
+    role: Optional[str] = None
+    their_service: Optional[ServiceDecorator] = None
+    trace: Optional[bool] = None
+    updated_at: Optional[str] = None
+
 
 class Connection(BaseModel):
     connection_id: Optional[str] = None

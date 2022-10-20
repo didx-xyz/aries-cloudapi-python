@@ -78,7 +78,7 @@ async def test_create_tenant_member(
     assert tenant["tenant_name"] == name
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
-    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
+    assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
 @pytest.mark.asyncio
@@ -141,9 +141,6 @@ async def test_create_tenant_issuer(
     assert_that(actor).has_name(tenant["tenant_name"])
     assert_that(actor).has_did(f"did:sov:{public_did.did}")
     assert_that(actor).has_roles(["issuer"])
-    assert_that(
-        actor["didcomm_invitation"]
-    ).is_not_empty().is_not_none().is_instance_of(str)
 
     # Connection with endorser
     assert_that(connection).has_their_public_did(endorser_did.did)
@@ -153,7 +150,7 @@ async def test_create_tenant_issuer(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
+    assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
 @pytest.mark.asyncio
@@ -204,7 +201,7 @@ async def test_create_tenant_verifier(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
+    assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
 @pytest.mark.asyncio
@@ -255,7 +252,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
+    assert_that(wallet.settings["wallet.name"]).is_length(32)
 
     new_name = uuid4().hex
     new_image_url = "https://some-ssi-site.org/image.png"
@@ -274,49 +271,19 @@ async def test_update_tenant_verifier_to_issuer(
     new_tenant = response.json()
     new_actor = await trust_registry.actor_by_id(tenant_id)
 
-    endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
-
-    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
-        public_did = await acapy_wallet.get_public_did(tenant_controller)
-
-        _connections = (await tenant_controller.connection.get_connections()).results
-
-        connections = [
-            connection
-            for connection in _connections
-            if connection.their_public_did == endorser_did.did
-        ]
-
-    endorser_connection = connections[0]
-
-    async with tenant_client(token=tenant["access_token"]) as client:
-        # Wait for connection to be completed
-        assert check_webhook_state(
-            client,
-            "connections",
-            {
-                "state": "completed",
-                "connection_id": endorser_connection.connection_id,
-            },
-        )
-
-    # Connection invitation
-    assert_that(endorser_connection).has_their_public_did(endorser_did.did)
-
     assert new_actor
     assert_that(new_actor).has_name(new_name)
-    assert_that(new_actor).has_did(f"did:sov:{public_did.did}")
+    assert_that(new_actor).has_did(f"{new_actor['did']}")
     assert_that(new_actor["roles"]).contains_only("issuer", "verifier")
-    assert_that(
-        new_actor["didcomm_invitation"]
-    ).is_not_empty().is_not_none().is_instance_of(str)
+
+    assert new_actor["didcomm_invitation"] is None
 
     # Tenant
     assert_that(new_tenant).has_tenant_id(wallet.wallet_id)
     assert_that(new_tenant).has_image_url(new_image_url)
     assert_that(new_tenant).has_tenant_name(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
-    assert_that(wallet.settings["wallet.name"]).is_type_of(str)
+    assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
 @pytest.mark.asyncio

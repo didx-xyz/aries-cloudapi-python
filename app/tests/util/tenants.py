@@ -16,7 +16,6 @@ async def create_issuer_tenant(tenant_admin_client: AsyncClient, name: str):
 
     wallet = wallet_response.json()
 
-    print(wallet)
     return wallet
 
 
@@ -33,7 +32,6 @@ async def create_verifier_tenant(tenant_admin_client: AsyncClient, name: str):
 
     wallet = wallet_response.json()
 
-    print(wallet)
     return wallet
 
 

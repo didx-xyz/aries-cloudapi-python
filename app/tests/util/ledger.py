@@ -66,13 +66,6 @@ async def create_public_did(
 ) -> acapy_wallet.Did:
     did_object = await acapy_wallet.create_did(aries_controller)
 
-    print('\n\n\n\n\n')
-    print(aries_controller.client.__dict__)
-    print(acapy_wallet.AcaPyClient.__dict__)
-    connections = await aries_controller.connection.get_connections()
-    print('\n\n\n\n\n')
-    print(connections)
-    print('\n\n\n\n\n')
     if not did_object.did or not did_object.verkey:
         raise Exception("Cannot register did without did and/or verkey")
 

@@ -165,24 +165,36 @@ async def test_create_invitation_oob(
 @pytest.mark.asyncio
 async def test_accept_invitation_oob(
     bob_member_client: AsyncClient,
+    alice_member_client: AsyncClient,
+    alice_acapy_client: AcaPyClient,
 ):
     invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation", json={"create_connection": True}
+        "/generic/connections/oob/create-invitation",
+        json={
+            "create_connection": True,
+            "use_public_did": False,
+            "handshake_protocols": ["https://didcomm.org/didexchange/1.0"],
+        },
     )
     assert_that(invitation_response.status_code).is_equal_to(200)
-    invitation = invitation_response.json()
+    invitation = (invitation_response.json())["invitation"]
 
-    accept_response = await bob_member_client.post(
+    invitation["id"] = invitation.pop("@id")
+    invitation["type"] = invitation.pop("@type")
+    accept_response = await alice_member_client.post(
         "/generic/connections/oob/accept-invitation",
-        json={"invitation": invitation["invitation"]},
+        json={"invitation": invitation},
     )
-    connection_record = accept_response.json()
+    # FIXME: This should be an oob record but there are many fields None instead of data
+    oob_record = accept_response.json()
+
+    connection_record = await alice_acapy_client.connection.get_connection(
+        conn_id=oob_record["connection_id"]
+    )
 
     assert_that(accept_response.status_code).is_equal_to(200)
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
-    )
-    assert_that(connection_record).has_connection_protocol("didexchange/1.0")
+    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+    assert_that(connection_record.connection_protocol).contains("didexchange/1.0")
 
 
 @pytest.mark.asyncio
@@ -190,7 +202,6 @@ async def test_oob_connect_via_public_did(
     bob_member_client: AsyncClient,
     faber_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
-    # bob_and_alice_public_did: BobAlicePublicDid,
 ):
     time.sleep(5)
 
@@ -199,20 +210,15 @@ async def test_oob_connect_via_public_did(
         "/generic/connections/oob/connect-public-did",
         json={"public_did": faber_public_did.result.did},
     )
-    bob_connection_record = connect_response.json()
+    bob_oob_record = connect_response.json()
 
-    print('\n\n\n\n\n')
-    print('BOBBIE RECORD')
-    print(bob_connection_record)
-    print('\n\n\n\n\n')
+    assert check_webhook_state(
+        client=bob_member_client,
+        topic="connections",
+        filter_map={
+            "state": "request-sent",
+            "connection_id": bob_oob_record["connection_id"],
+        },
+    )
 
-    # assert check_webhook_state(
-    #     client=bob_member_client,
-    #     topic="connections",
-    #     filter_map={
-    #         "state": "request-sent",
-    #         "connection_id": bob_connection_record["connection_id"],
-    #     },
-    # )
-
-    assert_that(bob_connection_record).has_their_public_did(faber_public_did.result.did)
+    assert_that(bob_oob_record).has_their_public_did(faber_public_did.result.did)

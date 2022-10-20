@@ -8,6 +8,7 @@ from app.error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
+
 class Did(BaseModel):
     did: str
     verkey: str
@@ -59,7 +60,13 @@ async def create_did(controller: AcaPyClient) -> Did:
     return Did(did=did_result.result.did, verkey=did_result.result.verkey)
 
 
-async def set_public_did(controller: AcaPyClient, did: str) -> DID:
+async def set_public_did(
+    controller: AcaPyClient,
+    did: str,
+    connection_id: str = None,
+    create_transaction_for_endorser: bool = False,
+    is_endorsed: bool = False,
+) -> DID:
     """Set the public did.
 
     Args:
@@ -72,11 +79,16 @@ async def set_public_did(controller: AcaPyClient, did: str) -> DID:
     Returns:
         DID: the did
     """
-    result = await controller.wallet.set_public_did(did=did)
+    result = await controller.wallet.set_public_did(
+        did=did,
+        conn_id=connection_id,
+        create_transaction_for_endorser=create_transaction_for_endorser,
+    )
 
-    # FIXME: This is not true (anymore). Returns null for an endorsed DID so let's skip this check
-    # if not result.result:
-    #     raise CloudApiException(f"Error setting public did: {did}")
+    # FIXME: for an oob endorsed DID this returns null (correctly, as the public did is on the ledger and set in the wallet)
+    # Ideally we should not need the is_endorsed param
+    if not result.result and not is_endorsed:
+        raise CloudApiException(f"Error setting public did: {did}")
 
     return result.result
 

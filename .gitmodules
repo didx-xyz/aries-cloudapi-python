@@ -1,0 +1,6 @@
+[submodule "aries-cloudcontroller-python"]
+	path = aries-cloudcontroller-python
+	url = https://github.com/didx-xyz/aries-cloudcontroller-python
+[submodule "aries-cloudagent-python"]
+	path = aries-cloudagent-python
+	url = https://github.com/hyperledger/aries-cloudagent-python

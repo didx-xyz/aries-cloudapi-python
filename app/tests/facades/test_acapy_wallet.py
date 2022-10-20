@@ -5,7 +5,7 @@ from mockito import when
 
 from app.error.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet
-from app.tests.util.event_loop import get
+from tests.util.mock import get
 
 
 @pytest.mark.asyncio
@@ -39,11 +39,11 @@ async def test_error_on_get_pub_did(mock_agent_controller: AcaPyClient):
 
 @pytest.mark.asyncio
 async def test_error_on_assign_pub_did(mock_agent_controller: AcaPyClient):
-    when(mock_agent_controller.wallet).set_public_did(did="did").thenReturn(
-        get(DIDResult(result=None))
-    )
+    when(mock_agent_controller.wallet).set_public_did(
+        did="did", conn_id=None, create_transaction_for_endorser=False
+    ).thenReturn(get(DIDResult(result=None)))
 
     with pytest.raises(CloudApiException) as exc:
-        await acapy_wallet.set_public_did(mock_agent_controller, "did")
+        await acapy_wallet.set_public_did(mock_agent_controller, did="did")
     assert exc.value.status_code == 500
     assert "Error setting public did: did" in exc.value.detail

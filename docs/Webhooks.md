@@ -18,6 +18,7 @@ topics = Literal[
     "issue_credential",
     "forward",
     "ping",
+    "oob",
     "basicmessages",
     "issuer_cred_rev",
     "issue_credential_v2_0",
@@ -53,7 +54,7 @@ async def main():
     ]
     client = PubSubClient([*topics], callback=on_events)
 
-    client.start_client(f"ws://127.0.0.1:3010/pubsub")
+    client.start_client(f"ws://127.0.0.1:3010/")
     await client.wait_until_done()
 
 asyncio.run(main())
@@ -64,3 +65,18 @@ All (and this can be handy for debugging or development as you just get all webh
 ```bash
 docker logs --follow $(docker ps -f name="governance-webhooks-web" | awk 'FNR == 2 {print $1}')
 ```
+
+### Non-Python options
+
+Listening to webhooks the subscriber way (not long polling via http) is pnot limited to the python example given above. In fact, all one needs is a websocket-based RPC client. 
+
+Here are two examples:
+
+```bash
+websocat -E --text ws://127.0.0.1:3010/pubsub exec:'{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}'
+```
+or 
+```bash
+wscat -c ws://127.0.0.1:3010 -x '{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}' -w 99999
+```
+How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (*NOTE:* You might have to change the uri according to your setup of the webhooks relay). Both examples do pretty much the same. However, [Wscat](https://github.com/websockets/wscat) is written in Javascript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint the `exec:` parameter and `-x` flag mean execute. Execute in this case refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By Adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet. 

@@ -212,7 +212,7 @@ async def onboard_issuer(
             verkey=issuer_did.verkey
         )
         await acapy_ledger.accept_taa_if_required(issuer_controller)
-        await acapy_wallet.set_public_did(issuer_controller, did=issuer_did.did, create_transaction_for_endorser=False)
+        await acapy_wallet.set_public_did(issuer_controller, did=issuer_did.did, create_transaction_for_endorser=False, is_endorsed=True)
 
     return OnboardResult(did=qualified_did_sov(issuer_did.did))
 

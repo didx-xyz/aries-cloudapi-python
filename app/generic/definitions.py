@@ -1,13 +1,13 @@
 import asyncio
 import json
 from typing import List, Optional
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinition as AcaPyCredentialDefinition,
     ModelSchema,
     SchemaSendRequest,
-    SchemaSendResult,
     TxnOrCredentialDefinitionSendResult,
 )
 from app.error.cloud_api_error import CloudApiException
@@ -353,12 +353,20 @@ async def create_schema(
         schema_name=schema.name,
         schema_version=schema.version,
     )
-    result = await aries_controller.schema.publish_schema(
-        body=schema_send_request, create_transaction_for_endorser=False
-    )
-
-    if not isinstance(result, SchemaSendResult) or not result.schema_:
-        raise CloudApiException("Error creating schema", 500)
+    try:
+        result = await aries_controller.schema.publish_schema(
+            body=schema_send_request, create_transaction_for_endorser=False
+        )
+    except ClientResponseError as e:
+        if e.status == 400 and "already exist" in e.message:
+            schema_ids = await aries_controller.schema.get_created_schemas(schema_name=schema.name)
+            schema = await aries_controller.schema.get_schema(schema_id=schema_ids.schema_ids[0])
+            return _credential_schema_from_acapy(schema.schema_)
+        else:
+            raise CloudApiException(detail={"Error creating schema: %s", e.message}, status_code=500)
+            
+    # if not isinstance(result, SchemaSendResult) or not result.schema_:
+    #     raise CloudApiException("Error creating schema", 500)
 
     # Register the schema in the trust registry
     try:
@@ -367,7 +375,7 @@ async def create_schema(
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
         #   make sure the schema is registered in the trust registry
-        if error.status_code != 405:
+        if error.status_code != 400:
             raise error
 
     return _credential_schema_from_acapy(result.schema_)

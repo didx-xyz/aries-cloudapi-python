@@ -195,7 +195,7 @@ async def test_accept_invitation_oob(
 @pytest.mark.asyncio
 async def test_oob_connect_via_public_did(
     bob_member_client: AsyncClient,
-    faber_member_client: AsyncClient,
+    faber_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
 ):
     time.sleep(5)
@@ -206,9 +206,6 @@ async def test_oob_connect_via_public_did(
         json={"public_did": faber_public_did.result.did},
     )
     bob_oob_record = connect_response.json()
-    print('\n\n\n\n\n')
-    print(bob_oob_record)
-    print('\n\n\n\n\n')
 
     assert check_webhook_state(
         client=bob_member_client,

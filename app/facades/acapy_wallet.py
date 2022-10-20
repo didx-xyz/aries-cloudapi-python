@@ -65,6 +65,7 @@ async def set_public_did(
     did: str,
     connection_id: str = None,
     create_transaction_for_endorser: bool = False,
+    is_endorsed: bool = False,
 ) -> DID:
     """Set the public did.
 
@@ -85,8 +86,9 @@ async def set_public_did(
     )
 
     # FIXME: for an oob endorsed DID this returns null (correctly, as the public did is on the ledger and set in the wallet)
-    # if not result.result:
-    #     raise CloudApiException(f"Error setting public did: {result.json()} {did}")
+    # Ideally we should not need the is_endorsed param
+    # if not result.result and not is_endorsed:
+    #     raise CloudApiException(f"Error setting public did: {did}")
 
     return result.result
 

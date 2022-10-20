@@ -178,6 +178,7 @@ async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyCl
     )
 
     onboard_result = await onboarding.onboard_verifier(
+        name='verifier_xyz',
         verifier_controller=mock_agent_controller
     )
 
@@ -204,6 +205,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     )
 
     onboard_result = await onboarding.onboard_verifier(
+        name="verifier_xyz",
         verifier_controller=mock_agent_controller
     )
 
@@ -235,5 +237,6 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
 
     with pytest.raises(CloudApiException, match="Error creating invitation:"):
         await onboarding.onboard_verifier(
+            name="verifier_xyz",
             verifier_controller=mock_agent_controller
         )

@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 from typing import Optional, List
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -212,7 +213,11 @@ async def onboard_issuer(
             verkey=issuer_did.verkey
         )
         await acapy_ledger.accept_taa_if_required(issuer_controller)
-        await acapy_wallet.set_public_did(issuer_controller, did=issuer_did.did, create_transaction_for_endorser=False, is_endorsed=True)
+        # TODO: This doesn't need endorsement as of 0.7.5-rc0 onward - bug in 0.7.4
+        # Change this in future versions
+        await acapy_wallet.set_public_did(issuer_controller, did=issuer_did.did, connection_id=connection_record.connection_id, create_transaction_for_endorser=True, is_endorsed=True)
+        # Wait for endorsement acked
+        sleep(10)
 
     return OnboardResult(did=qualified_did_sov(issuer_did.did))
 

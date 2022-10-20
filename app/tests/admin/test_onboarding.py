@@ -76,20 +76,6 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
-    verify(acapy_wallet, times=0).create_did(...)
-    verify(endorser_controller.out_of_band).create_invitation(
-        auto_accept=True,
-        body=InvitationCreateRequest(
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-            use_public_did=True,
-        ),
-    )
-    verify(mock_agent_controller.out_of_band).receive_invitation(
-        auto_accept=True,
-        use_existing_connection=True,
-        body=InvitationMessage(),
-        alias="endorser",
-    )
 
 
 @pytest.mark.asyncio
@@ -160,10 +146,15 @@ async def test_onboard_issuer_no_public_did(
         endorser_controller,
         did="WgWxqztrNooG92RXvxSTWv",
         verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
-        alias="issuer_name",
     )
     verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
-    verify(acapy_wallet).set_public_did(mock_agent_controller, "WgWxqztrNooG92RXvxSTWv")
+    verify(acapy_wallet).set_public_did(
+        mock_agent_controller,
+        did="WgWxqztrNooG92RXvxSTWv",
+        connection_id=None,
+        create_transaction_for_endorser=True,
+        is_endorsed=True,
+    )
 
 
 @pytest.mark.asyncio
@@ -178,8 +169,7 @@ async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyCl
     )
 
     onboard_result = await onboarding.onboard_verifier(
-        name='verifier_xyz',
-        verifier_controller=mock_agent_controller
+        name="verifier_name", verifier_controller=mock_agent_controller
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
@@ -205,8 +195,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     )
 
     onboard_result = await onboarding.onboard_verifier(
-        name="verifier_xyz",
-        verifier_controller=mock_agent_controller
+        name="verifier_name", verifier_controller=mock_agent_controller
     )
 
     assert_that(onboard_result).has_did(did_key)
@@ -237,6 +226,5 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
 
     with pytest.raises(CloudApiException, match="Error creating invitation:"):
         await onboarding.onboard_verifier(
-            name="verifier_xyz",
-            verifier_controller=mock_agent_controller
+            name="verifier_name", verifier_controller=mock_agent_controller
         )

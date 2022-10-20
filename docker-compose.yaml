@@ -10,7 +10,7 @@ services:
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
-      - ./aries-cloudcontroller-python:/aries-cloudcontroller-python
+      # - ./aries-cloudcontroller-python:/aries-cloudcontroller-python
       - ./environments/governance-ga/fastapi.default.env:/app/.env
     depends_on:
       - governance-ga-wallets-db
@@ -85,7 +85,7 @@ services:
     volumes:
       - ./shared_models/shared_models.py:/app/shared_models.py
       - ./app:/app
-      - ./aries-cloudcontroller-python:/aries-cloudcontroller-python
+      # - ./aries-cloudcontroller-python:/aries-cloudcontroller-python
       - ./environments/governance-multitenant/fastapi.default.env:/app/.env
     depends_on:
       - governance-multitenant-wallets-db

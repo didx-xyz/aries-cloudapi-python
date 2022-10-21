@@ -1,0 +1,18 @@
+FROM bcgovimages/von-image:py36-1.16-1
+
+USER root
+RUN apt-get update
+RUN apt-get update && apt-get install -y gcc
+
+RUN pip3 install aries-cloudagent[askar,indy]==0.7.4
+
+ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 ./jq
+RUN chmod +x ./jq
+COPY scripts/startup.sh startup.sh
+RUN chmod +x ./startup.sh
+# COPY scripts/ngrok-wait.sh wait.sh
+# RUN chmod +x ./wait.sh
+
+USER $user
+
+CMD ./startup.sh --wallet-type askar --auto-promote-author-did

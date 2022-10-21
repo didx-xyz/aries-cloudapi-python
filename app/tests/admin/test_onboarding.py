@@ -1,9 +1,12 @@
+from asynctest import MagicMock, CoroutineMock
 from aries_cloudcontroller import (
     AcaPyClient,
     ConnRecord,
     InvitationCreateRequest,
     InvitationMessage,
     InvitationRecord,
+    TransactionList,
+    TransactionRecord,
 )
 
 import pytest
@@ -12,9 +15,9 @@ from mockito import verify, when
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
 from assertpy import assert_that
-from app.tests.util.client import get_mock_agent_controller
+from tests.fixtures import get_mock_agent_controller
 
-from app.tests.util.mock import get
+from tests.util.mock import get
 import app.admin.tenants.onboarding as onboarding
 from app.admin.tenants.onboarding import acapy_wallet, acapy_ledger
 from app.tests.util.webhooks import mock_start_listener
@@ -49,37 +52,32 @@ async def test_onboard_issuer_public_did_exists(
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         get()
     )
+    when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
+        get()
+    )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
         get()
     )
-    when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
-        get(InvitationRecord(invitation=InvitationMessage()))
-    )
 
     # Mock event listener
-    when(onboarding).start_listener(...).thenReturn(get(mock_start_listener))
+    when(onboarding).start_listener(
+        topic="connections", wallet_id="issuer_wallet_id"
+    ).thenReturn(get(mock_start_listener))
+    when(onboarding).start_listener(topic="connections", wallet_id="admin").thenReturn(
+        get(
+            (
+                CoroutineMock(return_value={"connection_id": "endorser_connection_id"}),
+                MagicMock(),
+            )
+        )
+    )
     onboard_result = await onboarding.onboard_issuer(
-        name="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
         issuer_wallet_id="issuer_wallet_id",
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
-    verify(acapy_wallet, times=0).create_did(...)
-    verify(endorser_controller.out_of_band).create_invitation(
-        auto_accept=True,
-        body=InvitationCreateRequest(
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-            use_public_did=True,
-        ),
-    )
-    verify(mock_agent_controller.out_of_band).receive_invitation(
-        auto_accept=True,
-        use_existing_connection=True,
-        body=InvitationMessage(),
-        alias="endorser",
-    )
 
 
 @pytest.mark.asyncio
@@ -119,17 +117,55 @@ async def test_onboard_issuer_no_public_did(
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         get()
     )
+    when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
+        get()
+    )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
         get()
     )
-    when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
-        get(InvitationRecord(invitation=InvitationMessage()))
-    )
 
     # Mock event listener
-    when(onboarding).start_listener(...).thenReturn(get(mock_start_listener))
+    when(onboarding).start_listener(
+        topic="connections", wallet_id="issuer_wallet_id"
+    ).thenReturn(get(mock_start_listener))
+    when(onboarding).start_listener(topic="connections", wallet_id="admin").thenReturn(
+        get(
+            (
+                CoroutineMock(return_value={"connection_id": "endorser_connection_id"}),
+                MagicMock(),
+            )
+        )
+    )
+    when(onboarding).start_listener(topic="endorsements", wallet_id="admin").thenReturn(
+        get(
+            (
+                CoroutineMock(return_value={"state": "request-received"}),
+                MagicMock(),
+            )
+        )
+    )
+    when(endorser_controller.endorse_transaction).get_records(...).thenReturn(
+        get(
+            TransactionList(
+                results=[
+                    TransactionRecord(
+                        state="request-received",
+                        transaction_id="abcde",
+                        connection_id="endorser_connection_id",
+                    ),
+                    TransactionRecord(
+                        state="request-received",
+                        transaction_id="abcde",
+                        connection_id="some_other_connection_id",
+                    ),
+                ]
+            )
+        )
+    )
+    when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
+        get()
+    )
     onboard_result = await onboarding.onboard_issuer(
-        name="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
         issuer_wallet_id="issuer_wallet_id",
@@ -141,10 +177,15 @@ async def test_onboard_issuer_no_public_did(
         endorser_controller,
         did="WgWxqztrNooG92RXvxSTWv",
         verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
-        alias="issuer_name",
     )
     verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
-    verify(acapy_wallet).set_public_did(mock_agent_controller, "WgWxqztrNooG92RXvxSTWv")
+    verify(acapy_wallet).set_public_did(
+        mock_agent_controller,
+        did="WgWxqztrNooG92RXvxSTWv",
+        connection_id=None,
+        create_transaction_for_endorser=True,
+        is_endorsed=True,
+    )
 
 
 @pytest.mark.asyncio

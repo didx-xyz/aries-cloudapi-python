@@ -1,3 +1,4 @@
+from time import sleep
 import pytest
 from assertpy.assertpy import assert_that
 from httpx import AsyncClient
@@ -17,6 +18,8 @@ async def test_send_trust_ping(
         connection_id=bob_and_alice_connection["alice_connection_id"], comment="Donda"
     )
 
+    # Wait for connection to be ready - sometimes this takes a second or two
+    sleep(5)
     response = await alice_member_client.post(
         "/generic/messaging/trust-ping", json=trustping_msg.dict()
     )

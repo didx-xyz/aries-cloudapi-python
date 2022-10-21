@@ -28,7 +28,7 @@ async def main():
     [client.subscribe(topic, on_data) for topic in topics]
     """
 
-    client.start_client(f"ws://{URL}:{3010}/")
+    client.start_client(f"ws://{URL}:{3010}/pubsub")
     print("Started")
     await client.wait_until_done()
 

@@ -1,5 +1,4 @@
 import logging
-from time import sleep
 from typing import Optional, List
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -19,11 +18,11 @@ from app.facades.trust_registry import (
     update_actor,
 )
 from app.constants import ACAPY_ENDORSER_ALIAS
+from app.util.did import qualified_did_sov
 from app.webhook_listener import start_listener
 
 from app.error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet
-from app.util.did import qualified_did_sov
 
 logger = logging.getLogger(__name__)
 
@@ -149,8 +148,12 @@ async def onboard_issuer(
         wait_for_event, _ = await start_listener(
             topic="connections", wallet_id=issuer_wallet_id
         )
-        endorser_wait_for_event, _ = await start_listener(
+        endorser_wait_for_connection, _ = await start_listener(
             topic="connections", wallet_id="admin"
+        )
+
+        endorser_wait_for_transaction, _ = await start_listener(
+            topic="endorsements", wallet_id="admin"
         )
 
         logger.debug("Receiving connection invitation")
@@ -177,12 +180,13 @@ async def onboard_issuer(
                 }
             )
 
-            endorser_connection = await endorser_wait_for_event(
+            endorser_connection = await endorser_wait_for_connection(
                 filter_map={
                     "invitation_msg_id": invitation.invi_msg_id,
                     "state": "completed",
                 }
             )
+
         except TimeoutError:
             raise CloudApiException("Error creating connection with endorser", 500)
 
@@ -207,9 +211,11 @@ async def onboard_issuer(
         )
 
         issuer_did = await acapy_wallet.create_did(issuer_controller)
+
         await acapy_ledger.register_nym_on_ledger(
             endorser_controller, did=issuer_did.did, verkey=issuer_did.verkey
         )
+
         await acapy_ledger.accept_taa_if_required(issuer_controller)
         # TODO: This doesn't need endorsement as of 0.7.5-rc0 onward - bug in 0.7.4
         # Change this in future versions
@@ -220,9 +226,27 @@ async def onboard_issuer(
             create_transaction_for_endorser=True,
             is_endorsed=True,
         )
-        # Wait for endorsement acked
-        # TODO: replace me with webhook listen
-        sleep(10)
+
+        try:
+            await endorser_wait_for_transaction(
+                filter_map={
+                    "state": "request-received",
+                }
+            )
+        except TimeoutError:
+            raise CloudApiException("Error creating connection with endorser", 500)
+
+        txns = await endorser_controller.endorse_transaction.get_records()
+
+        txn = [
+            txn
+            for txn in txns.results
+            if txn.connection_id == endorser_connection["connection_id"]
+        ][-1]
+
+        await endorser_controller.endorse_transaction.endorse_transaction(
+            tran_id=txn.transaction_id
+        )
 
     return OnboardResult(did=qualified_did_sov(issuer_did.did))
 

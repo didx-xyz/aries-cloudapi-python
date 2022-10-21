@@ -5,6 +5,8 @@ from aries_cloudcontroller import (
     InvitationCreateRequest,
     InvitationMessage,
     InvitationRecord,
+    TransactionList,
+    TransactionRecord,
 )
 
 import pytest
@@ -133,6 +135,35 @@ async def test_onboard_issuer_no_public_did(
                 MagicMock(),
             )
         )
+    )
+    when(onboarding).start_listener(topic="endorsements", wallet_id="admin").thenReturn(
+        get(
+            (
+                CoroutineMock(return_value={"state": "request-received"}),
+                MagicMock(),
+            )
+        )
+    )
+    when(endorser_controller.endorse_transaction).get_records(...).thenReturn(
+        get(
+            TransactionList(
+                results=[
+                    TransactionRecord(
+                        state="request-received",
+                        transaction_id="abcde",
+                        connection_id="endorser_connection_id",
+                    ),
+                    TransactionRecord(
+                        state="request-received",
+                        transaction_id="abcde",
+                        connection_id="some_other_connection_id",
+                    ),
+                ]
+            )
+        )
+    )
+    when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
+        get()
     )
     onboard_result = await onboarding.onboard_issuer(
         endorser_controller=endorser_controller,

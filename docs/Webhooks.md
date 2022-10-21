@@ -54,7 +54,7 @@ async def main():
     ]
     client = PubSubClient([*topics], callback=on_events)
 
-    client.start_client(f"ws://127.0.0.1:3010/")
+    client.start_client(f"ws://127.0.0.1:3010/pubsub")
     await client.wait_until_done()
 
 asyncio.run(main())

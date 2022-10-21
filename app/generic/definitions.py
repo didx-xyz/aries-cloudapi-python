@@ -371,9 +371,6 @@ async def create_schema(
                 detail={"Error creating schema: %s", e.message}, status_code=500
             )
 
-    # if not isinstance(result, SchemaSendResult) or not result.schema_:
-    #     raise CloudApiException("Error creating schema", 500)
-
     # Register the schema in the trust registry
     try:
         await trust_registry.register_schema(schema_id=result.schema_id)

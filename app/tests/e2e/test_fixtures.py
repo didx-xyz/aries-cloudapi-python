@@ -16,14 +16,6 @@ from app.tests.util.webhooks import check_webhook_state
 from app.generic.issuer.issuer import router
 
 from app.tests.util.trust_registry import register_issuer
-from app.tests.util.member_personas import (
-    BobAliceConnect,
-    alice_member_client,
-    bob_acapy_client,
-    bob_and_alice_connection,
-    bob_and_alice_public_did,
-    bob_member_client,
-)
 from app.webhook_listener import start_listener
 from shared_models.shared_models import CredentialExchange
 

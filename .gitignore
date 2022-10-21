@@ -155,5 +155,6 @@ junit.xml
 *junit.xml
 
 *.db
-
-aries-cloudcontroller-python/
+listen_webhooks.py
+**aries-cloudcontroller-python/
+**aries-cloudagent-python/

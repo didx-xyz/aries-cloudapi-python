@@ -1,0 +1,2737 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="48" failures="0" skipped="0" tests="165" time="4.643" timestamp="2022-10-21T16:26:15.018681" hostname="felurian"><testcase classname="trustregistry.tests.test_actor" name="test_get_actors" time="0.029" /><testcase classname="trustregistry.tests.test_actor" name="test_register_actor" time="0.026" /><testcase classname="trustregistry.tests.test_actor" name="test_update_actor" time="0.021" /><testcase classname="trustregistry.tests.test_actor" name="test_update_actor_x" time="0.005" /><testcase classname="trustregistry.tests.test_actor" name="test_remove_schema" time="0.011" /><testcase classname="trustregistry.tests.test_crud" name="test_get_actors" time="0.001" /><testcase classname="trustregistry.tests.test_crud" name="test_create_actor" time="0.002" /><testcase classname="trustregistry.tests.test_crud" name="test_update_actor" time="0.002" /><testcase classname="trustregistry.tests.test_crud" name="test_delete_actor" time="0.001" /><testcase classname="trustregistry.tests.test_crud" name="test_get_schemas" time="0.001" /><testcase classname="trustregistry.tests.test_crud" name="test_create_schema" time="0.003" /><testcase classname="trustregistry.tests.test_crud" name="test_update_schema" time="0.002" /><testcase classname="trustregistry.tests.test_crud" name="test_delete_schema" time="0.002" /><testcase classname="trustregistry.tests.test_main" name="test_root" time="0.009" /><testcase classname="trustregistry.tests.test_main" name="test_registry" time="0.005" /><testcase classname="trustregistry.tests.test_models" name="test_actor" time="0.000" /><testcase classname="trustregistry.tests.test_models" name="test_schema" time="0.000" /><testcase classname="trustregistry.tests.test_schema" name="test_get_schemas" time="0.011" /><testcase classname="trustregistry.tests.test_schema" name="test_register_schema" time="0.022" /><testcase classname="trustregistry.tests.test_schema" name="test_update_schema" time="0.021" /><testcase classname="trustregistry.tests.test_schema" name="test_remove_schema" time="0.011" /><testcase classname="trustregistry.tests.test_schema" name="test__get_schema_attrs" time="0.000" /><testcase classname="trustregistry.tests.test_schemas" name="test_actor" time="0.000" /><testcase classname="trustregistry.tests.test_schemas" name="test_schema" time="0.000" /><testcase classname="app.tests.test_definitions" name="test_credential_schema_from_acapy" time="0.002" /><testcase classname="app.tests.test_definitions" name="test_credential_definition_from_acapy" time="0.001" /><testcase classname="app.tests.test_dependencies" name="test_governance_agent" time="0.004" /><testcase classname="app.tests.test_dependencies" name="test_tenant_agent" time="0.004" /><testcase classname="app.tests.test_dependencies" name="test_agent_selector" time="0.006" /><testcase classname="app.tests.test_dependencies" name="test_admin_agent_selector" time="0.006" /><testcase classname="app.tests.test_dependencies" name="test_web_tenant" time="0.020" /><testcase classname="app.tests.test_dependencies" name="test_tenant_admin_agent" time="0.003" /><testcase classname="app.tests.test_did" name="test_ed25519_verkey_to_did_key" time="0.001" /><testcase classname="app.tests.test_did" name="test_qualified_did_sov" time="0.001" /><testcase classname="app.tests.admin.test_onboarding" name="test_onboard_issuer_public_did_exists" time="0.003" /><testcase classname="app.tests.admin.test_onboarding" name="test_onboard_issuer_no_public_did" time="0.004" /><testcase classname="app.tests.admin.test_onboarding" name="test_onboard_verifier_public_did_exists" time="0.002" /><testcase classname="app.tests.admin.test_onboarding" name="test_onboard_verifier_no_public_did" time="0.005" /><testcase classname="app.tests.admin.test_onboarding" name="test_onboard_verifier_no_recipient_keys" time="0.003" /><testcase classname="app.tests.e2e.test_connections" name="test_create_invitation" time="0.289"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_accept_invitation" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_get_connections" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_get_connection_by_id" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_delete_connection" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_bob_and_alice_connect" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_create_invitation_oob" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_accept_invitation_oob" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_connections" name="test_oob_connect_via_public_did" time="0.002"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119503dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1194c3790&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'MZW4y49Qssn3YMFnuNk8Xy', verkey = 'CCxKASg5NH1gBfq2rhsfaJjiWz5EB6cYAaSeTmWVYjdj', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_definitions" name="test_create_credential_definition" time="0.090"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1195d1b50&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1195c7820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Y7bYKEEv3zjTQUBGHfePWt', verkey = 'HxZpfYN3Hv3ehvNHF5foR7Scw44VLdvcfWELv6HuctB1', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_definitions" name="test_create_schema" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1195d1b50&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1195c7820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Y7bYKEEv3zjTQUBGHfePWt', verkey = 'HxZpfYN3Hv3ehvNHF5foR7Scw44VLdvcfWELv6HuctB1', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_definitions" name="test_get_schema" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1195d1b50&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1195c7820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Y7bYKEEv3zjTQUBGHfePWt', verkey = 'HxZpfYN3Hv3ehvNHF5foR7Scw44VLdvcfWELv6HuctB1', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_definitions" name="test_get_credential_definition" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1195d1b50&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1195c7820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Y7bYKEEv3zjTQUBGHfePWt', verkey = 'HxZpfYN3Hv3ehvNHF5foR7Scw44VLdvcfWELv6HuctB1', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_definitions" name="test_create_credential_definition_issuer_tenant" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1195d1b50&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1195c7820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Y7bYKEEv3zjTQUBGHfePWt', verkey = 'HxZpfYN3Hv3ehvNHF5foR7Scw44VLdvcfWELv6HuctB1', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_exception_handler" name="test_error_handler" time="0.106"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1197fe790&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119780e50&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'S4XyY9oAYE9tGgV91dnUJy', verkey = 'EfE5T8CFKbaJzysVcVTj1DDpeqTHpN9xoZ9J6inhwPjL', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_issuer" name="test_send_credential" time="0.095"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1197adbe0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1197aa040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '8F1KqN3uex5jYQoaPELcWg', verkey = '4wvCtWSaf5XRa2LinLdPa7fJ7zCMrYJXhGGiVLZ2EfZT', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_issuer" name="test_get_records" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1197adbe0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1197aa040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '8F1KqN3uex5jYQoaPELcWg', verkey = '4wvCtWSaf5XRa2LinLdPa7fJ7zCMrYJXhGGiVLZ2EfZT', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_issuer" name="test_send_credential_request" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1197adbe0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1197aa040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '8F1KqN3uex5jYQoaPELcWg', verkey = '4wvCtWSaf5XRa2LinLdPa7fJ7zCMrYJXhGGiVLZ2EfZT', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_issuer" name="test_store_credential" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x1197adbe0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1197aa040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '8F1KqN3uex5jYQoaPELcWg', verkey = '4wvCtWSaf5XRa2LinLdPa7fJ7zCMrYJXhGGiVLZ2EfZT', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_messaging" name="test_send_trust_ping" time="0.122"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37700&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1197a80d0&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'E3ga27qAuoatHzd1xzf6mx', verkey = '87RDavVrmvrZzBt7rvDJaP4XpaKd8M3YrTHtbdACuUqQ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_messaging" name="test_send_message" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37700&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x1197a80d0&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'E3ga27qAuoatHzd1xzf6mx', verkey = '87RDavVrmvrZzBt7rvDJaP4XpaKd8M3YrTHtbdACuUqQ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_get_tenant_auth_token" time="0.094"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_create_tenant_member" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_create_tenant_issuer" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_create_tenant_verifier" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_update_tenant_verifier_to_issuer" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_get_tenant" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_get_tenants" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_tenants" name="test_delete_tenant" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b37dc0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119720820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = '7fWFBBZheQi9r6KpsTg9iK', verkey = '4dfAHkJ3YAwrqKXPQverFdWj8LKF4fjvr45JK7wqudDq', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_trust_registry_integration" name="test_accept_proof_request_verifier_no_public_did" time="0.081"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b1cca0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b3f820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'EnkfgXxPEvPcTwCrBcsg4C', verkey = '8WtmNnPeTSeXurgGcQYvCUt71mmyuQRBLDF4zjiGq214', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_accept_proof_request_v1" time="0.089"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_accept_proof_request_v2" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_send_proof_request" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_reject_proof_request" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_get_proof_single" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_get_proofs_multi" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_delete_proof" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_verifier" name="test_get_credentials_for_request" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b3b3a0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119b06040&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'Xqvs5ZuwAyehd9kcbyG6dm', verkey = 'Hp2ZcNJ4jTegoRfp5sKFsbHP4aDJPjSyaVMnnsRjhdqZ', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_wallet" name="test_list_dids" time="0.119"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119bef4f0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119be6820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'WQVVsGoFzf5XtuDPzoz8tW', verkey = 'H2YwihfqbNxWYJMotk4Mnumkpc52huxKG1cKdtrRHtkg', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_wallet" name="test_create_local_did" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119bef4f0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119be6820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'WQVVsGoFzf5XtuDPzoz8tW', verkey = 'H2YwihfqbNxWYJMotk4Mnumkpc52huxKG1cKdtrRHtkg', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_wallet" name="test_get_public_did" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119bef4f0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119be6820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'WQVVsGoFzf5XtuDPzoz8tW', verkey = 'H2YwihfqbNxWYJMotk4Mnumkpc52huxKG1cKdtrRHtkg', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_wallet" name="test_get_did_endpoint" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119bef4f0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119be6820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'WQVVsGoFzf5XtuDPzoz8tW', verkey = 'H2YwihfqbNxWYJMotk4Mnumkpc52huxKG1cKdtrRHtkg', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_wallet" name="test_set_public_did" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119bef4f0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119be6820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'WQVVsGoFzf5XtuDPzoz8tW', verkey = 'H2YwihfqbNxWYJMotk4Mnumkpc52huxKG1cKdtrRHtkg', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_wallet" name="test_set_did_endpoint" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119bef4f0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119be6820&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'WQVVsGoFzf5XtuDPzoz8tW', verkey = 'H2YwihfqbNxWYJMotk4Mnumkpc52huxKG1cKdtrRHtkg', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_webhook" name="test_get_webhooks_for_wallet_by_topic" time="0.075"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b721c0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119906ca0&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'PhPdARNXBhc5BcdRKvWPTM', verkey = 'DNUgj4H5UkqAscp68pgHvjtkZr3r3GF5GzbGgwxJgfFA', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_webhook" name="test_get_webhooks_for_wallet" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b721c0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119906ca0&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'PhPdARNXBhc5BcdRKvWPTM', verkey = 'DNUgj4H5UkqAscp68pgHvjtkZr3r3GF5GzbGgwxJgfFA', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_webhook" name="test_get_webhooks_for_wallet_by_topic_tenant_error" time="0.000"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b721c0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119906ca0&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'PhPdARNXBhc5BcdRKvWPTM', verkey = 'DNUgj4H5UkqAscp68pgHvjtkZr3r3GF5GzbGgwxJgfFA', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.e2e.test_webhook" name="test_get_webhooks_for_wallet_by_topic_admin_error" time="0.001"><error message="failed on setup with &quot;fastapi.exceptions.HTTPException&quot;">args = ()
+kwargs = {'governance_acapy_client': &lt;aries_cloudcontroller.acapy_client.AcaPyClient object at 0x119b721c0&gt;}
+loop = &lt;_UnixSelectorEventLoop running=False closed=False debug=False&gt;
+setup = &lt;function pytest_fixture_setup.&lt;locals&gt;.wrapper.&lt;locals&gt;.setup at 0x119906ca0&gt;
+
+    def wrapper(*args, **kwargs):
+        loop = fixture_stripper.get_and_strip_from(
+            FixtureStripper.EVENT_LOOP, kwargs
+        )
+    
+        async def setup():
+            res = await coro(*args, **kwargs)
+            return res
+    
+&gt;       return loop.run_until_complete(setup())
+
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../.pyenv/versions/3.8.10/lib/python3.8/asyncio/base_events.py:616: in run_until_complete
+    return future.result()
+../../.pyenv/versions/3.8.10/lib/python3.8/site-packages/pytest_asyncio/plugin.py:157: in setup
+    res = await coro(*args, **kwargs)
+app/tests/e2e/conftest.py:21: in governance_public_did
+    await create_public_did(governance_acapy_client, set_public=True)
+app/tests/util/ledger.py:72: in create_public_did
+    await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+did = 'PhPdARNXBhc5BcdRKvWPTM', verkey = 'DNUgj4H5UkqAscp68pgHvjtkZr3r3GF5GzbGgwxJgfFA', role = 'ENDORSER'
+
+    async def post_to_ledger(
+        did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
+    ):
+        if LEDGER_TYPE == "sovrin":
+            payload = LedgerRequestSovrin(
+                network="stagingnet",
+                did=did,
+                verkey=verkey,
+            )
+        elif LEDGER_TYPE == "von":
+            payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        else:
+            raise HTTPException(
+                status_code=501,
+                detail="Cannot resolve ledger type. Should be either von or sovrin",
+            )
+    
+        response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    
+        if response.is_error:
+            logger.error("Failed to write to ledger:\n %s", response.text)
+&gt;           raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",
+            )
+E           fastapi.exceptions.HTTPException
+
+app/tests/util/ledger.py:50: HTTPException</error></testcase><testcase classname="app.tests.facades.test_acapy_ledger" name="test_error_on_get_taa" time="0.002" /><testcase classname="app.tests.facades.test_acapy_ledger" name="test_error_on_accept_taa" time="0.002" /><testcase classname="app.tests.facades.test_acapy_ledger" name="test_error_on_get_did_endpoint" time="0.002" /><testcase classname="app.tests.facades.test_acapy_ledger" name="test_schema_id_from_credential_definition_id_seq_no" time="0.002" /><testcase classname="app.tests.facades.test_acapy_ledger" name="test_schema_id_from_credential_definition_id_schema_id" time="0.002" /><testcase classname="app.tests.facades.test_acapy_wallet" name="test_assert_public_did" time="0.002" /><testcase classname="app.tests.facades.test_acapy_wallet" name="test_error_on_get_pub_did" time="0.002" /><testcase classname="app.tests.facades.test_acapy_wallet" name="test_error_on_assign_pub_did" time="0.002" /><testcase classname="app.tests.facades.test_trust_registry" name="test_assert_valid_issuer" time="0.007" /><testcase classname="app.tests.facades.test_trust_registry" name="test_actor_has_role" time="0.005" /><testcase classname="app.tests.facades.test_trust_registry" name="test_actor_by_did" time="0.004" /><testcase classname="app.tests.facades.test_trust_registry" name="test_actor_with_role" time="0.005" /><testcase classname="app.tests.facades.test_trust_registry" name="test_registry_has_schema" time="0.004" /><testcase classname="app.tests.facades.test_trust_registry" name="test_register_schema" time="0.003" /><testcase classname="app.tests.facades.test_trust_registry" name="test_register_actor" time="0.003" /><testcase classname="app.tests.facades.test_trust_registry" name="test_remove_actor_by_id" time="0.002" /><testcase classname="app.tests.facades.test_trust_registry" name="test_remove_schema_by_id" time="0.002" /><testcase classname="app.tests.facades.test_trust_registry" name="test_get_actor_by_did" time="0.005" /><testcase classname="app.tests.facades.test_trust_registry" name="test_update_actor" time="0.003" /><testcase classname="app.tests.facades.test_webhooks" name="test_get_hooks_per_topic_per_wallet" time="0.002" /><testcase classname="app.tests.facades.test_webhooks" name="test_get_hooks_per_wallet" time="0.001" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_get_records" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_get_records_connection_id" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_get_record" time="0.001" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_delete_credential_exchange_with_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_delete_credential_exchange_without_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_send_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_store_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v1_facade" name="test_request_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_get_records" time="0.001" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_get_records_connection_id" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_get_record" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_delete_credential_exchange_with_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_delete_credential_exchange_without_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_send_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_store_credential" time="0.002" /><testcase classname="app.tests.issuer.test_acapy_issuer_v2_facade" name="test_request_credential" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_send_credential" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_get_credentials" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_get_credential" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_remove_credential" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_request_credential" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_request_credential_x_no_schema_cred_def" time="0.002" /><testcase classname="app.tests.issuer.test_issuer" name="test_store_credential" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v1_facade" name="test_create_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v1_facade" name="test_send_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v1_facade" name="test_accept_proof_request" time="0.001" /><testcase classname="app.tests.verifier.test_acapy_verifier_v1_facade" name="test_reject_proof_reject" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v2_facade" name="test_create_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v2_facade" name="test_send_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v2_facade" name="test_accept_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_acapy_verifier_v2_facade" name="test_reject_proof_reject" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_send_proof_request_v1" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_send_proof_request_v2" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_create_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_accept_proof_request_v1" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_accept_proof_request_v2" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_reject_proof_request" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_delete_proof" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_get_proof_record" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_get_proof_records" time="0.002" /><testcase classname="app.tests.verifier.test_verifier" name="test_get_credentials_for_request" time="0.002" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_are_valid_schemas" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_get_connection_record" time="0.002" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_get_schema_ids" time="0.002" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_ed25519_verkey_to_did_key" time="0.001" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_is_verifier" time="0.001" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_get_actor" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_prover_invitation_key" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_prover_public_did" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_prover_x_no_public_did_no_invitation_key" time="0.002" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_prover_x_actor_invalid_role" time="0.002" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_prover_x_invalid_schemas" time="0.004" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_prover_x_no_connection_id" time="0.002" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_verifier_invitation_key" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_verifier_public_did" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_verifier_x_no_public_did_no_invitation_key" time="0.003" /><testcase classname="app.tests.verifier.test_verifier_utils" name="test_assert_valid_verifier_x_not_verifier" time="0.004" /></testsuite></testsuites>

@@ -14,7 +14,9 @@ from models import (
 )
 
 from shared_models import (
-    BasicMessage,
+    TopicItem,
+    Oob,
+    RedisItem,
     Connection,
     CredentialExchange,
     Endorsement,

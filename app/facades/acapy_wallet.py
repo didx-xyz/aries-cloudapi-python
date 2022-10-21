@@ -60,7 +60,13 @@ async def create_did(controller: AcaPyClient) -> Did:
     return Did(did=did_result.result.did, verkey=did_result.result.verkey)
 
 
-async def set_public_did(controller: AcaPyClient, did: str) -> DID:
+async def set_public_did(
+    controller: AcaPyClient,
+    did: str,
+    connection_id: str = None,
+    create_transaction_for_endorser: bool = False,
+    is_endorsed: bool = False,
+) -> DID:
     """Set the public did.
 
     Args:
@@ -73,9 +79,13 @@ async def set_public_did(controller: AcaPyClient, did: str) -> DID:
     Returns:
         DID: the did
     """
-    result = await controller.wallet.set_public_did(did=did)
+    result = await controller.wallet.set_public_did(
+        did=did,
+        conn_id=connection_id,
+        create_transaction_for_endorser=create_transaction_for_endorser,
+    )
 
-    if not result.result:
+    if not result.result and not is_endorsed:
         raise CloudApiException(f"Error setting public did: {did}")
 
     return result.result

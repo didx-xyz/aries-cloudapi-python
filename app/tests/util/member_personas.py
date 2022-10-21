@@ -83,13 +83,11 @@ async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
-    tenant_admin = tenant_admin_client()
     tenant_admin_acapy = governance_acapy_client()
 
     invite = await tenant_admin_acapy.connection.create_invitation(
         alias="endorser",
         auto_accept=True,
-        # multi_use=False,
         public=True,
         body=InvitationCreateRequest(
             handshake_protocols=["https://didcomm.org/didexchange/1.0"],

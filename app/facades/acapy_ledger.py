@@ -129,7 +129,7 @@ async def register_nym_on_ledger(
         )
     except ClientResponseError as e:
         # if not nym_response.success:
-        raise HTTPException(500, f"Error registering nym on ledger: %s", e)
+        raise HTTPException(500, "Error registering nym on ledger: %s", e)
 
 
 async def accept_taa_if_required(aries_controller: AcaPyClient):

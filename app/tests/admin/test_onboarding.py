@@ -72,6 +72,7 @@ async def test_onboard_issuer_public_did_exists(
         )
     )
     onboard_result = await onboarding.onboard_issuer(
+        name="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
         issuer_wallet_id="issuer_wallet_id",
@@ -139,7 +140,12 @@ async def test_onboard_issuer_no_public_did(
     when(onboarding).start_listener(topic="endorsements", wallet_id="admin").thenReturn(
         get(
             (
-                CoroutineMock(return_value={"state": "request-received"}),
+                CoroutineMock(
+                    return_value={
+                        "state": "request-received",
+                        "transaction_id": "abcde",
+                    }
+                ),
                 MagicMock(),
             )
         )
@@ -166,6 +172,7 @@ async def test_onboard_issuer_no_public_did(
         get()
     )
     onboard_result = await onboarding.onboard_issuer(
+        name="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
         issuer_wallet_id="issuer_wallet_id",
@@ -177,6 +184,7 @@ async def test_onboard_issuer_no_public_did(
         endorser_controller,
         did="WgWxqztrNooG92RXvxSTWv",
         verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
+        alias="issuer_name",
     )
     verify(acapy_ledger).accept_taa_if_required(mock_agent_controller)
     verify(acapy_wallet).set_public_did(
@@ -184,7 +192,6 @@ async def test_onboard_issuer_no_public_did(
         did="WgWxqztrNooG92RXvxSTWv",
         connection_id=None,
         create_transaction_for_endorser=True,
-        is_endorsed=True,
     )
 
 

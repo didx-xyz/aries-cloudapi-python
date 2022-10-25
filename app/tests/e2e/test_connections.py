@@ -185,7 +185,7 @@ async def test_accept_invitation_oob(
         "/generic/connections/oob/accept-invitation",
         json={"invitation": invitation},
     )
-    # FIXME: This should be an oob record but there are many fields None instead of data
+
     oob_record = accept_response.json()
 
     connection_record = await alice_acapy_client.connection.get_connection(

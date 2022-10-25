@@ -14,10 +14,9 @@ from app.tests.util.client import (
 from app.tests.util.ledger import create_public_did
 from app.generic.connections.connections import (
     CreateInvitation,
-    InvitationCreateRequest,
 )
 
-from app.tests.util.tenants import create_issuer_tenant, delete_tenant
+from app.tests.util.tenants import create_issuer_tenant, create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -44,7 +43,7 @@ async def bob_member_client():
 @pytest.fixture(scope="module")
 async def alice_tenant():
     async with tenant_admin_client() as client:
-        tenant = await create_issuer_tenant(client, "alice")
+        tenant = await create_tenant(client, "alice")
 
         yield tenant
 
@@ -83,58 +82,9 @@ async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
-    tenant_admin_acapy = governance_acapy_client()
-
-    invite = await tenant_admin_acapy.connection.create_invitation(
-        alias="endorser",
-        auto_accept=True,
-        public=True,
-        body=InvitationCreateRequest(
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-            use_public_did=True,
-        ),
-    )
-
-    # create did
-    set_public_did_result = await create_public_did(tenant_admin_acapy)
-
-    bob_conn = await bob_acapy_client.connection.receive_invitation(
-        alias="endorser", auto_accept=True, body=invite.invitation
-    )
-    alice_conn = await alice_acapy_client.connection.receive_invitation(
-        alias="endorser", auto_accept=True, body=invite.invitation
-    )
 
     bob_records = await bob_acapy_client.connection.get_connections()
     alice_records = await alice_acapy_client.connection.get_connections()
-
-    # Get connection record for admin
-    admin_conn_records = await tenant_admin_acapy.connection.get_connections()
-
-    set_endorser_role_result_bob = (
-        await bob_acapy_client.endorse_transaction.set_endorser_role(
-            conn_id=bob_conn.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
-        )
-    )
-    set_endorser_info_result_bob = (
-        await bob_acapy_client.endorse_transaction.set_endorser_info(
-            conn_id=bob_conn.connection_id,
-            endorser_did=set_public_did_result.did,
-            endorser_name="endorser",
-        )
-    )
-    set_endorser_role_result_alice = (
-        await alice_acapy_client.endorse_transaction.set_endorser_role(
-            conn_id=alice_conn.connection_id, transaction_my_job="TRANSACTION_AUTHOR"
-        )
-    )
-    set_endorser_info_result_alice = (
-        await alice_acapy_client.endorse_transaction.set_endorser_info(
-            conn_id=alice_conn.connection_id,
-            endorser_did=set_public_did_result.did,
-            endorser_name="endorser",
-        )
-    )
 
     await bob_acapy_client.connection.accept_invitation(
         conn_id=bob_records.results[-1].connection_id
@@ -194,6 +144,16 @@ async def bob_and_alice_connection(
         bob_member_client,
         topic="connections",
         filter_map={"state": "completed"},
+    )
+    # assert check_webhook_state(
+    #     alice_member_client,
+    #     topic="endorsements",
+    #     filter_map={"state": "transaction-acked"},
+    # )
+    assert check_webhook_state(
+        bob_member_client,
+        topic="endorsements",
+        filter_map={"state": "transaction-acked"},
     )
 
     return {

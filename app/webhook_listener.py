@@ -29,7 +29,11 @@ class Webhooks:
 
     @staticmethod
     def off(f: Callable[[Dict[str, Any]], Awaitable[None]]):
-        Webhooks._listeners.remove(f)
+        try:
+            Webhooks._listeners.remove(f)
+        except ValueError:
+            # Listener not in list
+            pass
 
     @staticmethod
     async def listen_webhooks():

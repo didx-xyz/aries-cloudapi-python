@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Generic, List, Mapping, Optional, Dict, TypeVar, Union, Tuple
+from typing import Any, Generic, List, Optional, Dict, TypeVar, Union, Tuple
 
 from typing_extensions import TypedDict, Literal
 
@@ -100,7 +100,17 @@ def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 
 class Endorsement(BaseModel):
     transaction_id: str
-    state: str
+    state: Literal[
+        "transaction-created",
+        "request-sent",
+        "request-received",
+        "transaction-endorsed",
+        "transaction-refused",
+        "transaction-resent",
+        "transaction-resent_received",
+        "transaction-cancelled",
+        "transaction-acked",
+    ]
 
 
 class ServiceDecorator(TypedDict):
@@ -110,33 +120,51 @@ class ServiceDecorator(TypedDict):
 
 
 class Oob(BaseModel):
-    role: Optional[str] = str
+    role: Optional[Literal['sender', 'receiver']] = None
     invi_msg_id: Optional[str] = None
-    state: Optional[str] = str
-    trace: Optional[str] = None
+    state: Optional[
+        Literal[
+            "initial",
+            "prepare-response",
+            "await-response",
+            "reuse-not-accepted",
+            "reuse-accepted",
+            "done",
+        ]
+    ] = None
+    trace: Optional[bool] = None
     our_recipient_key: Optional[str] = None
     oob_id: Optional[str] = None
-    invitation: Union[InvitationMessage, Mapping[str, Any]] = None
+    invitation: InvitationMessage = None
     created_at: Optional[str] = None
     connection_id: Optional[str] = None
     updated_at: Optional[str] = None
     attach_thread_id: Optional[str] = None
     multi_use: Optional[bool] = False
     our_recipient_key: Optional[str] = None
-    their_service: Optional[Union[ServiceDecorator, Any]] = None
-    our_service: Optional[Union[ServiceDecorator, Any]] = None
 
 
+# TODO: Import this from aca-py instead of typing this here
+# when aca-py version is >=0.7.5
 class OobRecord(BaseModel):
-    nvi_msg_id: Optional[str]
-    invitation: Union[InvitationMessage, Mapping[str, Any]] = None
+    invi_msg_id: Optional[str]
+    invitation: Optional[InvitationMessage] = None
     oob_id: Optional[str] = None
-    state: Optional[str] = None
+    state: Optional[
+        Literal[
+            "initial",
+            "prepare-response",
+            "await-response",
+            "reuse-not-accepted",
+            "reuse-accepted",
+            "done",
+        ]
+    ] = None
     attach_thread_id: Optional[str] = None
     connection_id: Optional[str] = None
     created_at: Optional[str] = None
     our_recipient_key: Optional[str] = None
-    role: Optional[str] = None
+    role: Optional[Literal['sender', 'receiver']] = None
     their_service: Optional[ServiceDecorator] = None
     trace: Optional[bool] = None
     updated_at: Optional[str] = None
@@ -144,9 +172,7 @@ class OobRecord(BaseModel):
 
 class Connection(BaseModel):
     connection_id: Optional[str] = None
-    connection_protocol: Optional[
-        str
-    ] = None  # Optional[Literal["connections/1.0", "didexchange/1.0"]] = None
+    connection_protocol: Optional[Literal["connections/1.0", "didexchange/1.0"]] = None
     created_at: Optional[str] = None
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
     their_role: Optional[Literal["invitee", "requester", "inviter", "responder"]] = None

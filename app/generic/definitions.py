@@ -359,13 +359,42 @@ async def create_schema(
         )
     except ClientResponseError as e:
         if e.status == 400 and "already exist" in e.message:
-            schema_ids = await aries_controller.schema.get_created_schemas(
-                schema_name=schema.name
+            pub_did = await aries_controller.wallet.get_public_did()
+            _schema = await aries_controller.schema.get_schema(
+                schema_id=f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
             )
-            schema = await aries_controller.schema.get_schema(
-                schema_id=schema_ids.schema_ids[0]
-            )
-            return _credential_schema_from_acapy(schema.schema_)
+            # Edge case where the governance agent has changed its public did
+            # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
+            # will not be correct due to different public did.
+            if _schema.schema_ is None:
+                schemas_created_ids = await aries_controller.schema.get_created_schemas(
+                    schema_name=schema.name, schema_version=schema.version
+                )
+                schemas = [
+                    await aries_controller.schema.get_schema(schema_id=schema_id)
+                    for schema_id in schemas_created_ids.schema_ids
+                    if schema_id is not None
+                ]
+                if len(schemas) > 1:
+                    raise CloudApiException(
+                        detail={
+                            "Multiple schemas with name %s and version %s exist. These are: %s",
+                            schema.name,
+                            schema.version,
+                            str(schemas_created_ids.schema_ids),
+                        }
+                    )
+                _schema = schemas[0]
+            # Schema exists with different attributes
+            if set(_schema.schema_.attr_names) != set(schema.attribute_names):
+                raise CloudApiException(
+                    detail={
+                        "Error creating schema: Schema already exists with different attribute names. Given: %s. Found: %s",
+                        str(set(_schema.schema_.attr_names)),
+                        str(set(schema.attribute_names)),
+                    }
+                )
+            return _credential_schema_from_acapy(_schema.schema_)
         else:
             raise CloudApiException(
                 detail={"Error creating schema: %s", e.message}, status_code=500

@@ -65,7 +65,6 @@ async def set_public_did(
     did: str,
     connection_id: str = None,
     create_transaction_for_endorser: bool = False,
-    is_endorsed: bool = False,
 ) -> DID:
     """Set the public did.
 
@@ -85,10 +84,10 @@ async def set_public_did(
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
-    if not result.result and not is_endorsed:
+    if not result.result and not create_transaction_for_endorser:
         raise CloudApiException(f"Error setting public did: {did}")
 
-    return result.result
+    return result.dict()
 
 
 async def get_public_did(controller: AcaPyClient) -> Did:

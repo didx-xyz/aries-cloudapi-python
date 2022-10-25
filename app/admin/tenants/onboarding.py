@@ -59,7 +59,7 @@ async def handle_tenant_update(
             # We only care about the added roles, as that's what needs the setup.
             # Teardown is not required at the moment, besides from removing it from
             # the trust registry
-            added_roles = set(update.roles) - set(actor["roles"])
+            added_roles = list(set(update.roles) - set(actor["roles"]))
 
             # We need to pose as the tenant to onboard for the specified role
             token_response = await admin_controller.multitenancy.get_auth_token(
@@ -90,6 +90,7 @@ async def onboard_tenant(
             Role.TENANT, tenant_auth_token
         ) as tenant_controller:
             return await onboard_issuer(
+                name=name,
                 endorser_controller=governance_controller,
                 issuer_controller=tenant_controller,
                 issuer_wallet_id=tenant_id,
@@ -108,6 +109,7 @@ async def onboard_tenant(
 
 async def onboard_issuer(
     *,
+    name: str = None,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     issuer_wallet_id: str,
@@ -135,7 +137,7 @@ async def onboard_issuer(
         invitation = await endorser_controller.out_of_band.create_invitation(
             auto_accept=True,
             body=InvitationCreateRequest(
-                alias=ACAPY_ENDORSER_ALIAS,
+                alias=name,
                 handshake_protocols=["https://didcomm.org/didexchange/1.0"],
                 use_public_did=True,
             ),
@@ -145,9 +147,6 @@ async def onboard_issuer(
             f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
         )
 
-        wait_for_event, _ = await start_listener(
-            topic="connections", wallet_id=issuer_wallet_id
-        )
         endorser_wait_for_connection, _ = await start_listener(
             topic="connections", wallet_id="admin"
         )
@@ -173,20 +172,12 @@ async def onboard_issuer(
 
         # Wait for connection to be completed before continuing
         try:
-            await wait_for_event(
-                filter_map={
-                    "connection_id": connection_record.connection_id,
-                    "state": "completed",
-                }
-            )
-
             endorser_connection = await endorser_wait_for_connection(
                 filter_map={
                     "invitation_msg_id": invitation.invi_msg_id,
                     "state": "completed",
                 }
             )
-
         except TimeoutError:
             raise CloudApiException("Error creating connection with endorser", 500)
 
@@ -213,7 +204,10 @@ async def onboard_issuer(
         issuer_did = await acapy_wallet.create_did(issuer_controller)
 
         await acapy_ledger.register_nym_on_ledger(
-            endorser_controller, did=issuer_did.did, verkey=issuer_did.verkey
+            endorser_controller,
+            did=issuer_did.did,
+            verkey=issuer_did.verkey,
+            alias=name,
         )
 
         await acapy_ledger.accept_taa_if_required(issuer_controller)
@@ -224,11 +218,10 @@ async def onboard_issuer(
             did=issuer_did.did,
             connection_id=connection_record.connection_id,
             create_transaction_for_endorser=True,
-            is_endorsed=True,
         )
 
         try:
-            await endorser_wait_for_transaction(
+            txn_record = await endorser_wait_for_transaction(
                 filter_map={
                     "state": "request-received",
                 }
@@ -236,16 +229,8 @@ async def onboard_issuer(
         except TimeoutError:
             raise CloudApiException("Error creating connection with endorser", 500)
 
-        txns = await endorser_controller.endorse_transaction.get_records()
-
-        txn = [
-            txn
-            for txn in txns.results
-            if txn.connection_id == endorser_connection["connection_id"]
-        ][-1]
-
         await endorser_controller.endorse_transaction.endorse_transaction(
-            tran_id=txn.transaction_id
+            tran_id=txn_record["transaction_id"]
         )
 
     return OnboardResult(did=qualified_did_sov(issuer_did.did))

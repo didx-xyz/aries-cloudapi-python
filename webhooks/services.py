@@ -11,6 +11,7 @@ from models import (
     to_credential_hook_model,
     to_proof_hook_model,
     to_connections_model,
+    to_endorsement_model,
 )
 from shared_models import (
     TopicItem,
@@ -21,7 +22,6 @@ from shared_models import (
     PresentationExchange,
     BasicMessage,
     PayloadType,
-    Endorsement,
 )
 
 log = logging.getLogger(__name__)
@@ -49,15 +49,10 @@ class Service:
         return to_connections_model(item=item)
 
     def _basic_messages(self, item: RedisItem) -> BasicMessage:
-        basic_message = BasicMessage(**item["payload"])
-
-        return basic_message
+        return BasicMessage(**item["payload"])
 
     def _endorsements(self, item: RedisItem):
-        endorsement = Endorsement(**item["payload"])
-        endorsement.state = endorsement.state.replace("_", "-")
-
-        return endorsement
+        return to_endorsement_model(item=item)
 
     def _oob(self, item: RedisItem):
         oob = Oob(**item["payload"])

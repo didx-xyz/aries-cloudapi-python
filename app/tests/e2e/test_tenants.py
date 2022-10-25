@@ -271,6 +271,41 @@ async def test_update_tenant_verifier_to_issuer(
     new_tenant = response.json()
     new_actor = await trust_registry.actor_by_id(tenant_id)
 
+    endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
+
+    acapy_token = (
+        (await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}/access-token"))
+        .json()["access_token"]
+        .split(".", 1)[1]
+    )
+
+    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
+        public_did = await acapy_wallet.get_public_did(tenant_controller)
+
+        _connections = (await tenant_controller.connection.get_connections()).results
+
+        connections = [
+            connection
+            for connection in _connections
+            if connection.their_public_did == endorser_did.did
+        ]
+
+    endorser_connection = connections[0]
+
+    async with tenant_client(token=tenant["access_token"]) as client:
+        # Wait for connection to be completed
+        assert check_webhook_state(
+            client,
+            "connections",
+            {
+                "state": "completed",
+                "connection_id": endorser_connection.connection_id,
+            },
+        )
+
+    # Connection invitation
+    assert_that(endorser_connection).has_their_public_did(endorser_did.did)
+
     assert new_actor
     assert_that(new_actor).has_name(new_name)
     assert_that(new_actor).has_did(f"{new_actor['did']}")

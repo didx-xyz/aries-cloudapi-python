@@ -257,7 +257,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         onboarding_result["did"] = qualified_did_sov(public_did.did)
     except CloudApiException:
         # create a multi_use invitation from the did
-        invitation = await verifier_controller.did_exchange. out_of_band.create_invitation(
+        invitation = await verifier_controller.out_of_band.create_invitation(
             auto_accept=True,
             multi_use=True,
             body=InvitationCreateRequest(

@@ -34,10 +34,9 @@ router = APIRouter(
 
 
 class CreateCredentialDefinition(BaseModel):
-    # Revocation not supported currently
-    # support_revocation: bool = False
     tag: str = Field(..., example="default")
     schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    support_revocation: bool = False
 
 
 class CredentialDefinition(BaseModel):
@@ -208,8 +207,7 @@ async def create_credential_definition(
     result = await aries_controller.credential_definition.publish_cred_def(
         body=CredentialDefinitionSendRequest(
             schema_id=credential_definition.schema_id,
-            # Revocation not supported yet
-            support_revocation=False,
+            support_revocation=credential_definition.support_revocation,
             tag=credential_definition.tag,
         )
     )

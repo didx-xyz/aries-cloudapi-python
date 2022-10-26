@@ -143,7 +143,9 @@ async def accept_taa_if_required(aries_controller: AcaPyClient):
         )
 
 
-async def write_credential_def(controller: AcaPyClient, schema_id: str, support_revocation: bool = False) -> str:
+async def write_credential_def(
+    controller: AcaPyClient, schema_id: str, support_revocation: bool = False
+) -> str:
     """
     Writes Credential Definition to the ledger
 
@@ -152,9 +154,9 @@ async def write_credential_def(controller: AcaPyClient, schema_id: str, support_
     controller (AcaPyClient): The aries_cloudcontroller object
 
     schema_id (str): The schema identifier
-    
+
     support_revocation (bool): Whether to support revocation.
-        Default is False 
+        Default is False
 
     Returns:
     -------

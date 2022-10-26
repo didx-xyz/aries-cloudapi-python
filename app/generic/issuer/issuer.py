@@ -14,13 +14,14 @@ from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
+import app.facades.revocation_registry as revocation_registry
 from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential
 from app.util.indy import did_from_credential_definition_id
-from shared_models import IssueCredentialProtocolVersion
+from shared_models import IssueCredentialProtocolVersion, CredentialExchange
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +66,11 @@ async def get_credentials(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Get list of records.
+        Get a list of credential records.
 
     Parameters:
     ------------
-    connection_id: str (Optional)
+        connection_id: str (Optional)
     """
 
     v1_records = await IssueCredentialFacades.v1.value.get_records(
@@ -89,12 +90,12 @@ async def get_credential(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Get credential by credential id.
+        Get a credential by credential id.
 
     Parameters:
     -----------
-    credential_id: str
-        credential identifier
+        credential_id: str
+            credential identifier
     """
 
     issuer = __issuer_from_id(credential_id)
@@ -104,22 +105,24 @@ async def get_credential(
     )
 
 
-@router.post("/credentials")
+@router.post("/credentials", response_model=CredentialExchange)
 async def send_credential(
     credential: SendCredential,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Create and send credential. Automating the entire flow.
+        Create and send a credential. Automating the entire flow.
 
     Parameters:
     ------------
-    credential: Credential
-        payload for sending a credential
+        credential: Credential
+            payload for sending a credential
 
     Returns:
     --------
-    The response object from sending a credential
+        payload: CredentialExchange
+            The response object from sending a credential
+        status_code: 200
     """
 
     issuer = __issuer_from_protocol_version(credential.protocol_version)
@@ -151,22 +154,49 @@ async def remove_credential(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Remove credential.
+        Remove a credential.
 
     Parameters:
     -----------
-    credential_id: str
-        credential identifier
+        credential_id: str
+            credential identifier
 
     Returns:
     --------
-    The response object from removing a credential.
-
+        payload: None
+        status_code: 204
     """
     issuer = __issuer_from_id(credential_id)
 
     await issuer.delete_credential(
         controller=aries_controller, credential_exchange_id=credential_id
+    )
+
+
+@router.post("/credentials/{credential_exchange_id}/revoke", status_code=204)
+async def revoke_credential(
+    credential_exchange_id: str,
+    auto_publish_on_ledger: Optional[bool] = False,
+    aries_controller: AcaPyClient = Depends(agent_selector),
+):
+    """
+        Revoke a credential.
+
+    Parameters:
+    -----------
+        credential_exchange_id: str
+            The credential exchange id
+
+    Returns:
+    --------
+        payload: None
+        status_code: 204
+    """
+
+    await revocation_registry.revoke_credential(
+        controller=aries_controller,
+        credential_exchange_id=credential_exchange_id,
+        auto_publish_to_ledger=auto_publish_on_ledger,
     )
 
 
@@ -176,12 +206,12 @@ async def request_credential(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Send credential request.
+        Send a credential request.
 
     Parameters:
     -----------
-    credential_id: str
-        credential id
+        credential_id: str
+            credential id
     """
     issuer = __issuer_from_id(credential_id)
 
@@ -190,7 +220,7 @@ async def request_credential(
     if not record.credential_definition_id or not record.schema_id:
         raise CloudApiException(
             "Record has no credential definition or schema associated. "
-            "This proably means you haven't received an offer yet.",
+            "This probably means you haven't received an offer yet.",
             403,
         )
 
@@ -210,12 +240,12 @@ async def store_credential(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Store credential.
+        Store a credential.
 
     Parameters:
     -----------
-    credential_id: str
-        credential identifier
+        credential_id: str
+            credential identifier
 
     """
     issuer = __issuer_from_id(credential_id)

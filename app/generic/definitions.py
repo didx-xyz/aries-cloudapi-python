@@ -23,6 +23,9 @@ from app.dependencies import (
     agent_role,
     agent_selector,
 )
+from app.facades.revocation_registry import (
+    create_revocation_registry,
+)
 from app.role import Role
 from app.facades import trust_registry, acapy_wallet
 from app.webhook_listener import start_listener
@@ -36,7 +39,10 @@ router = APIRouter(
 class CreateCredentialDefinition(BaseModel):
     tag: str = Field(..., example="default")
     schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
-    support_revocation: bool = False
+    support_revocation: bool = True
+    revocation_registry_size: int = (
+        32767  # max is 32768 # potentially fix this in the controller
+    )
 
 
 class CredentialDefinition(BaseModel):
@@ -86,19 +92,19 @@ async def get_credential_definitions(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Retrieve credential definitions the current agent created.
+        Retrieve credential definitions the current agent created.
 
     Parameters:
     -----------
-    issuer_did: str (Optional)\n
-    credential_definition_id: str (Optional)\n
-    schema_id: str (Optional)\n
-    schema_issuer_id: str (Optional)\n
-    schema_version: str (Optional)\n
+        issuer_did: str (Optional)\n
+        credential_definition_id: str (Optional)\n
+        schema_id: str (Optional)\n
+        schema_issuer_id: str (Optional)\n
+        schema_version: str (Optional)\n
 
     Returns:
     ---------
-    The created credential definitions.
+        The created credential definitions.
     """
     # Get all created credential definition ids that match the filter
     response = await aries_controller.credential_definition.get_created_cred_defs(
@@ -141,12 +147,12 @@ async def get_credential_definition_by_id(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Get credential definition by id.
+        Get credential definition by id.
 
     Parameters:
     -----------
-    credential_definition_id: str
-        credential definition id
+        credential_definition_id: str
+            credential definition id
 
     """
     credential_definition = await aries_controller.credential_definition.get_cred_def(
@@ -180,16 +186,16 @@ async def create_credential_definition(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
-    Create a credential definition.
+        Create a credential definition.
 
     Parameters:
     -----------
-    credential_definition: CreateCredentialDefinition
-        Payload for creating a credential definition.
+        credential_definition: CreateCredentialDefinition
+            Payload for creating a credential definition.
 
     Returns:
     --------
-    Credential Definition
+        Credential Definition
     """
 
     # Assert the agent has a public did
@@ -247,6 +253,16 @@ async def create_credential_definition(
                 "Unable to construct credential definition id from signature response"
             ) from e
 
+        try:
+            # Create a revocation registry and publish it on the ledger
+            await create_revocation_registry(
+                controller=aries_controller,
+                credential_definition_id=credential_definition_id,
+                max_cred_num=credential_definition.revocation_registry_size,
+            )
+        except Exception as e:
+            raise e
+
     else:
         await stop_listener()
         credential_definition_id = result.credential_definition_id
@@ -268,18 +284,18 @@ async def get_schemas(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Retrieve schemas that the current agent created.
+        Retrieve schemas that the current agent created.
 
     Parameters:
     -----------
-    schema_id: str (Optional)
-    schema_issuer_did: str (Optional)
-    schema_name: str (Optional)
-    schema_version: str (Optional)
+        schema_id: str (Optional)
+        schema_issuer_did: str (Optional)
+        schema_name: str (Optional)
+        schema_version: str (Optional)
 
     Returns:
     --------
-    Json response with created schemas from ledger.
+        son response with created schemas from ledger.
     """
     # Get all created schema ids that match the filter
     response = await aries_controller.schema.get_created_schemas(
@@ -313,12 +329,12 @@ async def get_schema(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Retrieve schema by id.
+        Retrieve schema by id.
 
     Parameters:
     -----------
-    schema_id: str
-        schema id
+        schema_id: str
+            schema id
     """
     schema = await aries_controller.schema.get_schema(schema_id=schema_id)
 
@@ -335,16 +351,16 @@ async def create_schema(
     aries_controller: AcaPyClient = Depends(agent_role(Role.GOVERNANCE)),
 ) -> CredentialSchema:
     """
-    Create a new schema.
+        Create a new schema.
 
     Parameters:
     ------------
-    schema: CreateSchema
-        Payload for creating a schema.
+        schema: CreateSchema
+            Payload for creating a schema.
 
     Returns:
     --------
-    The response object from creating a schema.
+        The response object from creating a schema.
     """
     schema_send_request = SchemaSendRequest(
         attributes=schema.attribute_names,

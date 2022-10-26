@@ -19,17 +19,18 @@ logger = logging.getLogger(__name__)
 
 
 async def create_revocation_registry(
-    controller: AcaPyClient, credential_definition_id: str, max_cred_num: int = 1000
+    controller: AcaPyClient, credential_definition_id: str, max_cred_num: int = 32767
 ) -> IssuerRevRegRecord:
-    """Create a new revocation registry
+    """
+        Create a new revocation registry
 
-    This should be called whenever a new credential definition is created.
+        This should be called whenever a new credential definition is created.
 
     Args:
         controller (AcaPyClient): aca-py client
         credential_definition_id (str): The credential definition ID.
         max_cred_num (Optional(int)): The maximum number of credentials to be stored by the registry.
-            Default = 1000
+            Default = 32768 (max is 32768)
 
     Raises:
         Exception: When the credential definition is not found or the revocation registry could not be created.
@@ -54,7 +55,8 @@ async def create_revocation_registry(
 async def get_active_revocation_registry_for_credential(
     controller: AcaPyClient, credential_definition_id: str
 ) -> IssuerRevRegRecord:
-    """Get the active revocation registry for a credential
+    """
+        Get the active revocation registry for a credential
 
     Args:
         controller (AcaPyClient): aca-py client
@@ -81,7 +83,8 @@ async def get_active_revocation_registry_for_credential(
 async def get_credential_revocation_status(
     controller: AcaPyClient, credential_exchange_id: str
 ) -> IssuerCredRevRecord:
-    """Get the active revocation registry for a credential
+    """
+        Get the active revocation registry for a credential
 
     Args:
         controller (AcaPyClient): aca-py client
@@ -115,7 +118,8 @@ async def publish_revocation_registry_on_ledger(
     connection_id: str = None,
     create_transaction_for_endorser: bool = False,
 ) -> Union[IssuerRevRegRecord, TxnOrRevRegResult]:
-    """Publish a created revocation registry to the ledger
+    """
+        Publish a created revocation registry to the ledger
 
     Args:
         controller (AcaPyClient): aca-py client
@@ -155,18 +159,24 @@ async def publish_revocation_registry_on_ledger(
 
 async def publish_revocation_entry_to_ledger(
     controller: AcaPyClient,
-    revocation_registry_id: str,
+    revocation_registry_id: str = None,
+    credential_definition_id: str = None,
     connection_id: str = None,
     create_transaction_for_endorser: bool = False,
 ) -> IssuerRevRegRecord:
-    """Publish a created revocation entry to the ledger
+    """
+        Publish a created revocation entry to the ledger
 
     Args:
         controller (AcaPyClient): aca-py client
+        credential_definition_id (str): The credential definition ID.
         revocation_registry_id (str): The revocation registry ID.
+            Default is None
         connection_id (str): The connection ID of author to endorser.
+            Default is None
         create_transaction_for_endorser (bool): Whether to create a transaction
             record to for the endorser to be endorsed.
+            Default is False
 
     Raises:
         Exception: When the revocation registry entry could not be published.
@@ -174,6 +184,14 @@ async def publish_revocation_entry_to_ledger(
     Returns:
         result (IssuerRevRegRecord): The revocation registry record.
     """
+    if not revocation_registry_id and not credential_definition_id:
+        raise CloudApiException(
+            "Please, provide either a revocation registry id OR credential definition id."
+        )
+    if not revocation_registry_id:
+        revocation_registry_id = await get_active_revocation_registry_for_credential(
+            controller=controller, credential_definition_id=credential_definition_id
+        )
     result = await controller.revocation.publish_rev_reg_entry(
         rev_reg_id=revocation_registry_id,
         conn_id=connection_id,
@@ -182,57 +200,71 @@ async def publish_revocation_entry_to_ledger(
 
     if not result.result:
         raise CloudApiException(
-            f"Revoked credential but failed to update ledger.\n{result}"
+            f"Failed to publish revocation entry to ledger.\n{result}"
         )
 
     return result.result
 
 
 async def revoke_credential(
-    controller: AcaPyClient, revoke_request: RevokeRequest
-) -> IssuerRevRegRecord:
-    """Revoke an issued credential
+    controller: AcaPyClient,
+    credential_exchange_id: str,
+    auto_publish_to_ledger: bool = True,
+) -> None:
+    """
+        Revoke an issued credential
 
     Args:
         controller (AcaPyClient): aca-py client
-        revoke_request (RevokeRequest): The revocation registry ID.
+        credential_exchange_id (str): The credential exchange ID.
+        auto_publish_to_ledger (bool): Whether to directly publish the revocation to the ledger.
+            Default is False
 
     Raises:
         Exception: When the credential could not be revoked
 
     Returns:
-        result (IssuerRevRegRecord): The revocation registry record.
+        result (None): Successful execution returns None.
     """
-    result = await controller.revocation.revoke_credential(body=revoke_request)
+    result = await controller.revocation.revoke_credential(
+        body=RevokeRequest(
+            cred_ex_id=credential_exchange_id, publish=auto_publish_to_ledger
+        )
+    )
 
     if result != {}:
         raise CloudApiException(f"Failed to revoke credential.\n{result}")
 
-    credential_definition_id = await _get_credential_definition_id_from_exchange_id(
-        controller=controller, credential_exchange_id=revoke_request.cred_ex_id
-    )
-
-    if not credential_definition_id:
-        raise CloudApiException(
-            "Failed to retrieve credential definition ID.",
-            "Credential revoked but not written to ledger.",
+    if not auto_publish_to_ledger:
+        credential_definition_id = await _get_credential_definition_id_from_exchange_id(
+            controller=controller, credential_exchange_id=credential_exchange_id
         )
 
-    active_revocation_registry_id = await get_active_revocation_registry_for_credential(
-        controller=controller, credential_definition_id=credential_definition_id
-    )
+        if not credential_definition_id:
+            raise CloudApiException(
+                "Failed to retrieve credential definition ID.",
+                "Credential revoked but not written to ledger.",
+            )
 
-    # Publish the revocation to ledger
-    return await publish_revocation_entry_to_ledger(
-        controller=controller,
-        revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
-    )
+        active_revocation_registry_id = (
+            await get_active_revocation_registry_for_credential(
+                controller=controller, credential_definition_id=credential_definition_id
+            )
+        )
+
+        # Publish the revocation to ledger
+        await publish_revocation_entry_to_ledger(
+            controller=controller,
+            revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
+        )
+    return None
 
 
 async def _get_credential_definition_id_from_exchange_id(
     controller: AcaPyClient, credential_exchange_id: str
 ) -> Union[str, None]:
-    """Get the credential definition id from the credential exchange id.
+    """
+        Get the credential definition id from the credential exchange id.
 
     Args:
         controller (AcaPyClient): aca-py client
@@ -256,9 +288,9 @@ async def _get_credential_definition_id_from_exchange_id(
         credential_definition_id = [
             rev_reg_parts[2],
             "3",
-            "CL",
+            "CL",  # TODO: Determine and potentially replace this with other possible signature type
             rev_reg_parts[-4],
-            rev_reg_parts[-3],
+            rev_reg_parts[-1],
         ].join(":")
     except Exception:
         credential_definition_id = None

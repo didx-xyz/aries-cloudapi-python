@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, TypedDict
 
 import pytest
@@ -7,14 +6,17 @@ from httpx import AsyncClient
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
 from app.tests.util.client import (
+    governance_acapy_client,
     tenant_acapy_client,
     tenant_admin_client,
     tenant_client,
 )
 from app.tests.util.ledger import create_public_did
-from app.generic.connections.connections import CreateInvitation
+from app.generic.connections.connections import (
+    CreateInvitation,
+)
 
-from app.tests.util.tenants import create_tenant, delete_tenant
+from app.tests.util.tenants import create_issuer_tenant, create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -31,7 +33,7 @@ class BobAlicePublicDid(TypedDict):
 @pytest.fixture(scope="module")
 async def bob_member_client():
     async with tenant_admin_client() as client:
-        tenant = await create_tenant(client, "bob")
+        tenant = await create_issuer_tenant(client, "bob")
 
         yield tenant_client(token=tenant["access_token"])
 
@@ -80,6 +82,20 @@ async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
+
+    bob_records = await bob_acapy_client.connection.get_connections()
+    alice_records = await alice_acapy_client.connection.get_connections()
+
+    await bob_acapy_client.connection.accept_invitation(
+        conn_id=bob_records.results[-1].connection_id
+    )
+    await alice_acapy_client.connection.accept_invitation(
+        conn_id=alice_records.results[-1].connection_id
+    )
+
+    bob_records = await bob_acapy_client.connection.get_connections()
+    alice_records = await alice_acapy_client.connection.get_connections()
+
     bob_did = await create_public_did(bob_acapy_client)
     alice_did = await create_public_did(alice_acapy_client)
 
@@ -128,6 +144,16 @@ async def bob_and_alice_connection(
         bob_member_client,
         topic="connections",
         filter_map={"state": "completed"},
+    )
+    # assert check_webhook_state(
+    #     alice_member_client,
+    #     topic="endorsements",
+    #     filter_map={"state": "transaction-acked"},
+    # )
+    assert check_webhook_state(
+        bob_member_client,
+        topic="endorsements",
+        filter_map={"state": "transaction-acked"},
     )
 
     return {
@@ -207,7 +233,6 @@ async def alice_bob_connect_multi(
     bob_connection_records = (
         await bob_member_client.get("/generic/connections")
     ).json()
-    print(json.dumps(bob_connection_records, indent=2))
 
     bob_connection_id = bob_connection_records[0]["connection_id"]
 

@@ -1,6 +1,5 @@
 import logging
 from typing import Literal, Optional
-from aries_cloudcontroller.model.did import DID
 
 import httpx
 from aries_cloudcontroller import AcaPyClient

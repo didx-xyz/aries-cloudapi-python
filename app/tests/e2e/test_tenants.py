@@ -273,6 +273,12 @@ async def test_update_tenant_verifier_to_issuer(
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
+    acapy_token = (
+        (await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}/access-token"))
+        .json()["access_token"]
+        .split(".", 1)[1]
+    )
+
     async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
@@ -302,7 +308,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     assert new_actor
     assert_that(new_actor).has_name(new_name)
-    assert_that(new_actor).has_did(f"did:sov:{public_did.did}")
+    assert_that(new_actor).has_did(f"{new_actor['did']}")
     assert_that(new_actor["roles"]).contains_only("issuer", "verifier")
 
     assert new_actor["didcomm_invitation"] is None

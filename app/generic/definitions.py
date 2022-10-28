@@ -1,13 +1,13 @@
 import asyncio
 import json
 from typing import List, Optional
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinition as AcaPyCredentialDefinition,
     ModelSchema,
     SchemaSendRequest,
-    SchemaSendResult,
     TxnOrCredentialDefinitionSendResult,
 )
 from app.error.cloud_api_error import CloudApiException
@@ -353,12 +353,52 @@ async def create_schema(
         schema_name=schema.name,
         schema_version=schema.version,
     )
-    result = await aries_controller.schema.publish_schema(
-        body=schema_send_request, create_transaction_for_endorser=False
-    )
-
-    if not isinstance(result, SchemaSendResult) or not result.schema_:
-        raise CloudApiException("Error creating schema", 500)
+    try:
+        result = await aries_controller.schema.publish_schema(
+            body=schema_send_request, create_transaction_for_endorser=False
+        )
+    except ClientResponseError as e:
+        if e.status == 400 and "already exist" in e.message:
+            pub_did = await aries_controller.wallet.get_public_did()
+            _schema = await aries_controller.schema.get_schema(
+                schema_id=f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
+            )
+            # Edge case where the governance agent has changed its public did
+            # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
+            # will not be correct due to different public did.
+            if _schema.schema_ is None:
+                schemas_created_ids = await aries_controller.schema.get_created_schemas(
+                    schema_name=schema.name, schema_version=schema.version
+                )
+                schemas = [
+                    await aries_controller.schema.get_schema(schema_id=schema_id)
+                    for schema_id in schemas_created_ids.schema_ids
+                    if schema_id is not None
+                ]
+                if len(schemas) > 1:
+                    raise CloudApiException(
+                        detail={
+                            "Multiple schemas with name %s and version %s exist. These are: %s",
+                            schema.name,
+                            schema.version,
+                            str(schemas_created_ids.schema_ids),
+                        }
+                    )
+                _schema = schemas[0]
+            # Schema exists with different attributes
+            if set(_schema.schema_.attr_names) != set(schema.attribute_names):
+                raise CloudApiException(
+                    detail={
+                        "Error creating schema: Schema already exists with different attribute names. Given: %s. Found: %s",
+                        str(set(_schema.schema_.attr_names)),
+                        str(set(schema.attribute_names)),
+                    }
+                )
+            return _credential_schema_from_acapy(_schema.schema_)
+        else:
+            raise CloudApiException(
+                detail={"Error creating schema: %s", e.message}, status_code=500
+            )
 
     # Register the schema in the trust registry
     try:
@@ -367,7 +407,7 @@ async def create_schema(
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
         #   make sure the schema is registered in the trust registry
-        if error.status_code != 405:
+        if error.status_code != 400:
             raise error
 
     return _credential_schema_from_acapy(result.schema_)

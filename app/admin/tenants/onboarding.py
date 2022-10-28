@@ -178,7 +178,6 @@ async def onboard_issuer(
                     "state": "completed",
                 }
             )
-
         except TimeoutError:
             raise CloudApiException("Error creating connection with endorser", 500)
 

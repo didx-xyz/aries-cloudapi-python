@@ -7,6 +7,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinition as AcaPyCredentialDefinition,
     ModelSchema,
+    RevRegUpdateTailsFileUri,
     SchemaSendRequest,
     TxnOrCredentialDefinitionSendResult,
 )
@@ -23,9 +24,7 @@ from app.dependencies import (
     agent_role,
     agent_selector,
 )
-from app.facades.revocation_registry import (
-    create_revocation_registry,
-)
+from app.facades.revocation_registry import create_revocation_registry, publish_revocation_registry_on_ledger
 from app.role import Role
 from app.facades import trust_registry, acapy_wallet
 from app.webhook_listener import start_listener
@@ -39,10 +38,8 @@ router = APIRouter(
 class CreateCredentialDefinition(BaseModel):
     tag: str = Field(..., example="default")
     schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
-    support_revocation: bool = True
-    revocation_registry_size: int = (
-        32767  # max is 32768 # potentially fix this in the controller
-    )
+    support_revocation: bool = Field(default=True)
+    revocation_registry_size: int = Field(default=32767)
 
 
 class CredentialDefinition(BaseModel):
@@ -255,12 +252,46 @@ async def create_credential_definition(
 
         try:
             # Create a revocation registry and publish it on the ledger
-            await create_revocation_registry(
+            revoc_reg_creation_result = await create_revocation_registry(
                 controller=aries_controller,
                 credential_definition_id=credential_definition_id,
                 max_cred_num=credential_definition.revocation_registry_size,
             )
-        except Exception as e:
+            upload_res = await aries_controller.revocation.upload_tails_file(rev_reg_id=revoc_reg_creation_result.revoc_reg_id)
+            print('\n\n\n')
+            print(upload_res)
+            print('\n\n\n')
+            update_uri_res = await aries_controller.revocation.update_registry(rev_reg_id=revoc_reg_creation_result.revoc_reg_id, body=RevRegUpdateTailsFileUri(tails_public_uri=f"http://0.0.0.0:6543/{revoc_reg_creation_result.revoc_reg_id}"))
+            print('\n\n\n')
+            print(update_uri_res)
+            print('\n\n\n')
+            print('\n\n\n')
+            print(revoc_reg_creation_result)
+            print('\n\n\n')
+            # wallet_id = (await aries_controller.multitenancy.get_wallets()).results[0].wallet_id
+            # token = await aries_controller.multitenancy.get_auth_token(wallet_id=wallet_id)
+            revocation_registry = await aries_controller.revocation.get_created_registries()
+            endorser_connection = (await aries_controller.connection.get_connections(alias='endorser'))
+            print(endorser_connection)
+            print(endorser_connection.results[-1].connection_id)
+            print('\n\n\n')
+            # print(wallet_id)
+            # print(token)
+            print(revocation_registry)
+            print('\n\n\n')
+            # async with get_tenant_admin_controller() as aries_controller:
+            # aries_controller = AcaPyClient(
+            #     base_url=TENANT_AGENT_URL,
+            #     api_key=TENANT_ACAPY_API_KEY,
+            # )
+            res = await publish_revocation_registry_on_ledger(
+                controller=aries_controller,
+                revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
+                connection_id=endorser_connection.results[-1].connection_id,
+                create_transaction_for_endorser=True,
+            )
+            
+        except ClientResponseError as e:
             raise e
 
     else:

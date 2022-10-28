@@ -1,5 +1,5 @@
 import logging
-from typing import Union
+from typing import Optional, Union
 from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
@@ -48,6 +48,8 @@ async def create_revocation_registry(
         raise CloudApiException(
             f"Error creating revocation registry for credential with ID {credential_definition_id} and max credential number {max_cred_num}\n{result}"
         )
+    
+    # result.result.tails_public_uri = 'http://tails-server:6543' # + result.result.revoc_reg_id
 
     return result.result
 
@@ -115,8 +117,8 @@ async def get_credential_revocation_status(
 async def publish_revocation_registry_on_ledger(
     controller: AcaPyClient,
     revocation_registry_id: str,
-    connection_id: str = None,
-    create_transaction_for_endorser: bool = False,
+    connection_id: Optional[str] = None,
+    create_transaction_for_endorser: Optional[bool] = False,
 ) -> Union[IssuerRevRegRecord, TxnOrRevRegResult]:
     """
         Publish a created revocation registry to the ledger
@@ -140,6 +142,11 @@ async def publish_revocation_registry_on_ledger(
         conn_id=connection_id,
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
+    # if create_transaction_for_endorser:
+    #     # Tenant issuer wants to write to ledger
+    #     assert isinstance(result.result, TxnOrRevRegResult)
+    #     governance_controller: AcaPyClient = await get_governance_controller()
+    #     await governance_controller.endorse_transaction.endorse_transaction(result.result.txn.transaction_id)
 
     if isinstance(result, RevRegResult) and result.result:
         is_error = False

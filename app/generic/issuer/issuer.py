@@ -14,7 +14,7 @@ from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
-import app.facades.revocation_registry as revocation_registry
+from app.facades import revocation_registry
 from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1

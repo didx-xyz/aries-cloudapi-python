@@ -288,7 +288,7 @@ async def create_credential_definition(
                 connection_id=endorser_connection.results[0].connection_id
                 if has_connections
                 else None,
-                create_transaction_for_endorser=True if has_connections else False,
+                create_transaction_for_endorser=bool(has_connections),
             )
             if has_connections:
                 async with get_governance_controller() as endorser_controller:

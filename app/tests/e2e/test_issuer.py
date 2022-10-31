@@ -1,3 +1,4 @@
+from time import sleep
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
@@ -6,7 +7,6 @@ from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
 # This import are important for tests to run!
-from app.tests.util.event_loop import event_loop
 
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.e2e.test_fixtures import *  # NOQA
@@ -145,6 +145,7 @@ async def test_store_credential(
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
+    sleep(5)
     credential = {
         "protocol_version": "v1",
         "credential_definition_id": credential_definition_id,

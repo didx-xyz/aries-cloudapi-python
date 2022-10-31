@@ -47,7 +47,7 @@ async def test_create_credential_definition(
     await register_issuer(governance_client, schema_result["id"])
 
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=get_random_string(5)
+        schema_id=schema_result["id"], tag=get_random_string(5), support_revocation=True
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))
@@ -159,7 +159,9 @@ async def test_create_credential_definition_issuer_tenant(
     faber_client: AsyncClient,
 ):
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_definition.id, tag=get_random_string(5), support_revocation=True
+        schema_id=schema_definition.id,
+        tag=get_random_string(5),
+        support_revocation=True,
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))

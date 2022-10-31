@@ -99,7 +99,11 @@ async def test_accept_proof_request_verifier_no_public_did(
     credential_definition = (
         await issuer_client.post(
             "/generic/definitions/credentials",
-            json={"tag": get_random_string(5), "schema_id": schema_id},
+            json={
+                "tag": get_random_string(5),
+                "schema_id": schema_id,
+                "support_revocation": True,
+            },
         )
     ).json()
 
@@ -143,7 +147,8 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Wait for credential exchange to finish
     await wait_for_event(
-        filter_map={"state": "done", "credential_id": issuer_credential_exchange_id}
+        filter_map={"state": "done", "credential_id": issuer_credential_exchange_id},
+        timeout=300,
     )
 
     # Present proof from holder to verifier
@@ -185,7 +190,8 @@ async def test_accept_proof_request_verifier_no_public_did(
         filter_map={
             "state": "request-received",
             "connection_id": holder_verifier_connection_id,
-        }
+        },
+        timeout=300,
     )
 
     verifier_proof_exchange_id = verifier_proof_exchange["proof_id"]
@@ -226,7 +232,8 @@ async def test_accept_proof_request_verifier_no_public_did(
             "state": "done",
             "proof_id": verifier_proof_exchange_id,
             "verified": True,
-        }
+        },
+        timeout=300,
     )
 
     # Delete all tenants

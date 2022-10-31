@@ -199,6 +199,7 @@ class CredentialExchange(BaseModel):
     error_msg: Optional[str] = None
     state: Optional[
         Literal[
+            "abandoned",
             "proposal-sent",
             "proposal-received",
             "offer-sent",
@@ -234,7 +235,6 @@ class PresentationExchange(BaseModel):
             "presentation-sent",
             "presentation-received",
             "done",
-            "abandoned",
         ]
     ] = None
     updated_at: Optional[str] = None

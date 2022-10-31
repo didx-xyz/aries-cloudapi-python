@@ -11,6 +11,7 @@ from aries_cloudcontroller import (
     SchemaSendRequest,
     TxnOrCredentialDefinitionSendResult,
 )
+from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from app.error.cloud_api_error import CloudApiException
 from aries_cloudcontroller.model.credential_definition_send_request import (
     CredentialDefinitionSendRequest,
@@ -23,8 +24,12 @@ from app.dependencies import (
     acapy_auth_verified,
     agent_role,
     agent_selector,
+    get_governance_controller,
 )
-from app.facades.revocation_registry import create_revocation_registry, publish_revocation_registry_on_ledger
+from app.facades.revocation_registry import (
+    create_revocation_registry,
+    publish_revocation_registry_on_ledger,
+)
 from app.role import Role
 from app.facades import trust_registry, acapy_wallet
 from app.webhook_listener import start_listener
@@ -249,7 +254,13 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Unable to construct credential definition id from signature response"
             ) from e
+        # finally:
+            # await stop_listener()
+    else:
+        credential_definition_id = result.credential_definition_id
 
+    # await stop_listener()
+    if credential_definition.support_revocation:
         try:
             # Create a revocation registry and publish it on the ledger
             revoc_reg_creation_result = await create_revocation_registry(
@@ -257,46 +268,51 @@ async def create_credential_definition(
                 credential_definition_id=credential_definition_id,
                 max_cred_num=credential_definition.revocation_registry_size,
             )
-            upload_res = await aries_controller.revocation.upload_tails_file(rev_reg_id=revoc_reg_creation_result.revoc_reg_id)
-            print('\n\n\n')
-            print(upload_res)
-            print('\n\n\n')
-            update_uri_res = await aries_controller.revocation.update_registry(rev_reg_id=revoc_reg_creation_result.revoc_reg_id, body=RevRegUpdateTailsFileUri(tails_public_uri=f"http://0.0.0.0:6543/{revoc_reg_creation_result.revoc_reg_id}"))
-            print('\n\n\n')
-            print(update_uri_res)
-            print('\n\n\n')
-            print('\n\n\n')
-            print(revoc_reg_creation_result)
-            print('\n\n\n')
-            # wallet_id = (await aries_controller.multitenancy.get_wallets()).results[0].wallet_id
-            # token = await aries_controller.multitenancy.get_auth_token(wallet_id=wallet_id)
-            revocation_registry = await aries_controller.revocation.get_created_registries()
-            endorser_connection = (await aries_controller.connection.get_connections(alias='endorser'))
-            print(endorser_connection)
-            print(endorser_connection.results[-1].connection_id)
-            print('\n\n\n')
-            # print(wallet_id)
-            # print(token)
-            print(revocation_registry)
-            print('\n\n\n')
-            # async with get_tenant_admin_controller() as aries_controller:
-            # aries_controller = AcaPyClient(
-            #     base_url=TENANT_AGENT_URL,
-            #     api_key=TENANT_ACAPY_API_KEY,
-            # )
-            res = await publish_revocation_registry_on_ledger(
+            await aries_controller.revocation.update_registry(
+                rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                body=RevRegUpdateTailsFileUri(
+                    tails_public_uri=f"{ACAPY_TAILS_SERVER_BASE_URL}/{revoc_reg_creation_result.revoc_reg_id}"
+                ),
+            )
+            endorser_connection = await aries_controller.connection.get_connections(
+                alias=ACAPY_ENDORSER_ALIAS
+            )
+            # NOTE: Special case - the endorser registers a cred def itself that
+            # supports revocation so there is no endorser connection.
+            has_connections = len(endorser_connection.results) > 0
+            await publish_revocation_registry_on_ledger(
                 controller=aries_controller,
                 revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
-                connection_id=endorser_connection.results[-1].connection_id,
-                create_transaction_for_endorser=True,
+                connection_id=endorser_connection.results[0].connection_id if has_connections else None,
+                create_transaction_for_endorser=True if has_connections else False,
             )
+            async with get_governance_controller() as endorser_controller:
+                # endorser_wait_for_transaction, stop_listener = await start_listener(
+                #     topic="endorsements", wallet_id="admin"
+                # )
+                try:
+                    txn_record = await wait_for_event(
+                        filter_map={
+                            "state": "request-received",
+                        }
+                    )
+                except TimeoutError:
+                    raise CloudApiException(
+                        "Failed to retrieve transaction record for endorser", 500
+                    )
+
+                await endorser_controller.endorse_transaction.endorse_transaction(
+                    tran_id=txn_record["transaction_id"]
+                )
             
+            active_rev_reg = await aries_controller.revocation.set_registry_state(rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state='active')
+            credential_definition_id = active_rev_reg.result.cred_def_id
         except ClientResponseError as e:
             raise e
-
-    else:
-        await stop_listener()
-        credential_definition_id = result.credential_definition_id
+        # finally:
+            # await stop_listener()
+        
+    await stop_listener()        
 
     # ACA-Py only returns the id after creating a credential definition
     # We want consistent return types across all endpoints, so retrieving the credential

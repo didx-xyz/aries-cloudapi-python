@@ -211,7 +211,7 @@ async def request_credential(
     Parameters:
     -----------
         credential_id: str
-            credential id
+            the credential id
     """
     issuer = __issuer_from_id(credential_id)
 

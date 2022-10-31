@@ -208,7 +208,7 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    wait_for_event, stop_listener = await start_listener(
+    wait_for_event_with_timeout, stop_listener = await start_listener(
         topic="endorsements", wallet_id=auth.wallet_id
     )
 
@@ -223,16 +223,19 @@ async def create_credential_definition(
     if isinstance(result, TxnOrCredentialDefinitionSendResult):
         try:
             # Wait for transaction to be acknowledged and written to the ledger
-            await wait_for_event(
+            await wait_for_event_with_timeout(
                 filter_map={
                     "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
-                }
+                },
+                timeout=30,
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
                 "Timeout waiting for endorser to accept the endorsement request"
             )
+        finally:
+            await stop_listener()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -254,12 +257,9 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Unable to construct credential definition id from signature response"
             ) from e
-        # finally:
-            # await stop_listener()
     else:
         credential_definition_id = result.credential_definition_id
 
-    # await stop_listener()
     if credential_definition.support_revocation:
         try:
             # Create a revocation registry and publish it on the ledger
@@ -279,40 +279,46 @@ async def create_credential_definition(
             )
             # NOTE: Special case - the endorser registers a cred def itself that
             # supports revocation so there is no endorser connection.
+            # Otherwise onboarding should have created an endorser connection
+            # for tenants so this fails correctly
             has_connections = len(endorser_connection.results) > 0
             await publish_revocation_registry_on_ledger(
                 controller=aries_controller,
                 revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
-                connection_id=endorser_connection.results[0].connection_id if has_connections else None,
+                connection_id=endorser_connection.results[0].connection_id
+                if has_connections
+                else None,
                 create_transaction_for_endorser=True if has_connections else False,
             )
-            async with get_governance_controller() as endorser_controller:
-                # endorser_wait_for_transaction, stop_listener = await start_listener(
-                #     topic="endorsements", wallet_id="admin"
-                # )
-                try:
-                    txn_record = await wait_for_event(
-                        filter_map={
-                            "state": "request-received",
-                        }
+            if has_connections:
+                async with get_governance_controller() as endorser_controller:
+                    wait_for_event_with_timeout, stop_listener = await start_listener(
+                        topic="endorsements", wallet_id="admin"
                     )
-                except TimeoutError:
-                    raise CloudApiException(
-                        "Failed to retrieve transaction record for endorser", 500
+                    try:
+                        txn_record = await wait_for_event_with_timeout(
+                            filter_map={
+                                "state": "request-received",
+                            },
+                            timeout=30,
+                        )
+                    except TimeoutError:
+                        raise CloudApiException(
+                            "Failed to retrieve transaction record for endorser", 500
+                        )
+                    finally:
+                        await stop_listener()
+
+                    await endorser_controller.endorse_transaction.endorse_transaction(
+                        tran_id=txn_record["transaction_id"]
                     )
 
-                await endorser_controller.endorse_transaction.endorse_transaction(
-                    tran_id=txn_record["transaction_id"]
-                )
-            
-            active_rev_reg = await aries_controller.revocation.set_registry_state(rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state='active')
+            active_rev_reg = await aries_controller.revocation.set_registry_state(
+                rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state="active"
+            )
             credential_definition_id = active_rev_reg.result.cred_def_id
         except ClientResponseError as e:
             raise e
-        # finally:
-            # await stop_listener()
-        
-    await stop_listener()        
 
     # ACA-Py only returns the id after creating a credential definition
     # We want consistent return types across all endpoints, so retrieving the credential

@@ -47,7 +47,11 @@ async def credential_definition_id(
 ) -> str:
     await register_issuer(faber_client, schema_definition.id)
 
-    definition = CreateCredentialDefinition(tag="tag", schema_id=schema_definition.id)
+    # Support revocation false here because revocation is tested elsewhere.
+    # No revocation is a fair bit faster to run
+    definition = CreateCredentialDefinition(
+        tag="tag", schema_id=schema_definition.id, support_revocation=False
+    )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
     result = await create_credential_definition(definition, faber_acapy_client, auth)

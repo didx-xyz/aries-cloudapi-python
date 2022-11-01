@@ -4,6 +4,7 @@ from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
+    CredRevRecordResult,
     IssuerCredRevRecord,
     IssuerRevRegRecord,
     RevRegCreateRequest,
@@ -46,7 +47,7 @@ async def create_revocation_registry(
         )
     )
 
-    if not result.result:
+    if not result:
         raise CloudApiException(
             f"Error creating revocation registry for credential with ID {credential_definition_id} and max credential number {max_cred_num}\n{result}"
         )
@@ -76,7 +77,7 @@ async def get_active_revocation_registry_for_credential(
         cred_def_id=credential_definition_id
     )
 
-    if not result.result:
+    if not result and not isinstance(result, RevRegResult):
         raise CloudApiException(
             f"Error retrieving revocation registry for credential with ID {credential_definition_id}.\n{result}"
         )
@@ -108,7 +109,7 @@ async def get_credential_revocation_status(
         cred_ex_id=credential_exchange_id
     )
 
-    if not result.result:
+    if not result and not isinstance(result, CredRevRecordResult):
         credential_definition_id = _get_credential_definition_id_from_exchange_id(
             controller=controller, credential_exchange_id=credential_exchange_id
         )
@@ -214,7 +215,7 @@ async def publish_revocation_entry_to_ledger(
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
-    if not result.result:
+    if not result and not isinstance(result, RevRegResult):
         raise CloudApiException(
             f"Failed to publish revocation entry to ledger.\n{result}"
         )

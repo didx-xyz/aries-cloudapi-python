@@ -291,10 +291,10 @@ async def create_credential_definition(
                 create_transaction_for_endorser=has_connections,
             )
             if has_connections:
+                wait_for_event_with_timeout, stop_listener = await start_listener(
+                    topic="endorsements", wallet_id="admin"
+                )
                 async with get_governance_controller() as endorser_controller:
-                    wait_for_event_with_timeout, stop_listener = await start_listener(
-                        topic="endorsements", wallet_id="admin"
-                    )
                     try:
                         txn_record = await wait_for_event_with_timeout(
                             filter_map={

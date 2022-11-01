@@ -156,6 +156,7 @@ junit.xml
 
 *.db
 **.db
+trustregistry/trustregistry.db
 trustregistry/*.db
 listen_webhooks.py
 **aries-cloudcontroller-python/

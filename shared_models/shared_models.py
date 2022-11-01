@@ -213,7 +213,7 @@ class CredentialExchange(BaseModel):
     ] = None
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
-    # Connetion id can be None in connectionless exchanges
+    # Connection id can be None in connectionless exchanges
     connection_id: Optional[str] = None
 
 

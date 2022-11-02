@@ -483,7 +483,7 @@ async def test_get_credentials_for_request(
     assert "cred_info" in result.keys()
     assert [
         attr
-        in ["attrs", "cred_def_info", "referant", "interval", "presentation_referents"]
+        in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
         for attr in result["cred_info"].keys()
     ]
 
@@ -518,6 +518,6 @@ async def test_get_credentials_for_request(
     assert "cred_info" in result.keys()
     assert [
         attr
-        in ["attrs", "cred_def_info", "referant", "interval", "presentation_referents"]
+        in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
         for attr in result["cred_info"].keys()
     ]

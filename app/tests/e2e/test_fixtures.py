@@ -60,6 +60,26 @@ async def credential_definition_id(
 
 
 @pytest.fixture(scope="module")
+async def credential_definition_id_revocable(
+    schema_definition: CredentialSchema,
+    faber_client: AsyncClient,
+    faber_acapy_client: AcaPyClient,
+) -> str:
+    await register_issuer(faber_client, schema_definition.id)
+
+    # Support revocation false here because revocation is tested elsewhere.
+    # No revocation is a fair bit faster to run
+    definition = CreateCredentialDefinition(
+        tag="tag", schema_id=schema_definition.id, support_revocation=True
+    )
+
+    auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
+    result = await create_credential_definition(definition, faber_acapy_client, auth)
+
+    return result.id
+
+
+@pytest.fixture(scope="module")
 async def credential_exchange_id(
     faber_client: AsyncClient,
     credential_definition_id: str,

@@ -176,7 +176,7 @@ async def remove_credential(
 @router.post("/credentials/{credential_exchange_id}/revoke", status_code=204)
 async def revoke_credential(
     credential_exchange_id: str,
-    auto_publish_on_ledger: Optional[bool] = False,
+    auto_publish_on_ledger: Optional[bool] = True,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """

@@ -50,7 +50,7 @@ class Webhooks:
             await Webhooks.client.wait_until_ready()
 
         try:
-            await asyncio.wait_for(wait_for_ready(), timeout=5)
+            await asyncio.wait_for(wait_for_ready(), timeout=15)
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()

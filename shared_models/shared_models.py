@@ -36,7 +36,13 @@ AcaPyTopics = Literal[
 ]
 
 CloudApiTopics = Literal[
-    "basic-messages", "connections", "proofs", "credentials", "endorsements", "oob"
+    "basic-messages",
+    "connections",
+    "proofs",
+    "credentials",
+    "endorsements",
+    "oob",
+    "revocation",
 ]
 
 # Mapping of acapy topic names to their respective cloud api topic names
@@ -49,6 +55,7 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
     "endorse_transaction": "endorsements",
+    "revocation_registry": "revocation",
 }
 
 

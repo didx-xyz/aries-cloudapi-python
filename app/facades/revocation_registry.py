@@ -10,6 +10,7 @@ from aries_cloudcontroller import (
     RevRegCreateRequest,
     RevRegResult,
     RevokeRequest,
+    TransactionRecord,
     TxnOrRevRegResult,
 )
 from app.dependencies import get_governance_controller
@@ -110,19 +111,21 @@ async def get_credential_revocation_status(
     )
 
     if not result and not isinstance(result, CredRevRecordResult):
-        credential_definition_id = _get_credential_definition_id_from_exchange_id(
+        credential_definition_id = await get_credential_definition_id_from_exchange_id(
             controller=controller, credential_exchange_id=credential_exchange_id
         )
 
         raise CloudApiException(
-            f"Error retrieving revocation status for credential with ID {credential_definition_id}.\n{result}"
+            f"Error retrieving revocation status for credential definition ID {credential_definition_id}"
         )
+    else:
+        result = result.result
 
     logger.info(
-        f"Credential exchange {credential_exchange_id} has status:\n{credential_definition_id}:\n{result.result}"
+        f"Credential exchange {credential_exchange_id} has status:\n{result.state}:\n{result}"
     )
 
-    return result.result
+    return result
 
 
 async def publish_revocation_registry_on_ledger(
@@ -130,7 +133,7 @@ async def publish_revocation_registry_on_ledger(
     revocation_registry_id: str,
     connection_id: Optional[str] = None,
     create_transaction_for_endorser: Optional[bool] = False,
-) -> Union[IssuerRevRegRecord, TxnOrRevRegResult]:
+) -> Union[IssuerRevRegRecord, TransactionRecord]:
     """
         Publish a created revocation registry to the ledger
 
@@ -150,19 +153,15 @@ async def publish_revocation_registry_on_ledger(
     """
     result = await controller.revocation.publish_rev_reg_def(
         rev_reg_id=revocation_registry_id,
-        conn_id=connection_id,
+        conn_id=connection_id if create_transaction_for_endorser else None,
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
     if isinstance(result, RevRegResult) and result.result:
-        is_error = False
         result = result.result
     elif isinstance(result, TxnOrRevRegResult) and result.txn:
-        is_error = False
+        result = result.txn
     else:
-        is_error = True
-
-    if is_error:
         raise CloudApiException(
             f"Failed to publish revocation registry to ledger.\n{result}"
         )
@@ -203,7 +202,8 @@ async def publish_revocation_entry_to_ledger(
     """
     if not revocation_registry_id and not credential_definition_id:
         raise CloudApiException(
-            "Please, provide either a revocation registry id OR credential definition id."
+            "Please, provide either a revocation registry id OR credential definition id.",
+            400,
         )
     if not revocation_registry_id:
         revocation_registry_id = await get_active_revocation_registry_for_credential(
@@ -265,7 +265,7 @@ async def revoke_credential(
 
         if not auto_publish_to_ledger:
             credential_definition_id = (
-                await _get_credential_definition_id_from_exchange_id(
+                await get_credential_definition_id_from_exchange_id(
                     controller=controller, credential_exchange_id=credential_exchange_id
                 )
             )
@@ -312,7 +312,7 @@ async def revoke_credential(
         return None
 
 
-async def _get_credential_definition_id_from_exchange_id(
+async def get_credential_definition_id_from_exchange_id(
     controller: AcaPyClient, credential_exchange_id: str
 ) -> Union[str, None]:
     """
@@ -332,18 +332,21 @@ async def _get_credential_definition_id_from_exchange_id(
             )
         ).credential_definition_id
     except ClientResponseError:
-        rev_reg_parts = (
-            await controller.issue_credential_v2_0.get_record(
-                cred_ex_id=credential_exchange_id
+        try:
+            rev_reg_parts = (
+                await controller.issue_credential_v2_0.get_record(
+                    cred_ex_id=credential_exchange_id
+                )
+            ).indy.rev_reg_id.split(":")
+            credential_definition_id = ":".join(
+                [
+                    rev_reg_parts[2],
+                    "3",
+                    "CL",  # NOTE: Potentially replace this with other possible signature type in future
+                    rev_reg_parts[-4],
+                    rev_reg_parts[-1],
+                ]
             )
-        ).indy.rev_reg_id.split(":")
-        credential_definition_id = [
-            rev_reg_parts[2],
-            "3",
-            "CL",  # NOTE: Potentially replace this with other possible signature type in future
-            rev_reg_parts[-4],
-            rev_reg_parts[-1],
-        ].join(":")
-    except Exception:
-        credential_definition_id = None
+        except Exception:
+            credential_definition_id = None
     return credential_definition_id

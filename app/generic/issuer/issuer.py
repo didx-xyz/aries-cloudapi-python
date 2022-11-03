@@ -44,6 +44,12 @@ class SendCredential(BaseModel):
     attributes: Dict[str, str]
 
 
+class RevokeCredential(BaseModel):
+    credential_definition_id: str = ""
+    auto_publish_on_ledger: Optional[bool] = False
+    credential_exchange_id: str = ""
+
+
 def __issuer_from_id(id: str) -> Issuer:
     if id.startswith("v1-"):
         return IssueCredentialFacades.v1.value
@@ -171,12 +177,6 @@ async def remove_credential(
     await issuer.delete_credential(
         controller=aries_controller, credential_exchange_id=credential_id
     )
-
-
-class RevokeCredential(BaseModel):
-    credential_definition_id: str = ''
-    auto_publish_on_ledger: Optional[bool] = False
-    credential_exchange_id: str = ''
 
 
 @router.post("/credentials/revoke", status_code=204)

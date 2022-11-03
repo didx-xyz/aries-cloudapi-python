@@ -218,15 +218,10 @@ async def test_store_credential(
 
 @pytest.mark.asyncio
 async def test_revoke_credential(
-    # issue_credential_to_alice: CredentialExchange,
     faber_client: AsyncClient,
-    # faber_acapy_client: AcaPyClient,
     alice_member_client: AsyncClient,
-    # acme_client: AsyncClient,
     alice_tenant: Any,
-    # acme_tenant: Any,
     credential_definition_id_revocable: str,
-    # acme_and_alice_connection: AcmeAliceConnect,
     faber_and_alice_connection: FaberAliceConnect,
 ):
     credential = {
@@ -268,33 +263,17 @@ async def test_revoke_credential(
     )
 
     await wait_for_event(
-        
         filter_map={"credential_id": alice_credential_id, "state": "done"}
     )
 
-    # records = await faber_client.get(
-    #     BASE_PATH
-    #     # + f"?connection_id={faber_and_alice_connection['faber_connection_id']}"
-    # )
-    records = (
-        await faber_client.get("/generic/issuer/credentials")
-    ).json()  # .credentials.get_record(credential_id=credential_exchange['credential_id'])
-    print("\n\n\n")
-    print(records)
-    print("\n\n\n")
+    # Retrieve an issued credential
+    records = (await faber_client.get("/generic/issuer/credentials")).json()
     record_as_issuer_for_alice = [
         rec
         for rec in records
-        if (
-            rec["role"] == "issuer"
-            and rec["state"] == "credential-issued"
-            # and rec["credential_definition_id"]
-            # == issue_credential_to_alice["credential_definition_id"]
-        )
+        if (rec["role"] == "issuer" and rec["state"] == "credential-issued")
     ]
-    print("\n\n\n")
-    print(record_as_issuer_for_alice)
-    print("\n\n\n")
+
     record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[0]
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
@@ -306,10 +285,6 @@ async def test_revoke_credential(
         },
     )
 
-    print(response)
     response.raise_for_status()
 
     assert response.status_code == 204
-    # assert check_webhook_state(
-    #     client=faber_client, filter_map={"state": "done"}, topic="revocation"
-    # )

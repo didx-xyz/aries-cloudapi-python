@@ -173,10 +173,15 @@ async def remove_credential(
     )
 
 
-@router.post("/credentials/{credential_exchange_id}/revoke", status_code=204)
+class RevokeCredential(BaseModel):
+    credential_definition_id: str = ''
+    auto_publish_on_ledger: Optional[bool] = False
+    credential_exchange_id: str = ''
+
+
+@router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
-    credential_exchange_id: str,
-    auto_publish_on_ledger: Optional[bool] = True,
+    body: RevokeCredential = RevokeCredential(),
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -195,8 +200,9 @@ async def revoke_credential(
 
     await revocation_registry.revoke_credential(
         controller=aries_controller,
-        credential_exchange_id=credential_exchange_id,
-        auto_publish_to_ledger=auto_publish_on_ledger,
+        credential_exchange_id=body.credential_exchange_id,
+        auto_publish_to_ledger=body.auto_publish_on_ledger,
+        credential_definition_id=body.credential_definition_id,
     )
 
 

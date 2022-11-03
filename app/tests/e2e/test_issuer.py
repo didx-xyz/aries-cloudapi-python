@@ -4,7 +4,7 @@ from assertpy import assert_that
 from httpx import AsyncClient
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
-from app.tests.util.ecosystem_personas import AcmeAliceConnect, FaberAliceConnect
+from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
 # This import are important for tests to run!
@@ -220,13 +220,13 @@ async def test_store_credential(
 async def test_revoke_credential(
     # issue_credential_to_alice: CredentialExchange,
     faber_client: AsyncClient,
-    faber_acapy_client: AcaPyClient,
+    # faber_acapy_client: AcaPyClient,
     alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    # acme_client: AsyncClient,
     alice_tenant: Any,
-    acme_tenant: Any,
+    # acme_tenant: Any,
     credential_definition_id_revocable: str,
-    acme_and_alice_connection: AcmeAliceConnect,
+    # acme_and_alice_connection: AcmeAliceConnect,
     faber_and_alice_connection: FaberAliceConnect,
 ):
     credential = {
@@ -268,6 +268,7 @@ async def test_revoke_credential(
     )
 
     await wait_for_event(
+        
         filter_map={"credential_id": alice_credential_id, "state": "done"}
     )
 
@@ -298,7 +299,11 @@ async def test_revoke_credential(
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
     response = await faber_client.post(
-        f"/generic/issuer/credentials/{cred_id}/revoke", json={}
+        f"/generic/issuer/credentials/revoke",
+        json={
+            "credential_definition_id": credential_definition_id_revocable,
+            "credential_exchange_id": cred_id,
+        },
     )
 
     print(response)

@@ -13,6 +13,7 @@ from aries_cloudcontroller import (
     TransactionRecord,
     TxnOrRevRegResult,
 )
+from app.dependencies import get_governance_controller
 
 from app.error.cloud_api_error import CloudApiException
 from app.webhook_listener import start_listener
@@ -174,10 +175,10 @@ async def publish_revocation_registry_on_ledger(
 
 async def publish_revocation_entry_to_ledger(
     controller: AcaPyClient,
-    revocation_registry_id: str = None,
-    credential_definition_id: str = None,
-    connection_id: str = None,
-    create_transaction_for_endorser: bool = False,
+    revocation_registry_id: Optional[str] = None,
+    credential_definition_id: Optional[str] = None,
+    connection_id: Optional[str] = None,
+    create_transaction_for_endorser: Optional[bool] = False,
 ) -> IssuerRevRegRecord:
     """
         Publish a created revocation entry to the ledger
@@ -208,11 +209,14 @@ async def publish_revocation_entry_to_ledger(
         revocation_registry_id = await get_active_revocation_registry_for_credential(
             controller=controller, credential_definition_id=credential_definition_id
         )
-    result = await controller.revocation.publish_rev_reg_entry(
-        rev_reg_id=revocation_registry_id,
-        conn_id=connection_id,
-        create_transaction_for_endorser=create_transaction_for_endorser,
-    )
+    try:
+        result = await controller.revocation.publish_rev_reg_entry(
+            rev_reg_id=revocation_registry_id,
+            conn_id=connection_id,
+            create_transaction_for_endorser=create_transaction_for_endorser,
+        )
+    except Exception as e:
+        return e
 
     if not result and not isinstance(result, RevRegResult):
         raise CloudApiException(
@@ -223,13 +227,15 @@ async def publish_revocation_entry_to_ledger(
         f"Published revocation entry for registry with ID {revocation_registry_id}:\n{result.result}"
     )
 
-    return result.result
+    # return result.result
+    return result
 
 
 async def revoke_credential(
     controller: AcaPyClient,
     credential_exchange_id: str,
-    auto_publish_to_ledger: Optional[bool] = True,
+    auto_publish_to_ledger: bool = True,
+    credential_definition_id: str = None,
 ) -> None:
     """
         Revoke an issued credential
@@ -260,57 +266,68 @@ async def revoke_credential(
             )
         )
     except ClientResponseError as e:
-    # if result != {}:
+        # if result != {}:
         raise CloudApiException(f"Failed to revoke credential.{e.message}", 418)
 
-    # if not auto_publish_to_ledger:
-    #     credential_definition_id = await get_credential_definition_id_from_exchange_id(
-    #         controller=controller, credential_exchange_id=credential_exchange_id
-    #     )
+    if True:
+        # if not auto_publish_to_ledger:
+        # credential_definition_id = await get_credential_definition_id_from_exchange_id(
+        #     controller=controller, credential_exchange_id=credential_exchange_id
+        # )
+        # credential_definition_ids = await controller.credentials.
 
-    #     if not credential_definition_id:
-    #         raise CloudApiException(
-    #             "Failed to retrieve credential definition ID.",
-    #             "Credential revoked but not written to ledger.",
-    #         )
+        if not credential_definition_id:
+            raise CloudApiException(
+                "Failed to retrieve credential definition ID.",
+                "Credential revoked but not written to ledger.",
+            )
 
-    #     active_revocation_registry_id = (
-    #         await get_active_revocation_registry_for_credential(
-    #             controller=controller,
-    #             credential_definition_id=credential_definition_id,
-    #         )
-    #     )
+        active_revocation_registry_id = (
+            await get_active_revocation_registry_for_credential(
+                controller=controller,
+                credential_definition_id=credential_definition_id,
+            )
+        )
 
-    #     # Publish the revocation to ledger
-    #     await publish_revocation_entry_to_ledger(
-    #         controller=controller,
-    #         revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
-    #         create_transaction_for_endorser=True,
-    #     )
+        print('\n\n\n\n')
+        print('active_revocation_registry_id')
+        print(active_revocation_registry_id)
+        print('\n\n\n\n')
 
-    #     try:
-    #         txn_record = await endorser_wait_for_transaction(
-    #             filter_map={
-    #                 "state": "request-received",
-    #             }
-    #         )
-    #     except TimeoutError:
-    #         await stop_listener()
-    #         raise CloudApiException(
-    #             "Failed to retrieve transaction record for endorser", 500
-    #         )
+        async with get_governance_controller() as controller:
+            # Publish the revocation to ledger
+            await publish_revocation_entry_to_ledger(
+                controller=controller,
+                revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
+                create_transaction_for_endorser=False,
+            )
+            # OR:
+            # Publish pending revocations
+            # pending_revocations = await controller.revocation.publish_revocations()
+        
 
-    #     async with get_governance_controller() as endorser_controller:
-    #         await endorser_controller.endorse_transaction.endorse_transaction(
-    #             tran_id=txn_record["transaction_id"]
-    #         )
 
-    # logger.info(
-    #     f"Revoked credential  with ID {credential_definition_id} for exchange ID {credential_exchange_id}."
-    # )
-    # await stop_listener()
+            # try:
+            #     txn_record = await endorser_wait_for_transaction(
+            #         filter_map={
+            #             "state": "request-received",
+            #         }
+            #     )
+            # except TimeoutError:
+            #     await stop_listener()
+            #     raise CloudApiException(
+            #         "Failed to retrieve transaction record for endorser", 500
+            #     )
 
-    return None
+            # await controller.endorse_transaction.endorse_transaction(
+            #     tran_id=txn_record["transaction_id"]
+            # )
+
+    logger.info(
+        f"Revoked credential  with ID {credential_definition_id} for exchange ID {credential_exchange_id}."
+    )
+    await stop_listener()
+    # return None
 
 
 async def get_credential_definition_id_from_exchange_id(
@@ -329,14 +346,16 @@ async def get_credential_definition_id_from_exchange_id(
     try:
         credential_definition_id = (
             await controller.issue_credential_v1_0.get_record(
-                cred_ex_id=credential_exchange_id
+                cred_ex_id="v1-" + credential_exchange_id
             )
         ).credential_definition_id
+        logger.info(f"Cred v1: {credential_definition_id}")
+        print(f"Cred v1: {credential_definition_id}")
     except ClientResponseError:
         try:
             rev_reg_parts = (
                 await controller.issue_credential_v2_0.get_record(
-                    cred_ex_id=credential_exchange_id
+                    cred_ex_id="v2-" + credential_exchange_id
                 )
             ).indy.rev_reg_id.split(":")
             credential_definition_id = ":".join(
@@ -348,6 +367,10 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
+            logger.info(f"Cred v2: {credential_definition_id}")
+            print(f"Cred v2: {credential_definition_id}")
         except Exception:
             credential_definition_id = None
+    logger.info(f"Cred def id: {credential_definition_id}")
+    print(f"Cred def id: {credential_definition_id}")
     return credential_definition_id

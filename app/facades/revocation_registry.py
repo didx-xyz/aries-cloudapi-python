@@ -253,9 +253,6 @@ async def revoke_credential(
     Returns:
         result (None): Successful execution returns None.
     """
-    endorser_wait_for_transaction, stop_listener = await start_listener(
-        topic="endorsements", wallet_id="admin"
-    )
 
     try:
         await controller.revocation.revoke_credential(
@@ -268,19 +265,6 @@ async def revoke_credential(
         raise CloudApiException(f"Failed to revoke credential.{e.message}", 418)
 
     if not auto_publish_to_ledger:
-        # TODO: Determine if it is more convenient to extract the
-        # credential exchange ID here instead of parsing it in the args.
-        # Strangely extracting it here sometimes fails.
-
-        # credential_definition_id = await get_credential_definition_id_from_exchange_id(
-        #     controller=controller, credential_exchange_id=credential_exchange_id
-        # )
-        # if not credential_definition_id:
-        #     raise CloudApiException(
-        #         "Failed to retrieve credential definition ID.",
-        #         "Credential revoked but not written to ledger.",
-        #     )
-
         active_revocation_registry_id = (
             await get_active_revocation_registry_for_credential(
                 controller=controller,
@@ -295,31 +279,38 @@ async def revoke_credential(
                 revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
                 create_transaction_for_endorser=True,
             )
-        except Exception as e:
+        except Exception:
             # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py
             # This is unexpected and throws and error in the controller validating the pydantic model.
             # It still creates the transaction record though that can be endorsed below.
-            async with get_governance_controller() as endorser_controller:
-                try:
-                    txn_record = await endorser_wait_for_transaction(
-                        filter_map={
-                            "state": "request-received",
-                        }
-                    )
-                except TimeoutError:
-                    await stop_listener()
-                    raise CloudApiException(
-                        "Failed to retrieve transaction record for endorser", 500
-                    )
-
-                await endorser_controller.endorse_transaction.endorse_transaction(
-                    tran_id=txn_record["transaction_id"]
-                )
+            await endorser_revoke()
 
     logger.info(
         f"Revoked credential  with ID {credential_definition_id} for exchange ID {credential_exchange_id}."
     )
-    await stop_listener()
+
+
+async def endorser_revoke():
+    endorser_wait_for_transaction, stop_listener = await start_listener(
+        topic="endorsements", wallet_id="admin"
+    )
+    async with get_governance_controller() as endorser_controller:
+        try:
+            txn_record = await endorser_wait_for_transaction(
+                filter_map={
+                    "state": "request-received",
+                }
+            )
+        except TimeoutError:
+            raise CloudApiException(
+                "Failed to retrieve transaction record for endorser", 500
+            )
+        finally:
+            await stop_listener()
+
+        await endorser_controller.endorse_transaction.endorse_transaction(
+            tran_id=txn_record["transaction_id"]
+        )
 
 
 async def get_credential_definition_id_from_exchange_id(

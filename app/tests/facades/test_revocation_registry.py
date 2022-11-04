@@ -6,6 +6,7 @@ from aries_cloudcontroller import (
     IssuerRevRegRecord,
     RevRegCreateRequest,
     RevRegResult,
+    RevokeRequest,
     TransactionRecord,
     TxnOrRevRegResult,
     V10CredentialExchange,
@@ -22,6 +23,7 @@ from tests.util.mock import get
 
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"
 cred_ex_id = "5mJRavkcQFrqgKqKKZua3z:3:CL:30:tag"
+cred_id = "c7c909f4-f670-49bd-9d81-53fba6bb23b8"
 max_cred_num = 32767
 revocation_registry_id = "VagGATdBsVdBeFKeoYPe7H:4:VagGATdBsVdBeFKeoYPe7H:3:CL:141:QIOPN:CL_ACCUM:5d211963-3478-4de4-b8b6-9072759a71c8"
 conn_id = "12345"
@@ -299,9 +301,39 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
 
 
 @pytest.mark.asyncio
-async def test_revoke_credential():
-    # TODO: add test when e2e tested and proven to work correctly
-    pass
+async def test_revoke_credential(mock_agent_controller: AcaPyClient):
+    # Success
+    when(mock_agent_controller.revocation).revoke_credential(
+        body=RevokeRequest(cred_ex_id=cred_id, publish=False)
+    ).thenReturn(get({}))
+
+    when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
+        cred_def_id=cred_def_id
+    ).thenReturn(
+        get(
+            RevRegResult(
+                result=IssuerRevRegRecord(
+                    cred_def_id=cred_def_id, max_cred_num=max_cred_num
+                )
+            )
+        )
+    )
+    when(mock_agent_controller.revocation).publish_rev_reg_entry(
+        rev_reg_id=revocation_registry_id,
+        conn_id=None,
+        create_transaction_for_endorser=False,
+    ).thenRaise(ClientResponseError({}, ("x", "x")))
+
+    when(rg).endorser_revoke().thenReturn(get(None))
+
+    revoke_credential_result = await rg.revoke_credential(
+        controller=mock_agent_controller,
+        credential_definition_id=cred_def_id,
+        credential_exchange_id=cred_id,
+        auto_publish_to_ledger=False,
+    )
+
+    assert revoke_credential_result is None
 
 
 @pytest.mark.asyncio

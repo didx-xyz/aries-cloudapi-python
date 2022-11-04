@@ -40,6 +40,22 @@ async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialS
 
 
 @pytest.fixture(scope="module")
+async def schema_definition_alt(
+    governance_acapy_client: AcaPyClient,
+) -> CredentialSchema:
+    definition = CreateSchema(
+        name="test_schema_alt", version="0.6", attribute_names=["speed"]
+    )
+
+    if not await has_public_did(governance_acapy_client):
+        await create_public_did(governance_acapy_client, set_public=True)
+
+    schema_definition_result = await create_schema(definition, governance_acapy_client)
+
+    return schema_definition_result
+
+
+@pytest.fixture(scope="module")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: AsyncClient,
@@ -61,16 +77,16 @@ async def credential_definition_id(
 
 @pytest.fixture(scope="module")
 async def credential_definition_id_revocable(
-    schema_definition: CredentialSchema,
+    schema_definition_alt: CredentialSchema,
     faber_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
 ) -> str:
-    await register_issuer(faber_client, schema_definition.id)
+    await register_issuer(faber_client, schema_definition_alt.id)
 
     # Support revocation false here because revocation is tested elsewhere.
     # No revocation is a fair bit faster to run
     definition = CreateCredentialDefinition(
-        tag="tag", schema_id=schema_definition.id, support_revocation=True
+        tag="tag", schema_id=schema_definition_alt.id, support_revocation=True
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))

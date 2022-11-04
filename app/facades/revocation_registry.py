@@ -244,6 +244,7 @@ async def revoke_credential(
         credential_exchange_id (str): The credential exchange ID.
         credential_definition_id (str): The credential definition ID.
         auto_publish_to_ledger (bool): Whether to directly publish the revocation to the ledger.
+            This should only be true when invoked by an endorser.
             Default is False
 
     Raises:

@@ -240,7 +240,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     # Success
     when(mock_agent_controller.revocation).publish_rev_reg_entry(
         rev_reg_id=revocation_registry_id,
-        conn_id=conn_id,
+        conn_id=None,
         create_transaction_for_endorser=False,
     ).thenReturn(
         get(
@@ -285,7 +285,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     ) as exc:
         when(mock_agent_controller.revocation).publish_rev_reg_entry(
             rev_reg_id=revocation_registry_id,
-            conn_id=conn_id,
+            conn_id=None,
             create_transaction_for_endorser=False,
         ).thenReturn(get(None))
         await rg.publish_revocation_entry_to_ledger(

@@ -2,7 +2,7 @@ from typing import List
 
 from trustregistry import crud
 from trustregistry import schemas
-from .test_main import override_get_db
+from trustregistry.tests.test_main import override_get_db
 
 
 actor_model = schemas.Actor(
@@ -11,6 +11,7 @@ actor_model = schemas.Actor(
     roles=["verifier", "issuer"],
     didcomm_invitation="xyz",
     did="did:sov:abc",
+    group_id="GroupId",
 )
 
 actor_model_update = schemas.Actor(
@@ -26,6 +27,13 @@ def test_get_actors():
 
     for db in override_get_db():
         actors = crud.get_actors(db)
+        assert isinstance(actors, List)
+
+
+def test_get_actors_by_group_id():
+
+    for db in override_get_db():
+        actors = crud.get_actors_by_group_id(db, group_id="GroupId")
         assert isinstance(actors, List)
 
 

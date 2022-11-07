@@ -27,6 +27,7 @@ class Actor(TypedDict):
     roles: List[TrustRegistryRole]
     did: str
     didcomm_invitation: Optional[str]
+    group_id: Optional[str]
 
 
 class TrustRegistry(TypedDict):
@@ -135,6 +136,32 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
         )
 
     return actor_res.json()
+
+
+async def actors_by_group_id(group_id: str):
+    """Get all actors from the trust registry by group id
+
+    Args:
+        group_id (str): The group id
+
+    Returns:
+        List[Actor]: List of actors with specified role
+    """
+    actors_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/group/{group_id}")
+
+    if actors_res.is_error:
+        raise TrustRegistryException(
+            f"Unable to retrieve actors from registry: {actors_res.text}",
+        )
+
+    actors = actors_res.json()
+    actors_with_group = [
+        actor
+        for actor in actors["actors"]
+        if group_id in (actor["group_id"] if "group_id" in actor.keys() else [])
+    ]
+
+    return actors_with_group
 
 
 async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:

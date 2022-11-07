@@ -54,6 +54,9 @@ async def handle_tenant_update(
         if update.name:
             updated_actor["name"] = update.name
 
+        if update.group_id:
+            updated_actor["group_id"] = update.group_id
+
         if update.roles:
 
             # We only care about the added roles, as that's what needs the setup.

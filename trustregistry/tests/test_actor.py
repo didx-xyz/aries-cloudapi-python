@@ -1,6 +1,6 @@
 import json
 
-from . import test_main
+from trustregistry.tests import test_main
 
 client = test_main.client
 
@@ -10,11 +10,18 @@ new_actor = {
     "roles": ["issuer", "verifier"],
     "didcomm_invitation": "string",
     "did": "did:key:string",
+    "group_id": "Endorsers",
 }
 
 
 def test_get_actors():
     response = client.get("/registry/actors")
+    assert response.status_code == 200
+    assert response.json() == {"actors": []}
+
+
+def test_get_actors_by_group_id():
+    response = client.get("/registry/actors/group/some-group")
     assert response.status_code == 200
     assert response.json() == {"actors": []}
 
@@ -33,6 +40,9 @@ def test_register_actor():
     assert new_actor_resp.status_code == 200
     new_actors = new_actor_resp.json()
     assert new_actor["id"] in [actor["id"] for actor in new_actors["actors"]]
+    assert new_actor["group_id"] in [
+        actor["group_id"] for actor in new_actors["actors"]
+    ]
 
     response = client.post(
         "/registry/actors/",
@@ -69,6 +79,7 @@ def test_update_actor():
 def test_update_actor_x():
     updated_actor = new_actor.copy()
     updated_actor["did"] = None
+    updated_actor["group_id"] = "Some very important group"
 
     response = client.post(
         "/registry/actors/darth-vader",

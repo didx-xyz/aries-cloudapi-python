@@ -162,7 +162,7 @@ async def test_actor_with_role():
 
     with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
         actors = [
-            {"id": "governance", "roles": ["issuer"]},
+            {"id": "governance", "roles": ["verifier"]},
             {"id": "governance2", "roles": ["verifier"]},
         ]
         mock_request.return_value.status_code = 428
@@ -181,6 +181,53 @@ async def test_actor_with_role():
         mock_request.return_value.json.return_value = {"actors": actors}
 
         assert await trf.actors_with_role("issuer") == []
+
+
+@pytest.mark.asyncio
+async def test_actors_by_group_id():
+    with patch("httpx.get") as mock_request:
+        actors = [
+            {"id": "governance", "roles": ["issuer"], "group_id": "TestGroup"},
+            {"id": "governance2", "roles": ["issuer"], "group_id": "TestGroup"},
+        ]
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.is_error = False
+        mock_request.return_value.json.return_value = {"actors": actors}
+
+        assert await trf.actors_by_group_id("TestGroup") == actors
+
+    with patch("httpx.get") as mock_request:
+        actors = [
+            {"id": "governance", "roles": ["issuer"], "group_id": "TestGroup"},
+            {"id": "governance2", "roles": ["issuer"], "group_id": "TestGroupOther"},
+        ]
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.is_error = False
+        mock_request.return_value.json.return_value = {"actors": [actors[0]]}
+
+        assert await trf.actors_by_group_id("TestGroup") == [actors[0]]
+
+    with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
+        actors = [
+            {"id": "governance", "roles": ["issuer"], "group_id": "TestGroup"},
+            {"id": "governance2", "roles": ["issuer"], "group_id": "TestGroup"},
+        ]
+        mock_request.return_value.status_code = 428
+        mock_request.return_value.is_error = True
+        mock_request.return_value.json.return_value = {"actors": actors}
+
+        assert await trf.actors_by_group_id("TestGroupOther") == []
+
+    with patch("httpx.get") as mock_request:
+        actors = [
+            {"id": "governance", "roles": ["verifier"]},
+            {"id": "governance2", "roles": ["verifier"]},
+        ]
+        mock_request.return_value.status_code = 200
+        mock_request.return_value.is_error = False
+        mock_request.return_value.json.return_value = {"actors": actors}
+
+        assert await trf.actors_by_group_id("TestGroup") == []
 
 
 @pytest.mark.asyncio

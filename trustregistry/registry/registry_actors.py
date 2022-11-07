@@ -31,6 +31,12 @@ async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db
     return update_actor_result
 
 
+@router.get("/group/{group_id}")
+async def get_actors_by_group_id(group_id: str, db: Session = Depends(get_db)):
+    db_actors = crud.get_actors_by_group_id(db, group_id=group_id)
+    return {"actors": db_actors}
+
+
 @router.get("/did/{actor_did}")
 async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
     actor = crud.get_actor_by_did(db, actor_did=actor_did)

@@ -1,6 +1,6 @@
 import logging
 from secrets import token_urlsafe
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 from aries_cloudcontroller import (
@@ -19,6 +19,7 @@ from app.admin.tenants.models import (
     Tenant,
     TenantAuth,
     UpdateTenantRequest,
+    WalletRecordWithGroups,
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import (
@@ -30,6 +31,7 @@ from app.error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,
+    actors_by_group_id,
     register_actor,
     remove_actor_by_id,
 )
@@ -39,6 +41,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 
 multitenant_admin = agent_role(Role.TENANT_ADMIN)
+
+
+class CreateWalletRequestWithGroups(CreateWalletRequest):
+    group_id: Optional[str] = None
 
 
 def tenant_api_key(role: Role, tenant_token: str):
@@ -65,13 +71,14 @@ async def create_tenant(
         )
 
     wallet_response = await aries_controller.multitenancy.create_wallet(
-        body=CreateWalletRequest(
+        body=CreateWalletRequestWithGroups(
             image_url=body.image_url,
             key_management_mode="managed",
             label=body.name,
             wallet_key=base58.b58encode(token_urlsafe(48)),
             wallet_name=uuid4().hex,
             wallet_type="askar",
+            group_id=body.group_id,
         )
     )
 
@@ -90,6 +97,7 @@ async def create_tenant(
                 roles=list(body.roles),
                 did=onboard_result.did,
                 didcomm_invitation=onboard_result.didcomm_invitation,
+                group_id=body.group_id,
             )
         )
 
@@ -100,6 +108,7 @@ async def create_tenant(
         updated_at=wallet_response.updated_at,
         tenant_name=body.name,
         access_token=tenant_api_key(auth.role, wallet_response.token),
+        group_id=body.group_id,
     )
 
 
@@ -189,3 +198,25 @@ async def get_tenant(
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
     return tenant_from_wallet_record(wallet)
+
+
+@router.get("/group/{group_id}", response_model=List[Tenant])
+async def get_tenants_by_group(
+    group_id: str, aries_controller: AcaPyClient = Depends(multitenant_admin)
+) -> List[Tenant]:
+    """Get tenants by group id."""
+    group_members = await actors_by_group_id(group_id=group_id)
+    wallets = await aries_controller.multitenancy.get_wallets()
+
+    if not wallets.results:
+        return []
+
+    group_members_ids = [member["id"] for member in group_members]
+    # Only return wallet with current group_id.
+    return [
+        tenant_from_wallet_record(
+            WalletRecordWithGroups(**wallet_record.dict(), group_id=group_id)
+        )
+        for wallet_record in wallets.results
+        if wallet_record.wallet_id in group_members_ids
+    ]

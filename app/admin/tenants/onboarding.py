@@ -211,15 +211,13 @@ async def onboard_issuer(
         )
 
         await acapy_ledger.accept_taa_if_required(issuer_controller)
-        # TODO: This doesn't need endorsement as of 0.7.5-rc0 onward - bug in 0.7.4
-        # Change this in future versions
+        # NOTE: Still needs endorsement in 0.7.5 release
+        # Otherwise did has no associated services.
         await acapy_wallet.set_public_did(
             issuer_controller,
             did=issuer_did.did,
-            connection_id=connection_record.connection_id,
             create_transaction_for_endorser=True,
         )
-
         try:
             txn_record = await endorser_wait_for_transaction(
                 filter_map={

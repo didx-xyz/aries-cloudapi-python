@@ -190,7 +190,6 @@ async def test_onboard_issuer_no_public_did(
     verify(acapy_wallet).set_public_did(
         mock_agent_controller,
         did="WgWxqztrNooG92RXvxSTWv",
-        connection_id=None,
         create_transaction_for_endorser=True,
     )
 

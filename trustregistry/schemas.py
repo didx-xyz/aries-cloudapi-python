@@ -10,7 +10,6 @@ class Actor(BaseModel):
     roles: List[str]
     did: str
     didcomm_invitation: Optional[str] = None
-    group_id: Optional[str] = None
 
     @validator("did")
     @classmethod

@@ -8,7 +8,6 @@ def test_actor():
         roles="verifier, issuer",
         didcomm_invitation="xyz",
         did="abc",
-        group_id="GroupId",
     )
 
     assert actor.id == "mickey-mouse"
@@ -16,7 +15,6 @@ def test_actor():
     assert actor.roles == "verifier, issuer"
     assert actor.didcomm_invitation == "xyz"
     assert actor.did == "abc"
-    assert actor.group_id == "GroupId"
 
 
 def test_schema():

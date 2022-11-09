@@ -20,7 +20,6 @@ class Actor(Base):
     roles = Column(StringList, index=True)
     didcomm_invitation = Column(String, unique=True, index=True)
     did = Column(String, unique=True, index=True)
-    group_id = Column(String, index=True)
 
 
 class Schema(Base):

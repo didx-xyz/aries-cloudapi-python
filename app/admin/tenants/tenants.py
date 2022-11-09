@@ -19,7 +19,6 @@ from app.admin.tenants.models import (
     Tenant,
     TenantAuth,
     UpdateTenantRequest,
-    WalletRecordWithGroups,
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import (
@@ -31,7 +30,6 @@ from app.error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,
-    actors_by_group_id,
     register_actor,
     remove_actor_by_id,
 )
@@ -97,7 +95,6 @@ async def create_tenant(
                 roles=list(body.roles),
                 did=onboard_result.did,
                 didcomm_invitation=onboard_result.didcomm_invitation,
-                group_id=body.group_id,
             )
         )
 
@@ -198,25 +195,3 @@ async def get_tenant(
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
     return tenant_from_wallet_record(wallet)
-
-
-@router.get("/group/{group_id}", response_model=List[Tenant])
-async def get_tenants_by_group(
-    group_id: str, aries_controller: AcaPyClient = Depends(multitenant_admin)
-) -> List[Tenant]:
-    """Get tenants by group id."""
-    group_members = await actors_by_group_id(group_id=group_id)
-    wallets = await aries_controller.multitenancy.get_wallets()
-
-    if not wallets.results:
-        return []
-
-    group_members_ids = [member["id"] for member in group_members]
-    # Only return wallet with current group_id.
-    return [
-        tenant_from_wallet_record(
-            WalletRecordWithGroups(**wallet_record.dict(), group_id=group_id)
-        )
-        for wallet_record in wallets.results
-        if wallet_record.wallet_id in group_members_ids
-    ]

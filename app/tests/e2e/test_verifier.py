@@ -164,7 +164,6 @@ async def test_accept_proof_request_oob_v1(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        connectionless=True,
         presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
@@ -255,7 +254,6 @@ async def test_accept_proof_request_oob_v2(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        connectionless=True,
         presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},

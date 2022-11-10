@@ -161,6 +161,9 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
     when(VerifierV1).accept_proof_request(...).thenReturn(
         get(presentation_exchange_record_1)
     )
+    when(VerifierV1).get_proof_record(...).thenReturn(
+        get(presentation_exchange_record_1)
+    )
 
     presentation = test_module.AcceptProofRequest(
         proof_id="v1-1234", presentation_spec=indy_pres_spec
@@ -185,6 +188,9 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
 async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).accept_proof_request(...).thenReturn(
+        get(presentation_exchange_record_2)
+    )
+    when(VerifierV2).get_proof_record(...).thenReturn(
         get(presentation_exchange_record_2)
     )
 

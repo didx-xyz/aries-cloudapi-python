@@ -45,6 +45,7 @@ class CreateOobInvitation(BaseModel):
     multi_use: Optional[bool] = None
     use_public_did: Optional[bool] = None
     attachments: Optional[List[AttachmentDef]] = None
+    handshake_protocols: Optional[List[str]] = None
     create_connection: Optional[bool] = None
 
 
@@ -79,7 +80,9 @@ async def create_oob_invitation(
     oob_body = InvitationCreateRequest(
         alias=body.alias,
         attachments=body.attachments,
-        handshake_protocols=handshake_protocols if body.create_connection else None,
+        handshake_protocols=handshake_protocols
+        if body.create_connection
+        else body.handshake_protocols,
         use_public_did=body.use_public_did,
     )
 

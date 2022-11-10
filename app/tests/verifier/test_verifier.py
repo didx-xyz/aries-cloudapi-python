@@ -6,7 +6,6 @@ from aries_cloudcontroller import (
     IndyCredPrecis,
 )
 from mockito import verify, when
-from app.error.cloud_api_error import CloudApiException
 
 import app.generic.verifier.verifier as test_module
 from app.generic.verifier import verifier_utils
@@ -127,17 +126,33 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
 
 @pytest.mark.asyncio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
-    with pytest.raises(
-        CloudApiException, match="Could not verify proof request against trust registry"
-    ):
-        await test_module.create_proof_request(
-            proof_request=test_module.CreateProofRequest(
-                protocol_version="v1",
-                proof_request=indy_proof_request,
-                connection_id="abcde",
-            ),
-            aries_controller=mock_agent_controller,
-        )
+    #  V1
+    when(VerifierV1).create_proof_request(...).thenReturn(
+        get(presentation_exchange_record_1)
+    )
+    result = await test_module.create_proof_request(
+        proof_request=test_module.CreateProofRequest(
+            protocol_version="v1",
+            proof_request=indy_proof_request,
+            connection_id="abcde",
+        ),
+        aries_controller=mock_agent_controller,
+    )
+    assert result is presentation_exchange_record_1
+
+    #  V2
+    when(VerifierV2).create_proof_request(...).thenReturn(
+        get(presentation_exchange_record_2)
+    )
+    result = await test_module.create_proof_request(
+        proof_request=test_module.CreateProofRequest(
+            protocol_version="v2",
+            proof_request=indy_proof_request,
+            connection_id="abcde",
+        ),
+        aries_controller=mock_agent_controller,
+    )
+    assert result is presentation_exchange_record_2
 
 
 @pytest.mark.asyncio

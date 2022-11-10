@@ -210,13 +210,6 @@ async def create_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
 
-        # FIXME: this currently doesn't work with connectionless. Fix in future PR
-        # await assert_valid_verifier(
-        #     aries_controller=aries_controller,
-        #     proof_request=proof_request,
-        # )
-        raise CloudApiException("Could not verify proof request against trust registry")
-
         return await prover.create_proof_request(
             controller=aries_controller, proof_request=proof_request
         )

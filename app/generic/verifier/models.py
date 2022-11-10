@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 
 class PresentProofProtocolVersion(Enum):
-    v1 = "v1"
-    v2 = "v2"
+    v1: str = "v1"
+    v2: str = "v2"
 
 
 class SendProofRequest(BaseModel):

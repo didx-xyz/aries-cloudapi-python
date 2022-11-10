@@ -19,7 +19,6 @@ from app.generic.verifier.models import (
 )
 from app.generic.verifier.verifier_utils import (
     assert_valid_prover,
-    assert_valid_verifier,
 )
 from shared_models import PresentationExchange
 
@@ -177,9 +176,9 @@ async def send_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
 
-        await assert_valid_verifier(
-            aries_controller=aries_controller, proof_request=proof_request
-        )
+        # await assert_valid_verifier(
+        #     aries_controller=aries_controller, proof_request=proof_request
+        # )
 
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request
@@ -239,9 +238,12 @@ async def accept_proof_request(
     try:
         prover = __get_verifier_by_version(presentation.proof_id)
 
-        await assert_valid_prover(
-            aries_controller=aries_controller, prover=prover, presentation=presentation
-        )
+        if not presentation.connectionless:
+            await assert_valid_prover(
+                aries_controller=aries_controller,
+                prover=prover,
+                presentation=presentation,
+            )
 
         return await prover.accept_proof_request(
             controller=aries_controller, proof_request=presentation

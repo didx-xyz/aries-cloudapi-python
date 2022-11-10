@@ -27,6 +27,7 @@ class CreateProofRequest(BaseModel):
 
 class AcceptProofRequest(BaseModel):
     proof_id: str
+    connectionless: Optional[bool] = False
     presentation_spec: IndyPresSpec
 
 

@@ -128,7 +128,6 @@ async def test_accept_proof_request_oob_v1(
         json={
             "create_connection": False,
             "use_public_did": False,
-            "handshake_protocols": ["https://didcomm.org/didexchange/1.0"],
             "attachments": [{"id": bob_exchange["proof_id"], "type": "present-proof"}],
         },
     )
@@ -141,57 +140,55 @@ async def test_accept_proof_request_oob_v1(
     invitation["id"] = invitation.pop("@id")
     invitation["type"] = invitation.pop("@type")
 
-    accept_response = await alice_member_client.post(
+    await alice_member_client.post(
         "/generic/connections/oob/accept-invitation",
         json={"invitation": invitation},
     )
 
-    oob_record = accept_response.json()
-
-    connection_record = await alice_acapy_client.connection.get_connection(
-        conn_id=oob_record["connection_id"]
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=120,
     )
-    assert_that(accept_response.status_code).is_equal_to(200)
-    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert_that(connection_record.connection_protocol).contains("didexchange/1.0")
+    proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
 
-    # FIXME: accept works but no proof request is received - commented below approx. should work
-    # assert check_webhook_state(
-    #     client=alice_member_client,
-    #     filter_map={"state": "request-received"},
-    #     topic="proofs",
-    #     max_duration=10,
-    # )
-    # proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
-    # alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+    requested_credentials = await alice_member_client.get(
+        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+    )
 
-    # requested_credentials = await alice_member_client.get(
-    #     f"/generic/verifier/proofs/{alice_proof_id}/credentials"
-    # )
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        connectionless=True,
+        presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
 
-    # referent = requested_credentials.json()[0]["cred_info"]["referent"]
-    # indy_request_attrs = IndyRequestedCredsRequestedAttr(
-    #     cred_id=referent, revealed=True
-    # )
-    # proof_accept = AcceptProofRequest(
-    #     proof_id=alice_proof_id,
-    #     presentation_spec=IndyPresSpec(
-    #         requested_attributes={"0_speed_uuid": indy_request_attrs},
-    #         requested_predicates={},
-    #         self_attested_attributes={},
-    #     ),
-    # )
+    response = await alice_member_client.post(
+        BASE_PATH + "/accept-request",
+        json=proof_accept.dict(),
+    )
 
-    # response = await alice_member_client.post(
-    #     BASE_PATH + "/accept-request",
-    #     json=proof_accept.dict(),
-    # )
-    # assert check_webhook_state(
-    #     client=alice_member_client,
-    #     filter_map={"state": "done", "proof_id": alice_proof_id},
-    #     topic="proofs",
-    #     max_duration=120,
-    # )
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "presentation-sent", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=120,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
+        topic="proofs",
+        max_duration=120,
+    )
 
 
 @pytest.mark.asyncio
@@ -222,7 +219,6 @@ async def test_accept_proof_request_oob_v2(
         json={
             "create_connection": False,
             "use_public_did": False,
-            "handshake_protocols": ["https://didcomm.org/didexchange/1.0"],
             "attachments": [{"id": bob_exchange["proof_id"], "type": "present-proof"}],
         },
     )
@@ -235,57 +231,55 @@ async def test_accept_proof_request_oob_v2(
     invitation["id"] = invitation.pop("@id")
     invitation["type"] = invitation.pop("@type")
 
-    accept_response = await alice_member_client.post(
+    await alice_member_client.post(
         "/generic/connections/oob/accept-invitation",
         json={"invitation": invitation},
     )
 
-    oob_record = accept_response.json()
-
-    connection_record = await alice_acapy_client.connection.get_connection(
-        conn_id=oob_record["connection_id"]
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=120,
     )
-    assert_that(accept_response.status_code).is_equal_to(200)
-    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert_that(connection_record.connection_protocol).contains("didexchange/1.0")
+    proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
 
-    # FIXME: accept works but no proof request is received - commented below approx. should work
-    # assert check_webhook_state(
-    #     client=alice_member_client,
-    #     filter_map={"state": "request-received"},
-    #     topic="proofs",
-    #     max_duration=10,
-    # )
-    # proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
-    # alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+    requested_credentials = await alice_member_client.get(
+        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+    )
 
-    # requested_credentials = await alice_member_client.get(
-    #     f"/generic/verifier/proofs/{alice_proof_id}/credentials"
-    # )
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        connectionless=True,
+        presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
 
-    # referent = requested_credentials.json()[0]["cred_info"]["referent"]
-    # indy_request_attrs = IndyRequestedCredsRequestedAttr(
-    #     cred_id=referent, revealed=True
-    # )
-    # proof_accept = AcceptProofRequest(
-    #     proof_id=alice_proof_id,
-    #     presentation_spec=IndyPresSpec(
-    #         requested_attributes={"0_speed_uuid": indy_request_attrs},
-    #         requested_predicates={},
-    #         self_attested_attributes={},
-    #     ),
-    # )
+    response = await alice_member_client.post(
+        BASE_PATH + "/accept-request",
+        json=proof_accept.dict(),
+    )
 
-    # response = await alice_member_client.post(
-    #     BASE_PATH + "/accept-request",
-    #     json=proof_accept.dict(),
-    # )
-    # assert check_webhook_state(
-    #     client=alice_member_client,
-    #     filter_map={"state": "done", "proof_id": alice_proof_id},
-    #     topic="proofs",
-    #     max_duration=120,
-    # )
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "presentation-sent", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=120,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
+        topic="proofs",
+        max_duration=120,
+    )
 
 
 @pytest.mark.asyncio

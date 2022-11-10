@@ -80,9 +80,7 @@ async def create_oob_invitation(
     oob_body = InvitationCreateRequest(
         alias=body.alias,
         attachments=body.attachments,
-        handshake_protocols=handshake_protocols
-        if body.create_connection
-        else body.handshake_protocols,
+        handshake_protocols=handshake_protocols if body.create_connection else None,
         use_public_did=body.use_public_did,
     )
 

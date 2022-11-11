@@ -56,5 +56,5 @@ def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
         image_url=image_url,
         created_at=wallet_record.created_at,
         updated_at=wallet_record.updated_at,
-        group_id=wallet_record.group_id,
+        group_id=wallet_record.group_id if hasattr(wallet_record, "group_id") else None,
     )

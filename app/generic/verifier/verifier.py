@@ -177,9 +177,10 @@ async def send_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
 
-        await assert_valid_verifier(
-            aries_controller=aries_controller, proof_request=proof_request
-        )
+        if proof_request.connection_id:
+            await assert_valid_verifier(
+                aries_controller=aries_controller, proof_request=proof_request
+            )
 
         return await prover.send_proof_request(
             controller=aries_controller, proof_request=proof_request
@@ -210,13 +211,6 @@ async def create_proof_request(
     try:
         prover = __get_verifier_by_version(proof_request.protocol_version)
 
-        # FIXME: this currently doesn't work with connectionless. Fix in future PR
-        # await assert_valid_verifier(
-        #     aries_controller=aries_controller,
-        #     proof_request=proof_request,
-        # )
-        raise CloudApiException("Could not verify proof request against trust registry")
-
         return await prover.create_proof_request(
             controller=aries_controller, proof_request=proof_request
         )
@@ -246,9 +240,17 @@ async def accept_proof_request(
     try:
         prover = __get_verifier_by_version(presentation.proof_id)
 
-        await assert_valid_prover(
-            aries_controller=aries_controller, prover=prover, presentation=presentation
+        proof_record = await prover.get_proof_record(
+            controller=aries_controller, proof_id=presentation.proof_id
         )
+
+        # If there is a connection id the proof is not connectionless
+        if proof_record.connection_id:
+            await assert_valid_prover(
+                aries_controller=aries_controller,
+                prover=prover,
+                presentation=presentation,
+            )
 
         return await prover.accept_proof_request(
             controller=aries_controller, proof_request=presentation

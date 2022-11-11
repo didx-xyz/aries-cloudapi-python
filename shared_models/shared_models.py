@@ -120,7 +120,7 @@ class ServiceDecorator(TypedDict):
 
 
 class Oob(BaseModel):
-    role: Optional[Literal['sender', 'receiver']] = None
+    role: Optional[Literal["sender", "receiver"]] = None
     invi_msg_id: Optional[str] = None
     state: Optional[
         Literal[
@@ -164,7 +164,7 @@ class OobRecord(BaseModel):
     connection_id: Optional[str] = None
     created_at: Optional[str] = None
     our_recipient_key: Optional[str] = None
-    role: Optional[Literal['sender', 'receiver']] = None
+    role: Optional[Literal["sender", "receiver"]] = None
     their_service: Optional[ServiceDecorator] = None
     trace: Optional[bool] = None
     updated_at: Optional[str] = None

@@ -121,7 +121,7 @@ async def test_accept_proof_request_oob_v1(
     response.raise_for_status()
     bob_exchange = response.json()
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"][3:]
+    bob_exchange["proof_id"] = bob_exchange["proof_id"]
 
     invitation_response = await bob_member_client.post(
         "/generic/connections/oob/create-invitation",
@@ -211,7 +211,7 @@ async def test_accept_proof_request_oob_v2(
     response.raise_for_status()
     bob_exchange = response.json()
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"][3:]
+    bob_exchange["proof_id"] = bob_exchange["proof_id"]
 
     invitation_response = await bob_member_client.post(
         "/generic/connections/oob/create-invitation",

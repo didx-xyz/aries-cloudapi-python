@@ -376,6 +376,40 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
+    name = uuid4().hex
+    group_id = "backstreetboys"
+    response = await tenant_admin_client.post(
+        BASE_PATH,
+        json={
+            "image_url": "https://image.ca",
+            "name": name,
+            "roles": ["verifier"],
+            "group_id": group_id,
+        },
+    )
+
+    assert response.status_code == 200
+    created_tenant = response.json()
+    tenant_id = created_tenant["tenant_id"]
+
+    response = await tenant_admin_client.get(f"{BASE_PATH}/group/{group_id}")
+    assert response.status_code == 200
+    tenants = response.json()
+    assert len(tenants) >= 1
+
+    # Make sure created tenant is returned
+    assert_that(tenants).extracting("tenant_id").contains(tenant_id)
+    assert_that(tenants).extracting("group_id").contains(group_id)
+
+    response = await tenant_admin_client.get(f"{BASE_PATH}/group/spicegirls")
+    assert response.status_code == 200
+    tenants = response.json()
+    assert len(tenants) == 0
+    assert tenants == []
+
+
+@pytest.mark.asyncio
 async def test_delete_tenant(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):

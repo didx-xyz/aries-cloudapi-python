@@ -45,6 +45,7 @@ class CreateOobInvitation(BaseModel):
     multi_use: Optional[bool] = None
     use_public_did: Optional[bool] = None
     attachments: Optional[List[AttachmentDef]] = None
+    handshake_protocols: Optional[List[str]] = None
     create_connection: Optional[bool] = None
 
 

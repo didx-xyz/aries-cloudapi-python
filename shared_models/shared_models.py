@@ -212,8 +212,10 @@ class CredentialExchange(BaseModel):
     ] = None
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
-    # Connetion id can be None in connectionless exchanges
+    # Connection id can be None in connectionless exchanges
     connection_id: Optional[str] = None
+    thread_id: Optional[str] = None
+    parent_thread_id: Optional[str] = None
 
 
 class PresentationExchange(BaseModel):
@@ -239,6 +241,7 @@ class PresentationExchange(BaseModel):
     ] = None
     updated_at: Optional[str] = None
     verified: Optional[bool] = None
+    thread_id: Optional[str] = None
 
 
 class BasicMessage(BaseModel):
@@ -287,6 +290,7 @@ def presentation_record_to_model(
             state=record.state,
             updated_at=record.updated_at,
             verified=string_to_bool(record.verified),
+            thread_id=record.thread_id
         )
     elif isinstance(record, V10PresentationExchange):
         return PresentationExchange(
@@ -301,6 +305,7 @@ def presentation_record_to_model(
             state=v1_presentation_state_to_rfc_state(record.state),
             updated_at=record.updated_at,
             verified=string_to_bool(record.verified),
+            thread_id=record.thread_id
         )
     else:
         raise ValueError("Record format unknown.")
@@ -341,6 +346,8 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         credential_definition_id=record.credential_definition_id,
         state=v1_credential_state_to_rfc_state(record.state),
         connection_id=record.connection_id,
+        thread_id=record.thread_id,
+        parent_thread_id=record.parent_thread_id,
     )
 
 
@@ -395,6 +402,8 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
         credential_definition_id=credential_definition_id,
         state=record.state,
         connection_id=record.connection_id,
+        thread_id=record.thread_id,
+        parent_thread_id=record.parent_thread_id,
     )
 
 

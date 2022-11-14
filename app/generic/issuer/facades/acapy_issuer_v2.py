@@ -50,7 +50,9 @@ class IssuerV2(Issuer):
         return cls.__record_to_model(record)
 
     @classmethod
-    async def create_offer(cls, controller: AcaPyClient, credential: CredentialNoConnection):
+    async def create_offer(
+        cls, controller: AcaPyClient, credential: CredentialNoConnection
+    ):
         credential_preview = cls.__preview_from_attributes(
             attributes=credential.attributes
         )

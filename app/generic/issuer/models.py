@@ -8,6 +8,7 @@ class Credential(BaseModel):
     cred_def_id: str
     attributes: Dict[str, str]
 
+
 class CredentialNoConnection(BaseModel):
     cred_def_id: str
     attributes: Dict[str, str]

@@ -41,8 +41,10 @@ class CredentialBase(BaseModel):
     credential_definition_id: str
     attributes: Dict[str, str]
 
+
 class SendCredential(CredentialBase):
     connection_id: str
+
 
 class CreateOffer(CredentialBase):
     pass

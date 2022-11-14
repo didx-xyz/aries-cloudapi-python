@@ -71,7 +71,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
     invitation_response = (
         await holder_client.post(
-            "/generic/connections/oob/accept-invitation",
+            "/generic/oob/accept-invitation",
             json={"invitation": invitation_json},
         )
     ).json()

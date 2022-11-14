@@ -31,6 +31,7 @@ jobs:
         run: |
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
+          sudo chmod 777 ./data
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup

@@ -3,6 +3,7 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedAttr,
 )
 import pytest
+from assertpy import assert_that
 from httpx import AsyncClient
 
 from app.generic.verifier.models import (
@@ -107,6 +108,186 @@ async def test_accept_proof_request_v1(
     pres_exchange_result = PresentationExchange(**result)
     assert isinstance(pres_exchange_result, PresentationExchange)
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_accept_proof_request_oob_v1(
+    issue_credential_to_alice: CredentialExchange,
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    acme_client: AsyncClient,
+    alice_acapy_client: AcaPyClient,
+    acme_and_alice_connection: AcmeAliceConnect,
+):
+    # Create the proof request against aca-py
+    response = await bob_member_client.post(
+        BASE_PATH + "/create-request",
+        json={
+            "comment": "some comment",
+            "protocol_version": "v1",
+            "proof_request": indy_proof_request.dict(),
+        },
+    )
+    response.raise_for_status()
+    bob_exchange = response.json()
+
+    bob_exchange["proof_id"] = bob_exchange["proof_id"][3:]
+
+    invitation_response = await bob_member_client.post(
+        "/generic/oob/create-invitation",
+        json={
+            "create_connection": False,
+            "use_public_did": False,
+            "attachments": [{"id": bob_exchange["proof_id"], "type": "present-proof"}],
+        },
+    )
+
+    invitation_response.raise_for_status()
+
+    assert_that(invitation_response.status_code).is_equal_to(200)
+    invitation = (invitation_response.json())["invitation"]
+
+    invitation["id"] = invitation.pop("@id")
+    invitation["type"] = invitation.pop("@type")
+
+    await alice_member_client.post(
+        "/generic/oob/accept-invitation",
+        json={"invitation": invitation},
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=120,
+    )
+    proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+
+    requested_credentials = await alice_member_client.get(
+        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+    )
+
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    response = await alice_member_client.post(
+        BASE_PATH + "/accept-request",
+        json=proof_accept.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "presentation-sent", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=120,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
+        topic="proofs",
+        max_duration=120,
+    )
+
+
+@pytest.mark.asyncio
+async def test_accept_proof_request_oob_v2(
+    issue_credential_to_alice: CredentialExchange,
+    alice_member_client: AsyncClient,
+    bob_member_client: AsyncClient,
+    acme_client: AsyncClient,
+    alice_acapy_client: AcaPyClient,
+    acme_and_alice_connection: AcmeAliceConnect,
+):
+    # Create the proof request against aca-py
+    response = await bob_member_client.post(
+        BASE_PATH + "/create-request",
+        json={
+            "comment": "some comment",
+            "protocol_version": "v2",
+            "proof_request": indy_proof_request.dict(),
+        },
+    )
+    response.raise_for_status()
+    bob_exchange = response.json()
+
+    bob_exchange["proof_id"] = bob_exchange["proof_id"][3:]
+
+    invitation_response = await bob_member_client.post(
+        "/generic/oob/create-invitation",
+        json={
+            "create_connection": False,
+            "use_public_did": False,
+            "attachments": [{"id": bob_exchange["proof_id"], "type": "present-proof"}],
+        },
+    )
+
+    invitation_response.raise_for_status()
+
+    assert_that(invitation_response.status_code).is_equal_to(200)
+    invitation = (invitation_response.json())["invitation"]
+
+    invitation["id"] = invitation.pop("@id")
+    invitation["type"] = invitation.pop("@type")
+
+    await alice_member_client.post(
+        "/generic/oob/accept-invitation",
+        json={"invitation": invitation},
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=120,
+    )
+    proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+
+    requested_credentials = await alice_member_client.get(
+        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+    )
+
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    response = await alice_member_client.post(
+        BASE_PATH + "/accept-request",
+        json=proof_accept.dict(),
+    )
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "presentation-sent", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=120,
+    )
+    assert check_webhook_state(
+        client=bob_member_client,
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
+        topic="proofs",
+        max_duration=120,
+    )
 
 
 @pytest.mark.asyncio

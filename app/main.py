@@ -15,6 +15,7 @@ from app.admin.tenants import tenants
 from app.generic import definitions, messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
+from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
 from app.webhook_listener import Webhooks
@@ -32,13 +33,14 @@ app = FastAPI(
 )
 
 app.include_router(connections.router)
+app.include_router(definitions.router)
 app.include_router(issuer.router)
 app.include_router(messaging.router)
-app.include_router(wallet.router)
+app.include_router(oob.router)
 app.include_router(tenants.router)
-app.include_router(verifier.router)
 app.include_router(trust_registry.router)
-app.include_router(definitions.router)
+app.include_router(verifier.router)
+app.include_router(wallet.router)
 app.include_router(webhooks.router)
 
 

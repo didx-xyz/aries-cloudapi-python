@@ -12,7 +12,11 @@ from app.tests.util.client import (
 from app.tests.util.string import base64_to_json
 from app.webhook_listener import start_listener
 
-from .tenants import create_issuer_tenant, create_verifier_tenant, delete_tenant
+from app.tests.util.tenants import (
+    create_issuer_tenant,
+    create_verifier_tenant,
+    delete_tenant,
+)
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -100,7 +104,7 @@ async def acme_and_alice_connection(
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
-            "/generic/connections/oob/accept-invitation",
+            "/generic/oob/accept-invitation",
             json={"invitation": invitation_json},
         )
     ).json()

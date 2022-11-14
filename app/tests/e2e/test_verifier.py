@@ -124,7 +124,7 @@ async def test_accept_proof_request_oob_v1(
     bob_exchange["proof_id"] = bob_exchange["proof_id"]
 
     invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation",
+        "/generic/oob/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -141,7 +141,7 @@ async def test_accept_proof_request_oob_v1(
     invitation["type"] = invitation.pop("@type")
 
     await alice_member_client.post(
-        "/generic/connections/oob/accept-invitation",
+        "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
 
@@ -214,7 +214,7 @@ async def test_accept_proof_request_oob_v2(
     bob_exchange["proof_id"] = bob_exchange["proof_id"]
 
     invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation",
+        "/generic/oob/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -231,7 +231,7 @@ async def test_accept_proof_request_oob_v2(
     invitation["type"] = invitation.pop("@type")
 
     await alice_member_client.post(
-        "/generic/connections/oob/accept-invitation",
+        "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
 

@@ -43,8 +43,8 @@ class Issuer(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        credential: Credential
-            Credential to issue
+        credential: CredentialNoConnection
+            Credential ffer to create
 
         Returns:
         --------

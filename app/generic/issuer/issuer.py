@@ -18,7 +18,7 @@ from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
-from app.generic.issuer.models import Credential
+from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.indy import did_from_credential_definition_id
 from shared_models import IssueCredentialProtocolVersion
 
@@ -152,7 +152,7 @@ async def send_credential(
     )
 
 
-@router.post("/credentials/create_offer")
+@router.post("/credentials/create-offer")
 async def create_offer(
     credential: CreateOffer,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -185,7 +185,7 @@ async def create_offer(
 
     return await issuer.create_offer(
         controller=aries_controller,
-        credential=Credential(
+        credential=CredentialNoConnection(
             attributes=credential.attributes,
             cred_def_id=credential.credential_definition_id,
         ),
@@ -237,7 +237,7 @@ async def request_credential(
     if not record.credential_definition_id or not record.schema_id:
         raise CloudApiException(
             "Record has no credential definition or schema associated. "
-            "This proably means you haven't received an offer yet.",
+            "This probably means you haven't received an offer yet.",
             403,
         )
 

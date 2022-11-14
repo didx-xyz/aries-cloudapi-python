@@ -8,9 +8,9 @@ from aries_cloudcontroller import (
     V20CredExRecord,
     V20CredFilter,
     V20CredFilterIndy,
+    V20CredOfferConnFreeRequest,
     V20CredPreview,
     V20CredRequestRequest,
-    V20IssueCredSchemaCore,
 )
 from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
 
@@ -57,14 +57,16 @@ class IssuerV2(Issuer):
             attributes=credential.attributes
         )
 
-        record = await controller.issue_credential_v2_0.create_credential(
-            body=V20IssueCredSchemaCore(
-                credential_preview=credential_preview,
-                filter=V20CredFilter(
-                    indy=V20CredFilterIndy(
-                        cred_def_id=credential.cred_def_id,
-                    )
-                ),
+        record = (
+            await controller.issue_credential_v2_0.issue_credential20_create_offer_post(
+                body=V20CredOfferConnFreeRequest(
+                    credential_preview=credential_preview,
+                    filter=V20CredFilter(
+                        indy=V20CredFilterIndy(
+                            cred_def_id=credential.cred_def_id,
+                        )
+                    ),
+                )
             )
         )
 

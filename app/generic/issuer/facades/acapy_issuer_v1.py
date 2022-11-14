@@ -5,7 +5,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     CredAttrSpec,
     CredentialPreview,
-    V10CredentialCreate,
+    V10CredentialConnFreeOfferRequest,
     V10CredentialExchange,
     V10CredentialProposalRequestMand,
 )
@@ -52,9 +52,9 @@ class IssuerV1(Issuer):
             attributes=credential.attributes
         )
 
-        record = await controller.issue_credential_v1_0.create_credential(
-            body=V10CredentialCreate(
-                credential_proposal=credential_preview,
+        record = await controller.issue_credential_v1_0.create_offer(
+            body=V10CredentialConnFreeOfferRequest(
+                credential_preview=credential_preview,
                 cred_def_id=credential.cred_def_id,
             )
         )

@@ -6,7 +6,6 @@ from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
 
 # This import are important for tests to run!
-from app.tests.util.event_loop import event_loop
 
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.e2e.test_fixtures import *  # NOQA
@@ -85,6 +84,73 @@ async def test_send_credential(
         topic="credentials",
     )
     assert len(records) == 2
+
+    # Expect one v1 record, one v2 record
+    assert_that(records).extracting("protocol_version").contains("v1", "v2")
+
+
+@pytest.mark.asyncio
+async def test_create_offer(
+    faber_client: AsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+):
+    credential = {
+        "protocol_version": "v1",
+        "credential_definition_id": credential_definition_id,
+        "attributes": {"speed": "10"},
+    }
+
+    response = await faber_client.post(
+        BASE_PATH + "/create-offer",
+        json=credential,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)
+
+    credential["protocol_version"] = "v2"
+    response = await faber_client.post(
+        BASE_PATH + "/create-offer",
+        json=credential,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)
+
+    assert check_webhook_state(
+        client=faber_client,
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": data["credential_id"],
+        },
+        topic="credentials",
+    )
+    response = await faber_client.get(
+        BASE_PATH,
+    )
+    records = response.json()
+
+    assert check_webhook_state(
+        client=faber_client,
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": records[-1]["credential_id"],
+        },
+        topic="credentials",
+    )
+    # Two from this and two from previous test potentially. Depending on order.
+    # So let's do >= 2 instead of == 2 or == 4
+    assert len(records) >= 2
 
     # Expect one v1 record, one v2 record
     assert_that(records).extracting("protocol_version").contains("v1", "v2")

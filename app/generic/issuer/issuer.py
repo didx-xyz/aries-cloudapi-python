@@ -36,11 +36,16 @@ class ProblemReportExplanation(TypedDict):
     description: str
 
 
-class SendCredential(BaseModel):
+class CredentialBase(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
-    connection_id: str
     credential_definition_id: str
     attributes: Dict[str, str]
+
+class SendCredential(CredentialBase):
+    connection_id: str
+
+class CreateOffer(CredentialBase):
+    pass
 
 
 def __issuer_from_id(id: str) -> Issuer:
@@ -141,6 +146,46 @@ async def send_credential(
             attributes=credential.attributes,
             cred_def_id=credential.credential_definition_id,
             connection_id=credential.connection_id,
+        ),
+    )
+
+
+@router.post("/credentials/create_offer")
+async def create_offer(
+    credential: CreateOffer,
+    aries_controller: AcaPyClient = Depends(agent_selector),
+):
+    """
+        Create a credential offer not bound to any connection.
+
+    Parameters:
+    ------------
+        credential: Credential
+            payload for sending a credential
+
+    Returns:
+    --------
+        The response object from sending a credential
+    """
+
+    issuer = __issuer_from_protocol_version(credential.protocol_version)
+
+    # Assert the agent has a public did
+    public_did = await assert_public_did(aries_controller)
+
+    # Retrieve the schema_id based on the credential definition id
+    schema_id = await schema_id_from_credential_definition_id(
+        aries_controller, credential.credential_definition_id
+    )
+
+    # Make sure we are allowed to issue according to trust registry rules
+    await assert_valid_issuer(public_did, schema_id)
+
+    return await issuer.create_offer(
+        controller=aries_controller,
+        credential=Credential(
+            attributes=credential.attributes,
+            cred_def_id=credential.credential_definition_id,
         ),
     )
 

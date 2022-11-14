@@ -10,12 +10,14 @@ from aries_cloudcontroller import (
     V20CredFilterIndy,
     V20CredPreview,
     V20CredRequestRequest,
+    V20IssueCredSchemaCore,
 )
 from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
 
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import (
     Credential,
+    CredentialNoConnection,
 )
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from shared_models import (
@@ -36,6 +38,25 @@ class IssuerV2(Issuer):
         record = await controller.issue_credential_v2_0.issue_credential_automated(
             body=V20CredExFree(
                 connection_id=credential.connection_id,
+                credential_preview=credential_preview,
+                filter=V20CredFilter(
+                    indy=V20CredFilterIndy(
+                        cred_def_id=credential.cred_def_id,
+                    )
+                ),
+            )
+        )
+
+        return cls.__record_to_model(record)
+
+    @classmethod
+    async def create_offer(cls, controller: AcaPyClient, credential: CredentialNoConnection):
+        credential_preview = cls.__preview_from_attributes(
+            attributes=credential.attributes
+        )
+
+        record = await controller.issue_credential_v2_0.create_credential(
+            body=V20IssueCredSchemaCore(
                 credential_preview=credential_preview,
                 filter=V20CredFilter(
                     indy=V20CredFilterIndy(

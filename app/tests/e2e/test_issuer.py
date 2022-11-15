@@ -90,6 +90,120 @@ async def test_send_credential(
 
 
 @pytest.mark.asyncio
+async def test_send_credential_oob_v1(
+    faber_client: AsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    credential = {
+        "protocol_version": "v1",
+        "credential_definition_id": credential_definition_id,
+        "attributes": {"speed": "10"},
+    }
+
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+    )
+    records = response.json()
+
+    # nothing currently in alice's records
+    assert len(records) == 0
+
+    response = await faber_client.post(
+        BASE_PATH + "/create-offer",
+        json=credential,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)
+
+    invitation_response = await faber_client.post(
+        "/generic/oob/create-invitation",
+        json={
+            "create_connection": False,
+            "use_public_did": False,
+            "attachments": [
+                {"id": data["credential_id"][3:], "type": "credential-offer"}
+            ],
+        },
+    )
+    assert_that(invitation_response.status_code).is_equal_to(200)
+
+    invitation = (invitation_response.json())["invitation"]
+    invitation["id"] = invitation.pop("@id")
+    invitation["type"] = invitation.pop("@type")
+    accept_response = await alice_member_client.post(
+        "/generic/oob/accept-invitation",
+        json={"invitation": invitation},
+    )
+
+    oob_record = accept_response.json()
+
+    assert_that(accept_response.status_code).is_equal_to(200)
+    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
+
+@pytest.mark.asyncio
+async def test_send_credential_oob_v2(
+    faber_client: AsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+    alice_member_client: AsyncClient,
+):
+    credential = {
+        "protocol_version": "v2",
+        "credential_definition_id": credential_definition_id,
+        "attributes": {"speed": "10"},
+    }
+
+    response = await faber_client.post(
+        BASE_PATH + "/create-offer",
+        json=credential,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)
+
+    invitation_response = await faber_client.post(
+        "/generic/oob/create-invitation",
+        json={
+            "create_connection": False,
+            "use_public_did": False,
+            "attachments": [
+                {"id": data["credential_id"][3:], "type": "credential-offer"}
+            ],
+        },
+    )
+    assert_that(invitation_response.status_code).is_equal_to(200)
+
+    invitation = (invitation_response.json())["invitation"]
+    invitation["id"] = invitation.pop("@id")
+    invitation["type"] = invitation.pop("@type")
+    accept_response = await alice_member_client.post(
+        "/generic/oob/accept-invitation",
+        json={"invitation": invitation},
+    )
+
+    oob_record = accept_response.json()
+
+    assert_that(accept_response.status_code).is_equal_to(200)
+    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
+
+@pytest.mark.asyncio
 async def test_create_offer(
     faber_client: AsyncClient,
     schema_definition: CredentialSchema,

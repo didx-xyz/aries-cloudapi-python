@@ -6,7 +6,6 @@ from typing_extensions import TypedDict, Literal
 from aries_cloudcontroller import (
     ConnRecord,
     IndyProof,
-    IndyProofRequest,
     InvitationMessage,
     V10PresentationExchange,
     V10CredentialExchange,
@@ -223,8 +222,9 @@ class PresentationExchange(BaseModel):
     created_at: str
     error_msg: Optional[str] = None
     parent_thread_id: Optional[str] = None
-    presentation: Optional[IndyProof] = None
-    presentation_request: Optional[IndyProofRequest] = None
+    presentation: Optional[Any] = None
+    presentation_request: Optional[Any] = None
+    presentation_proposal: Optional[Any] = None
     proof_id: str
     protocol_version: PresentProofProtocolVersion
     role: Literal["prover", "verifier"]
@@ -283,9 +283,11 @@ def presentation_record_to_model(
             presentation=IndyProof(**record.by_format.pres["indy"])
             if record.by_format.pres
             else None,
-            presentation_request=IndyProofRequest(
-                **record.by_format.pres_request["indy"]
-            ),
+            presentation_request=record.pres_request,
+            presentation_proposal=record.dict(),
+            # presentation_request=IndyProofRequest(
+            #     **record.by_format.pres_request["indy"]
+            # ),
             proof_id="v2-" + str(record.pres_ex_id),
             protocol_version=PresentProofProtocolVersion.v2.value,
             role=record.role,
@@ -303,7 +305,9 @@ def presentation_record_to_model(
             if record.presentation_request_dict
             else None,
             presentation=record.presentation,
-            presentation_request=record.presentation_request,
+            presentation_request=record.pres_request,
+            presentation_proposal=record.dict(),
+            # presentation_request=record.presentation_request,
             proof_id="v1-" + str(record.presentation_exchange_id),
             protocol_version=PresentProofProtocolVersion.v1.value,
             role=record.role,

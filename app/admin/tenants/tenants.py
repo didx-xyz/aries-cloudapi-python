@@ -64,7 +64,7 @@ def tenant_api_key(role: Role, tenant_token: str):
     return f"{role.agent_type.tenant_role.name}.{tenant_token}"
 
 
-@router.post("/", response_model=CreateTenantResponse)
+@router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
     aries_controller: AcaPyClient = Depends(multitenant_admin),
@@ -180,23 +180,6 @@ async def update_tenant(
     return tenant_from_wallet_record(wallet)
 
 
-@router.get("/", response_model=List[Tenant])
-async def get_tenants(
-    aries_controller: AcaPyClient = Depends(multitenant_admin),
-) -> List[Tenant]:
-
-    """Get tenants."""
-    wallets = await aries_controller.multitenancy.get_wallets()
-
-    if not wallets.results:
-        return []
-
-    # Only return wallet with current authentication role.
-    return [
-        tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
-    ]
-
-
 @router.get("/{tenant_id}", response_model=Tenant)
 async def get_tenant(
     tenant_id: str, aries_controller: AcaPyClient = Depends(multitenant_admin)
@@ -207,12 +190,22 @@ async def get_tenant(
     return tenant_from_wallet_record(wallet)
 
 
-@router.get("/group/{group_id}", response_model=List[Tenant])
-async def get_tenants_by_group(
+@router.get("", response_model=List[Tenant])
+async def get_tenants(
     group_id: str = None, aries_controller: AcaPyClient = Depends(multitenant_admin)
 ) -> List[Tenant]:
-    """Get tenants by group id."""
-    # NOTE: still pass the controller for auth
+    """Get tenants (by group id.)"""
+    if not group_id:
+        wallets = await aries_controller.multitenancy.get_wallets()
+
+        if not wallets.results:
+            return []
+
+        # Only return wallet with current authentication role.
+        return [
+            tenant_from_wallet_record(wallet_record)
+            for wallet_record in wallets.results
+        ]
 
     # NOTE: The group id is provided via a plugin so the
     # controller doesn't have the api for that implement.

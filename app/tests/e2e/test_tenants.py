@@ -393,7 +393,7 @@ async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
     created_tenant = response.json()
     tenant_id = created_tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}/group/{group_id}")
+    response = await tenant_admin_client.get(f"{BASE_PATH}?group_id={group_id}")
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) >= 1
@@ -402,7 +402,7 @@ async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
     assert_that(tenants).extracting("tenant_id").contains(tenant_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}/group/spicegirls")
+    response = await tenant_admin_client.get(f"{BASE_PATH}?group_id=spicegirls")
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) == 0

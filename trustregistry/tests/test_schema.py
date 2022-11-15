@@ -1,6 +1,5 @@
-import json
 
-from . import test_main
+from trustregistry.tests import test_main
 from trustregistry.registry.registry_schemas import _get_schema_attrs, SchemaID
 
 client = test_main.client
@@ -23,7 +22,7 @@ def test_register_schema():
     payload = {"schema_id": schema_id}
 
     response = client.post(
-        "/registry/schemas/",
+        "/registry/schemas",
         headers={"content-type": "application/json", "accept": "application/json"},
         json=payload,
     )
@@ -37,7 +36,7 @@ def test_register_schema():
     assert "string:2:string:string" in new_schemas["schemas"]
 
     response = client.post(
-        "/registry/schemas/",
+        "/registry/schemas",
         headers={"content-type": "application/json", "accept": "application/json"},
         json=payload,
     )

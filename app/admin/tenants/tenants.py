@@ -50,7 +50,7 @@ def tenant_api_key(role: Role, tenant_token: str):
     return f"{role.agent_type.tenant_role.name}.{tenant_token}"
 
 
-@router.post("/", response_model=CreateTenantResponse)
+@router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
     aries_controller: AcaPyClient = Depends(multitenant_admin),
@@ -164,7 +164,7 @@ async def update_tenant(
     return tenant_from_wallet_record(wallet)
 
 
-@router.get("/", response_model=List[Tenant])
+@router.get("", response_model=List[Tenant])
 async def get_tenants(
     aries_controller: AcaPyClient = Depends(multitenant_admin),
 ) -> List[Tenant]:

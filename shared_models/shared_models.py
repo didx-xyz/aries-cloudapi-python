@@ -197,11 +197,9 @@ class CredentialExchange(BaseModel):
     credential_definition_id: Optional[str]
     credential_id: str
     error_msg: Optional[str] = None
-    parent_thread_id: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion
     role: Literal["issuer", "holder"]
     schema_id: Optional[str]
-    updated_at: str
     state: Optional[
         Literal[
             "proposal-sent",
@@ -216,6 +214,7 @@ class CredentialExchange(BaseModel):
         ]
     ] = None
     thread_id: Optional[str] = None
+    updated_at: str
 
 
 class PresentationExchange(BaseModel):
@@ -346,7 +345,6 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         credential_definition_id=record.credential_definition_id,
         credential_id=f"v1-{record.credential_exchange_id}",
         error_msg=record.error_msg,
-        parent_thread_id=record.parent_thread_id,
         protocol_version=IssueCredentialProtocolVersion.v1,
         role=record.role,
         schema_id=record.schema_id,
@@ -396,19 +394,18 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
     schema_id, credential_definition_id = schema_cred_def_from_record(record)
 
     return CredentialExchange(
-        credential_id=f"v2-{record.cred_ex_id}",
-        role=record.role,
-        created_at=record.created_at,
-        updated_at=record.updated_at,
-        error_msg=record.error_msg,
         attributes=attributes,
-        protocol_version=IssueCredentialProtocolVersion.v2,
-        schema_id=schema_id,
-        credential_definition_id=credential_definition_id,
-        state=record.state,
         connection_id=record.connection_id,
+        created_at=record.created_at,
+        credential_definition_id=credential_definition_id,
+        credential_id=f"v2-{record.cred_ex_id}",
+        error_msg=record.error_msg,
+        protocol_version=IssueCredentialProtocolVersion.v2,
+        role=record.role,
+        schema_id=schema_id,
+        state=record.state,
         thread_id=record.thread_id,
-        parent_thread_id=record.parent_thread_id,
+        updated_at=record.updated_at,
     )
 
 

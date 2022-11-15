@@ -29,9 +29,10 @@ jobs:
         run: pip install docker-compose
       - name: Start Test Harness
         run: |
+          rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
-          sudo chmod 777 ./data
+          sudo chmod 777 ./data -R
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup

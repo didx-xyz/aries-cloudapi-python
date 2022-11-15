@@ -144,11 +144,20 @@ async def test_send_credential_oob_v1(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
+    accept_response.raise_for_status()
 
     oob_record = accept_response.json()
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={
+            "state": "offer-received",
+            "credential_definition_id": credential_definition_id,
+        },
+        topic="credentials",
+    )
 
 
 @pytest.mark.asyncio
@@ -196,11 +205,20 @@ async def test_send_credential_oob_v2(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
+    accept_response.raise_for_status()
 
     oob_record = accept_response.json()
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={
+            "state": "offer-received",
+            "credential_definition_id": credential_definition_id,
+        },
+        topic="credentials",
+    )
 
 
 @pytest.mark.asyncio

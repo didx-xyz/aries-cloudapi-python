@@ -32,11 +32,11 @@ jobs:
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
-          chmod 644 ./data -R
+          sudo chmod 777 ./data -R
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup
-          ./manage up-as-daemon
+          ./manage up-daemon-usecache
           sleep 150
           while [ $i -le 240 ]
           do

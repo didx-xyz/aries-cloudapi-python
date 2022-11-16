@@ -45,9 +45,10 @@ async def sign_jsonld(
     Sign a JSON-LD structure
     """
 
-    if not (bool(body.pub_did) != bool(body.verkey)):
+    if body.pub_did and body.verkey:
         raise CloudApiException(
-            "Please provide either or neither, but not both, public did of the verkey or the verkey for the document."
+            "Please provide either or neither, but not both, public did of the verkey or the verkey for the document.",
+            418,
         )
     try:
         if body.verkey:
@@ -60,7 +61,7 @@ async def sign_jsonld(
 
         verkey = await aries_controller.ledger.get_did_verkey(did=pub_did.result.did)
         credential = await aries_controller.credentials.get_record(
-            credential_id=body.cred
+            credential_id=body.credential_id
         )
 
         signed_jsonld_structure = await aries_controller.jsonld.sign(
@@ -71,7 +72,7 @@ async def sign_jsonld(
         )
         return signed_jsonld_structure
     except ClientResponseError as e:
-        raise CloudApiException("Failed to sign payload.") from e
+        raise CloudApiException(f"Failed to sign payload. {e!r}") from e
 
 
 @router.post("/verify", response_model=VerifyResponse)
@@ -85,7 +86,8 @@ async def verify_jsonld(
 
     if not (bool(body.their_pub_did) != bool(body.verkey)):
         raise CloudApiException(
-            "Please provide either, but not both, public did of the verkey or the verkey for the document."
+            "Please provide either, but not both, public did of the verkey or the verkey for the document.",
+            418,
         )
     try:
         if not body.verkey:

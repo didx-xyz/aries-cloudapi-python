@@ -32,7 +32,7 @@ jobs:
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
-          sudo chmod 777 ./data -R
+          chmod 777 ./data -R
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup
@@ -61,6 +61,8 @@ jobs:
       - name: Retry tests
         if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
         run: |
+          sudo chown -R $(id -u):$(id -g) ./data
+          sudo chmod 777 ./data -R
           docker-compose up --build -d governance-ga-agent
           docker-compose up --build -d governance-multitenant-agent
           sleep 120
@@ -88,6 +90,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd aries-cloudapi-python
+            git checkout development
             git pull
-            make stop_n_clean
+            ./manage down
             ./manage up-as-daemon

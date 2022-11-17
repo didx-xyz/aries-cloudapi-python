@@ -12,84 +12,6 @@ from app.tests.e2e.test_fixtures import *  # NOQA
 
 
 @pytest.mark.asyncio
-async def test_send_credential(
-    faber_client: AsyncClient,
-    schema_definition: CredentialSchema,
-    credential_definition_id: str,
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
-):
-    credential = {
-        "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "10"},
-    }
-
-    response = await alice_member_client.get(
-        BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
-
-    response = await faber_client.post(
-        BASE_PATH,
-        json=credential,
-    )
-    response.raise_for_status()
-
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    credential["protocol_version"] = "v2"
-    response = await faber_client.post(
-        BASE_PATH,
-        json=credential,
-    )
-    response.raise_for_status()
-
-    data = response.json()
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-    assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    assert check_webhook_state(
-        client=faber_client,
-        filter_map={
-            "state": "offer-sent",
-            "credential_id": data["credential_id"],
-        },
-        topic="credentials",
-    )
-    response = await alice_member_client.get(
-        BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
-    )
-    records = response.json()
-
-    assert check_webhook_state(
-        client=alice_member_client,
-        filter_map={
-            "state": "offer-received",
-            "credential_id": records[-1]["credential_id"],
-        },
-        topic="credentials",
-    )
-    assert len(records) == 2
-
-    # Expect one v1 record, one v2 record
-    assert_that(records).extracting("protocol_version").contains("v1", "v2")
-
-
-@pytest.mark.asyncio
 async def test_send_credential_oob_v1(
     faber_client: AsyncClient,
     schema_definition: CredentialSchema,
@@ -219,6 +141,84 @@ async def test_send_credential_oob_v2(
         },
         topic="credentials",
     )
+
+
+@pytest.mark.asyncio
+async def test_send_credential(
+    faber_client: AsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: AsyncClient,
+):
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "credential_definition_id": credential_definition_id,
+        "attributes": {"speed": "10"},
+    }
+
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+    )
+    records = response.json()
+
+    # nothing currently in alice's records
+    assert len(records) == 0
+
+    response = await faber_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)
+
+    credential["protocol_version"] = "v2"
+    response = await faber_client.post(
+        BASE_PATH,
+        json=credential,
+    )
+    response.raise_for_status()
+
+    data = response.json()
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)
+
+    assert check_webhook_state(
+        client=faber_client,
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": data["credential_id"],
+        },
+        topic="credentials",
+    )
+    response = await alice_member_client.get(
+        BASE_PATH,
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+    )
+    records = response.json()
+
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={
+            "state": "offer-received",
+            "credential_id": records[-1]["credential_id"],
+        },
+        topic="credentials",
+    )
+    assert len(records) == 2
+
+    # Expect one v1 record, one v2 record
+    assert_that(records).extracting("protocol_version").contains("v1", "v2")
 
 
 @pytest.mark.asyncio

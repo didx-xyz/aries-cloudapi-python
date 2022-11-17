@@ -19,14 +19,14 @@ class SchemaID(BaseModel):
     schema_id: str = Field(..., example="WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0")
 
 
-@router.get("/", response_model=GetSchemasResponse)
+@router.get("", response_model=GetSchemasResponse)
 async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
     db_schemas = crud.get_schemas(db)
     schemas_repr = [schema.id for schema in db_schemas]
     return GetSchemasResponse(schemas=schemas_repr)
 
 
-@router.post("/")
+@router.post("")
 async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) -> Schema:
     schema_attrs_list = _get_schema_attrs(schema_id)
     create_schema_res = crud.create_schema(

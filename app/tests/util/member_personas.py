@@ -6,7 +6,6 @@ from httpx import AsyncClient
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
 
 from app.tests.util.client import (
-    governance_acapy_client,
     tenant_acapy_client,
     tenant_admin_client,
     tenant_client,
@@ -220,7 +219,7 @@ async def alice_bob_connect_multi(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="connections",
-        max_duration=30,
+        max_duration=60,
     )
 
     bob_connection_id = bob_multi_use_invitation["multi_use_invitation"][

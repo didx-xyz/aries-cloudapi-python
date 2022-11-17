@@ -74,7 +74,7 @@ async def accept_invitation(
     return conn_record_to_connection(connection_record)
 
 
-@router.get("/", response_model=List[Connection])
+@router.get("", response_model=List[Connection])
 async def get_connections(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[Connection]:

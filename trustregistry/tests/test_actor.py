@@ -1,6 +1,6 @@
 import json
 
-from . import test_main
+from trustregistry.tests import test_main
 
 client = test_main.client
 
@@ -22,7 +22,7 @@ def test_get_actors():
 def test_register_actor():
     payload = json.dumps(new_actor)
     response = client.post(
-        "/registry/actors/",
+        "/registry/actors",
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )
@@ -35,7 +35,7 @@ def test_register_actor():
     assert new_actor["id"] in [actor["id"] for actor in new_actors["actors"]]
 
     response = client.post(
-        "/registry/actors/",
+        "/registry/actors",
         headers={"content-type": "application/json", "accept": "application/json"},
         data=payload,
     )

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient
 
-from app.generic.issuer.models import Credential
+from app.generic.issuer.models import Credential, CredentialNoConnection
 from shared_models import CredentialExchange
 
 
@@ -24,6 +24,27 @@ class Issuer(ABC):
             The aries_cloudcontroller object
         credential: Credential
             Credential to issue
+
+        Returns:
+        --------
+        cred_ex_record:
+            The credential record
+        """
+
+    @classmethod
+    @abstractmethod
+    async def create_offer(
+        cls, controller: AcaPyClient, credential: CredentialNoConnection
+    ) -> CredentialExchange:
+        """
+        Create a credential offer not bound to a connection.
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+        credential: CredentialNoConnection
+            Credential ffer to create
 
         Returns:
         --------

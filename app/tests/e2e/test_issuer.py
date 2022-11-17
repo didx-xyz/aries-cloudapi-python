@@ -374,13 +374,14 @@ async def test_store_credential(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
         topic="credentials",
+        max_duration=240,
     )
 
     cred_hooks = get_hooks_per_topic_per_wallet(
         client=alice_member_client, topic="credentials"
     )
 
-    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
+    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][-1]
     credential_id = cred_hook["payload"]["credential_id"]
 
     # alice send request for that credential
@@ -394,6 +395,7 @@ async def test_store_credential(
         client=faber_client,
         filter_map={"state": "request-received"},
         topic="credentials",
+        max_duration=240,
     )
 
     # Check alice has received the credential
@@ -401,6 +403,7 @@ async def test_store_credential(
         client=alice_member_client,
         filter_map={"state": "credential-received"},
         topic="credentials",
+        max_duration=240,
     )
 
     # Alice stores credential
@@ -408,5 +411,8 @@ async def test_store_credential(
 
     # Check alice has received the credential
     assert check_webhook_state(
-        client=alice_member_client, filter_map={"state": "done"}, topic="credentials"
+        client=alice_member_client,
+        filter_map={"state": "done"},
+        topic="credentials",
+        max_duration=240,
     )

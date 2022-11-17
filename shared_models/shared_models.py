@@ -19,36 +19,36 @@ from pydantic.generics import GenericModel
 WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
 
 AcaPyTopics = Literal[
-    "connections",
-    "issue_credential",
-    "forward",
-    "ping",
     "basicmessages",
-    "issuer_cred_rev",
+    "connections",
+    "endorse_transaction",
+    "forward",
+    "issue_credential",
     "issue_credential_v2_0",
-    "issue_credential_v2_0_indy",
     "issue_credential_v2_0_dif",
-    "present_proof",
+    "issue_credential_v2_0_indy",
+    "issuer_cred_rev",
     "out_of_band",
+    "ping",
+    "present_proof",
     "present_proof_v2_0",
     "revocation_registry",
-    "endorse_transaction",
 ]
 
 CloudApiTopics = Literal[
-    "basic-messages", "connections", "proofs", "credentials", "endorsements", "oob"
+    "basic-messages", "connections", "credentials", "endorsements", "oob", "proofs"
 ]
 
 # Mapping of acapy topic names to their respective cloud api topic names
 topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "basicmessages": "basic-messages",
     "connections": "connections",
-    "present_proof": "proofs",
-    "present_proof_v2_0": "proofs",
-    "out_of_band": "oob",
+    "endorse_transaction": "endorsements",
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
-    "endorse_transaction": "endorsements",
+    "out_of_band": "oob",
+    "present_proof": "proofs",
+    "present_proof_v2_0": "proofs",
 }
 
 
@@ -80,16 +80,16 @@ def string_to_bool(verified: Optional[str]) -> Optional[bool]:
 
 def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
-        "proposal_sent": "proposal-sent",
-        "proposal_received": "proposal-received",
-        "request_sent": "request-sent",
-        "request_received": "request-received",
-        "presentation_sent": "presentation-sent",
-        "presentation_received": "presentation-received",
-        "verified": "done",
+        "abandoned": "abandoned",
         "done": "done",
         "presentation_acked": "done",
-        "abandoned": "abandoned",
+        "presentation_received": "presentation-received",
+        "presentation_sent": "presentation-sent",
+        "proposal_received": "proposal-received",
+        "proposal_sent": "proposal-sent",
+        "request_received": "request-received",
+        "request_sent": "request-sent",
+        "verified": "done",
     }
 
     if not state or not state in translation_dict:
@@ -99,18 +99,18 @@ def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 
 
 class Endorsement(BaseModel):
-    transaction_id: str
     state: Literal[
-        "transaction-created",
-        "request-sent",
         "request-received",
+        "request-sent",
+        "transaction-acked",
+        "transaction-cancelled",
+        "transaction-created",
         "transaction-endorsed",
         "transaction-refused",
         "transaction-resent",
         "transaction-resent_received",
-        "transaction-cancelled",
-        "transaction-acked",
     ]
+    transaction_id: str
 
 
 class ServiceDecorator(TypedDict):
@@ -120,8 +120,16 @@ class ServiceDecorator(TypedDict):
 
 
 class Oob(BaseModel):
-    role: Optional[Literal["sender", "receiver"]] = None
+    attach_thread_id: Optional[str] = None
+    connection_id: Optional[str] = None
+    created_at: Optional[str] = None
     invi_msg_id: Optional[str] = None
+    invitation: InvitationMessage = None
+    multi_use: Optional[bool] = False
+    oob_id: Optional[str] = None
+    our_recipient_key: Optional[str] = None
+    our_recipient_key: Optional[str] = None
+    role: Optional[Literal["sender", "receiver"]] = None
     state: Optional[
         Literal[
             "initial",
@@ -133,23 +141,20 @@ class Oob(BaseModel):
         ]
     ] = None
     trace: Optional[bool] = None
-    our_recipient_key: Optional[str] = None
-    oob_id: Optional[str] = None
-    invitation: InvitationMessage = None
-    created_at: Optional[str] = None
-    connection_id: Optional[str] = None
     updated_at: Optional[str] = None
-    attach_thread_id: Optional[str] = None
-    multi_use: Optional[bool] = False
-    our_recipient_key: Optional[str] = None
 
 
 # TODO: Import this from aca-py instead of typing this here
 # when aca-py version is >=0.7.5
 class OobRecord(BaseModel):
+    attach_thread_id: Optional[str] = None
+    connection_id: Optional[str] = None
+    created_at: Optional[str] = None
     invi_msg_id: Optional[str]
     invitation: Optional[InvitationMessage] = None
     oob_id: Optional[str] = None
+    our_recipient_key: Optional[str] = None
+    role: Optional[Literal["sender", "receiver"]] = None
     state: Optional[
         Literal[
             "initial",
@@ -160,43 +165,41 @@ class OobRecord(BaseModel):
             "done",
         ]
     ] = None
-    attach_thread_id: Optional[str] = None
-    connection_id: Optional[str] = None
-    created_at: Optional[str] = None
-    our_recipient_key: Optional[str] = None
-    role: Optional[Literal["sender", "receiver"]] = None
     their_service: Optional[ServiceDecorator] = None
     trace: Optional[bool] = None
     updated_at: Optional[str] = None
 
 
 class Connection(BaseModel):
+    alias: Optional[str] = None
     connection_id: Optional[str] = None
     connection_protocol: Optional[Literal["connections/1.0", "didexchange/1.0"]] = None
     created_at: Optional[str] = None
+    error_msg: Optional[str] = None
+    invitation_key: Optional[str] = None
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
-    their_role: Optional[Literal["invitee", "requester", "inviter", "responder"]] = None
-    state: Optional[str] = None  # did-exchange state
+    invitation_msg_id: Optional[str] = None
     my_did: Optional[str]
-    alias: Optional[str] = None
+    state: Optional[str] = None  # did-exchange state
     their_did: Optional[str] = None
     their_label: Optional[str] = None
     their_public_did: Optional[str] = None
+    their_role: Optional[Literal["invitee", "requester", "inviter", "responder"]] = None
     updated_at: Optional[str] = None
-    error_msg: Optional[str] = None
-    invitation_key: Optional[str] = None
-    invitation_msg_id: Optional[str] = None
 
 
 class CredentialExchange(BaseModel):
-    credential_id: str
-    role: Literal["issuer", "holder"]
+    # Attributes can be None in proposed state
+    attributes: Optional[Dict[str, str]] = None
+    # Connection id can be None in connectionless exchanges
+    connection_id: Optional[str] = None
     created_at: str
-    updated_at: str
-    protocol_version: IssueCredentialProtocolVersion
-    schema_id: Optional[str]
     credential_definition_id: Optional[str]
+    credential_id: str
     error_msg: Optional[str] = None
+    protocol_version: IssueCredentialProtocolVersion
+    role: Literal["issuer", "holder"]
+    schema_id: Optional[str]
     state: Optional[
         Literal[
             "proposal-sent",
@@ -210,19 +213,18 @@ class CredentialExchange(BaseModel):
             "done",
         ]
     ] = None
-    # Attributes can be None in proposed state
-    attributes: Optional[Dict[str, str]] = None
-    # Connetion id can be None in connectionless exchanges
-    connection_id: Optional[str] = None
+    thread_id: Optional[str] = None
+    updated_at: str
 
 
 class PresentationExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str
-    proof_id: str
     error_msg: Optional[str] = None
+    parent_thread_id: Optional[str] = None
     presentation: Optional[IndyProof] = None
     presentation_request: Optional[IndyProofRequest] = None
+    proof_id: str
     protocol_version: PresentProofProtocolVersion
     role: Literal["prover", "verifier"]
     state: Optional[
@@ -237,6 +239,7 @@ class PresentationExchange(BaseModel):
             "abandoned",
         ]
     ] = None
+    thread_id: Optional[str] = None
     updated_at: Optional[str] = None
     verified: Optional[bool] = None
 
@@ -275,7 +278,7 @@ def presentation_record_to_model(
             connection_id=record.connection_id,
             created_at=record.created_at,
             error_msg=record.error_msg,
-            protocol_version=PresentProofProtocolVersion.v2.value,
+            parent_thread_id=record.pres_request.id if record.pres_request else None,
             presentation=IndyProof(**record.by_format.pres["indy"])
             if record.by_format.pres
             else None,
@@ -283,8 +286,10 @@ def presentation_record_to_model(
                 **record.by_format.pres_request["indy"]
             ),
             proof_id="v2-" + str(record.pres_ex_id),
+            protocol_version=PresentProofProtocolVersion.v2.value,
             role=record.role,
             state=record.state,
+            thread_id=record.thread_id,
             updated_at=record.updated_at,
             verified=string_to_bool(record.verified),
         )
@@ -293,12 +298,16 @@ def presentation_record_to_model(
             connection_id=record.connection_id,
             created_at=record.created_at,
             error_msg=record.error_msg,
+            parent_thread_id=record.presentation_request_dict.id
+            if record.presentation_request_dict
+            else None,
             presentation=record.presentation,
             presentation_request=record.presentation_request,
-            protocol_version=PresentProofProtocolVersion.v1.value,
             proof_id="v1-" + str(record.presentation_exchange_id),
+            protocol_version=PresentProofProtocolVersion.v1.value,
             role=record.role,
             state=v1_presentation_state_to_rfc_state(record.state),
+            thread_id=record.thread_id,
             updated_at=record.updated_at,
             verified=string_to_bool(record.verified),
         )
@@ -308,21 +317,21 @@ def presentation_record_to_model(
 
 def conn_record_to_connection(connection_record: ConnRecord):
     return Connection(
+        alias=connection_record.alias,
         connection_id=connection_record.connection_id,
         connection_protocol=connection_record.connection_protocol,
         created_at=connection_record.created_at,
+        error_msg=connection_record.error_msg,
+        invitation_key=connection_record.invitation_key,
         invitation_mode=connection_record.invitation_mode,
-        their_role=connection_record.their_role,
+        invitation_msg_id=connection_record.invitation_msg_id,
         my_did=connection_record.my_did,
         state=connection_record.rfc23_state,
-        alias=connection_record.alias,
         their_did=connection_record.their_did,
         their_label=connection_record.their_label,
         their_public_did=connection_record.their_public_did,
+        their_role=connection_record.their_role,
         updated_at=connection_record.updated_at,
-        error_msg=connection_record.error_msg,
-        invitation_key=connection_record.invitation_key,
-        invitation_msg_id=connection_record.invitation_msg_id,
     )
 
 
@@ -330,17 +339,18 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
     attributes = attributes_from_record_v1(record)
 
     return CredentialExchange(
-        credential_id=f"v1-{record.credential_exchange_id}",
-        role=record.role,
-        created_at=record.created_at,
-        updated_at=record.updated_at,
         attributes=attributes,
-        protocol_version=IssueCredentialProtocolVersion.v1,
-        error_msg=record.error_msg,
-        schema_id=record.schema_id,
-        credential_definition_id=record.credential_definition_id,
-        state=v1_credential_state_to_rfc_state(record.state),
         connection_id=record.connection_id,
+        created_at=record.created_at,
+        credential_definition_id=record.credential_definition_id,
+        credential_id=f"v1-{record.credential_exchange_id}",
+        error_msg=record.error_msg,
+        protocol_version=IssueCredentialProtocolVersion.v1,
+        role=record.role,
+        schema_id=record.schema_id,
+        state=v1_credential_state_to_rfc_state(record.state),
+        thread_id=record.thread_id,
+        updated_at=record.updated_at,
     )
 
 
@@ -360,17 +370,17 @@ def attributes_from_record_v1(
 
 def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
-        "proposal_sent": "proposal-sent",
-        "proposal_received": "proposal-received",
-        "offer_sent": "offer-sent",
-        "offer_received": "offer-received",
-        "request_sent": "request-sent",
-        "request_received": "request-received",
+        "abandoned": "abandoned",
+        "credential_acked": "done",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
-        "credential_acked": "done",
         "done": "done",
-        "abandoned": "abandoned",
+        "offer_received": "offer-received",
+        "offer_sent": "offer-sent",
+        "proposal_received": "proposal-received",
+        "proposal_sent": "proposal-sent",
+        "request_received": "request-received",
+        "request_sent": "request-sent",
     }
 
     if not state or state not in translation_dict:
@@ -384,17 +394,18 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
     schema_id, credential_definition_id = schema_cred_def_from_record(record)
 
     return CredentialExchange(
-        credential_id=f"v2-{record.cred_ex_id}",
-        role=record.role,
-        created_at=record.created_at,
-        updated_at=record.updated_at,
-        error_msg=record.error_msg,
         attributes=attributes,
-        protocol_version=IssueCredentialProtocolVersion.v2,
-        schema_id=schema_id,
-        credential_definition_id=credential_definition_id,
-        state=record.state,
         connection_id=record.connection_id,
+        created_at=record.created_at,
+        credential_definition_id=credential_definition_id,
+        credential_id=f"v2-{record.cred_ex_id}",
+        error_msg=record.error_msg,
+        protocol_version=IssueCredentialProtocolVersion.v2,
+        role=record.role,
+        schema_id=schema_id,
+        state=record.state,
+        thread_id=record.thread_id,
+        updated_at=record.updated_at,
     )
 
 

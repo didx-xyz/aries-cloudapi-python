@@ -9,13 +9,13 @@ from trustregistry.schemas import Actor
 router = APIRouter(prefix="/registry/actors", tags=["actor"])
 
 
-@router.get("/")
+@router.get("")
 async def get_actors(db: Session = Depends(get_db)):
     db_actors = crud.get_actors(db)
     return {"actors": db_actors}
 
 
-@router.post("/")
+@router.post("")
 async def register_actor(actor: Actor, db: Session = Depends(get_db)):
     created_actor = crud.create_actor(db, actor=actor)
     if created_actor is None:

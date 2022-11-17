@@ -1,30 +1,30 @@
 import pytest
 import mockito
 from app.tests.util.client_fixtures import (
-    tenant_admin_client,
-    tenant_admin_acapy_client,
     governance_acapy_client,
     governance_client,
+    tenant_admin_acapy_client,
+    tenant_admin_client,
 )
 from app.tests.util.member_personas import (
-    alice_member_client,
-    bob_and_alice_connection,
-    bob_multi_use_invitation,
+    alice_acapy_client,
     alice_bob_connect_multi,
+    alice_member_client,
+    alice_tenant,
+    bob_acapy_client,
+    bob_and_alice_connection,
     bob_and_alice_public_did,
     bob_member_client,
-    alice_acapy_client,
-    bob_acapy_client,
-    alice_tenant,
+    bob_multi_use_invitation,
 )
 from app.tests.util.ecosystem_personas import (
-    faber_client,
-    faber_and_alice_connection,
-    faber_acapy_client,
-    acme_client,
     acme_acapy_client,
     acme_and_alice_connection,
+    acme_client,
     acme_tenant,
+    faber_acapy_client,
+    faber_and_alice_connection,
+    faber_client,
 )
 from app.webhook_listener import Webhooks
 from tests.fixtures import mock_agent_controller

@@ -18,7 +18,7 @@ from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
-from app.generic.issuer.models import Credential
+from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.indy import did_from_credential_definition_id
 from shared_models import IssueCredentialProtocolVersion
 
@@ -36,11 +36,18 @@ class ProblemReportExplanation(TypedDict):
     description: str
 
 
-class SendCredential(BaseModel):
+class CredentialBase(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
-    connection_id: str
     credential_definition_id: str
     attributes: Dict[str, str]
+
+
+class SendCredential(CredentialBase):
+    connection_id: str
+
+
+class CreateOffer(CredentialBase):
+    pass
 
 
 def __issuer_from_id(id: str) -> Issuer:
@@ -145,6 +152,46 @@ async def send_credential(
     )
 
 
+@router.post("/credentials/create-offer")
+async def create_offer(
+    credential: CreateOffer,
+    aries_controller: AcaPyClient = Depends(agent_selector),
+):
+    """
+        Create a credential offer not bound to any connection.
+
+    Parameters:
+    ------------
+        credential: Credential
+            payload for sending a credential
+
+    Returns:
+    --------
+        The response object from sending a credential
+    """
+
+    issuer = __issuer_from_protocol_version(credential.protocol_version)
+
+    # Assert the agent has a public did
+    public_did = await assert_public_did(aries_controller)
+
+    # Retrieve the schema_id based on the credential definition id
+    schema_id = await schema_id_from_credential_definition_id(
+        aries_controller, credential.credential_definition_id
+    )
+
+    # Make sure we are allowed to issue according to trust registry rules
+    await assert_valid_issuer(public_did, schema_id)
+
+    return await issuer.create_offer(
+        controller=aries_controller,
+        credential=CredentialNoConnection(
+            attributes=credential.attributes,
+            cred_def_id=credential.credential_definition_id,
+        ),
+    )
+
+
 @router.delete("/credentials/{credential_id}", status_code=204)
 async def remove_credential(
     credential_id: str,
@@ -190,7 +237,7 @@ async def request_credential(
     if not record.credential_definition_id or not record.schema_id:
         raise CloudApiException(
             "Record has no credential definition or schema associated. "
-            "This proably means you haven't received an offer yet.",
+            "This probably means you haven't received an offer yet.",
             403,
         )
 

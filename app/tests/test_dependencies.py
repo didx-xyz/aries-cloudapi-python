@@ -118,7 +118,7 @@ async def test_web_tenant():
         nonlocal injected_controller
         injected_controller = aries_controller
 
-    @router.get("/")
+    @router.get("")
     async def call(
         aries_controller: AcaPyClient = Depends(dependencies.agent_selector),
     ):

@@ -1,17 +1,20 @@
 import logging
 from secrets import token_urlsafe
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
+import base58
 from aries_cloudcontroller import (
     AcaPyClient,
     CreateWalletRequest,
     CreateWalletTokenRequest,
     RemoveWalletRequest,
     UpdateWalletRequest,
+    WalletRecord,
 )
-import base58
 from fastapi import APIRouter, Depends
+from httpx import AsyncClient, AsyncHTTPTransport
+from pydantic import BaseModel
 
 from app.admin.tenants.models import (
     CreateTenantRequest,
@@ -21,10 +24,8 @@ from app.admin.tenants.models import (
     UpdateTenantRequest,
     tenant_from_wallet_record,
 )
-from app.admin.tenants.onboarding import (
-    handle_tenant_update,
-    onboard_tenant,
-)
+from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
+from app.constants import MULTITENANT_AGENT_URL
 from app.dependencies import AcaPyAuth, Role, acapy_auth, agent_role
 from app.error import CloudApiException
 from app.facades.trust_registry import (
@@ -33,12 +34,25 @@ from app.facades.trust_registry import (
     register_actor,
     remove_actor_by_id,
 )
+from app.tests.util.constants import TENANT_ACAPY_API_KEY
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 
 multitenant_admin = agent_role(Role.TENANT_ADMIN)
+
+
+class CreateWalletRequestWithGroups(CreateWalletRequest):
+    group_id: Optional[str] = None
+
+
+class WalletRecordWithGroups(WalletRecord):
+    group_id: Optional[str] = None
+
+
+class WalletListWithGroups(BaseModel):
+    results: Optional[List[WalletRecordWithGroups]] = None
 
 
 def tenant_api_key(role: Role, tenant_token: str):
@@ -65,13 +79,14 @@ async def create_tenant(
         )
 
     wallet_response = await aries_controller.multitenancy.create_wallet(
-        body=CreateWalletRequest(
+        body=CreateWalletRequestWithGroups(
             image_url=body.image_url,
             key_management_mode="managed",
             label=body.name,
             wallet_key=base58.b58encode(token_urlsafe(48)),
             wallet_name=uuid4().hex,
             wallet_type="askar",
+            group_id=body.group_id,
         )
     )
 
@@ -100,6 +115,7 @@ async def create_tenant(
         updated_at=wallet_response.updated_at,
         tenant_name=body.name,
         access_token=tenant_api_key(auth.role, wallet_response.token),
+        group_id=body.group_id,
     )
 
 
@@ -164,23 +180,6 @@ async def update_tenant(
     return tenant_from_wallet_record(wallet)
 
 
-@router.get("", response_model=List[Tenant])
-async def get_tenants(
-    aries_controller: AcaPyClient = Depends(multitenant_admin),
-) -> List[Tenant]:
-
-    """Get tenants."""
-    wallets = await aries_controller.multitenancy.get_wallets()
-
-    if not wallets.results:
-        return []
-
-    # Only return wallet with current authentication role.
-    return [
-        tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
-    ]
-
-
 @router.get("/{tenant_id}", response_model=Tenant)
 async def get_tenant(
     tenant_id: str, aries_controller: AcaPyClient = Depends(multitenant_admin)
@@ -189,3 +188,47 @@ async def get_tenant(
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
     return tenant_from_wallet_record(wallet)
+
+
+@router.get("", response_model=List[Tenant])
+async def get_tenants(
+    group_id: str = None, aries_controller: AcaPyClient = Depends(multitenant_admin)
+) -> List[Tenant]:
+    """Get tenants (by group id.)"""
+    if not group_id:
+        wallets = await aries_controller.multitenancy.get_wallets()
+
+        if not wallets.results:
+            return []
+
+        # Only return wallet with current authentication role.
+        return [
+            tenant_from_wallet_record(wallet_record)
+            for wallet_record in wallets.results
+        ]
+
+    # NOTE: The group id is provided via a plugin so the
+    # controller doesn't have the api for that implement.
+    # Using http call instead via asyncClient
+    governance_client = AsyncClient(
+        base_url=MULTITENANT_AGENT_URL,
+        timeout=120.0,
+        headers={
+            "x-api-key": f"{TENANT_ACAPY_API_KEY}",
+            "content-type": "application/json",
+        },
+        transport=AsyncHTTPTransport(retries=3),
+    )
+
+    wallets = (
+        await governance_client.get(f"/multitenancy/wallets?group_id={group_id}")
+    ).json()
+
+    if not wallets["results"] or len(wallets["results"]) == 0:
+        return []
+
+    wallets = WalletListWithGroups(results=wallets["results"])
+
+    return [
+        tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
+    ]

@@ -54,10 +54,10 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
-    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+    alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
 
     requested_credentials = await alice_member_client.get(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
@@ -93,14 +93,14 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
 
     assert check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
 
     result = response.json()
@@ -131,7 +131,7 @@ async def test_accept_proof_request_oob_v1(
     response.raise_for_status()
     bob_exchange = response.json()
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"][3:]
+    bob_exchange["proof_id"] = bob_exchange["proof_id"]
 
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation",
@@ -159,7 +159,7 @@ async def test_accept_proof_request_oob_v1(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[0]["proof_id"]
@@ -168,7 +168,7 @@ async def test_accept_proof_request_oob_v1(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
@@ -190,13 +190,13 @@ async def test_accept_proof_request_oob_v1(
         client=alice_member_client,
         filter_map={"state": "presentation-sent", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "done", "role": "verifier", "connection_id": None},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
 
 
@@ -221,7 +221,7 @@ async def test_accept_proof_request_oob_v2(
     response.raise_for_status()
     bob_exchange = response.json()
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"][3:]
+    bob_exchange["proof_id"] = bob_exchange["proof_id"]
 
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation",
@@ -249,16 +249,16 @@ async def test_accept_proof_request_oob_v2(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
-    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+    alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
 
     requested_credentials = await alice_member_client.get(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
@@ -280,13 +280,13 @@ async def test_accept_proof_request_oob_v2(
         client=alice_member_client,
         filter_map={"state": "presentation-sent", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "done", "role": "verifier", "connection_id": None},
         topic="proofs",
-        max_duration=120,
+        max_duration=240,
     )
 
 

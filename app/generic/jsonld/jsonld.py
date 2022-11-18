@@ -57,20 +57,19 @@ async def sign_jsonld(
             if body.pub_did:
                 pub_did = body.pub_did
             else:
-                pub_did = await aries_controller.wallet.get_public_did()
+                pub_did = (await aries_controller.wallet.get_public_did()).result.did
 
-        verkey = await aries_controller.ledger.get_did_verkey(did=pub_did.result.did)
+        verkey = await aries_controller.ledger.get_did_verkey(did=pub_did)
         credential = await aries_controller.credentials.get_record(
             credential_id=body.credential_id
         )
 
-        signed_jsonld_structure = await aries_controller.jsonld.sign(
+        return await aries_controller.jsonld.sign(
             body=SignRequest(
                 doc=Doc(credential=credential.dict(), options=body.signature_options),
                 verkey=verkey,
             )
         )
-        return signed_jsonld_structure
     except ClientResponseError as e:
         raise CloudApiException(f"Failed to sign payload. {e!r}") from e
 
@@ -97,10 +96,8 @@ async def verify_jsonld(
         else:
             their_verkey = body.verkey
 
-        verified_jsonld_structure = await aries_controller.jsonld.verify(
+        return await aries_controller.jsonld.verify(
             body=VerifyRequest(doc=body.signed_doc, verkey=their_verkey)
         )
-
-        return verified_jsonld_structure
     except ClientResponseError as e:
-        raise CloudApiException("Failed to sign payload.") from e
+        raise CloudApiException(f"Failed to sign payload. {e!r}") from e

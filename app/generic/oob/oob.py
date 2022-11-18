@@ -40,6 +40,13 @@ class AcceptOobInvitation(BaseModel):
     invitation: InvitationMessage
 
 
+def strip_protocol_prefix(id: str):
+    if id.startswith("v1-") or id.startswith("v2-"):
+        return id[3:]
+    else:
+        return id
+
+
 @router.post("/create-invitation", response_model=InvitationRecord)
 async def create_oob_invitation(
     body: CreateOobInvitation = CreateOobInvitation(),
@@ -61,6 +68,10 @@ async def create_oob_invitation(
             status_code=400,
             detail="Either or both of 'create_connection' and 'attachments' must be defined / true",
         )
+
+    if body.attachments:
+        for item in body.attachments:
+            item.id = strip_protocol_prefix(item.id)
 
     oob_body = InvitationCreateRequest(
         alias=body.alias,

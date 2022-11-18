@@ -162,7 +162,7 @@ async def test_actor_with_role():
 
     with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
         actors = [
-            {"id": "governance", "roles": ["issuer"]},
+            {"id": "governance", "roles": ["verifier"]},
             {"id": "governance2", "roles": ["verifier"]},
         ]
         mock_request.return_value.status_code = 428

@@ -202,15 +202,16 @@ class CredentialExchange(BaseModel):
     schema_id: Optional[str]
     state: Optional[
         Literal[
-            "proposal-sent",
-            "proposal-received",
-            "offer-sent",
-            "offer-received",
-            "request-sent",
-            "request-received",
+            "abandoned",
             "credential-issued",
             "credential-received",
             "done",
+            "offer-received",
+            "offer-sent",
+            "proposal-received",
+            "proposal-sent",
+            "request-received",
+            "request-sent",
         ]
     ] = None
     thread_id: Optional[str] = None
@@ -229,14 +230,14 @@ class PresentationExchange(BaseModel):
     role: Literal["prover", "verifier"]
     state: Optional[
         Literal[
-            "proposal-sent",
-            "proposal-received",
-            "request-sent",
-            "request-received",
-            "presentation-sent",
-            "presentation-received",
-            "done",
             "abandoned",
+            "done",
+            "presentation-received",
+            "presentation-sent",
+            "proposal-received",
+            "proposal-sent",
+            "request-received",
+            "request-sent",
         ]
     ] = None
     thread_id: Optional[str] = None

@@ -15,7 +15,7 @@ from app.generic.connections.connections import (
     CreateInvitation,
 )
 
-from app.tests.util.tenants import create_issuer_tenant, delete_tenant
+from app.tests.util.tenants import create_issuer_tenant, create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 
 
@@ -42,7 +42,7 @@ async def bob_member_client():
 @pytest.fixture(scope="module")
 async def alice_tenant():
     async with tenant_admin_client() as client:
-        tenant = await create_issuer_tenant(client, "alice")
+        tenant = await create_tenant(client, "alice")
 
         yield tenant
 

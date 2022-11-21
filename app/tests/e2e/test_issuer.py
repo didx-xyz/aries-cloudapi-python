@@ -476,10 +476,10 @@ async def test_revoke_credential(
     record_as_issuer_for_alice = [
         rec
         for rec in records
-        if (rec["role"] == "issuer" and rec["state"] == "credential-issued")
+        if (rec["role"] == "issuer" and rec["state"] == "credential-issued" and rec['connection_id'] == faber_and_alice_connection["faber_connection_id"])
     ]
 
-    record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[0]
+    record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
     response = await faber_client.post(

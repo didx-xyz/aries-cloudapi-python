@@ -1,4 +1,3 @@
-
 from trustregistry.tests import test_main
 from trustregistry.registry.registry_schemas import _get_schema_attrs, SchemaID
 

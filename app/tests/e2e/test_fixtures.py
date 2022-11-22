@@ -149,4 +149,7 @@ async def issue_credential_to_alice(
     await wait_for_event(
         filter_map={"credential_id": alice_credential_id, "state": "done"}
     )
+
+    # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
+
     return response.json()

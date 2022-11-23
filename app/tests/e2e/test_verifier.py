@@ -18,6 +18,8 @@ from app.tests.verifier.test_verifier_utils import indy_proof_request
 from app.tests.e2e.test_fixtures import *
 from shared_models.shared_models import CredentialExchange, PresentationExchange  # NOQA
 
+import time
+
 BASE_PATH = "/generic/verifier"
 
 
@@ -182,6 +184,10 @@ async def test_accept_proof_request_oob_v1(
         topic="proofs",
         max_duration=240,
     )
+    
+    # Add sleep of 5 seconds to ensure state change of proof response
+    time.sleep(5)
+    
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "done", "role": "verifier", "connection_id": None},
@@ -272,6 +278,10 @@ async def test_accept_proof_request_oob_v2(
         topic="proofs",
         max_duration=240,
     )
+
+    # Add sleep of 5 seconds to ensure state change of proof response
+    time.sleep(5)
+    
     assert check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "done", "role": "verifier", "connection_id": None},

@@ -211,15 +211,15 @@ class CredentialExchange(BaseModel):
     state: Optional[
         Literal[
             "abandoned",
-            "proposal-sent",
-            "proposal-received",
-            "offer-sent",
-            "offer-received",
-            "request-sent",
-            "request-received",
             "credential-issued",
             "credential-received",
             "done",
+            "offer-received",
+            "offer-sent",
+            "proposal-received",
+            "proposal-sent",
+            "request-received",
+            "request-sent",
         ]
     ] = None
     # Attributes can be None in proposed state

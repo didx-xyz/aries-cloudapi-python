@@ -1,3 +1,4 @@
+from time import sleep
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
@@ -343,6 +344,7 @@ async def test_store_credential(
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
+    sleep(5)
     credential = {
         "protocol_version": "v1",
         "credential_definition_id": credential_definition_id,

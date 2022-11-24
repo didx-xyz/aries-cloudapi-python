@@ -9,4 +9,3 @@ PyYAML==5.4.1
 base58~=2.1.0
 fastapi_websocket_pubsub~=0.1.21
 pyjwt~=2.4.0
-uplink~=0.9.4

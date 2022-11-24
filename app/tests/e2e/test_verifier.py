@@ -160,7 +160,7 @@ async def test_accept_proof_request_oob_v1(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )

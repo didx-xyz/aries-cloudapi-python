@@ -8,11 +8,17 @@ from aries_cloudcontroller import (
     SignRequest,
     SignResponse,
     SignatureOptions,
-    VerifyRequest,
     VerifyResponse,
 )
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from uplink import (
+    Consumer,
+    Body,
+    post,
+    returns,
+    json,
+)
 
 from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException
@@ -31,8 +37,8 @@ class JsonLdSignRequest(BaseModel):
 
 
 class JsonLdVerifyRequest(BaseModel):
-    signed_doc: Dict[str, Any]
-    their_pub_did: Optional[str] = None
+    doc: Dict[str, Any]
+    public_did: Optional[str] = None
     verkey: Optional[str] = None
 
 
@@ -85,7 +91,24 @@ async def sign_jsonld(
         raise CloudApiException(f"Failed to sign payload. {e['message']}")
 
 
-@router.post("/verify", response_model=VerifyResponse)
+# Custom Override api endpoint that is incorrect in aca-py
+class JsonldApi(Consumer):
+    async def verify(
+        self, *, body: Optional[JsonLdVerifyRequest] = None
+    ) -> VerifyResponse:
+        """Verify a JSON-LD structure."""
+        return await self.__verify(
+            body=body,
+        )
+
+    @returns.json
+    @json
+    @post("/jsonld/verify")
+    def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
+        """Internal uplink method for verify"""
+
+
+@router.post("/verify", status_code=204)
 async def verify_jsonld(
     body: JsonLdVerifyRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -94,28 +117,30 @@ async def verify_jsonld(
     Verify a JSON-LD structure
     """
 
-    if not (bool(body.their_pub_did) != bool(body.verkey)):
+    if not (bool(body.public_did) != bool(body.verkey)):
         raise CloudApiException(
             "Please provide either, but not both, public did of the verkey or the verkey for the document.",
             418,
         )
     try:
         if not body.verkey:
-            their_verkey = (
-                await aries_controller.ledger.get_did_verkey(did=body.their_pub_did)
+            verkey = (
+                await aries_controller.ledger.get_did_verkey(did=body.public_did)
             ).verkey
         else:
-            their_verkey = body.verkey
+            verkey = body.verkey
 
-        # TODO: fixme below
-        # FIXME: Aca-py returns not enough values to unpack (expected 1, got 0) even for a presumably valid jsonld
-        # Example taken from aca-py aries_cloudagent/messaging/jsonld/tests/test_routes.py mock_sign_request() and request_body()
-        # When this is fixed it should return something like 204 None for valid or raise an error otherwise.
-        return await aries_controller.jsonld.verify(
-            body=VerifyRequest(
-                doc=body.signed_doc,
-                verkey=their_verkey,
-            )
+        # NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
+        # Hence, override it here
+        aries_controller.jsonld = JsonldApi(
+            base_url=aries_controller.base_url, client=aries_controller.client
         )
+        jsonld_verify_response = await aries_controller.jsonld.verify(
+            body=JsonLdVerifyRequest(doc=body.doc, verkey=verkey)
+        )
+        if not jsonld_verify_response.valid:
+            raise CloudApiException(
+                f"Failed to verify payload with: {jsonld_verify_response.error}", 422
+            )
     except ClientResponseError as e:
-        raise CloudApiException(f"Failed to verify payload. {e['message']}")
+        raise CloudApiException(f"Failed to verify payload. {e.message}")

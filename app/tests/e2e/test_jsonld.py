@@ -1,4 +1,4 @@
-from aries_cloudcontroller import AcaPyClient, SignatureOptions, SignedDoc
+from aries_cloudcontroller import AcaPyClient, SignatureOptions
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
@@ -6,14 +6,42 @@ from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.e2e.test_fixtures import *
 from app.tests.e2e.test_fixtures import FaberAliceConnect, BASE_PATH
 
-# from shared_models.shared_models import CredentialExchange
-
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
     "@id": "http://dbpedia.org/resource/John_Lennon",
     "name": "John Lennon",
     "born": "1940-10-09",
     "spouse": "http://dbpedia.org/resource/Cynthia_Lennon",
+}
+
+signed_doc = {
+    "doc": {
+        "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://www.w3.org/2018/credentials/examples/v1",
+        ],
+        "id": "http://example.edu/credentials/1872",
+        "type": ["VerifiableCredential", "AlumniCredential"],
+        "issuanceDate": "2010-01-01T19:23:24Z",
+        "credentialSubject": {
+            "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
+            "alumniOf": {
+                "id": "did:example:c276e12ec21ebfeb1f712ebc6f1",
+                "name": [
+                    {"value": "Example University", "lang": "en"},
+                    {"value": "Exemple d'Université", "lang": "fr"},
+                ],
+            },
+        },
+        "proof": {
+            "type": "Ed25519Signature2018",
+            "verificationMethod": "did:key:did:key:z6Mkq8pevWDaxgsD2DZC11JUnnjGdrLmHSh9P7waX3HR4Zwz#did:key:z6Mkq8pevWDaxgsD2DZC11JUnnjGdrLmHSh9P7waX3HR4Zwz",
+            "proofPurpose": "assertionMethod",
+            "created": "2022-11-24T08:20:11Z",
+            "jws": "eyJhbGciOiAiRWREU0EiLCAiYjY0IjogZmFsc2UsICJjcml0IjogWyJiNjQiXX0..Rdpq5uOCJInEMD-5G7mXalu0NiJHSgIfE5ISE7Ed451wJmkpFHR50K9Sb3nEo0P8wpXzrUQRCETqImTvqsZNDA",
+        },
+    },
+    "verkey": "BgZcLFy9d9NjuiiVKSLdwhBGpH4usZSnh72egmKQ9MAc",
 }
 
 
@@ -101,16 +129,13 @@ async def test_verify_jsonld(
     alice_member_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
     faber_client: AsyncClient,
-    issue_credential_to_alice: CredentialExchange,
 ):
     jsonld_verify = JsonLdVerifyRequest(
-        their_pub_did="abcde",
-        verkey="verkey",
-        signed_doc=SignedDoc(
-            proof=SignatureOptions(proof_purpose="test", verification_method="ed25519")
-        ).dict(),
+        public_did="abcde",
+        verkey=signed_doc["verkey"],
+        doc=signed_doc["doc"],
     )
-    # Error
+    # Error wrong args
     response = await alice_member_client.post(
         "/generic/jsonld/verify", json=jsonld_verify.dict()
     )
@@ -118,60 +143,23 @@ async def test_verify_jsonld(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
     )
     assert_that(response.status_code).is_equal_to(418)
-    json_ld_req = JsonLdSignRequest(
-        verkey="abcde",
-        pub_did="abcde",
-        credential_id=issue_credential_to_alice["credential_id"][3:],
-        signature_options=SignatureOptions(
-            proof_purpose="test", verification_method="ed25519"
-        ).dict(),
-    )
-    # Success pub_did
-    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-    json_ld_req.pub_did = faber_pub_did
-    json_ld_req.credential = jsonld_credential
-    json_ld_req.credential_id = None
-    json_ld_req.verkey = None
-    jsonld_sign_response = await faber_client.post(
-        "/generic/jsonld/sign", json=json_ld_req.dict()
-    )
-    assert_that(jsonld_sign_response.status_code).is_equal_to(200)
-    jsonld_sign_response = jsonld_sign_response.json()
-    assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
 
-    jsonld_verify.signed_doc = jsonld_sign_response["signed_doc"]
+    # # Error invalid
     jsonld_verify.verkey = None
-    jsonld_verify.their_pub_did = faber_pub_did
+    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
+    jsonld_verify.public_did = faber_pub_did
+    response = await faber_client.post(
+        "/generic/jsonld/verify", json=jsonld_verify.dict()
+    )
+
+    assert_that(response.status_code).is_equal_to(422)
+    assert_that(response.json()["detail"]).contains("Failed to verify payload with:")
+
+    # Success
+    jsonld_verify.public_did = None
+    jsonld_verify.verkey = signed_doc["verkey"]
 
     response = await alice_member_client.post(
         "/generic/jsonld/verify", json=jsonld_verify.dict()
     )
-    assert_that(response.status_code).is_equal_to(200)
-    # FIXME: Aca-py returns not enough values to unpack (expected 1, got 0) even for a presumably valid jsonld
-    # Example taken from aca-py aries_cloudagent/messaging/jsonld/tests/test_routes.py mock_sign_request() and request_body()
-    assert_that(response.json()["valid"]).is_equal_to(False)
-    assert_that(response.json()["error"]).is_equal_to(
-        "not enough values to unpack (expected 1, got 0)"
-    )
-
-    # Success verkey
-    faber_verkey = (
-        await faber_acapy_client.ledger.get_did_verkey(did=faber_pub_did)
-    ).verkey
-    jsonld_verify.verkey = faber_verkey
-    jsonld_verify.their_pub_did = None
-
-    response = await alice_member_client.post(
-        "/generic/jsonld/verify", json=jsonld_verify.dict()
-    )
-    assert_that(response.status_code).is_equal_to(200)
-    # FIXME: Aca-py returns not enough values to unpack (expected 1, got 0) even for a presumably valid jsonld
-    # Example taken from aca-py aries_cloudagent/messaging/jsonld/tests/test_routes.py mock_sign_request() and request_body()
-    assert_that(response.json()["valid"]).is_equal_to(False)
-    assert_that(response.json()["error"]).is_equal_to(
-        "not enough values to unpack (expected 1, got 0)"
-    )
+    assert_that(response.status_code).is_equal_to(204)

@@ -384,7 +384,7 @@ async def test_store_credential(
         client=alice_member_client, topic="credentials"
     )
 
-    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][-1]
+    cred_hook = [h for h in cred_hooks if h["payload"]["state"] == "offer-received"][0]
     credential_id = cred_hook["payload"]["credential_id"]
 
     # alice send request for that credential

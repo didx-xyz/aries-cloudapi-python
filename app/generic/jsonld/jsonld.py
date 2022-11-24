@@ -91,23 +91,6 @@ async def sign_jsonld(
         raise CloudApiException(f"Failed to sign payload. {e['message']}")
 
 
-# Custom Override api endpoint that is incorrect in aca-py
-class JsonldApi(Consumer):
-    async def verify(
-        self, *, body: Optional[JsonLdVerifyRequest] = None
-    ) -> VerifyResponse:
-        """Verify a JSON-LD structure."""
-        return await self.__verify(
-            body=body,
-        )
-
-    @returns.json
-    @json
-    @post("/jsonld/verify")
-    def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
-        """Internal uplink method for verify"""
-
-
 @router.post("/verify", status_code=204)
 async def verify_jsonld(
     body: JsonLdVerifyRequest,
@@ -132,6 +115,22 @@ async def verify_jsonld(
 
         # NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
         # Hence, override it here
+        # Custom Override api endpoint that is incorrect in aca-py
+        class JsonldApi(Consumer):
+            async def verify(
+                self, *, body: Optional[JsonLdVerifyRequest] = None
+            ) -> VerifyResponse:
+                """Verify a JSON-LD structure."""
+                return await self.__verify(
+                    body=body,
+                )
+
+            @returns.json
+            @json
+            @post("/jsonld/verify")
+            def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
+                """Internal uplink method for verify"""
+
         aries_controller.jsonld = JsonldApi(
             base_url=aries_controller.base_url, client=aries_controller.client
         )

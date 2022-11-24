@@ -65,10 +65,18 @@ async def test_accept_proof_request_v1(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    assert check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=120,
+    )
+
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
+
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
         presentation_spec=IndyPresSpec(
@@ -82,12 +90,14 @@ async def test_accept_proof_request_v1(
         BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
+
     assert check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
         max_duration=240,
     )
+
     assert check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
@@ -341,7 +351,7 @@ async def test_accept_proof_request_v2(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
@@ -659,11 +669,11 @@ async def test_get_credentials_for_request(
         f"{BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
-    result = response.json()[0]
+    result = response.json()[-1]
     assert "cred_info" in result.keys()
     assert [
         attr
-        in ["attrs", "cred_def_info", "referant", "interval", "presentation_referents"]
+        in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
         for attr in result["cred_info"].keys()
     ]
 
@@ -694,10 +704,10 @@ async def test_get_credentials_for_request(
         f"{BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
-    result = response.json()[0]
+    result = response.json()[-1]
     assert "cred_info" in result.keys()
     assert [
         attr
-        in ["attrs", "cred_def_info", "referant", "interval", "presentation_referents"]
+        in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
         for attr in result["cred_info"].keys()
     ]

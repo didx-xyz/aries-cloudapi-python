@@ -1,6 +1,7 @@
 import logging
 from enum import Enum
 from typing import Dict, Optional
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Query
@@ -142,14 +143,19 @@ async def send_credential(
     # Make sure we are allowed to issue according to trust registry rules
     await assert_valid_issuer(public_did, schema_id)
 
-    return await issuer.send_credential(
-        controller=aries_controller,
-        credential=Credential(
-            attributes=credential.attributes,
-            cred_def_id=credential.credential_definition_id,
-            connection_id=credential.connection_id,
-        ),
-    )
+    try:
+        return await issuer.send_credential(
+            controller=aries_controller,
+            credential=Credential(
+                attributes=credential.attributes,
+                cred_def_id=credential.credential_definition_id,
+                connection_id=credential.connection_id,
+            ),
+        )
+    except ClientResponseError as e:
+        raise CloudApiException(
+            f"Failed to create and send credential: {e.message}", 500
+        )
 
 
 @router.post("/credentials/create-offer")

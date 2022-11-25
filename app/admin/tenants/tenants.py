@@ -16,6 +16,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from uplink import (
     Consumer,
+    Query,
     get,
     returns,
 )
@@ -198,6 +199,29 @@ async def get_tenants(
     group_id: str = None, aries_controller: AcaPyClient = Depends(multitenant_admin)
 ) -> List[Tenant]:
     """Get tenants (by group id.)"""
+
+    # NOTE: Since this is using the groups plugin we need to override the
+    # controller to be aware of this
+    class MultitenancyApi(Consumer):
+        async def get_wallets(
+            self, *, group_id: Optional[str] = None, wallet_name: Optional[str] = None
+        ) -> WalletListWithGroups:
+            """Query subwallets"""
+            return await self.__get_wallets(
+                group_id=group_id,
+                wallet_name=wallet_name,
+            )
+
+        @returns.json
+        @get("/multitenancy/wallets")
+        def __get_wallets(
+            self, *, group_id: Query = None, wallet_name: Query = None
+        ) -> WalletListWithGroups:
+            """Internal uplink method for get_wallets"""
+
+    aries_controller.multitenancy = MultitenancyApi(
+        base_url=aries_controller.base_url, client=aries_controller.client
+    )
     if not group_id:
         wallets = await aries_controller.multitenancy.get_wallets()
 
@@ -209,24 +233,6 @@ async def get_tenants(
             tenant_from_wallet_record(wallet_record)
             for wallet_record in wallets.results
         ]
-
-    # NOTE: Since this is using the groups plugin we need to override the
-    # controller to be aware of this
-    class MultitenancyApi(Consumer):
-        async def get_wallets(self, *, group_id: str) -> WalletListWithGroups:
-            """Query subwallets"""
-            return await self.__get_wallets(
-                group_id=group_id,
-            )
-
-        @returns.json
-        @get("/multitenancy/wallets?group_id={group_id}")
-        def __get_wallets(self, *, group_id: str = None) -> WalletListWithGroups:
-            """Internal uplink method for get_wallets"""
-
-    aries_controller.multitenancy = MultitenancyApi(
-        base_url=aries_controller.base_url, client=aries_controller.client
-    )
 
     wallets = await aries_controller.multitenancy.get_wallets(group_id=group_id)
 

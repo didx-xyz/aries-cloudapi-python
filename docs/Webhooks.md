@@ -89,8 +89,6 @@ How this works is that either procedure instantiates a client connecting to the 
 Here's a simple example in javascript using a single dependency (`ws`):
 
 ```javascript
-Object.assign(global, { WebSocket: require("ws") });
-
 const WebSocket = require("ws");
 
 const ws = new WebSocket("ws://127.0.0.1:3010/pubsub");
@@ -112,6 +110,6 @@ ws.on("message", (data) => {
 In order to use this:
 
 - Install `ws` dependency with
-  - `npm i ws` OR `yarn add ws` (you can add the --save-dev or -D flags to not install globally)
+  - `npm i ws` OR `yarn add ws` (you can add the `--save-dev` or `-D` flags to install as dev dependencies, or `-g` and `global` respectively to install globally)
 - Save the script above to a file (eg wslisten.js)
 - Run the script with node `node wslisten.js`

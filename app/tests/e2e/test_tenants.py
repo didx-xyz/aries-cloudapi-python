@@ -359,6 +359,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
             "image_url": "https://image.ca",
             "name": name,
             "roles": ["verifier"],
+            "group_id": "ac/dc",
         },
     )
 
@@ -373,6 +374,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
 
     # Make sure created tenant is returned
     assert_that(tenants).extracting("tenant_id").contains(tenant_id)
+    assert_that(tenants).extracting("group_id").contains("ac/dc")
 
 
 @pytest.mark.asyncio

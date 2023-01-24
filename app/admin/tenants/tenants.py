@@ -13,8 +13,14 @@ from aries_cloudcontroller import (
     WalletRecord,
 )
 from fastapi import APIRouter, Depends
-from httpx import AsyncClient, AsyncHTTPTransport
 from pydantic import BaseModel
+from uplink import (
+    Consumer,
+    Query,
+    get,
+    returns,
+)
+
 
 from app.admin.tenants.models import (
     CreateTenantRequest,
@@ -25,7 +31,6 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
-from app.constants import MULTITENANT_AGENT_URL
 from app.dependencies import AcaPyAuth, Role, acapy_auth, agent_role
 from app.error import CloudApiException
 from app.facades.trust_registry import (
@@ -34,7 +39,6 @@ from app.facades.trust_registry import (
     register_actor,
     remove_actor_by_id,
 )
-from app.tests.util.constants import TENANT_ACAPY_API_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +199,29 @@ async def get_tenants(
     group_id: str = None, aries_controller: AcaPyClient = Depends(multitenant_admin)
 ) -> List[Tenant]:
     """Get tenants (by group id.)"""
+
+    # NOTE: Since this is using the groups plugin we need to override the
+    # controller to be aware of this
+    class MultitenancyApi(Consumer):
+        async def get_wallets(
+            self, *, group_id: Optional[str] = None, wallet_name: Optional[str] = None
+        ) -> WalletListWithGroups:
+            """Query subwallets"""
+            return await self.__get_wallets(
+                group_id=group_id,
+                wallet_name=wallet_name,
+            )
+
+        @returns.json
+        @get("/multitenancy/wallets")
+        def __get_wallets(
+            self, *, group_id: Query = None, wallet_name: Query = None
+        ) -> WalletListWithGroups:
+            """Internal uplink method for get_wallets"""
+
+    aries_controller.multitenancy = MultitenancyApi(
+        base_url=aries_controller.base_url, client=aries_controller.client
+    )
     if not group_id:
         wallets = await aries_controller.multitenancy.get_wallets()
 
@@ -207,27 +234,10 @@ async def get_tenants(
             for wallet_record in wallets.results
         ]
 
-    # NOTE: The group id is provided via a plugin so the
-    # controller doesn't have the api for that implement.
-    # Using http call instead via asyncClient
-    governance_client = AsyncClient(
-        base_url=MULTITENANT_AGENT_URL,
-        timeout=120.0,
-        headers={
-            "x-api-key": f"{TENANT_ACAPY_API_KEY}",
-            "content-type": "application/json",
-        },
-        transport=AsyncHTTPTransport(retries=3),
-    )
+    wallets = await aries_controller.multitenancy.get_wallets(group_id=group_id)
 
-    wallets = (
-        await governance_client.get(f"/multitenancy/wallets?group_id={group_id}")
-    ).json()
-
-    if not wallets["results"] or len(wallets["results"]) == 0:
+    if not wallets.results or len(wallets.results) == 0:
         return []
-
-    wallets = WalletListWithGroups(results=wallets["results"])
 
     return [
         tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results

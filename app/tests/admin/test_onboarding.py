@@ -71,6 +71,17 @@ async def test_onboard_issuer_public_did_exists(
             )
         )
     )
+
+    invitation_url = "https://invitation.com"
+
+    when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
+        get(
+            InvitationRecord(
+                invitation_url=invitation_url,
+            )
+        )
+    )
+
     onboard_result = await onboarding.onboard_issuer(
         name="issuer_name",
         endorser_controller=endorser_controller,
@@ -171,6 +182,16 @@ async def test_onboard_issuer_no_public_did(
     when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
         get()
     )
+    invitation_url = "https://invitation.com"
+
+    when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
+        get(
+            InvitationRecord(
+                invitation_url=invitation_url,
+            )
+        )
+    )
+
     onboard_result = await onboarding.onboard_issuer(
         name="issuer_name",
         endorser_controller=endorser_controller,

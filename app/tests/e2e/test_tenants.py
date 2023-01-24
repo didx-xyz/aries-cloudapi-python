@@ -316,7 +316,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(new_actor).has_did(f"{new_actor['did']}")
     assert_that(new_actor["roles"]).contains_only("issuer", "verifier")
 
-    assert new_actor["didcomm_invitation"] is None
+    assert new_actor["didcomm_invitation"] is not None
 
     # Tenant
     assert_that(new_tenant).has_tenant_id(wallet.wallet_id)

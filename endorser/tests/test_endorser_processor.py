@@ -6,7 +6,7 @@ import pytest
 from mockito import verify, when
 
 from endorser.constants import TRUST_REGISTRY_URL
-from ..endorser_processor import (
+from endorser.endorser_processor import (
     Event,
     accept_endorsement,
     get_endorsement_request_attachment,
@@ -17,7 +17,7 @@ from ..endorser_processor import (
     process_endorsement_event,
     should_accept_endorsement,
 )
-from .. import endorser_processor as test_module
+from endorser import endorser_processor as test_module
 from asynctest import MagicMock
 
 from tests.util.mock import get
@@ -326,7 +326,7 @@ async def test_process_endorsement_event():
         {
             "origin": "governance",
             "wallet_id": "admin",
-            "payload": {"transaction_id": "tran-id", "state": "request_received"},
+            "payload": {"transaction_id": "tran-id", "state": "request-received"},
         }
     )
 

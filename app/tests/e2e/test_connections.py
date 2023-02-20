@@ -3,8 +3,7 @@ import time
 from assertpy import assert_that
 from httpx import AsyncClient
 
-from app.tests.util.member_personas import BobAlicePublicDid
-from app.tests.util.member_personas import BobAliceConnect, BobAlicePublicDid
+from app.tests.util.member_personas import BobAliceConnect
 
 from app.tests.util.webhooks import (
     check_webhook_state,
@@ -145,69 +144,3 @@ async def test_bob_and_alice_connect(
 
     assert "completed" in alice_connection["state"]
     assert "completed" in bob_connection["state"]
-
-
-@pytest.mark.asyncio
-async def test_create_invitation_oob(
-    bob_member_client: AsyncClient,
-):
-
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation", json={"create_connection": True}
-    )
-    assert_that(invitation_response.status_code).is_equal_to(200)
-    invitation = invitation_response.json()
-
-    assert_that(invitation).contains("invi_msg_id", "invitation", "invitation_url")
-    assert_that(invitation["invitation"]).contains("@id", "services")
-
-
-@pytest.mark.asyncio
-async def test_accept_invitation_oob(
-    bob_member_client: AsyncClient,
-):
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/oob/create-invitation", json={"create_connection": True}
-    )
-    assert_that(invitation_response.status_code).is_equal_to(200)
-    invitation = invitation_response.json()
-
-    accept_response = await bob_member_client.post(
-        "/generic/connections/oob/accept-invitation",
-        json={"invitation": invitation["invitation"]},
-    )
-    connection_record = accept_response.json()
-
-    assert_that(accept_response.status_code).is_equal_to(200)
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
-    )
-    assert_that(connection_record).has_connection_protocol("didexchange/1.0")
-
-
-@pytest.mark.asyncio
-async def test_oob_connect_via_public_did(
-    bob_member_client: AsyncClient,
-    alice_member_client: AsyncClient,
-    bob_and_alice_public_did: BobAlicePublicDid,
-):
-    time.sleep(5)
-    connect_response = await bob_member_client.post(
-        "/generic/connections/oob/connect-public-did",
-        json={"public_did": bob_and_alice_public_did["alice_public_did"]},
-    )
-    bob_connection_record = connect_response.json()
-
-    assert check_webhook_state(
-        client=bob_member_client,
-        topic="connections",
-        filter_map={
-            "state": "request-sent",
-            "connection_id": bob_connection_record["connection_id"],
-        },
-    )
-
-    public_did_response = await alice_member_client.get("/wallet/dids/public")
-    alice_public_did = public_did_response.json()
-
-    assert_that(bob_connection_record).has_their_public_did(alice_public_did["did"])

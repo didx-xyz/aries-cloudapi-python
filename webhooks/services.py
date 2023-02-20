@@ -11,16 +11,17 @@ from models import (
     to_credential_hook_model,
     to_proof_hook_model,
     to_connections_model,
+    to_endorsement_model,
 )
 from shared_models import (
     TopicItem,
+    Oob,
     RedisItem,
     Connection,
     CredentialExchange,
     PresentationExchange,
     BasicMessage,
     PayloadType,
-    Endorsement,
 )
 
 log = logging.getLogger(__name__)
@@ -48,15 +49,15 @@ class Service:
         return to_connections_model(item=item)
 
     def _basic_messages(self, item: RedisItem) -> BasicMessage:
-        basic_message = BasicMessage(**item["payload"])
-
-        return basic_message
+        return BasicMessage(**item["payload"])
 
     def _endorsements(self, item: RedisItem):
-        endorsement = Endorsement(**item["payload"])
-        endorsement.state = endorsement.state.replace("_", "-")
+        return to_endorsement_model(item=item)
 
-        return endorsement
+    def _oob(self, item: RedisItem):
+        oob = Oob(**item["payload"])
+
+        return oob
 
     def _to_item(self, data: RedisItem):
         item = None
@@ -72,6 +73,8 @@ class Service:
             item = self._basic_messages(data)
         elif data["topic"] == "endorsements":
             item = self._endorsements(data)
+        elif data["topic"] == "oob":
+            item = self._oob(data)
 
         return item
 
@@ -89,7 +92,7 @@ class Service:
         await self._redis.sadd(topic, hook)
 
     async def transform_topic_entry(self, data: RedisItem):
-        """Transfroms an entry from the redis cache into model."""
+        """Transforms an entry from the redis cache into model."""
         payload = self._to_item(data=data)
 
         # Only return payload if recognized event

@@ -13,14 +13,14 @@ from app.dependencies import agent_selector
 from app.facades import acapy_wallet
 from app.error import CloudApiException
 
-from .models import SetDidEndpointRequest
+from app.generic.wallet.models import SetDidEndpointRequest
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/wallet/dids", tags=["wallet"])
 
 
-@router.post("/", response_model=DID)
+@router.post("", response_model=DID)
 async def create_did(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
@@ -29,7 +29,7 @@ async def create_did(
     return await acapy_wallet.create_did(aries_controller)
 
 
-@router.get("/", response_model=List[DID])
+@router.get("", response_model=List[DID])
 async def list_dids(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):

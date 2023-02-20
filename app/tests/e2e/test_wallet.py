@@ -86,6 +86,11 @@ async def test_set_public_did(
     response = await governance_client.put(f"{WALLET_BASE_PATH}/public?did={did}")
 
     assert_that(response.status_code).is_equal_to(200)
+
+    # With endorsement the set pub dic returns None but sets the did correctly
+    # So let's get it a different way and check that it is correct
+    response = await governance_client.get(f"{WALLET_BASE_PATH}/public")
+    assert_that(response.status_code).is_equal_to(200)
     response = response.json()
 
     assert_that(response).contains("did", "verkey")

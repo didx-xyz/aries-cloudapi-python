@@ -11,11 +11,18 @@ from shared_models import (
     PresentationExchange,
     CredentialExchange,
     Connection,
+    Endorsement,
     presentation_record_to_model,
     conn_record_to_connection,
     credential_record_to_model_v2,
     RedisItem,
 )
+
+
+def to_endorsement_model(item: RedisItem) -> Endorsement:
+    if item["payload"]["state"]:
+        item["payload"]["state"] = item["payload"]["state"].replace("_", "-")
+    return Endorsement(**item["payload"])
 
 
 def to_connections_model(item: RedisItem) -> Connection:

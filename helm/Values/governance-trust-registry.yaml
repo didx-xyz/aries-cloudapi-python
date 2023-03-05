@@ -3,9 +3,9 @@ replicaCount: 1
 daemon: false
 
 image:
-  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/trustregistry"
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-trust-registry"
   pullPolicy: Always
-  tag: "master"
+  tag: "baseline-04d67c5"
 
 ingress:
   enabled: false
@@ -26,7 +26,7 @@ httpProbes: {}
 
 persistence:
   enabled: true
-  mountPath: /trustregistry
+  mountPath: /trustregistry-db
   capacity: 25Gi
   storageClassName: "gp2"
 
@@ -38,5 +38,5 @@ nodeSelector:
 
 env:
   PYTHONPATH: /
-  SQLALCHEMY_DATABASE_URL: sqlite:///trustregistry/trustregistry.db
+  SQLALCHEMY_DATABASE_URL: sqlite:///trustregistry-db/trustregistry.db
   OPENAPI_NAME: Trustregistry

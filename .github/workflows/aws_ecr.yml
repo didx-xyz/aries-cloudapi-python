@@ -2,18 +2,44 @@ name: Deploy to ECR
 
 on:
   push:
-    branches: [development]
-  pull_request:
-    branches: [development]
+  workflow_dispatch:
 
 jobs:
   deploy:
     name: Build image and push to ECR
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - image: governance-ga-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+          - image: governance-ga-agent
+            context: .
+            file: dockerfiles/agents/Dockerfile.agent
+          - image: governance-trust-registry
+            context: .
+            file: dockerfiles/trustregistry/Dockerfile
+          - image: governance-multitenant-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+          - image: governance-webhooks-web
+            context: .
+            file: dockerfiles/webhooks/Dockerfile
+          - image: governance-multitenant-agent
+            context: .
+            file: dockerfiles/agents/Dockerfile.author.agent
+          - image: ledger-browser
+            context: https://github.com/didx-xyz/von-network.git
+            file: Dockerfile
+          - image: ledger-nodes
+            context: https://github.com/didx-xyz/von-network.git
+            file: Dockerfile
+
     steps:
-      - name: Check out code and build
-        uses: actions/checkout@v2
+      - name: Check out code
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -22,26 +48,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: af-south-1
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          #ECR_REPOSITORY: cloud_api
-          IMAGE_TAG: development
-          #DOCKER_REGISTRY=324190738845.dkr.ecr.af-south-1.amazonaws.com/cloud_api
-          #DOCKER_REGISTRY=324190738845.dkr.ecr.af-south-1.amazonaws.com
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}
+          tags: |
+            type=raw,value={{branch}}-{{sha}}
+            type=ref,event=branch
 
-        run: |
-          #docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          #docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
-          #bash ./scripts/git_update.sh -v minor
-          bash ./scripts/install_latest_docker-compose.sh
-          #bash /usr/local/bin/python -m pip install --upgrade pip
-          #bash ./scripts/create_ecr_repos.sh -v ${ECR_REGISTRY}
-          #bash create_ecr_repos.sh
-          
-          docker-compose build
-          docker-compose push
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

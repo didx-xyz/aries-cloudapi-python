@@ -3,13 +3,20 @@ replicaCount: 1
 daemon: false
 
 image:
-  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/agent"
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-ga-agent"
   pullPolicy: Always
-  tag: "master"
+  tag: "baseline-04d67c5"
 
 ingress:
-  enabled: false
-  tls_enabled: false
+  enabled: true
+  tls_enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+  hosts:
+  - host: ga-agent.didx.co.za
+    paths:
+    - path: /
+      port: 3020
 
 service:
   # if set, will run Pods on Node Network
@@ -52,7 +59,7 @@ env:
   ADMIN_URL: http://governance-ga-agent:3021
   ACAPY_OUTBOUND_TRANSPORT: http
   ACAPY_ADMIN: "[0.0.0.0,3021]"
-  ACAPY_ENDPOINT: http://governance-ga-agent:3020
+  ACAPY_ENDPOINT: https://ga-agent.didx.co.za
   ACAPY_WEBHOOK_URL: http://governance-webhooks-web:3010/governance
   # Tails server
   # Should be changed further
@@ -66,9 +73,9 @@ env:
   ACAPY_LOG_LEVEL: debug
   ACAPY_AUTO_PROVISION: true
   # Ledger
-  ACAPY_GENESIS_URL: https://testnet.didx.co.za/genesis
+  ACAPY_GENESIS_URL: http://test.bcovrin.vonx.io/genesis
   ACAPY_PUBLIC_INVITES: true
-  AGENT_ENDPOINT: http://governance-ga-agent:3020
+  AGENT_ENDPOINT: https://ga-agent.didx.co.za
   ACAPY_ENDORSER_ROLE: endorser
   # ## DO NOT CHANGE VARIABLES BELOW
   # ## Unless you know exactly what you are doing

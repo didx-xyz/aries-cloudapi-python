@@ -13,6 +13,14 @@ This project is a essentially comprises of a [FastAPI](fastapi.tiangolo.com/) ap
 
 ## How to run it
 
+Export the necessary environment variables
+
+```sh
+export ECR_REGISTRY=324190738845.dkr.ecr.af-south-1.amazonaws.com
+# ECR_REGISTRY doesn't need to be valid for `./manage up` or `make start`
+# It is only used when building and pushing via docker-compose
+```
+
 Running it is pretty straight forward - it's all containers. Simply run `./manage up` or `make start` from the root of the project. This should spin up and provision all you need. You can visit [localhost:8000/api/doc](localhost:8000/api/doc) for the swagger docs and start playing about.
 
 If you are familiar with Make you can also have a look in the Makefile to find some handy methods for running the project.
@@ -55,4 +63,38 @@ or only the unit tests with:
 
 ```bash
 pytest --ignore=app/tests/e2e
+```
+
+## CI/CD
+
+:warning: WIP
+
+When deploying with `cloud_api_helm`, symlink `./shared_models` dir inside `helm/Chart/assets/shared_models`, e.g.:
+
+```sh
+git clone git@github.com:didx-xyz/cloud_api_helm.git helm/Chart
+mkdir helm/Chart/assets
+cd helm/Chart/assets
+ln -s ../../../shared_models .
+cd ../../../
+```
+
+From the root of this repo:
+
+```sh
+PROJECTS=(
+  governance-ga-agent
+  governance-ga-web
+  governance-multitenant-agent
+  governance-multitenant-web
+  governance-trust-registry
+  governance-webhooks-web
+)
+
+for PROJECT in "${PROJECTS[@]}"; do
+  helm -n app upgrade --install --atomic --timeout=300s \
+    $PROJECT \
+    -f "./helm/Values/$PROJECT.yaml" \
+    ./helm/Chart/.
+done 
 ```

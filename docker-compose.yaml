@@ -2,7 +2,7 @@ version: "3"
 
 services:
   governance-ga-web:
-    image: ${ECR_REGISTRY}/governance-ga-web
+    image: ${ECR_REGISTRY}/governance-ga-web:${IMAGE_TAG:-latest}
     container_name: governance-ga-web
     build:
       context: .
@@ -23,9 +23,9 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
-    image: ${ECR_REGISTRY}/postgres:11
+    #image: ${ECR_REGISTRY}/postgres:11
     container_name: governance-ga-wallets-db
-    #image: postgres:11
+    image: postgres:11
     command: postgres -c listen_addresses='*'
     env_file:
       - environments/governance-ga/db.default.env
@@ -47,7 +47,7 @@ services:
   #     - ledger-nodes
   #     - ledger-browser
   governance-ga-agent:
-    image: ${ECR_REGISTRY}/governance-ga-agent
+    image: ${ECR_REGISTRY}/governance-ga-agent:${IMAGE_TAG:-latest}
     container_name: governance-ga-agent
     build:
       context: .
@@ -67,7 +67,7 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
   governance-trust-registry:
-    image: ${ECR_REGISTRY}/governance-trust-registry
+    image: ${ECR_REGISTRY}/governance-trust-registry:${IMAGE_TAG:-latest}
     container_name: governance-trust-registry
     build:
       context: .
@@ -83,7 +83,7 @@ services:
       - governance-multitenant
       - host
   governance-multitenant-web:
-    image: ${ECR_REGISTRY}/governance-multitenant-web
+    image: ${ECR_REGISTRY}/governance-multitenant-web:${IMAGE_TAG:-latest}
     container_name: governance-multitenant-web
     build:
       context: .
@@ -104,7 +104,7 @@ services:
     env_file:
       - environments/governance-multitenant/fastapi.default.env
   governance-webhooks-web:
-    image: ${ECR_REGISTRY}/governance-webhooks-web
+    image: ${ECR_REGISTRY}/governance-webhooks-web:${IMAGE_TAG:-latest}
     container_name: governance-webhooks-web
     build:
       context: .
@@ -136,7 +136,8 @@ services:
     env_file:
       - environments/endorser/endorser.env
   wh-redis:
-    image: ${ECR_REGISTRY}/redis:latest
+    #image: ${ECR_REGISTRY}/redis:latest
+    image: redis:latest
     container_name: wh-redis
     restart: always
     ports:
@@ -148,7 +149,8 @@ services:
     env_file:
       - environments/webhooks/redis.env
   governance-multitenant-wallets-db:
-    image: ${ECR_REGISTRY}/postgres:11
+    #image: ${ECR_REGISTRY}/postgres:11
+    image: postgres:11
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
@@ -172,6 +174,7 @@ services:
       - ledger-nodes
       - ledger-browser
   governance-multitenant-agent:
+    image: ${ECR_REGISTRY}/governance-multitenant-agent:${IMAGE_TAG:-latest}
     container_name: governance-multitenant-agent
     build:
       context: .
@@ -214,7 +217,7 @@ services:
     depends_on:
       - ledger-nodes
   ledger-nodes:
-    image: ${ECR_REGISTRY}/ledger-nodes
+    image: ${ECR_REGISTRY}/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-nodes
     build:
       context: https://github.com/didx-xyz/von-network.git
@@ -238,7 +241,7 @@ services:
       - governance-ga
       - host
   tails-server:
-    image: ${ECR_REGISTRY}/ghcr.io/bcgov/tails-server:1.0.0
+    image: ghcr.io/bcgov/tails-server:1.0.0
     container_name: tails-server
     ports:
       - 0.0.0.0:6543:6543

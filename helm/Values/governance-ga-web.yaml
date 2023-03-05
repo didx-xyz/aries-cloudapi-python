@@ -3,9 +3,9 @@ replicaCount: 1
 daemon: false
 
 image:
-  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/fastapi"
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-ga-web"
   pullPolicy: Always
-  tag: "master"
+  tag: "baseline-04d67c5"
 
 ingress:
   enabled: false
@@ -26,6 +26,16 @@ httpProbes: {}
 
 persistence:
   enabled: false
+
+configFiles:
+  shared_models.py:
+    path: /app/shared_models/shared_models.py
+    content: |-
+      {{ .Files.Get "assets/shared_models/shared_models.py" }}
+  __init__.py:
+    path: /app/shared_models/__init__.py
+    content: |-
+      {{ .Files.Get "assets/shared_models/__init__.py" }}
 
 autoscaling:
   enabled: false

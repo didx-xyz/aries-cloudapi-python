@@ -12,7 +12,8 @@ ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 ./jq
 RUN chmod +x ./jq
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
+COPY environments/governance-ga/multi_ledger_config.yml ./multi_ledger_config.yml
 
 USER $user
 
-CMD ./startup.sh --wallet-type askar --plugin acapy_wallet_groups_plugin
+CMD ./startup.sh --wallet-type askar --plugin acapy_wallet_groups_plugin --genesis-transactions-list ./multi_ledger_config.yml

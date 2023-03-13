@@ -10,6 +10,9 @@ on:
     branches: [development]
   workflow_dispatch:
 
+env:
+  ECR_REGISTRY: 324190738845.dkr.ecr.af-south-1.amazonaws.com
+
 jobs:
   build:
     runs-on: ubuntu-20.04

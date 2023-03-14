@@ -123,6 +123,7 @@ services:
     environment:
       - REDIS_URL=redis://wh-redis
   governance-endorser:
+    image: ${ECR_REGISTRY}/governance-endorser:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: ./dockerfiles/endorser/Dockerfile

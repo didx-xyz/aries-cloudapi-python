@@ -43,6 +43,9 @@ jobs:
           - image: ledger-nodes
             context: https://github.com/didx-xyz/von-network.git
             file: Dockerfile
+          - image: governance-endorser
+            context: .
+            file: dockerfiles/endorser/Dockerfile
 
     steps:
       - name: Check out code

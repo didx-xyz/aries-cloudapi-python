@@ -1,7 +1,7 @@
 - id: default
   is_production: true
   is_write: true
-  genesis_url: 'http://ssi-beta.didx.co.za:9100/genesis'
+  genesis_url: 'https://raw.githubusercontent.com/Indicio-tech/indicio-network/main/genesis_files/pool_transactions_testnet_genesis'
 - id: bcovrinTest
   is_production: true
   genesis_url: 'https://raw.githubusercontent.com/sovrin-foundation/sovrin/master/sovrin/pool_transactions_sandbox_genesis'

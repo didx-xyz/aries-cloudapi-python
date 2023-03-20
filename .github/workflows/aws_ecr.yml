@@ -4,24 +4,25 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'development'
+      - "development"
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches:
-      - 'development'
+      - "development"
 
 jobs:
-  deploy:
+  build:
     name: Build image and push to ECR
     runs-on: ubuntu-latest
+
+    outputs:
+      image_repository: ${{ steps.login-ecr.outputs.repository }}
+      image_tag: ${{ steps.meta.outputs.tags }}
 
     strategy:
       matrix:
         include:
-          - image: governance-ga-web
-            context: .
-            file: dockerfiles/fastapi/Dockerfile
           - image: governance-ga-agent
             context: .
             file: dockerfiles/agents/Dockerfile.agent
@@ -52,7 +53,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -84,3 +85,64 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: Deploy to EKS
+    needs: build
+    runs-on: ubuntu-latest
+    if: (github.event_name == 'pull_request' && github.event.review.state == 'approved') || (github.event_name == 'push' && github.ref == 'refs/heads/development')
+
+    strategy:
+      matrix:
+        project_name:
+          [
+            governance-ga-agent,
+            governance-multitenant-agent,
+            governance-multitenant-web,
+            governance-trust-registry,
+            governance-webhooks-web,
+            governance-endorser,
+          ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Checkout Helm chart
+        uses: actions/checkout@v3
+        with:
+          repository: didx-xyz/cloud_api_helm
+          token: ${{ secrets.HELM_REPO_TOKEN }} # private access token here, for HTTPS clones
+          path: helm/Chart
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_DEV_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_DEV_SECRET_ACCESS_KEY }}
+          aws-region: af-south-1
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Install helm secrets plugin
+        run: helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
+
+      - name: Update Kubeconfig
+        run: aws eks update-kubeconfig --name cloudapi-dev
+      
+      - name: Tailscale
+        uses: tailscale/github-action@v1
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Update deployments
+        run: |
+          helm -n dev-cloudapi \
+            secrets upgrade ${{ matrix.project_name }} \
+            --install \
+            --atomic \
+            --timeout=300s \
+            --set image.repository=${{ needs.build.outputs.image_repository }}/${{ matrix.project_name }} \
+            --set image.tag=${{ needs.build.outputs.image_tag }} \
+            -f helm/Chart/values/dev/${{ matrix.project_name }}.yaml \
+            -f helm/Chart/secrets/dev/${{ matrix.project_name }}.yaml \
+            ./helm/Chart

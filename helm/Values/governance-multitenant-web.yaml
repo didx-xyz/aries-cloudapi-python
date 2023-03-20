@@ -8,8 +8,10 @@ image:
   tag: "baseline-04d67c5"
 
 ingress:
-  enabled: false
-  tls_enabled: false
+  internal:
+    enabled: false
+  external:
+    enabled: false
 
 service:
   # if set, will run Pods on Node Network
@@ -40,11 +42,10 @@ configFiles:
 autoscaling:
   enabled: false
 
-nodeSelector:
-  eks.amazonaws.com/nodegroup: application
-
 extraSecretNamesForEnvFrom:
-- acapy-env-variables
+- ga-and-mt-web-env
+
+secretData: {}
 
 env:
   ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021

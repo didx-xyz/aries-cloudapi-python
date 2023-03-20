@@ -5,18 +5,35 @@ daemon: false
 image:
   repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-ga-agent"
   pullPolicy: Always
-  tag: "baseline-04d67c5"
+  tag: "pr-7"
+
+args:
+  - --wallet-type
+  - askar
+  - --plugin
+  - acapy_wallet_groups_plugin
 
 ingress:
-  enabled: true
-  tls_enabled: true
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt"
-  hosts:
-  - host: ga-agent.didx.co.za
-    paths:
-    - path: /
-      port: 3020
+  internal:
+    enabled: true
+    className: nginx-internal
+    annotations:
+      nginx.ingress.kubernetes.io/service-upstream: "true"
+    hosts:
+      - host: ga-agent.cloudapi.dev.didxtech.com
+        paths:
+          - path: /
+            port: 3020
+  external:
+    enabled: true
+    className: nginx-external
+    annotations:
+      nginx.ingress.kubernetes.io/service-upstream: "true"
+    hosts:
+      - host: ga-agent.cloudapi.dev.didxtech.com
+        paths:
+          - path: /
+            port: 3020
 
 service:
   # if set, will run Pods on Node Network
@@ -29,12 +46,15 @@ addPorts:
     containerPort: 3020
     protocol: TCP
 
-httpProbes: {}
- # liveness:
- #   path: /
- # readiness:
- #   path: /
- # initialDelaySeconds: 2
+httpProbes:
+  liveness:
+    path: /status/live
+    initialDelaySeconds: 300
+    timeoutSeconds: 30
+  readiness:
+    path: /status/ready
+    initialDelaySeconds: 5
+    timeoutSeconds: 30
 
 persistence:
   enabled: false
@@ -42,16 +62,13 @@ persistence:
 autoscaling:
   enabled: false
 
-nodeSelector:
-  eks.amazonaws.com/nodegroup: application
-
 extraSecretNamesForEnvFrom:
-- acapy-env-variables
-- governance-rds-credentials
+  - didx-rds-credentials
+  - ga-agent-env
+
+secretData: {}
 
 env:
-  WALLET_DB_HOST: aries-default-governance.ce5tswq1klfu.af-south-1.rds.amazonaws.com
-  WALLET_DB_PORT: 5432
   # for aca-py
   HTTP_PORT: 3020
   WEBHOOK_PORT: 3010
@@ -59,23 +76,19 @@ env:
   ADMIN_URL: http://governance-ga-agent:3021
   ACAPY_OUTBOUND_TRANSPORT: http
   ACAPY_ADMIN: "[0.0.0.0,3021]"
-  ACAPY_ENDPOINT: https://ga-agent.didx.co.za
+  ACAPY_ENDPOINT: https://ga-agent.cloudapi.dev.didxtech.com
   ACAPY_WEBHOOK_URL: http://governance-webhooks-web:3010/governance
   # Tails server
   # Should be changed further
   ACAPY_TAILS_SERVER_BASE_URL: http://tails-server:6543
-  ACAPY_LABEL: Alice
-  ACAPY_WALLET_NAME: Alice_Name
-  ACAPY_WALLET_KEY: alice_key
   ACAPY_WALLET_TYPE: askar
   ACAPY_WALLET_STORAGE_TYPE: postgres_storage
-  ACAPY_WALLET_STORAGE_CONFIG: '{"url":"aries-default-governance.ce5tswq1klfu.af-south-1.rds.amazonaws.com:5432","wallet_scheme":"MultiWalletSingleTable"}'
   ACAPY_LOG_LEVEL: debug
   ACAPY_AUTO_PROVISION: true
   # Ledger
-  ACAPY_GENESIS_URL: http://test.bcovrin.vonx.io/genesis
+  ACAPY_GENESIS_URL: https://raw.githubusercontent.com/Indicio-tech/indicio-network/main/genesis_files/pool_transactions_testnet_genesis
   ACAPY_PUBLIC_INVITES: true
-  AGENT_ENDPOINT: https://ga-agent.didx.co.za
+  AGENT_ENDPOINT: https://ga-agent.cloudapi.dev.didxtech.com
   ACAPY_ENDORSER_ROLE: endorser
   # ## DO NOT CHANGE VARIABLES BELOW
   # ## Unless you know exactly what you are doing
@@ -94,3 +107,5 @@ env:
   ACAPY_AUTO_VERIFY_PRESENTATION: true
   ACAPY_PRESERVE_EXCHANGE_RECORDS: false
   ACAPY_AUTO_ENDORSE_TRANSACTIONS: true
+
+  ACAPY_ACCEPT_TAA: "[service_agreement,1.0]"

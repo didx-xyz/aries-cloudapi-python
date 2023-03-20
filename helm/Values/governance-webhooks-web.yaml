@@ -8,11 +8,14 @@ image:
   tag: "baseline-04d67c5"
 
 ingress:
-  enabled: false
-  tls_enabled: false
+  internal:
+    enabled: false
+  external:
+    enabled: false
 
 service:
   # if set, will run Pods on Node Network
+  appProtocol: tcp
   hostNetwork: false
   port: 3010
   containerPort: 3010
@@ -40,11 +43,12 @@ configFiles:
 autoscaling:
   enabled: false
 
-nodeSelector:
-  eks.amazonaws.com/nodegroup: application
+secretData: {}
+
+extraSecretNamesForEnvFrom:
+- redis-host
 
 env:
-  REDIS_HOST: aries-default.gpip5x.0001.afs1.cache.amazonaws.com:6379
   ACAPY_WEBHOOK_PORT: 3010
   LOG_LEVEL: error
   OPENAPI_NAME: Webhooks

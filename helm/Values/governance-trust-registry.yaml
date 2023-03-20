@@ -2,41 +2,44 @@ replicaCount: 1
 
 daemon: false
 
+strategy:
+  type: Recreate
+
 image:
   repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-trust-registry"
   pullPolicy: Always
   tag: "baseline-04d67c5"
 
 ingress:
-  enabled: false
-  tls_enabled: false
+  internal:
+    enabled: false
+  external:
+    enabled: false
 
 service:
   # if set, will run Pods on Node Network
+  appProtocol: tcp
   hostNetwork: false
   port: 8001
   containerPort: 8001
 
 httpProbes: {}
- # liveness:
- #   path: /
- # readiness:
- #   path: /
- # initialDelaySeconds: 2
+  # liveness:
+  #   path: /
+  # readiness:
+  #   path: /
+  # initialDelaySeconds: 2
 
 persistence:
   enabled: true
   mountPath: /trustregistry-db
   capacity: 25Gi
-  storageClassName: "gp2"
+  storageClassName: "gp3"
 
 autoscaling:
   enabled: false
 
-nodeSelector:
-  eks.amazonaws.com/nodegroup: application
-
 env:
   PYTHONPATH: /
-  SQLALCHEMY_DATABASE_URL: sqlite:///trustregistry-db/trustregistry.db
+  SQLALCHEMY_DATABASE_URL: sqlite:////trustregistry-db/trustregistry.db
   OPENAPI_NAME: Trustregistry

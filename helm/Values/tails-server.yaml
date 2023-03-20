@@ -1,0 +1,26 @@
+replicaCount: 1
+
+daemon: false
+
+strategy:
+  type: Recreate
+
+image:
+  repository: "ghcr.io/bcgov/tails-server"
+  pullPolicy: Always
+  tag: "1.0.0"
+
+args:
+  - tails-server
+  - --storage-path
+  - /tails-server-db
+
+service:
+  port: 6543
+  containerPort: 6543
+
+persistence:
+  enabled: true
+  mountPath: /tails-server-db
+  capacity: 10Gi
+  storageClassName: "gp3"

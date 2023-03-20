@@ -124,6 +124,7 @@ services:
       - REDIS_URL=redis://wh-redis
   governance-endorser:
     image: ${ECR_REGISTRY}/governance-endorser:${IMAGE_TAG:-latest}
+    container_name: governance-endorser
     build:
       context: .
       dockerfile: ./dockerfiles/endorser/Dockerfile

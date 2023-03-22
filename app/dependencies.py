@@ -104,6 +104,18 @@ async def get_governance_controller():
 
 
 @asynccontextmanager
+async def get_tenant_admin_controller():
+    # TODO: would be good to support this natively in AcaPyClient
+    client = AcaPyClient(
+        Role.TENANT_ADMIN.agent_type.base_url,
+        api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
+    )
+
+    yield client
+    await client.close()
+
+
+@asynccontextmanager
 async def get_tenant_controller(role: "Role", auth_token: str):
     client = AcaPyClient(
         role.agent_type.base_url,

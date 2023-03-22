@@ -39,7 +39,7 @@ async def assert_valid_issuer(did: str, schema_id: str):
 
     This method asserts that there is an actor registered in the trust registry
     with the specified did. It verifies whether this actor has the `issuer` role
-    and will also make sure the specified schema_id is regsitred as a valid schema.
+    and will also make sure the specified schema_id is registered as a valid schema.
     Raises an exception if one of the assertions fail.
 
     NOTE: the dids in the registry are registered as fully qualified dids. This means
@@ -47,7 +47,7 @@ async def assert_valid_issuer(did: str, schema_id: str):
 
     Args:
         did (str): the did of the issuer in fully qualified format.
-        schema_id (str): the schema_id of the credential being issued
+        schema_id (str): the schema_id of the credential being issued.
 
     Raises:
         Exception: When the did is not registered, the actor doesn't have the issuer role

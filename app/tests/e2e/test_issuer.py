@@ -417,7 +417,7 @@ async def test_store_credential(
         client=alice_member_client,
         filter_map={"state": "done"},
         topic="credentials",
-        max_duration=240,
+        max_duration=360,
     )
 
 

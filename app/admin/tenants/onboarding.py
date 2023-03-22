@@ -231,7 +231,20 @@ async def onboard_issuer(
             tran_id=txn_record["transaction_id"]
         )
 
-    return OnboardResult(did=qualified_did_sov(issuer_did.did))
+    # Create an invitation as well
+    invitation = await issuer_controller.out_of_band.create_invitation(
+        auto_accept=True,
+        multi_use=True,
+        body=InvitationCreateRequest(
+            alias=f"Trust Registry {name}",
+            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+        ),
+    )
+
+    return OnboardResult(
+        did=qualified_did_sov(issuer_did.did),
+        didcomm_invitation=invitation.invitation_url,
+    )
 
 
 async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):

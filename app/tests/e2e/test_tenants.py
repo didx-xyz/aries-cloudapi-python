@@ -316,7 +316,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(new_actor).has_did(f"{new_actor['did']}")
     assert_that(new_actor["roles"]).contains_only("issuer", "verifier")
 
-    assert new_actor["didcomm_invitation"] is None
+    assert new_actor["didcomm_invitation"] is not None
 
     # Tenant
     assert_that(new_tenant).has_tenant_id(wallet.wallet_id)
@@ -359,6 +359,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
             "image_url": "https://image.ca",
             "name": name,
             "roles": ["verifier"],
+            "group_id": "ac/dc",
         },
     )
 
@@ -373,6 +374,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
 
     # Make sure created tenant is returned
     assert_that(tenants).extracting("tenant_id").contains(tenant_id)
+    assert_that(tenants).extracting("group_id").contains("ac/dc")
 
 
 @pytest.mark.asyncio

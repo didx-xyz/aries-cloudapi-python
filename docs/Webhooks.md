@@ -58,7 +58,7 @@ docker logs --follow $(docker ps -f name="governance-webhooks-web" | awk 'FNR ==
 
 Listening to webhooks the subscriber way (not long polling via http) is pnot limited to the python example given above. In fact, all one needs is a websocket-based RPC client.
 
-Here are two examples:
+Here are two examples from the terminal:
 
 ```bash
 websocat -E --text ws://127.0.0.1:3010/pubsub exec:'{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}'
@@ -71,3 +71,33 @@ wscat -c ws://127.0.0.1:3010 -x '{"request": {"method": "subscribe", "arguments"
 ```
 
 How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (_NOTE:_ You might have to change the uri according to your setup of the webhooks relay). Both examples do pretty much the same. However, [Wscat](https://github.com/websockets/wscat) is written in Javascript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint the `exec:` parameter and `-x` flag mean execute. Execute in this case refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By Adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet.
+
+#### Javascript example
+
+Here's a simple example in javascript using a single dependency (`ws`):
+
+```javascript
+const WebSocket = require("ws");
+
+const ws = new WebSocket("ws://127.0.0.1:3010/pubsub");
+
+ws.on("open", () => {
+  ws.send(
+    '{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}'
+  );
+  setTimeout(() => {
+    ws.close(); // close after 99999 seconds
+  }, 99999);
+});
+
+ws.on("message", (data) => {
+  console.log(data.toString());
+});
+```
+
+In order to use this:
+
+- Install `ws` dependency with
+  - `npm i ws` OR `yarn add ws` (you can add the `--save-dev` or `-D` flags to install as dev dependencies, or `-g` and `global` respectively to install globally)
+- Save the script above to a file (eg wslisten.js)
+- Run the script with node `node wslisten.js`

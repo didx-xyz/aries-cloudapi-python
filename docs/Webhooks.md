@@ -14,19 +14,7 @@ Valid topics are:
 
 ```python
 topics = Literal[
-    "connections",
-    "issue_credential",
-    "forward",
-    "ping",
-    "oob",
-    "basicmessages",
-    "issuer_cred_rev",
-    "issue_credential_v2_0",
-    "issue_credential_v2_0_indy",
-    "issue_credential_v2_0_dif",
-    "present_proof",
-    "present_proof_v2_0",
-    "revocation_registry",
+    "basic-messages", "connections", "proofs", "credentials", "endorsements", "oob", "revocation"
 ]
 ```
 
@@ -68,15 +56,18 @@ docker logs --follow $(docker ps -f name="governance-webhooks-web" | awk 'FNR ==
 
 ### Non-Python options
 
-Listening to webhooks the subscriber way (not long polling via http) is pnot limited to the python example given above. In fact, all one needs is a websocket-based RPC client. 
+Listening to webhooks the subscriber way (not long polling via http) is pnot limited to the python example given above. In fact, all one needs is a websocket-based RPC client.
 
 Here are two examples:
 
 ```bash
 websocat -E --text ws://127.0.0.1:3010/pubsub exec:'{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}'
 ```
-or 
+
+or
+
 ```bash
 wscat -c ws://127.0.0.1:3010 -x '{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}' -w 99999
 ```
-How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (*NOTE:* You might have to change the uri according to your setup of the webhooks relay). Both examples do pretty much the same. However, [Wscat](https://github.com/websockets/wscat) is written in Javascript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint the `exec:` parameter and `-x` flag mean execute. Execute in this case refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By Adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet. 
+
+How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (_NOTE:_ You might have to change the uri according to your setup of the webhooks relay). Both examples do pretty much the same. However, [Wscat](https://github.com/websockets/wscat) is written in Javascript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint the `exec:` parameter and `-x` flag mean execute. Execute in this case refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By Adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet.

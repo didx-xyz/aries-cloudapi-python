@@ -7,9 +7,11 @@ from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinition as AcaPyCredentialDefinition,
     ModelSchema,
+    RevRegUpdateTailsFileUri,
     SchemaSendRequest,
     TxnOrCredentialDefinitionSendResult,
 )
+from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from app.error.cloud_api_error import CloudApiException
 from aries_cloudcontroller.model.credential_definition_send_request import (
     CredentialDefinitionSendRequest,
@@ -22,6 +24,11 @@ from app.dependencies import (
     acapy_auth_verified,
     agent_role,
     agent_selector,
+    get_governance_controller,
+)
+from app.facades.revocation_registry import (
+    create_revocation_registry,
+    publish_revocation_registry_on_ledger,
 )
 from app.role import Role
 from app.facades import trust_registry, acapy_wallet
@@ -34,10 +41,10 @@ router = APIRouter(
 
 
 class CreateCredentialDefinition(BaseModel):
-    # Revocation not supported currently
-    # support_revocation: bool = False
     tag: str = Field(..., example="default")
     schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    support_revocation: bool = Field(default=True)
+    revocation_registry_size: int = Field(default=32767)
 
 
 class CredentialDefinition(BaseModel):
@@ -87,19 +94,19 @@ async def get_credential_definitions(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Retrieve credential definitions the current agent created.
+        Retrieve credential definitions the current agent created.
 
     Parameters:
     -----------
-    issuer_did: str (Optional)\n
-    credential_definition_id: str (Optional)\n
-    schema_id: str (Optional)\n
-    schema_issuer_id: str (Optional)\n
-    schema_version: str (Optional)\n
+        issuer_did: str (Optional)\n
+        credential_definition_id: str (Optional)\n
+        schema_id: str (Optional)\n
+        schema_issuer_id: str (Optional)\n
+        schema_version: str (Optional)\n
 
     Returns:
     ---------
-    The created credential definitions.
+        The created credential definitions.
     """
     # Get all created credential definition ids that match the filter
     response = await aries_controller.credential_definition.get_created_cred_defs(
@@ -142,12 +149,12 @@ async def get_credential_definition_by_id(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Get credential definition by id.
+        Get credential definition by id.
 
     Parameters:
     -----------
-    credential_definition_id: str
-        credential definition id
+        credential_definition_id: str
+            credential definition id
 
     """
     credential_definition = await aries_controller.credential_definition.get_cred_def(
@@ -181,16 +188,16 @@ async def create_credential_definition(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
-    Create a credential definition.
+        Create a credential definition.
 
     Parameters:
     -----------
-    credential_definition: CreateCredentialDefinition
-        Payload for creating a credential definition.
+        credential_definition: CreateCredentialDefinition
+            Payload for creating a credential definition.
 
     Returns:
     --------
-    Credential Definition
+        Credential Definition
     """
 
     # Assert the agent has a public did
@@ -201,15 +208,14 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    wait_for_event, stop_listener = await start_listener(
+    wait_for_event_with_timeout, stop_listener = await start_listener(
         topic="endorsements", wallet_id=auth.wallet_id
     )
 
     result = await aries_controller.credential_definition.publish_cred_def(
         body=CredentialDefinitionSendRequest(
             schema_id=credential_definition.schema_id,
-            # Revocation not supported yet
-            support_revocation=False,
+            support_revocation=credential_definition.support_revocation,
             tag=credential_definition.tag,
         )
     )
@@ -217,16 +223,19 @@ async def create_credential_definition(
     if isinstance(result, TxnOrCredentialDefinitionSendResult):
         try:
             # Wait for transaction to be acknowledged and written to the ledger
-            await wait_for_event(
+            await wait_for_event_with_timeout(
                 filter_map={
                     "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
-                }
+                },
+                timeout=30,
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
                 "Timeout waiting for endorser to accept the endorsement request"
             )
+        finally:
+            await stop_listener()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -248,10 +257,68 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Unable to construct credential definition id from signature response"
             ) from e
-
     else:
-        await stop_listener()
         credential_definition_id = result.credential_definition_id
+
+    if credential_definition.support_revocation:
+        try:
+            # Create a revocation registry and publish it on the ledger
+            revoc_reg_creation_result = await create_revocation_registry(
+                controller=aries_controller,
+                credential_definition_id=credential_definition_id,
+                max_cred_num=credential_definition.revocation_registry_size,
+            )
+            await aries_controller.revocation.update_registry(
+                rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                body=RevRegUpdateTailsFileUri(
+                    tails_public_uri=f"{ACAPY_TAILS_SERVER_BASE_URL}/{revoc_reg_creation_result.revoc_reg_id}"
+                ),
+            )
+            endorser_connection = await aries_controller.connection.get_connections(
+                alias=ACAPY_ENDORSER_ALIAS
+            )
+            # NOTE: Special case - the endorser registers a cred def itself that
+            # supports revocation so there is no endorser connection.
+            # Otherwise onboarding should have created an endorser connection
+            # for tenants so this fails correctly
+            has_connections = len(endorser_connection.results) > 0
+            await publish_revocation_registry_on_ledger(
+                controller=aries_controller,
+                revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
+                connection_id=endorser_connection.results[0].connection_id
+                if has_connections
+                else None,
+                create_transaction_for_endorser=has_connections,
+            )
+            if has_connections:
+                wait_for_event_with_timeout, stop_listener = await start_listener(
+                    topic="endorsements", wallet_id="admin"
+                )
+                async with get_governance_controller() as endorser_controller:
+                    try:
+                        txn_record = await wait_for_event_with_timeout(
+                            filter_map={
+                                "state": "request-received",
+                            },
+                            timeout=30,
+                        )
+                    except TimeoutError:
+                        raise CloudApiException(
+                            "Failed to retrieve transaction record for endorser", 500
+                        )
+                    finally:
+                        await stop_listener()
+
+                    await endorser_controller.endorse_transaction.endorse_transaction(
+                        tran_id=txn_record["transaction_id"]
+                    )
+
+            active_rev_reg = await aries_controller.revocation.set_registry_state(
+                rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state="active"
+            )
+            credential_definition_id = active_rev_reg.result.cred_def_id
+        except ClientResponseError as e:
+            raise e
 
     # ACA-Py only returns the id after creating a credential definition
     # We want consistent return types across all endpoints, so retrieving the credential
@@ -270,18 +337,18 @@ async def get_schemas(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Retrieve schemas that the current agent created.
+        Retrieve schemas that the current agent created.
 
     Parameters:
     -----------
-    schema_id: str (Optional)
-    schema_issuer_did: str (Optional)
-    schema_name: str (Optional)
-    schema_version: str (Optional)
+        schema_id: str (Optional)
+        schema_issuer_did: str (Optional)
+        schema_name: str (Optional)
+        schema_version: str (Optional)
 
     Returns:
     --------
-    Json response with created schemas from ledger.
+        son response with created schemas from ledger.
     """
     # Get all created schema ids that match the filter
     response = await aries_controller.schema.get_created_schemas(
@@ -315,12 +382,12 @@ async def get_schema(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Retrieve schema by id.
+        Retrieve schema by id.
 
     Parameters:
     -----------
-    schema_id: str
-        schema id
+        schema_id: str
+            schema id
     """
     schema = await aries_controller.schema.get_schema(schema_id=schema_id)
 
@@ -337,16 +404,16 @@ async def create_schema(
     aries_controller: AcaPyClient = Depends(agent_role(Role.GOVERNANCE)),
 ) -> CredentialSchema:
     """
-    Create a new schema.
+        Create a new schema.
 
     Parameters:
     ------------
-    schema: CreateSchema
-        Payload for creating a schema.
+        schema: CreateSchema
+            Payload for creating a schema.
 
     Returns:
     --------
-    The response object from creating a schema.
+        The response object from creating a schema.
     """
     schema_send_request = SchemaSendRequest(
         attributes=schema.attribute_names,

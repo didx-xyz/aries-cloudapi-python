@@ -90,6 +90,8 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd aries-cloudapi-python
+            git add .
+            git stash
             git checkout development
             git pull
             ./manage down

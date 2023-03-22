@@ -10,6 +10,7 @@ from aries_cloudcontroller import (
     OutOfBandApi,
     PresentProofV10Api,
     PresentProofV20Api,
+    RevocationApi,
     SchemaApi,
     WalletApi,
 )
@@ -22,18 +23,19 @@ async def noop():
 
 def get_mock_agent_controller() -> AcaPyClient:
     controller = mock(AcaPyClient)
-    controller.wallet = mock(WalletApi)
-    controller.ledger = mock(LedgerApi)
+    controller.__aexit__ = noop
     controller.connection = mock(ConnectionApi)
+    controller.credentials = mock(CredentialsApi)
+    controller.endorse_transaction = mock(EndorseTransactionApi)
     controller.issue_credential_v1_0 = mock(IssueCredentialV10Api)
     controller.issue_credential_v2_0 = mock(IssueCredentialV20Api)
+    controller.ledger = mock(LedgerApi)
+    controller.out_of_band = mock(OutOfBandApi)
     controller.present_proof_v1_0 = mock(PresentProofV10Api)
     controller.present_proof_v2_0 = mock(PresentProofV20Api)
-    controller.credentials = mock(CredentialsApi)
-    controller.out_of_band = mock(OutOfBandApi)
-    controller.endorse_transaction = mock(EndorseTransactionApi)
+    controller.revocation = mock(RevocationApi)
     controller.schema = mock(SchemaApi)
-    controller.__aexit__ = noop
+    controller.wallet = mock(WalletApi)
     return controller
 
 

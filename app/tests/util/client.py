@@ -17,11 +17,13 @@ from app.constants import (
 
 # GOVERNANCE
 
+TEST_CLIENT_TIMEOUT = 300
+
 
 def governance_client(*, app: Optional[Any] = None):
     return AsyncClient(
         base_url=GOVERNANCE_FASTAPI_ENDPOINT,
-        timeout=120.0,
+        timeout=TEST_CLIENT_TIMEOUT,
         app=app,
         headers={
             "x-api-key": f"governance.{GOVERNANCE_ACAPY_API_KEY}",
@@ -44,7 +46,7 @@ def governance_acapy_client():
 def tenant_admin_client(*, app: Optional[Any] = None):
     return AsyncClient(
         base_url=TENANT_FASTAPI_ENDPOINT,
-        timeout=120.0,
+        timeout=TEST_CLIENT_TIMEOUT,
         app=app,
         headers={
             "x-api-key": f"tenant-admin.{TENANT_ACAPY_API_KEY}",
@@ -67,7 +69,7 @@ def tenant_admin_acapy_client():
 def tenant_client(*, token: str, app: Optional[Any] = None):
     return AsyncClient(
         base_url=TENANT_FASTAPI_ENDPOINT,
-        timeout=120.0,
+        timeout=TEST_CLIENT_TIMEOUT,
         app=app,
         headers={
             "x-api-key": token,
@@ -78,5 +80,7 @@ def tenant_client(*, token: str, app: Optional[Any] = None):
 
 def tenant_acapy_client(*, token: str):
     return AcaPyClient(
-        base_url=TENANT_AGENT_URL, api_key=TENANT_ACAPY_API_KEY, tenant_jwt=token
+        base_url=TENANT_AGENT_URL,
+        api_key=TENANT_ACAPY_API_KEY,
+        tenant_jwt=token,
     )

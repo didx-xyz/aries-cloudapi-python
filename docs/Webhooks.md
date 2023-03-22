@@ -14,19 +14,7 @@ Valid topics are:
 
 ```python
 topics = Literal[
-    "connections",
-    "issue_credential",
-    "forward",
-    "ping",
-    "oob",
-    "basicmessages",
-    "issuer_cred_rev",
-    "issue_credential_v2_0",
-    "issue_credential_v2_0_indy",
-    "issue_credential_v2_0_dif",
-    "present_proof",
-    "present_proof_v2_0",
-    "revocation_registry",
+    "basic-messages", "connections", "proofs", "credentials", "endorsements", "oob", "revocation"
 ]
 ```
 

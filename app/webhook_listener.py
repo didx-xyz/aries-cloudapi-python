@@ -50,7 +50,7 @@ class Webhooks:
             await Webhooks.client.wait_until_ready()
 
         try:
-            await asyncio.wait_for(wait_for_ready(), timeout=5)
+            await asyncio.wait_for(wait_for_ready(), timeout=30)
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()
@@ -70,7 +70,7 @@ class Webhooks:
             Webhooks._listeners = []
 
         try:
-            await asyncio.wait_for(wait_for_shutdown(), timeout=5)
+            await asyncio.wait_for(wait_for_shutdown(), timeout=20)
         except asyncio.TimeoutError:
             sys.exit()
 
@@ -100,7 +100,7 @@ async def start_listener(*, topic: CloudApiTopics, wallet_id: str):
                 return payload
 
     async def wait_for_event_with_timeout(
-        *, filter_map: Dict[str, Any], timeout: float = 10
+        *, filter_map: Dict[str, Any], timeout: float = 180
     ):
         try:
             payload = await asyncio.wait_for(

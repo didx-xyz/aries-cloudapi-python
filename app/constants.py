@@ -13,3 +13,7 @@ WEBHOOKS_URL = os.getenv("WEBHOOKS_URL", "http://localhost:3010")
 
 ACAPY_MULTITENANT_JWT_SECRET = os.getenv("ACAPY_MULTITENANT_JWT_SECRET", "jwtSecret")
 ACAPY_ENDORSER_ALIAS = os.getenv("ACAPY_ENDORSER_ALIAS", "endorser")
+
+ACAPY_TAILS_SERVER_BASE_URL = os.getenv(
+    "ACAPY_TAILS_SERVER_BASE_URL", "http://localhost:6543"
+)

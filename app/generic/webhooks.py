@@ -24,7 +24,7 @@ async def get_webhooks_for_wallet(
     Returns all webhooks per wallet
 
     This implicitly extracts the wallet ID and return only items
-    belongign to the wallet.
+    belonging to the wallet.
 
     Returns:
     ---------

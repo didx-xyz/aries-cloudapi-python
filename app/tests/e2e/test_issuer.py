@@ -404,7 +404,7 @@ async def test_store_credential(
     # Check alice has received the credential
     assert check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "credential-received"},
+        filter_map={"state": "offer-received"},
         topic="credentials",
         max_duration=240,
     )

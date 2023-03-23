@@ -14,7 +14,7 @@ def event_loop(request: Any):
     loop.close()
 
 
-# Governace should be provisioned with public did in all e2e tests
+# Governance should be provisioned with public did in all e2e tests
 @pytest.fixture(autouse=True, scope="module")
 async def governance_public_did(governance_acapy_client: AcaPyClient):
     if not await has_public_did(governance_acapy_client):

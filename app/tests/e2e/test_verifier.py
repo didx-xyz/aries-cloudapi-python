@@ -164,13 +164,13 @@ async def test_accept_proof_request_oob_v1(
         max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
-    alice_proof_id = proof_records_alice.json()[0]["proof_id"]
+    alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
 
     requested_credentials = await alice_member_client.get(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
@@ -195,8 +195,8 @@ async def test_accept_proof_request_oob_v1(
         max_duration=240,
     )
 
-    # Add sleep of 20 seconds to ensure state change of proof response
-    time.sleep(20)
+    # Add sleep of 5 seconds to ensure state change of proof response
+    time.sleep(5)
 
     assert check_webhook_state(
         client=bob_member_client,

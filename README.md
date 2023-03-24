@@ -68,3 +68,9 @@ pytest --ignore=app/tests/e2e
 > ```
 > will output all log messages with a log level of `DEBUG` or higher.
 
+To run specific tests you can specify the path to the test file or the test class or test method. For example:
+
+```bash
+pytest app/tests/e2e/test_verifier.py::test_accept_proof_request_oob_v1
+```
+

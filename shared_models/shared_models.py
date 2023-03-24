@@ -240,13 +240,14 @@ class PresentationExchange(BaseModel):
     role: Literal["prover", "verifier"]
     state: Optional[
         Literal[
-            "proposal-sent",
-            "proposal-received",
-            "request-sent",
-            "request-received",
-            "presentation-sent",
-            "presentation-received",
+            "abandoned",
             "done",
+            "presentation-received",
+            "presentation-sent",
+            "proposal-received",
+            "proposal-sent",
+            "request-received",
+            "request-sent",
         ]
     ] = None
     thread_id: Optional[str] = None

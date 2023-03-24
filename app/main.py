@@ -1,20 +1,21 @@
+from distutils.util import strtobool
 import io
 import logging
 import os
 import traceback
-from distutils.util import strtobool
 
-import pydantic
-import yaml
 from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
+import pydantic
+import yaml
 
 from app.admin.tenants import tenants
 from app.generic import definitions, messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
+from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
@@ -35,6 +36,7 @@ app = FastAPI(
 app.include_router(connections.router)
 app.include_router(definitions.router)
 app.include_router(issuer.router)
+app.include_router(jsonld.router)
 app.include_router(messaging.router)
 app.include_router(oob.router)
 app.include_router(tenants.router)

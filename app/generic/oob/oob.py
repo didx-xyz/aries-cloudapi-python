@@ -10,11 +10,13 @@ from aries_cloudcontroller.model.attachment_def import AttachmentDef
 from aries_cloudcontroller.model.invitation_create_request import (
     InvitationCreateRequest,
 )
+from aries_cloudcontroller.model.oob_record import OobRecord
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.dependencies import agent_selector
-from shared_models import OobRecord, Connection, conn_record_to_connection
+from shared_models import Connection, conn_record_to_connection
 
 logger = logging.getLogger(__name__)
 

@@ -70,8 +70,10 @@ async def accept_taa(
     accept_taa_response = await controller.ledger.accept_taa(
         body=TAAAccept(**taa.dict(), mechanism=mechanism)
     )
-    logger.info("accept_taa_response: %s", accept_taa_response)
-    if accept_taa_response != {}:
+
+    logger.info("accept_taa_response value: %s", accept_taa_response)
+
+    if isinstance(accept_taa_response, ClientResponseError):
         logger.error("Failed to accept TAA.\n %s", accept_taa_response)
         raise HTTPException(
             status_code=404,

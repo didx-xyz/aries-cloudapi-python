@@ -10,7 +10,6 @@ from shared_models.shared_models import (
     IssueCredentialProtocolVersion,
     presentation_record_to_model,
     pres_id_no_version,
-    OobRecord,
     RedisItem,
     BasicMessage,
     PayloadType,

@@ -152,32 +152,6 @@ class Oob(BaseModel):
     updated_at: Optional[str] = None
 
 
-# TODO: Import this from aca-py instead of typing this here
-# when aca-py version is >=0.7.5
-class OobRecord(BaseModel):
-    attach_thread_id: Optional[str] = None
-    connection_id: Optional[str] = None
-    created_at: Optional[str] = None
-    invi_msg_id: Optional[str]
-    invitation: Optional[InvitationMessage] = None
-    oob_id: Optional[str] = None
-    our_recipient_key: Optional[str] = None
-    role: Optional[Literal["sender", "receiver"]] = None
-    state: Optional[
-        Literal[
-            "initial",
-            "prepare-response",
-            "await-response",
-            "reuse-not-accepted",
-            "reuse-accepted",
-            "done",
-        ]
-    ] = None
-    their_service: Optional[ServiceDecorator] = None
-    trace: Optional[bool] = None
-    updated_at: Optional[str] = None
-
-
 class Connection(BaseModel):
     alias: Optional[str] = None
     connection_id: Optional[str] = None
@@ -285,17 +259,23 @@ def presentation_record_to_model(
     record: Union[V20PresExRecord, V10PresentationExchange]
 ) -> PresentationExchange:
     if isinstance(record, V20PresExRecord):
+        try:
+            presentation = IndyProof(**record.by_format.pres["indy"]) if record.by_format.pres else None
+        except AttributeError:
+            presentation = None
+
+        try:
+            presentation_request = IndyProofRequest(**record.by_format.pres_request["indy"])
+        except AttributeError:
+            presentation_request = None
+
         return PresentationExchange(
             connection_id=record.connection_id,
             created_at=record.created_at,
             error_msg=record.error_msg,
             parent_thread_id=record.pres_request.id if record.pres_request else None,
-            presentation=IndyProof(**record.by_format.pres["indy"])
-            if record.by_format.pres
-            else None,
-            presentation_request=IndyProofRequest(
-                **record.by_format.pres_request["indy"]
-            ),
+            presentation=presentation,
+            presentation_request=presentation_request,
             proof_id="v2-" + str(record.pres_ex_id),
             protocol_version=PresentProofProtocolVersion.v2.value,
             role=record.role,

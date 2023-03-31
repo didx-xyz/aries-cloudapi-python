@@ -12,6 +12,16 @@
 This project is a essentially comprises of a [FastAPI](fastapi.tiangolo.com/) app around the [hyperledger aries stack](https://github.com/hyperledger/) primarily tailored around [YOMA](yoma.africa)-specific use cases. The FastAPI app serves as a wrapper around common workflows for real-life applications of the stack. You can think of it as a wrapper, a form of middleware, or interface for client applications (for instance a mobile app) and the backend stack (using [Aries Cloudcontroller](https://github.com/didx-xyz/aries-cloudcontroller-python) under the hood and [Aca-py](https://github.com/hyperledger/aries-cloudagent-python) in the back - like a mullet). The aim is to facilitate a client's workflow by providing some convenience API endpoints for common workflows like creating wallets, managing wallets, their connections, and credentials, proofs and workflows. What is multiple API calls to the AriesCloudAgent can often be achieved with a single call via this API. For example, you want to create a wallet, which involves writing to the ledger, waiting for the result, getting and accepting a TAA, creating a DID and creating the wallet itself can be done in a single blow - how convenient, isn't it.
 
 ## How to run it
+### Step 1: Run a local VON Network
+Setup the VON network locally that will provide an instance of Hyperledger Indy ledger. Follow the instructions in the [VON Network README](https://github.com/bcgov/von-network/blob/main/README.md)
+> NOTE: Ensure you start the VON Network with `--taa-sample` flag to enable TAA acceptance. For example:
+> ```bash
+> ./manage start --taa-sample
+> ```
+> This will start the VON Network with a sample TAA that you can use to accept the TAA. You can find the TAA in the `./von-network/config/sample_taa.json` and `./von-network/config/sample_aml.json` file.
+
+### Step 2: Run the Aries Cloud Agent
+> NOTE: Ensure the VON Network is running before starting the Cloud API. The Cloud API will try to connect to the VON Network and will fail if it is not running.
 
 Running it is pretty straight forward - it's all containers. Simply run `./manage up` or `make start` from the root of the project. This should spin up and provision all you need. You can visit [localhost:8000/api/doc](localhost:8000/api/doc) for the swagger docs and start playing about.
 

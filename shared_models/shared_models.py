@@ -146,6 +146,7 @@ class Oob(BaseModel):
             "reuse-not-accepted",
             "reuse-accepted",
             "done",
+            "deleted",
         ]
     ] = None
     trace: Optional[bool] = None

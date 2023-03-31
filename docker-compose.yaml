@@ -13,8 +13,8 @@ services:
       - ./environments/governance-ga/fastapi.default.env:/app/.env
     depends_on:
       - governance-ga-wallets-db
-      - ledger-nodes
-      - ledger-browser
+#      - ledger-nodes
+#      - ledger-browser
     networks:
       - governance-ga
       - host
@@ -54,8 +54,8 @@ services:
       - 0.0.0.0:3021:3021
     depends_on:
       - governance-ga-wallets-db
-      - ledger-nodes
-      - ledger-browser
+#      - ledger-nodes
+#      - ledger-browser
     networks:
       - governance-ga
       - host
@@ -87,8 +87,8 @@ services:
       - ./environments/governance-multitenant/fastapi.default.env:/app/.env
     depends_on:
       - governance-multitenant-wallets-db
-      - ledger-nodes
-      - ledger-browser
+#      - ledger-nodes
+#      - ledger-browser
     networks:
       - governance-multitenant
       - host
@@ -155,9 +155,9 @@ services:
     networks:
       - governance-multitenant
       - host
-    depends_on:
-      - ledger-nodes
-      - ledger-browser
+#    depends_on:
+#      - ledger-nodes
+#      - ledger-browser
   governance-multitenant-agent:
     build:
       context: .
@@ -169,56 +169,56 @@ services:
       - 0.0.0.0:4021:3021
     depends_on:
       - governance-multitenant-wallets-db
-      - ledger-nodes
-      - ledger-browser
+#      - ledger-nodes
+#      - ledger-browser
     networks:
       - governance-multitenant
       - governance-ga
       - host
-  ledger-browser:
-    build:
-      context: https://github.com/didx-xyz/von-network.git
-      dockerfile: Dockerfile
-    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh; sleep 60'"
-    environment:
-      - DOCKERHOST=${DOCKERHOST}
-      - MAX_FETCH=50000
-      - RESYNC_TIME=120
-      - REGISTER_NEW_DIDS=True
-      - LEDGER_INSTANCE_NAME=localhost
-    ports:
-      - ${WEB_SERVER_HOST_PORT:-9000}:8000
-    volumes:
-      - webserver-cli:/home/indy/.indy-cli
-      - webserver-ledger:/home/indy/ledger
-    networks:
-      - governance-multitenant
-      - governance-ga
-      - host
-    depends_on:
-      - ledger-nodes
-  ledger-nodes:
-    build:
-      context: https://github.com/didx-xyz/von-network.git
-      dockerfile: Dockerfile
-    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh; sleep 60'"
-    ports:
-      - 0.0.0.0:9701:9701
-      - 0.0.0.0:9702:9702
-      - 0.0.0.0:9703:9703
-      - 0.0.0.0:9704:9704
-      - 0.0.0.0:9705:9705
-      - 0.0.0.0:9706:9706
-      - 0.0.0.0:9707:9707
-      - 0.0.0.0:9708:9708
-    environment:
-      - DOCKERHOST=${DOCKERHOST}
-    volumes:
-      - nodes-data:/home/indy/ledger
-    networks:
-      - governance-multitenant
-      - governance-ga
-      - host
+#  ledger-browser:
+#    build:
+#      context: https://github.com/didx-xyz/von-network.git
+#      dockerfile: Dockerfile
+#    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh; sleep 60'"
+#    environment:
+#      - DOCKERHOST=${DOCKERHOST}
+#      - MAX_FETCH=50000
+#      - RESYNC_TIME=120
+#      - REGISTER_NEW_DIDS=True
+#      - LEDGER_INSTANCE_NAME=localhost
+#    ports:
+#      - ${WEB_SERVER_HOST_PORT:-9000}:8000
+#    volumes:
+#      - webserver-cli:/home/indy/.indy-cli
+#      - webserver-ledger:/home/indy/ledger
+#    networks:
+#      - governance-multitenant
+#      - governance-ga
+#      - host
+#    depends_on:
+#      - ledger-nodes
+#  ledger-nodes:
+#    build:
+#      context: https://github.com/didx-xyz/von-network.git
+#      dockerfile: Dockerfile
+#    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh; sleep 60'"
+#    ports:
+#      - 0.0.0.0:9701:9701
+#      - 0.0.0.0:9702:9702
+#      - 0.0.0.0:9703:9703
+#      - 0.0.0.0:9704:9704
+#      - 0.0.0.0:9705:9705
+#      - 0.0.0.0:9706:9706
+#      - 0.0.0.0:9707:9707
+#      - 0.0.0.0:9708:9708
+#    environment:
+#      - DOCKERHOST=${DOCKERHOST}
+#    volumes:
+#      - nodes-data:/home/indy/ledger
+#    networks:
+#      - governance-multitenant
+#      - governance-ga
+#      - host
   tails-server:
     image: ghcr.io/bcgov/tails-server:1.0.0
     ports:

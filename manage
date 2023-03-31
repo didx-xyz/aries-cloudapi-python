@@ -1,7 +1,8 @@
 #!/bin/bash
 export MSYS_NO_PATHCONV=1
-export DOCKERHOST=${APPLICATION_URL-$(docker run --rm --net=host codenvy/che-ip)}
-set -e
+# getDockerHost; for details refer to https://github.com/bcgov/DITP-DevOps/tree/main/code/snippets#getdockerhost
+. /dev/stdin <<<"$(cat <(curl -s --raw https://raw.githubusercontent.com/bcgov/DITP-DevOps/main/code/snippets/getDockerHost))"
+export DOCKERHOST=$(getDockerHost)
 
 SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
 
@@ -54,7 +55,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="governance-trust-registry governance-multitenant-wallets-db governance-multitenant-agent tails-server ledger-nodes ledger-browser
+DEFAULT_CONTAINERS="governance-trust-registry governance-multitenant-wallets-db governance-multitenant-agent tails-server
                     governance-ga-wallets-db governance-ga-agent governance-multitenant-web governance-ga-web wh-redis governance-webhooks-web governance-endorser"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:

@@ -160,6 +160,12 @@ async def test_create_credential_definition_issuer_tenant(
     faber_acapy_client: AcaPyClient,
     faber_client: AsyncClient,
 ):
+    # Fails sometimes on first full e2e test run against external stack.
+    # There is a race condition / timing issue somewhere...
+    # Temporary sleep workaround
+    # TODO: debug
+    await asyncio.sleep(10)
+
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id,
         tag=get_random_string(5),

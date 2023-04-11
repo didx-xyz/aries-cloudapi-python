@@ -2,6 +2,9 @@ replicaCount: 1
 
 daemon: false
 
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+  
 image:
   repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-webhooks-web"
   pullPolicy: Always
@@ -9,7 +12,7 @@ image:
 
 ingress:
   internal:
-    enabled: false
+    enabled: true
     className: nginx-internal
     annotations:
       nginx.ingress.kubernetes.io/service-upstream: "true"

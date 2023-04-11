@@ -2,6 +2,9 @@ replicaCount: 1
 
 daemon: false
 
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+  
 strategy:
   type: Recreate
 
@@ -12,7 +15,7 @@ image:
 
 ingress:
   internal:
-    enabled: false
+    enabled: true
     className: nginx-internal
     annotations:
       nginx.ingress.kubernetes.io/service-upstream: "true"

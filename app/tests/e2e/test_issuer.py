@@ -421,7 +421,6 @@ async def test_send_credential_request(
 #         max_duration=360,
 #     )
 
-
 @pytest.mark.asyncio
 async def test_revoke_credential(
     faber_client: AsyncClient,

@@ -1,15 +1,21 @@
 replicaCount: 1
 
+strategy:
+  type: Recreate
+
 daemon: false
+
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
 
 image:
   repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/ledger-nodes"
   pullPolicy: Always
-  tag: "pr-8"
+  tag: "development"
 
 ingress:
   internal:
-    enabled: true
+    enabled: false
     className: nginx-internal
     annotations:
       nginx.ingress.kubernetes.io/service-upstream: "true"
@@ -56,29 +62,8 @@ addPorts:
     containerPort: 9708
     protocol: TCP
     appProtocol: tcp
-  - port: 9000
-    containerPort: 8000
-    protocol: TCP
 
 command:
   - "bash"
   - "-c"
   - "export DOCKERHOST=ledger-nodes; ./scripts/start_nodes.sh"
-
-extraContainers:
-  - name: ledger-browser
-    image:
-      repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/ledger-browser"
-      tag: "pr-8"
-    command:
-      - "bash"
-      - "-c"
-      - "sleep 60; export DOCKERHOST=ledger-nodes; ./scripts/start_webserver.sh"
-    port: 8000
-
-env:
-  MAX_FETCH: "50000"
-  RESYNC_TIME: "120"
-  REGISTER_NEW_DIDS: "True"
-  LEDGER_INSTANCE_NAME: "localhost"
-  LOG_LEVEL: info

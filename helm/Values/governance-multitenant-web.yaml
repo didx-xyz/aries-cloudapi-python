@@ -2,6 +2,9 @@ replicaCount: 1
 
 daemon: false
 
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+
 image:
   repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-multitenant-web"
   pullPolicy: Always
@@ -18,6 +21,7 @@ service:
   hostNetwork: false
   port: 8100
   containerPort: 8000
+  appProtocol: https
 
 httpProbes:
   {}
@@ -26,6 +30,40 @@ httpProbes:
   # readiness:
   #   path: /
   # initialDelaySeconds: 2
+
+initContainers:
+  - name: wait-governance-ga-agent
+    image: busybox
+    env:
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache busybox-extras
+        until echo exit | telnet governance-ga-agent.$(MY_POD_NAMESPACE).svc.cluster.local 3021; do
+          echo "waiting for governance-ga-agent to be healthy"
+          sleep 2
+        done
+  - name: wait-governance-multitenant-agent
+    image: busybox
+    env:
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache busybox-extras
+        until echo exit | telnet governance-multitenant-agent.$(MY_POD_NAMESPACE).svc.cluster.local 4021; do
+          echo "waiting for governance-multitenant-agent to be healthy"
+          sleep 2
+        done
 
 persistence:
   enabled: false

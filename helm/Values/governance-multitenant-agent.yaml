@@ -2,6 +2,9 @@ replicaCount: 1
 
 daemon: false
 
+podAnnotations:
+  sidecar.istio.io/proxyCPU: 10m
+
 image:
   repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-multitenant-agent"
   pullPolicy: Always
@@ -26,7 +29,7 @@ ingress:
           - path: /
             port: 4020
   external:
-    enabled: true
+    enabled: false
     className: nginx-external
     annotations:
       nginx.ingress.kubernetes.io/service-upstream: "true"
@@ -36,7 +39,7 @@ ingress:
           - path: /
             port: 4020
   internal-e2e:
-    enabled: false
+    enabled: true
     className: nginx-internal
     annotations:
       nginx.ingress.kubernetes.io/service-upstream: "true"
@@ -63,9 +66,28 @@ httpProbes:
     initialDelaySeconds: 300
     timeoutSeconds: 30
   readiness:
+    type: httpGet
     path: /status/ready
     initialDelaySeconds: 5
     timeoutSeconds: 30
+
+initContainers:
+  - name: wait-for-ledger-browser
+    image: busybox
+    env:
+      - name: MY_POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+    command:
+      - sh
+      - -c
+      - |
+        apk add --no-cache busybox-extras
+        until echo exit | telnet ledger-browser.$(MY_POD_NAMESPACE).svc.cluster.local 9000; do
+          echo "waiting for ledger-browser to be healthy"
+          sleep 2
+        done
 
 persistence:
   enabled: false
@@ -108,10 +130,11 @@ env:
 
   ACAPY_WALLET_TYPE: askar
   ACAPY_WALLET_STORAGE_TYPE: postgres_storage
-  ACAPY_LOG_LEVEL: debug
+  ACAPY_LOG_LEVEL: info
   ACAPY_AUTO_PROVISION: true
   # Ledger
-  ACAPY_GENESIS_URL: http://ledger-nodes:9000/genesis
+  ACAPY_GENESIS_URL: http://ledger-browser:9000/genesis
+
   # Multi-tenant Configuration
   ACAPY_MULTITENANT: true
   ACAPY_MULTITENANT_ADMIN: false

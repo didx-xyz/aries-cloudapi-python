@@ -15,15 +15,15 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up Python 3.8.10
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8.10"
+          python-version: "3.9"
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
@@ -40,27 +40,32 @@ jobs:
           i=0
           echo waiting for aca-py container to startup
           ./manage up-daemon-usecache
-          sleep 150
-          while [ $i -le 240 ]
-          do
-            if (docker logs $(docker ps -f name="governance-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
-            :: Alice                                    ::
-            ::                                          ::
-            ::                                          ::
-            :: Inbound Transports:                      ::
-            ::                                          ::
-            :: "); echo wait over; exit 0; then ((i++)); fi
-          done
+          # sleep 150
+          # while [ $i -le 240 ]
+          # do
+          #   if (docker logs $(docker ps -f name="governance-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
+          #   :: Alice                                    ::
+          #   ::                                          ::
+          #   ::                                          ::
+          #   :: Inbound Transports:                      ::
+          #   ::                                          ::
+          #   :: "); echo wait over; exit 0; then ((i++)); fi
+          # done
+        shell: bash
+      - name: Debug
+        if: always()
+        run: |
+          docker ps
         shell: bash
       - name: Test with pytest
         id: test
         continue-on-error: true
         run: |
-          pytest  --cov=trustregistry --cov=app trustregistry app
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          pytest -x --cov=trustregistry --cov=app trustregistry app
+          # bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+        # env:
+          # CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
       - name: Retry tests
         if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
         run: |

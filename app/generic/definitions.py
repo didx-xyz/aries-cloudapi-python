@@ -425,7 +425,12 @@ async def create_schema(
             body=schema_send_request, create_transaction_for_endorser=False
         )
     except ClientResponseError as e:
-        if e.status == 400 and "already exist" in e.message:
+        # When runnin e2e tests against k8s deployment with governance-ga-agent exposed with nginx ingress
+        # the message returned as:
+        # message='Bad Request', url=URL('https://governance-ga-agent.cloudapi.dev.didxtech.com/schemas?create_transaction_for_endorser=false')
+        is_localhost = "localhost" in aries_controller.base_url
+        error_message = e.message
+        if e.status == 400 and (is_localhost and "already exist" in error_message) or (not is_localhost and "Bad Request" in error_message):
             pub_did = await aries_controller.wallet.get_public_did()
             _schema = await aries_controller.schema.get_schema(
                 schema_id=f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
@@ -474,7 +479,7 @@ async def create_schema(
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
         #   make sure the schema is registered in the trust registry
-        if error.status_code != 400:
+        if error.status_code != 405:
             raise error
 
     return _credential_schema_from_acapy(result.schema_)

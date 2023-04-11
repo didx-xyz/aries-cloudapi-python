@@ -1,0 +1,63 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-multitenant-web"
+  pullPolicy: Always
+  tag: "baseline-04d67c5"
+
+ingress:
+  internal:
+    enabled: false
+  external:
+    enabled: false
+
+service:
+  # if set, will run Pods on Node Network
+  hostNetwork: false
+  port: 8100
+  containerPort: 8000
+
+httpProbes:
+  {}
+  # liveness:
+  #   path: /
+  # readiness:
+  #   path: /
+  # initialDelaySeconds: 2
+
+persistence:
+  enabled: false
+
+configFiles:
+  shared_models.py:
+    path: /app/shared_models/shared_models.py
+    content: |-
+      {{ .Files.Get "assets/shared_models/shared_models.py" }}
+  __init__.py:
+    path: /app/shared_models/__init__.py
+    content: |-
+      {{ .Files.Get "assets/shared_models/__init__.py" }}
+
+autoscaling:
+  enabled: false
+
+extraSecretNamesForEnvFrom:
+  - ga-and-mt-web-env
+
+secretData:
+  {}
+  # ACAPY_ADMIN_API_KEY: "adminApiKey"
+  # ACAPY_MULTITENANT_JWT_SECRET: "jwtSecret"
+  # ACAPY_TENANT_AGENT_API_KEY: "adminApiKey"
+  # ACAPY_GOVERNANCE_AGENT_API_KEY: "adminApiKey"
+
+env:
+  ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
+  ACAPY_TENANT_AGENT_URL: http://governance-multitenant-agent:4021
+  TRUST_REGISTRY_URL: http://governance-trust-registry:8001
+  OPENAPI_NAME: CloudAPI-Multitenant
+  WEBHOOKS_URL: http://governance-webhooks-web:3010
+  PYTHONPATH: /
+  ACAPY_ENDORSER_ALIAS: endorser

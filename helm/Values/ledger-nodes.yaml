@@ -1,0 +1,84 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/ledger-nodes"
+  pullPolicy: Always
+  tag: "pr-8"
+
+ingress:
+  internal:
+    enabled: true
+    className: nginx-internal
+    annotations:
+      nginx.ingress.kubernetes.io/service-upstream: "true"
+    hosts:
+      - host: ledger-browser.cloudapi.dev.didxtech.com
+        paths:
+          - path: /
+            port: 9000
+  external:
+    enabled: false
+
+service:
+  hostNetwork: false
+  port: 9701
+  containerPort: 9701
+  appProtocol: tcp
+
+addPorts:
+  - port: 9702
+    containerPort: 9702
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9703
+    containerPort: 9703
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9704
+    containerPort: 9704
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9705
+    containerPort: 9705
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9706
+    containerPort: 9706
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9707
+    containerPort: 9707
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9708
+    containerPort: 9708
+    protocol: TCP
+    appProtocol: tcp
+  - port: 9000
+    containerPort: 8000
+    protocol: TCP
+
+command:
+  - "bash"
+  - "-c"
+  - "export DOCKERHOST=ledger-nodes; ./scripts/start_nodes.sh"
+
+extraContainers:
+  - name: ledger-browser
+    image:
+      repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/ledger-browser"
+      tag: "pr-8"
+    command:
+      - "bash"
+      - "-c"
+      - "sleep 60; export DOCKERHOST=ledger-nodes; ./scripts/start_webserver.sh"
+    port: 8000
+
+env:
+  MAX_FETCH: "50000"
+  RESYNC_TIME: "120"
+  REGISTER_NEW_DIDS: "True"
+  LEDGER_INSTANCE_NAME: "localhost"
+  LOG_LEVEL: info

@@ -112,7 +112,6 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push Docker images
-        # if: github.event.inputs.run-build == 'true'
         uses: docker/build-push-action@v4
         with:
           context: ${{ matrix.context }}

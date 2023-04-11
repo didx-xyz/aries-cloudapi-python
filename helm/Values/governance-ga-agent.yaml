@@ -1,0 +1,137 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-ga-agent"
+  pullPolicy: Always
+  tag: "pr-10"
+
+args:
+  - --wallet-type
+  - askar
+  - --plugin
+  - acapy_wallet_groups_plugin
+
+ingress:
+  internal:
+    enabled: true
+    className: nginx-internal
+    annotations:
+      nginx.ingress.kubernetes.io/service-upstream: "true"
+    hosts:
+      - host: ga-agent.cloudapi.dev.didxtech.com
+        paths:
+          - path: /
+            port: 3020
+  external:
+    enabled: true
+    className: nginx-external
+    annotations:
+      nginx.ingress.kubernetes.io/service-upstream: "true"
+    hosts:
+      - host: ga-agent.cloudapi.dev.didxtech.com
+        paths:
+          - path: /
+            port: 3020
+  internal-e2e:
+    enabled: false
+    className: nginx-internal
+    annotations:
+      nginx.ingress.kubernetes.io/service-upstream: "true"
+    hosts:
+      - host: governance-ga-agent.cloudapi.dev.didxtech.com
+        paths:
+          - path: /
+            port: 3021
+
+service:
+  # if set, will run Pods on Node Network
+  hostNetwork: false
+  port: 3021
+  containerPort: 3021
+
+addPorts:
+  - port: 3020
+    containerPort: 3020
+    protocol: TCP
+
+httpProbes:
+  liveness:
+    path: /status/live
+    initialDelaySeconds: 300
+    timeoutSeconds: 30
+  readiness:
+    path: /status/ready
+    initialDelaySeconds: 5
+    timeoutSeconds: 30
+
+persistence:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+extraSecretNamesForEnvFrom:
+  - didx-rds-credentials
+  - ga-agent-env
+
+# Sensitive environment variables are sourced from k8s secrets:
+# - generated with secretData, or
+# - pre-populated with external tooling
+# TODO: Helm secret logic to create new secret if not exist
+secretData:
+  {}
+  # WALLET_DB_HOST: "<redis_cluster>"
+  # WALLET_DB_PORT: "<redis_port>"
+  # ACAPY_LABEL: "Alice"
+  # ACAPY_WALLET_NAME: "Alice_Name"
+  # ACAPY_WALLET_KEY: "alice_key"
+  # ACAPY_WALLET_SEED: "00000000000000000governance1Any1"
+  # ACAPY_ADMIN_API_KEY: "adminApiKey"
+  # ACAPY_MULTITENANT_JWT_SECRET: "jwtSecret"
+  # ACAPY_TENANT_AGENT_API_KEY: "adminApiKey"
+  # ACAPY_GOVERNANCE_AGENT_API_KEY: "adminApiKey"
+  # ACAPY_WALLET_STORAGE_CONFIG: "{"url":"governance-ga-wallets-db:5432","wallet_scheme":"MultiWalletSingleTable"}"
+
+env:
+  # for aca-py
+  HTTP_PORT: 3020
+  WEBHOOK_PORT: 3010
+  ADMIN_PORT: 3021
+  ADMIN_URL: http://governance-ga-agent:3021
+  ACAPY_OUTBOUND_TRANSPORT: http
+  ACAPY_ADMIN: "[0.0.0.0,3021]"
+  ACAPY_ENDPOINT: https://ga-agent.cloudapi.dev.didxtech.com
+  ACAPY_WEBHOOK_URL: http://governance-webhooks-web:3010/governance
+  # Tails server
+  # Should be changed further
+  ACAPY_TAILS_SERVER_BASE_URL: http://tails-server:6543
+  ACAPY_WALLET_TYPE: askar
+  ACAPY_WALLET_STORAGE_TYPE: postgres_storage
+  ACAPY_LOG_LEVEL: debug
+  ACAPY_AUTO_PROVISION: true
+  # Ledger
+  ACAPY_GENESIS_URL: http://ledger-nodes:9000/genesis
+  ACAPY_PUBLIC_INVITES: true
+  AGENT_ENDPOINT: https://ga-agent.cloudapi.dev.didxtech.com
+  ACAPY_ENDORSER_ROLE: endorser
+  # ## DO NOT CHANGE VARIABLES BELOW
+  # ## Unless you know exactly what you are doing
+  # ## Changes will probably break CloudAPI
+  # Optional Helper Configurations - See https://github.com/hyperledger/aries-cloudagent-python/blob/main/aries_cloudagent/config/argparse.py
+  ACAPY_AUTO_ACCEPT_INVITES: false
+  ACAPY_AUTO_ACCEPT_REQUESTS: false
+  ACAPY_AUTO_PING_CONNECTION: true
+  ACAPY_AUTO_RESPOND_MESSAGES: false
+  ACAPY_AUTO_RESPOND_CREDENTIAL_PROPOSAL: false
+  ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER: false
+  ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST: false
+  ACAPY_AUTO_RESPOND_PRESENTATION_PROPOSAL: false
+  ACAPY_AUTO_RESPOND_PRESENTATION_REQUEST: false
+  ACAPY_AUTO_STORE_CREDENTIAL: true
+  ACAPY_AUTO_VERIFY_PRESENTATION: true
+  ACAPY_PRESERVE_EXCHANGE_RECORDS: false
+  ACAPY_AUTO_ENDORSE_TRANSACTIONS: true
+
+  ACAPY_ACCEPT_TAA: "[service_agreement,1.0]"

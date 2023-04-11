@@ -2,6 +2,8 @@ version: "3"
 
 services:
   governance-ga-web:
+    image: ${ECR_REGISTRY}/governance-ga-web:${IMAGE_TAG:-latest}
+    container_name: governance-ga-web
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
@@ -21,8 +23,9 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
-    image: postgres:11
+    #image: ${ECR_REGISTRY}/postgres:11
     container_name: governance-ga-wallets-db
+    image: postgres:11
     command: postgres -c listen_addresses='*'
     env_file:
       - environments/governance-ga/db.default.env
@@ -44,6 +47,8 @@ services:
   #     - ledger-nodes
   #     - ledger-browser
   governance-ga-agent:
+    image: ${ECR_REGISTRY}/governance-ga-agent:${IMAGE_TAG:-latest}
+    container_name: governance-ga-agent
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.agent
@@ -62,6 +67,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
   governance-trust-registry:
+    image: ${ECR_REGISTRY}/governance-trust-registry:${IMAGE_TAG:-latest}
+    container_name: governance-trust-registry
     build:
       context: .
       dockerfile: ./dockerfiles/trustregistry/Dockerfile
@@ -76,6 +83,8 @@ services:
       - governance-multitenant
       - host
   governance-multitenant-web:
+    image: ${ECR_REGISTRY}/governance-multitenant-web:${IMAGE_TAG:-latest}
+    container_name: governance-multitenant-web
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
@@ -95,6 +104,8 @@ services:
     env_file:
       - environments/governance-multitenant/fastapi.default.env
   governance-webhooks-web:
+    image: ${ECR_REGISTRY}/governance-webhooks-web:${IMAGE_TAG:-latest}
+    container_name: governance-webhooks-web
     build:
       context: .
       dockerfile: ./dockerfiles/webhooks/Dockerfile
@@ -112,6 +123,8 @@ services:
     environment:
       - REDIS_URL=redis://wh-redis
   governance-endorser:
+    image: ${ECR_REGISTRY}/governance-endorser:${IMAGE_TAG:-latest}
+    container_name: governance-endorser
     build:
       context: .
       dockerfile: ./dockerfiles/endorser/Dockerfile
@@ -125,7 +138,9 @@ services:
     env_file:
       - environments/endorser/endorser.env
   wh-redis:
+    #image: ${ECR_REGISTRY}/redis:latest
     image: redis:latest
+    container_name: wh-redis
     restart: always
     ports:
       - 0.0.0.0:6379:6379
@@ -136,6 +151,7 @@ services:
     env_file:
       - environments/webhooks/redis.env
   governance-multitenant-wallets-db:
+    #image: ${ECR_REGISTRY}/postgres:11
     image: postgres:11
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
@@ -148,7 +164,8 @@ services:
       - host
     tty: true
   ngrok-governance-multitenant:
-    image: wernight/ngrok
+    image: ${ECR_REGISTRY}/wernight/ngrok
+    container_name: ngrok-governance-multitenant
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     command: ngrok http governance-multitenant-agent:3020 --log stdout
@@ -159,6 +176,8 @@ services:
       - ledger-nodes
       - ledger-browser
   governance-multitenant-agent:
+    image: ${ECR_REGISTRY}/governance-multitenant-agent:${IMAGE_TAG:-latest}
+    container_name: governance-multitenant-agent
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.author.agent
@@ -176,6 +195,8 @@ services:
       - governance-ga
       - host
   ledger-browser:
+    image: ${ECR_REGISTRY}/ledger-browser
+    container_name: ledger-browser
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
@@ -198,6 +219,8 @@ services:
     depends_on:
       - ledger-nodes
   ledger-nodes:
+    image: ${ECR_REGISTRY}/ledger-nodes:${IMAGE_TAG:-latest}
+    container_name: ledger-nodes
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
@@ -221,6 +244,7 @@ services:
       - host
   tails-server:
     image: ghcr.io/bcgov/tails-server:1.0.0
+    container_name: tails-server
     ports:
       - 0.0.0.0:6543:6543
     networks:

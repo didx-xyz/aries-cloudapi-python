@@ -1,0 +1,38 @@
+replicaCount: 1
+
+daemon: false
+
+image:
+  repository: "324190738845.dkr.ecr.af-south-1.amazonaws.com/governance-endorser"
+  pullPolicy: Always
+  tag: "pr-6"
+
+args: []
+
+configFiles:
+  shared_models.py:
+    path: /shared_models/shared_models.py
+    content: |-
+      {{ .Files.Get "assets/shared_models/shared_models.py" }}
+  __init__.py:
+    path: /shared_models/__init__.py
+    content: |-
+      {{ .Files.Get "assets/shared_models/__init__.py" }}
+
+autoscaling:
+  enabled: false
+
+extraSecretNamesForEnvFrom:
+  - mt-agent-env
+
+env:
+  LOG_LEVEL: debug
+
+  ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
+  #ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey
+
+  # Trust registry
+  TRUST_REGISTRY_URL: http://governance-trust-registry:8001
+
+  # Webhooks
+  WEBHOOKS_PUBSUB_URL: ws://governance-webhooks-web:3010/pubsub

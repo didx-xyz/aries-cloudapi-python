@@ -223,6 +223,7 @@ class PresentationExchange(BaseModel):
             "proposal-sent",
             "request-received",
             "request-sent",
+            "abandoned",
         ]
     ] = None
     thread_id: Optional[str] = None

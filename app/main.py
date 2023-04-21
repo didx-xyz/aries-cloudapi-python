@@ -26,8 +26,9 @@ PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
+debug = not prod
 app = FastAPI(
-    debug=not prod,
+    debug=debug,
     title=OPENAPI_NAME,
     description="Welcome to the Aries CloudAPI Python project",
     version=PROJECT_VERSION,
@@ -74,11 +75,11 @@ async def client_response_error_exception_handler(
 
     if isinstance(exception, ClientResponseError):
         return JSONResponse(
-            {"detail": exception.message, "stack": stacktrace}, exception.status or 500
+            {"detail": exception.message, **({"stack": stacktrace} if debug else {})}, exception.status or 500
         )
     if isinstance(exception, HTTPException):
         return JSONResponse(
-            {**exception.detail, "stack": stacktrace},
+            {**exception.detail, **({"stack": stacktrace} if debug else {})},
             exception.status_code,
             exception.headers,
         )
@@ -86,5 +87,5 @@ async def client_response_error_exception_handler(
         return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
         return JSONResponse(
-            {"detail": "Internal server error", "stack": stacktrace}, 500
+            {"detail": "Internal server error", **({"stack": stacktrace} if debug else {})}, 500
         )

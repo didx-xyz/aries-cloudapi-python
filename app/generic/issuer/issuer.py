@@ -64,7 +64,7 @@ def __issuer_from_id(id: str) -> Issuer:
     elif id.startswith("v2-"):
         return IssueCredentialFacades.v2.value
 
-    raise Exception("Unknown version. ID is expected to contain protocol version")
+    raise CloudApiException("Unknown version. ID is expected to contain protocol version", 400)
 
 
 def __issuer_from_protocol_version(version: IssueCredentialProtocolVersion) -> Issuer:

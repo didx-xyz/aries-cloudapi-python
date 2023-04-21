@@ -12,6 +12,7 @@ import pydantic
 import yaml
 
 from app.admin.tenants import tenants
+from app.error.cloud_api_error import CloudApiException
 from app.generic import definitions, messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -76,6 +77,10 @@ async def client_response_error_exception_handler(
     if isinstance(exception, ClientResponseError):
         return JSONResponse(
             {"detail": exception.message, **({"stack": stacktrace} if debug else {})}, exception.status or 500
+        )
+    if isinstance(exception, CloudApiException):
+        return JSONResponse(
+            {"detail": exception.detail, **({"stack": stacktrace} if debug else {})}, exception.status_code
         )
     if isinstance(exception, HTTPException):
         return JSONResponse(

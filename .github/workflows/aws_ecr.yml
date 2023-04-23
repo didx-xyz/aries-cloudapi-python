@@ -243,9 +243,12 @@ jobs:
         continue-on-error: true
         run: |
           for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
-            helm -n dev-cloudapi delete ${project} || true &
+            if helm -n dev-cloudapi ls --filter "^${project}$" | grep -q ${project}; then
+              helm -n dev-cloudapi delete ${project}
+            else
+              echo "Deployment ${project} not found. Skipping..."
+            fi
           done
-          wait
 
       - name: Drop DBs
         id: drop_dbs

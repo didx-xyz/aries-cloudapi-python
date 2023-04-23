@@ -30,9 +30,8 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
-    #image: ${ECR_REGISTRY:-local}/postgres:11
-    container_name: governance-ga-wallets-db
     image: postgres:11
+    container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
       - environments/governance-ga/db.default.env
@@ -161,7 +160,6 @@ services:
     env_file:
       - environments/endorser/endorser.env
   wh-redis:
-    #image: ${ECR_REGISTRY:-local}/redis:latest
     image: redis:latest
     container_name: wh-redis
     restart: always
@@ -174,7 +172,6 @@ services:
     env_file:
       - environments/webhooks/redis.env
   governance-multitenant-wallets-db:
-    #image: ${ECR_REGISTRY:-local}/postgres:11
     image: postgres:11
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'

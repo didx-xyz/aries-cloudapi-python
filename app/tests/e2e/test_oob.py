@@ -1,7 +1,6 @@
 from aries_cloudcontroller import AcaPyClient
 import pytest
 import time
-import asyncio
 from assertpy import assert_that
 from httpx import AsyncClient
 
@@ -9,14 +8,6 @@ from httpx import AsyncClient
 from app.tests.util.webhooks import (
     check_webhook_state,
 )
-
-# When using the default module scoped fixture in ./conftest.py test_oob_connect_via_public_did fails
-# Setting temporary event_loop override for tests in this file.
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.mark.asyncio

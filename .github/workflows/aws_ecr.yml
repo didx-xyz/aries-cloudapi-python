@@ -6,7 +6,7 @@ on:
       run-update-deployments:
         description: "Run Update Deployments step manually"
         required: false
-        default: "false"
+        default: "true"
       run-tests:
         description: "Run tests step"
         required: false
@@ -30,6 +30,8 @@ concurrency:
 jobs:
   build:
     name: Build image and push to ECR
+    permissions:
+      id-token: write # This is required for requesting the JWT
     runs-on: ubuntu-latest
 
     outputs:
@@ -85,9 +87,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -95,6 +97,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: "324190738845" # org registry
 
       - name: Docker Metadata
         id: meta
@@ -180,7 +184,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update && apt-get upgrade -y
-          apt-get install -y unzip postgresql-client python-is-python3
+          apt-get install -y unzip postgresql-client python-is-python3 redis-tools
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
           curl -Lo sops.deb https://github.com/mozilla/sops/releases/download/v3.7.3/sops_3.7.3_amd64.deb
@@ -190,7 +194,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: didx-xyz/cloud_api_helm
-          token: ${{ secrets.HELM_REPO_TOKEN }} # private access token here, for HTTPS clones
+          token: ${{ secrets.PAT }} # private access token here, for HTTPS clones
           path: helm/Chart
 
       - name: install-aws-cli
@@ -213,7 +217,7 @@ jobs:
 
       - name: Install helm plugins
         run: |
-          helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
+          # helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
           helm plugin install https://github.com/databus23/helm-diff
 
       - name: Symlink shared models
@@ -226,11 +230,10 @@ jobs:
         run: |
           for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
             helm -n dev-cloudapi \
-              secrets diff upgrade "${project}" \
+              diff upgrade "${project}" \
               --install \
               --set image.tag=${{ needs.build.outputs.image_version }} \
               -f ./helm/Values/${project}.yaml \
-              -f ./helm/Secrets/${project}.yaml \
               ./helm/Chart
           done
 
@@ -257,19 +260,34 @@ jobs:
           bash ./scripts/aurora-delete.sh -o didx -d
           bash ./scripts/aurora-delete.sh -o didx_multitenant -d
 
+      - name: List Elasticache Redis
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        env:
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+        run: |
+          redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
+
+      - name: Clean Elasticache Redis
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        env:
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+        run: |
+          redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
+       
       - name: Update deployments
         id: update_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
         run: |
           for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
             helm -n dev-cloudapi \
-              secrets upgrade "${project}" \
+              upgrade "${project}" \
               --install \
               --atomic \
               --timeout=300s \
               --set image.tag=${{ needs.build.outputs.image_version }} \
               -f ./helm/Values/${project}.yaml \
-              -f ./helm/Secrets/${project}.yaml \
               ./helm/Chart &
           done
           wait
@@ -320,7 +338,7 @@ jobs:
         continue-on-error: true
         run: |
           source ./scripts/env.sh
-          pytest -x --cov=trustregistry --cov=app trustregistry app
+          pytest --cov=trustregistry --cov=app trustregistry app
           # pytest -v app/tests/e2e/test_verifier.py
           # pytest -v app/tests/e2e/test_verifier.py::test_accept_proof_request_v1
           # bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
@@ -331,7 +349,7 @@ jobs:
         if: steps.test.outcome=='failure'
         run: |
           source ./scripts/env.sh
-          pytest -x --cov=trustregistry --cov=app trustregistry app
+          pytest --cov=trustregistry --cov=app trustregistry app
           # pytest -v app/tests/e2e/test_verifier.py
           # pytest -v app/tests/e2e/test_verifier.py::test_accept_proof_request_v1
 

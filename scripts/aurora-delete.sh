@@ -105,9 +105,8 @@ drop_db_function() {
     (
       log "Dropping database: $DB"
       PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -c "DROP DATABASE \"$DB\""
-    ) &
+    )
   done
-  wait
   log "$STEP: done"
   echo ""
 }

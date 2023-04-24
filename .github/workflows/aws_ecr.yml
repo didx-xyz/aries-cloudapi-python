@@ -342,19 +342,10 @@ jobs:
         run: |
           source ./scripts/env.sh
           pytest --cov=trustregistry --cov=app trustregistry app
-          # pytest -v app/tests/e2e/test_verifier.py
-          # pytest -v app/tests/e2e/test_verifier.py::test_accept_proof_request_v1
-          # bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-          # echo done
+        #   bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+        #   echo done
         # env:
         #   CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      - name: Retry tests
-        if: steps.test.outcome=='failure'
-        run: |
-          source ./scripts/env.sh
-          pytest --cov=trustregistry --cov=app trustregistry app
-          # pytest -v app/tests/e2e/test_verifier.py
-          # pytest -v app/tests/e2e/test_verifier.py::test_accept_proof_request_v1
 
   stop-runner:
     permissions:

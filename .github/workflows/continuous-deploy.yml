@@ -235,8 +235,12 @@ jobs:
               --install \
               --set image.tag=${{ needs.build.outputs.image_version }} \
               -f ./helm/Chart/values/dev/${project}.yaml \
-              ./helm/Chart
+              ./helm/Chart | tee diff_output.txt
           done
+
+      - name: Quiet diff # Display lines with actual changes and lines indicating the service or component that has changed
+        run: |
+          grep -E '^\s*[-+]|has changed:$' diff_output.txt | awk '{$1=$1};1'
 
       - name: Destroy deployments
         id: destroy_deployments

@@ -24,8 +24,11 @@ on:
     types: [submitted]
 
 concurrency:
-  group: deploy-to-ecr
+  group: continuous-deploy
   cancel-in-progress: false
+
+env:
+  GITHUB_TOKEN: ${{ secrets.PAT }}
 
 jobs:
   build:

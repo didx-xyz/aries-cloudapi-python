@@ -79,6 +79,7 @@ async def accept_taa(
         )
     return accept_taa_response
 
+
 async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     """
     Obtains the public DID endpoint

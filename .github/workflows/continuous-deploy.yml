@@ -196,6 +196,7 @@ jobs:
           repository: didx-xyz/cloud_api_helm
           token: ${{ secrets.PAT }} # private access token here, for HTTPS clones
           path: helm/Chart
+          ref: DIDX-295-source-dev-values-from-helm-repo
 
       - name: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -233,7 +234,7 @@ jobs:
               diff upgrade "${project}" \
               --install \
               --set image.tag=${{ needs.build.outputs.image_version }} \
-              -f ./helm/Values/${project}.yaml \
+              -f ./helm/Chart/values/dev/${project}.yaml \
               ./helm/Chart
           done
 
@@ -290,7 +291,7 @@ jobs:
               --atomic \
               --timeout=300s \
               --set image.tag=${{ needs.build.outputs.image_version }} \
-              -f ./helm/Values/${project}.yaml \
+              -f ./helm/Chart/values/dev/${project}.yaml \
               ./helm/Chart &
           done
           wait

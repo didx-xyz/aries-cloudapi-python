@@ -15,12 +15,6 @@ This project is a essentially comprises of a [FastAPI](fastapi.tiangolo.com/) ap
 
 Export the necessary environment variables
 
-```sh
-export ECR_REGISTRY=324190738845.dkr.ecr.af-south-1.amazonaws.com
-# ECR_REGISTRY doesn't need to be valid for `./manage up` or `make start`
-# It is only used when building and pushing via docker-compose
-```
-
 Running it is pretty straight forward - it's all containers. Simply run `./manage up` or `make start` from the root of the project. This should spin up and provision all you need. You can visit [localhost:8000/api/doc](localhost:8000/api/doc) for the swagger docs and start playing about.
 
 If you are familiar with Make you can also have a look in the Makefile to find some handy methods for running the project.

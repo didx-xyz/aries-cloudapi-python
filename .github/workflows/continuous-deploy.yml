@@ -1,4 +1,4 @@
-name: Deploy to ECR
+name: Continuous Deploy
 
 on:
   workflow_dispatch:

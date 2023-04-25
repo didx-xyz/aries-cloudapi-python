@@ -353,14 +353,13 @@ jobs:
 
       - name: Test with pytest
         id: test
-        # continue-on-error: true
         run: |
           source ./scripts/env.sh
           pytest --cov=trustregistry --cov=app trustregistry app
-        #   bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-        #   echo done
-        # env:
-        #   CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          echo done
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
 
   stop-runner:
     permissions:

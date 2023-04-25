@@ -44,10 +44,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest --cov=trustregistry --cov=app trustregistry app
-          # bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
-        # env:
-          # CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
       - name: Retry tests
         if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
         run: |

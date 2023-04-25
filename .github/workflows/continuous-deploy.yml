@@ -14,7 +14,7 @@ on:
 
   push:
     branches:
-      - "*"
+      - "developement"
     tags:
       - "v*"
   pull_request:

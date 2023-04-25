@@ -5,7 +5,8 @@ name: Continuous Build
 
 on:
   push:
-    branches: [development, main]
+    branches:
+      - "*"
   pull_request:
     branches: [development]
   workflow_dispatch:

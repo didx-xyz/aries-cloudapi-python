@@ -14,7 +14,7 @@ on:
 
   push:
     branches:
-      - "development"
+      - "*"
     tags:
       - "v*"
   pull_request:
@@ -196,7 +196,6 @@ jobs:
           repository: didx-xyz/cloud_api_helm
           token: ${{ secrets.PAT }} # private access token here, for HTTPS clones
           path: helm/Chart
-          ref: DIDX-295-source-dev-values-from-helm-repo
 
       - name: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -235,12 +234,12 @@ jobs:
               --install \
               --set image.tag=${{ needs.build.outputs.image_version }} \
               -f ./helm/Chart/values/dev/${project}.yaml \
-              ./helm/Chart | tee diff_output.txt
+              ./helm/Chart | tee -a diff_output.txt
           done
 
       - name: Quiet diff # Display lines with actual changes and lines indicating the service or component that has changed
         run: |
-          grep -E '^\s*[-+]|has changed:$' diff_output.txt | awk '{$1=$1};1'
+          grep -E '^[-+]\s|has changed:$' diff_output.txt | awk '{$1=$1};1'
 
       - name: Destroy deployments
         id: destroy_deployments

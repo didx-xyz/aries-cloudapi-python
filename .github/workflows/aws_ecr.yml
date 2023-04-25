@@ -338,7 +338,7 @@ jobs:
 
       - name: Test with pytest
         id: test
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           source ./scripts/env.sh
           pytest --cov=trustregistry --cov=app trustregistry app

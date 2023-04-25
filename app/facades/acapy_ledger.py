@@ -70,14 +70,6 @@ async def accept_taa(
     accept_taa_response = await controller.ledger.accept_taa(
         body=TAAAccept(**taa.dict(), mechanism=mechanism)
     )
-
-    if isinstance(accept_taa_response, dict):
-        accept_taa_response = accept_taa_response
-        logger.info("accept_taa_response - TAA response is type dict %s", accept_taa_response)
-    else:
-        logger.info("accept_taa_response - TAA response is type something else %s", accept_taa_response)
-        accept_taa_response = await accept_taa_response.json()
-        
     logger.info("accept_taa_response: %s", accept_taa_response)
     if accept_taa_response != {}:
         logger.error("Failed to accept TAA.\n %s", accept_taa_response)

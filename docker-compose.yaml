@@ -184,7 +184,7 @@ services:
       - host
     tty: true
   ngrok-governance-multitenant:
-    image: ${REGISTRY:-local}/wernight/ngrok
+    image: wernight/ngrok
     container_name: ngrok-governance-multitenant
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env

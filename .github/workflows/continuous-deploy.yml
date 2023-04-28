@@ -238,7 +238,7 @@ jobs:
               ./helm/Chart | tee -a diff_output.txt
           done
 
-      - name: Quiet diff # Display lines with actual changes and lines indicating the service or component that has changed
+      - name: Quiet diff # Display lines with actual changes and lines indicating the component that has changed
         run: |
           grep -E '^[-+]\s|has changed:$' diff_output.txt | awk '{$1=$1};1'
 

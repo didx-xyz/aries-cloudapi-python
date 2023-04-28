@@ -109,7 +109,7 @@ drop_db_function() {
 get_db_list() {
   local DB_OWNER="$1"
   local STEP="get-db-list"
-  local EXCLUDED_DBS=$(echo ${DB_EXCLUDE} | sed "s/,/','/g" | sed "s/\(.*\)/'\1'/")
+  local EXCLUDED_DBS=$(echo "${DB_EXCLUDE}" | sed "s/,/','/g" | sed "s/\(.*\)/'\1'/")
   local SQL_QUERY="SELECT datname FROM pg_database
                    JOIN pg_user ON (pg_database.datdba = pg_user.usesysid)
                    WHERE pg_user.usename = '${DB_OWNER}'
@@ -122,7 +122,7 @@ list_db_function() {
   local DB_OWNER="$1"
   local STEP="list-db"
   log "$STEP: in progress"
-  DB_LIST=$(get_db_list ${DB_OWNER})
+  DB_LIST=$(get_db_list "${DB_OWNER}")
   for DB in $DB_LIST; do
     log "Listing database: $DB"
   done

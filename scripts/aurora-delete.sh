@@ -87,7 +87,6 @@ wrn() {
 }
 
 # Export print function definitions to sub-shell
-
 export -f err
 export -f log
 export -f wrn

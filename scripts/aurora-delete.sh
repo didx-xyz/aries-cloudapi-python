@@ -19,7 +19,7 @@ EOF
 }
 
 main() {
-  #source vars.sh
+  # source vars.sh
   while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -95,34 +95,37 @@ export -f wrn
 drop_db_function() {
   local DB_OWNER="$1"
   local STEP="drop-db"
-  log "$STEP: in progress"
-  DB_LIST=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -t \
-    -c "SELECT datname FROM pg_database JOIN pg_user ON (pg_database.datdba = pg_user.usesysid) \
-    WHERE pg_user.usename = '$DB_OWNER' AND datname NOT IN ('postgres', $(echo $DB_EXCLUDE \
-    | sed "s/,/','/g" \
-    | sed "s/\(.*\)/'\1'/"));")
+  log "${STEP}: in progress"
+  DB_LIST=$(get_db_list "${DB_OWNER}")
   for DB in $DB_LIST; do
     (
       log "Dropping database: $DB"
-      PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -c "DROP DATABASE \"$DB\""
+      PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d postgres -c "DROP DATABASE \"${DB}\""
     )
   done
   log "$STEP: done"
   echo ""
 }
 
+get_db_list() {
+  local DB_OWNER="$1"
+  local STEP="get-db-list"
+  local EXCLUDED_DBS=$(echo ${DB_EXCLUDE} | sed "s/,/','/g" | sed "s/\(.*\)/'\1'/")
+  local SQL_QUERY="SELECT datname FROM pg_database
+                   JOIN pg_user ON (pg_database.datdba = pg_user.usesysid)
+                   WHERE pg_user.usename = '${DB_OWNER}'
+                   AND datname NOT IN ('postgres', ${EXCLUDED_DBS});"
+
+  PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d postgres -t -c "${SQL_QUERY}"
+}
+
 list_db_function() {
   local DB_OWNER="$1"
   local STEP="list-db"
   log "$STEP: in progress"
-  DB_LIST=$(PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -t \
-    -c "SELECT datname FROM pg_database JOIN pg_user ON (pg_database.datdba = pg_user.usesysid) \
-    WHERE pg_user.usename = '$DB_OWNER' AND datname NOT IN ('postgres', $(echo $DB_EXCLUDE \
-    | sed "s/,/','/g" \
-    | sed "s/\(.*\)/'\1'/"));")
+  DB_LIST=$(get_db_list ${DB_OWNER})
   for DB in $DB_LIST; do
     log "Listing database: $DB"
-    # DB_PASSWORD=$PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d postgres -c "DROP DATABASE \"$DB\""
   done
   log "$STEP: done"
   echo ""

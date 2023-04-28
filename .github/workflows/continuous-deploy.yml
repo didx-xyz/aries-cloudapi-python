@@ -15,6 +15,7 @@ on:
   push:
     branches:
       - "developement"
+      - "DIDX-272-merge-workflows-into-upstream"
     tags:
       - "v*"
   pull_request:
@@ -263,9 +264,11 @@ jobs:
           DB_USER: ${{ secrets.DB_USER}}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_EXCLUDE: ${{ secrets.DB_EXCLUDE }}
+          GA_ACAPY_WALLET_NAME: ${{ secrets.GA_ACAPY_WALLET_NAME }}
+          TA_ACAPY_WALLET_NAME: ${{ secrets.TA_ACAPY_WALLET_NAME }}
         run: |
-          bash ./scripts/aurora-delete.sh -o ${{ secrets.GA_ACAPY_WALLET_NAME }} -d
-          bash ./scripts/aurora-delete.sh -o ${{ secrets.TA_ACAPY_WALLET_NAME }} -d
+          bash ./scripts/aurora-delete.sh -o $GA_ACAPY_WALLET_NAME -d
+          bash ./scripts/aurora-delete.sh -o $TA_ACAPY_WALLET_NAME -d
 
       - name: List Elasticache Redis
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'

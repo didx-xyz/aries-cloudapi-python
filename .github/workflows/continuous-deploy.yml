@@ -321,7 +321,9 @@ jobs:
         run: echo "success=true" >> "$GITHUB_OUTPUT"
 
   test:
-    if: (needs.deploy.outputs.output == 'true' && github.event.inputs.run-tests != 'false') || github.event.inputs.run-tests == 'true'
+    # if: (needs.deploy.outputs.output == 'true' && github.event.inputs.run-tests != 'false') || github.event.inputs.run-tests == 'true'
+    # Only run external testing manually for now due to idiosyncrasies between local and external testing.
+    if: github.event.inputs.run-tests == 'true'
     needs:
       - start-runner
       - deploy

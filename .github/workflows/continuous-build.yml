@@ -17,6 +17,27 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: "324190738845" # org registry
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/governance-ga-agent
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
@@ -30,6 +51,8 @@ jobs:
         run: pip install docker-compose
       - name: Start Test Harness
         run: |
+          set -x
+          echo ${IMAGE_TAG}
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
@@ -37,8 +60,11 @@ jobs:
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup
-          ./manage up-daemon-usecache
+          ./manage up-as-daemon-no-build
         shell: bash
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.meta.outputs.tags }}
       - name: Test with pytest
         id: test
         continue-on-error: true

@@ -1,34 +1,6 @@
 version: "3"
 
 services:
-  governance-ga-web:
-    image: ${REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
-    container_name: governance-ga-web
-    build:
-      context: .
-      dockerfile: ./dockerfiles/fastapi/Dockerfile
-    ports:
-      - 0.0.0.0:8000:8000
-    volumes:
-      - ./shared_models/shared_models.py:/app/shared_models.py
-      - ./app:/app
-      - ./environments/governance-ga/fastapi.default.env:/app/.env
-    depends_on:
-      governance-ga-wallets-db:
-        condition: service_started
-      ledger-nodes:
-        condition: service_healthy
-      ledger-browser:
-        condition: service_healthy
-      governance-ga-agent:
-        condition: service_healthy
-      governance-multitenant-agent:
-        condition: service_healthy
-    networks:
-      - governance-ga
-      - host
-    env_file:
-      - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
     image: postgres:11
     container_name: governance-ga-wallets-db

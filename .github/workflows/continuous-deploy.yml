@@ -15,7 +15,6 @@ on:
   push:
     branches:
       - "developement"
-      - "DIDX-272-merge-workflows-into-upstream"
     tags:
       - "v*"
   pull_request:

@@ -49,18 +49,16 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
-      - name: Install docker-compose with pip
-        run: pip install docker-compose
+      - name: Install Compose
+        uses: ndeloof/install-compose-action@v0.0.1
+        with:
+          # version: v2.1.0 # defaults to 'latest'
+          legacy: true    # will also install in PATH as `docker-compose`
       - name: Start Test Harness
         run: |
           set -x
           echo ${IMAGE_TAG}
           docker-compose version
-          rm -rf ./data
-          mkdir ./data
-          sudo chown -R $(id -u):$(id -g) ./data
-          chmod 777 ./data -R
-          chmod u+x manage
           ./manage up-as-daemon-no-build
         shell: bash
         env:

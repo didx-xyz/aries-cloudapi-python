@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          cache: 'pip'
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
@@ -42,7 +43,7 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          pytest --cov=trustregistry --cov=app trustregistry app
+          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

@@ -54,11 +54,12 @@ jobs:
         with:
           # version: v2.1.0 # defaults to 'latest'
           legacy: true    # will also install in PATH as `docker-compose`
+      - name: Cache Docker images.
+        uses: ScribeMD/docker-cache@0.3.3
+        with:
+          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.yaml') }}
       - name: Start Test Harness
         run: |
-          set -x
-          echo ${IMAGE_TAG}
-          docker-compose version
           ./manage up-as-daemon-no-build
         shell: bash
         env:

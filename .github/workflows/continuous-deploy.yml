@@ -1,0 +1,408 @@
+name: Continuous Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      run-update-deployments:
+        description: "Run Update Deployments step manually"
+        required: false
+        default: "true"
+      run-tests:
+        description: "Run tests step"
+        required: false
+        default: "true"
+
+  push:
+    branches:
+      - "developement"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "development"
+  pull_request_review:
+    types: [submitted]
+
+concurrency:
+  group: continuous-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build image and push to ECR
+    permissions:
+      id-token: write # This is required for requesting the JWT
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_version: ${{ steps.meta.outputs.version }}
+
+    strategy:
+      matrix:
+        image:
+          [
+            ledger-nodes,
+            ledger-browser,
+            tails-server,
+            governance-ga-agent,
+            governance-trust-registry,
+            governance-multitenant-web,
+            governance-webhooks-web,
+            governance-multitenant-agent,
+            governance-endorser,
+          ]
+        include:
+          - image: governance-ga-agent
+            context: .
+            file: dockerfiles/agents/Dockerfile.agent
+          - image: governance-trust-registry
+            context: .
+            file: dockerfiles/trustregistry/Dockerfile
+          - image: governance-multitenant-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+          - image: governance-webhooks-web
+            context: .
+            file: dockerfiles/webhooks/Dockerfile
+          - image: governance-multitenant-agent
+            context: .
+            file: dockerfiles/agents/Dockerfile.author.agent
+          - image: ledger-browser
+            context: https://github.com/didx-xyz/von-network.git
+            file: Dockerfile
+          - image: ledger-nodes
+            context: https://github.com/didx-xyz/von-network.git
+            file: Dockerfile
+          - image: governance-endorser
+            context: .
+            file: dockerfiles/endorser/Dockerfile
+          - image: tails-server
+            context: https://github.com/bcgov/indy-tails-server.git#v1.0.0
+            file: docker/Dockerfile.tails-server
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: "324190738845" # org registry
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v4
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=build-${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.image }}
+
+  start-runner:
+    permissions:
+      id-token: write # This is required for requesting the JWT
+    name: Start self-hosted EC2 runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+
+      - name: Start EC2 runner
+        id: start-ec2-runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: start
+          github-token: ${{ secrets.PAT }}
+          ec2-image-id: ami-0e77ca258495da48e # ubuntu-jammy-22.04-amd64-server-20230325
+          ec2-instance-type: t3.medium
+          subnet-id: subnet-05db9c395c90d453d
+          security-group-id: sg-0e2beb26798761953 # Tailscale SG
+          aws-resource-tags: |
+            [
+              {"Key": "Name", "Value": "github-runner"},
+              {"Key": "GitHubRepository", "Value": "${{ github.repository }}"},
+              {"Key": "Project", "Value": "cloudapi-dev"},
+              {"Key": "ConfigManagement", "Value": "github"}
+            ]
+  deploy:
+    name: Deploy to EKS
+    needs:
+      - start-runner
+      - build
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    permissions:
+      id-token: write # This is required for requesting the JWT
+    outputs:
+      output: ${{ steps.updated_deployments.outputs.success }}
+    env:
+      projects: |
+        ledger-nodes
+        ledger-browser
+        governance-ga-agent
+        governance-multitenant-agent
+        governance-multitenant-web
+        governance-trust-registry
+        governance-webhooks-web
+        governance-endorser
+        tails-server
+      KUBECONFIG: /root/.kube/config
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get upgrade -y
+          apt-get install -y unzip postgresql-client python-is-python3 redis-tools
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          curl -Lo sops.deb https://github.com/mozilla/sops/releases/download/v3.7.3/sops_3.7.3_amd64.deb
+          apt-get --fix-broken install ./sops.deb
+
+      - name: Checkout Helm chart
+        uses: actions/checkout@v3
+        with:
+          repository: didx-xyz/cloud_api_helm
+          token: ${{ secrets.PAT }} # private access token here, for HTTPS clones
+          path: helm/Chart
+
+      - name: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+
+      - name: Update Kubeconfig
+        run: aws eks update-kubeconfig --name cloudapi-dev
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: latest
+
+      - name: Install helm plugins
+        run: |
+          # helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
+          helm plugin install https://github.com/databus23/helm-diff
+
+      - name: Symlink shared models
+        run: |
+          mkdir -p helm/Chart/assets
+          cd helm/Chart/assets
+          ln -s ../../../shared_models .
+
+      - name: Diff upgrade
+        run: |
+          for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
+            helm -n dev-cloudapi \
+              diff upgrade "${project}" \
+              --install \
+              --set image.tag=${{ needs.build.outputs.image_version }} \
+              -f ./helm/Chart/values/dev/${project}.yaml \
+              ./helm/Chart | tee -a diff_output.txt
+          done
+
+      - name: Quiet diff # Display lines with actual changes and lines indicating the component that has changed
+        run: |
+          grep -E '^[-+]\s|has changed:$' diff_output.txt | awk '{$1=$1};1'
+
+      - name: Destroy deployments
+        id: destroy_deployments
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        continue-on-error: true
+        run: |
+          for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
+            if helm -n dev-cloudapi ls --filter "^${project}$" | grep -q ${project}; then
+              helm -n dev-cloudapi delete ${project}
+            else
+              echo "Deployment ${project} not found. Skipping..."
+            fi
+          done
+
+      - name: Drop DBs
+        id: drop_dbs
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER}}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_EXCLUDE: ${{ secrets.DB_EXCLUDE }}
+          GA_ACAPY_WALLET_NAME: ${{ secrets.GA_ACAPY_WALLET_NAME }}
+          MT_ACAPY_WALLET_NAME: ${{ secrets.MT_ACAPY_WALLET_NAME }}
+        run: |
+          bash ./scripts/aurora-delete.sh -o $GA_ACAPY_WALLET_NAME -d
+          bash ./scripts/aurora-delete.sh -o $MT_ACAPY_WALLET_NAME -d
+
+      - name: List Elasticache Redis
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        env:
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+        run: |
+          redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
+
+      - name: Clean Elasticache Redis
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        env:
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+        run: |
+          redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
+       
+      - name: Update deployments
+        id: update_deployments
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        run: |
+          for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
+            helm -n dev-cloudapi \
+              upgrade "${project}" \
+              --install \
+              --atomic \
+              --timeout=300s \
+              --set image.tag=${{ needs.build.outputs.image_version }} \
+              -f ./helm/Chart/values/dev/${project}.yaml \
+              ./helm/Chart &
+          done
+          wait
+          # TODO: there is an istio bug
+          kubectl -n dev-cloudapi rollout restart deploy governance-multitenant-web
+          kubectl -n dev-cloudapi rollout status deploy governance-multitenant-web
+          # Wait for governance-multitenant-web to be ready
+          while true; do
+            not_ready_count=$(kubectl -n dev-cloudapi get pods -l app=governance-multitenant-web -o jsonpath='{.items[*].status.containerStatuses[*].ready}' | grep -o 'false' | wc -l)
+            if [ "$not_ready_count" -eq 0 ]; then
+              echo "governance-multitenant-web is ready"
+              break
+            else
+              echo "Waiting for containers to be ready"
+              sleep 10
+            fi
+          done
+
+      - name: Output
+        id: updated_deployments
+        if: steps.update_deployments.outcome == 'success'
+        run: echo "success=true" >> "$GITHUB_OUTPUT"
+
+  test:
+    # if: (needs.deploy.outputs.output == 'true' && github.event.inputs.run-tests != 'false') || github.event.inputs.run-tests == 'true'
+    # Only run external testing manually for now due to idiosyncrasies between local and external testing.
+    if: github.event.inputs.run-tests == 'true'
+    needs:
+      - start-runner
+      - deploy
+    runs-on: ${{ needs.start-runner.outputs.label }}
+    name: Test with pytest
+    permissions:
+      id-token: write # This is required for requesting the JWT
+    env:
+      KUBECONFIG: /root/.kube/config
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install test dependencies
+        run: |
+          apt-get update && apt-get upgrade -y
+          apt-get install -y python-is-python3 build-essential python3-dev
+          python --version
+          curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+          python get-pip.py
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+
+      - name: Test with pytest
+        id: test
+        run: |
+          pytest --cov=trustregistry --cov=app trustregistry app
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          echo done
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+          # ./app/constants.py
+          ACAPY_GOVERNANCE_AGENT_URL: ${{ secrets.ACAPY_GOVERNANCE_AGENT_URL }}
+          ACAPY_TENANT_AGENT_URL: ${{ secrets.ACAPY_TENANT_AGENT_URL }}
+          ACAPY_GOVERNANCE_AGENT_API_KEY: ${{ secrets.ACAPY_GOVERNANCE_AGENT_API_KEY }}
+          ACAPY_TENANT_AGENT_API_KEY: ${{ secrets.ACAPY_TENANT_AGENT_API_KEY }}
+          TRUST_REGISTRY_URL: ${{ secrets.TRUST_REGISTRY_URL }}
+          WEBHOOKS_URL: ${{ secrets.WEBHOOKS_URL }}
+          ACAPY_MULTITENANT_JWT_SECRET: ${{ secrets.ACAPY_MULTITENANT_JWT_SECRET }}
+          ACAPY_TAILS_SERVER_BASE_URL: ${{ secrets.ACAPY_TAILS_SERVER_BASE_URL }}
+          CLOUDAPI_URL: ${{ secrets.CLOUDAPI_URL }}
+
+          # ./app/tests/util/constants.py
+          GOVERNANCE_FASTAPI_ENDPOINT: ${{ secrets.GOVERNANCE_FASTAPI_ENDPOINT }}
+          GOVERNANCE_ACAPY_API_KEY: ${{ secrets.GOVERNANCE_ACAPY_API_KEY }}
+          TENANT_FASTAPI_ENDPOINT: ${{ secrets.TENANT_FASTAPI_ENDPOINT }}
+          TENANT_ACAPY_API_KEY: ${{ secrets.TENANT_ACAPY_API_KEY }}
+          LEDGER_REGISTRATION_URL: ${{ secrets.LEDGER_REGISTRATION_URL }}
+          #WEBHOOKS_URL: ${{ secrets.WEBHOOKS_URL }} # defined in both ./app/constants.py and ./app/tests/util/constants.py
+
+  stop-runner:
+    permissions:
+      id-token: write # This is required for requesting the JWT
+    name: Stop self-hosted EC2 runner
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - test
+      - deploy
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: af-south-1
+          role-to-assume: arn:aws:iam::402177810328:role/cicd
+          role-session-name: github-cicd
+      - name: Stop EC2 runner
+        uses: machulav/ec2-github-runner@v2
+        with:
+          mode: stop
+          github-token: ${{ secrets.PAT }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

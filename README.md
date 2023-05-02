@@ -68,3 +68,6 @@ pytest --ignore=app/tests/e2e
 > ```
 > will output all log messages with a log level of `DEBUG` or higher.
 
+## CI/CD
+
+Please, refer to the [CI/CD docs](./.github/workflows/README.md) for more information.

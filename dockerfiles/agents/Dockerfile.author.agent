@@ -15,4 +15,5 @@ RUN chmod +x ./startup.sh
 
 USER $user
 
-CMD ./startup.sh --wallet-type askar --auto-promote-author-did --plugin acapy_wallet_groups_plugin
+ENTRYPOINT [ "./startup.sh" ]
+CMD ["--wallet-type", "askar", "--auto-promote-author-did", "--plugin", "acapy_wallet_groups_plugin" ]

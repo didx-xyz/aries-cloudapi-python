@@ -10,7 +10,7 @@ import app.dependencies as dependencies
 from app.dependencies import Role, AcaPyAuth
 from app.main import app
 
-from app.tests.util.constants import TENANT_ACAPY_API_KEY, GOVERNANCE_ACAPY_API_KEY
+from app.tests.util.constants import TENANT_ACAPY_API_KEY, GOVERNANCE_ACAPY_API_KEY, CLOUDAPI_URL
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"
@@ -128,7 +128,7 @@ async def test_web_tenant():
     app.include_router(router)
 
     async def make_call(route_suffix: str = "", headers=None):
-        async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
+        async with AsyncClient(app=app, base_url=CLOUDAPI_URL) as ac:
             response = await ac.get("/testsabc" + route_suffix, headers={**headers})
             return response
 
@@ -208,5 +208,5 @@ async def test_tenant_admin_agent():
         auth=AcaPyAuth(role=Role.TENANT_ADMIN, token=TENANT_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)
-        assert c.client.headers["x-api-key"] == "adminApiKey"
+        assert c.client.headers["x-api-key"] == TENANT_ACAPY_API_KEY
         assert "Authorization" not in c.client.headers

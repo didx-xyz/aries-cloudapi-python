@@ -93,3 +93,7 @@ To run specific tests you can specify the path to the test file or the test clas
 ```bash
 pytest app/tests/e2e/test_verifier.py::test_accept_proof_request_oob_v1 --log-cli-level=0
 ```
+
+## CI/CD
+
+Please, refer to the [CI/CD docs](./.github/workflows/README.md) for more information.

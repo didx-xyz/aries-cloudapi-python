@@ -79,6 +79,7 @@ class Webhooks:
         await Webhooks.emit(json.loads(data))
 
     @staticmethod
+    async def shutdown(timeout: float = 20):
         """
         Shutdown the Webhooks client and clear the listeners with a specified timeout.
         """
@@ -90,7 +91,7 @@ class Webhooks:
             Webhooks._listeners = []
 
         try:
-            await asyncio.wait_for(wait_for_shutdown(), timeout=20)
+            await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError:
             raise WebhooksShutdownTimeout(
                 f"Webhooks shutdown timed out ({timeout}s)")
@@ -120,9 +121,7 @@ async def start_listener(*, topic: CloudApiTopics, wallet_id: str) -> Tuple[Call
             if match:
                 return payload
 
-    async def wait_for_event_with_timeout(
-        *, filter_map: Dict[str, Any], timeout: float = 180
-    ):
+    async def wait_for_event_with_timeout(*, filter_map: Dict[str, Any], timeout: float = 180):
         try:
             payload = await asyncio.wait_for(
                 wait_for_event(filter_map), timeout=timeout

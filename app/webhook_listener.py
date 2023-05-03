@@ -54,7 +54,8 @@ class Webhooks:
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()
-            sys.exit()
+            raise WebhooksShutdownTimeout(
+                f"Webhooks shutdown timed out ({timeout}s)")
 
     @staticmethod
     async def _on_webhook(data: str, topic: str):
@@ -72,7 +73,8 @@ class Webhooks:
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=20)
         except asyncio.TimeoutError:
-            sys.exit()
+            raise WebhooksShutdownTimeout(
+                f"Webhooks shutdown timed out ({timeout}s)")
 
 
 async def start_listener(*, topic: CloudApiTopics, wallet_id: str):

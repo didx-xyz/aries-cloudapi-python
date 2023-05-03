@@ -108,7 +108,7 @@ async def start_listener(*, topic: CloudApiTopics, wallet_id: str):
             )
             Webhooks.off(on_webhook)
             return payload
-        except Exception as e:
+        finally:
             # Always unsubscribe
             Webhooks.off(on_webhook)
             raise e from e

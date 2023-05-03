@@ -13,22 +13,32 @@ logger = logging.getLogger(__name__)
 
 
 class Webhooks:
+    """
+    A class for managing webhook listeners, emitting webhook events, and handling the underlying
+    WebSocket communication.
+    """
     _listeners: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
     client: Optional[PubSubClient] = None
 
     # TODO: add timeout to listening to webhooks
     @staticmethod
-    async def on(f: Callable[[Dict[str, Any]], Awaitable[None]]):
+        """
+        Register a listener function to be called when a webhook event is received.
+        """
         if not Webhooks.client:
             await Webhooks.listen_webhooks()
         Webhooks._listeners.append(f)
 
     @staticmethod
     async def emit(data: Dict[str, Any]):
-        [await f(data) for f in Webhooks._listeners]
+        """
+        Emit a webhook event by calling all registered listener functions with the event data.
+        """
 
     @staticmethod
-    def off(f: Callable[[Dict[str, Any]], Awaitable[None]]):
+        """
+        Unregister a listener function so that it will no longer be called when a webhook event is received.
+        """
         try:
             Webhooks._listeners.remove(f)
         except ValueError:
@@ -36,7 +46,9 @@ class Webhooks:
             pass
 
     @staticmethod
-    async def listen_webhooks():
+        """
+        Start listening for webhook events on a WebSocket connection with a specified timeout.
+        """
         async def wait_for_ready():
             Webhooks.client = PubSubClient(
                 [WEBHOOK_TOPIC_ALL], callback=Webhooks._on_webhook
@@ -59,10 +71,15 @@ class Webhooks:
 
     @staticmethod
     async def _on_webhook(data: str, topic: str):
+        """
+        Internal callback function for handling received webhook events.
+        """
         await Webhooks.emit(json.loads(data))
 
     @staticmethod
-    async def shutdown():
+        """
+        Shutdown the Webhooks client and clear the listeners with a specified timeout.
+        """
         async def wait_for_shutdown():
             if Webhooks.client:
                 await Webhooks.client.disconnect()

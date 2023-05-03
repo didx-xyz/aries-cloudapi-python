@@ -72,20 +72,19 @@ def read_openapi_yaml() -> Response:
 async def client_response_error_exception_handler(
     request: Request, exception: Exception
 ):
-    stacktrace = traceback.format_exc()
-    stackDict = {"stack": stacktrace}
+    stacktrace = {"stack": traceback.format_exc()}
 
     if isinstance(exception, ClientResponseError):
         return JSONResponse(
-            {"detail": exception.message, **(stackDict if debug else {})}, exception.status or 500
+            {"detail": exception.message, **(stacktrace if debug else {})}, exception.status or 500
         )
     if isinstance(exception, CloudApiException):
         return JSONResponse(
-            {"detail": exception.detail, **(stackDict if debug else {})}, exception.status_code
+            {"detail": exception.detail, **(stacktrace if debug else {})}, exception.status_code
         )
     if isinstance(exception, HTTPException):
         return JSONResponse(
-            {**exception.detail, **(stackDict if debug else {})},
+            {**exception.detail, **(stacktrace if debug else {})},
             exception.status_code,
             exception.headers,
         )

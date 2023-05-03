@@ -122,3 +122,8 @@ async def start_listener(*, topic: CloudApiTopics, wallet_id: str):
     await Webhooks.on(on_webhook)
 
     return wait_for_event_with_timeout, stop_listener
+
+
+class WebhooksShutdownTimeout(Exception):
+    """Exception raised when the Webhooks shutdown times out."""
+    pass

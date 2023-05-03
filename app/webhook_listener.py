@@ -19,7 +19,6 @@ class Webhooks:
     _listeners: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
     client: Optional[PubSubClient] = None
 
-    # TODO: add timeout to listening to webhooks
     @staticmethod
     async def register_listener(listener: Callable[[Dict[str, Any]], Awaitable[None]]):
         """
@@ -34,6 +33,8 @@ class Webhooks:
         """
         Emit a webhook event by calling all registered listener functions with the event data.
         """
+        for listener in Webhooks._listeners:
+            await listener(data)
 
     @staticmethod
     def unregister_listener(listener: Callable[[Dict[str, Any]], Awaitable[None]]):

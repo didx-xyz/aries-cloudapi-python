@@ -21,12 +21,13 @@ class Webhooks:
 
     # TODO: add timeout to listening to webhooks
     @staticmethod
+    async def register_listener(listener: Callable[[Dict[str, Any]], Awaitable[None]]):
         """
         Register a listener function to be called when a webhook event is received.
         """
         if not Webhooks.client:
             await Webhooks.listen_webhooks()
-        Webhooks._listeners.append(f)
+        Webhooks._listeners.append(listener)
 
     @staticmethod
     async def emit(data: Dict[str, Any]):
@@ -35,16 +36,18 @@ class Webhooks:
         """
 
     @staticmethod
+    def unregister_listener(listener: Callable[[Dict[str, Any]], Awaitable[None]]):
         """
         Unregister a listener function so that it will no longer be called when a webhook event is received.
         """
         try:
-            Webhooks._listeners.remove(f)
+            Webhooks._listeners.remove(listener)
         except ValueError:
             # Listener not in list
             pass
 
     @staticmethod
+    async def listen_webhooks(timeout: float = 30):
         """
         Start listening for webhook events on a WebSocket connection with a specified timeout.
         """
@@ -93,7 +96,7 @@ class Webhooks:
                 f"Webhooks shutdown timed out ({timeout}s)")
 
 
-async def start_listener(*, topic: CloudApiTopics, wallet_id: str):
+async def start_listener(*, topic: CloudApiTopics, wallet_id: str) -> Tuple[Callable[..., Dict[str, Any]], Callable[..., None]]:
     queue = asyncio.Queue()
 
     async def on_webhook(data: Dict[str, Any]):
@@ -124,20 +127,18 @@ async def start_listener(*, topic: CloudApiTopics, wallet_id: str):
             payload = await asyncio.wait_for(
                 wait_for_event(filter_map), timeout=timeout
             )
-            Webhooks.off(on_webhook)
             return payload
         except Exception:
             raise
         finally:
             # Always unsubscribe
-            Webhooks.off(on_webhook)
-            raise e from e
+            Webhooks.unregister_listener(on_webhook)
 
     async def stop_listener():
-        Webhooks.off(on_webhook)
+        Webhooks.unregister_listener(on_webhook)
 
     # Subscribe to webhook events and put them in a queue
-    await Webhooks.on(on_webhook)
+    await Webhooks.register_listener(on_webhook)
 
     return wait_for_event_with_timeout, stop_listener
 

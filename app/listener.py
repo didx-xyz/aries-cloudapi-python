@@ -30,6 +30,9 @@ class Listener:
             if self._payload_matches_filter(payload, filter_map):
                 return payload
 
+        # Return None or raise an exception if no matching payload is found
+        return None
+
     async def wait_for_event_with_timeout(self, filter_map: Dict[str, Any], timeout: float = 180):
         try:
             payload = await asyncio.wait_for(self.wait_for_event(filter_map), timeout=timeout)

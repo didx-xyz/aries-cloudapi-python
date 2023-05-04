@@ -1,8 +1,8 @@
 import asyncio
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from shared_models import CloudApiTopics
 from app.webhooks import Webhooks
+from shared_models import CloudApiTopics
 
 
 class Listener:

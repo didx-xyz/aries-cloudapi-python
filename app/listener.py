@@ -82,6 +82,7 @@ class Listener:
             except asyncio.TimeoutError:
                 logger.warning(
                     "_find_matching_event has timed out in `asyncio.wait_for`")
+            finally:
                 # If the total waiting time reaches the specified timeout, raise an exception, else continue
                 if asyncio.get_event_loop().time() - start_time >= timeout:
                     self.stop()

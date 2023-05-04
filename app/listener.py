@@ -34,6 +34,9 @@ class Listener:
         """
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
+        logger.debug(
+            f"Listener is starting to wait for a filtered event with timeout {timeout}s")
+
         def _payload_matches_filter(payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
             """
             Check if the given payload matches the specified filter_map. A payload is considered a
@@ -60,7 +63,8 @@ class Listener:
                     self._processed_events.append(item)
 
             # Return None if no matching payload is found
-            logger.debug("_find_matching_event found no matching events in queue")
+            logger.debug(
+                "_find_matching_event found no matching events in queue")
             return None
 
                     raise ListenerTimeout(

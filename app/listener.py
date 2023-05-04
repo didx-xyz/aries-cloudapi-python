@@ -17,8 +17,8 @@ class Listener:
 
     def _payload_matches_filter(self, payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
         return all(
-            payload.get(filter_key, None) == filter_value
-            for filter_key, filter_value in filter_map.items()
+            key in payload and payload.get(key, None) == filter_value
+            for key, filter_value in filter_map.items()
         )
 
     async def wait_for_event(self, filter_map: Dict[str, Any]) -> Dict[str, Any]:

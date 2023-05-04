@@ -26,7 +26,7 @@ from app.tests.util.ecosystem_personas import (
     faber_and_alice_connection,
     faber_client,
 )
-from app.webhook_listener import Webhooks
+from app.webhooks import Webhooks
 from tests.fixtures import mock_agent_controller
 
 

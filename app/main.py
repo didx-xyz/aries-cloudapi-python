@@ -20,7 +20,7 @@ from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
-from app.webhook_listener import Webhooks
+from app.webhooks import Webhooks
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")

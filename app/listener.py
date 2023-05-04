@@ -36,10 +36,10 @@ class Listener:
         except Exception:
             raise
         finally:
-            await self.stop_listener()
+            await self.stop()
 
     async def start(self):
         await Webhooks.register_listener(self.on_webhook)
 
-    async def stop_listener(self):
+    async def stop(self):
         Webhooks.unregister_listener(self.on_webhook)

@@ -27,10 +27,15 @@ class Listener:
         """
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
+        def _payload_matches_filter(payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
             """
             Check if the given payload matches the specified filter_map. A payload is considered a
             match if all key-value pairs in the filter_map have the same values in the payload.
             """
+            return all(
+                key in payload and payload.get(key, None) == filter_value
+                for key, filter_value in filter_map.items()
+            )
 
         async def _find_matching_event() -> Dict[str, Any]:
             """
@@ -40,8 +45,8 @@ class Listener:
 
             payload = item["payload"]
 
-            if self._payload_matches_filter(payload, filter_map):
-                return payload
+                if _payload_matches_filter(payload, filter_map):
+                    return payload
 
         # Return None or raise an exception if no matching payload is found
         return None

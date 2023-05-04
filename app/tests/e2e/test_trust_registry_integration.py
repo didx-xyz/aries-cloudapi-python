@@ -1,18 +1,12 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
+
 from app.facades.trust_registry import actor_by_id
-from app.tests.util.client import (
-    tenant_client,
-    tenant_admin_client,
-)
+from app.listener import Listener
+from app.tests.util.client import tenant_admin_client, tenant_client
 from app.tests.util.string import base64_to_json, get_random_string
-from app.tests.util.tenants import (
-    create_issuer_tenant,
-    create_tenant,
-    create_verifier_tenant,
-    delete_tenant,
-)
-from app.webhook_listener import start_listener
+from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
+                                    create_verifier_tenant, delete_tenant)
 
 
 @pytest.mark.asyncio

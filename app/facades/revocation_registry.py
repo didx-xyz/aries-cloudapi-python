@@ -1,23 +1,16 @@
 import logging
 from typing import Optional, Union
+
 from aiohttp import ClientResponseError
+from aries_cloudcontroller import (AcaPyClient, CredRevRecordResult,
+                                   IssuerCredRevRecord, IssuerRevRegRecord,
+                                   RevokeRequest, RevRegCreateRequest,
+                                   RevRegResult, TransactionRecord,
+                                   TxnOrRevRegResult)
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredRevRecordResult,
-    IssuerCredRevRecord,
-    IssuerRevRegRecord,
-    RevRegCreateRequest,
-    RevRegResult,
-    RevokeRequest,
-    TransactionRecord,
-    TxnOrRevRegResult,
-)
 from app.dependencies import get_governance_controller
-
 from app.error.cloud_api_error import CloudApiException
-from app.webhook_listener import start_listener
-
+from app.listener import Listener
 
 logger = logging.getLogger(__name__)
 

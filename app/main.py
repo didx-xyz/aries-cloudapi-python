@@ -1,15 +1,15 @@
-from distutils.util import strtobool
 import io
 import logging
 import os
 import traceback
+from distutils.util import strtobool
 
+import pydantic
+import yaml
 from aiohttp import ClientResponseError
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
-import pydantic
-import yaml
 
 from app.admin.tenants import tenants
 from app.error.cloud_api_error import CloudApiException

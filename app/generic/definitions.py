@@ -1,38 +1,29 @@
 import asyncio
 import json
 from typing import List, Optional
-from aiohttp import ClientResponseError
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinition as AcaPyCredentialDefinition,
-    ModelSchema,
-    RevRegUpdateTailsFileUri,
-    SchemaSendRequest,
-    TxnOrCredentialDefinitionSendResult,
-)
-from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
-from app.error.cloud_api_error import CloudApiException
-from aries_cloudcontroller.model.credential_definition_send_request import (
-    CredentialDefinitionSendRequest,
-)
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import \
+    CredentialDefinition as AcaPyCredentialDefinition
+from aries_cloudcontroller import (ModelSchema, RevRegUpdateTailsFileUri,
+                                   SchemaSendRequest,
+                                   TxnOrCredentialDefinitionSendResult)
+from aries_cloudcontroller.model.credential_definition_send_request import \
+    CredentialDefinitionSendRequest
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.dependencies import (
-    AcaPyAuthVerified,
-    acapy_auth_verified,
-    agent_role,
-    agent_selector,
-    get_governance_controller,
-)
+from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
+from app.dependencies import (AcaPyAuthVerified, acapy_auth_verified,
+                              agent_role, agent_selector,
+                              get_governance_controller)
+from app.error.cloud_api_error import CloudApiException
+from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
-    create_revocation_registry,
-    publish_revocation_registry_on_ledger,
-)
+    create_revocation_registry, publish_revocation_registry_on_ledger)
+from app.listener import Listener
 from app.role import Role
-from app.facades import trust_registry, acapy_wallet
-from app.webhook_listener import start_listener
 
 router = APIRouter(
     prefix="/generic/definitions",

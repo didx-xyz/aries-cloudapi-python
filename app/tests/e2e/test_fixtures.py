@@ -1,22 +1,20 @@
 from typing import Any
+
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
+
 from app.dependencies import acapy_auth, acapy_auth_verified
-from app.generic.definitions import (
-    CreateCredentialDefinition,
-    CreateSchema,
-    CredentialSchema,
-    create_schema,
-    create_credential_definition,
-)
+from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
+                                     CredentialSchema,
+                                     create_credential_definition,
+                                     create_schema)
+from app.generic.issuer.issuer import router
+from app.listener import Listener
 from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.ledger import create_public_did, has_public_did
-from app.tests.util.webhooks import check_webhook_state
-from app.generic.issuer.issuer import router
-
 from app.tests.util.trust_registry import register_issuer
-from app.webhook_listener import start_listener
+from app.tests.util.webhooks import check_webhook_state
 from shared_models.shared_models import CredentialExchange
 
 BASE_PATH = router.prefix + "/credentials"

@@ -55,7 +55,7 @@ async def shutdown_event():
 
 @app.on_event("startup")
 async def startup_event():
-    await Webhooks.listen_webhooks()
+    await Webhooks.start_webhook_client()
 
 
 # add endpoints

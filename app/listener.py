@@ -1,8 +1,11 @@
 import asyncio
+import logging
 from typing import Any, Dict, Optional
 
 from app.webhooks import Webhooks
 from shared_models import CloudApiTopics
+
+logger = logging.getLogger(__name__)
 
 
 class Listener:
@@ -56,7 +59,8 @@ class Listener:
                 else:
                     self._processed_events.append(item)
 
-            # Return None or raise an exception if no matching payload is found
+            # Return None if no matching payload is found
+            logger.debug("_find_matching_event found no matching events in queue")
             return None
 
         try:
@@ -69,10 +73,12 @@ class Listener:
         """
         Start the listener by registering its callback with the Webhooks class.
         """
+        logger.debug("Starting listener")
         await Webhooks.register_callback(self.handle_webhook)
 
     def stop(self):
         """
         Stop the listener by unregistering its callback from the Webhooks class.
         """
+        logger.debug("Stopping listener")
         Webhooks.unregister_callback(self.handle_webhook)

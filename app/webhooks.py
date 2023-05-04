@@ -11,6 +11,16 @@ from shared_models import WEBHOOK_TOPIC_ALL
 logger = logging.getLogger(__name__)
 
 
+def convert_url_to_ws(url: str) -> str:
+    """
+    Convert an HTTP or HTTPS URL to WebSocket (WS or WSS) URL.
+    """
+    if url.startswith("http"):
+        return "ws" + url[4:]
+    else:
+        return url
+
+
 class Webhooks:
     """
     A class for managing webhook callbacks, emitting webhook events, and handling the underlying
@@ -60,9 +70,7 @@ class Webhooks:
                 [WEBHOOK_TOPIC_ALL], callback=Webhooks._on_webhook
             )
 
-            ws_url = WEBHOOKS_URL
-            if ws_url.startswith("http"):
-                ws_url = "ws" + ws_url[4:]
+            ws_url = convert_url_to_ws(WEBHOOKS_URL)
 
             Webhooks.client.start_client(ws_url + "/pubsub")
             await Webhooks.client.wait_until_ready()

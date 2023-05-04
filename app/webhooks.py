@@ -25,7 +25,7 @@ class Webhooks:
         Register a listener function to be called when a webhook event is received.
         """
         if not Webhooks.client:
-            await Webhooks.listen_webhooks()
+            await Webhooks.start_webhook_client()
         Webhooks._callbacks.append(callback)
 
     @staticmethod
@@ -48,7 +48,7 @@ class Webhooks:
             pass
 
     @staticmethod
-    async def listen_webhooks(timeout: float = 30):
+    async def start_webhook_client(timeout: float = 30):
         """
         Start listening for webhook events on a WebSocket connection with a specified timeout.
         """

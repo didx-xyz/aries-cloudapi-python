@@ -14,7 +14,8 @@ import pytest
 from mockito import verify, when
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
-from assertpy import assert_that
+from app.tests.util.webhooks import (MockConnectionListener,
+                                     MockEndorsementListener, MockListener)
 from tests.fixtures import get_mock_agent_controller
 
 from tests.util.mock import get
@@ -59,17 +60,12 @@ async def test_onboard_issuer_public_did_exists(
         get()
     )
 
-    # Mock event listener
-    when(onboarding).start_listener(
+    # Mock event listeners
+    when(onboarding)._create_listener(
         topic="connections", wallet_id="issuer_wallet_id"
-    ).thenReturn(get(mock_start_listener))
-    when(onboarding).start_listener(topic="connections", wallet_id="admin").thenReturn(
-        get(
-            (
-                CoroutineMock(return_value={"connection_id": "endorser_connection_id"}),
-                MagicMock(),
-            )
-        )
+    ).thenReturn(MockListener(topic="connections", wallet_id="issuer_wallet_id"))
+    when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
+        MockConnectionListener(topic="connections", wallet_id="admin")
     )
 
     invitation_url = "https://invitation.com"
@@ -136,31 +132,19 @@ async def test_onboard_issuer_no_public_did(
         get()
     )
 
-    # Mock event listener
-    when(onboarding).start_listener(
+    # Mock event listeners
+    when(onboarding)._create_listener(
         topic="connections", wallet_id="issuer_wallet_id"
-    ).thenReturn(get(mock_start_listener))
-    when(onboarding).start_listener(topic="connections", wallet_id="admin").thenReturn(
-        get(
-            (
-                CoroutineMock(return_value={"connection_id": "endorser_connection_id"}),
-                MagicMock(),
-            )
-        )
+    ).thenReturn(MockListener(topic="connections", wallet_id="issuer_wallet_id"))
+
+    when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
+        MockConnectionListener(topic="connections", wallet_id="admin")
     )
-    when(onboarding).start_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        get(
-            (
-                CoroutineMock(
-                    return_value={
-                        "state": "request-received",
-                        "transaction_id": "abcde",
-                    }
-                ),
-                MagicMock(),
-            )
-        )
+
+    when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
+        MockEndorsementListener(topic="endorsements", wallet_id="admin")
     )
+
     when(endorser_controller.endorse_transaction).get_records(...).thenReturn(
         get(
             TransactionList(

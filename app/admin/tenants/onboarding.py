@@ -26,6 +26,10 @@ class OnboardResult(BaseModel):
     did: str
     didcomm_invitation: Optional[AnyHttpUrl]
 
+# Helper method for passing MockListener to class
+def _create_listener(self, topic: str, wallet_id: str) -> Listener:
+    return Listener(topic=topic, wallet_id=wallet_id)
+
 
 async def handle_tenant_update(
     admin_controller: AcaPyClient,
@@ -142,11 +146,11 @@ async def onboard_issuer(
             f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
         )
 
-        listener_connection = Listener(
+        connections_listener = _create_listener(
             topic="connections", wallet_id="admin"
         )
 
-        listener_transaction = Listener(
+        endorsements_listener = _create_listener(
             topic="endorsements", wallet_id="admin"
         )
 
@@ -167,7 +171,7 @@ async def onboard_issuer(
 
         # Wait for connection to be completed before continuing
         try:
-            endorser_connection = await listener_connection.wait_for_filtered_event(
+            endorser_connection = await connections_listener.wait_for_filtered_event(
                 filter_map={
                     "invitation_msg_id": invitation.invi_msg_id,
                     "state": "completed",
@@ -177,7 +181,7 @@ async def onboard_issuer(
             raise CloudApiException(
                 "Error creating connection with endorser", 500)
         finally:
-            listener_transaction.stop()
+            endorsements_listener.stop()
 
         logger.debug("Successfully created connection")
 
@@ -217,7 +221,7 @@ async def onboard_issuer(
             create_transaction_for_endorser=True,
         )
         try:
-            txn_record = await listener_transaction.wait_for_filtered_event(
+            txn_record = await endorsements_listener.wait_for_filtered_event(
                 filter_map={
                     "state": "request-received",
                 }
@@ -226,7 +230,7 @@ async def onboard_issuer(
             raise CloudApiException(
                 "Error creating connection with endorser", 500)
         finally:
-            listener_transaction.stop()
+            endorsements_listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

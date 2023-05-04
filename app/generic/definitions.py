@@ -33,7 +33,8 @@ router = APIRouter(
 
 class CreateCredentialDefinition(BaseModel):
     tag: str = Field(..., example="default")
-    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    schema_id: str = Field(...,
+                           example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
     support_revocation: bool = Field(default=True)
     revocation_registry_size: int = Field(default=32767)
 
@@ -41,7 +42,8 @@ class CreateCredentialDefinition(BaseModel):
 class CredentialDefinition(BaseModel):
     id: str = Field(..., example="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:default")
     tag: str = Field(..., example="default")
-    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    schema_id: str = Field(...,
+                           example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
 
 
 class CreateSchema(BaseModel):
@@ -124,7 +126,8 @@ async def get_credential_definitions(
         *get_credential_definition_futures
     )
     credential_definitions = [
-        _credential_definition_from_acapy(credential_definition.credential_definition)
+        _credential_definition_from_acapy(
+            credential_definition.credential_definition)
         for credential_definition in credential_definition_results
         if credential_definition.credential_definition
     ]

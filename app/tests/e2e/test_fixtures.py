@@ -129,7 +129,8 @@ async def credential_exchange_id(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     response.raise_for_status()
     records = response.json()

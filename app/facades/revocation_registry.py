@@ -255,7 +255,8 @@ async def revoke_credential(
             )
         )
     except ClientResponseError as e:
-        raise CloudApiException(f"Failed to revoke credential.{e.message}", 418)
+        raise CloudApiException(
+            f"Failed to revoke credential.{e.message}", 418)
 
     if not auto_publish_to_ledger:
         active_revocation_registry_id = (

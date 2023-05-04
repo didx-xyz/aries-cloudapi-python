@@ -57,7 +57,7 @@ async def test_onboard_issuer_public_did_exists(
         topic="connections", wallet_id="admin"
     ).thenReturn(MockListener(topic="connections", wallet_id="admin"))
     when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        MockEndorserConnectionListener(topic="endorsements", wallet_id="admin")
+        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
     )
 
     invitation_url = "https://invitation.com"
@@ -125,16 +125,12 @@ async def test_onboard_issuer_no_public_did(
     )
 
     # Mock event listeners
-    when(onboarding)._create_listener(
-        topic="connections", wallet_id="issuer_wallet_id"
-    ).thenReturn(MockListener(topic="connections", wallet_id="issuer_wallet_id"))
-
     when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockConnectionListener(topic="connections", wallet_id="admin")
+        MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
     )
 
     when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        MockEndorsementListener(topic="endorsements", wallet_id="admin")
+        MockListenerRequestReceived(topic="endorsements", wallet_id="admin")
     )
 
     when(endorser_controller.endorse_transaction).get_records(...).thenReturn(

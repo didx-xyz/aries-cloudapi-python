@@ -300,7 +300,7 @@ async def endorser_revoke():
                 "Failed to retrieve transaction record for endorser", 500
             )
         finally:
-            await listener.stop()
+            listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

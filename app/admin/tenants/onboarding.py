@@ -142,11 +142,11 @@ async def onboard_issuer(
             f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
         )
 
-        endorser_wait_for_connection, _ = await start_listener(
+        listener_connection = Listener(
             topic="connections", wallet_id="admin"
         )
 
-        endorser_wait_for_transaction, _ = await start_listener(
+        listener_transaction = Listener(
             topic="endorsements", wallet_id="admin"
         )
 
@@ -167,7 +167,7 @@ async def onboard_issuer(
 
         # Wait for connection to be completed before continuing
         try:
-            endorser_connection = await endorser_wait_for_connection(
+            endorser_connection = await listener_connection.wait_for_filtered_event(
                 filter_map={
                     "invitation_msg_id": invitation.invi_msg_id,
                     "state": "completed",
@@ -175,6 +175,8 @@ async def onboard_issuer(
             )
         except TimeoutError:
             raise CloudApiException("Error creating connection with endorser", 500)
+        finally:
+            listener_transaction.stop()
 
         logger.debug("Successfully created connection")
 
@@ -214,13 +216,15 @@ async def onboard_issuer(
             create_transaction_for_endorser=True,
         )
         try:
-            txn_record = await endorser_wait_for_transaction(
+            txn_record = await listener_transaction.wait_for_filtered_event(
                 filter_map={
                     "state": "request-received",
                 }
             )
         except TimeoutError:
             raise CloudApiException("Error creating connection with endorser", 500)
+        finally:
+            listener_transaction.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

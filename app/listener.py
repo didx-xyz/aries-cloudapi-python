@@ -22,7 +22,7 @@ class Listener:
         )
 
     async def wait_for_event(self, filter_map: Dict[str, Any]) -> Dict[str, Any]:
-        while True:
+        while not self.queue.empty():
             item = await self.queue.get()
 
             payload = item["payload"]

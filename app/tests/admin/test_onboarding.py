@@ -54,10 +54,10 @@ async def test_onboard_issuer_public_did_exists(
 
     # Mock event listeners
     when(onboarding)._create_listener(
-        topic="connections", wallet_id="issuer_wallet_id"
-    ).thenReturn(MockListener(topic="connections", wallet_id="issuer_wallet_id"))
-    when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockConnectionListener(topic="connections", wallet_id="admin")
+        topic="connections", wallet_id="admin"
+    ).thenReturn(MockListener(topic="connections", wallet_id="admin"))
+    when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
+        MockEndorserConnectionListener(topic="endorsements", wallet_id="admin")
     )
 
     invitation_url = "https://invitation.com"
@@ -273,11 +273,11 @@ class MockListener(Listener):
         pass
 
 
-class MockEndorserConnectionListener(MockListener):
+class MockListenerEndorserConnectionId(MockListener):
     async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
         return {"connection_id": "endorser_connection_id"}
 
 
-class MockEndorsementListener(MockListener):
+class MockListenerRequestReceived(MockListener):
     async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
         return {"state": "request-received", "transaction_id": "abcde"}

@@ -285,12 +285,12 @@ async def revoke_credential(
 
 
 async def endorser_revoke():
-    endorser_wait_for_transaction, stop_listener = await start_listener(
+    listener = Listener(
         topic="endorsements", wallet_id="admin"
     )
     async with get_governance_controller() as endorser_controller:
         try:
-            txn_record = await endorser_wait_for_transaction(
+            txn_record = await listener.wait_for_filtered_event(
                 filter_map={
                     "state": "request-received",
                 }
@@ -300,7 +300,7 @@ async def endorser_revoke():
                 "Failed to retrieve transaction record for endorser", 500
             )
         finally:
-            await stop_listener()
+            await listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

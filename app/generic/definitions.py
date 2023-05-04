@@ -202,7 +202,7 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    wait_for_event_with_timeout, stop_listener = await start_listener(
+    listener = Listener(
         topic="endorsements", wallet_id=auth.wallet_id
     )
 
@@ -217,7 +217,7 @@ async def create_credential_definition(
     if isinstance(result, TxnOrCredentialDefinitionSendResult):
         try:
             # Wait for transaction to be acknowledged and written to the ledger
-            await wait_for_event_with_timeout(
+            await listener.wait_for_filtered_event(
                 filter_map={
                     "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
@@ -229,7 +229,7 @@ async def create_credential_definition(
                 "Timeout waiting for endorser to accept the endorsement request"
             )
         finally:
-            await stop_listener()
+            await listener.stop()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -285,12 +285,12 @@ async def create_credential_definition(
                 create_transaction_for_endorser=has_connections,
             )
             if has_connections:
-                wait_for_event_with_timeout, stop_listener = await start_listener(
+                admin_listener = Listener(
                     topic="endorsements", wallet_id="admin"
                 )
                 async with get_governance_controller() as endorser_controller:
                     try:
-                        txn_record = await wait_for_event_with_timeout(
+                        txn_record = await admin_listener.wait_for_filtered_event(
                             filter_map={
                                 "state": "request-received",
                             },
@@ -301,7 +301,7 @@ async def create_credential_definition(
                             "Failed to retrieve transaction record for endorser", 500
                         )
                     finally:
-                        await stop_listener()
+                        await admin_listener.stop()
 
                     await endorser_controller.endorse_transaction.endorse_transaction(
                         tran_id=txn_record["transaction_id"]

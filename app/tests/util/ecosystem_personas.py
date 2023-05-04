@@ -91,9 +91,8 @@ async def acme_and_alice_connection(
     invitation_json = base64_to_json(
         acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    wait_for_event, _ = await start_listener(
-        topic="connections", wallet_id=acme_tenant["tenant_id"]
-    )
+    listener = Listener(topic="connections",
+                        wallet_id=acme_tenant["tenant_id"])
 
     # accept invitation on alice side
     invitation_response = (
@@ -103,7 +102,8 @@ async def acme_and_alice_connection(
         )
     ).json()
 
-    payload = await wait_for_event(filter_map={"state": "completed"})
+    payload = await listener.wait_for_filtered_event(filter_map={"state": "completed"})
+    listener.stop()
 
     acme_connection_id = payload["connection_id"]
     alice_connection_id = invitation_response["connection_id"]

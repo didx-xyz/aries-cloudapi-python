@@ -154,7 +154,7 @@ async def issue_credential_to_alice(
         "attributes": {"speed": "10"},
     }
 
-    wait_for_event, _ = await start_listener(
+    listener = Listener(
         topic="credentials", wallet_id=alice_tenant["tenant_id"]
     )
 
@@ -168,7 +168,7 @@ async def issue_credential_to_alice(
         print(credential_exchange)
     response.raise_for_status()
 
-    payload = await wait_for_event(
+    payload = await listener.wait_for_filtered_event(
         filter_map={
             "connection_id": faber_and_alice_connection["alice_connection_id"],
             "state": "offer-received",
@@ -176,18 +176,16 @@ async def issue_credential_to_alice(
     )
 
     alice_credential_id = payload["credential_id"]
-    wait_for_event, _ = await start_listener(
-        topic="credentials", wallet_id=alice_tenant["tenant_id"]
-    )
 
     # send credential request - holder
     response = await alice_member_client.post(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await wait_for_event(
+    await listener.wait_for_filtered_event(
         filter_map={"credential_id": alice_credential_id, "state": "done"}
     )
+    listener.stop()
 
     # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
 

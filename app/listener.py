@@ -63,6 +63,8 @@ class Listener:
             logger.debug("_find_matching_event found no matching events in queue")
             return None
 
+                    raise ListenerTimeout(
+                        f"Waiting for a filtered event has timed out ({timeout}s), using filter_map: {filter_map}")
         try:
             payload = await asyncio.wait_for(_find_matching_event(), timeout=timeout)
             return payload
@@ -82,3 +84,8 @@ class Listener:
         """
         logger.debug("Stopping listener")
         Webhooks.unregister_callback(self.handle_webhook)
+
+
+class ListenerTimeout(Exception):
+    """Exception raised when the Listener times out waiting for a matching event."""
+    pass

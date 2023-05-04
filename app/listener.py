@@ -57,7 +57,7 @@ class Listener:
             payload = await asyncio.wait_for(_find_matching_event(), timeout=timeout)
             return payload
         finally:
-            await self.stop()
+            self.stop()
 
     async def start(self):
         """
@@ -65,7 +65,7 @@ class Listener:
         """
         await Webhooks.register_callback(self.handle_webhook)
 
-    async def stop(self):
+    def stop(self):
         """
         Stop the listener by unregistering its callback from the Webhooks class.
         """

@@ -182,7 +182,7 @@ async def onboard_issuer(
             raise CloudApiException(
                 "Error creating connection with endorser", 500)
         finally:
-            endorsements_listener.stop()
+            connections_listener.stop()
 
         logger.debug("Successfully created connection")
 

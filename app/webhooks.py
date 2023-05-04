@@ -73,7 +73,7 @@ class Webhooks:
             Ensure the connection is established before proceeding
             """
             Webhooks.client = PubSubClient(
-                [WEBHOOK_TOPIC_ALL], callback=Webhooks._on_webhook
+                [WEBHOOK_TOPIC_ALL], callback=Webhooks._handle_webhook
             )
 
             ws_url = convert_url_to_ws(WEBHOOKS_URL)
@@ -92,7 +92,7 @@ class Webhooks:
                 f"Starting Webhooks has timed out ({timeout}s)")
 
     @staticmethod
-    async def _on_webhook(data: str, topic: str):
+    async def _handle_webhook(data: str, topic: str):
         """
         Internal callback function for handling received webhook events.
         """

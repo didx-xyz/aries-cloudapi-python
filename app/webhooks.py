@@ -36,7 +36,7 @@ class Webhooks:
         """
         if not Webhooks.client:
             await Webhooks.start_webhook_client()
-            
+
         logger.debug("Registering a callback")
         Webhooks._callbacks.append(callback)
 
@@ -54,7 +54,7 @@ class Webhooks:
         Unregister a listener function so that it will no longer be called when a webhook event is received.
         """
         logger.debug("Unregistering a callback")
-        
+
         try:
             Webhooks._callbacks.remove(callback)
         except ValueError:
@@ -97,7 +97,7 @@ class Webhooks:
         Internal callback function for handling received webhook events.
         """
         logger.debug(f"Handling webhook for topic: {topic} - emit {data}")
-        
+
         await Webhooks.emit(json.loads(data))
 
     @staticmethod
@@ -106,7 +106,7 @@ class Webhooks:
         Shutdown the Webhooks client and clear the listeners with a specified timeout.
         """
         logger.debug("Shutting down Webhooks client")
-        
+
         async def wait_for_shutdown():
             if Webhooks.client:
                 await Webhooks.client.disconnect()

@@ -45,20 +45,17 @@ class Listener:
             while not self.queue.empty():
                 item = await self.queue.get()
 
-            payload = item["payload"]
+                payload = item["payload"]
 
                 if _payload_matches_filter(payload, filter_map):
                     return payload
 
-        # Return None or raise an exception if no matching payload is found
-        return None
+            # Return None or raise an exception if no matching payload is found
+            return None
 
-    async def wait_for_event_with_timeout(self, filter_map: Dict[str, Any], timeout: float = 180):
         try:
             payload = await asyncio.wait_for(_find_matching_event(), timeout=timeout)
             return payload
-        except Exception:
-            raise
         finally:
             await self.stop()
 

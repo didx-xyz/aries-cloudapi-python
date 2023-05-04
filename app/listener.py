@@ -16,12 +16,14 @@ class Listener:
         self.wallet_id = wallet_id
         self.queue = asyncio.Queue()
 
+    async def handle_webhook(self, data: Dict[str, Any]):
         """
         Process a webhook event and add it to the queue if the topic and wallet_id match.
         """
         if data["topic"] == self.topic and data["wallet_id"] == self.wallet_id:
             await self.queue.put(data)
 
+    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: Optional[float] = 180):
         """
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
@@ -30,6 +32,7 @@ class Listener:
             match if all key-value pairs in the filter_map have the same values in the payload.
             """
 
+        async def _find_matching_event() -> Dict[str, Any]:
             """
             Search the queue for an event that matches the specified filter_map. If a matching event
             is found, return its payload. Otherwise, return None.
@@ -45,7 +48,7 @@ class Listener:
 
     async def wait_for_event_with_timeout(self, filter_map: Dict[str, Any], timeout: float = 180):
         try:
-            payload = await asyncio.wait_for(self.wait_for_event(filter_map), timeout=timeout)
+            payload = await asyncio.wait_for(_find_matching_event(), timeout=timeout)
             return payload
         except Exception:
             raise
@@ -56,8 +59,10 @@ class Listener:
         """
         Start the listener by registering its callback with the Webhooks class.
         """
+        await Webhooks.register_callback(self.handle_webhook)
 
     async def stop(self):
         """
         Stop the listener by unregistering its callback from the Webhooks class.
         """
+        Webhooks.unregister_callback(self.handle_webhook)

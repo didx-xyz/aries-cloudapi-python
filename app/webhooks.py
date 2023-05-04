@@ -43,7 +43,7 @@ class Webhooks:
         """
         Emit a webhook event by calling all registered listener functions with the event data.
         """
-        for callback in Webhooks._callbacks:
+        for callback in Webhooks._callbacks:  # todo: surely we don't need to submit data to every single callbacks
             await callback(data)
 
     @staticmethod

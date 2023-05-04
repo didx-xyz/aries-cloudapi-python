@@ -13,36 +13,36 @@ logger = logging.getLogger(__name__)
 
 class Webhooks:
     """
-    A class for managing webhook listeners, emitting webhook events, and handling the underlying
+    A class for managing webhook callbacks, emitting webhook events, and handling the underlying
     WebSocket communication.
     """
-    _listeners: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
+    _callbacks: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
     client: Optional[PubSubClient] = None
 
     @staticmethod
-    async def register_listener(listener: Callable[[Dict[str, Any]], Awaitable[None]]):
+    async def register_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
         """
         Register a listener function to be called when a webhook event is received.
         """
         if not Webhooks.client:
             await Webhooks.listen_webhooks()
-        Webhooks._listeners.append(listener)
+        Webhooks._callbacks.append(callback)
 
     @staticmethod
     async def emit(data: Dict[str, Any]):
         """
         Emit a webhook event by calling all registered listener functions with the event data.
         """
-        for listener in Webhooks._listeners:
-            await listener(data)
+        for callback in Webhooks._callbacks:
+            await callback(data)
 
     @staticmethod
-    def unregister_listener(listener: Callable[[Dict[str, Any]], Awaitable[None]]):
+    def unregister_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
         """
         Unregister a listener function so that it will no longer be called when a webhook event is received.
         """
         try:
-            Webhooks._listeners.remove(listener)
+            Webhooks._callbacks.remove(callback)
         except ValueError:
             # Listener not in list
             pass
@@ -92,7 +92,7 @@ class Webhooks:
                 await Webhooks.client.disconnect()
                 Webhooks.client = None
 
-            Webhooks._listeners = []
+            Webhooks._callbacks = []
 
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)

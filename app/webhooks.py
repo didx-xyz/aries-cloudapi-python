@@ -52,7 +52,7 @@ class Webhooks:
         """
         Start listening for webhook events on a WebSocket connection with a specified timeout.
         """
-        async def wait_for_ready():
+        async def ensure_connection_ready():
             """
             Ensure the connection is established before proceeding
             """
@@ -68,7 +68,7 @@ class Webhooks:
             await Webhooks.client.wait_until_ready()
 
         try:
-            await asyncio.wait_for(wait_for_ready(), timeout=timeout)
+            await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
         except asyncio.TimeoutError:
             if Webhooks.client:
                 await Webhooks.client.disconnect()

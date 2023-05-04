@@ -66,7 +66,6 @@ class Webhooks:
         """
         Start listening for webhook events on a WebSocket connection with a specified timeout.
         """
-        logger.debug("Starting Webhooks client")
 
         async def ensure_connection_ready():
             """
@@ -81,14 +80,19 @@ class Webhooks:
             Webhooks.client.start_client(ws_url + "/pubsub")
             await Webhooks.client.wait_until_ready()
 
-        try:
-            await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
-        except asyncio.TimeoutError:
-            logger.warning(
-                f"Starting Webhooks client has timed out after {timeout}s")
-            if Webhooks.client:
-                await Webhooks.client.disconnect()
-            raise WebhooksTimeout(f"Starting Webhooks has timed out")
+        if not Webhooks.client:
+            try:
+                logger.debug("Starting Webhooks client")
+                await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
+            except asyncio.TimeoutError:
+                logger.warning(
+                    f"Starting Webhooks client has timed out after {timeout}s")
+                if Webhooks.client:
+                    await Webhooks.client.disconnect()
+                raise WebhooksTimeout(f"Starting Webhooks has timed out")
+        else:
+            logger.debug(
+                f"Tried to start Webhook client when it's already started. Ignoring.")
 
     @staticmethod
     async def _handle_webhook(data: str, topic: str):

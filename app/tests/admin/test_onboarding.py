@@ -91,20 +91,6 @@ async def test_onboard_issuer_no_public_did(
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
         CloudApiException(detail="Error")
     )
-    when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
-        get(
-            Did(
-                did="WgWxqztrNooG92RXvxSTWv",
-                verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
-            )
-        )
-    )
-
-    when(acapy_ledger).register_nym_on_ledger(...).thenReturn(get())
-
-    when(acapy_ledger).accept_taa_if_required(...).thenReturn(get())
-    when(acapy_wallet).set_public_did(...).thenReturn(get())
-
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
         get(Did(did="EndorserController", verkey="EndorserVerkey"))
     )
@@ -112,10 +98,20 @@ async def test_onboard_issuer_no_public_did(
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
         get(InvitationRecord(invitation=InvitationMessage()))
     )
+
+    # Mock event listeners
+    when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
+        MockListenerEndorserConnectionId(
+            topic="connections", wallet_id="admin")
+    )
+    when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
+        MockListenerRequestReceived(topic="endorsements", wallet_id="admin")
+    )
+
+    # Mock responses
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
         get(ConnRecord())
     )
-
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         get()
     )
@@ -125,40 +121,23 @@ async def test_onboard_issuer_no_public_did(
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
         get()
     )
-
-    # Mock event listeners
-    when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockListenerEndorserConnectionId(
-            topic="connections", wallet_id="admin")
-    )
-
-    when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        MockListenerRequestReceived(topic="endorsements", wallet_id="admin")
-    )
-
-    when(endorser_controller.endorse_transaction).get_records(...).thenReturn(
+    when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
         get(
-            TransactionList(
-                results=[
-                    TransactionRecord(
-                        state="request-received",
-                        transaction_id="abcde",
-                        connection_id="endorser_connection_id",
-                    ),
-                    TransactionRecord(
-                        state="request-received",
-                        transaction_id="abcde",
-                        connection_id="some_other_connection_id",
-                    ),
-                ]
+            Did(
+                did="WgWxqztrNooG92RXvxSTWv",
+                verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
             )
         )
     )
+    when(acapy_ledger).register_nym_on_ledger(...).thenReturn(get())
+    when(acapy_ledger).accept_taa_if_required(...).thenReturn(get())
+    when(acapy_wallet).set_public_did(...).thenReturn(get())
     when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
         get()
     )
-    invitation_url = "https://invitation.com"
 
+    # Create an invitation as well
+    invitation_url = "https://invitation.com"
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
         get(
             InvitationRecord(

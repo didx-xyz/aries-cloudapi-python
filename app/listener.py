@@ -15,18 +15,19 @@ class Listener:
         if data["topic"] == self.topic and data["wallet_id"] == self.wallet_id:
             await self.queue.put(data)
 
+    def _payload_matches_filter(self, payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
+        return all(
+            payload.get(filter_key, None) == filter_value
+            for filter_key, filter_value in filter_map.items()
+        )
+
     async def wait_for_event(self, filter_map: Dict[str, Any]) -> Dict[str, Any]:
         while True:
             item = await self.queue.get()
 
             payload = item["payload"]
 
-            match = all(
-                payload.get(filter_key, None) == filter_value
-                for filter_key, filter_value in filter_map.items()
-            )
-
-            if match:
+            if self._payload_matches_filter(payload, filter_map):
                 return payload
 
     async def wait_for_event_with_timeout(self, filter_map: Dict[str, Any], timeout: float = 180):

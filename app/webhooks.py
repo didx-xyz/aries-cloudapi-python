@@ -88,8 +88,7 @@ class Webhooks:
                 f"Starting Webhooks client has timed out after {timeout}s")
             if Webhooks.client:
                 await Webhooks.client.disconnect()
-            raise WebhooksTimeout(
-                f"Starting Webhooks has timed out ({timeout}s)")
+            raise WebhooksTimeout(f"Starting Webhooks has timed out")
 
     @staticmethod
     async def _handle_webhook(data: str, topic: str):
@@ -119,8 +118,7 @@ class Webhooks:
         except asyncio.TimeoutError:
             logger.warning(
                 f"Shutting down Webhooks has timed out after {timeout}s")
-            raise WebhooksTimeout(
-                f"Webhooks shutdown timed out ({timeout}s)")
+            raise WebhooksTimeout(f"Webhooks shutdown timed out")
 
 
 class WebhooksTimeout(Exception):

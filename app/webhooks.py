@@ -36,6 +36,8 @@ class Webhooks:
         """
         if not Webhooks.client:
             await Webhooks.start_webhook_client()
+            
+        logger.debug("Registering a callback")
         Webhooks._callbacks.append(callback)
 
     @staticmethod
@@ -51,6 +53,8 @@ class Webhooks:
         """
         Unregister a listener function so that it will no longer be called when a webhook event is received.
         """
+        logger.debug("Unregistering a callback")
+        
         try:
             Webhooks._callbacks.remove(callback)
         except ValueError:
@@ -62,6 +66,8 @@ class Webhooks:
         """
         Start listening for webhook events on a WebSocket connection with a specified timeout.
         """
+        logger.debug("Starting Webhooks client")
+
         async def ensure_connection_ready():
             """
             Ensure the connection is established before proceeding
@@ -78,6 +84,8 @@ class Webhooks:
         try:
             await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
         except asyncio.TimeoutError:
+            logger.warning(
+                f"Starting Webhooks client has timed out after {timeout}s")
             if Webhooks.client:
                 await Webhooks.client.disconnect()
             raise WebhooksTimeout(
@@ -88,6 +96,8 @@ class Webhooks:
         """
         Internal callback function for handling received webhook events.
         """
+        logger.debug(f"Handling webhook for topic: {topic} - emit {data}")
+        
         await Webhooks.emit(json.loads(data))
 
     @staticmethod
@@ -95,6 +105,8 @@ class Webhooks:
         """
         Shutdown the Webhooks client and clear the listeners with a specified timeout.
         """
+        logger.debug("Shutting down Webhooks client")
+        
         async def wait_for_shutdown():
             if Webhooks.client:
                 await Webhooks.client.disconnect()
@@ -105,6 +117,8 @@ class Webhooks:
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError:
+            logger.warning(
+                f"Shutting down Webhooks has timed out after {timeout}s")
             raise WebhooksTimeout(
                 f"Webhooks shutdown timed out ({timeout}s)")
 

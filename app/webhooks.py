@@ -1,12 +1,12 @@
 import asyncio
 import json
 import logging
-from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from fastapi_websocket_pubsub import PubSubClient
 
 from app.constants import WEBHOOKS_URL
-from shared_models import WEBHOOK_TOPIC_ALL, CloudApiTopics
+from shared_models import WEBHOOK_TOPIC_ALL
 
 logger = logging.getLogger(__name__)
 
@@ -96,51 +96,6 @@ class Webhooks:
         except asyncio.TimeoutError:
             raise WebhooksShutdownTimeout(
                 f"Webhooks shutdown timed out ({timeout}s)")
-
-
-async def start_listener(*, topic: CloudApiTopics, wallet_id: str) -> Tuple[Callable[..., Dict[str, Any]], Callable[..., None]]:
-    queue = asyncio.Queue()
-
-    async def on_webhook(data: Dict[str, Any]):
-        # Do not flood the queue with unnecessary webhook events. We require topic and wallet_id
-        if data["topic"] == topic and data["wallet_id"] == wallet_id:
-            await queue.put(data)
-
-    async def wait_for_event(filter_map: Dict[str, Any]) -> Dict[str, Any]:
-        while True:
-            # Wait for item from the queue
-            item = await queue.get()
-
-            payload = item["payload"]
-
-            # Check if there is a match based on filters
-            match = all(
-                payload.get(filter_key, None) == filter_value
-                for filter_key, filter_value in filter_map.items()
-            )
-
-            if match:
-                return payload
-
-    async def wait_for_event_with_timeout(*, filter_map: Dict[str, Any], timeout: float = 180):
-        try:
-            payload = await asyncio.wait_for(
-                wait_for_event(filter_map), timeout=timeout
-            )
-            return payload
-        except Exception:
-            raise
-        finally:
-            # Always unsubscribe
-            Webhooks.unregister_listener(on_webhook)
-
-    async def stop_listener():
-        Webhooks.unregister_listener(on_webhook)
-
-    # Subscribe to webhook events and put them in a queue
-    await Webhooks.register_listener(on_webhook)
-
-    return wait_for_event_with_timeout, stop_listener
 
 
 class WebhooksShutdownTimeout(Exception):

@@ -11,8 +11,7 @@ import app.admin.tenants.onboarding as onboarding
 from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
-from app.tests.util.webhooks import (MockConnectionListener,
-                                     MockEndorsementListener, MockListener)
+from app.listener import Listener
 from tests.fixtures import get_mock_agent_controller
 from tests.util.mock import get
 
@@ -264,3 +263,21 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
         await onboarding.onboard_verifier(
             name="verifier_name", verifier_controller=mock_agent_controller
         )
+
+
+class MockListener(Listener):
+    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
+        pass
+
+    def stop(self):
+        pass
+
+
+class MockEndorserConnectionListener(MockListener):
+    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
+        return {"connection_id": "endorser_connection_id"}
+
+
+class MockEndorsementListener(MockListener):
+    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
+        return {"state": "request-received", "transaction_id": "abcde"}

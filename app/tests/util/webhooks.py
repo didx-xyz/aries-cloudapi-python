@@ -1,13 +1,12 @@
 import base64
 import json
 import time
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import httpx
 from httpx import AsyncClient
 from pydantic import BaseModel
 
-from app.listener import Listener
 from app.tests.util.constants import WEBHOOKS_URL
 from shared_models import CloudApiTopics
 
@@ -85,21 +84,3 @@ def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: CloudApiTopics) -
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e
-
-
-class MockListener(Listener):
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
-        pass
-
-    def stop(self):
-        pass
-
-
-class MockConnectionListener(MockListener):
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
-        return {"connection_id": "endorser_connection_id"}
-
-
-class MockEndorsementListener(MockListener):
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
-        return {"state": "request-received", "transaction_id": "abcde"}

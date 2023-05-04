@@ -42,6 +42,8 @@ class Listener:
             Search the queue for an event that matches the specified filter_map. If a matching event
             is found, return its payload. Otherwise, return None.
             """
+            while not self.queue.empty():
+                item = await self.queue.get()
 
             payload = item["payload"]
 

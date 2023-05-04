@@ -1,20 +1,20 @@
-from aries_cloudcontroller import (
-    IndyPresSpec,
-    IndyRequestedCredsRequestedAttr,
-)
+import time
+
 import pytest
+from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
 from assertpy import assert_that
 from httpx import AsyncClient
 
+from app.generic.verifier.models import (AcceptProofRequest,
+                                         PresentProofProtocolVersion,
+                                         RejectProofRequest, SendProofRequest)
 from app.listener import Listener
 from app.tests.e2e.test_fixtures import *
 from app.tests.util.ecosystem_personas import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from app.tests.verifier.test_verifier_utils import indy_proof_request
-from app.tests.e2e.test_fixtures import *
-from shared_models.shared_models import CredentialExchange, PresentationExchange  # NOQA
-
-import time
+from shared_models.shared_models import CredentialExchange  # NOQA
+from shared_models.shared_models import PresentationExchange
 
 BASE_PATH = "/generic/verifier"
 
@@ -196,7 +196,8 @@ async def test_accept_proof_request_oob_v1(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "done", "role": "verifier", "connection_id": None},
+        filter_map={"state": "done",
+                    "role": "verifier", "connection_id": None},
         topic="proofs",
         max_duration=240,
     )
@@ -290,7 +291,8 @@ async def test_accept_proof_request_oob_v2(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "done", "role": "verifier", "connection_id": None},
+        filter_map={"state": "done",
+                    "role": "verifier", "connection_id": None},
         topic="proofs",
         max_duration=240,
     )
@@ -694,7 +696,7 @@ async def test_get_credentials_for_request(
         }
     )
     alice_proofs_listener.stop()
-    
+
     proof_id = alice_exchange["proof_id"]
 
     response = await alice_member_client.get(

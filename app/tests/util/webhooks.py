@@ -3,12 +3,13 @@ import json
 import time
 from typing import Any, Dict, List, Optional
 
-from httpx import AsyncClient
 import httpx
+from httpx import AsyncClient
 from pydantic import BaseModel
 
-from shared_models import CloudApiTopics
+from app.listener import Listener
 from app.tests.util.constants import WEBHOOKS_URL
+from shared_models import CloudApiTopics
 
 
 class FilterMap(BaseModel):
@@ -55,7 +56,8 @@ def check_webhook_state(
         hooks_response = httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")
 
         if hooks_response.is_error:
-            raise Exception(f"Error retrieving webhooks: {hooks_response.text}")
+            raise Exception(
+                f"Error retrieving webhooks: {hooks_response.text}")
 
         hooks = hooks_response.json()
 
@@ -72,7 +74,8 @@ def check_webhook_state(
                 return True
 
         time.sleep(poll_interval)
-    raise Exception(f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
+    raise Exception(
+        f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
 
 
 def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: CloudApiTopics) -> List:

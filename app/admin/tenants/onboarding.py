@@ -174,7 +174,8 @@ async def onboard_issuer(
                 }
             )
         except TimeoutError:
-            raise CloudApiException("Error creating connection with endorser", 500)
+            raise CloudApiException(
+                "Error creating connection with endorser", 500)
         finally:
             listener_transaction.stop()
 
@@ -222,7 +223,8 @@ async def onboard_issuer(
                 }
             )
         except TimeoutError:
-            raise CloudApiException("Error creating connection with endorser", 500)
+            raise CloudApiException(
+                "Error creating connection with endorser", 500)
         finally:
             listener_transaction.stop()
 

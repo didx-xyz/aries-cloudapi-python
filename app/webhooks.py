@@ -53,6 +53,9 @@ class Webhooks:
         Start listening for webhook events on a WebSocket connection with a specified timeout.
         """
         async def wait_for_ready():
+            """
+            Ensure the connection is established before proceeding
+            """
             Webhooks.client = PubSubClient(
                 [WEBHOOK_TOPIC_ALL], callback=Webhooks._on_webhook
             )

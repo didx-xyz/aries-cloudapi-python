@@ -1,10 +1,11 @@
+from typing import Any, Dict
+
 import pytest
 from aries_cloudcontroller import (AcaPyClient, ConnRecord,
                                    InvitationCreateRequest, InvitationMessage,
                                    InvitationRecord, TransactionList,
                                    TransactionRecord)
 from assertpy import assert_that
-from asynctest import CoroutineMock, MagicMock
 from mockito import verify, when
 
 import app.admin.tenants.onboarding as onboarding
@@ -57,7 +58,8 @@ async def test_onboard_issuer_public_did_exists(
         topic="connections", wallet_id="admin"
     ).thenReturn(MockListener(topic="connections", wallet_id="admin"))
     when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
+        MockListenerEndorserConnectionId(
+            topic="endorsements", wallet_id="admin")
     )
 
     invitation_url = "https://invitation.com"
@@ -126,7 +128,8 @@ async def test_onboard_issuer_no_public_did(
 
     # Mock event listeners
     when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
+        MockListenerEndorserConnectionId(
+            topic="connections", wallet_id="admin")
     )
 
     when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(

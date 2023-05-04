@@ -1,27 +1,20 @@
-from asynctest import MagicMock, CoroutineMock
-from aries_cloudcontroller import (
-    AcaPyClient,
-    ConnRecord,
-    InvitationCreateRequest,
-    InvitationMessage,
-    InvitationRecord,
-    TransactionList,
-    TransactionRecord,
-)
-
 import pytest
-
+from aries_cloudcontroller import (AcaPyClient, ConnRecord,
+                                   InvitationCreateRequest, InvitationMessage,
+                                   InvitationRecord, TransactionList,
+                                   TransactionRecord)
+from assertpy import assert_that
+from asynctest import CoroutineMock, MagicMock
 from mockito import verify, when
+
+import app.admin.tenants.onboarding as onboarding
+from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
 from app.tests.util.webhooks import (MockConnectionListener,
                                      MockEndorsementListener, MockListener)
 from tests.fixtures import get_mock_agent_controller
-
 from tests.util.mock import get
-import app.admin.tenants.onboarding as onboarding
-from app.admin.tenants.onboarding import acapy_wallet, acapy_ledger
-from app.tests.util.webhooks import mock_start_listener
 
 
 @pytest.mark.asyncio
@@ -231,7 +224,8 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
         get(
             InvitationRecord(
                 invitation_url=invitation_url,
-                invitation=InvitationMessage(services=[{"recipientKeys": [did_key]}]),
+                invitation=InvitationMessage(
+                    services=[{"recipientKeys": [did_key]}]),
             )
         )
     )

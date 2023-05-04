@@ -26,8 +26,9 @@ class OnboardResult(BaseModel):
     did: str
     didcomm_invitation: Optional[AnyHttpUrl]
 
-# Helper method for passing MockListener to class
+
 def _create_listener(self, topic: str, wallet_id: str) -> Listener:
+    # Helper method for passing MockListener to class
     return Listener(topic=topic, wallet_id=wallet_id)
 
 

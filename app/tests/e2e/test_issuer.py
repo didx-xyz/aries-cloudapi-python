@@ -1,16 +1,18 @@
 from time import sleep
+
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
+
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
+from app.tests.e2e.test_fixtures import *  # NOQA
+from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
+from app.tests.util.webhooks import (check_webhook_state,
+                                     get_hooks_per_topic_per_wallet)
 
 # This import are important for tests to run!
-
-from app.tests.e2e.test_fixtures import BASE_PATH
-from app.tests.e2e.test_fixtures import *  # NOQA
 
 
 @pytest.mark.asyncio
@@ -29,7 +31,8 @@ async def test_send_credential_oob_v1(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -162,7 +165,8 @@ async def test_send_credential(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -205,7 +209,8 @@ async def test_send_credential(
     )
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -329,7 +334,8 @@ async def test_send_credential_request(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     assert check_webhook_state(
         client=alice_member_client,

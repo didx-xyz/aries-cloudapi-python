@@ -19,7 +19,7 @@ class Listener:
         self.wallet_id = wallet_id
         self.unprocessed_queue = asyncio.Queue()
         self._processed_events = []
-        
+
         # Start the listener when the object is created
         asyncio.create_task(self.start())
 

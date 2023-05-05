@@ -229,7 +229,7 @@ async def create_credential_definition(
                 "Timeout waiting for endorser to accept the endorsement request"
             )
         finally:
-            await listener.stop()
+            listener.stop()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -301,7 +301,7 @@ async def create_credential_definition(
                             "Failed to retrieve transaction record for endorser", 500
                         )
                     finally:
-                        await admin_listener.stop()
+                        admin_listener.stop()
 
                     await endorser_controller.endorse_transaction.endorse_transaction(
                         tran_id=txn_record["transaction_id"]

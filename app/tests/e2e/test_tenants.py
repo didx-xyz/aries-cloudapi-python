@@ -10,7 +10,7 @@ from app.facades import acapy_wallet, trust_registry
 from app.role import Role
 
 # Tests are broken if we import the event_loop...
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def event_loop(request):
     """Create an instance of the default event loop for each test case."""
     loop = asyncio.get_event_loop_policy().new_event_loop()

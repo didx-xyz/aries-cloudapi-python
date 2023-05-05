@@ -19,8 +19,9 @@ from app.tests.util.member_personas import (alice_acapy_client,
                                             bob_and_alice_public_did,
                                             bob_member_client,
                                             bob_multi_use_invitation)
-# Unused imports contain fixtures
 from app.webhooks import Webhooks
+from tests.fixtures import mock_agent_controller
+# Unused imports contain fixtures
 
 # In pytest, conftest.py is a special file used to share fixtures, hooks, and other configurations
 # among multiple test files. It's automatically discovered by pytest when tests are run, and the

@@ -1,5 +1,24 @@
-import pytest
 import mockito
+import pytest
+
+from app.tests.util.client_fixtures import (governance_acapy_client,
+                                            governance_client,
+                                            tenant_admin_acapy_client,
+                                            tenant_admin_client)
+from app.tests.util.ecosystem_personas import (acme_acapy_client,
+                                               acme_and_alice_connection,
+                                               acme_client, acme_tenant,
+                                               faber_acapy_client,
+                                               faber_and_alice_connection,
+                                               faber_client)
+from app.tests.util.member_personas import (alice_acapy_client,
+                                            alice_bob_connect_multi,
+                                            alice_member_client, alice_tenant,
+                                            bob_acapy_client,
+                                            bob_and_alice_connection,
+                                            bob_and_alice_public_did,
+                                            bob_member_client,
+                                            bob_multi_use_invitation)
 # Unused imports contain fixtures
 from app.webhooks import Webhooks
 

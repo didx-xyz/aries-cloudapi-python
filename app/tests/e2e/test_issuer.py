@@ -439,9 +439,11 @@ async def test_revoke_credential(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
+    faber_connection_id = faber_and_alice_connection["faber_connection_id"]
+
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_connection_id,
         "credential_definition_id": credential_definition_id_revocable,
         "attributes": {"speed": "10"},
     }
@@ -484,14 +486,14 @@ async def test_revoke_credential(
     record_as_issuer_for_alice = [
         rec
         for rec in records
-        if (rec["role"] == "issuer" and rec["state"] == "credential-issued" and rec['connection_id'] == faber_and_alice_connection["faber_connection_id"])
+        if (rec["role"] == "issuer" and rec["state"] == "credential-issued" and rec['connection_id'] == faber_connection_id)
     ]
 
     if record_as_issuer_for_alice:
         record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
     else:
         logger.warning(
-            f"No records matched `credential-issued` with role: issuer. List of records retreived: {records}")
+            f"No records matched state: `credential-issued` with role: `issuer`. Looking for connection_id = {faber_connection_id}. List of records retreived: {records}.\n")
         raise Exception(
             "No issued credential retreived.")
 

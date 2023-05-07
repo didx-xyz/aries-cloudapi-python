@@ -1,5 +1,6 @@
 from time import sleep
 
+import logging
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
@@ -13,6 +14,8 @@ from app.tests.util.webhooks import (check_webhook_state,
                                      get_hooks_per_topic_per_wallet)
 
 # This import are important for tests to run!
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
@@ -487,6 +490,11 @@ async def test_revoke_credential(
     if record_as_issuer_for_alice:
         record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
     else:
+        logger.warning(
+            f"No records matched `credential-issued` with role: issuer. List of records retreived: {records}")
+        raise Exception(
+            "No issued credential retreived.")
+
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
     response = await faber_client.post(

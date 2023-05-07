@@ -37,7 +37,6 @@ class Webhooks:
         if not Webhooks.client:
             await Webhooks.start_webhook_client()
 
-        logger.debug("Registering a callback")
         Webhooks._callbacks.append(callback)
 
     @staticmethod
@@ -45,7 +44,7 @@ class Webhooks:
         """
         Emit a webhook event by calling all registered listener functions with the event data.
         """
-        for callback in Webhooks._callbacks:  # todo: surely we don't need to submit data to every single callbacks
+        for callback in Webhooks._callbacks:  # todo: surely we don't need to submit data to every single callback
             await callback(data)
 
     @staticmethod
@@ -87,8 +86,7 @@ class Webhooks:
             except asyncio.TimeoutError:
                 logger.warning(
                     f"Starting Webhooks client has timed out after {timeout}s")
-                if Webhooks.client:
-                    await Webhooks.client.disconnect()
+                await Webhooks.shutdown()
                 raise WebhooksTimeout(f"Starting Webhooks has timed out")
         else:
             logger.debug(

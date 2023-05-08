@@ -30,7 +30,7 @@ class Listener:
         if data["topic"] == self.topic and data["wallet_id"] == self.wallet_id:
             await self.unprocessed_queue.put(data)
 
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: Optional[float] = 180):
+    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: Optional[float] = 30):
         """
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
@@ -73,7 +73,7 @@ class Listener:
         while loop.is_running:
             try:
                 # Use a smaller timeout value for asyncio.wait_for to repeatedly call _find_matching_event
-                payload = await asyncio.wait_for(_find_matching_event(), timeout=5)
+                payload = await asyncio.wait_for(_find_matching_event(), timeout=2)
                 if payload:
                     return payload
                 else:

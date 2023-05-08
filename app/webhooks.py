@@ -96,7 +96,6 @@ class Webhooks:
     @staticmethod
     async def wait_until_client_ready():
         if Webhooks.client:
-            logger.debug("wait_until_client_ready")
             await Webhooks.client.wait_until_ready()
             Webhooks._ready.set()
 

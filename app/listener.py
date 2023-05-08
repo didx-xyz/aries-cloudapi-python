@@ -77,8 +77,8 @@ class Listener:
                 if payload:
                     return payload
                 else:
-                    logger.warning(
-                        "_find_matching_event returned None. Sleep before retry.")
+                    logger.debug(
+                        f"_find_matching_event returned None. Sleep briefly before retry. Events already checked: {self._processed_events}")
                     await asyncio.sleep(2)
             except asyncio.TimeoutError:
                 logger.warning(

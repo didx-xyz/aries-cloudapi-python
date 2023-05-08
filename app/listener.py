@@ -75,6 +75,8 @@ class Listener:
                 # Use a smaller timeout value for asyncio.wait_for to repeatedly call _find_matching_event
                 payload = await asyncio.wait_for(_find_matching_event(), timeout=2)
                 if payload:
+                    logger.debug(
+                        f"_find_matching_event successfully matched. payload: {payload}")
                     return payload
                 else:
                     logger.debug(
@@ -87,8 +89,10 @@ class Listener:
                 # If the total waiting time reaches the specified timeout, raise an exception, else continue
                 if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
-                    raise ListenerTimeout(
+                    logger.warning(
                         f"Waiting for a filtered event has timed out ({timeout}s), using filter_map: {filter_map}")
+                    raise ListenerTimeout(
+                        f"Waiting for an expected event has timed out")
 
     async def start(self):
         """

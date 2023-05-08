@@ -105,7 +105,7 @@ class Webhooks:
         Internal callback function for handling received webhook events.
         """
         logger.debug(f"Handling webhook for topic: {topic} - emit {data}")
-
+        #todo: topic isn't used. should only emit to relevant topic/callback pairs
         await Webhooks.emit(json.loads(data))
 
     @staticmethod
@@ -118,8 +118,9 @@ class Webhooks:
         async def wait_for_shutdown():
             if Webhooks.client and await Webhooks._ready.wait():
                 await Webhooks.client.disconnect()
-                Webhooks.client = None
-                Webhooks._ready = asyncio.Event()
+            
+            Webhooks.client = None
+            Webhooks._ready = asyncio.Event()
             Webhooks._callbacks = []
 
         try:

@@ -67,9 +67,10 @@ class Listener:
                 "_find_matching_event found no matching events in queue")
             return None
 
-         # Loop continuously, waiting for a matching event or until the total waiting time reaches the specified timeout
-        start_time = asyncio.get_event_loop().time()
-        while True:
+        # Loop continuously, waiting for a matching event or until the total waiting time reaches the specified timeout
+        loop = asyncio.get_event_loop()
+        start_time = loop.time()
+        while loop.is_running:
             try:
                 # Use a smaller timeout value for asyncio.wait_for to repeatedly call _find_matching_event
                 payload = await asyncio.wait_for(_find_matching_event(), timeout=5)
@@ -84,7 +85,7 @@ class Listener:
                     "_find_matching_event has timed out in `asyncio.wait_for`")
             finally:
                 # If the total waiting time reaches the specified timeout, raise an exception, else continue
-                if asyncio.get_event_loop().time() - start_time >= timeout:
+                if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
                     raise ListenerTimeout(
                         f"Waiting for a filtered event has timed out ({timeout}s), using filter_map: {filter_map}")

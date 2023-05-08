@@ -244,6 +244,10 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
 
 
 class MockListener(Listener):
+    def __init__(self, topic: CloudApiTopics, wallet_id: str):
+        # Override init method, to prevent asyncio tasks from being created
+        pass
+
     async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
         pass
 

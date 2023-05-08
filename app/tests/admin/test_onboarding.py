@@ -13,6 +13,7 @@ from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
 from app.listener import Listener
+from shared_models.shared_models import CloudApiTopics
 from tests.fixtures import get_mock_agent_controller
 from tests.util.mock import get
 

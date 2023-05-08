@@ -27,6 +27,7 @@ class Webhooks:
     WebSocket communication.
     """
     _callbacks: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
+    _ready = asyncio.Event()
     client: Optional[PubSubClient] = None
 
     @staticmethod
@@ -77,7 +78,7 @@ class Webhooks:
             ws_url = convert_url_to_ws(WEBHOOKS_URL)
 
             Webhooks.client.start_client(ws_url + "/pubsub")
-            await Webhooks.client.wait_until_ready()
+            await Webhooks.wait_until_client_ready()
 
         if not Webhooks.client:
             try:
@@ -91,6 +92,13 @@ class Webhooks:
         else:
             logger.debug(
                 f"Tried to start Webhook client when it's already started. Ignoring.")
+
+    @staticmethod
+    async def wait_until_client_ready():
+        if Webhooks.client:
+            logger.debug("wait_until_client_ready")
+            await Webhooks.client.wait_until_ready()
+            Webhooks._ready.set()
 
     @staticmethod
     async def _handle_webhook(data: str, topic: str):
@@ -109,10 +117,10 @@ class Webhooks:
         logger.debug("Shutting down Webhooks client")
 
         async def wait_for_shutdown():
-            if Webhooks.client:
+            if Webhooks.client and await Webhooks._ready.wait():
                 await Webhooks.client.disconnect()
                 Webhooks.client = None
-
+                Webhooks._ready = asyncio.Event()
             Webhooks._callbacks = []
 
         try:

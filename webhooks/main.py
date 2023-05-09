@@ -1,24 +1,22 @@
+import asyncio
 import json
-from typing import Any, Dict, List
-from pprint import pformat
-
-from fastapi import FastAPI, Request, Depends, APIRouter, status, WebSocket
-from fastapi.responses import JSONResponse, StreamingResponse
-from dependency_injector.wiring import inject, Provide
-from containers import Container
-from fastapi_websocket_pubsub import PubSubEndpoint
-
-
-from services import Service
-from shared_models import TopicItem, topic_mapping, RedisItem, WEBHOOK_TOPIC_ALL
-
 import logging
 import os
 import sys
-
-import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager
+from pprint import pformat
+from typing import Any, Dict, List
+
+from containers import Container
+from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends, FastAPI, Request, WebSocket, status
+from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi_websocket_pubsub import PubSubEndpoint
+from services import Service
+
+from shared_models import (WEBHOOK_TOPIC_ALL, RedisItem, TopicItem,
+                           topic_mapping)
 
 OPENAPI_NAME = os.getenv(
     "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events")

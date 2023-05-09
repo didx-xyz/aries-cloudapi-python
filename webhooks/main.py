@@ -20,7 +20,8 @@ import asyncio
 from collections import defaultdict
 from contextlib import asynccontextmanager
 
-OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events")
+OPENAPI_NAME = os.getenv(
+    "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.1.0")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "error")
 log = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ app.include_router(router)
 # SSE related code
 clients = defaultdict(list)
 
+
 @asynccontextmanager
 async def sse_event_stream(topic: str, service: Service):
     queue = asyncio.Queue()
@@ -56,6 +58,7 @@ async def sse_event_stream(topic: str, service: Service):
     finally:
         clients[topic].remove(queue)
 
+
 async def send_sse_event(event: str, topic: str, service: Service):
     log.debug(f"Sending event to topic '{topic}': {event}")
     log.debug((f"Number of clients listening to topic '{topic}': "))
@@ -65,8 +68,10 @@ async def send_sse_event(event: str, topic: str, service: Service):
     else:
         await service.store_undelivered_message(topic, event)
 
+
 async def on_startup():
     pass  # Perform any startup tasks, if needed
+
 
 async def on_shutdown():
     global clients
@@ -78,6 +83,7 @@ async def on_shutdown():
 
 app.add_event_handler("startup", on_startup)
 app.add_event_handler("shutdown", on_shutdown)
+
 
 @app.get("/sse/{walletId}", response_class=StreamingResponse, summary="Subscribe to wallet ID server-side events")
 @inject
@@ -92,6 +98,7 @@ async def sse_subscribe_wallet(walletId: str, service: Service = Depends(Provide
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
+
 @app.get("/sse/{topic}/{walletId}", response_class=StreamingResponse, summary="Subscribe to topic and wallet ID server-side events")
 @inject
 async def sse_subscribe(topic: str, walletId: str, service: Service = Depends(Provide[Container.service])):
@@ -105,6 +112,7 @@ async def sse_subscribe(topic: str, walletId: str, service: Service = Depends(Pr
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
+
 @app.get("/sse/{topic}", response_class=StreamingResponse, summary="Subscribe to topic server-side events")
 @inject
 async def sse_subscribe(topic: str, service: Service = Depends(Provide[Container.service])):
@@ -116,6 +124,7 @@ async def sse_subscribe(topic: str, service: Service = Depends(Provide[Container
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 # End of SSE related code
+
 
 @app.api_route("/{topic}/{wallet_id}", summary="Subscribe or get all webhook events for a topic and wallet ID")
 @inject

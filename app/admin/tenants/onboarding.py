@@ -153,7 +153,25 @@ async def onboard_issuer_no_public_did(
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient
 ):
+    """
+    Onboard an issuer without a public DID.
 
+    This function handles the case where the issuer does not have a public DID.
+    It takes care of the following steps:
+      - Create an endorser invitation using the endorser_controller
+      - Wait for the connection between issuer and endorser to complete
+      - Set roles for both issuer and endorser
+      - Configure endorsement for the connection
+      - Register the issuer DID on the ledger
+
+    Args:
+        name (str): Name of the issuer
+        endorser_controller (AcaPyClient): Authenticated ACA-Py client for endorser
+        issuer_controller (AcaPyClient): Authenticated ACA-Py client for issuer
+
+    Returns:
+        issuer_did (DID): The issuer's DID after completing the onboarding process
+    """
     async def create_endorser_invitation():
         # Make sure the issuer has a connection with the endorser
         invitation = await endorser_controller.out_of_band.create_invitation(

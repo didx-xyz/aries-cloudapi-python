@@ -119,8 +119,6 @@ jobs:
           aws-region: af-south-1
           role-to-assume: arn:aws:iam::402177810328:role/cicd
           role-session-name: github-cicd
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
@@ -156,49 +154,40 @@ jobs:
         with:
           # version: v2.1.0 # defaults to 'latest'
           legacy: true    # will also install in PATH as `docker-compose`
-      - name: Expose GitHub Runtime
-        uses: crazy-max/ghaction-github-runtime@v2
-      - name: buildx
-        run: |
-          docker buildx create --use --driver=docker-container
-          docker buildx bake --set *.cache-to="type=gha,mode=max" --set *.cache-from="type=gha" --load
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ steps.meta.outputs.version }}
       - name: Start Test Harness
         run: |
-          ./manage up-as-daemon
+          ./manage up-as-daemon-no-build
         shell: bash
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ steps.meta.outputs.version }}
-      # - name: Test with pytest
-      #   id: test
-      #   continue-on-error: true
-      #   run: |
-      #     pytest --durations=0 --cov=trustregistry --cov=app trustregistry app
-      #     bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-      #     echo done
-      #   env:
-      #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      # - name: Retry tests
-      #   if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
-      #   run: |
-      #     sudo chown -R $(id -u):$(id -g) ./data
-      #     sudo chmod 777 ./data -R
-      #     docker-compose up --build -d governance-ga-agent
-      #     docker-compose up --build -d governance-multitenant-agent
-      #     pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
-      #     bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-      #     echo done
-      #   env:
-      #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      # - name: Run Pylint
-      #   run: |
-      #     pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
-      # - name: Tear down test harness
-      #   run: |
-      #     ./manage down || true
+      - name: Test with pytest
+        id: test
+        continue-on-error: true
+        run: |
+          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          echo done
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+      - name: Retry tests
+        if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
+        run: |
+          sudo chown -R $(id -u):$(id -g) ./data
+          sudo chmod 777 ./data -R
+          docker-compose up --build -d governance-ga-agent
+          docker-compose up --build -d governance-multitenant-agent
+          pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          echo done
+        env:
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+      - name: Run Pylint
+        run: |
+          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+      - name: Tear down test harness
+        run: |
+          ./manage down || true
   deploy:
     runs-on: ubuntu-latest
     steps:

@@ -20,6 +20,7 @@ on:
   pull_request:
     branches:
       - "development"
+      - "DIDX-305-optimize-cicd"
   pull_request_review:
     types: [submitted]
 

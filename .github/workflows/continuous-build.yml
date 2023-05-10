@@ -23,7 +23,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          check-name: 'Build and push Docker images'
+          running-workflow-name: 'Continuous Deploy'
           repo-token: ${{ github.token }}
           wait-interval: 10
       - uses: actions/checkout@v3

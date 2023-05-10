@@ -48,6 +48,7 @@ class RevokeCredential(BaseModel):
     auto_publish_on_ledger: Optional[bool] = False
     credential_exchange_id: str = ""
 
+
 class SendCredential(CredentialBase):
     connection_id: str
 
@@ -63,7 +64,8 @@ def __issuer_from_id(id: str) -> Issuer:
     elif id.startswith("v2-"):
         return IssueCredentialFacades.v2.value
 
-    raise CloudApiException("Unknown version. ID is expected to contain protocol version", 400)
+    raise CloudApiException(
+        "Unknown version. ID is expected to contain protocol version", 400)
 
 
 def __issuer_from_protocol_version(version: IssueCredentialProtocolVersion) -> Issuer:

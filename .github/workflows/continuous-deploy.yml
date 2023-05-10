@@ -28,99 +28,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build image and push to ECR
-    permissions:
-      id-token: write # This is required for requesting the JWT
-    runs-on: ubuntu-latest
-
-    outputs:
-      image_version: ${{ steps.meta.outputs.version }}
-
-    strategy:
-      matrix:
-        image:
-          [
-            ledger-nodes,
-            ledger-browser,
-            tails-server,
-            governance-ga-agent,
-            governance-trust-registry,
-            governance-multitenant-web,
-            governance-webhooks-web,
-            governance-multitenant-agent,
-            governance-endorser,
-          ]
-        include:
-          - image: governance-ga-agent
-            context: .
-            file: dockerfiles/agents/Dockerfile.agent
-          - image: governance-trust-registry
-            context: .
-            file: dockerfiles/trustregistry/Dockerfile
-          - image: governance-multitenant-web
-            context: .
-            file: dockerfiles/fastapi/Dockerfile
-          - image: governance-webhooks-web
-            context: .
-            file: dockerfiles/webhooks/Dockerfile
-          - image: governance-multitenant-agent
-            context: .
-            file: dockerfiles/agents/Dockerfile.author.agent
-          - image: ledger-browser
-            context: https://github.com/didx-xyz/von-network.git
-            file: Dockerfile
-          - image: ledger-nodes
-            context: https://github.com/didx-xyz/von-network.git
-            file: Dockerfile
-          - image: governance-endorser
-            context: .
-            file: dockerfiles/endorser/Dockerfile
-          - image: tails-server
-            context: https://github.com/bcgov/indy-tails-server.git#v1.0.0
-            file: docker/Dockerfile.tails-server
-
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: af-south-1
-          role-to-assume: arn:aws:iam::402177810328:role/cicd
-          role-session-name: github-cicd
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          registries: "324190738845" # org registry
-
-      - name: Docker Metadata
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-
-      - name: Build and push Docker images
-        uses: docker/build-push-action@v4
-        with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.file }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=build-${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.image }}
 
   start-runner:
     permissions:
@@ -159,10 +66,11 @@ jobs:
     name: Deploy to EKS
     needs:
       - start-runner
-      - build
     runs-on: ${{ needs.start-runner.outputs.label }}
     permissions:
       id-token: write # This is required for requesting the JWT
+      checks: read # Read permissions are required for the wait-on-check-action
+      contents: read
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
     env:
@@ -240,6 +148,14 @@ jobs:
       - name: Quiet diff # Display lines with actual changes and lines indicating the component that has changed
         run: |
           grep -E '^[-+]\s|has changed:$' diff_output.txt | awk '{$1=$1};1'
+
+      - name: Wait for continuous build
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          running-workflow-name: 'Continuous Build'
+          repo-token: ${{ github.token }}
+          wait-interval: 10
 
       - name: Destroy deployments
         id: destroy_deployments

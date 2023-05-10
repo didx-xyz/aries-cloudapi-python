@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - development
-      - "DIDX-305-optimize-cicd"
   workflow_dispatch:
 
 jobs:

@@ -23,7 +23,7 @@ jobs:
       - name: Wait for docker builds
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'Build and push Docker images'
           repo-token: ${{ github.token }}
           wait-interval: 10

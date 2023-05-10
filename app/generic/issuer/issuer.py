@@ -163,7 +163,7 @@ async def send_credential(
     except ClientResponseError as e:
         raise CloudApiException(
             f"Failed to create and send credential: {e.message}", 500
-        )
+        ) from e
 
 
 @router.post("/credentials/create-offer")

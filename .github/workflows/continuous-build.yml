@@ -30,6 +30,8 @@ jobs:
         run: pip install docker-compose
       - name: Start Test Harness
         run: |
+          set -x
+          docker-compose version
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data

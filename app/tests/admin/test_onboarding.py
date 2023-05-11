@@ -55,10 +55,10 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     # Mock event listeners
-    when(onboarding)._create_listener(
+    when(onboarding).create_listener(
         topic="connections", wallet_id="admin"
     ).thenReturn(MockListener(topic="connections", wallet_id="admin"))
-    when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
+    when(onboarding).create_listener(topic="endorsements", wallet_id="admin").thenReturn(
         MockListenerEndorserConnectionId(
             topic="endorsements", wallet_id="admin")
     )
@@ -101,11 +101,11 @@ async def test_onboard_issuer_no_public_did(
     )
 
     # Mock event listeners
-    when(onboarding)._create_listener(topic="connections", wallet_id="admin").thenReturn(
+    when(onboarding).create_listener(topic="connections", wallet_id="admin").thenReturn(
         MockListenerEndorserConnectionId(
             topic="connections", wallet_id="admin")
     )
-    when(onboarding)._create_listener(topic="endorsements", wallet_id="admin").thenReturn(
+    when(onboarding).create_listener(topic="endorsements", wallet_id="admin").thenReturn(
         MockListenerRequestReceived(topic="endorsements", wallet_id="admin")
     )
 

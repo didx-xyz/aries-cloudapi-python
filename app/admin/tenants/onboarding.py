@@ -27,7 +27,7 @@ class OnboardResult(BaseModel):
     didcomm_invitation: Optional[AnyHttpUrl]
 
 
-def _create_listener(topic: str, wallet_id: str) -> Listener:
+def create_listener(topic: str, wallet_id: str) -> Listener:
     # Helper method for passing MockListener to class
     return Listener(topic=topic, wallet_id=wallet_id)
 
@@ -147,11 +147,11 @@ async def onboard_issuer(
             f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
         )
 
-        connections_listener = _create_listener(
+        connections_listener = create_listener(
             topic="connections", wallet_id="admin"
         )
 
-        endorsements_listener = _create_listener(
+        endorsements_listener = create_listener(
             topic="endorsements", wallet_id="admin"
         )
 

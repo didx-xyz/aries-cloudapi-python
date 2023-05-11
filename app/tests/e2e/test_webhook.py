@@ -27,7 +27,7 @@ async def test_get_webhooks_for_wallet(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
-    result = (await alice_member_client.get(WALLET_BASE_PATH + "/")).json()
+    result = (await alice_member_client.get(WALLET_BASE_PATH)).json()
 
     assert len(result) >= 1
     assert isinstance(result, list)

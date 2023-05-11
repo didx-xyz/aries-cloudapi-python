@@ -86,12 +86,12 @@ class Webhooks:
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
             except asyncio.TimeoutError:
                 logger.warning(
-                    f"Starting Webhooks client has timed out after {timeout}s")
+                    "Starting Webhooks client has timed out after %ss", timeout)
                 await Webhooks.shutdown()
-                raise WebhooksTimeout(f"Starting Webhooks has timed out")
+                raise WebhooksTimeout("Starting Webhooks has timed out")
         else:
             logger.debug(
-                f"Tried to start Webhook client when it's already started. Ignoring.")
+                "Requested to start Webhook client when it's already started. Ignoring.")
 
     @staticmethod
     async def wait_until_client_ready():
@@ -104,8 +104,7 @@ class Webhooks:
         """
         Internal callback function for handling received webhook events.
         """
-        logger.debug(f"Handling webhook for topic: {topic} - emit {data}")
-        #todo: topic isn't used. should only emit to relevant topic/callback pairs
+        # todo: topic isn't used. should only emit to relevant topic/callback pairs
         await Webhooks.emit(json.loads(data))
 
     @staticmethod
@@ -118,7 +117,7 @@ class Webhooks:
         async def wait_for_shutdown():
             if Webhooks.client and await Webhooks._ready.wait():
                 await Webhooks.client.disconnect()
-            
+
             Webhooks.client = None
             Webhooks._ready = asyncio.Event()
             Webhooks._callbacks = []
@@ -127,8 +126,8 @@ class Webhooks:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError:
             logger.warning(
-                f"Shutting down Webhooks has timed out after {timeout}s")
-            raise WebhooksTimeout(f"Webhooks shutdown timed out")
+                "Shutting down Webhooks has timed out after %ss", timeout)
+            raise WebhooksTimeout("Webhooks shutdown timed out")
 
 
 class WebhooksTimeout(Exception):

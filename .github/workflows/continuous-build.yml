@@ -26,6 +26,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
+      - name: Run Pylint
+        run: |
+          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
       - name: Install Compose
         uses: ndeloof/install-compose-action@v0.0.1
         with:
@@ -46,32 +49,29 @@ jobs:
         shell: bash
       - name: Test with pytest
         id: test
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           pytest --durations=0 --cov=trustregistry --cov=app trustregistry app -k "not test_accept_proof_request_oob_v1"
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      - name: Retry tests
-        if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
-        run: |
-          sudo chown -R $(id -u):$(id -g) ./data
-          sudo chmod 777 ./data -R
-          docker-compose up --build -d governance-ga-agent
-          docker-compose up --build -d governance-multitenant-agent
-          sleep 120
-          pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-          echo done
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      - name: Run Pylint
-        run: |
-          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
-      - name: Tear down test harness
-        run: |
-          ./manage down || true
+      # - name: Retry tests
+      #   if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
+      #   run: |
+      #     sudo chown -R $(id -u):$(id -g) ./data
+      #     sudo chmod 777 ./data -R
+      #     docker-compose up --build -d governance-ga-agent
+      #     docker-compose up --build -d governance-multitenant-agent
+      #     sleep 120
+      #     pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+      #     bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+      #     echo done
+      #   env:
+      #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+      # - name: Tear down test harness
+      #   run: |
+      #     ./manage down || true
   deploy:
     runs-on: ubuntu-latest
     steps:

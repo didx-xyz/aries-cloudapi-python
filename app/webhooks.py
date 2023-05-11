@@ -132,4 +132,3 @@ class Webhooks:
 
 class WebhooksTimeout(Exception):
     """Exception raised when Webhooks functions time out."""
-    pass

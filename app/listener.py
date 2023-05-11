@@ -35,7 +35,7 @@ class Listener:
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
         logger.debug(
-            f"Listener is starting to wait for a filtered event with timeout {timeout}s")
+            "Listener is starting to wait for a filtered event with timeout %ss", timeout)
 
         def _payload_matches_filter(payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
             """
@@ -76,7 +76,7 @@ class Listener:
                 payload = await asyncio.wait_for(_find_matching_event(), timeout=2)
                 if payload:
                     logger.debug(
-                        f"_find_matching_event successfully matched. payload: {payload}")
+                        "_find_matching_event successfully matched. payload: %s", payload)
                     return payload
                 else:
                     logger.debug(

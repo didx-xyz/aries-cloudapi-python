@@ -45,6 +45,10 @@ Without using `make` you can run:
 ./manage up
 ```
 
+Install the requirements
+```bash
+pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
+```
 to start the containers and run the tests with
 
 ```bash
@@ -56,3 +60,14 @@ or only the unit tests with:
 ```bash
 pytest --ignore=app/tests/e2e
 ```
+
+> NOTE:
+> You can specify the log level of the pytest output by using the `--log-cli-level=DEBUG` flag. For example:
+> ```bash
+> pytest . --log-cli-level=DEBUG
+> ```
+> will output all log messages with a log level of `DEBUG` or higher.
+
+## CI/CD
+
+Please, refer to the [CI/CD docs](./.github/workflows/README.md) for more information.

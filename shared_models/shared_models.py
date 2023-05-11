@@ -36,7 +36,13 @@ AcaPyTopics = Literal[
 ]
 
 CloudApiTopics = Literal[
-    "basic-messages", "connections", "credentials", "endorsements", "oob", "proofs"
+    "basic-messages",
+    "connections",
+    "proofs",
+    "credentials",
+    "endorsements",
+    "oob",
+    "revocation",
 ]
 
 # Mapping of acapy topic names to their respective cloud api topic names
@@ -46,6 +52,8 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "endorse_transaction": "endorsements",
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
+    "endorse_transaction": "endorsements",
+    "revocation_registry": "revocation",
     "out_of_band": "oob",
     "present_proof": "proofs",
     "present_proof_v2_0": "proofs",
@@ -214,6 +222,8 @@ class CredentialExchange(BaseModel):
             "request-sent",
         ]
     ] = None
+    # Attributes can be None in proposed state
+    # Connection id can be None in connectionless exchanges
     thread_id: Optional[str] = None
     updated_at: str
 
@@ -230,14 +240,14 @@ class PresentationExchange(BaseModel):
     role: Literal["prover", "verifier"]
     state: Optional[
         Literal[
-            "proposal-sent",
-            "proposal-received",
-            "request-sent",
-            "request-received",
-            "presentation-sent",
-            "presentation-received",
-            "done",
             "abandoned",
+            "done",
+            "presentation-received",
+            "presentation-sent",
+            "proposal-received",
+            "proposal-sent",
+            "request-received",
+            "request-sent",
         ]
     ] = None
     thread_id: Optional[str] = None

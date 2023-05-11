@@ -21,7 +21,7 @@ async def test_create_invitation(
     assert_that(invitation["invitation"]).is_instance_of(dict).contains(
         "@id", "@type", "recipientKeys", "serviceEndpoint"
     )
-    assert_that(invitation["invitation_url"]).contains("http://")
+    assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
 
 @pytest.mark.asyncio

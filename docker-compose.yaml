@@ -2,6 +2,8 @@ version: "3"
 
 services:
   governance-ga-web:
+    image: ${REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
+    container_name: governance-ga-web
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
@@ -12,9 +14,16 @@ services:
       - ./app:/app
       - ./environments/governance-ga/fastapi.default.env:/app/.env
     depends_on:
-      - governance-ga-wallets-db
-      - ledger-nodes
-      - ledger-browser
+      governance-ga-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+      governance-multitenant-agent:
+        condition: service_healthy
     networks:
       - governance-ga
       - host
@@ -44,6 +53,8 @@ services:
   #     - ledger-nodes
   #     - ledger-browser
   governance-ga-agent:
+    image: ${REGISTRY:-local}/governance-ga-agent:${IMAGE_TAG:-latest}
+    container_name: governance-ga-agent
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.agent
@@ -53,15 +64,26 @@ services:
       - 0.0.0.0:3020:3020
       - 0.0.0.0:3021:3021
     depends_on:
-      - governance-ga-wallets-db
-      - ledger-nodes
-      - ledger-browser
+      governance-ga-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
     networks:
       - governance-ga
       - host
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
   governance-trust-registry:
+    image: ${REGISTRY:-local}/governance-trust-registry:${IMAGE_TAG:-latest}
+    container_name: governance-trust-registry
     build:
       context: .
       dockerfile: ./dockerfiles/trustregistry/Dockerfile
@@ -76,6 +98,8 @@ services:
       - governance-multitenant
       - host
   governance-multitenant-web:
+    image: ${REGISTRY:-local}/governance-multitenant-web:${IMAGE_TAG:-latest}
+    container_name: governance-multitenant-web
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
@@ -86,15 +110,24 @@ services:
       - ./app:/app
       - ./environments/governance-multitenant/fastapi.default.env:/app/.env
     depends_on:
-      - governance-multitenant-wallets-db
-      - ledger-nodes
-      - ledger-browser
+      governance-multitenant-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+      governance-multitenant-agent:
+        condition: service_healthy
     networks:
       - governance-multitenant
       - host
     env_file:
       - environments/governance-multitenant/fastapi.default.env
   governance-webhooks-web:
+    image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
+    container_name: governance-webhooks-web
     build:
       context: .
       dockerfile: ./dockerfiles/webhooks/Dockerfile
@@ -112,6 +145,8 @@ services:
     environment:
       - REDIS_URL=redis://wh-redis
   governance-endorser:
+    image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
+    container_name: governance-endorser
     build:
       context: .
       dockerfile: ./dockerfiles/endorser/Dockerfile
@@ -126,6 +161,7 @@ services:
       - environments/endorser/endorser.env
   wh-redis:
     image: redis:latest
+    container_name: wh-redis
     restart: always
     ports:
       - 0.0.0.0:6379:6379
@@ -149,6 +185,7 @@ services:
     tty: true
   ngrok-governance-multitenant:
     image: wernight/ngrok
+    container_name: ngrok-governance-multitenant
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     command: ngrok http governance-multitenant-agent:3020 --log stdout
@@ -156,9 +193,13 @@ services:
       - governance-multitenant
       - host
     depends_on:
-      - ledger-nodes
-      - ledger-browser
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
   governance-multitenant-agent:
+    image: ${REGISTRY:-local}/governance-multitenant-agent:${IMAGE_TAG:-latest}
+    container_name: governance-multitenant-agent
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.author.agent
@@ -168,24 +209,38 @@ services:
       - 0.0.0.0:4020:3020
       - 0.0.0.0:4021:3021
     depends_on:
-      - governance-multitenant-wallets-db
-      - ledger-nodes
-      - ledger-browser
+      governance-multitenant-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
     networks:
       - governance-multitenant
       - governance-ga
       - host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
   ledger-browser:
+    image: ${REGISTRY:-local}/ledger-browser
+    container_name: ledger-browser
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 5; ./scripts/start_webserver.sh; sleep 60'"
+    command: "bash -c './scripts/start_webserver.sh'"
     environment:
       - DOCKERHOST=${DOCKERHOST}
       - MAX_FETCH=50000
       - RESYNC_TIME=120
       - REGISTER_NEW_DIDS=True
       - LEDGER_INSTANCE_NAME=localhost
+      # - POOL_CONNECTION_ATTEMPTS=${POOL_CONNECTION_ATTEMPTS:-5}
+      # - POOL_CONNECTION_DELAY=${POOL_CONNECTION_DELAY:-10}
+      - LEDGER_SEED=${LEDGER_SEED:-000000000000000000000000Trustee1}
     ports:
       - ${WEB_SERVER_HOST_PORT:-9000}:8000
     volumes:
@@ -195,13 +250,22 @@ services:
       - governance-multitenant
       - governance-ga
       - host
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://ledger-browser:8000"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     depends_on:
-      - ledger-nodes
+      ledger-nodes:
+        condition: service_healthy
   ledger-nodes:
+    image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
+    container_name: ledger-nodes
     build:
       context: https://github.com/didx-xyz/von-network.git
       dockerfile: Dockerfile
-    command: "bash -c 'sleep 15; ./scripts/start_nodes.sh; sleep 60'"
+    command: "bash -c './scripts/start_nodes.sh'"
     ports:
       - 0.0.0.0:9701:9701
       - 0.0.0.0:9702:9702
@@ -215,12 +279,23 @@ services:
       - DOCKERHOST=${DOCKERHOST}
     volumes:
       - nodes-data:/home/indy/ledger
+      - ./scripts/indy_healthcheck.sh:/home/indy/indy_healthcheck.sh
     networks:
       - governance-multitenant
       - governance-ga
       - host
+    healthcheck:
+      test: ["CMD-SHELL", "/home/indy/indy_healthcheck.sh"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
   tails-server:
-    image: ghcr.io/bcgov/tails-server:1.0.0
+    image: ${REGISTRY:-local}/tails-server:${IMAGE_TAG:-latest}
+    container_name: tails-server
+    build:
+      context: https://github.com/bcgov/indy-tails-server.git#v1.0.0
+      dockerfile: docker/Dockerfile.tails-server
     ports:
       - 0.0.0.0:6543:6543
     networks:
@@ -233,7 +308,7 @@ services:
       tails-server
         --host 0.0.0.0
         --port 6543
-        --storage-path ./data
+        --storage-path ./
         --log-level INFO
 
 volumes:

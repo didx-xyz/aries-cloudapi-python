@@ -30,6 +30,7 @@ class Webhooks:
     _callbacks: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
     _ready = asyncio.Event()
     client: Optional[PubSubClient] = None
+    sse_clients: List[WebSocket] = []
 
     @staticmethod
     async def register_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
@@ -42,12 +43,23 @@ class Webhooks:
         Webhooks._callbacks.append(callback)
 
     @staticmethod
+    async def register_sse_client(ws: WebSocket):
+        """
+        Register a WebSocket for Server-Sent Events (SSE).
+        """
+        Webhooks.sse_clients.append(ws)
+
+    @staticmethod
     async def emit(data: Dict[str, Any]):
         """
         Emit a webhook event by calling all registered listener functions with the event data.
         """
         for callback in Webhooks._callbacks:  # todo: surely we don't need to submit data to every single callback
             await callback(data)
+
+        # Send the event to SSE clients
+        for ws in Webhooks.sse_clients:
+            await ws.send_text(json.dumps(data))
 
     @staticmethod
     def unregister_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
@@ -60,6 +72,17 @@ class Webhooks:
             Webhooks._callbacks.remove(callback)
         except ValueError:
             # Listener not in list
+            pass
+
+    @staticmethod
+    async def unregister_sse_client(ws: WebSocket):
+        """
+        Unregister a WebSocket for Server-Sent Events (SSE).
+        """
+        try:
+            Webhooks.sse_clients.remove(ws)
+        except ValueError:
+            # WebSocket not in list
             pass
 
     @staticmethod
@@ -106,8 +129,21 @@ class Webhooks:
         Internal callback function for handling received webhook events.
         """
         logger.debug(f"Handling webhook for topic: {topic} - emit {data}")
-        #todo: topic isn't used. should only emit to relevant topic/callback pairs
+        # todo: topic isn't used. should only emit to relevant topic/callback pairs
         await Webhooks.emit(json.loads(data))
+
+    @staticmethod
+    async def sse_endpoint(websocket: WebSocket):
+        """
+        Server-Sent Events (SSE) endpoint.
+        """
+        await websocket.accept()
+        await Webhooks.register_sse_client(websocket)
+        try:
+            while True:
+                await websocket.receive_text()
+        except WebSocketDisconnect:
+            await Webhooks.unregister_sse_client(websocket)
 
     @staticmethod
     async def shutdown(timeout: float = 20):

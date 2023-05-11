@@ -1,5 +1,5 @@
 fastapi~=0.95.1
-pydantic~=1.8.2
-sqlalchemy~=1.4.27
-uvicorn[standard]==0.15.0
-starlette>=0.25.0
+pydantic~=1.10.7
+sqlalchemy~=2.0.13
+uvicorn[standard]~=0.22.0
+starlette~=0.26.1

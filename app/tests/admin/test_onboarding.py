@@ -3,8 +3,7 @@ from typing import Any, Dict
 import pytest
 from aries_cloudcontroller import (AcaPyClient, ConnRecord,
                                    InvitationCreateRequest, InvitationMessage,
-                                   InvitationRecord, TransactionList,
-                                   TransactionRecord)
+                                   InvitationRecord)
 from assertpy import assert_that
 from mockito import verify, when
 

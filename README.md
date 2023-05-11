@@ -1,7 +1,7 @@
+# aries-cloudapi-python
+
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Coverage)
-
-# aries-cloudapi-python
 
 ## WIP
 
@@ -46,9 +46,11 @@ Without using `make` you can run:
 ```
 
 Install the requirements
+
 ```bash
 pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
 ```
+
 to start the containers and run the tests with
 
 ```bash
@@ -63,9 +65,11 @@ pytest --ignore=app/tests/e2e
 
 > NOTE:
 > You can specify the log level of the pytest output by using the `--log-cli-level=DEBUG` flag. For example:
+>
 > ```bash
 > pytest . --log-cli-level=DEBUG
 > ```
+>
 > will output all log messages with a log level of `DEBUG` or higher.
 
 ## CI/CD

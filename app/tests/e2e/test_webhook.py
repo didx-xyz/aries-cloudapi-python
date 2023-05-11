@@ -1,8 +1,7 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
 
 from app.generic.webhooks import router
-
 from app.tests.util.member_personas import BobAliceConnect
 from shared_models import Connection
 

@@ -1,4 +1,4 @@
-fastapi_websocket_pubsub~=0.1.21
+fastapi_websocket_pubsub~=0.3.1
 typing_extensions
 httpx==0.18.1
 aries-cloudcontroller~=0.7.0

@@ -78,15 +78,15 @@ class Listener:
                     return payload
             except asyncio.TimeoutError:
                 logger.warning(
-                    "_find_matching_event has timed out in `asyncio.wait_for`")
+                    "_find_matching_event has timed out. unprocessed_queue may be very large")
             finally:
                 # If the total waiting time reaches the specified timeout, raise an exception, else continue
                 if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
                     logger.warning(
-                        f"Waiting for a filtered event has timed out ({timeout}s), using filter_map: {filter_map}")
+                        "Waiting for a filtered event has timed out (%ss), with filter_map: %s", timeout, filter_map)
                     raise ListenerTimeout(
-                        f"Waiting for an expected event has timed out")
+                        "Waiting for an expected event has timed out")
 
     async def start(self):
         """

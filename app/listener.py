@@ -75,13 +75,7 @@ class Listener:
                 # Use a smaller timeout value for asyncio.wait_for to repeatedly call _find_matching_event
                 payload = await asyncio.wait_for(_find_matching_event(), timeout=2)
                 if payload:
-                    logger.debug(
-                        "_find_matching_event successfully matched. payload: %s", payload)
                     return payload
-                else:
-                    logger.debug(
-                        f"_find_matching_event returned None. Sleep briefly before retry. Events already checked: {self._processed_events}")
-                    await asyncio.sleep(2)
             except asyncio.TimeoutError:
                 logger.warning(
                     "_find_matching_event has timed out in `asyncio.wait_for`")

@@ -105,4 +105,3 @@ class Listener:
 
 class ListenerTimeout(Exception):
     """Exception raised when the Listener times out waiting for a matching event."""
-    pass

@@ -3,6 +3,7 @@ import json
 import logging
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
+from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_websocket_pubsub import PubSubClient
 
 from app.constants import WEBHOOKS_URL
@@ -118,7 +119,7 @@ class Webhooks:
         async def wait_for_shutdown():
             if Webhooks.client and await Webhooks._ready.wait():
                 await Webhooks.client.disconnect()
-            
+
             Webhooks.client = None
             Webhooks._ready = asyncio.Event()
             Webhooks._callbacks = []

@@ -3,6 +3,6 @@ aries-cloudcontroller~=0.7.0
 dependency_injector~=4.37.0
 fastapi==0.65.2
 fastapi_websocket_pubsub~=0.1.21
-starlette
+starlette>=0.25.0
 typing_extensions
 uvicorn[standard]==0.15.0

@@ -30,6 +30,11 @@ from app.webhook_listener import Webhooks
 from tests.fixtures import mock_agent_controller
 
 
+@pytest.fixture(scope="module")
+def anyio_backend():
+    return "asyncio"
+
+
 @pytest.fixture(autouse=True)
 def run_around_tests():
     yield

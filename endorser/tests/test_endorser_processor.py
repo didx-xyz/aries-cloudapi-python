@@ -18,7 +18,7 @@ from endorser.endorser_processor import (
     should_accept_endorsement,
 )
 from endorser import endorser_processor as test_module
-from asynctest import MagicMock
+from unittest.mock import MagicMock
 
 from tests.util.mock import get
 

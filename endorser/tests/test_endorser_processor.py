@@ -1,25 +1,18 @@
 import json
-from aries_cloudcontroller import AcaPyClient
-import httpx
-import pytest
-
-from mockito import verify, when
-
-from endorser.constants import TRUST_REGISTRY_URL
-from endorser.endorser_processor import (
-    Event,
-    accept_endorsement,
-    get_endorsement_request_attachment,
-    is_credential_definition_transaction,
-    get_did_and_schema_id_from_cred_def_attachment,
-    is_governance_agent,
-    is_valid_issuer,
-    process_endorsement_event,
-    should_accept_endorsement,
-)
-from endorser import endorser_processor as test_module
 from unittest.mock import MagicMock
 
+import httpx
+import pytest
+from aries_cloudcontroller import AcaPyClient
+from mockito import verify, when
+
+from endorser import endorser_processor as test_module
+from endorser.constants import TRUST_REGISTRY_URL
+from endorser.endorser_processor import (
+    Event, accept_endorsement, get_did_and_schema_id_from_cred_def_attachment,
+    get_endorsement_request_attachment, is_credential_definition_transaction,
+    is_governance_agent, is_valid_issuer, process_endorsement_event,
+    should_accept_endorsement)
 from tests.util.mock import get
 
 

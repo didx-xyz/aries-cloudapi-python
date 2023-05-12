@@ -60,7 +60,7 @@ conn_record = ConnRecord(
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).send_proof_request(...).thenReturn(
@@ -92,7 +92,7 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).send_proof_request(...).thenReturn(
@@ -124,7 +124,7 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     #  V1
     when(VerifierV1).create_proof_request(...).thenReturn(
@@ -155,7 +155,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     assert result is presentation_exchange_record_2
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).accept_proof_request(...).thenReturn(
@@ -184,7 +184,7 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
     verify(VerifierV1).accept_proof_request(...)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).accept_proof_request(...).thenReturn(
@@ -213,7 +213,7 @@ async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
     verify(VerifierV2).accept_proof_request(...)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     proof_request_v1 = test_module.RejectProofRequest(proof_id="v1-1234")
     # V1
@@ -263,7 +263,7 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_proof(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).delete_proof(
@@ -294,7 +294,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proof_record(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).get_proof_record(
@@ -327,7 +327,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proof_records(mock_agent_controller: AcaPyClient):
     # V1 and V2
     with when(VerifierV1).get_proof_records(
@@ -352,7 +352,7 @@ async def test_get_proof_records(mock_agent_controller: AcaPyClient):
         verify(VerifierV2).get_proof_records(controller=mock_agent_controller)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
     cred_precis = IndyCredPrecis(
         cred_info=IndyCredInfo(cred_def_id="WgWxqztrNooG92RXvxSTWv:3:CL:20:tag")

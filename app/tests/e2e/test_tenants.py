@@ -30,7 +30,7 @@ from app.util.did import ed25519_verkey_to_did_key
 BASE_PATH = tenants.router.prefix
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -57,7 +57,7 @@ async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
     assert token["access_token"].startswith("tenant.ey")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_tenant_member(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -84,7 +84,7 @@ async def test_create_tenant_member(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_tenant_issuer(
     tenant_admin_client: AsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -158,7 +158,7 @@ async def test_create_tenant_issuer(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_tenant_verifier(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -209,7 +209,7 @@ async def test_create_tenant_verifier(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_tenant_verifier_to_issuer(
     tenant_admin_client: AsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -326,7 +326,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenant(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -350,7 +350,7 @@ async def test_get_tenant(tenant_admin_client: AsyncClient):
     assert created_tenant == retrieved_tenant
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenants(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -377,7 +377,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
     assert_that(tenants).extracting("group_id").contains("ac/dc")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     group_id = "backstreetboys"
@@ -411,7 +411,7 @@ async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
     assert tenants == []
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_tenant(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):

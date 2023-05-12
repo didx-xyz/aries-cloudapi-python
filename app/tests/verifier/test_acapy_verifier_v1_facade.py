@@ -20,7 +20,7 @@ from .test_verifier_utils import (
 from shared_models import PresentationExchange
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).create_proof_request(...).thenReturn(
         get(v10_presentation_exchange_records[0])
@@ -38,7 +38,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     assert isinstance(created_proof_request, PresentationExchange)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # Mock different functions on AcaPy client present proof api
     # proof interface decides upon params which methods it calls on the client
@@ -68,7 +68,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     assert isinstance(created_proof_send_proposal, PresentationExchange)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).send_presentation(...).thenReturn(
         get(v10_presentation_exchange_records[0])
@@ -89,7 +89,7 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
     assert isinstance(accepted_proof_request, PresentationExchange)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).delete_record(...).thenReturn(
         get({})

@@ -8,7 +8,7 @@ from app.facades import acapy_wallet
 from tests.util.mock import get
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_public_did(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.wallet).get_public_did().thenReturn(
         get(DIDResult(result=DID(did="Ehx3RZSV38pn3MYvxtHhbQ")))
@@ -25,7 +25,7 @@ async def test_assert_public_did(mock_agent_controller: AcaPyClient):
         did = await acapy_wallet.assert_public_did(mock_agent_controller)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_on_get_pub_did(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.wallet).get_public_did().thenReturn(
         get(DIDResult(result=None))
@@ -37,7 +37,7 @@ async def test_error_on_get_pub_did(mock_agent_controller: AcaPyClient):
     assert "No public did found" in exc.value.detail
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_on_assign_pub_did(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.wallet).set_public_did(
         did="did", conn_id=None, create_transaction_for_endorser=False

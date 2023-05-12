@@ -90,7 +90,7 @@ v2_credential_exchange_records = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_records(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.issue_credential_v2_0).get_records(...).thenReturn(
         get(V20CredExRecordListResult(results=v2_credential_exchange_records))
@@ -105,7 +105,7 @@ async def test_get_records(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_records_connection_id(mock_agent_controller: AcaPyClient):
     v2_record = v2_credential_exchange_records[0]
 
@@ -123,7 +123,7 @@ async def test_get_records_connection_id(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_record(mock_agent_controller: AcaPyClient):
     v2_record = v2_credential_exchange_records[0]
 
@@ -149,7 +149,7 @@ async def test_get_record(mock_agent_controller: AcaPyClient):
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_credential_exchange_with_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -170,7 +170,7 @@ async def test_delete_credential_exchange_with_credential(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_credential_exchange_without_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -187,7 +187,7 @@ async def test_delete_credential_exchange_without_credential(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential(mock_agent_controller: AcaPyClient):
     v2_record = v2_credential_exchange_records[0]
 
@@ -221,7 +221,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_store_credential(mock_agent_controller: AcaPyClient):
     v2_record = v2_credential_exchange_records[0]
 
@@ -240,7 +240,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_request_credential(mock_agent_controller: AcaPyClient):
     v2_record = v2_credential_exchange_records[0]
 

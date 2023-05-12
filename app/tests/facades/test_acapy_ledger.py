@@ -21,7 +21,7 @@ from app.facades.acapy_ledger import (
 from tests.util.mock import get
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).fetch_taa().thenReturn(
         get(TAAResult(result=TAAInfo(taa_required=True)))
@@ -33,7 +33,7 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
     assert "Something went wrong. Could not get TAA." in exc.value.detail
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     error_response = {"x": "y"}
     when(mock_agent_controller.ledger).accept_taa(
@@ -50,7 +50,7 @@ async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_error_on_get_did_endpoint(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).get_did_endpoint(did="data").thenReturn(
         get(None)
@@ -62,7 +62,7 @@ async def test_error_on_get_did_endpoint(mock_agent_controller: AcaPyClient):
     assert exc.value.detail == "Something went wrong. Could not obtain issuer endpoint."
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_schema_id_from_credential_definition_id_seq_no(
     mock_agent_controller: AcaPyClient,
 ):
@@ -88,7 +88,7 @@ async def test_schema_id_from_credential_definition_id_seq_no(
     verify(mock_agent_controller.schema).get_schema(schema_id=seq_no)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_schema_id_from_credential_definition_id_schema_id(
     mock_agent_controller: AcaPyClient,
 ):

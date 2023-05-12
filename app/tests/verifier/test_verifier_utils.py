@@ -179,7 +179,7 @@ indy_pres_spec = IndyPresSpec(
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_are_valid_schemas():
     # schemas are valid
     schemas = {
@@ -208,7 +208,7 @@ async def test_are_valid_schemas():
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_connection_record(mock_agent_controller: AcaPyClient):
     pres_exchange = PresentationExchange(
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -238,7 +238,7 @@ async def test_get_connection_record(mock_agent_controller: AcaPyClient):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
     first_cred_record = IndyCredInfo(
         schema_id="NR6Y28AiZ893utPSfoQRrz:2:test_schema:0.3"
@@ -283,7 +283,7 @@ async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ed25519_verkey_to_did_key():
     got_key = ed25519_verkey_to_did_key(
         key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
@@ -291,7 +291,7 @@ async def test_ed25519_verkey_to_did_key():
     assert got_key == "did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_is_verifier():
     # False
     actor = Actor(
@@ -308,7 +308,7 @@ async def test_is_verifier():
     assert is_verifier(actor=actor) is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_actor():
     # gets actor
     actor = Actor(id="abcde", name="Flint", roles=["verifier"], did="did:sov:abcde")
@@ -331,7 +331,7 @@ async def test_get_actor():
             await get_actor(did=actor["did"]) == actor
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyClient):
     pres_exchange = PresentationExchange(
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -395,7 +395,7 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient):
 
     pres_exchange = PresentationExchange(
@@ -459,7 +459,7 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
     mock_agent_controller: AcaPyClient,
 ):
@@ -498,7 +498,7 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_actor_invalid_role(
     mock_agent_controller: AcaPyClient,
 ):
@@ -549,7 +549,7 @@ async def test_assert_valid_prover_x_actor_invalid_role(
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_invalid_schemas(
     mock_agent_controller: AcaPyClient,
 ):
@@ -600,7 +600,7 @@ async def test_assert_valid_prover_x_invalid_schemas(
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_no_connection_id(
     mock_agent_controller: AcaPyClient,
 ):
@@ -634,7 +634,7 @@ async def test_assert_valid_prover_x_no_connection_id(
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPyClient):
     conn = ConnRecord(
         connection_id="a-connection-id",
@@ -661,7 +661,7 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClient):
     # valid
     with patch(
@@ -678,7 +678,7 @@ async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClie
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
     mock_agent_controller: AcaPyClient,
 ):
@@ -706,7 +706,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_x_not_verifier(
     mock_agent_controller: AcaPyClient,
 ):

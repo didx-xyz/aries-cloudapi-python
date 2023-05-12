@@ -23,7 +23,7 @@ from app.admin.tenants.onboarding import acapy_wallet, acapy_ledger
 from app.tests.util.webhooks import mock_start_listener
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_onboard_issuer_public_did_exists(
     mock_agent_controller: AcaPyClient,
 ):
@@ -92,7 +92,7 @@ async def test_onboard_issuer_public_did_exists(
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_onboard_issuer_no_public_did(
     mock_agent_controller: AcaPyClient,
 ):
@@ -215,7 +215,7 @@ async def test_onboard_issuer_no_public_did(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
         get(
@@ -234,7 +234,7 @@ async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyCl
     verify(acapy_wallet).get_public_did(controller=mock_agent_controller)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
         CloudApiException(detail="No public did found")
@@ -269,7 +269,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
         CloudApiException(detail="No public did found")

@@ -33,7 +33,7 @@ def create_send_request(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -112,7 +112,7 @@ async def test_accept_proof_request_v1(
     assert response.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -206,7 +206,7 @@ async def test_accept_proof_request_oob_v1(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -300,7 +300,7 @@ async def test_accept_proof_request_oob_v2(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -384,7 +384,7 @@ async def test_accept_proof_request_v2(
     assert response.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: AsyncClient,
@@ -453,7 +453,7 @@ async def test_send_proof_request(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: AsyncClient,
@@ -496,7 +496,7 @@ async def test_reject_proof_request(
     assert result is None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proof_single(
     acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
 ):
@@ -546,7 +546,7 @@ async def test_get_proof_single(
     assert "presentation_request" in result
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proofs_multi(
     acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
 ):
@@ -595,7 +595,7 @@ async def test_get_proofs_multi(
     assert "presentation_request" in result
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_proof(
     acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
 ):
@@ -634,7 +634,7 @@ async def test_delete_proof(
     assert response.json() == None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credentials_for_request(
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: AsyncClient,

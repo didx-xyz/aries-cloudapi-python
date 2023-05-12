@@ -29,7 +29,7 @@ def event_loop(request):
     loop.close()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: AsyncClient
 ):
@@ -65,7 +65,7 @@ async def test_create_credential_definition(
     assert_that(result["id"]).is_not_empty()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_schema(governance_acapy_client: AcaPyClient):
     # given
     schema_send = CreateSchema(
@@ -89,7 +89,7 @@ async def test_create_schema(governance_acapy_client: AcaPyClient):
     assert_that(result).has_attribute_names(schema_send.attribute_names)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_schema(governance_acapy_client: AcaPyClient):
     # given
     schema_send = CreateSchema(
@@ -113,7 +113,7 @@ async def test_get_schema(governance_acapy_client: AcaPyClient):
     assert_that(result).has_attribute_names(schema_send.attribute_names)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: AsyncClient
 ):
@@ -154,7 +154,7 @@ async def test_get_credential_definition(
     assert_that(result["id"]).is_not_empty()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_credential_definition_issuer_tenant(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,

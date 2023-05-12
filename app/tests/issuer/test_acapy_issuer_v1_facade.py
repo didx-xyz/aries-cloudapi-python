@@ -58,7 +58,7 @@ v1_credential_exchange_records = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_records(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.issue_credential_v1_0).get_records(...).thenReturn(
         get(V10CredentialExchangeListResult(results=v1_credential_exchange_records))
@@ -73,7 +73,7 @@ async def test_get_records(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_records_connection_id(mock_agent_controller: AcaPyClient):
     record = v1_credential_exchange_records[0]
 
@@ -91,7 +91,7 @@ async def test_get_records_connection_id(mock_agent_controller: AcaPyClient):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_record(mock_agent_controller: AcaPyClient):
     v1_record = v1_credential_exchange_records[0]
 
@@ -116,7 +116,7 @@ async def test_get_record(mock_agent_controller: AcaPyClient):
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_credential_exchange_with_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -137,7 +137,7 @@ async def test_delete_credential_exchange_with_credential(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_credential_exchange_without_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -154,7 +154,7 @@ async def test_delete_credential_exchange_without_credential(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential(mock_agent_controller: AcaPyClient):
     record = v1_credential_exchange_records[0]
 
@@ -190,7 +190,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_store_credential(mock_agent_controller: AcaPyClient):
     v1_record = v1_credential_exchange_records[0]
 
@@ -206,7 +206,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
     assert credential_exchange.credential_id == f"v1-{v1_record.credential_exchange_id}"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_request_credential(mock_agent_controller: AcaPyClient):
     v1_record = v1_credential_exchange_records[0]
 

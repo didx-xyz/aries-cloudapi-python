@@ -5,7 +5,7 @@ import pytest
 import app.facades.trust_registry as trf
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_issuer():
     did = "did:sov:xxxx"
     actor = {"id": "actor-id", "roles": ["issuer"], "did": did}
@@ -59,7 +59,7 @@ async def test_assert_valid_issuer():
             await trf.assert_valid_issuer(did=did, schema_id=schema_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_actor_has_role():
     with patch("httpx.get") as mock_request:
         mock_request.return_value.status_code = 200
@@ -90,7 +90,7 @@ async def test_actor_has_role():
         assert await trf.actor_has_role("governance", "issuer") is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_actor_by_did():
     with patch("httpx.get") as mock_request:
         res = {
@@ -136,7 +136,7 @@ async def test_actor_by_did():
         assert actor is None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_actor_with_role():
     with patch("httpx.get") as mock_request:
         actors = [
@@ -183,7 +183,7 @@ async def test_actor_with_role():
         assert await trf.actors_with_role("issuer") == []
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_registry_has_schema():
     with patch("httpx.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
@@ -220,7 +220,7 @@ async def test_registry_has_schema():
         await trf.registry_has_schema(schema_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_register_schema():
     with patch("httpx.post") as mock_request:
         schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
@@ -245,7 +245,7 @@ async def test_register_schema():
         await trf.register_schema(schema_id=schema_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_register_actor():
     actor = trf.Actor(
         id="actor-id",
@@ -278,7 +278,7 @@ async def test_register_actor():
         await trf.register_actor(actor=actor)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_remove_actor_by_id():
     with patch("httpx.delete") as mock_request:
         mock_request.return_value.status_code = 200
@@ -302,7 +302,7 @@ async def test_remove_actor_by_id():
         await trf.remove_actor_by_id(actor_id="actor_id")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_remove_schema_by_id():
     with patch("httpx.delete") as mock_request:
         mock_request.return_value.status_code = 200
@@ -326,7 +326,7 @@ async def test_remove_schema_by_id():
         await trf.remove_schema_by_id(schema_id="schema_id")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_actor_by_did():
     with patch("httpx.get") as mock_request:
         res = {
@@ -362,7 +362,7 @@ async def test_get_actor_by_did():
         tr = await trf.get_trust_registry()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_actor():
     actor_id = "actor_id"
     actor = trf.Actor(

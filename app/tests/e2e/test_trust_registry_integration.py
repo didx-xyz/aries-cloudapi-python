@@ -15,7 +15,7 @@ from app.tests.util.tenants import (
 from app.webhook_listener import start_listener
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: AsyncClient,
 ):

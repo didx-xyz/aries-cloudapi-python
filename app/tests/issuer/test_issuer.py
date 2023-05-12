@@ -16,7 +16,7 @@ async def get(response: Optional[Any] = None):
         return response
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential(mock_agent_controller: AcaPyClient):
     did = "did:sov:WgWxqztrNooG92RXvxSTWv"
     cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
@@ -47,7 +47,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
     verify(test_module).assert_valid_issuer(did, "schema_id")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credentials(mock_agent_controller: AcaPyClient):
     v1_records_no_conn_id = [mock(CredentialExchange), mock(CredentialExchange)]
     v2_records_no_conn_id = [mock(CredentialExchange), mock(CredentialExchange)]
@@ -83,7 +83,7 @@ async def test_get_credentials(mock_agent_controller: AcaPyClient):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential(mock_agent_controller: AcaPyClient):
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
@@ -110,7 +110,7 @@ async def test_get_credential(mock_agent_controller: AcaPyClient):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_remove_credential(mock_agent_controller: AcaPyClient):
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
@@ -129,7 +129,7 @@ async def test_remove_credential(mock_agent_controller: AcaPyClient):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_request_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -175,7 +175,7 @@ async def test_request_credential(
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_request_credential_x_no_schema_cred_def(
     mock_agent_controller: AcaPyClient,
 ):
@@ -197,7 +197,7 @@ async def test_request_credential_x_no_schema_cred_def(
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_store_credential(mock_agent_controller: AcaPyClient):
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)

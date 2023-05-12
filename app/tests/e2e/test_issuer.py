@@ -13,7 +13,7 @@ from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.e2e.test_fixtures import *  # NOQA
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential_oob_v1(
     faber_client: AsyncClient,
     schema_definition: CredentialSchema,
@@ -84,7 +84,7 @@ async def test_send_credential_oob_v1(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential_oob_v2(
     faber_client: AsyncClient,
     schema_definition: CredentialSchema,
@@ -145,7 +145,7 @@ async def test_send_credential_oob_v2(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential(
     faber_client: AsyncClient,
     schema_definition: CredentialSchema,
@@ -223,7 +223,7 @@ async def test_send_credential(
     assert_that(records).extracting("protocol_version").contains("v1", "v2")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_offer(
     faber_client: AsyncClient,
     schema_definition: CredentialSchema,
@@ -290,14 +290,14 @@ async def test_create_offer(
     assert_that(records).extracting("protocol_version").contains("v1", "v2")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_records(alice_member_client: AsyncClient):
     records = (await alice_member_client.get(BASE_PATH)).json()
     assert records
     assert len(records) >= 1
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_credential_request(
     alice_member_client: AsyncClient,
     faber_client: AsyncClient,
@@ -339,7 +339,7 @@ async def test_send_credential_request(
 
 # Turned off this test because of the parameter below set in ../../../environments/governance-multitenant/aca-py-agent.default.env
 # ACAPY_AUTO_STORE_CREDENTIAL=true
-# @pytest.mark.asyncio
+# @pytest.mark.anyio
 # async def test_store_credential(
 #     alice_member_client: AsyncClient,
 #     faber_client: AsyncClient,
@@ -422,7 +422,7 @@ async def test_send_credential_request(
 #     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_revoke_credential(
     faber_client: AsyncClient,
     alice_member_client: AsyncClient,

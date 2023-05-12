@@ -30,7 +30,7 @@ conn_id = "12345"
 transaction_id = "1234"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_revocation_registry(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.revocation).create_registry(
         body=RevRegCreateRequest(
@@ -70,7 +70,7 @@ async def test_create_revocation_registry(mock_agent_controller: AcaPyClient):
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_active_revocation_registry_for_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -117,7 +117,7 @@ async def test_get_active_revocation_registry_for_credential(
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClient):
     cred_ex_id = "db9d7025-b276-4c32-ae38-fbad41864112"
     # Success
@@ -156,7 +156,7 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_publish_revocation_registry_on_ledger(
     mock_agent_controller: AcaPyClient,
 ):
@@ -237,7 +237,7 @@ async def test_publish_revocation_registry_on_ledger(
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyClient):
     # Success
     when(mock_agent_controller.revocation).publish_rev_reg_entry(
@@ -300,7 +300,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_revoke_credential(mock_agent_controller: AcaPyClient):
     # Success
     when(mock_agent_controller.revocation).revoke_credential(
@@ -336,7 +336,7 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
     assert revoke_credential_result is None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential_definition_id_from_exchange_id(
     mock_agent_controller: AcaPyClient,
 ):

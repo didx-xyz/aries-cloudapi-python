@@ -34,24 +34,24 @@ async def test_onboard_issuer_public_did_exists(
     endorser_controller = get_mock_agent_controller()
 
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
-        await to_async(InvitationRecord(invitation=InvitationMessage()))
+        InvitationRecord(invitation=InvitationMessage())
     )
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
-        await to_async(ConnRecord())
+        ConnRecord()
     )
 
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        await to_async(Did(did="EndorserController", verkey="EndorserVerkey"))
+        Did(did="EndorserController", verkey="EndorserVerkey")
     )
 
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
-        await to_async()
+        None
     )
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
-        await to_async()
+        None
     )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
-        await to_async()
+        None
     )
 
     # Mock event listeners

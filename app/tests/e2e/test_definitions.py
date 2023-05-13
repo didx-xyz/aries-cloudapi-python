@@ -1,21 +1,17 @@
 from time import sleep
-from httpx import AsyncClient
+
 import pytest
-import asyncio
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
+from httpx import AsyncClient
+
 from app.dependencies import acapy_auth, acapy_auth_verified
-from app.facades.acapy_wallet import get_public_did
 from app.facades import trust_registry
-
+from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
-from app.generic.definitions import (
-    CreateSchema,
-    CreateCredentialDefinition,
-    CredentialSchema,
-)
+from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
+                                     CredentialSchema)
 from app.tests.e2e.test_fixtures import *  # NOQA
-
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import get_random_string
 from app.tests.util.trust_registry import register_issuer

@@ -1,7 +1,5 @@
-import asyncio
-from typing import Any
-from aries_cloudcontroller import AcaPyClient
 import pytest
+from aries_cloudcontroller import AcaPyClient
 
 from app.tests.e2e.test_fixtures import issue_credential_to_alice
 from app.tests.util.ledger import create_public_did, has_public_did

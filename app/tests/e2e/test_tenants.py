@@ -1,16 +1,16 @@
-import asyncio
 from uuid import uuid4
+
+import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
-import pytest
-
 from httpx import AsyncClient
+
+from app.admin.tenants import tenants
 from app.dependencies import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.role import Role
 from app.tests.util.client import tenant_client
-
-from app.admin.tenants import tenants
+from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 
 BASE_PATH = tenants.router.prefix

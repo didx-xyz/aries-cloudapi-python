@@ -33,7 +33,7 @@ from tests.fixtures import mock_agent_controller
 # so there is no need to explicitly include it in the test functions.
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 def anyio_backend():
     return "asyncio"
 

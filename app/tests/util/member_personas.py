@@ -24,7 +24,7 @@ class BobAlicePublicDid(TypedDict):
     alice_public_did: str
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def bob_member_client():
     async with tenant_admin_client() as client:
         tenant = await create_issuer_tenant(client, "bob")
@@ -37,7 +37,7 @@ async def bob_member_client():
         await delete_tenant(client, tenant["tenant_id"])
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def alice_tenant():
     async with tenant_admin_client() as client:
         tenant = await create_tenant(client, "alice")
@@ -47,7 +47,7 @@ async def alice_tenant():
         await delete_tenant(client, tenant["tenant_id"])
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def alice_member_client(alice_tenant: Any):
     alice_client = tenant_client(token=alice_tenant["access_token"])
 
@@ -56,7 +56,7 @@ async def alice_member_client(alice_tenant: Any):
     await alice_client.aclose()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def bob_acapy_client(bob_member_client: AsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
@@ -69,7 +69,7 @@ async def bob_acapy_client(bob_member_client: AsyncClient):
     await client.close()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def alice_acapy_client(alice_member_client: AsyncClient):
     [_, token] = alice_member_client.headers.get(
         "x-api-key").split(".", maxsplit=1)
@@ -80,7 +80,7 @@ async def alice_acapy_client(alice_member_client: AsyncClient):
     await client.close()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
@@ -111,7 +111,7 @@ async def bob_and_alice_public_did(
     }
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def bob_and_alice_connection(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
@@ -176,7 +176,7 @@ class MultiInvite(TypedDict):
     did_from_rec_key: str
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def bob_multi_use_invitation(
     bob_member_client: AsyncClient,
 ) -> MultiInvite:
@@ -203,7 +203,7 @@ async def bob_multi_use_invitation(
     return bob_multi_invite
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def alice_bob_connect_multi(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,

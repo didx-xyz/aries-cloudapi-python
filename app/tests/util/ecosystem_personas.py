@@ -34,7 +34,7 @@ async def faber_client():
         faber_async_client = tenant_client(token=tenant["access_token"])
         yield faber_async_client
 
-        faber_async_client.aclose()
+        await faber_async_client.aclose()
 
         await delete_tenant(client, tenant["tenant_id"])
 
@@ -69,7 +69,7 @@ async def acme_client(acme_tenant: Any):
     acme_async_client = tenant_client(token=acme_tenant["access_token"])
     yield acme_async_client
 
-    acme_async_client.aclose()
+    await acme_async_client.aclose()
 
 
 @pytest.fixture(scope="module")

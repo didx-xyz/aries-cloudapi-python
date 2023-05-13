@@ -3,21 +3,14 @@ from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
-from app.generic.verifier.models import (
-    AcceptProofRequest,
-    CreateProofRequest,
-    PresentProofProtocolVersion,
-    RejectProofRequest,
-    SendProofRequest,
-)
-
-from .test_verifier_utils import (
-    get,
-    indy_proof_request,
-    v10_presentation_exchange_records,
-)
-
+from app.generic.verifier.models import (AcceptProofRequest,
+                                         CreateProofRequest,
+                                         PresentProofProtocolVersion,
+                                         RejectProofRequest, SendProofRequest)
 from shared_models import PresentationExchange
+
+from .test_verifier_utils import (indy_proof_request,
+                                  v10_presentation_exchange_records)
 
 
 @pytest.mark.anyio

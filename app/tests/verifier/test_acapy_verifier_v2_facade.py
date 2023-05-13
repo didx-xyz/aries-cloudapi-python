@@ -4,20 +4,13 @@ from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
 
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
-from app.generic.verifier.models import (
-    AcceptProofRequest,
-    CreateProofRequest,
-    RejectProofRequest,
-    SendProofRequest,
-)
-
-from .test_verifier_utils import (
-    get,
-    indy_proof_request,
-    v20_presentation_exchange_records,
-)
-
+from app.generic.verifier.models import (AcceptProofRequest,
+                                         CreateProofRequest,
+                                         RejectProofRequest, SendProofRequest)
 from shared_models import PresentationExchange
+
+from .test_verifier_utils import (indy_proof_request,
+                                  v20_presentation_exchange_records)
 
 
 @pytest.mark.anyio

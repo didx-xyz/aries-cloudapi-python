@@ -7,7 +7,7 @@ from typing import Any, List
 from aioredis import Redis
 from pydantic import ValidationError
 
-from models import (
+from webhooks.models import (
     to_credential_hook_model,
     to_proof_hook_model,
     to_connections_model,

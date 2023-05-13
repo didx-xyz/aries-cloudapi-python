@@ -4,11 +4,10 @@ from pprint import pformat
 
 from fastapi import FastAPI, Request, Depends, APIRouter
 from dependency_injector.wiring import inject, Provide
-from containers import Container
+from webhooks.containers import Container
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from containers import Container as RedisContainer
-from services import Service
+from webhooks.services import Service
 from shared_models import TopicItem, topic_mapping, RedisItem, WEBHOOK_TOPIC_ALL
 
 import logging
@@ -124,7 +123,7 @@ async def topic_root(
 
 app.include_router(router)
 
-container = RedisContainer()
+container = Container()
 container.config.redis_host.from_env("REDIS_HOST", "wh-redis")
 container.config.redis_password.from_env("REDIS_PASSWORD", "")
 container.wire(modules=[sys.modules[__name__]])

@@ -199,7 +199,7 @@ async def test_get_connection_record(mock_agent_controller: AcaPyClient):
     conn_record = ConnRecord(connection_id=pres_exchange.connection_id)
     with when(mock_agent_controller.connection).get_connection(...).thenReturn(
         to_async(conn_record)
-    ), when(Verifier).get_proof_record(...).thenReturn(to_async(pres_exchange)), patch(
+    ), when(Verifier).get_proof_record(...).thenReturn(pres_exchange), patch(
         "app.generic.verifier.verifier_utils.get_connection_record",
         return_value=conn_record,
     ):
@@ -210,6 +210,7 @@ async def test_get_connection_record(mock_agent_controller: AcaPyClient):
             )
             == conn_record
         )
+    # todo: mocking of get_proof_record does nothing
 
 
 @pytest.mark.anyio

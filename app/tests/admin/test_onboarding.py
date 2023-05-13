@@ -11,9 +11,9 @@ import app.admin.tenants.onboarding as onboarding
 from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
+from app.tests.util.mock import to_async
 from app.tests.util.webhooks import mock_start_listener
 from tests.fixtures import get_mock_agent_controller
-from tests.util.mock import get
 
 
 @pytest.mark.anyio
@@ -21,7 +21,7 @@ async def test_onboard_issuer_public_did_exists(
     mock_agent_controller: AcaPyClient,
 ):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
-        get(
+        to_async(
             Did(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
@@ -32,32 +32,32 @@ async def test_onboard_issuer_public_did_exists(
     endorser_controller = get_mock_agent_controller()
 
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
-        get(InvitationRecord(invitation=InvitationMessage()))
+        to_async(InvitationRecord(invitation=InvitationMessage()))
     )
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
-        get(ConnRecord())
+        to_async(ConnRecord())
     )
 
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        get(Did(did="EndorserController", verkey="EndorserVerkey"))
+        to_async(Did(did="EndorserController", verkey="EndorserVerkey"))
     )
 
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
-        get()
+        to_async()
     )
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
-        get()
+        to_async()
     )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
-        get()
+        to_async()
     )
 
     # Mock event listener
     when(onboarding).start_listener(
         topic="connections", wallet_id="issuer_wallet_id"
-    ).thenReturn(get(mock_start_listener))
+    ).thenReturn(to_async(mock_start_listener))
     when(onboarding).start_listener(topic="connections", wallet_id="admin").thenReturn(
-        get(
+        to_async(
             (
                 CoroutineMock(return_value={"connection_id": "endorser_connection_id"}),
                 MagicMock(),
@@ -68,7 +68,7 @@ async def test_onboard_issuer_public_did_exists(
     invitation_url = "https://invitation.com"
 
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
-        get(
+        to_async(
             InvitationRecord(
                 invitation_url=invitation_url,
             )
@@ -95,7 +95,7 @@ async def test_onboard_issuer_no_public_did(
         CloudApiException(detail="Error")
     )
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
-        get(
+        to_async(
             Did(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
@@ -103,38 +103,38 @@ async def test_onboard_issuer_no_public_did(
         )
     )
 
-    when(acapy_ledger).register_nym_on_ledger(...).thenReturn(get())
+    when(acapy_ledger).register_nym_on_ledger(...).thenReturn(to_async())
 
-    when(acapy_ledger).accept_taa_if_required(...).thenReturn(get())
-    when(acapy_wallet).set_public_did(...).thenReturn(get())
+    when(acapy_ledger).accept_taa_if_required(...).thenReturn(to_async())
+    when(acapy_wallet).set_public_did(...).thenReturn(to_async())
 
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        get(Did(did="EndorserController", verkey="EndorserVerkey"))
+        to_async(Did(did="EndorserController", verkey="EndorserVerkey"))
     )
 
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
-        get(InvitationRecord(invitation=InvitationMessage()))
+        to_async(InvitationRecord(invitation=InvitationMessage()))
     )
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
-        get(ConnRecord())
+        to_async(ConnRecord())
     )
 
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
-        get()
+        to_async()
     )
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
-        get()
+        to_async()
     )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
-        get()
+        to_async()
     )
 
     # Mock event listener
     when(onboarding).start_listener(
         topic="connections", wallet_id="issuer_wallet_id"
-    ).thenReturn(get(mock_start_listener))
+    ).thenReturn(to_async(mock_start_listener))
     when(onboarding).start_listener(topic="connections", wallet_id="admin").thenReturn(
-        get(
+        to_async(
             (
                 CoroutineMock(return_value={"connection_id": "endorser_connection_id"}),
                 MagicMock(),
@@ -142,7 +142,7 @@ async def test_onboard_issuer_no_public_did(
         )
     )
     when(onboarding).start_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        get(
+        to_async(
             (
                 CoroutineMock(
                     return_value={
@@ -155,7 +155,7 @@ async def test_onboard_issuer_no_public_did(
         )
     )
     when(endorser_controller.endorse_transaction).get_records(...).thenReturn(
-        get(
+        to_async(
             TransactionList(
                 results=[
                     TransactionRecord(
@@ -173,12 +173,12 @@ async def test_onboard_issuer_no_public_did(
         )
     )
     when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
-        get()
+        to_async()
     )
     invitation_url = "https://invitation.com"
 
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
-        get(
+        to_async(
             InvitationRecord(
                 invitation_url=invitation_url,
             )
@@ -211,7 +211,7 @@ async def test_onboard_issuer_no_public_did(
 @pytest.mark.anyio
 async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
-        get(
+        to_async(
             Did(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
@@ -237,7 +237,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     invitation_url = "https://invitation.com"
 
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
-        get(
+        to_async(
             InvitationRecord(
                 invitation_url=invitation_url,
                 invitation=InvitationMessage(services=[{"recipientKeys": [did_key]}]),
@@ -268,7 +268,7 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
         CloudApiException(detail="No public did found")
     )
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
-        get(
+        to_async(
             InvitationRecord(
                 invitation=InvitationMessage(services=[{"recipientKeys": []}]),
             )

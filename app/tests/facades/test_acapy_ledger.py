@@ -7,13 +7,13 @@ from mockito import verify, when
 
 from app.facades.acapy_ledger import (accept_taa, get_did_endpoint, get_taa,
                                       schema_id_from_credential_definition_id)
-from tests.util.mock import get
+from app.tests.util.mock import to_async
 
 
 @pytest.mark.anyio
 async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).fetch_taa().thenReturn(
-        get(TAAResult(result=TAAInfo(taa_required=True)))
+        to_async(TAAResult(result=TAAInfo(taa_required=True)))
     )
 
     with pytest.raises(HTTPException) as exc:
@@ -27,7 +27,7 @@ async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     error_response = {"x": "y"}
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
-    ).thenReturn(get(error_response))
+    ).thenReturn(to_async(error_response))
 
     record = TAARecord(digest="")
     with pytest.raises(HTTPException) as exc:
@@ -42,7 +42,7 @@ async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
 @pytest.mark.anyio
 async def test_error_on_get_did_endpoint(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).get_did_endpoint(did="data").thenReturn(
-        get(None)
+        to_async(None)
     )
 
     with pytest.raises(HTTPException) as exc:
@@ -60,7 +60,7 @@ async def test_schema_id_from_credential_definition_id_seq_no(
     cred_def_id_seq_no = "Ehx3RZSV38pn3MYvxtHhbQ:3:CL:58278:tag"
 
     when(mock_agent_controller.schema).get_schema(schema_id=seq_no).thenReturn(
-        get(
+        to_async(
             SchemaGetResult(
                 schema_=ModelSchema(
                     id=schema_id,

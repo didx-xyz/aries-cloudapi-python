@@ -6,6 +6,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from mockito import verify, when
 
+from app.tests.util.mock import to_async
 from endorser import endorser_processor as test_module
 from endorser.constants import TRUST_REGISTRY_URL
 from endorser.endorser_processor import (
@@ -13,14 +14,13 @@ from endorser.endorser_processor import (
     get_endorsement_request_attachment, is_credential_definition_transaction,
     is_governance_agent, is_valid_issuer, process_endorsement_event,
     should_accept_endorsement)
-from tests.util.mock import get
 
 
 @pytest.mark.anyio
 async def test_accept_endorsement(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.endorse_transaction).endorse_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get())
+    ).thenReturn(to_async())
     endorsement = MagicMock(transaction_id="the-tran-id")
     await accept_endorsement(mock_agent_controller, endorsement)
 
@@ -67,7 +67,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment(
     schema = MagicMock(schema_=MagicMock(id="the-schema-id"))
 
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(schema)
+        to_async(schema)
     )
 
     (did, schema_id) = await get_did_and_schema_id_from_cred_def_attachment(
@@ -89,7 +89,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment_err_no_schema_id(
     schema = MagicMock(schema_=MagicMock(id=None))
 
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(schema)
+        to_async(schema)
     )
 
     with pytest.raises(
@@ -208,13 +208,13 @@ async def test_should_accept_endorsement(mock_agent_controller: AcaPyClient):
         ],
     )
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(MagicMock(schema_=MagicMock(id="the-schema-id")))
+        to_async(MagicMock(schema_=MagicMock(id="the-schema-id")))
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
     when(test_module).is_valid_issuer("did:sov:123", "the-schema-id").thenReturn(
-        get(True)
+        to_async(True)
     )
 
     endorsement = MagicMock(transaction_id="the-tran-id")
@@ -228,7 +228,7 @@ async def test_should_accept_endorsement_invalid_state(
     transaction = MagicMock(state="done")
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
@@ -241,7 +241,7 @@ async def test_should_accept_endorsement_no_attachment(
     transaction = MagicMock(state="request_received")
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
@@ -271,7 +271,7 @@ async def test_should_accept_endorsement_no_cred_def_operation(
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
@@ -300,13 +300,13 @@ async def test_should_accept_endorsement_not_valid_issuer(
         ],
     )
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(MagicMock(schema_=MagicMock(id="the-schema-id")))
+        to_async(MagicMock(schema_=MagicMock(id="the-schema-id")))
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
     when(test_module).is_valid_issuer("did:sov:123", "the-schema-id").thenReturn(
-        get(False)
+        to_async(False)
     )
 
     endorsement = MagicMock(transaction_id="the-tran-id")
@@ -323,9 +323,9 @@ async def test_process_endorsement_event():
         }
     )
 
-    when(test_module).should_accept_endorsement(...).thenReturn(get(True))
+    when(test_module).should_accept_endorsement(...).thenReturn(to_async(True))
 
-    when(test_module).accept_endorsement(...).thenReturn(get())
+    when(test_module).accept_endorsement(...).thenReturn(to_async())
 
     await process_endorsement_event(data, "endorsements")
 

@@ -9,10 +9,10 @@ from app.generic.verifier import verifier_utils
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import PresentProofProtocolVersion
+from app.tests.util.mock import to_async
 from app.tests.verifier.test_verifier_utils import (indy_pres_spec,
                                                     indy_proof_request)
 from shared_models import PresentationExchange
-from tests.util.mock import get
 
 presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",
@@ -55,16 +55,16 @@ conn_record = ConnRecord(
 async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).send_proof_request(...).thenReturn(
-        get(presentation_exchange_record_1)
+        to_async(presentation_exchange_record_1)
     )
 
     when(mock_agent_controller.connection).get_connection(conn_id="abcde").thenReturn(
-        get(conn_record)
+        to_async(conn_record)
     )
 
     when(verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
-    ).thenReturn(get(actor))
+    ).thenReturn(to_async(actor))
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
@@ -87,16 +87,16 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
 async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).send_proof_request(...).thenReturn(
-        get(presentation_exchange_record_2)
+        to_async(presentation_exchange_record_2)
     )
 
     when(mock_agent_controller.connection).get_connection(conn_id="abcde").thenReturn(
-        get(conn_record)
+        to_async(conn_record)
     )
 
     when(verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
-    ).thenReturn(get(actor))
+    ).thenReturn(to_async(actor))
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
@@ -119,7 +119,7 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
 async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     #  V1
     when(VerifierV1).create_proof_request(...).thenReturn(
-        get(presentation_exchange_record_1)
+        to_async(presentation_exchange_record_1)
     )
     result = await test_module.create_proof_request(
         proof_request=test_module.CreateProofRequest(
@@ -133,7 +133,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 
     #  V2
     when(VerifierV2).create_proof_request(...).thenReturn(
-        get(presentation_exchange_record_2)
+        to_async(presentation_exchange_record_2)
     )
     result = await test_module.create_proof_request(
         proof_request=test_module.CreateProofRequest(
@@ -150,10 +150,10 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).accept_proof_request(...).thenReturn(
-        get(presentation_exchange_record_1)
+        to_async(presentation_exchange_record_1)
     )
     when(VerifierV1).get_proof_record(...).thenReturn(
-        get(presentation_exchange_record_1)
+        to_async(presentation_exchange_record_1)
     )
 
     presentation = test_module.AcceptProofRequest(
@@ -164,7 +164,7 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
         aries_controller=mock_agent_controller,
         prover=VerifierV1,
         presentation=presentation,
-    ).thenReturn(get())
+    ).thenReturn(to_async())
 
     result = await test_module.accept_proof_request(
         presentation=presentation,
@@ -179,10 +179,10 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
 async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).accept_proof_request(...).thenReturn(
-        get(presentation_exchange_record_2)
+        to_async(presentation_exchange_record_2)
     )
     when(VerifierV2).get_proof_record(...).thenReturn(
-        get(presentation_exchange_record_2)
+        to_async(presentation_exchange_record_2)
     )
 
     presentation = test_module.AcceptProofRequest(
@@ -193,7 +193,7 @@ async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
         aries_controller=mock_agent_controller,
         prover=VerifierV2,
         presentation=presentation,
-    ).thenReturn(get())
+    ).thenReturn(to_async())
 
     result = await test_module.accept_proof_request(
         presentation=presentation,
@@ -210,11 +210,11 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v1
-    ).thenReturn(get(None))
+    ).thenReturn(to_async(None))
     presentation_exchange_record_1.state = "request-received"
     when(VerifierV1).get_proof_record(
         controller=mock_agent_controller, proof_id=proof_request_v1.proof_id
-    ).thenReturn(get(presentation_exchange_record_1))
+    ).thenReturn(to_async(presentation_exchange_record_1))
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
@@ -234,11 +234,11 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v2
-    ).thenReturn(get(None))
+    ).thenReturn(to_async(None))
     presentation_exchange_record_2.state = "request-received"
     when(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=proof_request_v2.proof_id
-    ).thenReturn(get(presentation_exchange_record_2))
+    ).thenReturn(to_async(presentation_exchange_record_2))
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
@@ -259,7 +259,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).delete_proof(
         controller=mock_agent_controller, proof_id="v1-1234"
-    ).thenReturn(get(None))
+    ).thenReturn(to_async(None))
 
     result = await test_module.delete_proof(
         proof_id="v1-1234", aries_controller=mock_agent_controller
@@ -273,7 +273,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).delete_proof(
         controller=mock_agent_controller, proof_id="v2-1234"
-    ).thenReturn(get(None))
+    ).thenReturn(to_async(None))
 
     result = await test_module.delete_proof(
         proof_id="v2-1234", aries_controller=mock_agent_controller
@@ -290,7 +290,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).get_proof_record(
         controller=mock_agent_controller, proof_id="v1-abcd"
-    ).thenReturn(get(presentation_exchange_record_1))
+    ).thenReturn(to_async(presentation_exchange_record_1))
 
     result = await test_module.get_proof_record(
         proof_id="v1-abcd",
@@ -305,7 +305,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id="v2-abcd"
-    ).thenReturn(get(presentation_exchange_record_2))
+    ).thenReturn(to_async(presentation_exchange_record_2))
 
     result = await test_module.get_proof_record(
         proof_id="v2-abcd",
@@ -323,12 +323,12 @@ async def test_get_proof_records(mock_agent_controller: AcaPyClient):
     # V1 and V2
     with when(VerifierV1).get_proof_records(
         controller=mock_agent_controller
-    ).thenReturn(get([presentation_exchange_record_1])), when(
+    ).thenReturn(to_async([presentation_exchange_record_1])), when(
         VerifierV2
     ).get_proof_records(
         controller=mock_agent_controller
     ).thenReturn(
-        get([presentation_exchange_record_2])
+        to_async([presentation_exchange_record_2])
     ):
 
         result = await test_module.get_proof_records(
@@ -351,7 +351,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).get_credentials_for_request(
         controller=mock_agent_controller, proof_id="v1-abcd"
-    ).thenReturn(get([cred_precis]))
+    ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_for_request(
         proof_id="v1-abcd",
@@ -366,7 +366,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).get_credentials_for_request(
         controller=mock_agent_controller, proof_id="v2-abcd"
-    ).thenReturn(get([cred_precis]))
+    ).thenReturn(to_async([cred_precis]))
 
     result = await test_module.get_credentials_for_request(
         proof_id="v2-abcd",

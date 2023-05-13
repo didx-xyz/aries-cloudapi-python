@@ -1,6 +1,6 @@
 from typing import Any
 
 
-async def get(response: Any):
-    if response:
-        return response
+# This allows easy mocking of async functions, making `response` awaitable
+async def to_async(response: Any):
+    return response

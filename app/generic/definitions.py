@@ -1,38 +1,29 @@
 import asyncio
 import json
 from typing import List, Optional
-from aiohttp import ClientResponseError
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinition as AcaPyCredentialDefinition,
-    ModelSchema,
-    RevRegUpdateTailsFileUri,
-    SchemaSendRequest,
-    TxnOrCredentialDefinitionSendResult,
-)
-from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
-from app.error.cloud_api_error import CloudApiException
-from aries_cloudcontroller.model.credential_definition_send_request import (
-    CredentialDefinitionSendRequest,
-)
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import \
+    CredentialDefinition as AcaPyCredentialDefinition
+from aries_cloudcontroller import (ModelSchema, RevRegUpdateTailsFileUri,
+                                   SchemaSendRequest,
+                                   TxnOrCredentialDefinitionSendResult)
+from aries_cloudcontroller.model.credential_definition_send_request import \
+    CredentialDefinitionSendRequest
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.dependencies import (
-    AcaPyAuthVerified,
-    acapy_auth_verified,
-    agent_role,
-    agent_selector,
-    get_governance_controller,
-)
+from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
+from app.dependencies import (AcaPyAuthVerified, acapy_auth_verified,
+                              agent_role, agent_selector,
+                              get_governance_controller)
+from app.error.cloud_api_error import CloudApiException
+from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
-    create_revocation_registry,
-    publish_revocation_registry_on_ledger,
-)
+    create_revocation_registry, publish_revocation_registry_on_ledger)
+from app.listener import Listener
 from app.role import Role
-from app.facades import trust_registry, acapy_wallet
-from app.webhook_listener import start_listener
 
 router = APIRouter(
     prefix="/generic/definitions",
@@ -42,7 +33,8 @@ router = APIRouter(
 
 class CreateCredentialDefinition(BaseModel):
     tag: str = Field(..., example="default")
-    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    schema_id: str = Field(...,
+                           example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
     support_revocation: bool = Field(default=True)
     revocation_registry_size: int = Field(default=32767)
 
@@ -50,7 +42,8 @@ class CreateCredentialDefinition(BaseModel):
 class CredentialDefinition(BaseModel):
     id: str = Field(..., example="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:default")
     tag: str = Field(..., example="default")
-    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    schema_id: str = Field(...,
+                           example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
 
 
 class CreateSchema(BaseModel):
@@ -133,7 +126,8 @@ async def get_credential_definitions(
         *get_credential_definition_futures
     )
     credential_definitions = [
-        _credential_definition_from_acapy(credential_definition.credential_definition)
+        _credential_definition_from_acapy(
+            credential_definition.credential_definition)
         for credential_definition in credential_definition_results
         if credential_definition.credential_definition
     ]
@@ -208,7 +202,7 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    wait_for_event_with_timeout, stop_listener = await start_listener(
+    listener = Listener(
         topic="endorsements", wallet_id=auth.wallet_id
     )
 
@@ -223,7 +217,7 @@ async def create_credential_definition(
     if isinstance(result, TxnOrCredentialDefinitionSendResult):
         try:
             # Wait for transaction to be acknowledged and written to the ledger
-            await wait_for_event_with_timeout(
+            await listener.wait_for_filtered_event(
                 filter_map={
                     "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
@@ -235,7 +229,7 @@ async def create_credential_definition(
                 "Timeout waiting for endorser to accept the endorsement request"
             )
         finally:
-            await stop_listener()
+            listener.stop()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -291,12 +285,12 @@ async def create_credential_definition(
                 create_transaction_for_endorser=has_connections,
             )
             if has_connections:
-                wait_for_event_with_timeout, stop_listener = await start_listener(
+                admin_listener = Listener(
                     topic="endorsements", wallet_id="admin"
                 )
                 async with get_governance_controller() as endorser_controller:
                     try:
-                        txn_record = await wait_for_event_with_timeout(
+                        txn_record = await admin_listener.wait_for_filtered_event(
                             filter_map={
                                 "state": "request-received",
                             },
@@ -307,7 +301,7 @@ async def create_credential_definition(
                             "Failed to retrieve transaction record for endorser", 500
                         )
                     finally:
-                        await stop_listener()
+                        admin_listener.stop()
 
                     await endorser_controller.endorse_transaction.endorse_transaction(
                         tran_id=txn_record["transaction_id"]

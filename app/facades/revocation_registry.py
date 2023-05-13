@@ -1,23 +1,16 @@
 import logging
 from typing import Optional, Union
+
 from aiohttp import ClientResponseError
+from aries_cloudcontroller import (AcaPyClient, CredRevRecordResult,
+                                   IssuerCredRevRecord, IssuerRevRegRecord,
+                                   RevokeRequest, RevRegCreateRequest,
+                                   RevRegResult, TransactionRecord,
+                                   TxnOrRevRegResult)
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredRevRecordResult,
-    IssuerCredRevRecord,
-    IssuerRevRegRecord,
-    RevRegCreateRequest,
-    RevRegResult,
-    RevokeRequest,
-    TransactionRecord,
-    TxnOrRevRegResult,
-)
 from app.dependencies import get_governance_controller
-
 from app.error.cloud_api_error import CloudApiException
-from app.webhook_listener import start_listener
-
+from app.listener import Listener
 
 logger = logging.getLogger(__name__)
 
@@ -262,7 +255,8 @@ async def revoke_credential(
             )
         )
     except ClientResponseError as e:
-        raise CloudApiException(f"Failed to revoke credential.{e.message}", 418)
+        raise CloudApiException(
+            f"Failed to revoke credential.{e.message}", 418)
 
     if not auto_publish_to_ledger:
         active_revocation_registry_id = (
@@ -291,12 +285,12 @@ async def revoke_credential(
 
 
 async def endorser_revoke():
-    endorser_wait_for_transaction, stop_listener = await start_listener(
+    listener = Listener(
         topic="endorsements", wallet_id="admin"
     )
     async with get_governance_controller() as endorser_controller:
         try:
-            txn_record = await endorser_wait_for_transaction(
+            txn_record = await listener.wait_for_filtered_event(
                 filter_map={
                     "state": "request-received",
                 }
@@ -306,7 +300,7 @@ async def endorser_revoke():
                 "Failed to retrieve transaction record for endorser", 500
             )
         finally:
-            await stop_listener()
+            listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

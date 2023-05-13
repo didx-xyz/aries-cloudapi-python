@@ -9,13 +9,7 @@ from mockito import when
 
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.models import Credential
-
-
-# need this to handle the async with the mock
-async def get(response: Optional[Any] = None):
-    if response:
-        return response
-
+from app.tests.util.mock import to_async
 
 v1_credential_exchange_records = [
     V10CredentialExchange(
@@ -55,7 +49,7 @@ v1_credential_exchange_records = [
 @pytest.mark.anyio
 async def test_get_records(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.issue_credential_v1_0).get_records(...).thenReturn(
-        get(V10CredentialExchangeListResult(results=v1_credential_exchange_records))
+        to_async(V10CredentialExchangeListResult(results=v1_credential_exchange_records))
     )
 
     records = await IssuerV1.get_records(mock_agent_controller)
@@ -73,7 +67,7 @@ async def test_get_records_connection_id(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v1_0).get_records(
         connection_id=record.connection_id
-    ).thenReturn(get(V10CredentialExchangeListResult(results=[record])))
+    ).thenReturn(to_async(V10CredentialExchangeListResult(results=[record])))
 
     records = await IssuerV1.get_records(
         mock_agent_controller, connection_id=record.connection_id
@@ -91,7 +85,7 @@ async def test_get_record(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=v1_record.credential_exchange_id
-    ).thenReturn(get(v1_record))
+    ).thenReturn(to_async(v1_record))
 
     record = await IssuerV1.get_record(
         mock_agent_controller, credential_exchange_id=v1_record.credential_exchange_id
@@ -118,13 +112,13 @@ async def test_delete_credential_exchange_with_credential(
 
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=with_credential_id.credential_exchange_id
-    ).thenReturn(get(with_credential_id))
+    ).thenReturn(to_async(with_credential_id))
     when(mock_agent_controller.issue_credential_v1_0).delete_record(
         cred_ex_id=with_credential_id.credential_exchange_id
-    ).thenReturn(get())
+    ).thenReturn(to_async())
     when(mock_agent_controller.credentials).delete_record(
         credential_id=with_credential_id.credential_id
-    ).thenReturn(get())
+    ).thenReturn(to_async())
     await IssuerV1.delete_credential(
         mock_agent_controller,
         credential_exchange_id=with_credential_id.credential_exchange_id,
@@ -138,10 +132,10 @@ async def test_delete_credential_exchange_without_credential(
     without_credential_id = v1_credential_exchange_records[0]
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=without_credential_id.credential_exchange_id
-    ).thenReturn(get(without_credential_id))
+    ).thenReturn(to_async(without_credential_id))
     when(mock_agent_controller.issue_credential_v1_0).delete_record(
         cred_ex_id=without_credential_id.credential_exchange_id
-    ).thenReturn(get())
+    ).thenReturn(to_async())
     await IssuerV1.delete_credential(
         mock_agent_controller,
         credential_exchange_id=without_credential_id.credential_exchange_id,
@@ -163,7 +157,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v1_0).issue_credential_automated(
         ...
-    ).thenReturn(get(record))
+    ).thenReturn(to_async(record))
 
     credential_exchange = await IssuerV1.send_credential(
         mock_agent_controller, credential
@@ -191,7 +185,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.issue_credential_v1_0).store_credential(
         cred_ex_id=v1_record.credential_exchange_id,
         body=V10CredentialStoreRequest(credential_id=None),
-    ).thenReturn(get(v1_record))
+    ).thenReturn(to_async(v1_record))
 
     credential_exchange = await IssuerV1.store_credential(
         mock_agent_controller, credential_exchange_id=v1_record.credential_exchange_id
@@ -206,7 +200,7 @@ async def test_request_credential(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v1_0).send_request(
         cred_ex_id=v1_record.credential_exchange_id
-    ).thenReturn(get(v1_record))
+    ).thenReturn(to_async(v1_record))
 
     credential_exchange = await IssuerV1.request_credential(
         mock_agent_controller, credential_exchange_id=v1_record.credential_exchange_id

@@ -51,7 +51,7 @@ jobs:
         id: test
         # continue-on-error: true
         run: |
-          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app -k "not test_accept_proof_request_oob_v1" --ignore=app/tests/admin/test_onboarding.py
+          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app -k "not test_accept_proof_request_oob_v1"
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

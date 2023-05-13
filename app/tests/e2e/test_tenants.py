@@ -8,20 +8,6 @@ from httpx import AsyncClient
 from app.dependencies import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.role import Role
-
-# Tests are broken if we import the event_loop...
-@pytest.yield_fixture(scope="session")
-def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-from app.tests.util.webhooks import (
-    check_webhook_state,
-)
-
 from app.tests.util.client import tenant_client
 
 from app.admin.tenants import tenants

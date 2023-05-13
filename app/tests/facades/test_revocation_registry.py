@@ -1,24 +1,15 @@
-from aiohttp import ClientResponseError
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredRevRecordResult,
-    IssuerCredRevRecord,
-    IssuerRevRegRecord,
-    RevRegCreateRequest,
-    RevRegResult,
-    RevokeRequest,
-    TransactionRecord,
-    TxnOrRevRegResult,
-    V10CredentialExchange,
-    V20CredExRecordDetail,
-    V20CredExRecordIndy,
-)
-
 import pytest
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import (AcaPyClient, CredRevRecordResult,
+                                   IssuerCredRevRecord, IssuerRevRegRecord,
+                                   RevokeRequest, RevRegCreateRequest,
+                                   RevRegResult, TransactionRecord,
+                                   TxnOrRevRegResult, V10CredentialExchange,
+                                   V20CredExRecordDetail, V20CredExRecordIndy)
 from mockito import when
-from app.error.cloud_api_error import CloudApiException
 
 import app.facades.revocation_registry as rg
+from app.error.cloud_api_error import CloudApiException
 from tests.util.mock import get
 
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"

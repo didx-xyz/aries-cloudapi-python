@@ -55,12 +55,13 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     # Mock event listeners
+    when(onboarding).create_listener(topic="connections", wallet_id="admin").thenReturn(
+        MockListener(topic="connections", wallet_id="admin")
+    )
     when(onboarding).create_listener(
-        topic="connections", wallet_id="admin"
-    ).thenReturn(MockListener(topic="connections", wallet_id="admin"))
-    when(onboarding).create_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        MockListenerEndorserConnectionId(
-            topic="endorsements", wallet_id="admin")
+        topic="endorsements", wallet_id="admin"
+    ).thenReturn(
+        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
     )
 
     invitation_url = "https://invitation.com"
@@ -102,12 +103,11 @@ async def test_onboard_issuer_no_public_did(
 
     # Mock event listeners
     when(onboarding).create_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockListenerEndorserConnectionId(
-            topic="connections", wallet_id="admin")
+        MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
     )
-    when(onboarding).create_listener(topic="endorsements", wallet_id="admin").thenReturn(
-        MockListenerRequestReceived(topic="endorsements", wallet_id="admin")
-    )
+    when(onboarding).create_listener(
+        topic="endorsements", wallet_id="admin"
+    ).thenReturn(MockListenerRequestReceived(topic="endorsements", wallet_id="admin"))
 
     # Mock responses
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
@@ -123,16 +123,16 @@ async def test_onboard_issuer_no_public_did(
         to_async()
     )
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
-        get(
+        to_async(
             Did(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
             )
         )
     )
-    when(acapy_ledger).register_nym_on_ledger(...).thenReturn(get())
-    when(acapy_ledger).accept_taa_if_required(...).thenReturn(get())
-    when(acapy_wallet).set_public_did(...).thenReturn(get())
+    when(acapy_ledger).register_nym_on_ledger(...).thenReturn(to_async())
+    when(acapy_ledger).accept_taa_if_required(...).thenReturn(to_async())
+    when(acapy_wallet).set_public_did(...).thenReturn(to_async())
     when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
         to_async()
     )
@@ -202,8 +202,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
         to_async(
             InvitationRecord(
                 invitation_url=invitation_url,
-                invitation=InvitationMessage(
-                    services=[{"recipientKeys": [did_key]}]),
+                invitation=InvitationMessage(services=[{"recipientKeys": [did_key]}]),
             )
         )
     )
@@ -249,7 +248,9 @@ class MockListener(Listener):
         # Override init method, to prevent asyncio tasks from being created
         pass
 
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
+    async def wait_for_filtered_event(
+        self, filter_map: Dict[str, Any], timeout: float = 300
+    ):
         pass
 
     def stop(self):
@@ -257,10 +258,14 @@ class MockListener(Listener):
 
 
 class MockListenerEndorserConnectionId(MockListener):
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
+    async def wait_for_filtered_event(
+        self, filter_map: Dict[str, Any], timeout: float = 300
+    ):
         return {"connection_id": "endorser_connection_id"}
 
 
 class MockListenerRequestReceived(MockListener):
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: float = 300):
+    async def wait_for_filtered_event(
+        self, filter_map: Dict[str, Any], timeout: float = 300
+    ):
         return {"state": "request-received", "transaction_id": "abcde"}

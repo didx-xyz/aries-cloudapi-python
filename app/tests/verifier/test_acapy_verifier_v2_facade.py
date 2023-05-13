@@ -36,10 +36,10 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
     # proof interface decides upon params which methods it calls on the client
     # so let's mock those methods out
     when(mock_agent_controller.present_proof_v2_0).send_request(...).thenReturn(
-        to_async(v20_presentation_exchange_records[0])
-    )
+        v20_presentation_exchange_records[0]
+    )  # todo: all of the mocks with to_async removed are unnecessary and have no effect
     when(mock_agent_controller.present_proof_v2_0).send_proposal(...).thenReturn(
-        to_async(v20_presentation_exchange_records[0])
+        v20_presentation_exchange_records[0]
     )
     when(mock_agent_controller.present_proof_v2_0).send_request_free(...).thenReturn(
         to_async(v20_presentation_exchange_records[0])
@@ -90,10 +90,10 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
         to_async({})
     )
     when(mock_agent_controller.present_proof_v2_0).report_problem(...).thenReturn(
-        to_async({})
+        {}  # todo: all of the mocks with to_async removed are unnecessary and have no effect
     )
     when(mock_agent_controller.present_proof_v2_0).get_record(...).thenReturn(
-        to_async(v20_presentation_exchange_records[0])
+        v20_presentation_exchange_records[0]
     )
 
     deleted_proof_request = await VerifierV2.reject_proof_request(
@@ -107,13 +107,11 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
 
     # Test exception handling when delete record returns rubbish
     when(mock_agent_controller.present_proof_v2_0).delete_record(...).thenReturn(
-        to_async("Something went wrong")
+        "Something went wrong"
     )
-    when(mock_agent_controller.present_proof_v2_0).report_problem(...).thenReturn(
-        to_async({})
-    )
+    when(mock_agent_controller.present_proof_v2_0).report_problem(...).thenReturn({})
     when(mock_agent_controller.present_proof_v2_0).get_record(...).thenReturn(
-        to_async(v20_presentation_exchange_records[0])
+        v20_presentation_exchange_records[0]
     )
 
     with pytest.raises(AttributeError):

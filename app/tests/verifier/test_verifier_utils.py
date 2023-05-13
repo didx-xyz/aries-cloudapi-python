@@ -6,8 +6,8 @@ from aries_cloudcontroller import (AcaPyClient, AttachDecorator,
                                    IndyCredInfo, IndyPresAttrSpec,
                                    IndyPresPredSpec, IndyPresPreview,
                                    IndyPresSpec, IndyProof, IndyProofProof,
-                                   IndyProofReqAttrSpec,
-                                   IndyProofRequest, IndyProofRequestedProof,
+                                   IndyProofReqAttrSpec, IndyProofRequest,
+                                   IndyProofRequestedProof,
                                    IndyProofRequestNonRevoked,
                                    IndyRequestedCredsRequestedAttr,
                                    IndyRequestedCredsRequestedPred,
@@ -372,7 +372,6 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
 
 @pytest.mark.anyio
 async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient):
-
     pres_exchange = PresentationExchange(
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
         created_at="2021-09-15 13:49:47Z",
@@ -625,7 +624,6 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
         "app.generic.verifier.verifier_utils.assert_public_did",
         side_effect=Exception("Error"),
     ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=actor):
-
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(

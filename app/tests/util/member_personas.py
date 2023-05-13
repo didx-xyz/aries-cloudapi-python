@@ -37,7 +37,7 @@ async def bob_member_client():
         bob_client = tenant_client(token=tenant["access_token"])
         yield bob_client
 
-        bob_client.aclose()
+        await bob_client.aclose()
 
         await delete_tenant(client, tenant["tenant_id"])
 
@@ -58,7 +58,7 @@ async def alice_member_client(alice_tenant: Any):
 
     yield alice_client
 
-    alice_client.aclose()
+    await alice_client.aclose()
 
 
 @pytest.fixture(scope="module")

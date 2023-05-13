@@ -14,7 +14,7 @@ def client(event_loop):
     event_loop.run_until_complete(client.aclose())
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_index(client):
     service_mock = mock.AsyncMock(spec=Service)
     service_mock.add_topic_entry.return_value = None

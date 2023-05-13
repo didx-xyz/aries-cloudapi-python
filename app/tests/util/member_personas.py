@@ -3,19 +3,14 @@ from typing import Any, Dict, TypedDict
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
+
+from app.generic.connections.connections import CreateInvitation
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
-
-from app.tests.util.client import (
-    tenant_acapy_client,
-    tenant_admin_client,
-    tenant_client,
-)
+from app.tests.util.client import (tenant_acapy_client, tenant_admin_client,
+                                   tenant_client)
 from app.tests.util.ledger import create_public_did
-from app.generic.connections.connections import (
-    CreateInvitation,
-)
-
-from app.tests.util.tenants import create_issuer_tenant, create_tenant, delete_tenant
+from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
+                                    delete_tenant)
 from app.tests.util.webhooks import check_webhook_state
 
 

@@ -1,64 +1,39 @@
-from typing import Any, Optional
+from unittest.mock import patch
+
+import pytest
+from aries_cloudcontroller import (AcaPyClient, AttachDecorator,
+                                   AttachDecoratorData, ConnRecord,
+                                   IndyCredInfo, IndyPresAttrSpec,
+                                   IndyPresPredSpec, IndyPresPreview,
+                                   IndyPresSpec, IndyProof, IndyProofProof,
+                                   IndyProofReqAttrSpec,
+                                   IndyProofReqAttrSpecNonRevoked,
+                                   IndyProofRequest, IndyProofRequestedProof,
+                                   IndyProofRequestNonRevoked,
+                                   IndyRequestedCredsRequestedAttr,
+                                   IndyRequestedCredsRequestedPred,
+                                   V10PresentationExchange,
+                                   V10PresentationProposalRequest, V20Pres,
+                                   V20PresExRecord, V20PresExRecordByFormat,
+                                   V20PresFormat, V20PresProposal)
+from assertpy import assert_that
+from mockito import mock, when
 
 from app.error.cloud_api_error import CloudApiException
-
-from app.generic.verifier.models import (
-    AcceptProofRequest,
-    PresentProofProtocolVersion,
-    SendProofRequest,
-)
-from shared_models import PresentationExchange
-from unittest.mock import patch
-from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.facades.trust_registry import Actor
-from app.generic.verifier.verifier_utils import (
-    are_valid_schemas,
-    ed25519_verkey_to_did_key,
-    get_connection_record,
-    get_schema_ids,
-    is_verifier,
-    assert_valid_prover,
-    assert_valid_verifier,
-    get_actor,
-)
-from assertpy import assert_that
-
-from mockito import mock, when
-import pytest
-from aries_cloudcontroller import (
-    AcaPyClient,
-    AttachDecorator,
-    AttachDecoratorData,
-    ConnRecord,
-    IndyCredInfo,
-    IndyPresAttrSpec,
-    IndyPresPredSpec,
-    IndyPresPreview,
-    IndyPresSpec,
-    IndyProof,
-    IndyProofProof,
-    IndyProofReqAttrSpec,
-    IndyProofRequest,
-    IndyProofRequestNonRevoked,
-    IndyProofRequestedProof,
-    IndyRequestedCredsRequestedPred,
-    IndyProofReqAttrSpecNonRevoked,
-    IndyRequestedCredsRequestedAttr,
-    V10PresentationExchange,
-    V10PresentationProposalRequest,
-    V20Pres,
-    V20PresExRecord,
-    V20PresExRecordByFormat,
-    V20PresFormat,
-    V20PresProposal,
-)
-
-
-# need this to handle the async with the mock
-async def get(response: Optional[Any] = None):
-    if response:
-        return response
-
+from app.generic.verifier.facades.acapy_verifier import Verifier
+from app.generic.verifier.models import (AcceptProofRequest,
+                                         PresentProofProtocolVersion,
+                                         SendProofRequest)
+from app.generic.verifier.verifier_utils import (are_valid_schemas,
+                                                 assert_valid_prover,
+                                                 assert_valid_verifier,
+                                                 ed25519_verkey_to_did_key,
+                                                 get_actor,
+                                                 get_connection_record,
+                                                 get_schema_ids, is_verifier)
+from app.tests.util.mock import to_async
+from shared_models import PresentationExchange
 
 actor = Actor(
     id="abcde",

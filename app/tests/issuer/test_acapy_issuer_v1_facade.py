@@ -1,15 +1,9 @@
-from typing import Any, Optional
-
 import pytest
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredAttrSpec,
-    CredentialPreview,
-    CredentialProposal,
-    V10CredentialExchange,
-    V10CredentialExchangeListResult,
-    V10CredentialStoreRequest,
-)
+from aries_cloudcontroller import (AcaPyClient, CredAttrSpec,
+                                   CredentialPreview, CredentialProposal,
+                                   V10CredentialExchange,
+                                   V10CredentialExchangeListResult,
+                                   V10CredentialStoreRequest)
 from assertpy import assert_that
 from mockito import when
 

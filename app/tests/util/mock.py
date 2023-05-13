@@ -1,6 +1,6 @@
-from typing import Optional, Any
+from typing import Any
 
-# need this to handle the async with the mock
-async def get(response: Optional[Any] = None):
-    if response:
-        return response
+
+# This allows easy mocking of async functions, making `response` awaitable
+async def to_async(response: Any):
+    return response

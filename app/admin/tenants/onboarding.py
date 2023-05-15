@@ -291,15 +291,13 @@ async def onboard_issuer_no_public_did(
 
     try:
         endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
-    except CloudApiException as e:
-        raise CloudApiException(
-            "Unable to get endorser public DID", 500) from e
+    except Exception as e:
+        raise CloudApiException("Unable to get endorser public DID", 500) from e
 
     try:
         issuer_did = await create_connection_with_endorser(endorser_did)
-    except CloudApiException as e:
-        raise CloudApiException(
-            "Error creating connection with endorser", 500) from e
+    except Exception as e:
+        raise CloudApiException("Error creating connection with endorser", 500) from e
 
     return issuer_did
 

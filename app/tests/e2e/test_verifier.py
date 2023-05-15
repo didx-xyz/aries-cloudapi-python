@@ -196,8 +196,7 @@ async def test_accept_proof_request_oob_v1(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "done",
-                    "role": "verifier", "connection_id": None},
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
         topic="proofs",
         max_duration=240,
     )
@@ -291,8 +290,7 @@ async def test_accept_proof_request_oob_v2(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "done",
-                    "role": "verifier", "connection_id": None},
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
         topic="proofs",
         max_duration=240,
     )
@@ -363,9 +361,7 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = Listener(
-        topic="proofs", wallet_id=acme_tenant["tenant_id"]
-    )
+    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant["tenant_id"])
 
     response = await alice_member_client.post(
         BASE_PATH + "/accept-request",
@@ -373,8 +369,7 @@ async def test_accept_proof_request_v2(
     )
 
     await acme_proofs_listener.wait_for_filtered_event(
-        filter_map={"proof_id": acme_proof_id,
-                    "state": "done", "verified": True}
+        filter_map={"proof_id": acme_proof_id, "state": "done", "verified": True}
     )
     acme_proofs_listener.stop()
 

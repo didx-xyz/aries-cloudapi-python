@@ -1,6 +1,5 @@
-from time import sleep
-
 import logging
+
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
@@ -10,8 +9,7 @@ from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from app.tests.e2e.test_fixtures import *  # NOQA
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import (check_webhook_state,
-                                     get_hooks_per_topic_per_wallet)
+from app.tests.util.webhooks import check_webhook_state
 
 # This import are important for tests to run!
 

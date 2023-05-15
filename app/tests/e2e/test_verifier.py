@@ -636,6 +636,7 @@ async def test_delete_proof(
 
 @pytest.mark.anyio
 async def test_get_credentials_for_request(
+    issue_credential_to_alice: CredentialExchange,
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: AsyncClient,
     alice_tenant: Any,

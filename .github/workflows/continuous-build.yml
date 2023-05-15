@@ -72,22 +72,22 @@ jobs:
       # - name: Tear down test harness
       #   run: |
       #     ./manage down || true
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: multiple command
-        if: github.ref == 'refs/heads/development' && github.repository == 'didx-xyz/aries-cloudapi-python' && github.event_name == 'push'
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOSTNAME }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd aries-cloudapi-python
-            git add .
-            git stash
-            git checkout development
-            git pull
-            ./manage down
-            ./manage up-as-daemon
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: multiple command
+#         if: github.ref == 'refs/heads/development' && github.repository == 'didx-xyz/aries-cloudapi-python' && github.event_name == 'push'
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.HOSTNAME }}
+#           username: ${{ secrets.USERNAME }}
+#           key: ${{ secrets.KEY }}
+#           port: ${{ secrets.PORT }}
+#           script: |
+#             cd aries-cloudapi-python
+#             git add .
+#             git stash
+#             git checkout development
+#             git pull
+#             ./manage down
+#             ./manage up-as-daemon

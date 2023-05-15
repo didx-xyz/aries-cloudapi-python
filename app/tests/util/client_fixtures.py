@@ -10,7 +10,7 @@ from app.tests.util.client import (
 # governance
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 async def governance_acapy_client():
     client = _governance_acapy_client()
     yield client
@@ -18,7 +18,7 @@ async def governance_acapy_client():
     await client.close()
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 async def governance_client():
     async with _governance_client() as client:
         yield client
@@ -27,13 +27,13 @@ async def governance_client():
 # TENANT ADMIN
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 async def tenant_admin_client():
     async with _tenant_admin_client() as client:
         yield client
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.fixture(scope="module")
 async def tenant_admin_acapy_client():
     client = _tenant_admin_acapy_client()
     yield client

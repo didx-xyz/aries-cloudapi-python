@@ -1,28 +1,23 @@
 import logging
-from typing import Optional, List
-from aries_cloudcontroller import (
-    AcaPyClient,
-    InvitationCreateRequest,
-)
-from aries_cloudcontroller.model.create_wallet_token_request import (
-    CreateWalletTokenRequest,
-)
+from typing import List, Optional
+
+from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
+from aries_cloudcontroller.model.create_wallet_token_request import \
+    CreateWalletTokenRequest
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
-from app.admin.tenants.models import UpdateTenantRequest
-from app.dependencies import Role, get_tenant_controller, get_governance_controller
-from app.facades.trust_registry import (
-    TrustRegistryRole,
-    actor_by_id,
-    update_actor,
-)
-from app.constants import ACAPY_ENDORSER_ALIAS
-from app.util.did import qualified_did_sov
-from app.webhook_listener import start_listener
 
+from app.admin.tenants.models import UpdateTenantRequest
+from app.constants import ACAPY_ENDORSER_ALIAS
+from app.dependencies import (Role, get_governance_controller,
+                              get_tenant_controller)
 from app.error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet
+from app.facades.trust_registry import (TrustRegistryRole, actor_by_id,
+                                        update_actor)
+from app.listener import Listener
+from app.util.did import qualified_did_sov
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +25,11 @@ logger = logging.getLogger(__name__)
 class OnboardResult(BaseModel):
     did: str
     didcomm_invitation: Optional[AnyHttpUrl]
+
+
+def create_listener(topic: str, wallet_id: str) -> Listener:
+    # Helper method for passing MockListener to class
+    return Listener(topic=topic, wallet_id=wallet_id)
 
 
 async def handle_tenant_update(
@@ -147,11 +147,11 @@ async def onboard_issuer(
             f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
         )
 
-        endorser_wait_for_connection, _ = await start_listener(
+        connections_listener = create_listener(
             topic="connections", wallet_id="admin"
         )
 
-        endorser_wait_for_transaction, _ = await start_listener(
+        endorsements_listener = create_listener(
             topic="endorsements", wallet_id="admin"
         )
 
@@ -172,14 +172,17 @@ async def onboard_issuer(
 
         # Wait for connection to be completed before continuing
         try:
-            endorser_connection = await endorser_wait_for_connection(
+            endorser_connection = await connections_listener.wait_for_filtered_event(
                 filter_map={
                     "invitation_msg_id": invitation.invi_msg_id,
                     "state": "completed",
                 }
             )
-        except TimeoutError:
-            raise CloudApiException("Error creating connection with endorser", 500)
+        except TimeoutError as e:
+            raise CloudApiException(
+                "Error creating connection with endorser", 500) from e
+        finally:
+            connections_listener.stop()
 
         logger.debug("Successfully created connection")
 
@@ -219,13 +222,16 @@ async def onboard_issuer(
             create_transaction_for_endorser=True,
         )
         try:
-            txn_record = await endorser_wait_for_transaction(
+            txn_record = await endorsements_listener.wait_for_filtered_event(
                 filter_map={
                     "state": "request-received",
                 }
             )
-        except TimeoutError:
-            raise CloudApiException("Error creating connection with endorser", 500)
+        except TimeoutError as e:
+            raise CloudApiException(
+                "Error creating connection with endorser", 500) from e
+        finally:
+            endorsements_listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

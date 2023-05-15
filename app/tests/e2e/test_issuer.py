@@ -1,16 +1,21 @@
 from time import sleep
+
+import logging
 import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
+
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
+from app.tests.e2e.test_fixtures import *  # NOQA
+from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import get_hooks_per_topic_per_wallet, check_webhook_state
+from app.tests.util.webhooks import (check_webhook_state,
+                                     get_hooks_per_topic_per_wallet)
 
 # This import are important for tests to run!
 
-from app.tests.e2e.test_fixtures import BASE_PATH
-from app.tests.e2e.test_fixtures import *  # NOQA
+logger = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
@@ -29,7 +34,8 @@ async def test_send_credential_oob_v1(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -162,7 +168,8 @@ async def test_send_credential(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -205,7 +212,8 @@ async def test_send_credential(
     )
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
 
@@ -329,7 +337,8 @@ async def test_send_credential_request(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     assert check_webhook_state(
         client=alice_member_client,
@@ -430,14 +439,16 @@ async def test_revoke_credential(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
+    faber_connection_id = faber_and_alice_connection["faber_connection_id"]
+
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_connection_id,
         "credential_definition_id": credential_definition_id_revocable,
         "attributes": {"speed": "10"},
     }
 
-    wait_for_event, _ = await start_listener(
+    alice_credentials_listener = Listener(
         topic="credentials", wallet_id=alice_tenant["tenant_id"]
     )
 
@@ -451,7 +462,7 @@ async def test_revoke_credential(
         print(credential_exchange)
     response.raise_for_status()
 
-    payload = await wait_for_event(
+    payload = await alice_credentials_listener.wait_for_filtered_event(
         filter_map={
             "connection_id": faber_and_alice_connection["alice_connection_id"],
             "state": "offer-received",
@@ -459,28 +470,33 @@ async def test_revoke_credential(
     )
 
     alice_credential_id = payload["credential_id"]
-    wait_for_event, _ = await start_listener(
-        topic="credentials", wallet_id=alice_tenant["tenant_id"]
-    )
 
     # send credential request - holder
     response = await alice_member_client.post(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await wait_for_event(
+    await alice_credentials_listener.wait_for_filtered_event(
         filter_map={"credential_id": alice_credential_id, "state": "done"}
     )
+    alice_credentials_listener.stop()
 
     # Retrieve an issued credential
     records = (await faber_client.get("/generic/issuer/credentials")).json()
     record_as_issuer_for_alice = [
         rec
         for rec in records
-        if (rec["role"] == "issuer" and rec["state"] == "credential-issued" and rec['connection_id'] == faber_and_alice_connection["faber_connection_id"])
+        if (rec["role"] == "issuer" and rec["state"] == "credential-issued" and rec['connection_id'] == faber_connection_id)
     ]
 
-    record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
+    if record_as_issuer_for_alice:
+        record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
+    else:
+        logger.warning(
+            f"No records matched state: `credential-issued` with role: `issuer`. Looking for connection_id = {faber_connection_id}. List of records retreived: {records}.\n")
+        raise Exception(
+            "No issued credential retreived.")
+
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
     response = await faber_client.post(

@@ -1,5 +1,4 @@
 assertpy==1.1
-asyncio~=3.4.3
 black==22.10.0
 httpx==0.24.0
 mockito==1.2.2

@@ -665,11 +665,11 @@ async def test_get_credentials_for_request(
 
     proof_id = alice_exchange["proof_id"]
 
-    response = await alice_member_client.get(
+    requested_credentials = await alice_member_client.get(
         f"{BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
-    result = response.json()[-1]
+    result = requested_credentials.json()[-1]
     assert "cred_info" in result.keys()
     assert [
         attr

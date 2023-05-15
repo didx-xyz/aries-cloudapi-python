@@ -55,7 +55,6 @@ async def handle_tenant_update(
             updated_actor["name"] = update.name
 
         if update.roles:
-
             # We only care about the added roles, as that's what needs the setup.
             # Teardown is not required at the moment, besides from removing it from
             # the trust registry
@@ -130,7 +129,9 @@ async def onboard_issuer(
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
     except CloudApiException:
-        issuer_did = await onboard_issuer_no_public_did(name, endorser_controller, issuer_controller, issuer_wallet_id)
+        issuer_did = await onboard_issuer_no_public_did(
+            name, endorser_controller, issuer_controller, issuer_wallet_id
+        )
 
     # Create an invitation as well
     invitation = await issuer_controller.out_of_band.create_invitation(
@@ -151,8 +152,8 @@ async def onboard_issuer(
 async def onboard_issuer_no_public_did(
     name: str,
     endorser_controller: AcaPyClient,
-    issuer_controller: AcaPyClient, 
-    issuer_wallet_id: str
+    issuer_controller: AcaPyClient,
+    issuer_wallet_id: str,
 ):
     """
     Onboard an issuer without a public DID.
@@ -174,6 +175,7 @@ async def onboard_issuer_no_public_did(
     Returns:
         issuer_did (DID): The issuer's DID after completing the onboarding process
     """
+
     async def create_endorser_invitation():
         # Make sure the issuer has a connection with the endorser
         invitation = await endorser_controller.out_of_band.create_invitation(
@@ -191,9 +193,7 @@ async def onboard_issuer_no_public_did(
             f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
         )
 
-        connections_listener = create_listener(
-            topic="connections", wallet_id="admin"
-        )
+        connections_listener = create_listener(topic="connections", wallet_id="admin")
 
         # FIXME: make sure the connection with this alias doesn't exist yet
         # Or does use_existing_connection take care of this?
@@ -213,7 +213,8 @@ async def onboard_issuer_no_public_did(
             )
         except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500) from e
+                "Error creating connection with endorser", 500
+            ) from e
         finally:
             connections_listener.stop()
 
@@ -258,9 +259,7 @@ async def onboard_issuer_no_public_did(
             create_transaction_for_endorser=True,
         )
 
-        endorsements_listener = create_listener(
-            topic="endorsements", wallet_id="admin"
-        )
+        endorsements_listener = create_listener(topic="endorsements", wallet_id="admin")
 
         try:
             txn_record = await endorsements_listener.wait_for_filtered_event(
@@ -270,7 +269,8 @@ async def onboard_issuer_no_public_did(
             )
         except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500) from e
+                "Error creating connection with endorser", 500
+            ) from e
         finally:
             endorsements_listener.stop()
 
@@ -282,7 +282,9 @@ async def onboard_issuer_no_public_did(
 
     async def create_connection_with_endorser(endorser_did):
         invitation = await create_endorser_invitation()
-        endorser_connection, connection_record = await wait_for_connection_completion(invitation)
+        endorser_connection, connection_record = await wait_for_connection_completion(
+            invitation
+        )
         await set_endorser_roles(endorser_connection, connection_record)
         await configure_endorsement(connection_record, endorser_did)
         issuer_did = await register_issuer_did()

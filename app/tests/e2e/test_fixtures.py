@@ -1,22 +1,20 @@
 from typing import Any
+
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncClient
+
 from app.dependencies import acapy_auth, acapy_auth_verified
-from app.generic.definitions import (
-    CreateCredentialDefinition,
-    CreateSchema,
-    CredentialSchema,
-    create_schema,
-    create_credential_definition,
-)
+from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
+                                     CredentialSchema,
+                                     create_credential_definition,
+                                     create_schema)
+from app.generic.issuer.issuer import router
+from app.listener import Listener
 from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.ledger import create_public_did, has_public_did
-from app.tests.util.webhooks import check_webhook_state
-from app.generic.issuer.issuer import router
-
 from app.tests.util.trust_registry import register_issuer
-from app.webhook_listener import start_listener
+from app.tests.util.webhooks import check_webhook_state
 from shared_models.shared_models import CredentialExchange
 
 BASE_PATH = router.prefix + "/credentials"
@@ -25,7 +23,7 @@ BASE_PATH = router.prefix + "/credentials"
 # OR abstract the persona specific parts out of it
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version="0.3", attribute_names=["speed"]
@@ -39,7 +37,7 @@ async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialS
     return schema_definition_result
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def schema_definition_alt(
     governance_acapy_client: AcaPyClient,
 ) -> CredentialSchema:
@@ -55,7 +53,7 @@ async def schema_definition_alt(
     return schema_definition_result
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: AsyncClient,
@@ -75,7 +73,7 @@ async def credential_definition_id(
     return result.id
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: AsyncClient,
@@ -95,7 +93,7 @@ async def credential_definition_id_revocable(
     return result.id
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def credential_exchange_id(
     faber_client: AsyncClient,
     credential_definition_id: str,
@@ -131,7 +129,8 @@ async def credential_exchange_id(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={
+            "connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     response.raise_for_status()
     records = response.json()
@@ -140,7 +139,7 @@ async def credential_exchange_id(
     return credential_exchange_id
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def issue_credential_to_alice(
     faber_client: AsyncClient,
     credential_definition_id: str,
@@ -155,7 +154,7 @@ async def issue_credential_to_alice(
         "attributes": {"speed": "10"},
     }
 
-    wait_for_event, _ = await start_listener(
+    listener = Listener(
         topic="credentials", wallet_id=alice_tenant["tenant_id"]
     )
 
@@ -169,7 +168,7 @@ async def issue_credential_to_alice(
         print(credential_exchange)
     response.raise_for_status()
 
-    payload = await wait_for_event(
+    payload = await listener.wait_for_filtered_event(
         filter_map={
             "connection_id": faber_and_alice_connection["alice_connection_id"],
             "state": "offer-received",
@@ -177,18 +176,16 @@ async def issue_credential_to_alice(
     )
 
     alice_credential_id = payload["credential_id"]
-    wait_for_event, _ = await start_listener(
-        topic="credentials", wallet_id=alice_tenant["tenant_id"]
-    )
 
     # send credential request - holder
     response = await alice_member_client.post(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await wait_for_event(
+    await listener.wait_for_filtered_event(
         filter_map={"credential_id": alice_credential_id, "state": "done"}
     )
+    listener.stop()
 
     # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
 

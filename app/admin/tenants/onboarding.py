@@ -27,7 +27,7 @@ class OnboardResult(BaseModel):
     didcomm_invitation: Optional[AnyHttpUrl]
 
 
-def _create_listener(topic: str, wallet_id: str) -> Listener:
+def create_listener(topic: str, wallet_id: str) -> Listener:
     # Helper method for passing MockListener to class
     return Listener(topic=topic, wallet_id=wallet_id)
 
@@ -130,7 +130,7 @@ async def onboard_issuer(
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
     except CloudApiException:
-        issuer_did = await onboard_issuer_no_public_did(name, endorser_controller, issuer_controller)
+        issuer_did = await onboard_issuer_no_public_did(name, endorser_controller, issuer_controller, issuer_wallet_id)
 
     # Create an invitation as well
     invitation = await issuer_controller.out_of_band.create_invitation(
@@ -151,7 +151,8 @@ async def onboard_issuer(
 async def onboard_issuer_no_public_did(
     name: str,
     endorser_controller: AcaPyClient,
-    issuer_controller: AcaPyClient
+    issuer_controller: AcaPyClient, 
+    issuer_wallet_id: str
 ):
     """
     Onboard an issuer without a public DID.
@@ -168,6 +169,7 @@ async def onboard_issuer_no_public_did(
         name (str): Name of the issuer
         endorser_controller (AcaPyClient): Authenticated ACA-Py client for endorser
         issuer_controller (AcaPyClient): Authenticated ACA-Py client for issuer
+        issuer_wallet_id (str): Wallet id of the issuer
 
     Returns:
         issuer_did (DID): The issuer's DID after completing the onboarding process
@@ -185,7 +187,11 @@ async def onboard_issuer_no_public_did(
         return invitation
 
     async def wait_for_connection_completion(invitation):
-        connections_listener = _create_listener(
+        logger.debug(
+            f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
+        )
+
+        connections_listener = create_listener(
             topic="connections", wallet_id="admin"
         )
 
@@ -205,9 +211,9 @@ async def onboard_issuer_no_public_did(
                     "state": "completed",
                 }
             )
-        except TimeoutError:
+        except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500)
+                "Error creating connection with endorser", 500) from e
         finally:
             connections_listener.stop()
 
@@ -252,7 +258,7 @@ async def onboard_issuer_no_public_did(
             create_transaction_for_endorser=True,
         )
 
-        endorsements_listener = _create_listener(
+        endorsements_listener = create_listener(
             topic="endorsements", wallet_id="admin"
         )
 
@@ -262,9 +268,9 @@ async def onboard_issuer_no_public_did(
                     "state": "request-received",
                 }
             )
-        except TimeoutError:
+        except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500)
+                "Error creating connection with endorser", 500) from e
         finally:
             endorsements_listener.stop()
 

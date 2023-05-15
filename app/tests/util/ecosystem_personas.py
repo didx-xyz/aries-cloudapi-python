@@ -31,7 +31,10 @@ async def faber_client():
         if "access_token" not in tenant:
             raise Exception("Error creating tenant", tenant)
 
-        yield tenant_client(token=tenant["access_token"])
+        faber_async_client = tenant_client(token=tenant["access_token"])
+        yield faber_async_client
+
+        await faber_async_client.aclose()
 
         await delete_tenant(client, tenant["tenant_id"])
 
@@ -63,7 +66,10 @@ async def acme_tenant():
 
 @pytest.fixture(scope="module")
 async def acme_client(acme_tenant: Any):
-    yield tenant_client(token=acme_tenant["access_token"])
+    acme_async_client = tenant_client(token=acme_tenant["access_token"])
+    yield acme_async_client
+
+    await acme_async_client.aclose()
 
 
 @pytest.fixture(scope="module")

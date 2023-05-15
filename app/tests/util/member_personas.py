@@ -34,7 +34,10 @@ async def bob_member_client():
     async with tenant_admin_client() as client:
         tenant = await create_issuer_tenant(client, "bob")
 
-        yield tenant_client(token=tenant["access_token"])
+        bob_client = tenant_client(token=tenant["access_token"])
+        yield bob_client
+
+        await bob_client.aclose()
 
         await delete_tenant(client, tenant["tenant_id"])
 
@@ -51,14 +54,19 @@ async def alice_tenant():
 
 @pytest.fixture(scope="module")
 async def alice_member_client(alice_tenant: Any):
-    yield tenant_client(token=alice_tenant["access_token"])
+    alice_client = tenant_client(token=alice_tenant["access_token"])
+
+    yield alice_client
+
+    await alice_client.aclose()
 
 
 @pytest.fixture(scope="module")
 async def bob_acapy_client(bob_member_client: AsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
-    [_, token] = bob_member_client.headers.get("x-api-key").split(".", maxsplit=1)
+    [_, token] = bob_member_client.headers.get(
+        "x-api-key").split(".", maxsplit=1)
 
     client = tenant_acapy_client(token=token)
     yield client
@@ -68,7 +76,8 @@ async def bob_acapy_client(bob_member_client: AsyncClient):
 
 @pytest.fixture(scope="module")
 async def alice_acapy_client(alice_member_client: AsyncClient):
-    [_, token] = alice_member_client.headers.get("x-api-key").split(".", maxsplit=1)
+    [_, token] = alice_member_client.headers.get(
+        "x-api-key").split(".", maxsplit=1)
 
     client = tenant_acapy_client(token=token)
     yield client

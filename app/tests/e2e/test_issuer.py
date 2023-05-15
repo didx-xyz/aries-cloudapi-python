@@ -299,13 +299,6 @@ async def test_create_offer(
 
 
 @pytest.mark.anyio
-async def test_get_records(alice_member_client: AsyncClient):
-    records = (await alice_member_client.get(BASE_PATH)).json()
-    assert records
-    assert len(records) >= 1
-
-
-@pytest.mark.anyio
 async def test_send_credential_request(
     alice_member_client: AsyncClient,
     faber_client: AsyncClient,

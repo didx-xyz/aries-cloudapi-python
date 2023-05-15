@@ -1,8 +1,7 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
 
 from app.generic.webhooks import router
-
 from app.tests.util.member_personas import BobAliceConnect
 from shared_models import Connection
 
@@ -28,7 +27,7 @@ async def test_get_webhooks_for_wallet(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
-    result = (await alice_member_client.get(WALLET_BASE_PATH + "/")).json()
+    result = (await alice_member_client.get(WALLET_BASE_PATH)).json()
 
     assert len(result) >= 1
     assert isinstance(result, list)

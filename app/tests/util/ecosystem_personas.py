@@ -23,7 +23,7 @@ class AcmeAliceConnect(TypedDict):
     alice_connection_id: str
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def faber_client():
     async with tenant_admin_client() as client:
         tenant = await create_issuer_tenant(client, "faber")
@@ -31,12 +31,15 @@ async def faber_client():
         if "access_token" not in tenant:
             raise Exception("Error creating tenant", tenant)
 
-        yield tenant_client(token=tenant["access_token"])
+        faber_async_client = tenant_client(token=tenant["access_token"])
+        yield faber_async_client
+
+        await faber_async_client.aclose()
 
         await delete_tenant(client, tenant["tenant_id"])
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def faber_acapy_client(faber_client: AsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
@@ -48,7 +51,7 @@ async def faber_acapy_client(faber_client: AsyncClient):
     await client.close()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def acme_tenant():
     async with tenant_admin_client() as client:
         tenant = await create_verifier_tenant(client, "acme")
@@ -61,12 +64,15 @@ async def acme_tenant():
         await delete_tenant(client, tenant["tenant_id"])
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def acme_client(acme_tenant: Any):
-    yield tenant_client(token=acme_tenant["access_token"])
+    acme_async_client = tenant_client(token=acme_tenant["access_token"])
+    yield acme_async_client
+
+    await acme_async_client.aclose()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def acme_acapy_client(faber_client: AsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
@@ -78,7 +84,7 @@ async def acme_acapy_client(faber_client: AsyncClient):
     await client.close()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def acme_and_alice_connection(
     alice_member_client: AsyncClient, acme_tenant: Any
 ) -> AcmeAliceConnect:
@@ -114,7 +120,7 @@ async def acme_and_alice_connection(
     }
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def faber_and_alice_connection(
     alice_member_client: AsyncClient, faber_client: AsyncClient, alice_tenant: Any
 ) -> FaberAliceConnect:

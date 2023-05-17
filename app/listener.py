@@ -35,7 +35,7 @@ class Listener:
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
         logger.debug(
-            f"Listener is starting to wait for a filtered event with timeout {timeout}s")
+            "Listener is starting to wait for a filtered event with timeout %ss", timeout)
 
         def _payload_matches_filter(payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
             """
@@ -63,8 +63,6 @@ class Listener:
                     self._processed_events.append(item)
 
             # Return None if no matching payload is found
-            logger.debug(
-                "_find_matching_event found no matching events in queue")
             return None
 
         # Loop continuously, waiting for a matching event or until the total waiting time reaches the specified timeout
@@ -75,24 +73,18 @@ class Listener:
                 # Use a smaller timeout value for asyncio.wait_for to repeatedly call _find_matching_event
                 payload = await asyncio.wait_for(_find_matching_event(), timeout=2)
                 if payload:
-                    logger.debug(
-                        f"_find_matching_event successfully matched. payload: {payload}")
                     return payload
-                else:
-                    logger.debug(
-                        f"_find_matching_event returned None. Sleep briefly before retry. Events already checked: {self._processed_events}")
-                    await asyncio.sleep(2)
             except asyncio.TimeoutError:
                 logger.warning(
-                    "_find_matching_event has timed out in `asyncio.wait_for`")
+                    "_find_matching_event has timed out. unprocessed_queue may be very large")
             finally:
                 # If the total waiting time reaches the specified timeout, raise an exception, else continue
                 if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
                     logger.warning(
-                        f"Waiting for a filtered event has timed out ({timeout}s), using filter_map: {filter_map}")
+                        "Waiting for a filtered event has timed out (%ss), with filter_map: %s", timeout, filter_map)
                     raise ListenerTimeout(
-                        f"Waiting for an expected event has timed out")
+                        "Waiting for an expected event has timed out")
 
     async def start(self):
         """
@@ -111,4 +103,3 @@ class Listener:
 
 class ListenerTimeout(Exception):
     """Exception raised when the Listener times out waiting for a matching event."""
-    pass

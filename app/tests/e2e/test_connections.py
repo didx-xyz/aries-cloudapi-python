@@ -10,7 +10,7 @@ from app.tests.util.webhooks import (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_invitation(
     bob_member_client: AsyncClient,
 ):
@@ -24,7 +24,7 @@ async def test_create_invitation(
     assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_invitation(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
@@ -55,7 +55,7 @@ async def test_accept_invitation(
     assert_that(connection_record).has_state("request-sent")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_connections(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
@@ -68,7 +68,7 @@ async def test_get_connections(
     assert_that(len(bob_connections)).is_greater_than_or_equal_to(1)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_connection_by_id(
     bob_member_client: AsyncClient,
 ):
@@ -89,7 +89,7 @@ async def test_get_connection_by_id(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_connection(
     bob_member_client: AsyncClient,
 ):
@@ -106,7 +106,7 @@ async def test_delete_connection(
     assert_that(response.status_code).is_equal_to(404)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_bob_and_alice_connect(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,

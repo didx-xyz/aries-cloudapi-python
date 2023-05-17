@@ -45,7 +45,7 @@ signed_doc = {
 }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_sign_jsonld(
     alice_member_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -124,7 +124,7 @@ async def test_sign_jsonld(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_verify_jsonld(
     alice_member_client: AsyncClient,
     faber_acapy_client: AcaPyClient,

@@ -1,4 +1,4 @@
-## How to contribute
+# How to Contribute
 
 You are encouraged to contribute to the repository by **forking the repo, making your changes and then submitting a pull request back to this repo**.
 

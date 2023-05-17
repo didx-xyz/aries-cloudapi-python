@@ -9,7 +9,7 @@ from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
                                     create_verifier_tenant, delete_tenant)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: AsyncClient,
 ):

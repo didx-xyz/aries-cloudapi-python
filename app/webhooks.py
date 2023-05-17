@@ -108,14 +108,14 @@ class Webhooks:
             try:
                 logger.debug("Starting Webhooks client")
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
-            except asyncio.TimeoutError:
+            except asyncio.TimeoutError as e:
                 logger.warning(
-                    f"Starting Webhooks client has timed out after {timeout}s")
+                    "Starting Webhooks client has timed out after %ss", timeout)
                 await Webhooks.shutdown()
-                raise WebhooksTimeout(f"Starting Webhooks has timed out")
+                raise WebhooksTimeout("Starting Webhooks has timed out") from e
         else:
             logger.debug(
-                f"Tried to start Webhook client when it's already started. Ignoring.")
+                "Requested to start Webhook client when it's already started. Ignoring.")
 
     @staticmethod
     async def wait_until_client_ready():
@@ -128,7 +128,6 @@ class Webhooks:
         """
         Internal callback function for handling received webhook events.
         """
-        logger.debug(f"Handling webhook for topic: {topic} - emit {data}")
         # todo: topic isn't used. should only emit to relevant topic/callback pairs
         await Webhooks.emit(json.loads(data))
 
@@ -162,12 +161,11 @@ class Webhooks:
 
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as e:
             logger.warning(
-                f"Shutting down Webhooks has timed out after {timeout}s")
-            raise WebhooksTimeout(f"Webhooks shutdown timed out")
+                "Shutting down Webhooks has timed out after %ss", timeout)
+            raise WebhooksTimeout("Webhooks shutdown timed out") from e
 
 
 class WebhooksTimeout(Exception):
     """Exception raised when Webhooks functions time out."""
-    pass

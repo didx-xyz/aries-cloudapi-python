@@ -16,7 +16,7 @@ conn_record = Connection(
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_hooks_per_topic_per_wallet():
 
     with patch.object(
@@ -30,7 +30,7 @@ async def test_get_hooks_per_topic_per_wallet():
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_hooks_per_wallet():
     with patch.object(whf, "get_hooks_per_wallet") as mock_get_hooks_per_wallet:
         whf.get_hooks_per_wallet.return_value = [conn_record]

@@ -42,7 +42,7 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)):
         raise HTTPException(401, "Unauthorized")
 
     if not role:
-        raise HTTPException(401, "Unauthorized")
+        raise HTTPException(401, "Unauthorized role")
 
     return AcaPyAuth(role=role, token=token)
 
@@ -50,7 +50,7 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)):
 def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
     if auth.role.is_admin:
         if auth.token != auth.role.agent_type.x_api_key:
-            raise HTTPException(403, "Unauthorized")
+            raise HTTPException(403, "Unauthorized auth token")
 
         wallet_id = "admin"
     else:
@@ -60,7 +60,7 @@ def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
                 auth.token, ACAPY_MULTITENANT_JWT_SECRET, algorithms=["HS256"]
             )
         except jwt.InvalidTokenError:
-            raise HTTPException(403, "Unauthorized")
+            raise HTTPException(403, "Unauthorized, invalid token")
 
         wallet_id = token_body.get("wallet_id")
 

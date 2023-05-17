@@ -7,7 +7,7 @@ from app.tests.e2e.test_fixtures import issue_credential_to_alice
 from app.tests.util.ledger import create_public_did, has_public_did
 
 
-@pytest.yield_fixture(autouse=True, scope="module")
+@pytest.fixture(autouse=True, scope="module")
 def event_loop(request: Any):
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop

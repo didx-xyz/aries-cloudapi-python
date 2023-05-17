@@ -88,19 +88,19 @@ async def get_credential_definitions(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-        Retrieve credential definitions the current agent created.
+        Get agent-created credential definitions
 
     Parameters:
-    -----------
-        issuer_did: str (Optional)\n
-        credential_definition_id: str (Optional)\n
-        schema_id: str (Optional)\n
-        schema_issuer_id: str (Optional)\n
-        schema_version: str (Optional)\n
+    ---
+        issuer_did: Optional[str]
+        credential_definition_id: Optional[str]
+        schema_id: Optional[str]
+        schema_issuer_id: Optional[str]
+        schema_version: Optional[str]
 
     Returns:
-    ---------
-        The created credential definitions.
+    ---
+        Created credential definitions
     """
     # Get all created credential definition ids that match the filter
     response = await aries_controller.credential_definition.get_created_cred_defs(

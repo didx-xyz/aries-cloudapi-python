@@ -237,7 +237,7 @@ async def remove_credential(
 
 @router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
-    body: RevokeCredential = RevokeCredential(),
+    body: RevokeCredential,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """

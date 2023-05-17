@@ -213,7 +213,7 @@ async def onboard_issuer_no_public_did(
             )
         except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500
+                "TimeoutError caught while waiting for connection with endorser to complete", 500
             ) from e
         finally:
             connections_listener.stop()

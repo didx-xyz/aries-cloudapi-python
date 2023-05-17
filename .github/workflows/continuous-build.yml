@@ -29,17 +29,17 @@ jobs:
       - name: Run Pylint
         run: |
           pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+      - name: Install Compose
+        uses: ndeloof/install-compose-action@v0.0.1
+        with:
+          # version: v2.1.0 # defaults to 'latest'
+          legacy: true    # will also install in PATH as `docker-compose`
       - name: Setup VON Network
         run: |
           git clone https://github.com/bcgov/von-network
           cd von-network
           ./manage build
           ./manage start --taa-sample --logs
-      - name: Install Compose
-        uses: ndeloof/install-compose-action@v0.0.1
-        with:
-          # version: v2.1.0 # defaults to 'latest'
-          legacy: true    # will also install in PATH as `docker-compose`
       - name: Start Test Harness
         run: |
           set -x

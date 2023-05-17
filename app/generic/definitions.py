@@ -455,7 +455,7 @@ async def create_schema(
                 "An unhandled ClientResponseError was caught while publishing schema. The error message is: '%s'",
                 e.message,
             )
-            raise CloudApiException("Error while creating schema.")
+            raise CloudApiException("Error while creating schema.") from e
 
     # Register the schema in the trust registry
     try:

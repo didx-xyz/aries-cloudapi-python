@@ -1,33 +1,26 @@
 import json
-from aries_cloudcontroller import AcaPyClient
+from unittest.mock import MagicMock
+
 import httpx
 import pytest
-
+from aries_cloudcontroller import AcaPyClient
 from mockito import verify, when
 
+from app.tests.util.mock import to_async
+from endorser import endorser_processor as test_module
 from endorser.constants import TRUST_REGISTRY_URL
 from endorser.endorser_processor import (
-    Event,
-    accept_endorsement,
-    get_endorsement_request_attachment,
-    is_credential_definition_transaction,
-    get_did_and_schema_id_from_cred_def_attachment,
-    is_governance_agent,
-    is_valid_issuer,
-    process_endorsement_event,
-    should_accept_endorsement,
-)
-from endorser import endorser_processor as test_module
-from asynctest import MagicMock
-
-from tests.util.mock import get
+    Event, accept_endorsement, get_did_and_schema_id_from_cred_def_attachment,
+    get_endorsement_request_attachment, is_credential_definition_transaction,
+    is_governance_agent, is_valid_issuer, process_endorsement_event,
+    should_accept_endorsement)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_endorsement(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.endorse_transaction).endorse_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get())
+    ).thenReturn(to_async())
     endorsement = MagicMock(transaction_id="the-tran-id")
     await accept_endorsement(mock_agent_controller, endorsement)
 
@@ -65,7 +58,7 @@ def test_get_endorsement_request_attachment():
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_did_and_schema_id_from_cred_def_attachment(
     mock_agent_controller: AcaPyClient,
 ):
@@ -74,7 +67,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment(
     schema = MagicMock(schema_=MagicMock(id="the-schema-id"))
 
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(schema)
+        to_async(schema)
     )
 
     (did, schema_id) = await get_did_and_schema_id_from_cred_def_attachment(
@@ -87,7 +80,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment(
     verify(mock_agent_controller.schema).get_schema(schema_id="456")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_did_and_schema_id_from_cred_def_attachment_err_no_schema_id(
     mock_agent_controller: AcaPyClient,
 ):
@@ -96,7 +89,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment_err_no_schema_id(
     schema = MagicMock(schema_=MagicMock(id=None))
 
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(schema)
+        to_async(schema)
     )
 
     with pytest.raises(
@@ -118,7 +111,7 @@ def test_is_governance_agent():
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_is_valid_issuer():
     did = "did:sov:123"
     schema_id = "the-schema-id"
@@ -145,7 +138,7 @@ async def test_is_valid_issuer():
     verify(httpx).get(f"{TRUST_REGISTRY_URL}/registry/schemas")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_is_valid_issuer_x_res_errors():
     did = "did:sov:123"
     schema_id = "the-schema-id"
@@ -194,7 +187,7 @@ async def test_is_valid_issuer_x_res_errors():
     assert await is_valid_issuer(did, schema_id)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_accept_endorsement(mock_agent_controller: AcaPyClient):
     transaction = MagicMock(
         state="request_received",
@@ -215,46 +208,46 @@ async def test_should_accept_endorsement(mock_agent_controller: AcaPyClient):
         ],
     )
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(MagicMock(schema_=MagicMock(id="the-schema-id")))
+        to_async(MagicMock(schema_=MagicMock(id="the-schema-id")))
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
     when(test_module).is_valid_issuer("did:sov:123", "the-schema-id").thenReturn(
-        get(True)
+        to_async(True)
     )
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert await should_accept_endorsement(mock_agent_controller, endorsement)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_accept_endorsement_invalid_state(
     mock_agent_controller: AcaPyClient,
 ):
     transaction = MagicMock(state="done")
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_accept_endorsement_no_attachment(
     mock_agent_controller: AcaPyClient,
 ):
     transaction = MagicMock(state="request_received")
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_accept_endorsement_no_cred_def_operation(
     mock_agent_controller: AcaPyClient,
 ):
@@ -278,13 +271,13 @@ async def test_should_accept_endorsement_no_cred_def_operation(
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_should_accept_endorsement_not_valid_issuer(
     mock_agent_controller: AcaPyClient,
 ):
@@ -307,20 +300,20 @@ async def test_should_accept_endorsement_not_valid_issuer(
         ],
     )
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        get(MagicMock(schema_=MagicMock(id="the-schema-id")))
+        to_async(MagicMock(schema_=MagicMock(id="the-schema-id")))
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
-    ).thenReturn(get(transaction))
+    ).thenReturn(to_async(transaction))
     when(test_module).is_valid_issuer("did:sov:123", "the-schema-id").thenReturn(
-        get(False)
+        to_async(False)
     )
 
     endorsement = MagicMock(transaction_id="the-tran-id")
     assert not await should_accept_endorsement(mock_agent_controller, endorsement)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_process_endorsement_event():
     data = json.dumps(
         {
@@ -330,9 +323,9 @@ async def test_process_endorsement_event():
         }
     )
 
-    when(test_module).should_accept_endorsement(...).thenReturn(get(True))
+    when(test_module).should_accept_endorsement(...).thenReturn(to_async(True))
 
-    when(test_module).accept_endorsement(...).thenReturn(get())
+    when(test_module).accept_endorsement(...).thenReturn(to_async())
 
     await process_endorsement_event(data, "endorsements")
 

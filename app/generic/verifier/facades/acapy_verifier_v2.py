@@ -84,6 +84,17 @@ class VerifierV2(Verifier):
         proof_request: CreateProofRequest,
         comment: Optional[str] = None,
     ) -> PresentationExchange:
+        try:
+            proof_record = await controller.present_proof_v2_0.create_proof_request(
+                body=V20PresCreateRequestRequest(
+                    presentation_request=V20PresRequestByFormat(
+                        indy=proof_request.proof_request
+                    ),
+                    comment=comment,
+                    trace=False,
+                )
+            )
+            return record_to_model(proof_record)
         except Exception as e:
             logger.exception(
                 "An unexpected error occurred while sending presentation request: %r", e
@@ -96,6 +107,18 @@ class VerifierV2(Verifier):
         controller: AcaPyClient,
         proof_request: SendProofRequest,
     ) -> PresentationExchange:
+        try:
+            presentation_exchange = (
+                await controller.present_proof_v2_0.send_request_free(
+                    body=V20PresSendRequestRequest(
+                        connection_id=proof_request.connection_id,
+                        presentation_request=V20PresRequestByFormat(
+                            dif=None, indy=proof_request.proof_request
+                        ),
+                    )
+                )
+            )
+            return record_to_model(presentation_exchange)
         except Exception as e:
             logger.exception(
                 "An unexpected error occurred while sending presentation request: %r", e
@@ -107,6 +130,12 @@ class VerifierV2(Verifier):
         cls, controller: AcaPyClient, proof_request: AcceptProofRequest
     ) -> PresentationExchange:
         pres_ex_id = pres_id_no_version(proof_id=proof_request.proof_id)
+        try:
+            presentation_record = await controller.present_proof_v2_0.send_presentation(
+                pres_ex_id=pres_ex_id,
+                body=V20PresSpecByFormatRequest(indy=proof_request.presentation_spec),
+            )
+            return record_to_model(presentation_record)
         except Exception as e:
             logger.exception(
                 "An unexpected error occurred while sending a proof presentation: %r", e

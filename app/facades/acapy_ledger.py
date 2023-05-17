@@ -1,16 +1,14 @@
 import logging
 from typing import Optional, Tuple
-from aiohttp import ClientResponseError
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinitionSendRequest,
-    TAAAccept,
-    TAAInfo,
-    TAARecord,
-    TxnOrRegisterLedgerNymResponse,
-)
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import (AcaPyClient,
+                                   CredentialDefinitionSendRequest, TAAAccept,
+                                   TAAInfo, TAARecord,
+                                   TxnOrRegisterLedgerNymResponse)
 from fastapi import HTTPException
+
+from app.error.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
@@ -70,9 +68,14 @@ async def accept_taa(
 
     if isinstance(accept_taa_response, dict):
         # accept_taa_response = accept_taa_response
-        logger.info("accept_taa_response - TAA response is type dict %s", accept_taa_response)
+        logger.info(
+            "accept_taa_response - TAA response is type dict %s", accept_taa_response
+        )
     else:
-        logger.info("accept_taa_response - TAA response is type something else %s", accept_taa_response)
+        logger.info(
+            "accept_taa_response - TAA response is type something else %s",
+            accept_taa_response,
+        )
         accept_taa_response = await accept_taa_response.json()
 
     if accept_taa_response != {}:
@@ -81,6 +84,7 @@ async def accept_taa(
         )
         raise CloudApiException("Something went wrong. Could not accept TAA")
     return accept_taa_response
+
 
 async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     """

@@ -39,8 +39,8 @@ class VerifierV2(Verifier):
 
     @classmethod
     async def get_proof_record(cls, controller: AcaPyClient, proof_id: str):
+        pres_ex_id = pres_id_no_version(proof_id)
         try:
-            pres_ex_id = pres_id_no_version(proof_id)
             presentation_exchange = await controller.present_proof_v2_0.get_record(
                 pres_ex_id=pres_ex_id
             )
@@ -62,7 +62,7 @@ class VerifierV2(Verifier):
 
     @classmethod
     async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
-        try:
+        pres_ex_id = pres_id_no_version(proof_id=proof_id)
             pres_ex_id = pres_id_no_version(proof_id=proof_id)
             await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
         except Exception as e:

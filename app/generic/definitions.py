@@ -439,24 +439,15 @@ async def create_schema(
                 ]
                 if len(schemas) > 1:
                     raise CloudApiException(
-                        detail={
-                            "Multiple schemas with name %s and version %s exist. These are: %s",
-                            schema.name,
-                            schema.version,
-                            str(schemas_created_ids.schema_ids),
-                        },
-                        status_code=409,
+                        f"Multiple schemas with name {schema.name} and version {schema.version} exist. These are: {str(schemas_created_ids.schema_ids)}",
+                        409,
                     )
                 _schema = schemas[0]
             # Schema exists with different attributes
             if set(_schema.schema_.attr_names) != set(schema.attribute_names):
                 raise CloudApiException(
-                    detail={
-                        "Error creating schema: Schema already exists with different attribute names. Given: %s. Found: %s",
-                        str(set(_schema.schema_.attr_names)),
-                        str(set(schema.attribute_names)),
-                    },
-                    status_code=409,
+                    f"Error creating schema: Schema already exists with different attribute names. Given: {str(set(_schema.schema_.attr_names))}. Found: {str(set(schema.attribute_names))}",
+                    409
                 )
             return _credential_schema_from_acapy(_schema.schema_)
         else:

@@ -36,7 +36,7 @@ class AcceptInvitation(BaseModel):
 
 @router.post("/create-invitation", response_model=InvitationResult)
 async def create_invitation(
-    body: CreateInvitation = CreateInvitation(),
+    body: CreateInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """

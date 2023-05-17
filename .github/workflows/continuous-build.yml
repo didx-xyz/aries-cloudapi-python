@@ -39,7 +39,7 @@ jobs:
           git clone https://github.com/bcgov/von-network
           cd von-network
           ./manage build
-          ./manage start --taa-sample --logs
+          ./manage start --taa-sample --logs > von-network.log 2>&1 &
       - name: Start Test Harness
         run: |
           set -x

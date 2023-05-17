@@ -30,14 +30,20 @@ class Listener:
         if data["topic"] == self.topic and data["wallet_id"] == self.wallet_id:
             await self.unprocessed_queue.put(data)
 
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: Optional[float] = 60):
+    async def wait_for_filtered_event(
+        self, filter_map: Dict[str, Any], timeout: Optional[float] = 60
+    ):
         """
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
         logger.debug(
-            "Listener is starting to wait for a filtered event with timeout %ss", timeout)
+            "Listener is starting to wait for a filtered event with timeout %ss",
+            timeout,
+        )
 
-        def _payload_matches_filter(payload: Dict[str, Any], filter_map: Dict[str, Any]) -> bool:
+        def _payload_matches_filter(
+            payload: Dict[str, Any], filter_map: Dict[str, Any]
+        ) -> bool:
             """
             Check if the given payload matches the specified filter_map. A payload is considered a
             match if all key-value pairs in the filter_map have the same values in the payload.
@@ -76,15 +82,20 @@ class Listener:
                     return payload
             except asyncio.TimeoutError:
                 logger.warning(
-                    "_find_matching_event has timed out. unprocessed_queue may be very large")
+                    "_find_matching_event has timed out. unprocessed_queue may be very large"
+                )
             finally:
                 # If the total waiting time reaches the specified timeout, raise an exception, else continue
                 if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
                     logger.warning(
-                        "Waiting for a filtered event has timed out (%ss), with filter_map: %s", timeout, filter_map)
+                        "Waiting for a filtered event has timed out (%ss), with filter_map: %s",
+                        timeout,
+                        filter_map,
+                    )
                     raise ListenerTimeout(
-                        "Waiting for an expected event has timed out on topic %s", self.topic)
+                        f"Waiting for an expected event has timed out on topic {self.topic}"
+                    )
 
     async def start(self):
         """

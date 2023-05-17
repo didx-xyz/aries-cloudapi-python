@@ -32,12 +32,15 @@ class AcceptInvitation(BaseModel):
 
 @router.post("/create-invitation", response_model=InvitationResult)
 async def create_invitation(
-    body: CreateInvitation,
+    body: Optional[CreateInvitation] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create connection invitation.
     """
+    if body is None:
+        body = CreateInvitation()
+
     invitation = await aries_controller.connection.create_invitation(
         alias=body.alias,
         auto_accept=True,

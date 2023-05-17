@@ -45,12 +45,14 @@ def strip_protocol_prefix(id: str):
 
 @router.post("/create-invitation", response_model=InvitationRecord)
 async def create_oob_invitation(
-    body: CreateOobInvitation,
+    body: Optional[CreateOobInvitation] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create connection invitation out-of-band.
     """
+    if body is None:
+        body = CreateOobInvitation()
 
     handshake_protocols = [
         "https://didcomm.org/didexchange/1.0",

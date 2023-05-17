@@ -1,20 +1,16 @@
 import logging
 from typing import List, Optional
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    InvitationMessage,
-    InvitationRecord,
-)
+from aries_cloudcontroller import (AcaPyClient, InvitationMessage,
+                                   InvitationRecord)
 from aries_cloudcontroller.model.attachment_def import AttachmentDef
-from aries_cloudcontroller.model.invitation_create_request import (
-    InvitationCreateRequest,
-)
+from aries_cloudcontroller.model.invitation_create_request import \
+    InvitationCreateRequest
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.dependencies import agent_selector
-from shared_models import OobRecord, Connection, conn_record_to_connection
+from shared_models import Connection, OobRecord, conn_record_to_connection
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +61,8 @@ async def create_oob_invitation(
         not body.attachments or len(body.attachments) == 0
     ):
         raise HTTPException(
-            status_code=400,
-            detail="Either or both of 'create_connection' and 'attachments' must be defined / true",
+            400,
+            "Either or both of 'create_connection' and 'attachments' must be defined / true",
         )
 
     if body.attachments:

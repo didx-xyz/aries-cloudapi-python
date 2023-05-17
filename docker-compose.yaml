@@ -190,7 +190,6 @@ services:
 #    image: ${ECR_REGISTRY:-local}/wernight/ngrok
     container_name: ngrok-governance-multitenant
     image: wernight/ngrok
-    container_name: ngrok-governance-multitenant
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     command: ngrok http governance-multitenant-agent:3020 --log stdout

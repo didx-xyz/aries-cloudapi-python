@@ -98,7 +98,7 @@ async def verify_jsonld(
     Verify a JSON-LD structure
     """
 
-    if not (bool(body.public_did) != bool(body.verkey)):
+    if not bool(body.public_did) != bool(body.verkey):
         raise CloudApiException(
             "Please provide either, but not both, public did of the verkey or the verkey for the document.",
             400,

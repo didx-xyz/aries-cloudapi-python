@@ -40,11 +40,8 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
             else "service_agreement"
         )
         if not taa_response.taa_record and taa_response.taa_required:
-            logger.error("Failed to get TAA:\n %s", taa_response)
-            raise HTTPException(
-                status_code=404,
-                detail=f"Something went wrong. Could not get TAA. {taa_response}",
-            )
+            logger.error("Failed to get TAA. Received response:\n%s", taa_response)
+            raise CloudApiException("Something went wrong. Could not get TAA.")
         return taa_response, mechanism
     return taa_response, "service_agreement"
 
@@ -78,13 +75,11 @@ async def accept_taa(
         logger.info("accept_taa_response - TAA response is type something else %s", accept_taa_response)
         accept_taa_response = await accept_taa_response.json()
 
-    logger.info("accept_taa_response: %s", accept_taa_response)
     if accept_taa_response != {}:
-        logger.error("Failed to accept TAA.\n %s", accept_taa_response)
-        raise HTTPException(
-            status_code=404,
-            detail=f"Something went wrong. Could not accept TAA. {accept_taa_response}",
+        logger.warning(
+            "Failed to accept TAA. Response received:\n%s", accept_taa_response
         )
+        raise CloudApiException("Something went wrong. Could not accept TAA")
     return accept_taa_response
 
 async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
@@ -107,10 +102,7 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     issuer_endpoint_response = await controller.ledger.get_did_endpoint(did=issuer_nym)
     if not issuer_endpoint_response:
         logger.error("Failed to get DID endpoint:\n %s", issuer_endpoint_response)
-        raise HTTPException(
-            status_code=404,
-            detail="Something went wrong. Could not obtain issuer endpoint.",
-        )
+        raise CloudApiException("Could not obtain issuer endpoint.")
     return issuer_endpoint_response
 
 
@@ -135,8 +127,12 @@ async def register_nym_on_ledger(
             create_transaction_for_endorser=create_transaction_for_endorser,
         )
     except ClientResponseError as e:
+        logger.warning(
+            "A ClientResponseError was caught while registering NYM. The error message is: '%s'",
+            e.message,
+        )
         # if not nym_response.success:
-        raise HTTPException(500, "Error registering nym on ledger: %s", e)
+        raise CloudApiException("Error registering NYM on ledger.")
 
 
 async def accept_taa_if_required(aries_controller: AcaPyClient):
@@ -176,9 +172,11 @@ async def write_credential_def(
         )
     )
     if not write_cred_response.credential_definition_id:
-        raise HTTPException(
-            status_code=404,
-            detail="Something went wrong. Could not write credential definition to the ledger",
+        logger.warning(
+            "Response from `publish_cred_def` did not contain 'credential_definition_id'"
+        )
+        raise CloudApiException(
+            "Something went wrong. Could not write credential definition to the ledger"
         )
     return write_cred_response.credential_definition_id
 

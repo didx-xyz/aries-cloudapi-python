@@ -1,11 +1,9 @@
 assertpy==1.1
-asyncio~=3.4.3
 black==22.10.0
 httpx==0.24.0
-mockito==1.2.2
+mockito~=1.4.0
 pylint==2.11.1
-pytest==6.2.4
-pytest-asyncio==0.15.1
-pytest-cov==2.12.1
-asynctest==0.13.0
+pytest~=7.3.1
+anyio~=3.6.2
+pytest-cov~=4.0.0
 setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability

@@ -63,8 +63,6 @@ class Listener:
                     self._processed_events.append(item)
 
             # Return None if no matching payload is found
-            logger.debug(
-                "_find_matching_event found no matching events in queue")
             return None
 
         # Loop continuously, waiting for a matching event or until the total waiting time reaches the specified timeout

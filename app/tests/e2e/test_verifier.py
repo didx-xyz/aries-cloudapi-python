@@ -29,7 +29,7 @@ def create_send_request(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -108,7 +108,7 @@ async def test_accept_proof_request_v1(
     assert response.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -196,14 +196,13 @@ async def test_accept_proof_request_oob_v1(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "done",
-                    "role": "verifier", "connection_id": None},
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
         topic="proofs",
         max_duration=240,
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -291,14 +290,13 @@ async def test_accept_proof_request_oob_v2(
 
     assert check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "done",
-                    "role": "verifier", "connection_id": None},
+        filter_map={"state": "done", "role": "verifier", "connection_id": None},
         topic="proofs",
         max_duration=240,
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: AsyncClient,
@@ -363,9 +361,7 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = Listener(
-        topic="proofs", wallet_id=acme_tenant["tenant_id"]
-    )
+    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant["tenant_id"])
 
     response = await alice_member_client.post(
         BASE_PATH + "/accept-request",
@@ -373,8 +369,7 @@ async def test_accept_proof_request_v2(
     )
 
     await acme_proofs_listener.wait_for_filtered_event(
-        filter_map={"proof_id": acme_proof_id,
-                    "state": "done", "verified": True}
+        filter_map={"proof_id": acme_proof_id, "state": "done", "verified": True}
     )
     acme_proofs_listener.stop()
 
@@ -385,7 +380,7 @@ async def test_accept_proof_request_v2(
     assert response.status_code == 200
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: AsyncClient,
@@ -452,7 +447,7 @@ async def test_send_proof_request(
     alice_proofs_listener.stop()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: AsyncClient,
@@ -496,7 +491,7 @@ async def test_reject_proof_request(
     assert result is None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proof_single(
     acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
 ):
@@ -546,7 +541,7 @@ async def test_get_proof_single(
     assert "presentation_request" in result
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_proofs_multi(
     acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
 ):
@@ -595,7 +590,7 @@ async def test_get_proofs_multi(
     assert "presentation_request" in result
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_proof(
     acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
 ):
@@ -634,8 +629,9 @@ async def test_delete_proof(
     assert response.json() == None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credentials_for_request(
+    issue_credential_to_alice: CredentialExchange,
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: AsyncClient,
     alice_tenant: Any,
@@ -665,11 +661,11 @@ async def test_get_credentials_for_request(
 
     proof_id = alice_exchange["proof_id"]
 
-    response = await alice_member_client.get(
+    requested_credentials = await alice_member_client.get(
         f"{BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
-    result = response.json()[-1]
+    result = requested_credentials.json()[-1]
     assert "cred_info" in result.keys()
     assert [
         attr

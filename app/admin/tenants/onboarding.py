@@ -345,6 +345,6 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         except (KeyError, IndexError) as e:
             # FIXME: more verbose error
             logger.warning("Error creating invitation:\n%s", str(e))
-            raise CloudApiException(f"Error creating invitation.")
+            raise CloudApiException("Error creating invitation.")
 
     return OnboardResult(**onboarding_result)

@@ -30,7 +30,7 @@ class Listener:
         if data["topic"] == self.topic and data["wallet_id"] == self.wallet_id:
             await self.unprocessed_queue.put(data)
 
-    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: Optional[float] = 30):
+    async def wait_for_filtered_event(self, filter_map: Dict[str, Any], timeout: Optional[float] = 60):
         """
         Wait for an event that matches the specified filter_map within the given timeout period.
         """

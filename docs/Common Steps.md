@@ -4,7 +4,7 @@ This document will guide you through some common flows and interactions. Please 
 
 > **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at [http://localhost:8000/docs](http://localhost:8000/docs) under a vanilla setup. If you find any datatype unclear from the document below, try finding it in SwaggerUI before opening an issue. This document describes only some basic flows and interactions; not every possible flow or interaction can be covered. Thus, learning to consult the SwaggerUI as a reference and solving issues independently is beneficial.
 
-It is also recommended to set up a webhook listener (refer to `webhooks.md`). This will significantly aid in understanding the activities occurring in the ACA-Py instances in the background.
+It is also recommended to set up a webhook listener (refer to our [Webhooks doc](./Webhooks.md)). This will significantly aid in understanding the activities occurring in the ACA-Py instances in the background.
 
 ## Creating Wallets
 

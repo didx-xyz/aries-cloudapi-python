@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from typing import List, Optional
 
 from aiohttp import ClientResponseError
@@ -24,6 +25,8 @@ from app.facades.revocation_registry import (
     create_revocation_registry, publish_revocation_registry_on_ledger)
 from app.listener import Listener
 from app.role import Role
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/generic/definitions",
@@ -312,6 +315,10 @@ async def create_credential_definition(
             )
             credential_definition_id = active_rev_reg.result.cred_def_id
         except ClientResponseError as e:
+            logger.debug(
+                "A ClientResponseError was caught while supporting revocation. The error message is: '%s'",
+                e.message,
+            )
             raise e
 
     # ACA-Py only returns the id after creating a credential definition
@@ -457,8 +464,9 @@ async def create_schema(
                 )
             return _credential_schema_from_acapy(_schema.schema_)
         else:
-            raise CloudApiException(
-                detail={"Error creating schema: %s", e.message}, status_code=500
+            logger.warning(
+                "An unhandled ClientResponseError was caught while publishing schema. The error message is: '%s'",
+                e.message,
             )
 
     # Register the schema in the trust registry

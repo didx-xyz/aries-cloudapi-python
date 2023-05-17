@@ -1,26 +1,16 @@
-from aiohttp import ClientResponseError
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredRevRecordResult,
-    IssuerCredRevRecord,
-    IssuerRevRegRecord,
-    RevRegCreateRequest,
-    RevRegResult,
-    RevokeRequest,
-    TransactionRecord,
-    TxnOrRevRegResult,
-    V10CredentialExchange,
-    V20CredExRecordDetail,
-    V20CredExRecordIndy,
-)
-
 import pytest
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import (AcaPyClient, CredRevRecordResult,
+                                   IssuerCredRevRecord, IssuerRevRegRecord,
+                                   RevokeRequest, RevRegCreateRequest,
+                                   RevRegResult, TransactionRecord,
+                                   TxnOrRevRegResult, V10CredentialExchange,
+                                   V20CredExRecordDetail, V20CredExRecordIndy)
 from mockito import when
-from app.error.cloud_api_error import CloudApiException
 
 import app.facades.revocation_registry as rg
-from tests.util.mock import get
-
+from app.error.cloud_api_error import CloudApiException
+from app.tests.util.mock import to_async
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"
 cred_ex_id = "5mJRavkcQFrqgKqKKZua3z:3:CL:30:tag"
 cred_id = "c7c909f4-f670-49bd-9d81-53fba6bb23b8"
@@ -30,14 +20,14 @@ conn_id = "12345"
 transaction_id = "1234"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_revocation_registry(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.revocation).create_registry(
         body=RevRegCreateRequest(
             credential_definition_id=cred_def_id, max_cred_num=max_cred_num
         )
     ).thenReturn(
-        get(
+        to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
                     cred_def_id=cred_def_id, max_cred_num=max_cred_num
@@ -63,14 +53,14 @@ async def test_create_revocation_registry(mock_agent_controller: AcaPyClient):
             body=RevRegCreateRequest(
                 credential_definition_id=cred_def_id, max_cred_num=max_cred_num
             )
-        ).thenReturn(get(None))
+        ).thenReturn(to_async(None))
         await rg.create_revocation_registry(
             mock_agent_controller, credential_definition_id=cred_def_id
         )
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_active_revocation_registry_for_credential(
     mock_agent_controller: AcaPyClient,
 ):
@@ -78,7 +68,7 @@ async def test_get_active_revocation_registry_for_credential(
     when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
         cred_def_id=cred_def_id
     ).thenReturn(
-        get(
+        to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
                     cred_def_id=cred_def_id, max_cred_num=max_cred_num
@@ -110,21 +100,21 @@ async def test_get_active_revocation_registry_for_credential(
     ) as exc:
         when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
             cred_def_id=cred_def_id
-        ).thenReturn(get(None))
+        ).thenReturn(to_async(None))
         await rg.get_active_revocation_registry_for_credential(
             mock_agent_controller, credential_definition_id=cred_def_id
         )
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClient):
     cred_ex_id = "db9d7025-b276-4c32-ae38-fbad41864112"
     # Success
     when(mock_agent_controller.revocation).get_revocation_status(
         cred_ex_id=cred_ex_id
     ).thenReturn(
-        get(
+        to_async(
             CredRevRecordResult(
                 result=IssuerCredRevRecord(
                     cred_ex_id=cred_ex_id, cred_def_id=cred_def_id
@@ -146,17 +136,17 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
             cred_ex_id=cred_ex_id
-        ).thenReturn(get(None))
+        ).thenReturn(to_async(None))
         when(rg).get_credential_definition_id_from_exchange_id(
             controller=mock_agent_controller, credential_exchange_id=cred_ex_id
-        ).thenReturn(get(cred_def_id))
+        ).thenReturn(to_async(cred_def_id))
         await rg.get_credential_revocation_status(
             controller=mock_agent_controller, credential_exchange_id=cred_ex_id
         )
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_publish_revocation_registry_on_ledger(
     mock_agent_controller: AcaPyClient,
 ):
@@ -167,7 +157,7 @@ async def test_publish_revocation_registry_on_ledger(
         conn_id=conn_id,
         create_transaction_for_endorser=True,
     ).thenReturn(
-        get(
+        to_async(
             TxnOrRevRegResult(
                 sent=None,
                 txn=TransactionRecord(
@@ -195,7 +185,7 @@ async def test_publish_revocation_registry_on_ledger(
         conn_id=None,
         create_transaction_for_endorser=False,
     ).thenReturn(
-        get(
+        to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
                     cred_def_id=cred_def_id, max_cred_num=max_cred_num
@@ -225,7 +215,7 @@ async def test_publish_revocation_registry_on_ledger(
             rev_reg_id=revocation_registry_id,
             conn_id=None,
             create_transaction_for_endorser=False,
-        ).thenReturn(get(None))
+        ).thenReturn(to_async(None))
         publish_revocation_registry_on_ledger_result = (
             await rg.publish_revocation_registry_on_ledger(
                 controller=mock_agent_controller,
@@ -237,7 +227,7 @@ async def test_publish_revocation_registry_on_ledger(
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyClient):
     # Success
     when(mock_agent_controller.revocation).publish_rev_reg_entry(
@@ -245,7 +235,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
         conn_id=None,
         create_transaction_for_endorser=False,
     ).thenReturn(
-        get(
+        to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
                     cred_def_id=cred_def_id, max_cred_num=max_cred_num
@@ -289,7 +279,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
             rev_reg_id=revocation_registry_id,
             conn_id=None,
             create_transaction_for_endorser=False,
-        ).thenReturn(get(None))
+        ).thenReturn(to_async(None))
         await rg.publish_revocation_entry_to_ledger(
             controller=mock_agent_controller,
             connection_id=conn_id,
@@ -300,17 +290,17 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     assert exc.value.status_code == 500
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_revoke_credential(mock_agent_controller: AcaPyClient):
     # Success
     when(mock_agent_controller.revocation).revoke_credential(
         body=RevokeRequest(cred_ex_id=cred_id, publish=False)
-    ).thenReturn(get({}))
+    ).thenReturn(to_async({}))
 
     when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
         cred_def_id=cred_def_id
     ).thenReturn(
-        get(
+        to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
                     cred_def_id=cred_def_id, max_cred_num=max_cred_num
@@ -324,7 +314,7 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         create_transaction_for_endorser=False,
     ).thenRaise(ClientResponseError({}, ("x", "x")))
 
-    when(rg).endorser_revoke().thenReturn(get(None))
+    when(rg).endorser_revoke().thenReturn(to_async(None))
 
     revoke_credential_result = await rg.revoke_credential(
         controller=mock_agent_controller,
@@ -336,7 +326,7 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
     assert revoke_credential_result is None
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential_definition_id_from_exchange_id(
     mock_agent_controller: AcaPyClient,
 ):
@@ -344,7 +334,7 @@ async def test_get_credential_definition_id_from_exchange_id(
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenReturn(
-        get(
+        to_async(
             V10CredentialExchange(
                 credential_exchange_id=cred_ex_id, credential_definition_id=cred_def_id
             )
@@ -368,7 +358,7 @@ async def test_get_credential_definition_id_from_exchange_id(
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenReturn(
-        get(
+        to_async(
             V20CredExRecordDetail(
                 indy=V20CredExRecordIndy(rev_reg_id=revocation_registry_id)
             )

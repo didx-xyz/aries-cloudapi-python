@@ -8,7 +8,7 @@ from shared_models import Connection
 WALLET_BASE_PATH = router.prefix
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
@@ -22,7 +22,7 @@ async def test_get_webhooks_for_wallet_by_topic(
     assert isinstance(hook_modelled, Connection)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_webhooks_for_wallet(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
@@ -36,7 +36,7 @@ async def test_get_webhooks_for_wallet(
     assert isinstance(hook_modelled, Connection)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic_tenant_error(
     alice_member_client: AsyncClient,
     bob_and_alice_connection: BobAliceConnect,
@@ -49,7 +49,7 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
     assert result.json()["detail"] == "Not authenticated"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic_admin_error(
     governance_client: AsyncClient,
 ):

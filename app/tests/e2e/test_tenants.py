@@ -1,36 +1,22 @@
-import asyncio
 from uuid import uuid4
+
+import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
-import pytest
-
 from httpx import AsyncClient
+
+from app.admin.tenants import tenants
 from app.dependencies import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.role import Role
-
-# Tests are broken if we import the event_loop...
-@pytest.fixture(scope="session")
-def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-from app.tests.util.webhooks import (
-    check_webhook_state,
-)
-
 from app.tests.util.client import tenant_client
-
-from app.admin.tenants import tenants
+from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 
 BASE_PATH = tenants.router.prefix
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -57,7 +43,7 @@ async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
     assert token["access_token"].startswith("tenant.ey")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_tenant_member(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -84,7 +70,7 @@ async def test_create_tenant_member(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_tenant_issuer(
     tenant_admin_client: AsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -158,7 +144,7 @@ async def test_create_tenant_issuer(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_tenant_verifier(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -209,7 +195,7 @@ async def test_create_tenant_verifier(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_update_tenant_verifier_to_issuer(
     tenant_admin_client: AsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -326,7 +312,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenant(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -350,7 +336,7 @@ async def test_get_tenant(tenant_admin_client: AsyncClient):
     assert created_tenant == retrieved_tenant
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenants(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -377,7 +363,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
     assert_that(tenants).extracting("group_id").contains("ac/dc")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
     name = uuid4().hex
     group_id = "backstreetboys"
@@ -411,7 +397,7 @@ async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
     assert tenants == []
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_delete_tenant(
     tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):

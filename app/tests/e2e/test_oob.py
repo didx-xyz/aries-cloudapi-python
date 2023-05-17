@@ -10,7 +10,7 @@ from app.tests.util.webhooks import (
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_invitation_oob(
     bob_member_client: AsyncClient,
 ):
@@ -25,7 +25,7 @@ async def test_create_invitation_oob(
     assert_that(invitation["invitation"]).contains("@id", "services")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_invitation_oob(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
@@ -60,7 +60,7 @@ async def test_accept_invitation_oob(
     assert_that(connection_record.connection_protocol).contains("didexchange/1.0")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_oob_connect_via_public_did(
     bob_member_client: AsyncClient,
     faber_client: AsyncClient,

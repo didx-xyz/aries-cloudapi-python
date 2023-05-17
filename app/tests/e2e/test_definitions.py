@@ -1,35 +1,23 @@
 from time import sleep
-from httpx import AsyncClient
+
 import pytest
-import asyncio
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
+from httpx import AsyncClient
+
 from app.dependencies import acapy_auth, acapy_auth_verified
-from app.facades.acapy_wallet import get_public_did
 from app.facades import trust_registry
-
+from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
-from app.generic.definitions import (
-    CreateSchema,
-    CreateCredentialDefinition,
-    CredentialSchema,
-)
+from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
+                                     CredentialSchema)
 from app.tests.e2e.test_fixtures import *  # NOQA
-
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import get_random_string
 from app.tests.util.trust_registry import register_issuer
 
-# Tests are broken if we import the event_loop...
-@pytest.fixture(scope="session")
-def event_loop(request):
-    """Create an instance of the default event loop for each test case."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
-
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: AsyncClient
 ):
@@ -65,7 +53,7 @@ async def test_create_credential_definition(
     assert_that(result["id"]).is_not_empty()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_schema(governance_acapy_client: AcaPyClient):
     # given
     schema_send = CreateSchema(
@@ -89,7 +77,7 @@ async def test_create_schema(governance_acapy_client: AcaPyClient):
     assert_that(result).has_attribute_names(schema_send.attribute_names)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_schema(governance_acapy_client: AcaPyClient):
     # given
     schema_send = CreateSchema(
@@ -113,7 +101,7 @@ async def test_get_schema(governance_acapy_client: AcaPyClient):
     assert_that(result).has_attribute_names(schema_send.attribute_names)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: AsyncClient
 ):
@@ -154,7 +142,7 @@ async def test_get_credential_definition(
     assert_that(result["id"]).is_not_empty()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_credential_definition_issuer_tenant(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,

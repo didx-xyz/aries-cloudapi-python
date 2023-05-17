@@ -29,6 +29,19 @@ logger = logging.getLogger(__name__)
 
 class VerifierV2(Verifier):
     @classmethod
+    async def get_credentials_for_request(cls, controller: AcaPyClient, proof_id: str):
+        pres_ex_id = pres_id_no_version(proof_id=proof_id)
+        try:
+            return await controller.present_proof_v2_0.get_matching_credentials(
+                pres_ex_id=pres_ex_id
+            )
+        except Exception as e:
+            logger.exception(
+                "An unexpected error occurred while getting matching credentials: %r", e
+            )
+            raise CloudApiException("Failed to get credentials for request.") from e
+
+    @classmethod
     async def get_proof_records(cls, controller: AcaPyClient):
         try:
             presentation_exchange = await controller.present_proof_v2_0.get_records()

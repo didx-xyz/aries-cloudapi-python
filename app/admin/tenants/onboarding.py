@@ -344,6 +344,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
             onboarding_result["didcomm_invitation"] = invitation.invitation_url
         except (KeyError, IndexError) as e:
             # FIXME: more verbose error
-            raise CloudApiException(f"Error creating invitation: {e}")
+            logger.warning("Error creating invitation:\n%s", str(e))
+            raise CloudApiException(f"Error creating invitation.")
 
     return OnboardResult(**onboarding_result)

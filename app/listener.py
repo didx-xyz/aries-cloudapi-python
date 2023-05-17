@@ -84,7 +84,7 @@ class Listener:
                     logger.warning(
                         "Waiting for a filtered event has timed out (%ss), with filter_map: %s", timeout, filter_map)
                     raise ListenerTimeout(
-                        "Waiting for an expected event has timed out")
+                        "Waiting for an expected event has timed out on topic %s", self.topic)
 
     async def start(self):
         """

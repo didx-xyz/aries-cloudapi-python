@@ -35,7 +35,7 @@ async def assert_valid_prover(
     # instead of simply rejecting the request
     if not connection_id:
         raise CloudApiException(
-            "No connection id associated with proof request. Can not verify proof request"
+            "No connection id associated with proof request. Can not verify proof request", 400
         )
 
     connection_record = await get_connection_record(
@@ -55,14 +55,14 @@ async def assert_valid_prover(
         invitation_key = connection_record.invitation_key
         public_did = ed25519_verkey_to_did_key(key=invitation_key)
     else:
-        raise CloudApiException("Could not determine did of the verifier")
+        raise CloudApiException("Could not determine did of the verifier", 400)
 
     # Try get actor from TR
     actor = await get_actor(did=public_did)
 
     # 2. Check actor has role verifier
     if not is_verifier(actor=actor):
-        raise CloudApiException("Actor is missing required role 'verifier'", 401)
+        raise CloudApiException("Actor is missing required role 'verifier'", 403)
 
     # Get schema ids
     schema_ids = await get_schema_ids(
@@ -72,7 +72,7 @@ async def assert_valid_prover(
     # Verify the schemas are actually in the list from TR
     if not await are_valid_schemas(schema_ids=schema_ids):
         raise CloudApiException(
-            "Presentation is using schemas not registered in trust registry", 401
+            "Presentation is using schemas not registered in trust registry", 403
         )
 
 
@@ -97,7 +97,7 @@ async def assert_valid_verifier(
         invitation_key = connection_record.invitation_key
 
         if not invitation_key:
-            raise CloudApiException("Connection has no invitation key")
+            raise CloudApiException("Connection has no invitation key", 400)
         public_did = ed25519_verkey_to_did_key(invitation_key)
 
     # Try get actor from TR
@@ -106,7 +106,7 @@ async def assert_valid_verifier(
     # 2. Check actor has role verifier, raise exception otherwise
     if not is_verifier(actor=actor):
         raise CloudApiException(
-            f"{actor['name']} is not a valid verifier in the trust registry."
+            f"{actor['name']} is not a valid verifier in the trust registry.", 403
         )
 
 

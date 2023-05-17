@@ -63,7 +63,7 @@ Or only the unit tests:
 pytest --ignore=app/tests/e2e
 ```
 
-You can specify the log level of the pytest output by using the `--log-cli-level=DEBUG` flag. For example:
+You can specify the log level of the pytest output by using the `--log-cli-level` flag.
 
 ```bash
 pytest . --log-cli-level=DEBUG

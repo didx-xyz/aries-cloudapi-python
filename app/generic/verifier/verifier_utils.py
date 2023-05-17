@@ -1,21 +1,15 @@
-from typing import List, Optional, Set
 import logging
-from app.generic.verifier.models import (
-    AcceptProofRequest,
-    SendProofRequest,
-)
-
-from app.util.did import ed25519_verkey_to_did_key
+from typing import List, Optional, Set
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
-from app.facades.trust_registry import (
-    Actor,
-    actor_by_did,
-    get_trust_registry_schemas,
-)
-from app.generic.verifier.facades.acapy_verifier import Verifier
+
 from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import assert_public_did
+from app.facades.trust_registry import (Actor, actor_by_did,
+                                        get_trust_registry_schemas)
+from app.generic.verifier.facades.acapy_verifier import Verifier
+from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
+from app.util.did import ed25519_verkey_to_did_key
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +29,8 @@ async def assert_valid_prover(
     # instead of simply rejecting the request
     if not connection_id:
         raise CloudApiException(
-            "No connection id associated with proof request. Can not verify proof request", 400
+            "No connection id associated with proof request. Can not verify proof request",
+            400,
         )
 
     connection_record = await get_connection_record(

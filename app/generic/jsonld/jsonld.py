@@ -1,24 +1,18 @@
 import logging
 from typing import Any, Dict, Optional
-from aiohttp import ClientResponseError
 
+from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
     Doc,
+    SignatureOptions,
     SignRequest,
     SignResponse,
-    SignatureOptions,
     VerifyResponse,
 )
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from uplink import (
-    Consumer,
-    Body,
-    post,
-    returns,
-    json,
-)
+from uplink import Body, Consumer, json, post, returns
 
 from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException

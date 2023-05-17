@@ -1,17 +1,19 @@
-# Aries Cloud API Architecture Overview
-> TODO: Link to Yoma Architecture Documents
+# Overview of Aries Cloud API Architecture
 
-### Admin Agent
+This document provides a brief overview of the Aries Cloud API Architecture, focusing on the two key components: the Admin Agent and the Multi-tenant Agent.
 
-Both aca-py agents are exposed via the same Swagger UI under the same url. They are distinguished under the hood via the authorization method which also specifies a role. Please, refer to the workflows doc for further information.
+> Note: For a more detailed overview, refer to the Yoma Architecture Documents (link to be added).
 
-The admin agent is a non-multitenant agent for general admin representing GOVERNANCE or in a broader sense of speaking the admin entity. This agent can be used to create schemas, manage actors (against the trust registry), and managing wallets.
+## Admin Agent
 
+The Admin Agent and the Multi-tenant Agent are both exposed via the same Swagger UI under the same URL. They are differentiated based on the authorization method, which also specifies a role. For more information on this, refer to the workflows document.
 
-### Multi-tenant agent
+The Admin Agent represents GOVERNANCE, or in a broader sense, the administrative entity. This non-multitenant agent is used for various administrative functions such as creating schemas, managing actors against the trust registry, and managing wallets.
 
-Both aca-py agents are exposed via the same Swagger UI under the same url. They are distinguished under the hood via the authorization method which also specifies a role. Please, refer to the workflows doc for further information.
+## Multi-tenant Agent
 
-This agent is meant for sub-wallet and tenant management from a tenant perspective.
+Like the Admin Agent, the Multi-tenant Agent is also exposed via the same Swagger UI under the same URL, with distinction made based on the authorization method and role.
 
-For more information on multi-tenancy please refer to the [aca-py docs](https://github.com/hyperledger/aries-cloudagent-python/blob/main/Multitenancy.md).
+The Multi-tenant Agent is designed for sub-wallet and tenant management from the tenant's perspective.
+
+For a more comprehensive understanding of multi-tenancy, please refer to the [ACA-Py docs](https://github.com/hyperledger/aries-cloudagent-python/blob/main/Multitenancy.md).

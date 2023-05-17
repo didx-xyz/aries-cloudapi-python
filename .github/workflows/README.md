@@ -2,7 +2,7 @@
 
 :warning: WIP
 
-When deploying with [Helm rpository](https://github.com/didx-xyz/cloud_api_helm), symlink `./shared_models` dir inside `./helm/Chart/assets/shared_models`:
+When deploying with [Helm repository](https://github.com/didx-xyz/cloud_api_helm), symlink the `./shared_models` dir inside `./helm/Chart/assets/shared_models`:
 
 ```sh
 git clone git@github.com:didx-xyz/cloud_api_helm.git helm/Chart
@@ -31,5 +31,5 @@ for PROJECT in "${PROJECTS[@]}"; do
     $PROJECT \
     -f "./helm/Values/$PROJECT.yaml" \
     ./helm/Chart/.
-done 
+done
 ```

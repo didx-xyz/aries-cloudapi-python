@@ -49,7 +49,7 @@ Once the project is running, you'll have access to several services via Swagger 
 - [ACA-Py CloudAPI Multitenant](http://localhost:8000/docs)
 - [ACA-Py Multitenant Agent Admin](http://localhost:4021)
 - [Webhooks](http://localhost:3010/docs)
-- [Trust registry](http://localhost:8001/docs)
+- [Trust Registry](http://localhost:8001/docs)
 
 ## Customization
 

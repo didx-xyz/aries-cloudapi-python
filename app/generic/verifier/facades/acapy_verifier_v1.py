@@ -118,6 +118,11 @@ class VerifierV1(Verifier):
         cls, controller: AcaPyClient, proof_request: AcceptProofRequest
     ) -> PresentationExchange:
         proof_id = pres_id_no_version(proof_id=proof_request.proof_id)
+        try:
+            presentation_record = await controller.present_proof_v1_0.send_presentation(
+                pres_ex_id=proof_id, body=proof_request.presentation_spec
+            )
+            return record_to_model(presentation_record)
         except Exception as e:
             logger.exception(
                 "An unexpected error occurred while sending a proof presentation: %r", e

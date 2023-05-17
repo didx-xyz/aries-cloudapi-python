@@ -96,7 +96,7 @@ async def get_credential_revocation_status(
 
     Args:
         controller (AcaPyClient): aca-py client
-        credential_definition_id (str): The credential definition ID.
+        credential_exchange_id (str): The credential exchange ID.
 
     Raises:
         Exception: When the active revocation registry cannot be retrieved.

@@ -57,4 +57,4 @@ Each Docker container's environment parameters can be adjusted via its respectiv
 
 Remember to stop and restart the affected containers after making changes. However, be careful when changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml` file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or `ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the values withing the `docker-compose.yaml` to reflect these changes.
 
-The `workflows.md` and `commonSteps.md` documents can help you understand how to use the project's infrastructure once it's up and running.
+The [Workflows](Workflows%20Overview.md) and [Common Steps](Common%20Steps.md) documents can help you understand how to use the project's infrastructure once it's up and running.

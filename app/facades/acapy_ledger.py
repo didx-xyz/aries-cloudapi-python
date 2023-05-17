@@ -212,6 +212,6 @@ async def schema_id_from_credential_definition_id(
     schema = await controller.schema.get_schema(schema_id=seq_no)
 
     if not schema.schema_ or not schema.schema_.id:
-        raise Exception(f"Schema with transaction number {seq_no} not found")
+        raise HTTPException(404, f"Schema with id {seq_no} not found")
 
     return schema.schema_.id

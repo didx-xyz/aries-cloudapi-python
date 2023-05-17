@@ -86,6 +86,7 @@ async def sign_jsonld(
             "A ClientResponseError was caught while signing jsonld. The error message is: '%s'",
             e.message,
         )
+        raise CloudApiException("Failed to sign payload.") from e
 
 
 @router.post("/verify", status_code=204)
@@ -143,3 +144,4 @@ async def verify_jsonld(
             "A ClientResponseError was caught while verifying jsonld. The error message is: '%s'",
             e.message,
         )
+        raise CloudApiException("Failed to verify payload.") from e

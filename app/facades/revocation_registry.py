@@ -113,7 +113,7 @@ async def get_credential_revocation_status(
             "Unexpected type returned from get_revocation_status: %s", result
         )
         raise CloudApiException(
-            f"Error retrieving revocation status for credential definition ID {credential_definition_id}"
+            f"Error retrieving revocation status for credential exchange ID {credential_exchange_id}"
         )
     else:
         result = result.result
@@ -163,6 +163,7 @@ async def publish_revocation_registry_on_ledger(
         result = result.txn
     else:
         logger.warning("Unexpected type returned from publish_rev_reg_def: %s", result)
+        raise CloudApiException("Failed to publish revocation registry to ledger.")
 
     logger.info(
         "Published revocation registry for registry with ID %s\n%s",
@@ -202,7 +203,7 @@ async def publish_revocation_entry_to_ledger(
     """
     if not revocation_registry_id and not credential_definition_id:
         raise CloudApiException(
-            "Please, provide either a revocation registry id OR credential definition id.",
+            "Invalid request. Please provide either a 'revocation registry id' or a 'credential definition id'.",
             400,
         )
     if not revocation_registry_id:
@@ -222,6 +223,7 @@ async def publish_revocation_entry_to_ledger(
         logger.warning(
             "Unexpected type returned from publish_rev_reg_entry: %s", result
         )
+        raise CloudApiException("Failed to publish revocation entry to ledger.")
 
     logger.info(
         "Published revocation entry for registry with ID %s:\n%s",
@@ -268,6 +270,7 @@ async def revoke_credential(
             "A ClientResponseError was caught while revoking credential. The error message is: '%s'",
             e.message,
         )
+        raise CloudApiException("Failed to revoke credential.", 400) from e
 
     if not auto_publish_to_ledger:
         active_revocation_registry_id = (
@@ -311,10 +314,11 @@ async def endorser_revoke():
                     "state": "request-received",
                 }
             )
-        except TimeoutError:
+        except TimeoutError as e:
             raise CloudApiException(
-                "Failed to retrieve transaction record for endorser", 500
-            )
+                "Timeout occured while waiting to retrieve transaction record for endorser",
+                504,
+            ) from e
         finally:
             listener.stop()
 

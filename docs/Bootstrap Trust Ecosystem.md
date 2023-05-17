@@ -75,22 +75,23 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 
 4. Copy the `text` and `version` from the API response.
 5. Accept the TAA by POSTING to the following API endpoint: `/ledger/taa/accept`.
+
    1. Paste the `text` and `version` from the previous step into the POST body.
    2. Set the `mechanism` to `service_agreement`. A complete POST JSON body example is as follows:
 
-````json
-{
-  "mechanism": "service_agreement",
-  "text": "This is a sample Transaction Authors Agreement **(TAA)**, for the VON test Network.\n\nOn public ledger systems this will typically contain legal constraints that must be accepted before any write operations will be permitted.",
-  "version": "1.1"
-}
+      ```json
+      {
+        "mechanism": "service_agreement",
+        "text": "This is a sample Transaction Authors Agreement **(TAA)**, for the VON test Network.\n\nOn public ledger systems this will typically contain legal constraints that must be accepted before any write operations will be permitted.",
+        "version": "1.1"
+      }
+      ```
 
+      The JSON response should be:
 
-The JSON response should be:
-
-```json
-{}
-```
+      ```json
+      {}
+      ```
 
 ## 5. Set Public DID
 

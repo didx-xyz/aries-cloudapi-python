@@ -282,7 +282,7 @@ async def request_credential(
         raise CloudApiException(
             "Record has no credential definition or schema associated. "
             "This probably means you haven't received an offer yet.",
-            403,
+            412,
         )
 
     did = did_from_credential_definition_id(record.credential_definition_id)

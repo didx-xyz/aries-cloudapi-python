@@ -229,7 +229,7 @@ async def create_credential_definition(
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
-                "Timeout waiting for endorser to accept the endorsement request"
+                "Timeout waiting for endorser to accept the endorsement request", 504
             )
         finally:
             listener.stop()
@@ -301,7 +301,8 @@ async def create_credential_definition(
                         )
                     except TimeoutError:
                         raise CloudApiException(
-                            "Failed to retrieve transaction record for endorser", 500
+                            "Timeout occurred while waiting to retrieve transaction record for endorser",
+                            504,
                         )
                     finally:
                         admin_listener.stop()
@@ -450,7 +451,8 @@ async def create_schema(
                             schema.name,
                             schema.version,
                             str(schemas_created_ids.schema_ids),
-                        }
+                        },
+                        status_code=409,
                     )
                 _schema = schemas[0]
             # Schema exists with different attributes
@@ -460,7 +462,8 @@ async def create_schema(
                         "Error creating schema: Schema already exists with different attribute names. Given: %s. Found: %s",
                         str(set(_schema.schema_.attr_names)),
                         str(set(schema.attribute_names)),
-                    }
+                    },
+                    status_code=409,
                 )
             return _credential_schema_from_acapy(_schema.schema_)
         else:
@@ -468,6 +471,7 @@ async def create_schema(
                 "An unhandled ClientResponseError was caught while publishing schema. The error message is: '%s'",
                 e.message,
             )
+            raise CloudApiException("Error while creating schema.")
 
     # Register the schema in the trust registry
     try:

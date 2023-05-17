@@ -365,11 +365,11 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
-        except Exception as e:
+        except Exception as exc:
             logger.exception(
                 "Exception caught when getting v2 record with cred_ex_id %s. Exception:\n%r",
                 credential_exchange_id,
-                e,
+                exc,
             )
             credential_definition_id = None
     return credential_definition_id

@@ -126,7 +126,9 @@ async def verify_jsonld(
             @returns.json
             @json
             @post("/jsonld/verify")
-            def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
+            def __verify(
+                self, *, body: Body(type=JsonLdVerifyRequest) = {}
+            ) -> VerifyResponse:
                 """Internal uplink method for verify"""
 
         aries_controller.jsonld = JsonldApi(
@@ -137,7 +139,7 @@ async def verify_jsonld(
         )
         if not jsonld_verify_response.valid:
             raise CloudApiException(
-                f"Failed to verify payload with: {jsonld_verify_response.error}", 422
+                f"Failed to verify payload with error message: {jsonld_verify_response.error}", 422
             )
     except ClientResponseError as e:
         logger.warning(

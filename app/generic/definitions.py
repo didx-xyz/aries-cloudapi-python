@@ -36,8 +36,7 @@ router = APIRouter(
 
 class CreateCredentialDefinition(BaseModel):
     tag: str = Field(..., example="default")
-    schema_id: str = Field(...,
-                           example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
     support_revocation: bool = Field(default=True)
     revocation_registry_size: int = Field(default=32767)
 
@@ -45,8 +44,7 @@ class CreateCredentialDefinition(BaseModel):
 class CredentialDefinition(BaseModel):
     id: str = Field(..., example="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:default")
     tag: str = Field(..., example="default")
-    schema_id: str = Field(...,
-                           example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
+    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
 
 
 class CreateSchema(BaseModel):
@@ -129,8 +127,7 @@ async def get_credential_definitions(
         *get_credential_definition_futures
     )
     credential_definitions = [
-        _credential_definition_from_acapy(
-            credential_definition.credential_definition)
+        _credential_definition_from_acapy(credential_definition.credential_definition)
         for credential_definition in credential_definition_results
         if credential_definition.credential_definition
     ]
@@ -205,9 +202,7 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    listener = Listener(
-        topic="endorsements", wallet_id=auth.wallet_id
-    )
+    listener = Listener(topic="endorsements", wallet_id=auth.wallet_id)
 
     result = await aries_controller.credential_definition.publish_cred_def(
         body=CredentialDefinitionSendRequest(
@@ -288,9 +283,7 @@ async def create_credential_definition(
                 create_transaction_for_endorser=has_connections,
             )
             if has_connections:
-                admin_listener = Listener(
-                    topic="endorsements", wallet_id="admin"
-                )
+                admin_listener = Listener(topic="endorsements", wallet_id="admin")
                 async with get_governance_controller() as endorser_controller:
                     try:
                         txn_record = await admin_listener.wait_for_filtered_event(

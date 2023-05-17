@@ -49,7 +49,7 @@ def strip_protocol_prefix(id: str):
 
 @router.post("/create-invitation", response_model=InvitationRecord)
 async def create_oob_invitation(
-    body: CreateOobInvitation = CreateOobInvitation(),
+    body: CreateOobInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """

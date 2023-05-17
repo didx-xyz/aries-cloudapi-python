@@ -190,7 +190,8 @@ async def onboard_issuer_no_public_did(
 
     async def wait_for_connection_completion(invitation):
         logger.debug(
-            f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
+            "Starting webhook listener for connections with wallet id %s",
+            issuer_wallet_id,
         )
 
         connections_listener = create_listener(topic="connections", wallet_id="admin")

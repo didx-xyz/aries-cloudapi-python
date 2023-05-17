@@ -43,7 +43,7 @@ async def create_revocation_registry(
 
     if not result:
         raise CloudApiException(
-            f"Error creating revocation registry for credential with ID {credential_definition_id} and max credential number {max_cred_num}\n{result}"
+            f"Error creating revocation registry for credential with ID {credential_definition_id} and max credential number {max_cred_num}"
         )
 
     logger.info("Created revocation registry:\n%s", result.result)
@@ -76,7 +76,7 @@ async def get_active_revocation_registry_for_credential(
             "Unexpected type returned from get_active_registry_for_cred_def: %s", result
         )
         raise CloudApiException(
-            f"Error retrieving revocation registry for credential with ID {credential_definition_id}.\n{result}"
+            f"Error retrieving revocation registry for credential with ID {credential_definition_id}"
         )
 
     logger.info(

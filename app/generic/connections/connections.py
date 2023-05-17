@@ -83,7 +83,7 @@ async def get_connections(
 
     Returns:
     ---------
-    JSON object with “connections” (key), a list of connections (ids)
+    JSON object with connections (key), a list of connections (ids)
     """
     connections = await aries_controller.connection.get_connections()
 

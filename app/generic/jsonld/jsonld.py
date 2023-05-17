@@ -48,7 +48,7 @@ async def sign_jsonld(
     if body.pub_did and body.verkey:
         raise CloudApiException(
             "Please provide either or neither, but not both, public did of the verkey or the verkey for the document.",
-            418,
+            400,
         )
     try:
         if body.verkey:
@@ -101,7 +101,7 @@ async def verify_jsonld(
     if not (bool(body.public_did) != bool(body.verkey)):
         raise CloudApiException(
             "Please provide either, but not both, public did of the verkey or the verkey for the document.",
-            418,
+            400,
         )
     try:
         if not body.verkey:

@@ -304,9 +304,7 @@ async def revoke_credential(
 
 
 async def endorser_revoke():
-    listener = Listener(
-        topic="endorsements", wallet_id="admin"
-    )
+    listener = Listener(topic="endorsements", wallet_id="admin")
     async with get_governance_controller() as endorser_controller:
         try:
             txn_record = await listener.wait_for_filtered_event(

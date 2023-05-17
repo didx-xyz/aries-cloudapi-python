@@ -85,7 +85,7 @@ async def set_public_did(
     )
 
     if not result.result and not create_transaction_for_endorser:
-        raise CloudApiException(f"Error setting public did: {did}")
+        raise CloudApiException(f"Error setting public did to {did}", 400)
 
     return result.dict()
 

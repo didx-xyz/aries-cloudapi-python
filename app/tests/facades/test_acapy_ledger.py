@@ -24,11 +24,6 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
 
 @pytest.mark.anyio
 async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
-    error_response = {"x": "y"}
-    when(mock_agent_controller.ledger).accept_taa(
-        body=TAAAccept(mechanism="data", text=None, version=None)
-    ).thenReturn(to_async(error_response))
-
     record = TAARecord(digest="")
     with pytest.raises(HTTPException) as exc:
         await accept_taa(mock_agent_controller, taa=record, mechanism="data")

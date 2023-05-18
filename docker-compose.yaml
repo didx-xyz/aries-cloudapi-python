@@ -2,7 +2,7 @@ version: "3"
 
 services:
   governance-ga-web:
-#    image: ${ECR_REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
     container_name: governance-ga-web
     build:
       context: .
@@ -30,7 +30,6 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
-    #image: ${ECR_REGISTRY:-local}/postgres:11
     image: postgres:11
     container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*'
@@ -54,7 +53,7 @@ services:
   #     - ledger-nodes
   #     - ledger-browser
   governance-ga-agent:
-#    image: ${ECR_REGISTRY:-local}/governance-ga-agent:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-ga-agent:${IMAGE_TAG:-latest}
     container_name: governance-ga-agent
     build:
       context: .
@@ -83,7 +82,7 @@ services:
       retries: 10
       start_period: 15s
   governance-trust-registry:
-#    image: ${ECR_REGISTRY:-local}/governance-trust-registry:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-trust-registry:${IMAGE_TAG:-latest}
     container_name: governance-trust-registry
     build:
       context: .
@@ -99,7 +98,7 @@ services:
       - governance-multitenant
       - host
   governance-multitenant-web:
-#    image: ${ECR_REGISTRY:-local}/governance-multitenant-web:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-multitenant-web:${IMAGE_TAG:-latest}
     container_name: governance-multitenant-web
     build:
       context: .
@@ -127,7 +126,7 @@ services:
     env_file:
       - environments/governance-multitenant/fastapi.default.env
   governance-webhooks-web:
-#    image: ${ECR_REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
     container_name: governance-webhooks-web
     build:
       context: .
@@ -146,7 +145,7 @@ services:
     environment:
       - REDIS_URL=redis://wh-redis
   governance-endorser:
-#    image: ${ECR_REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
     container_name: governance-endorser
     build:
       context: .
@@ -161,7 +160,6 @@ services:
     env_file:
       - environments/endorser/endorser.env
   wh-redis:
-    #image: ${ECR_REGISTRY:-local}/redis:latest
     image: redis:latest
     container_name: wh-redis
     restart: always
@@ -174,7 +172,6 @@ services:
     env_file:
       - environments/webhooks/redis.env
   governance-multitenant-wallets-db:
-    #image: ${ECR_REGISTRY:-local}/postgres:11
     image: postgres:11
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
@@ -187,9 +184,8 @@ services:
       - host
     tty: true
   ngrok-governance-multitenant:
-#    image: ${ECR_REGISTRY:-local}/wernight/ngrok
-    container_name: ngrok-governance-multitenant
     image: wernight/ngrok
+    container_name: ngrok-governance-multitenant
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     command: ngrok http governance-multitenant-agent:3020 --log stdout
@@ -202,7 +198,7 @@ services:
       ledger-browser:
         condition: service_healthy
   governance-multitenant-agent:
-#    image: ${ECR_REGISTRY:-local}/governance-multitenant-agent:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/governance-multitenant-agent:${IMAGE_TAG:-latest}
     container_name: governance-multitenant-agent
     build:
       context: .
@@ -230,7 +226,7 @@ services:
       retries: 10
       start_period: 15s
   ledger-browser:
-#    image: ${ECR_REGISTRY:-local}/ledger-browser
+    image: ${REGISTRY:-local}/ledger-browser
     container_name: ledger-browser
     build:
       # context: https://github.com/didx-xyz/von-network.git#531007d7755668088b321e57a42fe4ea2d999b26
@@ -265,7 +261,7 @@ services:
       ledger-nodes:
         condition: service_healthy
   ledger-nodes:
-#    image: ${ECR_REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
+    image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-nodes
     build:
       # context: https://github.com/didx-xyz/von-network.git#531007d7755668088b321e57a42fe4ea2d999b26
@@ -297,9 +293,9 @@ services:
       retries: 10
       start_period: 30s
   tails-server:
-    image: ghcr.io/bcgov/tails-server:1.0.0
+    image: ${REGISTRY:-local}/tails-server:${IMAGE_TAG:-latest}
     container_name: tails-server
-    build: #todo: pulled in from development, verify that this is still necessary with new image
+    build:
       context: https://github.com/bcgov/indy-tails-server.git#v1.0.0
       dockerfile: docker/Dockerfile.tails-server
     ports:
@@ -314,7 +310,7 @@ services:
       tails-server
         --host 0.0.0.0
         --port 6543
-        --storage-path ./data
+        --storage-path ./
         --log-level INFO
 
 volumes:

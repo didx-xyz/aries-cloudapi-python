@@ -94,6 +94,9 @@ async def test_send_credential_oob_v2(
     credential_definition_id: str,
     alice_member_client: AsyncClient,
 ):
+    wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_credentials_listener = Listener(topic="credentials", wallet_id=wallet_id)
+
     credential = {
         "protocol_version": "v2",
         "credential_definition_id": credential_definition_id,
@@ -138,14 +141,14 @@ async def test_send_credential_oob_v2(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert check_webhook_state(
-        client=alice_member_client,
+
+    result = await alice_credentials_listener.wait_for_filtered_event(
         filter_map={
             "state": "offer-received",
-            "credential_definition_id": credential_definition_id,
+            "thread_id": thread_id,
         },
-        topic="credentials",
     )
+    alice_credentials_listener.stop()
 
 
 @pytest.mark.anyio

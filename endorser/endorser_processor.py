@@ -160,7 +160,10 @@ def get_endorsement_request_attachment(
             json_payload = json.loads(json_payload)
 
         return json_payload
-    except:
+    except Exception as e:
+        logger.debug(
+            "Exception caught while running `get_endorsement_request_attachment`. %r", e
+        )
         return None
 
 
@@ -175,7 +178,11 @@ def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:
         # credential definition type is 102
         # see https://github.com/hyperledger/indy-node/blob/master/docs/source/requests.md#common-request-structure
         return operation.get("type") == "102"
-    except:
+    except Exception as e:
+        logger.debug(
+            "Exception caught while running `is_credential_definition_transaction`. %r",
+            e,
+        )
         return False
 
 

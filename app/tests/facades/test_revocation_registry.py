@@ -261,7 +261,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     # Error insufficient params supplied
     with pytest.raises(
         CloudApiException,
-        match="Please, provide either a revocation registry id OR credential definition id.",
+        match="Invalid request. Please provide either a 'revocation registry id' or a 'credential definition id'.",
     ) as exc:
         await rg.publish_revocation_entry_to_ledger(
             controller=mock_agent_controller,

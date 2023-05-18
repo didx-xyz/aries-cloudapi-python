@@ -118,9 +118,11 @@ async def test_accept_proof_request_oob_v1(
     alice_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
+
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant_id)
+    bob_proofs_listener = Listener(topic="proofs", wallet_id=bob_tenant_id)
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
@@ -167,20 +169,12 @@ async def test_accept_proof_request_oob_v1(
         json={"invitation": invitation},
     )
 
-    alice_wait_for_event, _ = await start_listener(
-        topic="proofs", wallet_id=alice_tenant_id
-    )
-
-    alice_request_received = await alice_wait_for_event(
+    alice_request_received = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "request-received", "thread_id": thread_id}
     )
 
     alice_proof_id = alice_request_received["proof_id"]
     assert alice_proof_id
-
-    alice_wait_for_event, _ = await start_listener(
-        topic="proofs", wallet_id=alice_tenant_id
-    )
 
     requested_credentials = await alice_member_client.get(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
@@ -206,19 +200,20 @@ async def test_accept_proof_request_oob_v1(
         json=proof_accept.dict(),
     )
 
-    time.sleep(2)
-
-    alice_presentation_sent = await alice_wait_for_event(
-        filter_map={"state": "presentation-sent", "proof_id": alice_proof_id, "thread_id": thread_id}
+    alice_presentation_sent = await alice_proofs_listener.wait_for_filtered_event(
+        filter_map={
+            "state": "presentation-sent",
+            "proof_id": alice_proof_id,
+            "thread_id": thread_id,
+        }
     )
 
-    bob_wait_for_event, _ = await start_listener(
-        topic="proofs", wallet_id=bob_tenant_id
-    )
-
-    bob_presentation_received = await bob_wait_for_event(
+    bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
+
+    alice_proofs_listener.stop()
+    bob_proofs_listener.stop()
 
 
 @pytest.mark.anyio
@@ -232,6 +227,9 @@ async def test_accept_proof_request_oob_v2(
 ):
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
+
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant_id)
+    bob_proofs_listener = Listener(topic="proofs", wallet_id=bob_tenant_id)
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
@@ -271,20 +269,12 @@ async def test_accept_proof_request_oob_v2(
         json={"invitation": invitation},
     )
 
-    alice_wait_for_event, _ = await start_listener(
-        topic="proofs", wallet_id=alice_tenant_id
-    )
-
-    alice_request_received = await alice_wait_for_event(
+    alice_request_received = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "request-received", "thread_id": thread_id}
     )
 
     alice_proof_id = alice_request_received["proof_id"]
     assert alice_proof_id
-
-    alice_wait_for_event, _ = await start_listener(
-        topic="proofs", wallet_id=alice_tenant_id
-    )
 
     requested_credentials = await alice_member_client.get(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
@@ -310,18 +300,20 @@ async def test_accept_proof_request_oob_v2(
         json=proof_accept.dict(),
     )
 
-    time.sleep(2)
-
-    alice_presentation_sent = await alice_wait_for_event(
-        filter_map={"state": "presentation-sent", "proof_id": alice_proof_id, "thread_id": thread_id}
+    alice_presentation_sent = await alice_proofs_listener.wait_for_filtered_event(
+        filter_map={
+            "state": "presentation-sent",
+            "proof_id": alice_proof_id,
+            "thread_id": thread_id,
+        }
     )
 
-    bob_wait_for_event, _ = await start_listener(
-        topic="proofs", wallet_id=bob_tenant_id
+    bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
+        filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
 
-    bob_presentation_received = await bob_wait_for_event(
-        filter_map={"state": "done", "role": "verifier", "thread_id": thread_id})
+    alice_proofs_listener.stop()
+    bob_proofs_listener.stop()
 
 
 @pytest.mark.anyio

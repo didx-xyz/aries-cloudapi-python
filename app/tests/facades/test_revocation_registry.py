@@ -273,7 +273,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     # Error no result
     with pytest.raises(
         CloudApiException,
-        match="Failed to publish revocation entry to ledger.\nNone",
+        match="Failed to publish revocation entry to ledger.",
     ) as exc:
         when(mock_agent_controller.revocation).publish_rev_reg_entry(
             rev_reg_id=revocation_registry_id,

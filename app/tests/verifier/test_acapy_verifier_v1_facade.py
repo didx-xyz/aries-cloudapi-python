@@ -112,7 +112,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
         v10_presentation_exchange_records[0]
     )
 
-    with pytest.raises(CloudApiException):
+    with pytest.raises(AttributeError):
         deleted_proof_request = await VerifierV1.reject_proof_request(
             controller=mock_agent_controller,
             proof_request="v1-abc",

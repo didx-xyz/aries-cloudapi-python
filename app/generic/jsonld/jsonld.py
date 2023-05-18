@@ -36,6 +36,24 @@ class JsonLdVerifyRequest(BaseModel):
     verkey: Optional[str] = None
 
 
+# NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
+# Hence, custom override api endpoint that is incorrect in aca-py
+class JsonldApi(Consumer):
+    async def verify(
+        self, *, body: Optional[JsonLdVerifyRequest] = None
+    ) -> VerifyResponse:
+        """Verify a JSON-LD structure."""
+        return await self.__verify(
+            body=body,
+        )
+
+    @returns.json
+    @json
+    @post("/jsonld/verify")
+    def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
+        """Internal uplink method for verify"""
+
+
 @router.post("/sign", response_model=SignResponse)
 async def sign_jsonld(
     body: JsonLdSignRequest,
@@ -110,26 +128,6 @@ async def verify_jsonld(
             ).verkey
         else:
             verkey = body.verkey
-
-        # NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
-        # Hence, override it here
-        # Custom Override api endpoint that is incorrect in aca-py
-        class JsonldApi(Consumer):
-            async def verify(
-                self, *, body: Optional[JsonLdVerifyRequest] = None
-            ) -> VerifyResponse:
-                """Verify a JSON-LD structure."""
-                return await self.__verify(
-                    body=body,
-                )
-
-            @returns.json
-            @json
-            @post("/jsonld/verify")
-            def __verify(
-                self, *, body: Body(type=JsonLdVerifyRequest) = {}
-            ) -> VerifyResponse:
-                """Internal uplink method for verify"""
 
         aries_controller.jsonld = JsonldApi(
             base_url=aries_controller.base_url, client=aries_controller.client

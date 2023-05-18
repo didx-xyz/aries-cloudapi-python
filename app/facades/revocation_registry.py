@@ -71,7 +71,7 @@ async def get_active_revocation_registry_for_credential(
         cred_def_id=credential_definition_id
     )
 
-    if not result or not isinstance(result, RevRegResult):
+    if not isinstance(result, RevRegResult):
         logger.warning(
             "Unexpected type returned from get_active_registry_for_cred_def: %s", result
         )
@@ -108,7 +108,7 @@ async def get_credential_revocation_status(
         cred_ex_id=credential_exchange_id
     )
 
-    if not result and not isinstance(result, CredRevRecordResult):
+    if not isinstance(result, CredRevRecordResult):
         logger.warning(
             "Unexpected type returned from get_revocation_status: %s", result
         )
@@ -219,7 +219,7 @@ async def publish_revocation_entry_to_ledger(
     except Exception as e:
         return e
 
-    if not result or not isinstance(result, RevRegResult):
+    if not isinstance(result, RevRegResult):
         logger.warning(
             "Unexpected type returned from publish_rev_reg_entry: %s", result
         )

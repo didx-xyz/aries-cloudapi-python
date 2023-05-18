@@ -82,7 +82,7 @@ async def accept_taa(
         logger.debug(
             "Failed to accept TAA. Response received:\n%s", accept_taa_response
         )
-        raise CloudApiException("Something went wrong. Could not accept TAA")
+        raise CloudApiException("Something went wrong. Could not accept TAA.", 400)
     return accept_taa_response
 
 
@@ -106,7 +106,7 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
     issuer_endpoint_response = await controller.ledger.get_did_endpoint(did=issuer_nym)
     if not issuer_endpoint_response:
         logger.debug("Failed to get DID endpoint:\n %s", issuer_endpoint_response)
-        raise CloudApiException("Could not obtain issuer endpoint.")
+        raise CloudApiException("Could not obtain issuer endpoint.", 404)
     return issuer_endpoint_response
 
 

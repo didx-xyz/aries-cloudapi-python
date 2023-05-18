@@ -18,7 +18,7 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
 
     with pytest.raises(HTTPException) as exc:
         await get_taa(mock_agent_controller)
-    assert exc.value.status_code == 404
+    assert exc.value.status_code == 500
     assert "Something went wrong. Could not get TAA." in exc.value.detail
 
 

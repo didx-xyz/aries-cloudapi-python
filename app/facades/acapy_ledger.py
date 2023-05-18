@@ -63,18 +63,26 @@ async def accept_taa(
     accept_taa_response: {}
         The response from letting the ledger know we accepted the response
     """
-    accept_taa_response = await controller.ledger.accept_taa(
-        body=TAAAccept(**taa.dict(), mechanism=mechanism)
-    )
+    try:
+        accept_taa_response = await controller.ledger.accept_taa(
+            body=TAAAccept(**taa.dict(), mechanism=mechanism)
+        )
+    except Exception as e:
+        logger.warning("An exception occurred while trying to accept TAA. %r", e)
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred while trying to accept TAA.",
+        ) from e
+
+    if isinstance(accept_taa_response, ClientResponseError):
+        logger.warning("Failed to accept TAA. Response: %s", accept_taa_response)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Something went wrong. Could not accept TAA.",
+        )
 
     logger.info("accept_taa_response value: %s", accept_taa_response)
 
-    if accept_taa_response != {}:
-        logger.warning("Failed to accept TAA.\n %s", accept_taa_response)
-        raise HTTPException(
-            status_code=404,
-            detail=f"Something went wrong. Could not accept TAA. {accept_taa_response}",
-        )
     return accept_taa_response
 
 

@@ -103,13 +103,13 @@ async def test_send_credential_oob_v2(
         "attributes": {"speed": "10"},
     }
 
-    response = await faber_client.post(
+    create_offer_response = await faber_client.post(
         BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
+    create_offer_response.raise_for_status()
 
-    data = response.json()
+    data = create_offer_response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")

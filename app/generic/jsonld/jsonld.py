@@ -2,14 +2,8 @@ import logging
 from typing import Any, Dict, Optional
 
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import (
-    AcaPyClient,
-    Doc,
-    SignatureOptions,
-    SignRequest,
-    SignResponse,
-    VerifyResponse,
-)
+from aries_cloudcontroller import (AcaPyClient, Doc, SignatureOptions,
+                                   SignRequest, SignResponse, VerifyResponse)
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from uplink import Body, Consumer, json, post, returns
@@ -137,7 +131,8 @@ async def verify_jsonld(
         )
         if not jsonld_verify_response.valid:
             raise CloudApiException(
-                f"Failed to verify payload with error message: {jsonld_verify_response.error}", 422
+                f"Failed to verify payload with error message: {jsonld_verify_response.error}",
+                422,
             )
     except ClientResponseError as e:
         logger.warning(

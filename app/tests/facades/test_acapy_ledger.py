@@ -1,6 +1,6 @@
 import pytest
 from aries_cloudcontroller import (AcaPyClient, ModelSchema, SchemaGetResult,
-                                   TAAAccept, TAAInfo, TAARecord, TAAResult)
+                                   TAAInfo, TAARecord, TAAResult)
 from assertpy import assert_that
 from fastapi import HTTPException
 from mockito import verify, when

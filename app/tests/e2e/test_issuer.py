@@ -153,6 +153,8 @@ async def test_send_credential_oob_v2(
     )
     alice_credentials_listener.stop()
 
+    assert result["credential_id"]
+
 
 @pytest.mark.anyio
 async def test_send_credential(

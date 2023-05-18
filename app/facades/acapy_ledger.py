@@ -73,8 +73,8 @@ async def accept_taa(
 
     logger.info("accept_taa_response value: %s", accept_taa_response)
 
-    if isinstance(accept_taa_response, ClientResponseError):
-        logger.error("Failed to accept TAA.\n %s", accept_taa_response)
+    if accept_taa_response != {}:
+        logger.warning("Failed to accept TAA.\n %s", accept_taa_response)
         raise HTTPException(
             status_code=404,
             detail=f"Something went wrong. Could not accept TAA. {accept_taa_response}",

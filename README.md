@@ -13,22 +13,6 @@ This project essentially comprises a [FastAPI](https://fastapi.tiangolo.com/) ap
 
 ## How to Run It
 
-### Step 1: Run a Local VON Network
-
-First, set up a local VON network, which will provide an instance of the Hyperledger Indy ledger. Follow the instructions in the [VON Network README](https://github.com/bcgov/von-network/blob/main/README.md).
-
-> NOTE: Be sure to start the VON Network with the `--taa-sample` flag to enable TAA acceptance. For example:
->
-> ```bash
-> ./manage start --taa-sample
-> ```
->
-> This command starts the VON Network with a sample TAA that you can use for TAA acceptance. You can find the TAA in the `./von-network/config/sample_taa.json` and `./von-network/config/sample_aml.json` files.
-
-### Step 2: Run the Aries Cloud Agent
-
-> NOTE: Make sure the VON Network is running before you start the Cloud API. The Cloud API will attempt to connect to the VON Network and will fail if it's not running.
-
 Running the project is straightforward — it's all containerized. Simply execute `./manage up` or `make start` from the project root. This command will spin up and provision everything you need. You can then visit [localhost:8000/api/doc](http://localhost:8000/api/doc) to access the Swagger documentation and begin experimenting.
 
 If you're familiar with Make, feel free to check the Makefile for some handy project-running methods.

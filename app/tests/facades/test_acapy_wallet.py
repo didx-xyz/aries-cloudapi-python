@@ -46,4 +46,4 @@ async def test_error_on_assign_pub_did(mock_agent_controller: AcaPyClient):
     with pytest.raises(CloudApiException) as exc:
         await acapy_wallet.set_public_did(mock_agent_controller, did="did")
     assert exc.value.status_code == 400
-    assert "Error setting public did: did" in exc.value.detail
+    assert "Error setting public did to did" in exc.value.detail

@@ -1,17 +1,13 @@
 import logging
 from typing import List, Optional
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CreateInvitationRequest,
-    InvitationResult,
-    ReceiveInvitationRequest,
-)
+from aries_cloudcontroller import (AcaPyClient, CreateInvitationRequest,
+                                   InvitationResult, ReceiveInvitationRequest)
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from shared_models import conn_record_to_connection, Connection
 from app.dependencies import agent_selector
+from shared_models import Connection, conn_record_to_connection
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +32,15 @@ class AcceptInvitation(BaseModel):
 
 @router.post("/create-invitation", response_model=InvitationResult)
 async def create_invitation(
-    body: CreateInvitation = CreateInvitation(),
+    body: Optional[CreateInvitation] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create connection invitation.
     """
+    if body is None:
+        body = CreateInvitation()
+
     invitation = await aries_controller.connection.create_invitation(
         alias=body.alias,
         auto_accept=True,
@@ -83,7 +82,7 @@ async def get_connections(
 
     Returns:
     ---------
-    JSON object with “connections” (key), a list of connections (ids)
+    JSON object with connections (key), a list of connections (ids)
     """
     connections = await aries_controller.connection.get_connections()
 

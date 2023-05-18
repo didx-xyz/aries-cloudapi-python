@@ -11,6 +11,7 @@ from mockito import when
 import app.facades.revocation_registry as rg
 from app.error.cloud_api_error import CloudApiException
 from app.tests.util.mock import to_async
+
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"
 cred_ex_id = "5mJRavkcQFrqgKqKKZua3z:3:CL:30:tag"
 cred_id = "c7c909f4-f670-49bd-9d81-53fba6bb23b8"
@@ -150,7 +151,6 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
 async def test_publish_revocation_registry_on_ledger(
     mock_agent_controller: AcaPyClient,
 ):
-
     # With endorsement
     when(mock_agent_controller.revocation).publish_rev_reg_def(
         rev_reg_id=revocation_registry_id,

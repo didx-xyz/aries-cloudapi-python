@@ -9,7 +9,8 @@ from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from app.tests.e2e.test_fixtures import *  # NOQA
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import (check_webhook_state,
+                                     get_wallet_id_from_async_client)
 
 # This import are important for tests to run!
 

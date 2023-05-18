@@ -2,7 +2,6 @@ from aries_cloudcontroller import (ConnRecord, V10CredentialExchange,
                                    V10PresentationExchange, V20CredExRecord,
                                    V20PresExRecord)
 
-from app.error.cloud_api_error import CloudApiException
 from shared_models import (Connection, CredentialExchange, Endorsement,
                            PresentationExchange, RedisItem,
                            conn_record_to_connection,
@@ -35,7 +34,7 @@ def to_proof_hook_model(item: RedisItem) -> PresentationExchange:
         presentation_exchange = presentation_record_to_model(presentation_exchange)
     else:
         topic = item["acapy_topic"]
-        raise CloudApiException(f"Unsupported proof acapy topic: {topic}")
+        raise Exception(f"Unsupported proof acapy topic: {topic}")
 
     return presentation_exchange
 
@@ -51,6 +50,6 @@ def to_credential_hook_model(item: RedisItem) -> CredentialExchange:
         cred_model = credential_record_to_model_v2(cred_exchange)
     else:
         topic = item["acapy_topic"]
-        raise CloudApiException(f"Unsupported issue credential acapy topic: {topic}")
+        raise Exception(f"Unsupported issue credential acapy topic: {topic}")
 
     return cred_model

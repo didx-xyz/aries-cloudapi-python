@@ -30,7 +30,8 @@ async def listen_endorsement_events():
     await client.wait_until_done()
     logger.debug("Connection to webhook server ready")
     logger.info(
-        f"Listening for 'endorsements' events from webhook server at {WEBHOOKS_PUBSUB_URL}"
+        "Listening for 'endorsements' events from webhook server at %s",
+        WEBHOOKS_PUBSUB_URL,
     )
 
 
@@ -38,7 +39,9 @@ async def listen_endorsement_events():
 async def process_endorsement_event(data: str, topic: str):
     event: Event = json.loads(data)
     logger.debug(
-        f"Processing endorsement event for agent {event['origin']} ({event['wallet_id']})"
+        "Processing endorsement event for agent %s (%s)",
+        event["origin"],
+        event["wallet_id"],
     )
     # We're only interested in events from the governance agent
     if not is_governance_agent(event):
@@ -53,12 +56,14 @@ async def process_endorsement_event(data: str, topic: str):
         # Not interested in this endorsement request
         if not await should_accept_endorsement(client, endorsement):
             logger.debug(
-                f"Endorsement request with transaction id {endorsement.transaction_id} is not applicable for endorsement."
+                "Endorsement request with transaction id %s is not applicable for endorsement.",
+                endorsement.transaction_id,
             )
             return
 
         logger.debug(
-            f"Endorsement request with transaction id {endorsement.transaction_id} is applicable for endorsement, accepting request."
+            "Endorsement request with transaction id %s is applicable for endorsement, accepting request.",
+            endorsement.transaction_id,
         )
         await accept_endorsement(client, endorsement)
 
@@ -90,7 +95,9 @@ async def should_accept_endorsement(
 
     if transaction.state != "request_received":
         logger.debug(
-            f"Endorsement event for transaction with id '{transaction.transaction_id}' not in state 'request_received' (is '{transaction.state}')."
+            "Endorsement event for transaction with id '%s' not in state 'request_received' (is '%s').",
+            transaction.transaction_id,
+            transaction.state,
         )
         return False
 
@@ -102,7 +109,8 @@ async def should_accept_endorsement(
 
     if not is_credential_definition_transaction(attachment):
         logger.debug(
-            f"Endorsement request with transaction id {endorsement.transaction_id} is not for credential definition."
+            "Endorsement request with transaction id %s is not for credential definition.",
+            endorsement.transaction_id,
         )
         return False
 
@@ -112,7 +120,8 @@ async def should_accept_endorsement(
 
     if not await is_valid_issuer(did, schema_id):
         logger.debug(
-            f"Endorsement request with transaction id {endorsement.transaction_id} is not for did and schema registered in the trust registry."
+            "Endorsement request with transaction id %s is not for did and schema registered in the trust registry.",
+            endorsement.transaction_id,
         )
         return False
 
@@ -160,7 +169,7 @@ def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:
         operation = attachment["operation"]
 
         logger.debug(
-            f"Endorsement request operation type: {operation.get('type')}. Need 102"
+            "Endorsement request operation type: %s. Need 102", operation.get("type")
         )
 
         # credential definition type is 102
@@ -194,7 +203,9 @@ async def is_valid_issuer(did: str, schema_id: str):
 
     if actor_res.is_error:
         logger.error(
-            f"Error retrieving actor for did {did} from trust registry. {actor_res.text}"
+            "Error retrieving actor for did %s from trust registry. %s",
+            did,
+            actor_res.text,
         )
         return False
     actor = actor_res.json()
@@ -202,18 +213,20 @@ async def is_valid_issuer(did: str, schema_id: str):
     # We need role issuer
     if "issuer" not in actor["roles"]:
         actor_id = actor["id"]
-        logger.error(f"Actor {actor_id} does not have required role 'issuer'")
+        logger.error("Actor %s does not have required role 'issuer'", actor_id)
         return False
 
     schema_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
 
     if schema_res.is_error:
-        logger.error(f"Error retrieving schemas from trust registry. {schema_res.text}")
+        logger.error(
+            "Error retrieving schemas from trust registry. %s", schema_res.text
+        )
         return False
 
     schemas = schema_res.json()["schemas"]
     if schema_id not in schemas:
-        logger.error(f"schema {schema_id} not in the trust registry.")
+        logger.error("schema %s not in the trust registry.", schema_id)
         return False
 
     return True

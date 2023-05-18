@@ -132,7 +132,7 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
     # Fail
     with pytest.raises(
         CloudApiException,
-        match=f"Error retrieving revocation status for credential definition ID {cred_def_id}",
+        match=f"Error retrieving revocation status for credential exchange ID {cred_ex_id}",
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
             cred_ex_id=cred_ex_id

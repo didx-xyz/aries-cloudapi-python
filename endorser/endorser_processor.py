@@ -6,7 +6,6 @@ import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
 
-from app.error.cloud_api_error import CloudApiException
 from endorser.constants import (GOVERNANCE_AGENT_API_KEY, GOVERNANCE_AGENT_URL,
                                 TRUST_REGISTRY_URL, WEBHOOKS_PUBSUB_URL)
 from shared_models import Endorsement
@@ -137,7 +136,7 @@ async def get_did_and_schema_id_from_cred_def_attachment(
     schema = await client.schema.get_schema(schema_id=schema_seq_id)
 
     if not schema.schema_ or not schema.schema_.id:
-        raise CloudApiException("Could not extract schema id from schema response")
+        raise Exception("Could not extract schema id from schema response")
 
     schema_id = schema.schema_.id
 

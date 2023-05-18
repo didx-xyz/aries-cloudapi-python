@@ -6,7 +6,6 @@ from aries_cloudcontroller import (AcaPyClient,
                                    CredentialDefinitionSendRequest, TAAAccept,
                                    TAAInfo, TAARecord,
                                    TxnOrRegisterLedgerNymResponse)
-from fastapi import HTTPException
 
 from app.error.cloud_api_error import CloudApiException
 
@@ -214,6 +213,6 @@ async def schema_id_from_credential_definition_id(
     schema = await controller.schema.get_schema(schema_id=seq_no)
 
     if not schema.schema_ or not schema.schema_.id:
-        raise HTTPException(404, f"Schema with id {seq_no} not found")
+        raise CloudApiException(f"Schema with id {seq_no} not found", 404)
 
     return schema.schema_.id

@@ -3,6 +3,7 @@ from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
 
+from app.error.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (AcceptProofRequest,
                                          CreateProofRequest,
@@ -56,7 +57,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 
     assert isinstance(created_proof_send_request, PresentationExchange)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(CloudApiException):
         await VerifierV2.send_proof_request(
             mock_agent_controller, proof_request="I am invalid"
         )
@@ -114,7 +115,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
         v20_presentation_exchange_records[0]
     )
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(CloudApiException):
         deleted_proof_request = await VerifierV2.reject_proof_request(
             controller=mock_agent_controller, proof_request="abc"
         )

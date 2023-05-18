@@ -1,6 +1,6 @@
 import pytest
-from aries_cloudcontroller import (AcaPyClient, ModelSchema, SchemaGetResult, TAAAccept,
-                                   TAAInfo, TAARecord, TAAResult)
+from aries_cloudcontroller import (AcaPyClient, ModelSchema, SchemaGetResult,
+                                   TAAAccept, TAAInfo, TAARecord, TAAResult)
 from assertpy import assert_that
 from fastapi import HTTPException
 from mockito import verify, when
@@ -27,7 +27,7 @@ async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
     ).thenReturn(to_async({"example": "error"}))
-    
+
     record = TAARecord(digest="")
     with pytest.raises(HTTPException) as exc:
         await accept_taa(mock_agent_controller, taa=record, mechanism="data")

@@ -78,7 +78,7 @@ async def accept_taa(
         logger.warning("Failed to accept TAA. Response: %s", accept_taa_response)
         raise HTTPException(
             status_code=400,
-            detail=f"Something went wrong. Could not accept TAA.",
+            detail="Something went wrong. Could not accept TAA.",
         )
 
     logger.info("accept_taa_response value: %s", accept_taa_response)

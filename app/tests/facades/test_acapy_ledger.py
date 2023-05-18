@@ -35,7 +35,7 @@ async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     with pytest.raises(HTTPException) as exc:
         await accept_taa(mock_agent_controller, taa=record, mechanism="data")
     assert exc.value.status_code == 400
-    assert exc.value.detail == f"Something went wrong. Could not accept TAA."
+    assert exc.value.detail == "Something went wrong. Could not accept TAA."
 
 
 @pytest.mark.anyio

@@ -29,7 +29,7 @@ async def faber_client():
         tenant = await create_issuer_tenant(client, "faber")
 
         if "access_token" not in tenant:
-            raise Exception("Error creating tenant", tenant)
+            raise Exception(f"Error creating tenant: {tenant}")
 
         faber_async_client = tenant_client(token=tenant["access_token"])
         yield faber_async_client
@@ -57,7 +57,7 @@ async def acme_tenant():
         tenant = await create_verifier_tenant(client, "acme")
 
         if "access_token" not in tenant:
-            raise Exception("Error creating tenant", tenant)
+            raise Exception(f"Error creating tenant: {tenant}")
 
         yield tenant
 

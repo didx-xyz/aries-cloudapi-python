@@ -4,14 +4,11 @@ from typing import Any, Dict, Optional, TypedDict
 
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
-from endorser.constants import (
-    GOVERNANCE_AGENT_API_KEY,
-    GOVERNANCE_AGENT_URL,
-    TRUST_REGISTRY_URL,
-    WEBHOOKS_PUBSUB_URL,
-)
 from fastapi_websocket_pubsub import PubSubClient
 
+from app.error.cloud_api_error import CloudApiException
+from endorser.constants import (GOVERNANCE_AGENT_API_KEY, GOVERNANCE_AGENT_URL,
+                                TRUST_REGISTRY_URL, WEBHOOKS_PUBSUB_URL)
 from shared_models import Endorsement
 
 logger = logging.getLogger(__name__)
@@ -53,7 +50,6 @@ async def process_endorsement_event(data: str, topic: str):
     async with AcaPyClient(
         base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
     ) as client:
-
         # Not interested in this endorsement request
         if not await should_accept_endorsement(client, endorsement):
             logger.debug(

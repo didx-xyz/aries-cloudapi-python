@@ -107,7 +107,7 @@ async def test_accept_proof_request_verifier_no_public_did(
             "support_revocation": True,
         },
     )
-    
+
     if credential_definition.is_client_error:
         raise Exception(credential_definition.json()["detail"])
 

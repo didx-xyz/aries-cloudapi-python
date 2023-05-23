@@ -252,8 +252,7 @@ async def revoke_credential(
             )
         )
     except ClientResponseError as e:
-        raise CloudApiException(
-            f"Failed to revoke credential.{e.message}", 418)
+        raise CloudApiException(f"Failed to revoke credential.{e.message}", 418)
 
     if not auto_publish_to_ledger:
         active_revocation_registry_id = (
@@ -282,9 +281,7 @@ async def revoke_credential(
 
 
 async def endorser_revoke():
-    listener = Listener(
-        topic="endorsements", wallet_id="admin"
-    )
+    listener = Listener(topic="endorsements", wallet_id="admin")
     async with get_governance_controller() as endorser_controller:
         try:
             txn_record = await listener.wait_for_filtered_event(

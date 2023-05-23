@@ -2,11 +2,10 @@ import logging
 from typing import List, Optional
 
 from aries_cloudcontroller import (AcaPyClient, InvitationMessage,
-                                   InvitationRecord)
+                                   InvitationRecord, OobRecord)
 from aries_cloudcontroller.model.attachment_def import AttachmentDef
 from aries_cloudcontroller.model.invitation_create_request import \
     InvitationCreateRequest
-from aries_cloudcontroller.model.oob_record import OobRecord
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 

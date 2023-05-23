@@ -7,8 +7,7 @@ from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller import \
     CredentialDefinition as AcaPyCredentialDefinition
 from aries_cloudcontroller import (ModelSchema, RevRegUpdateTailsFileUri,
-                                   SchemaSendRequest,
-                                   TxnOrCredentialDefinitionSendResult)
+                                   SchemaSendRequest)
 from aries_cloudcontroller.model.credential_definition_send_request import \
     CredentialDefinitionSendRequest
 from fastapi import APIRouter, Depends, HTTPException

@@ -1,20 +1,18 @@
 from enum import Enum
-from typing import Any, Generic, List, Optional, Dict, TypeVar, Union, Tuple
-
-from typing_extensions import TypedDict, Literal
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
 
 from aries_cloudcontroller import (
     ConnRecord,
     IndyProof,
     IndyProofRequest,
-    InvitationMessage,
-    V10PresentationExchange,
     V10CredentialExchange,
+    V10PresentationExchange,
     V20CredExRecord,
     V20PresExRecord,
 )
 from pydantic import BaseModel
 from pydantic.generics import GenericModel
+from typing_extensions import Literal, TypedDict
 
 WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
 

@@ -183,6 +183,7 @@ class CredentialExchange(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     role: Literal["issuer", "holder"]
     schema_id: Optional[str]
+    # state can be None in proposed state
     state: Optional[
         Literal[
             "abandoned",
@@ -197,8 +198,7 @@ class CredentialExchange(BaseModel):
             "request-sent",
         ]
     ] = None
-    # Attributes can be None in proposed state
-    # Connection id can be None in connectionless exchanges
+    # Thread id can be None in connectionless exchanges
     thread_id: Optional[str] = None
     updated_at: str
 
@@ -262,12 +262,18 @@ def presentation_record_to_model(
 ) -> PresentationExchange:
     if isinstance(record, V20PresExRecord):
         try:
-            presentation = IndyProof(**record.by_format.pres["indy"]) if record.by_format.pres else None
+            presentation = (
+                IndyProof(**record.by_format.pres["indy"])
+                if record.by_format.pres
+                else None
+            )
         except AttributeError:
             presentation = None
 
         try:
-            presentation_request = IndyProofRequest(**record.by_format.pres_request["indy"])
+            presentation_request = IndyProofRequest(
+                **record.by_format.pres_request["indy"]
+            )
         except AttributeError:
             presentation_request = None
 

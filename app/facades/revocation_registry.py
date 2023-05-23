@@ -26,8 +26,8 @@ async def create_revocation_registry(
     Args:
         controller (AcaPyClient): aca-py client
         credential_definition_id (str): The credential definition ID.
-        max_cred_num (Optional(int)): The maximum number of credentials to be stored by the registry.
-            Default = 32768 (max is 32768)
+        max_cred_num (int): The maximum number of credentials to be stored by the registry.
+            Default = 32768 (i.e. max is 32768)
 
     Raises:
         Exception: When the credential definition is not found or the revocation registry could not be created.

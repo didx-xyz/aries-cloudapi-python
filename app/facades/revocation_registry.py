@@ -126,7 +126,7 @@ async def publish_revocation_registry_on_ledger(
     revocation_registry_id: str,
     connection_id: Optional[str] = None,
     create_transaction_for_endorser: Optional[bool] = False,
-) -> Union[IssuerRevRegRecord, TransactionRecord]:
+) -> TransactionRecord:
     """
         Publish a created revocation registry to the ledger
 

@@ -5,8 +5,12 @@ from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
 from app.tests.util.client import tenant_admin_client, tenant_client
 from app.tests.util.string import base64_to_json, get_random_string
-from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
-                                    create_verifier_tenant, delete_tenant)
+from app.tests.util.tenants import (
+    create_issuer_tenant,
+    create_tenant,
+    create_verifier_tenant,
+    delete_tenant,
+)
 
 
 @pytest.mark.anyio
@@ -30,8 +34,9 @@ async def test_accept_proof_request_verifier_no_public_did(
         await issuer_client.post("/generic/connections/create-invitation")
     ).json()
 
-    issuer_tenant_listener = Listener(topic="connections",
-                                      wallet_id=issuer_tenant["tenant_id"])
+    issuer_tenant_listener = Listener(
+        topic="connections", wallet_id=issuer_tenant["tenant_id"]
+    )
 
     invitation_response = (
         await holder_client.post(
@@ -44,8 +49,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_issuer_connection_id = invitation_response["connection_id"]
 
     await issuer_tenant_listener.wait_for_filtered_event(
-        filter_map={"state": "completed",
-                    "connection_id": issuer_holder_connection_id}
+        filter_map={"state": "completed", "connection_id": issuer_holder_connection_id}
     )
     issuer_tenant_listener.stop()
 
@@ -72,7 +76,9 @@ async def test_accept_proof_request_verifier_no_public_did(
         )
     ).json()
 
-    payload = await verifier_tenant_listener.wait_for_filtered_event(filter_map={"state": "completed"}, timeout=100)
+    payload = await verifier_tenant_listener.wait_for_filtered_event(
+        filter_map={"state": "completed"}, timeout=100
+    )
     verifier_tenant_listener.stop()
 
     holder_verifier_connection_id = invitation_response["connection_id"]
@@ -144,9 +150,8 @@ async def test_accept_proof_request_verifier_no_public_did(
     response.raise_for_status()
 
     # Wait for credential exchange to finish
-    await issuer_tenant_cred_listener.wait_for_filtered_event(  # <- times out
-        filter_map={"state": "done",
-                    "credential_id": issuer_credential_exchange_id},
+    await issuer_tenant_cred_listener.wait_for_filtered_event(
+        filter_map={"state": "done", "credential_id": issuer_credential_exchange_id},
         timeout=300,
     )
     issuer_tenant_cred_listener.stop()

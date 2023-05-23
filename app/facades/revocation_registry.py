@@ -133,7 +133,7 @@ async def publish_revocation_registry_on_ledger(
     Args:
         controller (AcaPyClient): aca-py client
         revocation_registry_id (str): The revocation registry ID.
-        connection_id (str): The connection ID of author to endorser.
+        connection_id (Optional[str]): The connection ID of author to endorser.
         create_transaction_for_endorser (bool): Whether to create a transaction
             record to for the endorser to be endorsed.
 
@@ -141,8 +141,7 @@ async def publish_revocation_registry_on_ledger(
         Exception: When the revocation registry could not be published.
 
     Returns:
-        result (Union[IssuerRevRegRecord, TxnOrRevRegResult]): The revocation registry record,
-            or the Revocation Register Result and the associated transaction record.
+        result TxnOrRevRegResult: The transaction record or the Revocation Register Result.
     """
     result = await controller.revocation.publish_rev_reg_def(
         rev_reg_id=revocation_registry_id,

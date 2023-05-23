@@ -125,32 +125,6 @@ class ServiceDecorator(TypedDict):
     routing_keys: Optional[List[str]]
 
 
-class Oob(BaseModel):
-    attach_thread_id: Optional[str] = None
-    connection_id: Optional[str] = None
-    created_at: Optional[str] = None
-    invi_msg_id: Optional[str] = None
-    invitation: InvitationMessage = None
-    multi_use: Optional[bool] = False
-    oob_id: Optional[str] = None
-    our_recipient_key: Optional[str] = None
-    our_recipient_key: Optional[str] = None
-    role: Optional[Literal["sender", "receiver"]] = None
-    state: Optional[
-        Literal[
-            "initial",
-            "prepare-response",
-            "await-response",
-            "reuse-not-accepted",
-            "reuse-accepted",
-            "done",
-            "deleted",
-        ]
-    ] = None
-    trace: Optional[bool] = None
-    updated_at: Optional[str] = None
-
-
 class Connection(BaseModel):
     alias: Optional[str] = None
     connection_id: Optional[str] = None

@@ -143,18 +143,21 @@ async def publish_revocation_registry_on_ledger(
     Returns:
         result TxnOrRevRegResult: The transaction record or the Revocation Register Result.
     """
-    result = await controller.revocation.publish_rev_reg_def(
+    txn_or_rev_reg_result = await controller.revocation.publish_rev_reg_def(
         rev_reg_id=revocation_registry_id,
         conn_id=connection_id if create_transaction_for_endorser else None,
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
-    if isinstance(result, TxnOrRevRegResult) and result.txn:
-        result = result.txn
+    if isinstance(txn_or_rev_reg_result, RevRegResult):
+        result = txn_or_rev_reg_result.result
+    elif (
+        isinstance(txn_or_rev_reg_result, TxnOrRevRegResult)
+        and txn_or_rev_reg_result.txn
+    ):
+        result = txn_or_rev_reg_result.txn
     else:
-        raise CloudApiException(
-            f"Failed to publish revocation registry to ledger.\n{result}"
-        )
+        raise CloudApiException("Failed to publish revocation registry to ledger.")
 
     logger.info(
         f"Published revocation registry for registry with ID {revocation_registry_id}:\n{result}"

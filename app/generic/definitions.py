@@ -209,7 +209,9 @@ async def create_credential_definition(
         )
     )
 
-    if isinstance(result, TxnOrCredentialDefinitionSendResult):
+    if result.sent and result.sent.credential_definition_id:
+        credential_definition_id = result.sent.credential_definition_id
+    elif result.txn and result.txn.transaction_id:
         try:
             # Wait for transaction to be acknowledged and written to the ledger
             await listener.wait_for_filtered_event(

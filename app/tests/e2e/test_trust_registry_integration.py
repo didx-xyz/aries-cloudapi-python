@@ -99,18 +99,19 @@ async def test_accept_proof_request_verifier_no_public_did(
     schema_id = schema["id"]
 
     # Create credential definition as issuer
-    credential_definition = (
-        await issuer_client.post(
-            "/generic/definitions/credentials",
-            json={
-                "tag": get_random_string(5),
-                "schema_id": schema_id,
-                "support_revocation": True,
-            },
-        )
-    ).json()
+    credential_definition = await issuer_client.post(
+        "/generic/definitions/credentials",
+        json={
+            "tag": get_random_string(5),
+            "schema_id": schema_id,
+            "support_revocation": True,
+        },
+    )
+    
+    if credential_definition.is_client_error:
+        raise Exception(credential_definition.json()["detail"])
 
-    credential_definition_id = credential_definition["id"]
+    credential_definition_id = credential_definition.json()["id"]
 
     # Issue credential from issuer to holder
     holder_tenant_listener = Listener(

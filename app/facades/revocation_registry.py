@@ -125,7 +125,7 @@ async def publish_revocation_registry_on_ledger(
     controller: AcaPyClient,
     revocation_registry_id: str,
     connection_id: Optional[str] = None,
-    create_transaction_for_endorser: Optional[bool] = False,
+    create_transaction_for_endorser: bool = False,
 ) -> TransactionRecord:
     """
         Publish a created revocation registry to the ledger

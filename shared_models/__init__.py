@@ -14,7 +14,6 @@ from shared_models.shared_models import (
     BasicMessage,
     PayloadType,
     topic_mapping,
-    Oob,
     WEBHOOK_TOPIC_ALL,
     CloudApiTopics,
     Endorsement,

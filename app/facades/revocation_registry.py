@@ -149,9 +149,7 @@ async def publish_revocation_registry_on_ledger(
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
-    if isinstance(result, RevRegResult) and result.result:
-        result = result.result
-    elif isinstance(result, TxnOrRevRegResult) and result.txn:
+    if isinstance(result, TxnOrRevRegResult) and result.txn:
         result = result.txn
     else:
         raise CloudApiException(

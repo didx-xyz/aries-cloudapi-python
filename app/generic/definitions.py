@@ -456,7 +456,8 @@ async def create_schema(
 
     # Register the schema in the trust registry
     try:
-        await trust_registry.register_schema(schema_id=result.schema_id)
+        if result.sent and result.sent.schema_id:
+            await trust_registry.register_schema(schema_id=result.sent.schema_id)
     except trust_registry.TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
@@ -464,4 +465,4 @@ async def create_schema(
         if error.status_code != 400:
             raise error
 
-    return _credential_schema_from_acapy(result.schema_)
+    return _credential_schema_from_acapy(result.sent.schema_)

@@ -82,7 +82,7 @@ async def get_credential_definitions(
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[CredentialDefinition]:
     """
         Get agent-created credential definitions
 
@@ -137,7 +137,7 @@ async def get_credential_definitions(
 async def get_credential_definition_by_id(
     credential_definition_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> CredentialDefinition:
     """
         Get credential definition by id.
 
@@ -176,7 +176,7 @@ async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
     aries_controller: AcaPyClient = Depends(agent_selector),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> CredentialDefinition:
     """
         Create a credential definition.
 
@@ -325,7 +325,7 @@ async def get_schemas(
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[CredentialSchema]:
     """
         Retrieve schemas that the current agent created.
 
@@ -370,7 +370,7 @@ async def get_schemas(
 async def get_schema(
     schema_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> CredentialSchema:
     """
         Retrieve schema by id.
 

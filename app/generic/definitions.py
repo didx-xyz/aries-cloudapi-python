@@ -247,7 +247,9 @@ async def create_credential_definition(
                 "Unable to construct credential definition id from signature response"
             ) from e
     else:
-        credential_definition_id = result.credential_definition_id
+        raise CloudApiException(
+            "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def"
+        )
 
     if credential_definition.support_revocation:
         try:
@@ -458,6 +460,8 @@ async def create_schema(
     try:
         if result.sent and result.sent.schema_id:
             await trust_registry.register_schema(schema_id=result.sent.schema_id)
+        else:
+            raise CloudApiException("No SchemaSendResult in publish_schema response")
     except trust_registry.TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:

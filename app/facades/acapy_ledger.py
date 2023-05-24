@@ -66,7 +66,7 @@ async def accept_taa(
     )
 
     if accept_taa_response != {}:
-        logger.debug(
+        logger.warning(
             "Failed to accept TAA. Response received:\n%s", accept_taa_response
         )
         raise CloudApiException("Something went wrong. Could not accept TAA.", 400)

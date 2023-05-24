@@ -297,7 +297,7 @@ async def revoke_credential(
             await endorser_revoke()
 
     logger.info(
-        "Revoked credential  with ID %s for exchange ID %s.",
+        "Revoked credential with ID %s for exchange ID %s.",
         credential_definition_id,
         credential_exchange_id,
     )

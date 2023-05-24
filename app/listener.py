@@ -93,6 +93,10 @@ class Listener:
                         timeout,
                         filter_map,
                     )
+                    logger.debug(
+                        "Events already processed that weren't matched to filters: %s",
+                        self._processed_events,
+                    )
                     raise ListenerTimeout(
                         f"Waiting for an expected event has timed out on topic {self.topic}"
                     )

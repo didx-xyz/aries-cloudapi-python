@@ -12,6 +12,9 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
 def get_actor_by_did(db: Session, actor_did: str):
     return db.query(models.Actor).filter(models.Actor.did == actor_did).first()
 
+def get_actor_by_name(db: Session, actor_name: str):
+    return db.query(models.Actor).filter(models.Actor.name == actor_name).first()
+
 
 def get_actor_by_id(db: Session, actor_id: str):
     return db.query(models.Actor).filter(models.Actor.id == actor_id).first()

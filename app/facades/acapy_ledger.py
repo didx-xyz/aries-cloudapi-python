@@ -65,6 +65,19 @@ async def accept_taa(
         body=TAAAccept(**taa.dict(), mechanism=mechanism)
     )
 
+    if isinstance(accept_taa_response, dict):
+        logger.info(
+            "accept_taa_response - TAA response is type dict %s", accept_taa_response
+        )
+    else:
+        logger.info(
+            "accept_taa_response - TAA response is type something else %s",
+            accept_taa_response,
+        )
+        accept_taa_response = accept_taa_response.json()
+
+    logger.info("accept_taa_response: %s", accept_taa_response)
+
     if accept_taa_response != {}:
         logger.warning(
             "Failed to accept TAA. Response received:\n%s", accept_taa_response

@@ -118,6 +118,29 @@ async def actor_by_did(did: str) -> Optional[Actor]:
 
     return actor_res.json()
 
+async def actor_by_name(actor_name: str) -> Optional[Actor]:
+    """Retrieve actor by name from trust registry
+
+    Args:
+        actor_name (str): name of the actor to retrieve
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actor.
+
+    Returns:
+        Actor: The actor with specified name.
+    """
+    actor_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_name}")
+
+    if actor_res.status_code == 404:
+        return None
+    elif actor_res.is_error:
+        raise TrustRegistryException(
+            f"Error fetching actor by name: {actor_res.text}", actor_res.status_code
+        )
+
+    return actor_res.json()
+
 
 async def actor_by_id(actor_id: str) -> Optional[Actor]:
     """Retrieve actor by id from trust registry

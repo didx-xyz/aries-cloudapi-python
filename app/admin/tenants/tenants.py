@@ -2,6 +2,8 @@ import logging
 from secrets import token_urlsafe
 from typing import List, Optional
 from uuid import uuid4
+import httpx
+from http import HTTPStatus
 
 import base58
 from aries_cloudcontroller import (
@@ -12,7 +14,7 @@ from aries_cloudcontroller import (
     UpdateWalletRequest,
     WalletRecord,
 )
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from pydantic import BaseModel
 from uplink import Consumer, Query, get, returns
 
@@ -30,6 +32,7 @@ from app.facades.trust_registry import (
     actor_by_id,
     register_actor,
     remove_actor_by_id,
+    actor_by_name,
 )
 from shared import CloudApiException
 from shared.dependencies.auth import AcaPyAuth, Role, acapy_auth, agent_role
@@ -61,12 +64,57 @@ def tenant_api_key(role: Role, tenant_token: str):
 
     return f"{role.agent_type.tenant_role.name}.{tenant_token}"
 
+# async def send_webhook_event(url: str, data: dict):
+#     async with httpx.AsyncClient() as client:
+#         response = await client.post(url, json=data)
+#         if response.status_code != HTTPStatus.OK:
+#             logger.error("Failed to send webhook event. Status code: %s, message: %s",
+#                          response.status_code, response.text)
+async def onboard_and_register_tenant(
+    name: str,
+    roles: List[str],
+    tenant_auth_token: str,
+    tenant_id: str,
+    # webhook_url: str,  # this is the URL where we'll send the webhook events
+    # background_tasks: BackgroundTasks,
+):
+    onboard_result = await onboard_tenant(
+        name=name,
+        roles=roles,
+        tenant_auth_token=tenant_auth_token,
+        tenant_id=tenant_id,
+    )
+
+    # Send a webhook event
+    # background_tasks.add_task(
+    #     send_webhook_event,
+    #     webhook_url,
+    #     {"status": "tenant_onboarded", "tenant_id": tenant_id},
+    # )
+
+    await register_actor(
+        actor=Actor(
+            id=tenant_id,
+            name=name,
+            roles=list(roles),
+            did=onboard_result.did,
+            didcomm_invitation=onboard_result.didcomm_invitation,
+        )
+    )
+
+    # Send another webhook event
+    # background_tasks.add_task(
+    #     send_webhook_event,
+    #     webhook_url,
+    #     {"status": "actor_registered", "tenant_id": tenant_id},
+    # )
 
 @router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
     aries_controller: AcaPyClient = Depends(multitenant_admin),
     auth: AcaPyAuth = Depends(acapy_auth),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ) -> Tenant:
     """Create a new tenant."""
     tenant_role = auth.role.agent_type.tenant_role
@@ -74,6 +122,15 @@ async def create_tenant(
     if not tenant_role:
         raise CloudApiException(
             f"Unable to create tenant for agent type ${auth.role}, as it has no admin rights over tenants"
+        )
+
+    # check if actor with duplicate name exist
+    actor = await actor_by_name(body.name)
+    print("actor", actor)
+    # actor with same name exist in registry, throw exception
+    if actor and body.roles and len(body.roles) > 0:
+        raise CloudApiException(
+            f"Tenant with name: '{body.name}' already exist in Trust Registry. Please choose a different name"
         )
 
     wallet_response = await aries_controller.multitenancy.create_wallet(
@@ -89,21 +146,12 @@ async def create_tenant(
     )
 
     if body.roles and len(body.roles) > 0:
-        onboard_result = await onboard_tenant(
+        background_tasks.add_task(
+            onboard_and_register_tenant,
             name=body.name,
             roles=body.roles,
             tenant_auth_token=wallet_response.token,
             tenant_id=wallet_response.wallet_id,
-        )
-
-        await register_actor(
-            actor=Actor(
-                id=wallet_response.wallet_id,
-                name=body.name,
-                roles=list(body.roles),
-                did=onboard_result.did,
-                didcomm_invitation=onboard_result.didcomm_invitation,
-            )
         )
 
     return CreateTenantResponse(

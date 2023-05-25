@@ -6,7 +6,6 @@ from aries_cloudcontroller import (AcaPyClient,
                                    CredentialDefinitionSendRequest, TAAAccept,
                                    TAAInfo, TAARecord,
                                    TxnOrRegisterLedgerNymResponse)
-from fastapi import HTTPException
 
 from app.error.cloud_api_error import CloudApiException
 
@@ -69,15 +68,12 @@ async def accept_taa(
     except Exception as e:
         logger.warning("An exception occurred while trying to accept TAA. %r", e)
         raise CloudApiException(
-            "An unexpected error occurred while trying to accept TAA.",
+            "An unexpected error occurred while trying to accept TAA."
         ) from e
 
     if isinstance(accept_taa_response, ClientResponseError):
         logger.warning("Failed to accept TAA. Response: %s", accept_taa_response)
-
         raise CloudApiException("Something went wrong. Could not accept TAA.", 400)
-
-    logger.info("accept_taa_response value: %s", accept_taa_response)
 
     return accept_taa_response
 

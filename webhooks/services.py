@@ -114,10 +114,10 @@ class Service:
             # Log the data failing to create webhook, skip appending
             # anything to the list, and continue to next item in entries
             except (ValidationError, json.JSONDecodeError) as e:
-                log.error(f"Error creating formatted webhook for\n{data}\n{e!r}")
+                log.error("Error creating formatted webhook for\n%s\n%r", data, e)
             # Catch the general case if sth else/unknown occurs:
             except Exception as e:
-                log.error(f"Unknown exception occurred:\n{e!r}")
+                log.error("Unknown exception occurred:\n%r", e)
 
         return data_list
 
@@ -141,9 +141,9 @@ class Service:
             # Log the data failing to create webhook, skip appending
             # anything to the list, and continue to next item in entries
             except (ValidationError, json.JSONDecodeError) as e:
-                log.error(f"Error creating formatted webhook for\n{data}\n{e!r}")
+                log.error("Error creating formatted webhook for\n%s\n%r", data, e)
             # Catch the general case if sth else/unknown occurs:
             except Exception as e:
-                log.error(f"Unknown exception occurred:\n{e!r}")
+                log.error("Unknown exception occurred:\n%r", e)
 
         return data_list

@@ -12,7 +12,7 @@ async def create_issuer_tenant(tenant_admin_client: AsyncClient, name: str):
     )
 
     if wallet_response.is_error:
-        raise Exception("Error creating issuer tenant", wallet_response.text)
+        raise Exception(f"Could not create issuer tenant. {wallet_response.text}")
 
     wallet = wallet_response.json()
 
@@ -32,7 +32,7 @@ async def create_verifier_tenant(tenant_admin_client: AsyncClient, name: str):
     )
 
     if wallet_response.is_error:
-        raise Exception("Error creating verifier tenant", wallet_response.text)
+        raise Exception(f"Could not create verifier tenant. {wallet_response.text}")
 
     wallet = wallet_response.json()
 

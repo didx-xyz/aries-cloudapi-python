@@ -43,10 +43,10 @@ async def create_revocation_registry(
 
     if not result:
         raise CloudApiException(
-            f"Error creating revocation registry for credential with ID {credential_definition_id} and max credential number {max_cred_num}\n{result}"
+            f"Error creating revocation registry for credential with ID {credential_definition_id}"
         )
 
-    logger.info(f"Created revocation registry:\n{result.result}")
+    logger.info("Created revocation registry:\n%s", result.result)
 
     return result.result
 
@@ -71,13 +71,18 @@ async def get_active_revocation_registry_for_credential(
         cred_def_id=credential_definition_id
     )
 
-    if not result and not isinstance(result, RevRegResult):
+    if not isinstance(result, RevRegResult):
+        logger.warning(
+            "Unexpected type returned from get_active_registry_for_cred_def: %s", result
+        )
         raise CloudApiException(
-            f"Error retrieving revocation registry for credential with ID {credential_definition_id}.\n{result}"
+            f"Error retrieving revocation registry for credential with ID {credential_definition_id}"
         )
 
     logger.info(
-        f"Retrieved revocation registry for credential definition with ID {credential_definition_id}:\n{result.result}"
+        "Retrieved revocation registry for credential definition with ID %s:\n%s",
+        credential_definition_id,
+        result.result,
     )
 
     return result.result
@@ -91,7 +96,7 @@ async def get_credential_revocation_status(
 
     Args:
         controller (AcaPyClient): aca-py client
-        credential_definition_id (str): The credential definition ID.
+        credential_exchange_id (str): The credential exchange ID.
 
     Raises:
         Exception: When the active revocation registry cannot be retrieved.
@@ -103,19 +108,21 @@ async def get_credential_revocation_status(
         cred_ex_id=credential_exchange_id
     )
 
-    if not result and not isinstance(result, CredRevRecordResult):
-        credential_definition_id = await get_credential_definition_id_from_exchange_id(
-            controller=controller, credential_exchange_id=credential_exchange_id
+    if not isinstance(result, CredRevRecordResult):
+        logger.warning(
+            "Unexpected type returned from get_revocation_status: %s", result
         )
-
         raise CloudApiException(
-            f"Error retrieving revocation status for credential definition ID {credential_definition_id}"
+            f"Error retrieving revocation status for credential exchange ID {credential_exchange_id}"
         )
     else:
         result = result.result
 
     logger.info(
-        f"Credential exchange {credential_exchange_id} has status:\n{result.state}:\n{result}"
+        "Credential exchange %s has status:%s:\n%s",
+        credential_exchange_id,
+        result.state,
+        result,
     )
 
     return result
@@ -155,12 +162,13 @@ async def publish_revocation_registry_on_ledger(
     elif isinstance(result, TxnOrRevRegResult) and result.txn:
         result = result.txn
     else:
-        raise CloudApiException(
-            f"Failed to publish revocation registry to ledger.\n{result}"
-        )
+        logger.warning("Unexpected type returned from publish_rev_reg_def: %s", result)
+        raise CloudApiException("Failed to publish revocation registry to ledger.")
 
     logger.info(
-        f"Published revocation registry for registry with ID {revocation_registry_id}:\n{result}"
+        "Published revocation registry for registry with ID %s\n%s",
+        revocation_registry_id,
+        result,
     )
 
     return result
@@ -195,7 +203,7 @@ async def publish_revocation_entry_to_ledger(
     """
     if not revocation_registry_id and not credential_definition_id:
         raise CloudApiException(
-            "Please, provide either a revocation registry id OR credential definition id.",
+            "Invalid request. Please provide either a 'revocation registry id' or a 'credential definition id'.",
             400,
         )
     if not revocation_registry_id:
@@ -211,13 +219,16 @@ async def publish_revocation_entry_to_ledger(
     except Exception as e:
         return e
 
-    if not result and not isinstance(result, RevRegResult):
-        raise CloudApiException(
-            f"Failed to publish revocation entry to ledger.\n{result}"
+    if not isinstance(result, RevRegResult):
+        logger.warning(
+            "Unexpected type returned from publish_rev_reg_entry: %s", result
         )
+        raise CloudApiException("Failed to publish revocation entry to ledger.")
 
     logger.info(
-        f"Published revocation entry for registry with ID {revocation_registry_id}:\n{result.result}"
+        "Published revocation entry for registry with ID %s:\n%s",
+        revocation_registry_id,
+        result.result,
     )
 
     return result.result
@@ -255,8 +266,11 @@ async def revoke_credential(
             )
         )
     except ClientResponseError as e:
-        raise CloudApiException(
-            f"Failed to revoke credential.{e.message}", 418)
+        logger.debug(
+            "A ClientResponseError was caught while revoking credential. The error message is: '%s'",
+            e.message,
+        )
+        raise CloudApiException("Failed to revoke credential.", 400) from e
 
     if not auto_publish_to_ledger:
         active_revocation_registry_id = (
@@ -273,21 +287,24 @@ async def revoke_credential(
                 revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
                 create_transaction_for_endorser=True,
             )
-        except Exception:
+        except Exception as e:
+            logger.exception(
+                "Exception caught when revoking credential, with message: %r", e
+            )
             # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py
             # This is unexpected and throws and error in the controller validating the pydantic model.
             # It still creates the transaction record though that can be endorsed below.
             await endorser_revoke()
 
     logger.info(
-        f"Revoked credential  with ID {credential_definition_id} for exchange ID {credential_exchange_id}."
+        "Revoked credential with ID %s for exchange ID %s.",
+        credential_definition_id,
+        credential_exchange_id,
     )
 
 
 async def endorser_revoke():
-    listener = Listener(
-        topic="endorsements", wallet_id="admin"
-    )
+    listener = Listener(topic="endorsements", wallet_id="admin")
     async with get_governance_controller() as endorser_controller:
         try:
             txn_record = await listener.wait_for_filtered_event(
@@ -295,10 +312,11 @@ async def endorser_revoke():
                     "state": "request-received",
                 }
             )
-        except TimeoutError:
+        except TimeoutError as e:
             raise CloudApiException(
-                "Failed to retrieve transaction record for endorser", 500
-            )
+                "Timeout occured while waiting to retrieve transaction record for endorser",
+                504,
+            ) from e
         finally:
             listener.stop()
 
@@ -326,7 +344,12 @@ async def get_credential_definition_id_from_exchange_id(
                 cred_ex_id=credential_exchange_id
             )
         ).credential_definition_id
-    except ClientResponseError:
+    except ClientResponseError as e:
+        logger.debug(
+            "A ClientResponseError was caught while getting v1 record with cred_ex_id %s. The error message is: '%s'",
+            credential_exchange_id,
+            e.message,
+        )
         try:
             rev_reg_parts = (
                 await controller.issue_credential_v2_0.get_record(
@@ -342,6 +365,11 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
-        except Exception:
+        except Exception as exc:
+            logger.exception(
+                "Exception caught when getting v2 record with cred_ex_id %s. Exception:\n%r",
+                credential_exchange_id,
+                exc,
+            )
             credential_definition_id = None
     return credential_definition_id

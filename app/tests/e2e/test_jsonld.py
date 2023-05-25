@@ -70,7 +70,7 @@ async def test_sign_jsonld(
     assert_that(response.json()["detail"]).contains(
         "Please provide either or neither, but not both"
     )
-    assert_that(response.status_code).is_equal_to(418)
+    assert_that(response.status_code).is_equal_to(400)
 
     # Success pub_did
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -142,7 +142,7 @@ async def test_verify_jsonld(
     assert_that(response.json()["detail"]).contains(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
     )
-    assert_that(response.status_code).is_equal_to(418)
+    assert_that(response.status_code).is_equal_to(400)
 
     # # Error invalid
     jsonld_verify.verkey = None
@@ -153,7 +153,7 @@ async def test_verify_jsonld(
     )
 
     assert_that(response.status_code).is_equal_to(422)
-    assert_that(response.json()["detail"]).contains("Failed to verify payload with:")
+    assert_that(response.json()["detail"]).contains("Failed to verify payload with")
 
     # Success
     jsonld_verify.public_did = None

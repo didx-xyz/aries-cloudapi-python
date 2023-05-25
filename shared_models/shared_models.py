@@ -208,6 +208,7 @@ class CredentialExchange(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     role: Literal["issuer", "holder"]
     schema_id: Optional[str]
+    # state can be None in proposed state
     state: Optional[
         Literal[
             "abandoned",
@@ -222,8 +223,7 @@ class CredentialExchange(BaseModel):
             "request-sent",
         ]
     ] = None
-    # Attributes can be None in proposed state
-    # Connection id can be None in connectionless exchanges
+    # Thread id can be None in connectionless exchanges
     thread_id: Optional[str] = None
     updated_at: str
 

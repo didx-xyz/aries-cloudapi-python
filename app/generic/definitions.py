@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from typing import List, Optional
 
 from aiohttp import ClientResponseError
@@ -24,6 +25,8 @@ from app.facades.revocation_registry import (
     create_revocation_registry, publish_revocation_registry_on_ledger)
 from app.listener import Listener
 from app.role import Role
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/generic/definitions",
@@ -221,7 +224,7 @@ async def create_credential_definition(
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
-                "Timeout waiting for endorser to accept the endorsement request"
+                "Timeout waiting for endorser to accept the endorsement request", 504
             )
         finally:
             listener.stop()
@@ -291,7 +294,8 @@ async def create_credential_definition(
                         )
                     except TimeoutError:
                         raise CloudApiException(
-                            "Failed to retrieve transaction record for endorser", 500
+                            "Timeout occurred while waiting to retrieve transaction record for endorser",
+                            504,
                         )
                     finally:
                         admin_listener.stop()
@@ -305,6 +309,10 @@ async def create_credential_definition(
             )
             credential_definition_id = active_rev_reg.result.cred_def_id
         except ClientResponseError as e:
+            logger.debug(
+                "A ClientResponseError was caught while supporting revocation. The error message is: '%s'",
+                e.message,
+            )
             raise e
 
     # ACA-Py only returns the id after creating a credential definition
@@ -431,28 +439,25 @@ async def create_schema(
                 ]
                 if len(schemas) > 1:
                     raise CloudApiException(
-                        detail={
-                            "Multiple schemas with name %s and version %s exist. These are: %s",
-                            schema.name,
-                            schema.version,
-                            str(schemas_created_ids.schema_ids),
-                        }
+                        f"Multiple schemas with name {schema.name} and version {schema.version} exist."
+                        + f"These are: {str(schemas_created_ids.schema_ids)}",
+                        409,
                     )
                 _schema = schemas[0]
             # Schema exists with different attributes
             if set(_schema.schema_.attr_names) != set(schema.attribute_names):
                 raise CloudApiException(
-                    detail={
-                        "Error creating schema: Schema already exists with different attribute names. Given: %s. Found: %s",
-                        str(set(_schema.schema_.attr_names)),
-                        str(set(schema.attribute_names)),
-                    }
+                    "Error creating schema: Schema already exists with different attribute names."
+                    + f"Given: {str(set(_schema.schema_.attr_names))}. Found: {str(set(schema.attribute_names))}",
+                    409,
                 )
             return _credential_schema_from_acapy(_schema.schema_)
         else:
-            raise CloudApiException(
-                detail={"Error creating schema: %s", e.message}, status_code=500
+            logger.warning(
+                "An unhandled ClientResponseError was caught while publishing schema. The error message is: '%s'",
+                e.message,
             )
+            raise CloudApiException("Error while creating schema.") from e
 
     # Register the schema in the trust registry
     try:

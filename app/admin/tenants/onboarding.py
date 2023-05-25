@@ -190,7 +190,8 @@ async def onboard_issuer_no_public_did(
 
     async def wait_for_connection_completion(invitation):
         logger.debug(
-            f"Starting webhook listener for connections with wallet id {issuer_wallet_id}"
+            "Starting webhook listener for connections with wallet id %s",
+            issuer_wallet_id,
         )
 
         connections_listener = create_listener(topic="connections", wallet_id="admin")
@@ -213,7 +214,8 @@ async def onboard_issuer_no_public_did(
             )
         except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500
+                "Timeout occurred while waiting for connection with endorser to complete",
+                504,
             ) from e
         finally:
             connections_listener.stop()
@@ -269,7 +271,7 @@ async def onboard_issuer_no_public_did(
             )
         except TimeoutError as e:
             raise CloudApiException(
-                "Error creating connection with endorser", 500
+                "Timeout occured while waiting to create connection with endorser", 504
             ) from e
         finally:
             endorsements_listener.stop()
@@ -294,12 +296,12 @@ async def onboard_issuer_no_public_did(
     try:
         endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
     except Exception as e:
-        raise CloudApiException("Unable to get endorser public DID", 500) from e
+        raise CloudApiException("Unable to get endorser public DID") from e
 
     try:
         issuer_did = await create_connection_with_endorser(endorser_did)
     except Exception as e:
-        raise CloudApiException("Error creating connection with endorser", 500) from e
+        raise CloudApiException("Error creating connection with endorser") from e
 
     return issuer_did
 
@@ -343,6 +345,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
             onboarding_result["didcomm_invitation"] = invitation.invitation_url
         except (KeyError, IndexError) as e:
             # FIXME: more verbose error
-            raise CloudApiException(f"Error creating invitation: {e}")
+            logger.warning("Error creating invitation:\n%s", str(e))
+            raise CloudApiException("Error creating invitation.") from e
 
     return OnboardResult(**onboarding_result)

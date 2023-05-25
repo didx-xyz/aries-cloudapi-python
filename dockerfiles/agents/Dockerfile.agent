@@ -6,7 +6,9 @@ RUN apt-get update && apt-get install -y gcc
 
 
 RUN pip3 install -U pip
-RUN pip3 install aries-cloudagent[askar]==0.8.0 acapy-wallet-groups-plugin
+#RUN pip3 install aries-cloudagent[askar]==0.8.0 acapy-wallet-groups-plugin
+RUN pip3 install "aries_cloudagent[askar] @ git+https://github.com/TimoGlastra/aries-cloudagent-python.git@oob-issue"
+RUN pip3 install acapy-wallet-groups-plugin
 
 ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 ./jq
 RUN chmod +x ./jq

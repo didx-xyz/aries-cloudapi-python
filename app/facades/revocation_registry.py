@@ -164,7 +164,10 @@ async def publish_revocation_registry_on_ledger(
     ):
         result = txn_or_rev_reg_result.txn
     else:
-        logger.warning("Unexpected type returned from publish_rev_reg_def: %s", result)
+        logger.warning(
+            "Unexpected type returned from publish_rev_reg_def: %s",
+            txn_or_rev_reg_result,
+        )
         raise CloudApiException("Failed to publish revocation registry to ledger.")
 
     logger.info(

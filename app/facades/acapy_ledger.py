@@ -74,7 +74,7 @@ async def accept_taa(
             "accept_taa_response - TAA response is type something else %s",
             accept_taa_response,
         )
-        accept_taa_response = accept_taa_response.json()
+        accept_taa_response = await accept_taa_response.json()
 
     logger.info("accept_taa_response: %s", accept_taa_response)
 

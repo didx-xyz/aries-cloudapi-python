@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
 from assertpy import assert_that

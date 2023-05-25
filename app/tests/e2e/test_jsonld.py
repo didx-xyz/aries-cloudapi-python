@@ -1,10 +1,10 @@
-from aries_cloudcontroller import AcaPyClient, SignatureOptions
 import pytest
+from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
 from httpx import AsyncClient
+
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.e2e.test_fixtures import *
-from app.tests.e2e.test_fixtures import FaberAliceConnect, BASE_PATH
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",

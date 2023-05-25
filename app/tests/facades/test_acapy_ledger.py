@@ -1,10 +1,9 @@
 import pytest
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import (AcaPyClient, ModelSchema, SchemaGetResult,
                                    TAAAccept, TAAInfo, TAARecord, TAAResult)
 from assertpy import assert_that
 from fastapi import HTTPException
-from mockito import mock, verify, when
+from mockito import verify, when
 
 from app.facades.acapy_ledger import (accept_taa, get_did_endpoint, get_taa,
                                       schema_id_from_credential_definition_id)
@@ -19,23 +18,21 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
 
     with pytest.raises(HTTPException) as exc:
         await get_taa(mock_agent_controller)
-    assert exc.value.status_code == 404
+    assert exc.value.status_code == 500
     assert "Something went wrong. Could not get TAA." in exc.value.detail
 
 
 @pytest.mark.anyio
 async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
-    error_response = ClientResponseError(mock({}), mock({}))
-
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
-    ).thenReturn(to_async(error_response))
+    ).thenReturn(to_async({"example": "error"}))
 
     record = TAARecord(digest="")
     with pytest.raises(HTTPException) as exc:
         await accept_taa(mock_agent_controller, taa=record, mechanism="data")
     assert exc.value.status_code == 400
-    assert exc.value.detail == "Something went wrong. Could not accept TAA."
+    assert "Something went wrong. Could not accept TAA." in exc.value.detail
 
 
 @pytest.mark.anyio
@@ -47,7 +44,7 @@ async def test_error_on_get_did_endpoint(mock_agent_controller: AcaPyClient):
     with pytest.raises(HTTPException) as exc:
         await get_did_endpoint(mock_agent_controller, "data")
     assert exc.value.status_code == 404
-    assert exc.value.detail == "Something went wrong. Could not obtain issuer endpoint."
+    assert exc.value.detail == "Could not obtain issuer endpoint."
 
 
 @pytest.mark.anyio

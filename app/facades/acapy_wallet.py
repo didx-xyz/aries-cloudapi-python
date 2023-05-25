@@ -4,6 +4,7 @@ from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
 from pydantic import BaseModel
+
 from app.error import CloudApiException
 
 logger = logging.getLogger(__name__)
@@ -27,10 +28,7 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
     public_did = await aries_controller.wallet.get_public_did()
 
     if not public_did.result or not public_did.result.did:
-        raise CloudApiException(
-            "Agent has no public did",
-            403,
-        )
+        raise CloudApiException("Agent has no public did", 403)
 
     return f"did:sov:{public_did.result.did}"
 
@@ -55,7 +53,7 @@ async def create_did(controller: AcaPyClient) -> Did:
         or not did_result.result.verkey
     ):
         logger.error("Failed to create DID:\n %s", did_result)
-        raise CloudApiException(f"Error creating did: {did_result.dict()}", 500)
+        raise CloudApiException("Error creating did.")
 
     return Did(did=did_result.result.did, verkey=did_result.result.verkey)
 
@@ -85,7 +83,7 @@ async def set_public_did(
     )
 
     if not result.result and not create_transaction_for_endorser:
-        raise CloudApiException(f"Error setting public did: {did}")
+        raise CloudApiException(f"Error setting public did to {did}", 400)
 
     return result.dict()
 

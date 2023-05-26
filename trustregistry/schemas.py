@@ -34,8 +34,12 @@ class Schema(BaseModel):
     def default_id_create(cls, values):
         for v in ["did", "name", "version"]:
             if ":" in values[v]:
-                raise ValueError(f"{v} must not contain colon.")
-        values["id"] = f"{values['did']}:2:{values['name']}:{values['version']}"
+                raise ValueError(f"Schema field `{v}` must not contain colon.")
+        expected_id = f"{values['did']}:2:{values['name']}:{values['version']}"
+        if values.get("id") != expected_id:
+            raise ValueError(
+                f"Schema's `id` field does not match expected format: {expected_id}"
+            )
         return values
 
     class Config:

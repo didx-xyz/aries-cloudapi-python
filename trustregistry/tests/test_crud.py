@@ -73,11 +73,11 @@ def test_get_schemas():
 
 
 new_schema = schemas.Schema(
-    did="abc", name="awesomeschema", version="0.4.20", id="abc:awesomeschema:0.4.20"
+    did="abc", name="awesomeschema", version="0.4.20", id="abc:2:awesomeschema:0.4.20"
 )
 
 update_schema = schemas.Schema(
-    did="abcde", name="awesomeschema", version="0.4.20", id="abcde:awesomeschema:0.4.20"
+    did="abcde", name="awesomeschema", version="0.4.20", id="abcde:2:awesomeschema:0.4.20"
 )
 
 

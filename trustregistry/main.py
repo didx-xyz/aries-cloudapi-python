@@ -1,8 +1,14 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
+import logging
 import os
 
+from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
+
+from trustregistry import crud, models
+from trustregistry.database import engine
+from trustregistry.db import get_db
 from trustregistry.registry import registry_actors, registry_schemas
+
 logger = logging.getLogger(__name__)
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")

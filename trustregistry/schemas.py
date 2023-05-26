@@ -34,6 +34,7 @@ class Schema(BaseModel):
     version: str = Field(default=None)
     id: str = Field(default=None)
 
+    # pylint: disable=no-self-argument
     @root_validator
     def validate_and_set_values(cls, values):
         for v in ["did", "name", "version"]:

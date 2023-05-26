@@ -16,14 +16,14 @@ PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
 
 
 def create_app():
-    app = FastAPI(
+    api = FastAPI(
         title=OPENAPI_NAME,
         version=PROJECT_VERSION,
         description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",
     )
-    app.include_router(registry_actors.router)
-    app.include_router(registry_schemas.router)
-    return app
+    api.include_router(registry_actors.router)
+    api.include_router(registry_schemas.router)
+    return api
 
 
 app = create_app()

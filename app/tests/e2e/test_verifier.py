@@ -195,7 +195,7 @@ async def test_accept_proof_request_oob_v1(
         json=proof_accept.dict(),
     )
 
-    alice_presentation_sent = await alice_proofs_listener.wait_for_filtered_event(
+    await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
             "state": "presentation-sent",
             "proof_id": alice_proof_id,
@@ -203,7 +203,7 @@ async def test_accept_proof_request_oob_v1(
         }
     )
 
-    bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
+    await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
 
@@ -292,7 +292,7 @@ async def test_accept_proof_request_oob_v2(
         json=proof_accept.dict(),
     )
 
-    alice_presentation_sent = await alice_proofs_listener.wait_for_filtered_event(
+    await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
             "state": "presentation-sent",
             "proof_id": alice_proof_id,
@@ -300,7 +300,7 @@ async def test_accept_proof_request_oob_v2(
         }
     )
 
-    bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
+    await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
 

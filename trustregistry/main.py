@@ -12,14 +12,19 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title=OPENAPI_NAME,
-    description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",
-    version=PROJECT_VERSION,
-)
 
-app.include_router(registry_actors.router)
-app.include_router(registry_schemas.router)
+def create_app():
+    app = FastAPI(
+        title=OPENAPI_NAME,
+        version=PROJECT_VERSION,
+        description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",
+    )
+    app.include_router(registry_actors.router)
+    app.include_router(registry_schemas.router)
+    return app
+
+
+app = create_app()
 
 
 @app.get("/")

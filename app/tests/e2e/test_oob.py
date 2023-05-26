@@ -1,20 +1,17 @@
-from aries_cloudcontroller import AcaPyClient
-import pytest
 import time
+
+import pytest
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from httpx import AsyncClient
 
-
-from app.tests.util.webhooks import (
-    check_webhook_state,
-)
+from app.tests.util.webhooks import check_webhook_state
 
 
 @pytest.mark.anyio
 async def test_create_invitation_oob(
     bob_member_client: AsyncClient,
 ):
-
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation", json={"create_connection": True}
     )

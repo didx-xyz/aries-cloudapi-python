@@ -8,8 +8,7 @@ from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller import \
     CredentialDefinition as AcaPyCredentialDefinition
 from aries_cloudcontroller import (ModelSchema, RevRegUpdateTailsFileUri,
-                                   SchemaSendRequest,
-                                   TxnOrCredentialDefinitionSendResult)
+                                   SchemaSendRequest)
 from aries_cloudcontroller.model.credential_definition_send_request import \
     CredentialDefinitionSendRequest
 from fastapi import APIRouter, Depends, HTTPException
@@ -86,7 +85,7 @@ async def get_credential_definitions(
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[CredentialDefinition]:
     """
         Get agent-created credential definitions
 
@@ -141,7 +140,7 @@ async def get_credential_definitions(
 async def get_credential_definition_by_id(
     credential_definition_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> CredentialDefinition:
     """
         Get credential definition by id.
 
@@ -180,7 +179,7 @@ async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
     aries_controller: AcaPyClient = Depends(agent_selector),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> CredentialDefinition:
     """
         Create a credential definition.
 
@@ -212,7 +211,7 @@ async def create_credential_definition(
         )
     )
 
-    if isinstance(result, TxnOrCredentialDefinitionSendResult):
+    if result.txn and result.txn.transaction_id:
         try:
             # Wait for transaction to be acknowledged and written to the ledger
             await listener.wait_for_filtered_event(
@@ -249,8 +248,12 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Unable to construct credential definition id from signature response"
             ) from e
+    elif result.sent and result.sent.credential_definition_id:
+        credential_definition_id = result.sent.credential_definition_id
     else:
-        credential_definition_id = result.credential_definition_id
+        raise CloudApiException(
+            "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def"
+        )
 
     if credential_definition.support_revocation:
         try:
@@ -330,7 +333,7 @@ async def get_schemas(
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[CredentialSchema]:
     """
         Retrieve schemas that the current agent created.
 
@@ -375,7 +378,7 @@ async def get_schemas(
 async def get_schema(
     schema_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> CredentialSchema:
     """
         Retrieve schema by id.
 
@@ -461,7 +464,10 @@ async def create_schema(
 
     # Register the schema in the trust registry
     try:
-        await trust_registry.register_schema(schema_id=result.schema_id)
+        if result.sent and result.sent.schema_id:
+            await trust_registry.register_schema(schema_id=result.sent.schema_id)
+        else:
+            raise CloudApiException("No SchemaSendResult in publish_schema response")
     except trust_registry.TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
@@ -469,4 +475,4 @@ async def create_schema(
         if error.status_code != 400:
             raise error
 
-    return _credential_schema_from_acapy(result.schema_)
+    return _credential_schema_from_acapy(result.sent.schema_)

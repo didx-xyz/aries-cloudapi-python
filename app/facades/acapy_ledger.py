@@ -61,28 +61,20 @@ async def accept_taa(
     accept_taa_response: {}
         The response from letting the ledger know we accepted the response
     """
-    accept_taa_response = await controller.ledger.accept_taa(
-        body=TAAAccept(**taa.dict(), mechanism=mechanism)
-    )
-
-    if isinstance(accept_taa_response, dict):
-        logger.info(
-            "accept_taa_response - TAA response is type dict %s", accept_taa_response
+    try:
+        accept_taa_response = await controller.ledger.accept_taa(
+            body=TAAAccept(**taa.dict(), mechanism=mechanism)
         )
-    else:
-        logger.info(
-            "accept_taa_response - TAA response is type something else %s",
-            accept_taa_response,
-        )
-        accept_taa_response = await accept_taa_response.json()
+    except Exception as e:
+        logger.warning("An exception occurred while trying to accept TAA. %r", e)
+        raise CloudApiException(
+            "An unexpected error occurred while trying to accept TAA."
+        ) from e
 
-    logger.info("accept_taa_response: %s", accept_taa_response)
-
-    if accept_taa_response != {}:
-        logger.warning(
-            "Failed to accept TAA. Response received:\n%s", accept_taa_response
-        )
+    if isinstance(accept_taa_response, ClientResponseError):
+        logger.warning("Failed to accept TAA. Response: %s", accept_taa_response)
         raise CloudApiException("Something went wrong. Could not accept TAA.", 400)
+
     return accept_taa_response
 
 

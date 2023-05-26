@@ -17,7 +17,7 @@ NODES_STATUS=$(indy-cli $CLI_TMP_FILE 2>&1 | grep -P 'Pool\s+"\w+"\s+has been de
 # Run indy-cli with the temporary configuration file and check if deleteion of pool was successful
 # If the health check fails, exit with a non-zero status code
 if ! echo "$NODES_STATUS" | grep -q "has been deleted"; then
-  exit 1
+    exit 1
 fi
 
 # If pool was successfully created and deleted, exit with a zero status code

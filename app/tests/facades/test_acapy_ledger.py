@@ -1,10 +1,12 @@
 import pytest
+from aiohttp import ClientResponseError
 from aries_cloudcontroller import (AcaPyClient, ModelSchema, SchemaGetResult,
                                    TAAAccept, TAAInfo, TAARecord, TAAResult)
 from assertpy import assert_that
 from fastapi import HTTPException
-from mockito import verify, when
+from mockito import mock, verify, when
 
+from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_ledger import (accept_taa, get_did_endpoint, get_taa,
                                       schema_id_from_credential_definition_id)
 from app.tests.util.mock import to_async
@@ -26,11 +28,12 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
 async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
-    ).thenReturn(to_async({"example": "error"}))
+    ).thenReturn(to_async(ClientResponseError(mock(), mock())))
 
-    record = TAARecord(digest="")
-    with pytest.raises(HTTPException) as exc:
-        await accept_taa(mock_agent_controller, taa=record, mechanism="data")
+    with pytest.raises(CloudApiException) as exc:
+        await accept_taa(
+            mock_agent_controller, taa=TAARecord(digest=""), mechanism="data"
+        )
     assert exc.value.status_code == 400
     assert "Something went wrong. Could not accept TAA." in exc.value.detail
 

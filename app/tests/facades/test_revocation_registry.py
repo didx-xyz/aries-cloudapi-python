@@ -138,9 +138,6 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
         when(mock_agent_controller.revocation).get_revocation_status(
             cred_ex_id=cred_ex_id
         ).thenReturn(to_async(None))
-        when(rg).get_credential_definition_id_from_exchange_id(
-            controller=mock_agent_controller, credential_exchange_id=cred_ex_id
-        ).thenReturn(to_async(cred_def_id))
         await rg.get_credential_revocation_status(
             controller=mock_agent_controller, credential_exchange_id=cred_ex_id
         )

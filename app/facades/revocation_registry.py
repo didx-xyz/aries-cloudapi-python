@@ -26,8 +26,8 @@ async def create_revocation_registry(
     Args:
         controller (AcaPyClient): aca-py client
         credential_definition_id (str): The credential definition ID.
-        max_cred_num (Optional(int)): The maximum number of credentials to be stored by the registry.
-            Default = 32768 (max is 32768)
+        max_cred_num (int): The maximum number of credentials to be stored by the registry.
+            Default = 32768 (i.e. max is 32768)
 
     Raises:
         Exception: When the credential definition is not found or the revocation registry could not be created.
@@ -132,15 +132,15 @@ async def publish_revocation_registry_on_ledger(
     controller: AcaPyClient,
     revocation_registry_id: str,
     connection_id: Optional[str] = None,
-    create_transaction_for_endorser: Optional[bool] = False,
-) -> Union[IssuerRevRegRecord, TransactionRecord]:
+    create_transaction_for_endorser: bool = False,
+) -> TransactionRecord:
     """
         Publish a created revocation registry to the ledger
 
     Args:
         controller (AcaPyClient): aca-py client
         revocation_registry_id (str): The revocation registry ID.
-        connection_id (str): The connection ID of author to endorser.
+        connection_id (Optional[str]): The connection ID of author to endorser.
         create_transaction_for_endorser (bool): Whether to create a transaction
             record to for the endorser to be endorsed.
 
@@ -148,21 +148,26 @@ async def publish_revocation_registry_on_ledger(
         Exception: When the revocation registry could not be published.
 
     Returns:
-        result (Union[IssuerRevRegRecord, TxnOrRevRegResult]): The revocation registry record,
-            or the Revocation Register Result and the associated transaction record.
+        result TxnOrRevRegResult: The transaction record or the Revocation Register Result.
     """
-    result = await controller.revocation.publish_rev_reg_def(
+    txn_or_rev_reg_result = await controller.revocation.publish_rev_reg_def(
         rev_reg_id=revocation_registry_id,
         conn_id=connection_id if create_transaction_for_endorser else None,
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
-    if isinstance(result, RevRegResult) and result.result:
-        result = result.result
-    elif isinstance(result, TxnOrRevRegResult) and result.txn:
-        result = result.txn
+    if isinstance(txn_or_rev_reg_result, RevRegResult):
+        result = txn_or_rev_reg_result.result
+    elif (
+        isinstance(txn_or_rev_reg_result, TxnOrRevRegResult)
+        and txn_or_rev_reg_result.txn
+    ):
+        result = txn_or_rev_reg_result.txn
     else:
-        logger.warning("Unexpected type returned from publish_rev_reg_def: %s", result)
+        logger.warning(
+            "Unexpected type returned from publish_rev_reg_def: %s",
+            txn_or_rev_reg_result,
+        )
         raise CloudApiException("Failed to publish revocation registry to ledger.")
 
     logger.info(

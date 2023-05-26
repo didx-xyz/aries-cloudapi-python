@@ -48,7 +48,7 @@ indy_proof = IndyProof(
     requested_proof=IndyProofRequestedProof(),
 )
 
-indy_proof_request = IndyProofRequest(
+indy_proof_request_empty = IndyProofRequest(
     name=None,
     non_revoked=None,
     nonce=None,
@@ -67,7 +67,7 @@ v10_presentation_exchange_records = [
         presentation=indy_proof,
         presentation_exchange_id="dabc8f4e-164a-410f-bd10-471b090f65a5",
         presentation_proposal_dict=None,
-        presentation_request=indy_proof_request,
+        presentation_request=indy_proof_request_empty,
         presentation_request_dict=None,
         role="prover",
         state="proposal_sent",

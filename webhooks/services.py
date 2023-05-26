@@ -15,7 +15,6 @@ from models import (
 )
 from shared_models import (
     TopicItem,
-    Oob,
     RedisItem,
     Connection,
     CredentialExchange,
@@ -23,6 +22,7 @@ from shared_models import (
     BasicMessage,
     PayloadType,
 )
+from aries_cloudcontroller.model import OobRecord
 
 log = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class Service:
         return to_endorsement_model(item=item)
 
     def _oob(self, item: RedisItem):
-        oob = Oob(**item["payload"])
+        oob = OobRecord(**item["payload"])
 
         return oob
 

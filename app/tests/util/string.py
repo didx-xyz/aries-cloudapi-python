@@ -21,11 +21,4 @@ def base64_to_json(value: str):
 
 
 def random_version():
-    return format(
-        "%d.%d.%d"
-        % (
-            randint(1, 100),
-            randint(1, 100),
-            randint(1, 100),
-        )
-    )
+    return f"{randint(1, 100)}.{randint(1, 100)}.{randint(1, 100)}"

@@ -51,7 +51,7 @@ jobs:
         id: test
         # continue-on-error: true
         run: |
-          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app
+          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app -n 2
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

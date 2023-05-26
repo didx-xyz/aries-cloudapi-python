@@ -3,14 +3,10 @@ from sqlalchemy.orm import Session
 import os
 
 from trustregistry.registry import registry_actors, registry_schemas
-from trustregistry import crud
-from trustregistry import models
-from trustregistry.db import get_db
-from trustregistry.database import engine
+logger = logging.getLogger(__name__)
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
-models.Base.metadata.create_all(bind=engine)
 
 
 def create_app():
@@ -25,6 +21,19 @@ def create_app():
 
 
 app = create_app()
+
+
+@app.on_event("startup")
+async def startup_event():
+    models.Base.metadata.create_all(bind=engine)
+    engine.dispose()
+
+    # Validate tables are created
+    with engine.connect() as connection:
+        result = connection.execute(
+            "SELECT name FROM sqlite_master WHERE type='table';"
+        )
+        logger.debug("TrustRegistry tables created: %s", [row[0] for row in result])
 
 
 @app.get("/")

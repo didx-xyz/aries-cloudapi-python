@@ -1,6 +1,5 @@
 fastapi
 pydantic~=1.10.7
 sqlalchemy~=1.4.48
-uvicorn[standard]~=0.22.0
 urllib3==1.26.15
-starlette>=0.25.0
+uvicorn[standard]~=0.22.0

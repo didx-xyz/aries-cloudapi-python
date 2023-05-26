@@ -1,10 +1,9 @@
-from httpx import AsyncClient
 import pytest
+from httpx import AsyncClient
+
 from app.facades.trust_registry import actor_by_id
-from app.tests.util.client import (
-    tenant_client,
-    tenant_admin_client,
-)
+from app.listener import Listener
+from app.tests.util.client import tenant_admin_client, tenant_client
 from app.tests.util.string import base64_to_json, get_random_string
 from app.tests.util.tenants import (
     create_issuer_tenant,
@@ -12,10 +11,9 @@ from app.tests.util.tenants import (
     create_verifier_tenant,
     delete_tenant,
 )
-from app.webhook_listener import start_listener
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: AsyncClient,
 ):
@@ -36,9 +34,10 @@ async def test_accept_proof_request_verifier_no_public_did(
         await issuer_client.post("/generic/connections/create-invitation")
     ).json()
 
-    wait_for_event, _ = await start_listener(
+    issuer_tenant_listener = Listener(
         topic="connections", wallet_id=issuer_tenant["tenant_id"]
     )
+
     invitation_response = (
         await holder_client.post(
             "/generic/connections/accept-invitation",
@@ -49,17 +48,18 @@ async def test_accept_proof_request_verifier_no_public_did(
     issuer_holder_connection_id = invitation["connection_id"]
     holder_issuer_connection_id = invitation_response["connection_id"]
 
-    await wait_for_event(
+    await issuer_tenant_listener.wait_for_filtered_event(
         filter_map={"state": "completed", "connection_id": issuer_holder_connection_id}
     )
+    issuer_tenant_listener.stop()
 
     # Create connection between holder and verifier
-    ## We need to use the multi-use didcomm invitation from the trust registry
+    # We need to use the multi-use didcomm invitation from the trust registry
     verifier_actor = await actor_by_id(verifier_tenant["tenant_id"])
 
     assert verifier_actor
 
-    wait_for_event, _ = await start_listener(
+    verifier_tenant_listener = Listener(
         topic="connections",
         wallet_id=verifier_tenant["tenant_id"],
     )
@@ -76,7 +76,10 @@ async def test_accept_proof_request_verifier_no_public_did(
         )
     ).json()
 
-    payload = await wait_for_event(filter_map={"state": "completed"}, timeout=100)
+    payload = await verifier_tenant_listener.wait_for_filtered_event(
+        filter_map={"state": "completed"}, timeout=100
+    )
+    verifier_tenant_listener.stop()
 
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
@@ -96,21 +99,22 @@ async def test_accept_proof_request_verifier_no_public_did(
     schema_id = schema["id"]
 
     # Create credential definition as issuer
-    credential_definition = (
-        await issuer_client.post(
-            "/generic/definitions/credentials",
-            json={
-                "tag": get_random_string(5),
-                "schema_id": schema_id,
-                "support_revocation": True,
-            },
-        )
-    ).json()
+    credential_definition = await issuer_client.post(
+        "/generic/definitions/credentials",
+        json={
+            "tag": get_random_string(5),
+            "schema_id": schema_id,
+            "support_revocation": True,
+        },
+    )
 
-    credential_definition_id = credential_definition["id"]
+    if credential_definition.is_client_error:
+        raise Exception(credential_definition.json()["detail"])
+
+    credential_definition_id = credential_definition.json()["id"]
 
     # Issue credential from issuer to holder
-    wait_for_event, _ = await start_listener(
+    holder_tenant_listener = Listener(
         topic="credentials", wallet_id=holder_tenant["tenant_id"]
     )
 
@@ -126,17 +130,18 @@ async def test_accept_proof_request_verifier_no_public_did(
         )
     ).json()
 
-    payload = await wait_for_event(
+    payload = await holder_tenant_listener.wait_for_filtered_event(
         filter_map={
             "state": "offer-received",
             "connection_id": holder_issuer_connection_id,
         },
     )
+    holder_tenant_listener.stop()
 
     issuer_credential_exchange_id = issuer_credential_exchange["credential_id"]
     holder_credential_exchange_id = payload["credential_id"]
 
-    wait_for_event, _ = await start_listener(
+    issuer_tenant_cred_listener = Listener(
         topic="credentials", wallet_id=issuer_tenant["tenant_id"]
     )
 
@@ -146,14 +151,15 @@ async def test_accept_proof_request_verifier_no_public_did(
     response.raise_for_status()
 
     # Wait for credential exchange to finish
-    await wait_for_event(
+    await issuer_tenant_cred_listener.wait_for_filtered_event(
         filter_map={"state": "done", "credential_id": issuer_credential_exchange_id},
         timeout=300,
     )
+    issuer_tenant_cred_listener.stop()
 
     # Present proof from holder to verifier
 
-    wait_for_event, _ = await start_listener(
+    holder_tenant_proofs_listener = Listener(
         topic="proofs", wallet_id=holder_tenant["tenant_id"]
     )
 
@@ -186,13 +192,14 @@ async def test_accept_proof_request_verifier_no_public_did(
     response.raise_for_status()
     verifier_proof_exchange = response.json()
 
-    payload = await wait_for_event(
+    payload = await holder_tenant_proofs_listener.wait_for_filtered_event(
         filter_map={
             "state": "request-received",
             "connection_id": holder_verifier_connection_id,
         },
         timeout=300,
     )
+    holder_tenant_proofs_listener.stop()
 
     verifier_proof_exchange_id = verifier_proof_exchange["proof_id"]
     holder_proof_exchange_id = payload["proof_id"]
@@ -205,7 +212,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     cred_id = available_credentials[0]["cred_info"]["referent"]
 
-    wait_for_event, _ = await start_listener(
+    verifier_tenant_proofs_listener = Listener(
         topic="proofs", wallet_id=verifier_tenant["tenant_id"]
     )
 
@@ -227,7 +234,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
     response.raise_for_status()
 
-    await wait_for_event(
+    await verifier_tenant_proofs_listener.wait_for_filtered_event(
         filter_map={
             "state": "done",
             "proof_id": verifier_proof_exchange_id,
@@ -235,6 +242,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
         timeout=300,
     )
+    verifier_tenant_proofs_listener.stop()
 
     # Delete all tenants
     await delete_tenant(tenant_admin, issuer_tenant["tenant_id"])

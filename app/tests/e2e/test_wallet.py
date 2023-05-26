@@ -27,7 +27,7 @@ async def create_did_mock(governance_client: AsyncClient):
     return did
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_list_dids(
     governance_client: AsyncClient, governance_acapy_client: AcaPyClient
 ):
@@ -40,7 +40,7 @@ async def test_list_dids(
     assert res_method == response
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_local_did(governance_client: AsyncClient):
     response = await governance_client.post(WALLET_BASE_PATH)
 
@@ -50,7 +50,7 @@ async def test_create_local_did(governance_client: AsyncClient):
     assert_that(response).contains("did", "verkey")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_public_did(
     governance_client: AsyncClient, governance_acapy_client: AcaPyClient
 ):
@@ -65,7 +65,7 @@ async def test_get_public_did(
     assert res_method == response
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_did_endpoint(governance_client: AsyncClient, create_did_mock: Any):
     did = create_did_mock
     response = await governance_client.get(f"{WALLET_BASE_PATH}/{did}/endpoint")
@@ -75,7 +75,7 @@ async def test_get_did_endpoint(governance_client: AsyncClient, create_did_mock:
     assert response["did"] == did
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_set_public_did(
     governance_client: AsyncClient, governance_acapy_client: AcaPyClient
 ):
@@ -97,7 +97,7 @@ async def test_set_public_did(
     assert_that(response).has_did(did)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_set_did_endpoint(governance_acapy_client: AcaPyClient):
     # Don't want us overwriting the real endpoint, so not setting as public did
     did = await create_public_did(governance_acapy_client, set_public=False)

@@ -12,23 +12,32 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set up Python 3.8.10
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8.10"
+          python-version: "3.9"
+          cache: 'pip'
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
-      - name: Install docker-compose with pip
-        run: pip install docker-compose
+      - name: Run Pylint
+        run: |
+          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+      - name: Install Compose
+        uses: ndeloof/install-compose-action@v0.0.1
+        with:
+          # version: v2.1.0 # defaults to 'latest'
+          legacy: true    # will also install in PATH as `docker-compose`
       - name: Start Test Harness
         run: |
+          set -x
+          docker-compose version
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
@@ -37,62 +46,29 @@ jobs:
           i=0
           echo waiting for aca-py container to startup
           ./manage up-daemon-usecache
-          sleep 150
-          while [ $i -le 240 ]
-          do
-            if (docker logs $(docker ps -f name="governance-ga-agent" | awk 'FNR == 2 {print $1}') | grep -q "::::::::::::::::::::::::::::::::::::::::::::::
-            :: Alice                                    ::
-            ::                                          ::
-            ::                                          ::
-            :: Inbound Transports:                      ::
-            ::                                          ::
-            :: "); echo wait over; exit 0; then ((i++)); fi
-          done
         shell: bash
       - name: Test with pytest
         id: test
-        continue-on-error: true
+        # continue-on-error: true
         run: |
-          pytest  --cov=trustregistry --cov=app trustregistry app
+          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      - name: Retry tests
-        if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
-        run: |
-          sudo chown -R $(id -u):$(id -g) ./data
-          sudo chmod 777 ./data -R
-          docker-compose up --build -d governance-ga-agent
-          docker-compose up --build -d governance-multitenant-agent
-          sleep 120
-          pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-          echo done
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      - name: Run Pylint
-        run: |
-          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
-      - name: Tear down test harness
-        run: |
-          ./manage down || true
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: multiple command
-        if: github.ref == 'refs/heads/development' && github.repository == 'didx-xyz/aries-cloudapi-python' && github.event_name == 'push'
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOSTNAME }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd aries-cloudapi-python
-            git add .
-            git stash
-            git checkout development
-            git pull
-            ./manage down
-            ./manage up-as-daemon
+      # - name: Retry tests
+      #   if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
+      #   run: |
+      #     sudo chown -R $(id -u):$(id -g) ./data
+      #     sudo chmod 777 ./data -R
+      #     docker-compose up --build -d governance-ga-agent
+      #     docker-compose up --build -d governance-multitenant-agent
+      #     sleep 120
+      #     pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
+      #     bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+      #     echo done
+      #   env:
+      #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+      # - name: Tear down test harness
+      #   run: |
+      #     ./manage down || true

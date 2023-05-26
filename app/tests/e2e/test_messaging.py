@@ -3,13 +3,10 @@ from assertpy.assertpy import assert_that
 from httpx import AsyncClient
 
 from app.generic.messaging import Message, TrustPingMsg
-
-from app.tests.util.member_personas import (
-    BobAliceConnect,
-)
+from app.tests.util.member_personas import BobAliceConnect
 
 
-@pytest.mark.asyncio()
+@pytest.mark.anyio
 async def test_send_trust_ping(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: AsyncClient
 ):
@@ -26,7 +23,7 @@ async def test_send_trust_ping(
     assert_that(response_data).contains("thread_id")
 
 
-@pytest.mark.asyncio()
+@pytest.mark.anyio
 async def test_send_message(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: AsyncClient
 ):

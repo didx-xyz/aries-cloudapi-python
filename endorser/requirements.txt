@@ -1,4 +1,4 @@
 fastapi_websocket_pubsub~=0.1.21
-typing_extensions
-httpx==0.18.1
-aries-cloudcontroller~=0.7.0
+typing-extensions~=4.5.0
+httpx~=0.24.0
+aries-cloudcontroller==0.8.0

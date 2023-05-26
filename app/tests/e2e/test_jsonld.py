@@ -1,10 +1,10 @@
-from aries_cloudcontroller import AcaPyClient, SignatureOptions
 import pytest
+from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
 from httpx import AsyncClient
+
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.e2e.test_fixtures import *
-from app.tests.e2e.test_fixtures import FaberAliceConnect, BASE_PATH
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
@@ -45,7 +45,7 @@ signed_doc = {
 }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_sign_jsonld(
     alice_member_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -70,7 +70,7 @@ async def test_sign_jsonld(
     assert_that(response.json()["detail"]).contains(
         "Please provide either or neither, but not both"
     )
-    assert_that(response.status_code).is_equal_to(418)
+    assert_that(response.status_code).is_equal_to(400)
 
     # Success pub_did
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -124,7 +124,7 @@ async def test_sign_jsonld(
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_verify_jsonld(
     alice_member_client: AsyncClient,
     faber_acapy_client: AcaPyClient,
@@ -142,7 +142,7 @@ async def test_verify_jsonld(
     assert_that(response.json()["detail"]).contains(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
     )
-    assert_that(response.status_code).is_equal_to(418)
+    assert_that(response.status_code).is_equal_to(400)
 
     # # Error invalid
     jsonld_verify.verkey = None
@@ -153,7 +153,7 @@ async def test_verify_jsonld(
     )
 
     assert_that(response.status_code).is_equal_to(422)
-    assert_that(response.json()["detail"]).contains("Failed to verify payload with:")
+    assert_that(response.json()["detail"]).contains("Failed to verify payload with")
 
     # Success
     jsonld_verify.public_did = None

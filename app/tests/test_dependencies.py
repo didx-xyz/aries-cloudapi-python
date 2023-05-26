@@ -10,14 +10,14 @@ import app.dependencies as dependencies
 from app.dependencies import Role, AcaPyAuth
 from app.main import app
 
-from app.tests.util.constants import TENANT_ACAPY_API_KEY, GOVERNANCE_ACAPY_API_KEY
+from app.tests.util.constants import TENANT_ACAPY_API_KEY, GOVERNANCE_ACAPY_API_KEY, CLOUDAPI_URL
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"
 BEARER_TOKEN = "12345"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_governance_agent():
     async with asynccontextmanager(dependencies.agent_selector)(
         auth=AcaPyAuth(role=Role.GOVERNANCE, token=GOVERNANCE_ACAPY_API_KEY)
@@ -28,7 +28,7 @@ async def test_governance_agent():
         assert "Authorization" not in c.client.headers
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_tenant_agent():
     async with asynccontextmanager(dependencies.agent_role(Role.TENANT))(
         AcaPyAuth(role=Role.TENANT, token=BEARER_TOKEN)
@@ -52,7 +52,7 @@ agent_selector_data = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_agent_selector():
     c = await async_next(
         dependencies.agent_selector(AcaPyAuth(token="apiKey", role=Role.TENANT))
@@ -67,7 +67,7 @@ async def test_agent_selector():
     assert c.base_url == Role.GOVERNANCE.agent_type.base_url
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_admin_agent_selector():
     c = await async_next(
         dependencies.admin_agent_selector(
@@ -97,7 +97,7 @@ async def test_admin_agent_selector():
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_web_tenant():
     # Test adds two methods to the router it creates (/testabc) - called this to make
     # sure it doesn't interfere with normal operation
@@ -128,7 +128,7 @@ async def test_web_tenant():
     app.include_router(router)
 
     async def make_call(route_suffix: str = "", headers=None):
-        async with AsyncClient(app=app, base_url="http://localhost:8000") as ac:
+        async with AsyncClient(app=app, base_url=CLOUDAPI_URL) as ac:
             response = await ac.get("/testsabc" + route_suffix, headers={**headers})
             return response
 
@@ -177,7 +177,7 @@ async def test_web_tenant():
     )
     # then
     assert response.status_code == 401
-    assert response.text == '{"detail":"Unauthorized"}'
+    assert "Unauthorized" in response.text
 
     # when
     await make_call(
@@ -202,11 +202,11 @@ async def test_web_tenant():
     assert isinstance(injected_controller, AcaPyClient)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_tenant_admin_agent():
     async with asynccontextmanager(dependencies.agent_role(role=Role.TENANT_ADMIN))(
         auth=AcaPyAuth(role=Role.TENANT_ADMIN, token=TENANT_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)
-        assert c.client.headers["x-api-key"] == "adminApiKey"
+        assert c.client.headers["x-api-key"] == TENANT_ACAPY_API_KEY
         assert "Authorization" not in c.client.headers

@@ -1,38 +1,31 @@
 import asyncio
 import json
+import logging
 from typing import List, Optional
-from aiohttp import ClientResponseError
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    CredentialDefinition as AcaPyCredentialDefinition,
-    ModelSchema,
-    RevRegUpdateTailsFileUri,
-    SchemaSendRequest,
-    TxnOrCredentialDefinitionSendResult,
-)
-from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
-from app.error.cloud_api_error import CloudApiException
-from aries_cloudcontroller.model.credential_definition_send_request import (
-    CredentialDefinitionSendRequest,
-)
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import \
+    CredentialDefinition as AcaPyCredentialDefinition
+from aries_cloudcontroller import (ModelSchema, RevRegUpdateTailsFileUri,
+                                   SchemaSendRequest)
+from aries_cloudcontroller.model.credential_definition_send_request import \
+    CredentialDefinitionSendRequest
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.dependencies import (
-    AcaPyAuthVerified,
-    acapy_auth_verified,
-    agent_role,
-    agent_selector,
-    get_governance_controller,
-)
+from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
+from app.dependencies import (AcaPyAuthVerified, acapy_auth_verified,
+                              agent_role, agent_selector,
+                              get_governance_controller)
+from app.error.cloud_api_error import CloudApiException
+from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
-    create_revocation_registry,
-    publish_revocation_registry_on_ledger,
-)
+    create_revocation_registry, publish_revocation_registry_on_ledger)
+from app.listener import Listener
 from app.role import Role
-from app.facades import trust_registry, acapy_wallet
-from app.webhook_listener import start_listener
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/generic/definitions",
@@ -92,21 +85,21 @@ async def get_credential_definitions(
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[CredentialDefinition]:
     """
-        Retrieve credential definitions the current agent created.
+        Get agent-created credential definitions
 
     Parameters:
-    -----------
-        issuer_did: str (Optional)\n
-        credential_definition_id: str (Optional)\n
-        schema_id: str (Optional)\n
-        schema_issuer_id: str (Optional)\n
-        schema_version: str (Optional)\n
+    ---
+        issuer_did: Optional[str]
+        credential_definition_id: Optional[str]
+        schema_id: Optional[str]
+        schema_issuer_id: Optional[str]
+        schema_version: Optional[str]
 
     Returns:
-    ---------
-        The created credential definitions.
+    ---
+        Created credential definitions
     """
     # Get all created credential definition ids that match the filter
     response = await aries_controller.credential_definition.get_created_cred_defs(
@@ -147,7 +140,7 @@ async def get_credential_definitions(
 async def get_credential_definition_by_id(
     credential_definition_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> CredentialDefinition:
     """
         Get credential definition by id.
 
@@ -186,7 +179,7 @@ async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
     aries_controller: AcaPyClient = Depends(agent_selector),
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> CredentialDefinition:
     """
         Create a credential definition.
 
@@ -208,9 +201,7 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    wait_for_event_with_timeout, stop_listener = await start_listener(
-        topic="endorsements", wallet_id=auth.wallet_id
-    )
+    listener = Listener(topic="endorsements", wallet_id=auth.wallet_id)
 
     result = await aries_controller.credential_definition.publish_cred_def(
         body=CredentialDefinitionSendRequest(
@@ -220,10 +211,10 @@ async def create_credential_definition(
         )
     )
 
-    if isinstance(result, TxnOrCredentialDefinitionSendResult):
+    if result.txn and result.txn.transaction_id:
         try:
             # Wait for transaction to be acknowledged and written to the ledger
-            await wait_for_event_with_timeout(
+            await listener.wait_for_filtered_event(
                 filter_map={
                     "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
@@ -232,10 +223,10 @@ async def create_credential_definition(
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
-                "Timeout waiting for endorser to accept the endorsement request"
+                "Timeout waiting for endorser to accept the endorsement request", 504
             )
         finally:
-            await stop_listener()
+            listener.stop()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -257,8 +248,12 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Unable to construct credential definition id from signature response"
             ) from e
+    elif result.sent and result.sent.credential_definition_id:
+        credential_definition_id = result.sent.credential_definition_id
     else:
-        credential_definition_id = result.credential_definition_id
+        raise CloudApiException(
+            "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def"
+        )
 
     if credential_definition.support_revocation:
         try:
@@ -291,12 +286,10 @@ async def create_credential_definition(
                 create_transaction_for_endorser=has_connections,
             )
             if has_connections:
-                wait_for_event_with_timeout, stop_listener = await start_listener(
-                    topic="endorsements", wallet_id="admin"
-                )
+                admin_listener = Listener(topic="endorsements", wallet_id="admin")
                 async with get_governance_controller() as endorser_controller:
                     try:
-                        txn_record = await wait_for_event_with_timeout(
+                        txn_record = await admin_listener.wait_for_filtered_event(
                             filter_map={
                                 "state": "request-received",
                             },
@@ -304,10 +297,11 @@ async def create_credential_definition(
                         )
                     except TimeoutError:
                         raise CloudApiException(
-                            "Failed to retrieve transaction record for endorser", 500
+                            "Timeout occurred while waiting to retrieve transaction record for endorser",
+                            504,
                         )
                     finally:
-                        await stop_listener()
+                        admin_listener.stop()
 
                     await endorser_controller.endorse_transaction.endorse_transaction(
                         tran_id=txn_record["transaction_id"]
@@ -318,6 +312,10 @@ async def create_credential_definition(
             )
             credential_definition_id = active_rev_reg.result.cred_def_id
         except ClientResponseError as e:
+            logger.debug(
+                "A ClientResponseError was caught while supporting revocation. The error message is: '%s'",
+                e.message,
+            )
             raise e
 
     # ACA-Py only returns the id after creating a credential definition
@@ -335,7 +333,7 @@ async def get_schemas(
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> List[CredentialSchema]:
     """
         Retrieve schemas that the current agent created.
 
@@ -380,7 +378,7 @@ async def get_schemas(
 async def get_schema(
     schema_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> CredentialSchema:
     """
         Retrieve schema by id.
 
@@ -444,32 +442,32 @@ async def create_schema(
                 ]
                 if len(schemas) > 1:
                     raise CloudApiException(
-                        detail={
-                            "Multiple schemas with name %s and version %s exist. These are: %s",
-                            schema.name,
-                            schema.version,
-                            str(schemas_created_ids.schema_ids),
-                        }
+                        f"Multiple schemas with name {schema.name} and version {schema.version} exist."
+                        + f"These are: {str(schemas_created_ids.schema_ids)}",
+                        409,
                     )
                 _schema = schemas[0]
             # Schema exists with different attributes
             if set(_schema.schema_.attr_names) != set(schema.attribute_names):
                 raise CloudApiException(
-                    detail={
-                        "Error creating schema: Schema already exists with different attribute names. Given: %s. Found: %s",
-                        str(set(_schema.schema_.attr_names)),
-                        str(set(schema.attribute_names)),
-                    }
+                    "Error creating schema: Schema already exists with different attribute names."
+                    + f"Given: {str(set(_schema.schema_.attr_names))}. Found: {str(set(schema.attribute_names))}",
+                    409,
                 )
             return _credential_schema_from_acapy(_schema.schema_)
         else:
-            raise CloudApiException(
-                detail={"Error creating schema: %s", e.message}, status_code=500
+            logger.warning(
+                "An unhandled ClientResponseError was caught while publishing schema. The error message is: '%s'",
+                e.message,
             )
+            raise CloudApiException("Error while creating schema.") from e
 
     # Register the schema in the trust registry
     try:
-        await trust_registry.register_schema(schema_id=result.schema_id)
+        if result.sent and result.sent.schema_id:
+            await trust_registry.register_schema(schema_id=result.sent.schema_id)
+        else:
+            raise CloudApiException("No SchemaSendResult in publish_schema response")
     except trust_registry.TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
@@ -477,4 +475,4 @@ async def create_schema(
         if error.status_code != 400:
             raise error
 
-    return _credential_schema_from_acapy(result.schema_)
+    return _credential_schema_from_acapy(result.sent.schema_)

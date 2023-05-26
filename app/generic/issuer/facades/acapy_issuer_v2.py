@@ -13,6 +13,7 @@ from aries_cloudcontroller import (
     V20CredRequestRequest,
 )
 from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
+from app.error.cloud_api_error import CloudApiException
 
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import (
@@ -93,7 +94,7 @@ class IssuerV2(Issuer):
         )
 
         if not record.cred_ex_record:
-            raise Exception("No cred_ex_record found on record")
+            raise CloudApiException("Stored record has no credential exchange record")
 
         return cls.__record_to_model(record.cred_ex_record)
 
@@ -141,7 +142,7 @@ class IssuerV2(Issuer):
         )
 
         if not record.cred_ex_record:
-            raise Exception("Record has not credential exchang record")
+            raise CloudApiException("Record has no credential exchange record")
 
         return cls.__record_to_model(record.cred_ex_record)
 

@@ -1,24 +1,12 @@
 import logging
 from typing import Any, Dict, Optional
-from aiohttp import ClientResponseError
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    Doc,
-    SignRequest,
-    SignResponse,
-    SignatureOptions,
-    VerifyResponse,
-)
+from aiohttp import ClientResponseError
+from aries_cloudcontroller import (AcaPyClient, Doc, SignatureOptions,
+                                   SignRequest, SignResponse, VerifyResponse)
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from uplink import (
-    Consumer,
-    Body,
-    post,
-    returns,
-    json,
-)
+from uplink import Body, Consumer, json, post, returns
 
 from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException
@@ -42,6 +30,24 @@ class JsonLdVerifyRequest(BaseModel):
     verkey: Optional[str] = None
 
 
+# NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
+# Hence, custom override api endpoint that is incorrect in aca-py
+class JsonldApi(Consumer):
+    async def verify(
+        self, *, body: Optional[JsonLdVerifyRequest] = None
+    ) -> VerifyResponse:
+        """Verify a JSON-LD structure."""
+        return await self.__verify(
+            body=body,
+        )
+
+    @returns.json
+    @json
+    @post("/jsonld/verify")
+    def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
+        """Internal uplink method for verify"""
+
+
 @router.post("/sign", response_model=SignResponse)
 async def sign_jsonld(
     body: JsonLdSignRequest,
@@ -54,7 +60,7 @@ async def sign_jsonld(
     if body.pub_did and body.verkey:
         raise CloudApiException(
             "Please provide either or neither, but not both, public did of the verkey or the verkey for the document.",
-            418,
+            400,
         )
     try:
         if body.verkey:
@@ -88,7 +94,11 @@ async def sign_jsonld(
             )
         )
     except ClientResponseError as e:
-        raise CloudApiException(f"Failed to sign payload. {e['message']}")
+        logger.warning(
+            "A ClientResponseError was caught while signing jsonld. The error message is: '%s'",
+            e.message,
+        )
+        raise CloudApiException("Failed to sign payload.") from e
 
 
 @router.post("/verify", status_code=204)
@@ -100,10 +110,10 @@ async def verify_jsonld(
     Verify a JSON-LD structure
     """
 
-    if not (bool(body.public_did) != bool(body.verkey)):
+    if not bool(body.public_did) != bool(body.verkey):
         raise CloudApiException(
             "Please provide either, but not both, public did of the verkey or the verkey for the document.",
-            418,
+            400,
         )
     try:
         if not body.verkey:
@@ -113,24 +123,6 @@ async def verify_jsonld(
         else:
             verkey = body.verkey
 
-        # NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
-        # Hence, override it here
-        # Custom Override api endpoint that is incorrect in aca-py
-        class JsonldApi(Consumer):
-            async def verify(
-                self, *, body: Optional[JsonLdVerifyRequest] = None
-            ) -> VerifyResponse:
-                """Verify a JSON-LD structure."""
-                return await self.__verify(
-                    body=body,
-                )
-
-            @returns.json
-            @json
-            @post("/jsonld/verify")
-            def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
-                """Internal uplink method for verify"""
-
         aries_controller.jsonld = JsonldApi(
             base_url=aries_controller.base_url, client=aries_controller.client
         )
@@ -139,7 +131,12 @@ async def verify_jsonld(
         )
         if not jsonld_verify_response.valid:
             raise CloudApiException(
-                f"Failed to verify payload with: {jsonld_verify_response.error}", 422
+                f"Failed to verify payload with error message: {jsonld_verify_response.error}",
+                422,
             )
     except ClientResponseError as e:
-        raise CloudApiException(f"Failed to verify payload. {e.message}")
+        logger.warning(
+            "A ClientResponseError was caught while verifying jsonld. The error message is: '%s'",
+            e.message,
+        )
+        raise CloudApiException("Failed to verify payload.") from e

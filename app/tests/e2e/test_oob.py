@@ -1,20 +1,17 @@
-from aries_cloudcontroller import AcaPyClient
-import pytest
 import time
+
+import pytest
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 from httpx import AsyncClient
 
-
-from app.tests.util.webhooks import (
-    check_webhook_state,
-)
+from app.tests.util.webhooks import check_webhook_state
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_create_invitation_oob(
     bob_member_client: AsyncClient,
 ):
-
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation", json={"create_connection": True}
     )
@@ -25,7 +22,7 @@ async def test_create_invitation_oob(
     assert_that(invitation["invitation"]).contains("@id", "services")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_accept_invitation_oob(
     bob_member_client: AsyncClient,
     alice_member_client: AsyncClient,
@@ -60,7 +57,7 @@ async def test_accept_invitation_oob(
     assert_that(connection_record.connection_protocol).contains("didexchange/1.0")
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_oob_connect_via_public_did(
     bob_member_client: AsyncClient,
     faber_client: AsyncClient,

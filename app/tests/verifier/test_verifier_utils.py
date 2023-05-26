@@ -1,64 +1,38 @@
-from typing import Any, Optional
+from unittest.mock import patch
+
+import pytest
+from aries_cloudcontroller import (AcaPyClient, AttachDecorator,
+                                   AttachDecoratorData, ConnRecord,
+                                   IndyCredInfo, IndyPresAttrSpec,
+                                   IndyPresPredSpec, IndyPresPreview,
+                                   IndyPresSpec, IndyProof, IndyProofProof,
+                                   IndyProofReqAttrSpec, IndyProofRequest,
+                                   IndyProofRequestedProof,
+                                   IndyProofRequestNonRevoked,
+                                   IndyRequestedCredsRequestedAttr,
+                                   IndyRequestedCredsRequestedPred,
+                                   V10PresentationExchange,
+                                   V10PresentationProposalRequest, V20Pres,
+                                   V20PresExRecord, V20PresExRecordByFormat,
+                                   V20PresFormat, V20PresProposal)
+from assertpy import assert_that
+from mockito import mock, when
 
 from app.error.cloud_api_error import CloudApiException
-
-from app.generic.verifier.models import (
-    AcceptProofRequest,
-    PresentProofProtocolVersion,
-    SendProofRequest,
-)
-from shared_models import PresentationExchange
-from unittest.mock import patch
-from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.facades.trust_registry import Actor
-from app.generic.verifier.verifier_utils import (
-    are_valid_schemas,
-    ed25519_verkey_to_did_key,
-    get_connection_record,
-    get_schema_ids,
-    is_verifier,
-    assert_valid_prover,
-    assert_valid_verifier,
-    get_actor,
-)
-from assertpy import assert_that
-
-from mockito import mock, when
-import pytest
-from aries_cloudcontroller import (
-    AcaPyClient,
-    AttachDecorator,
-    AttachDecoratorData,
-    ConnRecord,
-    IndyCredInfo,
-    IndyPresAttrSpec,
-    IndyPresPredSpec,
-    IndyPresPreview,
-    IndyPresSpec,
-    IndyProof,
-    IndyProofProof,
-    IndyProofReqAttrSpec,
-    IndyProofRequest,
-    IndyProofRequestNonRevoked,
-    IndyProofRequestedProof,
-    IndyRequestedCredsRequestedPred,
-    IndyProofReqAttrSpecNonRevoked,
-    IndyRequestedCredsRequestedAttr,
-    V10PresentationExchange,
-    V10PresentationProposalRequest,
-    V20Pres,
-    V20PresExRecord,
-    V20PresExRecordByFormat,
-    V20PresFormat,
-    V20PresProposal,
-)
-
-
-# need this to handle the async with the mock
-async def get(response: Optional[Any] = None):
-    if response:
-        return response
-
+from app.generic.verifier.facades.acapy_verifier import Verifier
+from app.generic.verifier.models import (AcceptProofRequest,
+                                         PresentProofProtocolVersion,
+                                         SendProofRequest)
+from app.generic.verifier.verifier_utils import (are_valid_schemas,
+                                                 assert_valid_prover,
+                                                 assert_valid_verifier,
+                                                 ed25519_verkey_to_did_key,
+                                                 get_actor,
+                                                 get_connection_record,
+                                                 get_schema_ids, is_verifier)
+from app.tests.util.mock import to_async
+from shared_models import PresentationExchange
 
 actor = Actor(
     id="abcde",
@@ -74,7 +48,7 @@ indy_proof = IndyProof(
     requested_proof=IndyProofRequestedProof(),
 )
 
-indy_proof_request = IndyProofRequest(
+indy_proof_request_empty = IndyProofRequest(
     name=None,
     non_revoked=None,
     nonce=None,
@@ -93,7 +67,7 @@ v10_presentation_exchange_records = [
         presentation=indy_proof,
         presentation_exchange_id="dabc8f4e-164a-410f-bd10-471b090f65a5",
         presentation_proposal_dict=None,
-        presentation_request=indy_proof_request,
+        presentation_request=indy_proof_request_empty,
         presentation_request_dict=None,
         role="prover",
         state="proposal_sent",
@@ -179,7 +153,7 @@ indy_pres_spec = IndyPresSpec(
 )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_are_valid_schemas():
     # schemas are valid
     schemas = {
@@ -208,7 +182,7 @@ async def test_are_valid_schemas():
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_connection_record(mock_agent_controller: AcaPyClient):
     pres_exchange = PresentationExchange(
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -224,8 +198,8 @@ async def test_get_connection_record(mock_agent_controller: AcaPyClient):
     )
     conn_record = ConnRecord(connection_id=pres_exchange.connection_id)
     with when(mock_agent_controller.connection).get_connection(...).thenReturn(
-        get(conn_record)
-    ), when(Verifier).get_proof_record(...).thenReturn(get(pres_exchange)), patch(
+        to_async(conn_record)
+    ), when(Verifier).get_proof_record(...).thenReturn(pres_exchange), patch(
         "app.generic.verifier.verifier_utils.get_connection_record",
         return_value=conn_record,
     ):
@@ -236,9 +210,10 @@ async def test_get_connection_record(mock_agent_controller: AcaPyClient):
             )
             == conn_record
         )
+    # todo: mocking of get_proof_record does nothing
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
     first_cred_record = IndyCredInfo(
         schema_id="NR6Y28AiZ893utPSfoQRrz:2:test_schema:0.3"
@@ -266,12 +241,12 @@ async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
 
     with when(mock_agent_controller.credentials).get_record(
         credential_id="first-revealed-cred-id"
-    ).thenReturn(get(first_cred_record)), when(
+    ).thenReturn(to_async(first_cred_record)), when(
         mock_agent_controller.credentials
     ).get_record(
         credential_id="first-revealed-pred-cred-id"
     ).thenReturn(
-        get(second_cred_record)
+        to_async(second_cred_record)
     ):
         got_schema_ids = await get_schema_ids(
             aries_controller=mock_agent_controller, presentation=presentation
@@ -283,7 +258,7 @@ async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_ed25519_verkey_to_did_key():
     got_key = ed25519_verkey_to_did_key(
         key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
@@ -291,7 +266,7 @@ async def test_ed25519_verkey_to_did_key():
     assert got_key == "did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_is_verifier():
     # False
     actor = Actor(
@@ -308,7 +283,7 @@ async def test_is_verifier():
     assert is_verifier(actor=actor) is True
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_get_actor():
     # gets actor
     actor = Actor(id="abcde", name="Flint", roles=["verifier"], did="did:sov:abcde")
@@ -331,7 +306,7 @@ async def test_get_actor():
             await get_actor(did=actor["did"]) == actor
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyClient):
     pres_exchange = PresentationExchange(
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -371,10 +346,10 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
 
     when(prover).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(get(pres_exchange))
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
         conn_id=pres_exchange.connection_id
-    ).thenReturn(get(conn_record))
+    ).thenReturn(to_async(conn_record))
 
     with patch(
         "app.generic.verifier.verifier_utils.get_actor", return_value=actor
@@ -395,9 +370,8 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient):
-
     pres_exchange = PresentationExchange(
         connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
         created_at="2021-09-15 13:49:47Z",
@@ -435,10 +409,10 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
 
     when(prover).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(get(pres_exchange))
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
         conn_id=pres_exchange.connection_id
-    ).thenReturn(get(conn_record))
+    ).thenReturn(to_async(conn_record))
 
     with patch(
         "app.generic.verifier.verifier_utils.get_actor", return_value=actor
@@ -459,7 +433,7 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
     mock_agent_controller: AcaPyClient,
 ):
@@ -481,10 +455,10 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
 
     when(prover).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(get(pres_exchange))
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
         conn_id=pres_exchange.connection_id
-    ).thenReturn(get(conn_record))
+    ).thenReturn(to_async(conn_record))
 
     with pytest.raises(
         CloudApiException, match="Could not determine did of the verifier"
@@ -498,7 +472,7 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_actor_invalid_role(
     mock_agent_controller: AcaPyClient,
 ):
@@ -530,10 +504,10 @@ async def test_assert_valid_prover_x_actor_invalid_role(
 
     when(prover).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(get(pres_exchange))
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
         conn_id=pres_exchange.connection_id
-    ).thenReturn(get(conn_record))
+    ).thenReturn(to_async(conn_record))
 
     # valid
     with patch("app.generic.verifier.verifier_utils.get_actor", return_value=actor):
@@ -549,7 +523,7 @@ async def test_assert_valid_prover_x_actor_invalid_role(
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_invalid_schemas(
     mock_agent_controller: AcaPyClient,
 ):
@@ -573,10 +547,10 @@ async def test_assert_valid_prover_x_invalid_schemas(
 
     when(prover).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(get(pres_exchange))
+    ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
         conn_id=pres_exchange.connection_id
-    ).thenReturn(get(conn_record))
+    ).thenReturn(to_async(conn_record))
 
     with patch(
         "app.generic.verifier.verifier_utils.get_actor", return_value=actor
@@ -600,7 +574,7 @@ async def test_assert_valid_prover_x_invalid_schemas(
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_prover_x_no_connection_id(
     mock_agent_controller: AcaPyClient,
 ):
@@ -620,7 +594,7 @@ async def test_assert_valid_prover_x_no_connection_id(
 
     when(prover).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(get(pres_exchange))
+    ).thenReturn(to_async(pres_exchange))
 
     with pytest.raises(
         CloudApiException, match="No connection id associated with proof request."
@@ -634,7 +608,7 @@ async def test_assert_valid_prover_x_no_connection_id(
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPyClient):
     conn = ConnRecord(
         connection_id="a-connection-id",
@@ -643,14 +617,13 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
 
     when(mock_agent_controller.connection).get_connection(
         conn_id="a-connection-id"
-    ).thenReturn(get(conn))
+    ).thenReturn(to_async(conn))
 
     # valid
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         side_effect=Exception("Error"),
     ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=actor):
-
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
@@ -661,7 +634,7 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClient):
     # valid
     with patch(
@@ -678,7 +651,7 @@ async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClie
         )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
     mock_agent_controller: AcaPyClient,
 ):
@@ -688,7 +661,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
 
     when(mock_agent_controller.connection).get_connection(
         conn_id="a-connection-id"
-    ).thenReturn(get(conn))
+    ).thenReturn(to_async(conn))
 
     # valid
     with patch(
@@ -706,7 +679,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
             )
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_assert_valid_verifier_x_not_verifier(
     mock_agent_controller: AcaPyClient,
 ):
@@ -725,7 +698,7 @@ async def test_assert_valid_verifier_x_not_verifier(
 
     when(mock_agent_controller.connection).get_connection(
         conn_id="a-connection-id"
-    ).thenReturn(get(conn))
+    ).thenReturn(to_async(conn))
 
     # valid
     with patch(

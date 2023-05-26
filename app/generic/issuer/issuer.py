@@ -1,28 +1,27 @@
 import logging
 from enum import Enum
 from typing import Dict, Optional
-from aiohttp import ClientResponseError
 
+from aiohttp import ClientResponseError
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-
 # TypedDict from typing itself has some missing features for pydantic only available in 3.9
 # https://pydantic-docs.helpmanual.io/usage/types/#typeddict
 from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
 from app.error.cloud_api_error import CloudApiException
+from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
-from app.facades import revocation_registry
 from app.facades.trust_registry import assert_valid_issuer
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.indy import did_from_credential_definition_id
-from shared_models import IssueCredentialProtocolVersion, CredentialExchange
+from shared_models import CredentialExchange, IssueCredentialProtocolVersion
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +48,7 @@ class RevokeCredential(BaseModel):
     auto_publish_on_ledger: Optional[bool] = False
     credential_exchange_id: str = ""
 
+
 class SendCredential(CredentialBase):
     connection_id: str
 
@@ -64,7 +64,9 @@ def __issuer_from_id(id: str) -> Issuer:
     elif id.startswith("v2-"):
         return IssueCredentialFacades.v2.value
 
-    raise Exception("Unknown version. ID is expected to contain protocol version")
+    raise CloudApiException(
+        "Unknown version. ID is expected to contain protocol version", 400
+    )
 
 
 def __issuer_from_protocol_version(version: IssueCredentialProtocolVersion) -> Issuer:
@@ -161,9 +163,11 @@ async def send_credential(
             ),
         )
     except ClientResponseError as e:
-        raise CloudApiException(
-            f"Failed to create and send credential: {e.message}", 500
+        logger.debug(
+            "A ClientResponseError was caught while sending credentials. The error message is: '%s'",
+            e.message,
         )
+        raise CloudApiException("Failed to create and send credential.", 500) from e
 
 
 @router.post("/credentials/create-offer")
@@ -233,7 +237,7 @@ async def remove_credential(
 
 @router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
-    body: RevokeCredential = RevokeCredential(),
+    body: RevokeCredential,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -279,7 +283,7 @@ async def request_credential(
         raise CloudApiException(
             "Record has no credential definition or schema associated. "
             "This probably means you haven't received an offer yet.",
-            403,
+            412,
         )
 
     did = did_from_credential_definition_id(record.credential_definition_id)

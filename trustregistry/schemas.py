@@ -28,7 +28,7 @@ class Schema(BaseModel):
     did: str
     name: str
     version: str
-    id: str = None
+    id: str
 
     @root_validator(pre=True)
     def default_id_create(cls, values):

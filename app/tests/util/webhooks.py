@@ -41,7 +41,7 @@ def get_wallet_id_from_async_client(client: AsyncClient) -> str:
 def check_webhook_state(
     client: AsyncClient,
     topic: CloudApiTopics,
-    filter_map: Dict[str, Optional[str]] = {},
+    filter_map: Dict[str, Optional[str]],
     max_duration: int = 120,
     poll_interval: int = 1,
 ) -> bool:

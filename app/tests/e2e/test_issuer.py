@@ -9,7 +9,8 @@ from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from app.tests.e2e.test_fixtures import *  # NOQA
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import (check_webhook_state,
+                                     get_wallet_id_from_async_client)
 
 # This import are important for tests to run!
 
@@ -94,19 +95,22 @@ async def test_send_credential_oob_v2(
     credential_definition_id: str,
     alice_member_client: AsyncClient,
 ):
+    wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_credentials_listener = Listener(topic="credentials", wallet_id=wallet_id)
+
     credential = {
         "protocol_version": "v2",
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "10"},
     }
 
-    response = await faber_client.post(
+    create_offer_response = await faber_client.post(
         BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
+    create_offer_response.raise_for_status()
 
-    data = response.json()
+    data = create_offer_response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
@@ -128,6 +132,9 @@ async def test_send_credential_oob_v2(
     invitation = (invitation_response.json())["invitation"]
     invitation["id"] = invitation.pop("@id")
     invitation["type"] = invitation.pop("@type")
+
+    thread_id = invitation["requests~attach"][0]["data"]["json"]["@id"]
+
     accept_response = await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
@@ -138,14 +145,16 @@ async def test_send_credential_oob_v2(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert check_webhook_state(
-        client=alice_member_client,
+
+    result = await alice_credentials_listener.wait_for_filtered_event(
         filter_map={
             "state": "offer-received",
-            "credential_definition_id": credential_definition_id,
+            "thread_id": thread_id,
         },
-        topic="credentials",
     )
+    alice_credentials_listener.stop()
+
+    assert result["credential_id"]
 
 
 @pytest.mark.anyio

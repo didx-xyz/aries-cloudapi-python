@@ -65,7 +65,8 @@ def __issuer_from_id(id: str) -> Issuer:
         return IssueCredentialFacades.v2.value
 
     raise CloudApiException(
-        "Unknown version. ID is expected to contain protocol version", 400)
+        "Unknown version. ID is expected to contain protocol version", 400
+    )
 
 
 def __issuer_from_protocol_version(version: IssueCredentialProtocolVersion) -> Issuer:
@@ -162,9 +163,11 @@ async def send_credential(
             ),
         )
     except ClientResponseError as e:
-        raise CloudApiException(
-            f"Failed to create and send credential: {e.message}", 500
-        ) from e
+        logger.debug(
+            "A ClientResponseError was caught while sending credentials. The error message is: '%s'",
+            e.message,
+        )
+        raise CloudApiException("Failed to create and send credential.", 500) from e
 
 
 @router.post("/credentials/create-offer")
@@ -234,7 +237,7 @@ async def remove_credential(
 
 @router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
-    body: RevokeCredential = RevokeCredential(),
+    body: RevokeCredential,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
@@ -280,7 +283,7 @@ async def request_credential(
         raise CloudApiException(
             "Record has no credential definition or schema associated. "
             "This probably means you haven't received an offer yet.",
-            403,
+            412,
         )
 
     did = did_from_credential_definition_id(record.credential_definition_id)

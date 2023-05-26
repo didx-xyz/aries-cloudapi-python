@@ -1,5 +1,5 @@
 aioredis~=2.0.1
-aries-cloudcontroller~=0.7.0
+aries-cloudcontroller==0.8.0
 dependency-injector~=4.41.0
 fastapi
 fastapi_websocket_pubsub

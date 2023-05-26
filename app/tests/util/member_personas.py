@@ -103,7 +103,7 @@ async def bob_and_alice_public_did(
     alice_did = await create_public_did(alice_acapy_client)
 
     if not bob_did.did or not alice_did.did:
-        raise Exception("Missing public did")
+        raise Exception("Missing public did for alice or bob")
 
     return {
         "bob_public_did": bob_did.did,

@@ -11,6 +11,7 @@ from mockito import when
 import app.facades.revocation_registry as rg
 from app.error.cloud_api_error import CloudApiException
 from app.tests.util.mock import to_async
+
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"
 cred_ex_id = "5mJRavkcQFrqgKqKKZua3z:3:CL:30:tag"
 cred_id = "c7c909f4-f670-49bd-9d81-53fba6bb23b8"
@@ -132,14 +133,11 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
     # Fail
     with pytest.raises(
         CloudApiException,
-        match=f"Error retrieving revocation status for credential definition ID {cred_def_id}",
+        match=f"Error retrieving revocation status for credential exchange ID {cred_ex_id}",
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
             cred_ex_id=cred_ex_id
         ).thenReturn(to_async(None))
-        when(rg).get_credential_definition_id_from_exchange_id(
-            controller=mock_agent_controller, credential_exchange_id=cred_ex_id
-        ).thenReturn(to_async(cred_def_id))
         await rg.get_credential_revocation_status(
             controller=mock_agent_controller, credential_exchange_id=cred_ex_id
         )
@@ -150,7 +148,6 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
 async def test_publish_revocation_registry_on_ledger(
     mock_agent_controller: AcaPyClient,
 ):
-
     # With endorsement
     when(mock_agent_controller.revocation).publish_rev_reg_def(
         rev_reg_id=revocation_registry_id,
@@ -261,7 +258,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     # Error insufficient params supplied
     with pytest.raises(
         CloudApiException,
-        match="Please, provide either a revocation registry id OR credential definition id.",
+        match="Invalid request. Please provide either a 'revocation registry id' or a 'credential definition id'.",
     ) as exc:
         await rg.publish_revocation_entry_to_ledger(
             controller=mock_agent_controller,
@@ -273,7 +270,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
     # Error no result
     with pytest.raises(
         CloudApiException,
-        match="Failed to publish revocation entry to ledger.\nNone",
+        match="Failed to publish revocation entry to ledger.",
     ) as exc:
         when(mock_agent_controller.revocation).publish_rev_reg_entry(
             rev_reg_id=revocation_registry_id,

@@ -10,7 +10,7 @@ from app.tests.util.client import (
 # governance
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def governance_acapy_client():
     client = _governance_acapy_client()
     yield client

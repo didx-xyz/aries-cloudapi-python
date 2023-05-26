@@ -77,7 +77,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     ).json()
 
     payload = await verifier_tenant_listener.wait_for_filtered_event(
-        filter_map={"state": "completed"}, timeout=100
+        filter_map={"state": "completed"}
     )
     verifier_tenant_listener.stop()
 

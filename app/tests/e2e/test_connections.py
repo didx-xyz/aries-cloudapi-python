@@ -1,13 +1,11 @@
-import pytest
 import time
+
+import pytest
 from assertpy import assert_that
 from httpx import AsyncClient
 
 from app.tests.util.member_personas import BobAliceConnect
-
-from app.tests.util.webhooks import (
-    check_webhook_state,
-)
+from app.tests.util.webhooks import check_webhook_state
 
 
 @pytest.mark.anyio

@@ -177,7 +177,7 @@ async def test_web_tenant():
     )
     # then
     assert response.status_code == 401
-    assert response.text == '{"detail":"Unauthorized"}'
+    assert "Unauthorized" in response.text
 
     # when
     await make_call(

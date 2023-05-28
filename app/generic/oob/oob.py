@@ -1,20 +1,16 @@
 import logging
 from typing import List, Optional
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    InvitationMessage,
-    InvitationRecord,
-)
+from aries_cloudcontroller import (AcaPyClient, InvitationMessage,
+                                   InvitationRecord, OobRecord)
 from aries_cloudcontroller.model.attachment_def import AttachmentDef
-from aries_cloudcontroller.model.invitation_create_request import (
-    InvitationCreateRequest,
-)
+from aries_cloudcontroller.model.invitation_create_request import \
+    InvitationCreateRequest
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.dependencies import agent_selector
-from shared_models import OobRecord, Connection, conn_record_to_connection
+from shared_models import Connection, conn_record_to_connection
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +45,14 @@ def strip_protocol_prefix(id: str):
 
 @router.post("/create-invitation", response_model=InvitationRecord)
 async def create_oob_invitation(
-    body: CreateOobInvitation = CreateOobInvitation(),
+    body: Optional[CreateOobInvitation] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
     Create connection invitation out-of-band.
     """
+    if body is None:
+        body = CreateOobInvitation()
 
     handshake_protocols = [
         "https://didcomm.org/didexchange/1.0",
@@ -65,8 +63,8 @@ async def create_oob_invitation(
         not body.attachments or len(body.attachments) == 0
     ):
         raise HTTPException(
-            status_code=400,
-            detail="Either or both of 'create_connection' and 'attachments' must be defined / true",
+            400,
+            "One or both of 'create_connection' and 'attachments' must be included",
         )
 
     if body.attachments:
@@ -115,18 +113,18 @@ async def connect_to_public_did(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ):
     """
-    Use a public DID as implicit invitation and connect.
+    Connect using public DID as implicit invitation.
 
     Parameters:
-    -----------
+    ---
     their_public_did: str
-        The public did of the entity you want to connect to
+        Public DID of target entity
 
-    body: CreateConnFromDIDRequest (optional)
-        Extra information about the connection request
+    body: Optional[CreateConnFromDIDRequest]
+        Additional request info
 
     Returns:
-    ------------
+    ---
     ConnRecord
         The connection record
     """

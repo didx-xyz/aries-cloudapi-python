@@ -13,6 +13,7 @@ from app.generic.issuer.issuer import router
 from app.listener import Listener
 from app.tests.util.ecosystem_personas import FaberAliceConnect
 from app.tests.util.ledger import create_public_did, has_public_did
+from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
 from shared_models.shared_models import CredentialExchange
@@ -26,7 +27,7 @@ BASE_PATH = router.prefix + "/credentials"
 @pytest.fixture(scope="function")
 async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
     definition = CreateSchema(
-        name="test_schema", version="0.3", attribute_names=["speed"]
+        name="test_schema", version=random_version(), attribute_names=["speed"]
     )
 
     if not await has_public_did(governance_acapy_client):
@@ -42,7 +43,7 @@ async def schema_definition_alt(
     governance_acapy_client: AcaPyClient,
 ) -> CredentialSchema:
     definition = CreateSchema(
-        name="test_schema_alt", version="0.6", attribute_names=["speed"]
+        name="test_schema_alt", version=random_version(), attribute_names=["speed"]
     )
 
     if not await has_public_did(governance_acapy_client):
@@ -129,8 +130,7 @@ async def credential_exchange_id(
 
     response = await alice_member_client.get(
         BASE_PATH,
-        params={
-            "connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     response.raise_for_status()
     records = response.json()
@@ -154,9 +154,7 @@ async def issue_credential_to_alice(
         "attributes": {"speed": "10"},
     }
 
-    listener = Listener(
-        topic="credentials", wallet_id=alice_tenant["tenant_id"]
-    )
+    listener = Listener(topic="credentials", wallet_id=alice_tenant["tenant_id"])
 
     # create and send credential offer- issuer
     response = await faber_client.post(

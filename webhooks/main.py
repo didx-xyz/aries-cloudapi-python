@@ -155,7 +155,6 @@ async def topic_root(
     request: Request,
     service: Service = Depends(Provide[Container.service]),
 ):
-
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
@@ -167,7 +166,8 @@ async def topic_root(
     topic = topic_mapping.get(acapy_topic)
     if not topic:
         log.debug(
-            f"Not publishing webhook event for acapy_topic {acapy_topic} as it doesn't exist in the topic_mapping"
+            "Not publishing webhook event for acapy_topic %s as it doesn't exist in the topic_mapping",
+            acapy_topic,
         )
         return
 
@@ -182,7 +182,8 @@ async def topic_root(
     webhook_event = await service.transform_topic_entry(redis_item)
     if not webhook_event:
         log.debug(
-            f"Not publishing webhook event for topic {topic} as no transformer exists for the topic"
+            "Not publishing webhook event for topic %s as no transformer exists for the topic",
+            topic,
         )
         return
 
@@ -211,7 +212,7 @@ async def topic_root(
     # Add data to redis
     await service.add_topic_entry(redis_item["wallet_id"], json.dumps(redis_item))
 
-    log.debug(f"{topic}:\n{pformat(webhook_event)}")
+    log.debug("%s:\n%s", topic, pformat(webhook_event))
 
 
 # Example for broadcasting from eg Redis

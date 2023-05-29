@@ -20,62 +20,42 @@ from app.constants import (
 TEST_CLIENT_TIMEOUT = 300
 
 
-def governance_client(*, app: Optional[Any] = None):
-    return AsyncClient(
-        base_url=GOVERNANCE_FASTAPI_ENDPOINT,
-        timeout=TEST_CLIENT_TIMEOUT,
-        app=app,
-        headers={
-            "x-api-key": f"governance.{GOVERNANCE_ACAPY_API_KEY}",
+def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, Any]:
+    return {
+        "timeout": TEST_CLIENT_TIMEOUT,
+        "app": app,
+        "headers": {
+            "x-api-key": api_key,
             "content-type": "application/json",
         },
-        transport=AsyncHTTPTransport(retries=3),
-    )
+        "transport": AsyncHTTPTransport(retries=MAX_NUM_RETRIES),
+    }
+
+
+# Governance Clients
+def governance_client(*, app: Optional[Any] = None):
+    settings = get_common_settings(f"governance.{GOVERNANCE_ACAPY_API_KEY}", app)
+    return AsyncClient(base_url=GOVERNANCE_FASTAPI_ENDPOINT, **settings)
 
 
 def governance_acapy_client():
-    return AcaPyClient(
-        base_url=GOVERNANCE_AGENT_URL,
-        api_key=GOVERNANCE_ACAPY_API_KEY,
-    )
+    return AcaPyClient(base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_ACAPY_API_KEY)
 
 
-# TENANT ADMIN
-
-
+# Tenant Admin Clients
 def tenant_admin_client(*, app: Optional[Any] = None):
-    return AsyncClient(
-        base_url=TENANT_FASTAPI_ENDPOINT,
-        timeout=TEST_CLIENT_TIMEOUT,
-        app=app,
-        headers={
-            "x-api-key": f"tenant-admin.{TENANT_ACAPY_API_KEY}",
-            "content-type": "application/json",
-        },
-        transport=AsyncHTTPTransport(retries=3),
-    )
+    settings = get_common_settings(f"tenant-admin.{TENANT_ACAPY_API_KEY}", app)
+    return AsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, **settings)
 
 
 def tenant_admin_acapy_client():
-    return AcaPyClient(
-        base_url=TENANT_AGENT_URL,
-        api_key=TENANT_ACAPY_API_KEY,
-    )
+    return AcaPyClient(base_url=TENANT_AGENT_URL, api_key=TENANT_ACAPY_API_KEY)
 
 
-# TENANT
-
-
+# Tenant Clients
 def tenant_client(*, token: str, app: Optional[Any] = None):
-    return AsyncClient(
-        base_url=TENANT_FASTAPI_ENDPOINT,
-        timeout=TEST_CLIENT_TIMEOUT,
-        app=app,
-        headers={
-            "x-api-key": token,
-            "content-type": "application/json",
-        },
-    )
+    settings = get_common_settings(token, app)
+    return AsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, **settings)
 
 
 def tenant_acapy_client(*, token: str):

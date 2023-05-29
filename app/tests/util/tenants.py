@@ -14,7 +14,7 @@ async def create_issuer_tenant(tenant_admin_client: RichAsyncClient, name: str):
     )
 
     create_tennant_response = await tenant_admin_client.post(
-        tenant_admin_client, "/admin/tenants", json=request.dict()
+        "/admin/tenants", json=request.dict()
     )
 
     parsed_response = parse(CreateTenantResponse, create_tennant_response.text)

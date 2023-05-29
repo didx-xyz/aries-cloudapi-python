@@ -60,7 +60,6 @@ async def test_accept_invitation_oob(
 @pytest.mark.anyio
 async def test_oob_connect_via_public_did(
     bob_member_client: RichAsyncClient,
-    faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
 ):
     time.sleep(10)

@@ -114,9 +114,7 @@ async def acme_and_alice_connection(
 
 @pytest.fixture(scope="function")
 async def faber_and_alice_connection(
-    alice_member_client: RichAsyncClient,
-    faber_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
+    alice_member_client: RichAsyncClient, faber_client: RichAsyncClient
 ) -> FaberAliceConnect:
     # create invitation on faber side
     invitation = (

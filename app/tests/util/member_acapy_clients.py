@@ -28,10 +28,10 @@ async def tenant_admin_acapy_client():
 async def alice_acapy_client(alice_member_client: RichAsyncClient):
     [_, token] = alice_member_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = get_tenant_acapy_client(token=token)
-    yield client
+    acapy_client = get_tenant_acapy_client(token=token)
+    yield acapy_client
 
-    await client.close()
+    await acapy_client.close()
 
 
 @pytest.fixture(scope="function")
@@ -40,10 +40,10 @@ async def bob_acapy_client(bob_member_client: RichAsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = bob_member_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = get_tenant_acapy_client(token=token)
-    yield client
+    acapy_client = get_tenant_acapy_client(token=token)
+    yield acapy_client
 
-    await client.close()
+    await acapy_client.close()
 
 
 @pytest.fixture(scope="function")
@@ -52,10 +52,10 @@ async def faber_acapy_client(faber_client: RichAsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = get_tenant_acapy_client(token=token)
-    yield client
+    acapy_client = get_tenant_acapy_client(token=token)
+    yield acapy_client
 
-    await client.close()
+    await acapy_client.close()
 
 
 @pytest.fixture(scope="function")
@@ -64,7 +64,7 @@ async def acme_acapy_client(faber_client: RichAsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = get_tenant_acapy_client(token=token)
-    yield client
+    acapy_client = get_tenant_acapy_client(token=token)
+    yield acapy_client
 
-    await client.close()
+    await acapy_client.close()

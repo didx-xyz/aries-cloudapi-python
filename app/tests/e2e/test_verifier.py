@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.generic.verifier.models import (AcceptProofRequest,
                                          PresentProofProtocolVersion,
@@ -14,6 +13,7 @@ from app.tests.util.webhooks import (check_webhook_state,
 from app.tests.verifier.test_verifier_utils import indy_proof_request
 from shared_models.shared_models import CredentialExchange  # NOQA
 from shared_models.shared_models import PresentationExchange
+from app.util.rich_async_client import RichAsyncClient
 
 BASE_PATH = "/generic/verifier"
 
@@ -31,8 +31,8 @@ def create_send_request(
 @pytest.mark.anyio
 async def test_accept_proof_request_v1(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     response = await acme_client.post(
@@ -110,9 +110,9 @@ async def test_accept_proof_request_v1(
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    bob_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
@@ -217,9 +217,9 @@ async def test_accept_proof_request_oob_v1(
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    bob_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
@@ -317,8 +317,8 @@ async def test_accept_proof_request_oob_v2(
 @pytest.mark.anyio
 async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     alice_tenant: Any,
     acme_tenant: Any,
     credential_definition_id: str,
@@ -401,8 +401,8 @@ async def test_accept_proof_request_v2(
 @pytest.mark.anyio
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
-    alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     alice_tenant: Any,
 ):
     alice_proofs_listener = Listener(
@@ -468,9 +468,9 @@ async def test_send_proof_request(
 @pytest.mark.anyio
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     alice_tenant: Any,
-    acme_client: AsyncClient,
+    acme_client: RichAsyncClient,
 ):
     alice_proofs_listener = Listener(
         topic="proofs", wallet_id=alice_tenant["tenant_id"]
@@ -511,7 +511,7 @@ async def test_reject_proof_request(
 
 @pytest.mark.anyio
 async def test_get_proof_single(
-    acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
+    acme_and_alice_connection: AcmeAliceConnect, acme_client: RichAsyncClient
 ):
     # V1
     proof_req_res = await acme_client.post(
@@ -561,7 +561,7 @@ async def test_get_proof_single(
 
 @pytest.mark.anyio
 async def test_get_proofs_multi(
-    acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
+    acme_and_alice_connection: AcmeAliceConnect, acme_client: RichAsyncClient
 ):
     # V1
     await acme_client.post(
@@ -610,7 +610,7 @@ async def test_get_proofs_multi(
 
 @pytest.mark.anyio
 async def test_delete_proof(
-    acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
+    acme_and_alice_connection: AcmeAliceConnect, acme_client: RichAsyncClient
 ):
     # V1
     proof_req_res = await acme_client.post(
@@ -651,9 +651,9 @@ async def test_delete_proof(
 async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,
     acme_and_alice_connection: AcmeAliceConnect,
-    acme_client: AsyncClient,
+    acme_client: RichAsyncClient,
     alice_tenant: Any,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     alice_proofs_listener = Listener(
         topic="proofs", wallet_id=alice_tenant["tenant_id"]

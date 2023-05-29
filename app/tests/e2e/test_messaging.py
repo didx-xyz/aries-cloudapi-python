@@ -1,14 +1,14 @@
 import pytest
 from assertpy.assertpy import assert_that
-from httpx import AsyncClient
 
 from app.generic.messaging import Message, TrustPingMsg
 from app.tests.util.member_personas import BobAliceConnect
+from app.util.rich_async_client import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_send_trust_ping(
-    bob_and_alice_connection: BobAliceConnect, alice_member_client: AsyncClient
+    bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient
 ):
     trustping_msg = TrustPingMsg(
         connection_id=bob_and_alice_connection["alice_connection_id"], comment="Donda"
@@ -25,7 +25,7 @@ async def test_send_trust_ping(
 
 @pytest.mark.anyio
 async def test_send_message(
-    bob_and_alice_connection: BobAliceConnect, alice_member_client: AsyncClient
+    bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient
 ):
     message = Message(
         connection_id=bob_and_alice_connection["alice_connection_id"], content="Donda"

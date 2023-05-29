@@ -1,10 +1,10 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.e2e.test_fixtures import *
+from app.util.rich_async_client import RichAsyncClient
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
@@ -47,9 +47,9 @@ signed_doc = {
 
 @pytest.mark.anyio
 async def test_sign_jsonld(
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     issue_credential_to_alice: CredentialExchange,
 ):
@@ -126,9 +126,9 @@ async def test_sign_jsonld(
 
 @pytest.mark.anyio
 async def test_verify_jsonld(
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
 ):
     jsonld_verify = JsonLdVerifyRequest(
         public_did="abcde",

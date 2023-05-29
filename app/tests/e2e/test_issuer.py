@@ -2,15 +2,14 @@ import logging
 
 import pytest
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from app.tests.e2e.test_fixtures import *  # NOQA
 from app.tests.e2e.test_fixtures import BASE_PATH
 from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import (check_webhook_state,
-                                     get_wallet_id_from_async_client)
+from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
+from app.util.rich_async_client import RichAsyncClient
 
 # This import are important for tests to run!
 
@@ -19,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.anyio
 async def test_send_credential_oob_v1(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
@@ -90,10 +89,10 @@ async def test_send_credential_oob_v1(
 
 @pytest.mark.anyio
 async def test_send_credential_oob_v2(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_credentials_listener = Listener(topic="credentials", wallet_id=wallet_id)
@@ -159,11 +158,11 @@ async def test_send_credential_oob_v2(
 
 @pytest.mark.anyio
 async def test_send_credential(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
@@ -237,7 +236,7 @@ async def test_send_credential(
 
 @pytest.mark.anyio
 async def test_create_offer(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
 ):
@@ -304,8 +303,8 @@ async def test_create_offer(
 
 @pytest.mark.anyio
 async def test_send_credential_request(
-    alice_member_client: AsyncClient,
-    faber_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     credential_definition_id: str,
 ):
@@ -348,8 +347,8 @@ async def test_send_credential_request(
 # ACAPY_AUTO_STORE_CREDENTIAL=true
 # @pytest.mark.anyio
 # async def test_store_credential(
-#     alice_member_client: AsyncClient,
-#     faber_client: AsyncClient,
+#     alice_member_client: RichAsyncClient,
+#     faber_client: RichAsyncClient,
 #     credential_definition_id: str,
 #     faber_and_alice_connection: FaberAliceConnect,
 # ):
@@ -431,8 +430,8 @@ async def test_send_credential_request(
 
 @pytest.mark.anyio
 async def test_revoke_credential(
-    faber_client: AsyncClient,
-    alice_member_client: AsyncClient,
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     alice_tenant: Any,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,

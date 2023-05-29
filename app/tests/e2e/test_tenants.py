@@ -3,7 +3,6 @@ from uuid import uuid4
 import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
-from httpx import AsyncClient
 
 from app.admin.tenants import tenants
 from app.dependencies import get_tenant_controller
@@ -12,12 +11,13 @@ from app.role import Role
 from app.tests.util.client import tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
+from app.util.rich_async_client import RichAsyncClient
 
 BASE_PATH = tenants.router.prefix
 
 
 @pytest.mark.anyio
-async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
+async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
         BASE_PATH,
@@ -45,7 +45,7 @@ async def test_get_tenant_auth_token(tenant_admin_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_create_tenant_member(
-    tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
     group_id = "TestGroup"
@@ -72,7 +72,7 @@ async def test_create_tenant_member(
 
 @pytest.mark.anyio
 async def test_create_tenant_issuer(
-    tenant_admin_client: AsyncClient,
+    tenant_admin_client: RichAsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
     governance_acapy_client: AcaPyClient,
 ):
@@ -146,7 +146,7 @@ async def test_create_tenant_issuer(
 
 @pytest.mark.anyio
 async def test_create_tenant_verifier(
-    tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
     response = await tenant_admin_client.post(
@@ -197,7 +197,7 @@ async def test_create_tenant_verifier(
 
 @pytest.mark.anyio
 async def test_update_tenant_verifier_to_issuer(
-    tenant_admin_client: AsyncClient,
+    tenant_admin_client: RichAsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
     governance_acapy_client: AcaPyClient,
 ):
@@ -313,7 +313,7 @@ async def test_update_tenant_verifier_to_issuer(
 
 
 @pytest.mark.anyio
-async def test_get_tenant(tenant_admin_client: AsyncClient):
+async def test_get_tenant(tenant_admin_client: RichAsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
         BASE_PATH,
@@ -337,7 +337,7 @@ async def test_get_tenant(tenant_admin_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_get_tenants(tenant_admin_client: AsyncClient):
+async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     name = uuid4().hex
     response = await tenant_admin_client.post(
         BASE_PATH,
@@ -364,7 +364,7 @@ async def test_get_tenants(tenant_admin_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
+async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     name = uuid4().hex
     group_id = "backstreetboys"
     response = await tenant_admin_client.post(
@@ -399,7 +399,7 @@ async def test_get_tenants_by_group(tenant_admin_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_delete_tenant(
-    tenant_admin_client: AsyncClient, tenant_admin_acapy_client: AcaPyClient
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
     response = await tenant_admin_client.post(

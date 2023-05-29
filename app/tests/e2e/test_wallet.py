@@ -66,7 +66,7 @@ async def test_get_public_did(
 
 @pytest.mark.anyio
 async def test_get_did_endpoint(governance_client: RichAsyncClient):
-    did = create_did_mock(governance_client)
+    did = await create_did_mock(governance_client)
     response = await governance_client.get(f"{WALLET_BASE_PATH}/{did}/endpoint")
     assert_that(response.status_code).is_equal_to(200)
 

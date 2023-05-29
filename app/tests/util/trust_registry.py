@@ -1,12 +1,11 @@
 from random import random
 
-from httpx import AsyncClient
-
 from app.facades.trust_registry import (Actor, actor_by_did, register_actor,
                                         register_schema, registry_has_schema)
+from app.util.rich_async_client import RichAsyncClient
 
 
-async def register_issuer(client: AsyncClient, schema_id: str):
+async def register_issuer(client: RichAsyncClient, schema_id: str):
     pub_did_res = await client.get("/wallet/dids/public")
 
     if pub_did_res.is_error:

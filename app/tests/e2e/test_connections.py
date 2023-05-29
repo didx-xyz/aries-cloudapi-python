@@ -103,7 +103,7 @@ async def test_delete_connection(
 
     with pytest.raises(CloudApiException) as exc:
         response = await bob_member_client.get(f"/generic/connections/{connection_id}")
-    assert_that(exc.status_code).is_equal_to(404)
+    assert_that(exc.value.status_code).is_equal_to(404)
 
 
 @pytest.mark.anyio

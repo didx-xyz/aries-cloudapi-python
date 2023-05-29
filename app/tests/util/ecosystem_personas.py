@@ -2,6 +2,7 @@ from typing import Any, TypedDict
 
 import pytest
 
+from app.admin.tenants.models import CreateTenantResponse
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
 from app.tests.util.client import (get_tenant_acapy_client,
@@ -58,12 +59,12 @@ async def acme_tenant():
 
         yield tenant
 
-        await delete_tenant(client, tenant["tenant_id"])
+        await delete_tenant(client, tenant.tenant_id)
 
 
 @pytest.fixture(scope="function")
-async def acme_client(acme_tenant: Any):
-    acme_async_client = get_tenant_client(token=acme_tenant["access_token"])
+async def acme_client(acme_tenant: CreateTenantResponse):
+    acme_async_client = get_tenant_client(token=acme_tenant.access_token)
     yield acme_async_client
 
     await acme_async_client.aclose()
@@ -83,16 +84,16 @@ async def acme_acapy_client(faber_client: RichAsyncClient):
 
 @pytest.fixture(scope="function")
 async def acme_and_alice_connection(
-    alice_member_client: RichAsyncClient, acme_tenant: Any
+    alice_member_client: RichAsyncClient, acme_tenant: CreateTenantResponse
 ) -> AcmeAliceConnect:
-    acme_actor = await actor_by_id(acme_tenant["tenant_id"])
+    acme_actor = await actor_by_id(acme_tenant.tenant_id)
 
     assert acme_actor
     assert acme_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    listener = Listener(topic="connections", wallet_id=acme_tenant["tenant_id"])
+    listener = Listener(topic="connections", wallet_id=acme_tenant.tenant_id)
 
     # accept invitation on alice side
     invitation_response = (
@@ -118,7 +119,7 @@ async def acme_and_alice_connection(
 async def faber_and_alice_connection(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
-    alice_tenant: Any,
+    alice_tenant: CreateTenantResponse,
 ) -> FaberAliceConnect:
     # create invitation on faber side
     invitation = (

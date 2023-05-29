@@ -25,11 +25,10 @@ async def test_create_credential_definition(
     schema_result = (
         await definitions.create_schema(schema, governance_acapy_client)
     ).dict()
-
-    await register_issuer(governance_client, schema_result["id"])
+    schema_id = schema_result["id"]
 
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=get_random_string(5), support_revocation=True
+        schema_id=schema_id, tag=get_random_string(5), support_revocation=True
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))

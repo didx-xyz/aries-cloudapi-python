@@ -1,7 +1,27 @@
 import pytest
 
-from app.tests.util.client import get_tenant_acapy_client
+from app.tests.util.client import (
+    get_governance_acapy_client,
+    get_tenant_acapy_client,
+    get_tenant_admin_acapy_client,
+)
 from app.util.rich_async_client import RichAsyncClient
+
+
+@pytest.fixture(scope="module")
+async def governance_acapy_client():
+    acapy_client = get_governance_acapy_client()
+    yield acapy_client
+
+    await acapy_client.close()
+
+
+@pytest.fixture(scope="function")
+async def tenant_admin_acapy_client():
+    acapy_client = get_tenant_admin_acapy_client()
+    yield acapy_client
+
+    await acapy_client.close()
 
 
 @pytest.fixture(scope="function")

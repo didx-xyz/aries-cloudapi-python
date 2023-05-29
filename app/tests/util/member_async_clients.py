@@ -1,8 +1,24 @@
 import pytest
 
 from app.admin.tenants.models import CreateTenantResponse
-from app.tests.util.client import get_tenant_admin_client, get_tenant_client
+from app.tests.util.client import (
+    get_governance_client,
+    get_tenant_admin_client,
+    get_tenant_client,
+)
 from app.tests.util.tenants import create_issuer_tenant, delete_tenant
+
+
+@pytest.fixture(scope="function")
+async def governance_client():
+    async with get_governance_client() as async_client:
+        yield async_client
+
+
+@pytest.fixture(scope="function")
+async def tenant_admin_client():
+    async with get_tenant_admin_client() as async_client:
+        yield async_client
 
 
 @pytest.fixture(scope="function")

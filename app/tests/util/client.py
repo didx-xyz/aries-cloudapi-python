@@ -28,32 +28,32 @@ def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, An
 
 
 # Governance Clients
-def governance_client(*, app: Optional[Any] = None):
+def get_governance_client(*, app: Optional[Any] = None):
     settings = get_common_settings(f"governance.{GOVERNANCE_ACAPY_API_KEY}", app)
     return AsyncClient(base_url=GOVERNANCE_FASTAPI_ENDPOINT, **settings)
 
 
-def governance_acapy_client():
+def get_governance_acapy_client():
     return AcaPyClient(base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_ACAPY_API_KEY)
 
 
 # Tenant Admin Clients
-def tenant_admin_client(*, app: Optional[Any] = None):
+def get_tenant_admin_client(*, app: Optional[Any] = None):
     settings = get_common_settings(f"tenant-admin.{TENANT_ACAPY_API_KEY}", app)
     return AsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, **settings)
 
 
-def tenant_admin_acapy_client():
+def get_tenant_admin_acapy_client():
     return AcaPyClient(base_url=TENANT_AGENT_URL, api_key=TENANT_ACAPY_API_KEY)
 
 
 # Tenant Clients
-def tenant_client(*, token: str, app: Optional[Any] = None):
+def get_tenant_client(*, token: str, app: Optional[Any] = None):
     settings = get_common_settings(token, app)
     return AsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, **settings)
 
 
-def tenant_acapy_client(*, token: str):
+def get_tenant_acapy_client(*, token: str):
     return AcaPyClient(
         base_url=TENANT_AGENT_URL,
         api_key=TENANT_ACAPY_API_KEY,

@@ -11,8 +11,7 @@ from app.tests.util.client import (
     get_tenant_client,
 )
 from app.tests.util.ledger import create_public_did
-from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
-                                    delete_tenant)
+from app.tests.util.tenants import create_issuer_tenant, create_tenant, delete_tenant
 from app.tests.util.webhooks import check_webhook_state
 from app.util.rich_async_client import RichAsyncClient
 
@@ -63,8 +62,7 @@ async def alice_member_client(alice_tenant: Any):
 async def bob_acapy_client(bob_member_client: RichAsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
-    [_, token] = bob_member_client.headers.get(
-        "x-api-key").split(".", maxsplit=1)
+    [_, token] = bob_member_client.headers.get("x-api-key").split(".", maxsplit=1)
 
     client = get_tenant_acapy_client(token=token)
     yield client
@@ -74,6 +72,7 @@ async def bob_acapy_client(bob_member_client: RichAsyncClient):
 
 @pytest.fixture(scope="function")
 async def alice_acapy_client(alice_member_client: RichAsyncClient):
+    [_, token] = alice_member_client.headers.get("x-api-key").split(".", maxsplit=1)
 
     client = get_tenant_acapy_client(token=token)
     yield client
@@ -86,7 +85,6 @@ async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
 ) -> BobAlicePublicDid:
-
     bob_records = await bob_acapy_client.connection.get_connections()
     alice_records = await alice_acapy_client.connection.get_connections()
 

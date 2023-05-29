@@ -1,6 +1,7 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
+from app.error.cloud_api_error import CloudApiException
 
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.e2e.test_fixtures import *
@@ -63,14 +64,13 @@ async def test_sign_jsonld(
     )
 
     # Error
-    response = await alice_member_client.post(
-        "/generic/jsonld/sign", json=json_ld_req.dict()
-    )
+    with pytest.raises(CloudApiException) as exc:
+        await alice_member_client.post("/generic/jsonld/sign", json=json_ld_req.dict())
 
-    assert_that(response.json()["detail"]).contains(
+    assert_that(exc.value.detail).contains(
         "Please provide either or neither, but not both"
     )
-    assert_that(response.status_code).is_equal_to(400)
+    assert_that(exc.value.status_code).is_equal_to(400)
 
     # Success pub_did
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -136,13 +136,14 @@ async def test_verify_jsonld(
         doc=signed_doc["doc"],
     )
     # Error wrong args
-    response = await alice_member_client.post(
-        "/generic/jsonld/verify", json=jsonld_verify.dict()
-    )
-    assert_that(response.json()["detail"]).contains(
+    with pytest.raises(CloudApiException) as exc:
+        response = await alice_member_client.post(
+            "/generic/jsonld/verify", json=jsonld_verify.dict()
+        )
+    assert_that(exc.value.detail).contains(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
     )
-    assert_that(response.status_code).is_equal_to(400)
+    assert_that(exc.value.status_code).is_equal_to(400)
 
     # # Error invalid
     jsonld_verify.verkey = None

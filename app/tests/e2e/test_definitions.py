@@ -1,5 +1,3 @@
-from time import sleep
-
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
@@ -105,7 +103,6 @@ async def test_get_schema(governance_acapy_client: AcaPyClient):
 async def test_get_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
 ):
-    sleep(3)
     # given
     schema_send = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]

@@ -111,7 +111,6 @@ async def test_bob_and_alice_connect(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
 ):
-    time.sleep(1)
     invitation_response = await bob_member_client.post(
         "/generic/connections/create-invitation",
     )

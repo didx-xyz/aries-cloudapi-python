@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from aries_cloudcontroller import AcaPyClient
-from httpx import AsyncClient, AsyncHTTPTransport
+from httpx import AsyncHTTPTransport
 
 from app.constants import GOVERNANCE_AGENT_URL, TENANT_AGENT_URL
 from app.tests.util.constants import (

@@ -5,7 +5,7 @@ from app.util.rich_parsing import parse_with_error_handling as parse
 
 
 def append_random_string(name):
-    return f"{name}_{get_random_string(7)}"
+    return f"{name}_{get_random_string(5)}"
 
 
 async def create_issuer_tenant(tenant_admin_client: RichAsyncClient, name: str):
@@ -13,11 +13,10 @@ async def create_issuer_tenant(tenant_admin_client: RichAsyncClient, name: str):
         name=append_random_string(name), roles=["issuer"], group_id="IssuerGroup"
     )
 
-    create_tennant_response = await tenant_admin_client.post(
+    response = await tenant_admin_client.post(
         "/admin/tenants", json=request.dict()
     )
-
-    parsed_response = parse(CreateTenantResponse, create_tennant_response.text)
+    parsed_response = parse(CreateTenantResponse, response.text)
 
     return parsed_response
 
@@ -29,11 +28,10 @@ async def create_verifier_tenant(tenant_admin_client: RichAsyncClient, name: str
         group_id="VerifierGroup",
     )
 
-    create_tennant_response = await tenant_admin_client.post(
+    response = await tenant_admin_client.post(
         "/admin/tenants", json=request.dict()
     )
-
-    parsed_response = parse(CreateTenantResponse, create_tennant_response.text)
+    parsed_response = parse(CreateTenantResponse, response.text)
 
     return parsed_response
 
@@ -45,10 +43,10 @@ async def create_tenant(tenant_admin_client: RichAsyncClient, name: str):
         group_id="TenantGroup",
     )
 
-    create_tennant_response = await tenant_admin_client.post(
+    response = await tenant_admin_client.post(
         "/admin/tenants", json=request.dict()
     )
-    parsed_response = parse(CreateTenantResponse, create_tennant_response.text)
+    parsed_response = parse(CreateTenantResponse, response.text)
 
     return parsed_response
 

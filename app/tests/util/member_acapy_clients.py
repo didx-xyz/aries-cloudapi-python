@@ -8,7 +8,7 @@ from app.tests.util.client import (
 from app.util.rich_async_client import RichAsyncClient
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def governance_acapy_client():
     acapy_client = get_governance_acapy_client()
     yield acapy_client

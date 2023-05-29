@@ -12,7 +12,7 @@ from app.tests.util.client import (
 @pytest.fixture(scope="module")
 async def governance_acapy_client():
     acapy_client = get_governance_acapy_client()
-    yield acapy_client()
+    yield acapy_client
 
     await acapy_client.close()
 

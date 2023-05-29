@@ -25,9 +25,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_tenant = await create_tenant(tenant_admin, "alice")
 
     # Get clients
-    verifier_client = get_tenant_client(token=verifier_tenant["access_token"])
-    issuer_client = get_tenant_client(token=issuer_tenant["access_token"])
-    holder_client = get_tenant_client(token=holder_tenant["access_token"])
+    verifier_client = get_tenant_client(token=verifier_tenant.access_token)
+    issuer_client = get_tenant_client(token=issuer_tenant.access_token)
+    holder_client = get_tenant_client(token=holder_tenant.access_token)
 
     # Create connection between issuer and holder
     invitation = (

@@ -17,8 +17,8 @@ async def alice_tenant():
 @pytest.fixture(scope="function")
 async def acme_tenant():
     async with get_tenant_admin_client() as client:
-        tenant = await create_verifier_tenant(client, "acme")
+        verifier_tenant = await create_verifier_tenant(client, "acme")
 
-        yield tenant
+        yield verifier_tenant
 
-        await delete_tenant(client, tenant.tenant_id)
+        await delete_tenant(client, verifier_tenant.tenant_id)

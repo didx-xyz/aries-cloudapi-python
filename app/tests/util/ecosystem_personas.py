@@ -28,9 +28,6 @@ async def faber_client():
     async with get_tenant_admin_client() as tenant_admin_async_client:
         faber_issuer = await create_issuer_tenant(tenant_admin_async_client, "faber")
 
-        if "access_token" not in faber_issuer:
-            raise Exception(f"Error creating faber issuer tenant: {faber_issuer}")
-
         faber_async_client = get_tenant_client(token=faber_issuer["access_token"])
         yield faber_async_client
 

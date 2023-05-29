@@ -4,8 +4,8 @@ import pytest
 
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
-from app.tests.util.client import (get_tenant_acapy_client, get_tenant_admin_client,
-                                   get_tenant_client)
+from app.tests.util.client import (get_tenant_acapy_client,
+                                   get_tenant_admin_client, get_tenant_client)
 from app.tests.util.string import base64_to_json
 from app.tests.util.tenants import (create_issuer_tenant,
                                     create_verifier_tenant, delete_tenant)
@@ -93,11 +93,9 @@ async def acme_and_alice_connection(
     assert acme_actor
     assert acme_actor["didcomm_invitation"]
 
-    invitation_json = base64_to_json(
-        acme_actor["didcomm_invitation"].split("?oob=")[1])
+    invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    listener = Listener(topic="connections",
-                        wallet_id=acme_tenant["tenant_id"])
+    listener = Listener(topic="connections", wallet_id=acme_tenant["tenant_id"])
 
     # accept invitation on alice side
     invitation_response = (
@@ -123,6 +121,7 @@ async def acme_and_alice_connection(
 async def faber_and_alice_connection(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
+    alice_tenant: Any,
 ) -> FaberAliceConnect:
     # create invitation on faber side
     invitation = (
@@ -145,14 +144,12 @@ async def faber_and_alice_connection(
     assert check_webhook_state(
         alice_member_client,
         topic="connections",
-        filter_map={"state": "completed",
-                    "connection_id": alice_connection_id},
+        filter_map={"state": "completed", "connection_id": alice_connection_id},
     )
     assert check_webhook_state(
         faber_client,
         topic="connections",
-        filter_map={"state": "completed",
-                    "connection_id": faber_connection_id},
+        filter_map={"state": "completed", "connection_id": faber_connection_id},
     )
 
     return {

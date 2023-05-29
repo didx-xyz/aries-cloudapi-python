@@ -6,8 +6,11 @@ from httpx import AsyncClient
 
 from app.generic.connections.connections import CreateInvitation
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
-from app.tests.util.client import (tenant_acapy_client, tenant_admin_client,
-                                   tenant_client)
+from app.tests.util.client import (
+    get_tenant_acapy_client,
+    get_tenant_admin_client,
+    get_tenant_client,
+)
 from app.tests.util.ledger import create_public_did
 from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
                                     delete_tenant)
@@ -26,10 +29,10 @@ class BobAlicePublicDid(TypedDict):
 
 @pytest.fixture(scope="function")
 async def bob_member_client():
-    async with tenant_admin_client() as client:
+    async with get_tenant_admin_client() as client:
         tenant = await create_issuer_tenant(client, "bob")
 
-        bob_client = tenant_client(token=tenant["access_token"])
+        bob_client = get_tenant_client(token=tenant["access_token"])
         yield bob_client
 
         await bob_client.aclose()
@@ -39,7 +42,7 @@ async def bob_member_client():
 
 @pytest.fixture(scope="function")
 async def alice_tenant():
-    async with tenant_admin_client() as client:
+    async with get_tenant_admin_client() as client:
         tenant = await create_tenant(client, "alice")
 
         yield tenant
@@ -49,7 +52,7 @@ async def alice_tenant():
 
 @pytest.fixture(scope="function")
 async def alice_member_client(alice_tenant: Any):
-    alice_client = tenant_client(token=alice_tenant["access_token"])
+    alice_client = get_tenant_client(token=alice_tenant["access_token"])
 
     yield alice_client
 

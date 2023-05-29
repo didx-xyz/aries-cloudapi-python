@@ -19,7 +19,6 @@ from assertpy import assert_that
 WALLET_BASE_PATH = router.prefix
 
 
-@pytest.fixture()
 async def create_did_mock(governance_client: RichAsyncClient):
     did_response = await governance_client.post(WALLET_BASE_PATH)
     did_response = did_response.json()
@@ -66,8 +65,8 @@ async def test_get_public_did(
 
 
 @pytest.mark.anyio
-async def test_get_did_endpoint(governance_client: RichAsyncClient, create_did_mock: Any):
-    did = create_did_mock
+async def test_get_did_endpoint(governance_client: RichAsyncClient):
+    did = create_did_mock(governance_client)
     response = await governance_client.get(f"{WALLET_BASE_PATH}/{did}/endpoint")
     assert_that(response.status_code).is_equal_to(200)
 

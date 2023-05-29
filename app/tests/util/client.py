@@ -23,7 +23,7 @@ def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, An
             "x-api-key": api_key,
             "content-type": "application/json",
         },
-        "transport":AsyncHTTPTransport(retries=3),
+        "transport": AsyncHTTPTransport(retries=3),
     }
 
 

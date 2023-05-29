@@ -325,9 +325,7 @@ async def test_accept_proof_request_v2(
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
 
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -406,9 +404,7 @@ async def test_send_proof_request(
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
@@ -473,9 +469,7 @@ async def test_reject_proof_request(
     alice_tenant: CreateTenantResponse,
     acme_client: RichAsyncClient,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
 
     # V1
     response = await acme_client.post(
@@ -656,9 +650,7 @@ async def test_get_credentials_for_request(
     alice_tenant: CreateTenantResponse,
     alice_member_client: RichAsyncClient,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
     # V1
     await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",

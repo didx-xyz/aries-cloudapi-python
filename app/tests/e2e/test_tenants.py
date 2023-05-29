@@ -8,7 +8,7 @@ from app.admin.tenants import tenants
 from app.dependencies import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.role import Role
-from app.tests.util.client import tenant_client
+from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from app.util.rich_async_client import RichAsyncClient
@@ -117,7 +117,7 @@ async def test_create_tenant_issuer(
 
     connection = connections[0]
 
-    async with tenant_client(token=tenant["access_token"]) as client:
+    async with get_tenant_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
         assert check_webhook_state(
             client,
@@ -283,7 +283,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     endorser_connection = connections[0]
 
-    async with tenant_client(token=tenant["access_token"]) as client:
+    async with get_tenant_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
         assert check_webhook_state(
             client,

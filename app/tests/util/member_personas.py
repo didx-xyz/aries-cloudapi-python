@@ -31,12 +31,12 @@ async def bob_member_client():
     async with get_tenant_admin_client() as client:
         tenant = await create_issuer_tenant(client, "bob")
 
-        bob_client = get_tenant_client(token=tenant["access_token"])
+        bob_client = get_tenant_client(token=tenant.access_token)
         yield bob_client
 
         await bob_client.aclose()
 
-        await delete_tenant(client, tenant["tenant_id"])
+        await delete_tenant(client, tenant.tenant_id)
 
 
 @pytest.fixture(scope="function")
@@ -46,12 +46,12 @@ async def alice_tenant():
 
         yield tenant
 
-        await delete_tenant(client, tenant["tenant_id"])
+        await delete_tenant(client, tenant.tenant_id)
 
 
 @pytest.fixture(scope="function")
 async def alice_member_client(alice_tenant: Any):
-    alice_client = get_tenant_client(token=alice_tenant["access_token"])
+    alice_client = get_tenant_client(token=alice_tenant.access_token)
 
     yield alice_client
 

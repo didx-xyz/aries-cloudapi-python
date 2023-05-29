@@ -3,7 +3,6 @@ from time import sleep
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.dependencies import acapy_auth, acapy_auth_verified
 from app.facades import trust_registry
@@ -15,11 +14,12 @@ from app.tests.e2e.test_fixtures import *  # NOQA
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import get_random_string
 from app.tests.util.trust_registry import register_issuer
+from app.util.rich_async_client import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_create_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: AsyncClient
+    governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
 ):
     # given
     schema_send = CreateSchema(
@@ -103,7 +103,7 @@ async def test_get_schema(governance_acapy_client: AcaPyClient):
 
 @pytest.mark.anyio
 async def test_get_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: AsyncClient
+    governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
 ):
     sleep(3)
     # given
@@ -146,7 +146,7 @@ async def test_get_credential_definition(
 async def test_create_credential_definition_issuer_tenant(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
 ):
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id,

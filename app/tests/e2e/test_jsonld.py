@@ -149,12 +149,12 @@ async def test_verify_jsonld(
     jsonld_verify.verkey = None
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
     jsonld_verify.public_did = faber_pub_did
-    response = await faber_client.post(
-        "/generic/jsonld/verify", json=jsonld_verify.dict()
-    )
 
-    assert_that(response.status_code).is_equal_to(422)
-    assert_that(response.json()["detail"]).contains("Failed to verify payload with")
+    with pytest.raises(CloudApiException) as exc:
+        await faber_client.post("/generic/jsonld/verify", json=jsonld_verify.dict())
+
+    assert_that(exc.value.status_code).is_equal_to(422)
+    assert_that(exc.value.detail).contains("Failed to verify payload with")
 
     # Success
     jsonld_verify.public_did = None

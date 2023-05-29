@@ -66,7 +66,7 @@ async def bob_acapy_client(bob_member_client: AsyncClient):
     [_, token] = bob_member_client.headers.get(
         "x-api-key").split(".", maxsplit=1)
 
-    client = tenant_acapy_client(token=token)
+    client = get_tenant_acapy_client(token=token)
     yield client
 
     await client.close()
@@ -77,7 +77,7 @@ async def alice_acapy_client(alice_member_client: AsyncClient):
     [_, token] = alice_member_client.headers.get(
         "x-api-key").split(".", maxsplit=1)
 
-    client = tenant_acapy_client(token=token)
+    client = get_tenant_acapy_client(token=token)
     yield client
 
     await client.close()

@@ -1,20 +1,19 @@
 import pytest
 from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
 from assertpy import assert_that
-from app.admin.tenants.models import CreateTenantResponse
 
+from app.admin.tenants.models import CreateTenantResponse
 from app.generic.verifier.models import (AcceptProofRequest,
                                          PresentProofProtocolVersion,
                                          RejectProofRequest, SendProofRequest)
 from app.listener import Listener
-from app.tests.e2e.test_fixtures import *
-from app.tests.util.ecosystem_personas import AcmeAliceConnect
+from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import (check_webhook_state,
                                      get_wallet_id_from_async_client)
 from app.tests.verifier.test_verifier_utils import indy_proof_request
+from app.util.rich_async_client import RichAsyncClient
 from shared_models.shared_models import CredentialExchange  # NOQA
 from shared_models.shared_models import PresentationExchange
-from app.util.rich_async_client import RichAsyncClient
 
 VERIFIER_BASE_PATH = "/generic/verifier"
 

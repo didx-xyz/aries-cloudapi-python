@@ -2,7 +2,7 @@ import pytest
 from assertpy.assertpy import assert_that
 
 from app.generic.messaging import Message, TrustPingMsg
-from app.tests.util.member_personas import BobAliceConnect
+from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.util.rich_async_client import RichAsyncClient
 
 

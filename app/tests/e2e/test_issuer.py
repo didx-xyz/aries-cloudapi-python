@@ -45,7 +45,6 @@ async def test_send_credential_oob_v1(
         CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).contains("credential_id")
@@ -73,7 +72,6 @@ async def test_send_credential_oob_v1(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
-    accept_response.raise_for_status()
 
     oob_record = accept_response.json()
 
@@ -109,7 +107,6 @@ async def test_send_credential_oob_v2(
         CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    create_offer_response.raise_for_status()
 
     data = create_offer_response.json()
     assert_that(data).contains("credential_id")
@@ -140,7 +137,6 @@ async def test_send_credential_oob_v2(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
-    accept_response.raise_for_status()
 
     oob_record = accept_response.json()
 
@@ -186,7 +182,6 @@ async def test_send_credential(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).contains("credential_id")
@@ -200,7 +195,6 @@ async def test_send_credential(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).has_state("offer-sent")
@@ -252,7 +246,6 @@ async def test_create_offer(
         CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).contains("credential_id")
@@ -266,7 +259,6 @@ async def test_create_offer(
         CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).has_state("offer-sent")
@@ -452,14 +444,10 @@ async def test_revoke_credential(
     )
 
     # create and send credential offer- issuer
-    response = await faber_client.post(
+    await faber_client.post(
         "/generic/issuer/credentials",
         json=credential,
     )
-    credential_exchange = response.json()
-    if response.is_error:
-        print(credential_exchange)
-    response.raise_for_status()
 
     payload = await alice_credentials_listener.wait_for_filtered_event(
         filter_map={
@@ -510,7 +498,5 @@ async def test_revoke_credential(
             "credential_exchange_id": cred_id,
         },
     )
-
-    response.raise_for_status()
 
     assert response.status_code == 204

@@ -113,7 +113,6 @@ async def credential_exchange_id(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
-    response.raise_for_status()
     credential_exchange = response.json()
     credential_exchange_id = credential_exchange["credential_id"]
     assert credential_exchange["protocol_version"] == "v1"
@@ -131,7 +130,6 @@ async def credential_exchange_id(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
-    response.raise_for_status()
     records = response.json()
     assert len(records) > 0
 
@@ -156,14 +154,10 @@ async def issue_credential_to_alice(
     listener = Listener(topic="credentials", wallet_id=alice_tenant.tenant_id)
 
     # create and send credential offer- issuer
-    response = await faber_client.post(
+    await faber_client.post(
         "/generic/issuer/credentials",
         json=credential,
     )
-    credential_exchange = response.json()
-    if response.is_error:
-        print(credential_exchange)
-    response.raise_for_status()
 
     payload = await listener.wait_for_filtered_event(
         filter_map={

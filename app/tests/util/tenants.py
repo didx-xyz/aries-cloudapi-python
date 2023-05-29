@@ -33,11 +33,6 @@ async def create_verifier_tenant(tenant_admin_client: RichAsyncClient, name: str
         "/admin/tenants", json=request.dict()
     )
 
-    if create_tennant_response.is_error:
-        raise Exception(
-            f"Could not create verifier tenant. {create_tennant_response.text}"
-        )
-
     parsed_response = parse(CreateTenantResponse, create_tennant_response.text)
 
     return parsed_response

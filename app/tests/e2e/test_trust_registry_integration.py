@@ -148,7 +148,6 @@ async def test_accept_proof_request_verifier_no_public_did(
     response = await holder_client.post(
         f"/generic/issuer/credentials/{holder_credential_exchange_id}/request"
     )
-    response.raise_for_status()
 
     # Wait for credential exchange to finish
     await issuer_tenant_cred_listener.wait_for_filtered_event(
@@ -189,7 +188,6 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
     )
 
-    response.raise_for_status()
     verifier_proof_exchange = response.json()
 
     payload = await holder_tenant_proofs_listener.wait_for_filtered_event(
@@ -232,7 +230,6 @@ async def test_accept_proof_request_verifier_no_public_did(
             },
         },
     )
-    response.raise_for_status()
 
     await verifier_tenant_proofs_listener.wait_for_filtered_event(
         filter_map={

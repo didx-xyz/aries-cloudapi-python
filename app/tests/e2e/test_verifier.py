@@ -44,7 +44,6 @@ async def test_accept_proof_request_v1(
             "proof_request": indy_proof_request.dict(),
         },
     )
-    response.raise_for_status()
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
@@ -133,7 +132,6 @@ async def test_accept_proof_request_oob_v1(
         },
     )
 
-    response.raise_for_status()
     bob_exchange = response.json()
 
     thread_id = bob_exchange["thread_id"]
@@ -154,8 +152,6 @@ async def test_accept_proof_request_oob_v1(
             ],
         },
     )
-
-    invitation_response.raise_for_status()
 
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
@@ -239,7 +235,6 @@ async def test_accept_proof_request_oob_v2(
             "proof_request": indy_proof_request.dict(),
         },
     )
-    response.raise_for_status()
     bob_exchange = response.json()
 
     thread_id = bob_exchange["thread_id"]
@@ -254,8 +249,6 @@ async def test_accept_proof_request_oob_v2(
             "attachments": [{"id": bob_exchange["proof_id"], "type": "present-proof"}],
         },
     )
-
-    invitation_response.raise_for_status()
 
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
@@ -347,7 +340,6 @@ async def test_accept_proof_request_v2(
             },
         },
     )
-    response.raise_for_status()
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
@@ -480,7 +472,6 @@ async def test_reject_proof_request(
             "proof_request": indy_proof_request.dict(),
         },
     )
-    response.raise_for_status()
 
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
@@ -500,7 +491,6 @@ async def test_reject_proof_request(
         VERIFIER_BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
     )
     result = response.json()
-    response.raise_for_status()
     assert result is None
 
 

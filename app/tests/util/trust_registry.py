@@ -8,9 +8,6 @@ from app.util.rich_async_client import RichAsyncClient
 async def register_issuer(client: RichAsyncClient, schema_id: str):
     pub_did_res = await client.get("/wallet/dids/public")
 
-    if pub_did_res.is_error:
-        raise Exception(f"Error retrieving public did: {pub_did_res.text}")
-
     did_result = pub_did_res.json()
     did = did_result["did"]
 

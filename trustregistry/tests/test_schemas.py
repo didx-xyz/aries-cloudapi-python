@@ -27,8 +27,8 @@ def test_schema():
     assert schema.version == "0.4.20"
     assert schema.id == "abc:2:doubleaceschema:0.4.20"
 
-    schema.did = "abcde"
-    assert schema.id == "abcde:2:doubleaceschema:0.4.20"
+    with pytest.raises(ValueError):
+        schemas.Schema(did="abc:def", name="doubleaceschema", version="0.4.20")
 
     with pytest.raises(ValueError):
         schemas.Schema(did="abc", name="double:ace:schema", version="0.4.20")

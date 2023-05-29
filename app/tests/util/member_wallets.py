@@ -6,19 +6,19 @@ from app.tests.util.tenants import create_tenant, create_verifier_tenant, delete
 
 @pytest.fixture(scope="function")
 async def alice_tenant():
-    async with get_tenant_admin_client() as client:
-        tenant = await create_tenant(client, "alice")
+    async with get_tenant_admin_client() as admin_client:
+        tenant = await create_tenant(admin_client, "alice")
 
         yield tenant
 
-        await delete_tenant(client, tenant.tenant_id)
+        await delete_tenant(admin_client, tenant.tenant_id)
 
 
 @pytest.fixture(scope="function")
 async def acme_tenant():
-    async with get_tenant_admin_client() as client:
-        verifier_tenant = await create_verifier_tenant(client, "acme")
+    async with get_tenant_admin_client() as admin_client:
+        verifier_tenant = await create_verifier_tenant(admin_client, "acme")
 
         yield verifier_tenant
 
-        await delete_tenant(client, verifier_tenant.tenant_id)
+        await delete_tenant(admin_client, verifier_tenant.tenant_id)

@@ -5,8 +5,8 @@ from httpx import AsyncClient
 
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
-from app.tests.util.client import (tenant_acapy_client, tenant_admin_client,
-                                   tenant_client)
+from app.tests.util.client import (get_tenant_acapy_client, get_tenant_admin_client,
+                                   get_tenant_client)
 from app.tests.util.string import base64_to_json
 from app.tests.util.tenants import (create_issuer_tenant,
                                     create_verifier_tenant, delete_tenant)
@@ -25,18 +25,18 @@ class AcmeAliceConnect(TypedDict):
 
 @pytest.fixture(scope="function")
 async def faber_client():
-    async with tenant_admin_client() as client:
-        tenant = await create_issuer_tenant(client, "faber")
+    async with get_tenant_admin_client() as tenant_admin_async_client:
+        faber_issuer = await create_issuer_tenant(tenant_admin_async_client, "faber")
 
-        if "access_token" not in tenant:
-            raise Exception(f"Error creating tenant: {tenant}")
+        if "access_token" not in faber_issuer:
+            raise Exception(f"Error creating faber issuer tenant: {faber_issuer}")
 
-        faber_async_client = tenant_client(token=tenant["access_token"])
+        faber_async_client = get_tenant_client(token=faber_issuer["access_token"])
         yield faber_async_client
 
         await faber_async_client.aclose()
 
-        await delete_tenant(client, tenant["tenant_id"])
+        await delete_tenant(tenant_admin_async_client, faber_issuer["tenant_id"])
 
 
 @pytest.fixture(scope="function")
@@ -45,7 +45,7 @@ async def faber_acapy_client(faber_client: AsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = tenant_acapy_client(token=token)
+    client = get_tenant_acapy_client(token=token)
     yield client
 
     await client.close()
@@ -53,7 +53,7 @@ async def faber_acapy_client(faber_client: AsyncClient):
 
 @pytest.fixture(scope="function")
 async def acme_tenant():
-    async with tenant_admin_client() as client:
+    async with get_tenant_admin_client() as client:
         tenant = await create_verifier_tenant(client, "acme")
 
         if "access_token" not in tenant:
@@ -66,7 +66,7 @@ async def acme_tenant():
 
 @pytest.fixture(scope="function")
 async def acme_client(acme_tenant: Any):
-    acme_async_client = tenant_client(token=acme_tenant["access_token"])
+    acme_async_client = get_tenant_client(token=acme_tenant["access_token"])
     yield acme_async_client
 
     await acme_async_client.aclose()
@@ -78,7 +78,7 @@ async def acme_acapy_client(faber_client: AsyncClient):
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
 
-    client = tenant_acapy_client(token=token)
+    client = get_tenant_acapy_client(token=token)
     yield client
 
     await client.close()

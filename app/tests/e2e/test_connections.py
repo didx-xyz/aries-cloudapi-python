@@ -2,15 +2,15 @@ import time
 
 import pytest
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.tests.util.member_personas import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
+from app.util.rich_async_client import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_create_invitation(
-    bob_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
 ):
     response = await bob_member_client.post("/generic/connections/create-invitation")
     invitation = response.json()
@@ -24,8 +24,8 @@ async def test_create_invitation(
 
 @pytest.mark.anyio
 async def test_accept_invitation(
-    bob_member_client: AsyncClient,
-    alice_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     invitation_response = await bob_member_client.post(
         "/generic/connections/create-invitation"
@@ -55,8 +55,8 @@ async def test_accept_invitation(
 
 @pytest.mark.anyio
 async def test_get_connections(
-    bob_member_client: AsyncClient,
-    alice_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
     alice_connections = (await alice_member_client.get("/generic/connections")).json()
@@ -68,7 +68,7 @@ async def test_get_connections(
 
 @pytest.mark.anyio
 async def test_get_connection_by_id(
-    bob_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
 ):
     invitation_response = await bob_member_client.post(
         "/generic/connections/create-invitation"
@@ -89,7 +89,7 @@ async def test_get_connection_by_id(
 
 @pytest.mark.anyio
 async def test_delete_connection(
-    bob_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
 ):
     invitation_response = await bob_member_client.post(
         "/generic/connections/create-invitation"
@@ -106,8 +106,8 @@ async def test_delete_connection(
 
 @pytest.mark.anyio
 async def test_bob_and_alice_connect(
-    bob_member_client: AsyncClient,
-    alice_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     time.sleep(1)
     invitation_response = await bob_member_client.post(

@@ -22,7 +22,7 @@ CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 # OR abstract the persona specific parts out of it
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
@@ -33,7 +33,7 @@ async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialS
     return schema_definition_result
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def schema_definition_alt(
     governance_acapy_client: AcaPyClient,
 ) -> CredentialSchema:

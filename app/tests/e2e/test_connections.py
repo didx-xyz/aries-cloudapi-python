@@ -2,6 +2,7 @@ import time
 
 import pytest
 from assertpy import assert_that
+from app.error.cloud_api_error import CloudApiException
 
 from app.tests.util.member_personas import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
@@ -100,8 +101,9 @@ async def test_delete_connection(
     response = await bob_member_client.delete(f"/generic/connections/{connection_id}")
     assert_that(response.status_code).is_equal_to(200)
 
-    response = await bob_member_client.get(f"/generic/connections/{connection_id}")
-    assert_that(response.status_code).is_equal_to(404)
+    with pytest.raises(CloudApiException) as exc:
+        response = await bob_member_client.get(f"/generic/connections/{connection_id}")
+    assert_that(exc.status_code).is_equal_to(404)
 
 
 @pytest.mark.anyio

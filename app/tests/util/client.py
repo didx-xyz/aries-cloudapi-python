@@ -12,6 +12,7 @@ from app.tests.util.constants import (
 )
 
 TEST_CLIENT_TIMEOUT = 300
+MAX_NUM_RETRIES = 3
 
 
 def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, Any]:

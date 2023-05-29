@@ -7,6 +7,7 @@ from app.util.rich_async_client import RichAsyncClient
 
 async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
     pub_did_res = await issuer_client.get("/wallet/dids/public")
+    did = pub_did_res.json()["did"]
 
     if not await registry_has_schema(schema_id=schema_id):
         await register_schema(schema_id)

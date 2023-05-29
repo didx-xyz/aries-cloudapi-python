@@ -2,7 +2,6 @@ from typing import Any
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from httpx import AsyncClient
 
 from app.dependencies import acapy_auth, acapy_auth_verified
 from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
@@ -16,6 +15,7 @@ from app.tests.util.ledger import create_public_did, has_public_did
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
+from app.util.rich_async_client import RichAsyncClient
 from shared_models.shared_models import CredentialExchange
 
 BASE_PATH = router.prefix + "/credentials"
@@ -57,7 +57,7 @@ async def schema_definition_alt(
 @pytest.fixture(scope="function")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition.id)
@@ -77,7 +77,7 @@ async def credential_definition_id(
 @pytest.fixture(scope="function")
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition_alt.id)
@@ -96,10 +96,10 @@ async def credential_definition_id_revocable(
 
 @pytest.fixture(scope="function")
 async def credential_exchange_id(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
     then this fixture just returns it..."""
@@ -141,10 +141,10 @@ async def credential_exchange_id(
 
 @pytest.fixture(scope="function")
 async def issue_credential_to_alice(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     alice_tenant: Any,
 ) -> CredentialExchange:
     credential = {

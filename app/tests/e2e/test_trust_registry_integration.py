@@ -115,7 +115,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Issue credential from issuer to holder
     holder_tenant_listener = Listener(
-        topic="credentials", wallet_id=holder_tenant["tenant_id"]
+        topic="credentials", wallet_id=holder_tenant.tenant_id
     )
 
     issuer_credential_exchange = (

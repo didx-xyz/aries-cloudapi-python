@@ -2,7 +2,7 @@ import pytest
 
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
-from app.tests.util.client import tenant_admin_client, tenant_client
+from app.tests.util.client import get_tenant_admin_client, get_tenant_client
 from app.tests.util.string import base64_to_json, get_random_string
 from app.tests.util.tenants import (
     create_issuer_tenant,
@@ -17,7 +17,7 @@ from app.util.rich_async_client import RichAsyncClient
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: RichAsyncClient,
 ):
-    tenant_admin = tenant_admin_client()
+    tenant_admin = get_tenant_admin_client()
 
     # Create tenants
     verifier_tenant = await create_verifier_tenant(tenant_admin, "acme")
@@ -25,9 +25,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_tenant = await create_tenant(tenant_admin, "alice")
 
     # Get clients
-    verifier_client = tenant_client(token=verifier_tenant["access_token"])
-    issuer_client = tenant_client(token=issuer_tenant["access_token"])
-    holder_client = tenant_client(token=holder_tenant["access_token"])
+    verifier_client = get_tenant_client(token=verifier_tenant["access_token"])
+    issuer_client = get_tenant_client(token=issuer_tenant["access_token"])
+    holder_client = get_tenant_client(token=holder_tenant["access_token"])
 
     # Create connection between issuer and holder
     invitation = (

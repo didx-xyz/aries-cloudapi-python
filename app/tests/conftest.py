@@ -1,6 +1,7 @@
 import mockito
 import pytest
 
+# pylint: disable=unused-import
 from app.tests.util.ecosystem_connections import (
     acme_and_alice_connection,
     alice_bob_connect_multi,
@@ -28,7 +29,7 @@ from app.tests.util.member_wallets import acme_tenant, alice_tenant
 from app.webhooks import Webhooks
 from tests.fixtures import mock_agent_controller
 
-# Unused imports contain fixtures
+# Unused imports make pytest fixtures visible to tests within this module
 
 # In pytest, conftest.py is a special file used to share fixtures, hooks, and other configurations
 # among multiple test files. It's automatically discovered by pytest when tests are run, and the

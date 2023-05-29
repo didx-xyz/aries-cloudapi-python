@@ -1,6 +1,7 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
+# pylint: disable=unused-import
 from app.tests.e2e.test_fixtures import (
     credential_definition_id,
     credential_definition_id_revocable,

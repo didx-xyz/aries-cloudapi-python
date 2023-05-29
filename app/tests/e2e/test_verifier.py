@@ -1,5 +1,6 @@
 import pytest
-from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
+from aries_cloudcontroller import (AcaPyClient, IndyPresSpec,
+                                   IndyRequestedCredsRequestedAttr)
 from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
@@ -12,8 +13,8 @@ from app.tests.util.webhooks import (check_webhook_state,
                                      get_wallet_id_from_async_client)
 from app.tests.verifier.test_verifier_utils import indy_proof_request
 from app.util.rich_async_client import RichAsyncClient
-from shared_models.shared_models import CredentialExchange  # NOQA
-from shared_models.shared_models import PresentationExchange
+from shared_models.shared_models import (CredentialExchange,
+                                         PresentationExchange)
 
 VERIFIER_BASE_PATH = "/generic/verifier"
 

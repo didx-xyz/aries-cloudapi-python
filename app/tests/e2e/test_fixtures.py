@@ -17,7 +17,7 @@ from app.tests.util.webhooks import check_webhook_state
 from app.util.rich_async_client import RichAsyncClient
 from shared_models.shared_models import CredentialExchange
 
-BASE_PATH = router.prefix + "/credentials"
+CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
 # TODO: Move all methods here to member_personans as this is specific for the bob-alice interaction
 # OR abstract the persona specific parts out of it
@@ -110,7 +110,7 @@ async def credential_exchange_id(
     }
 
     response = await faber_client.post(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
     response.raise_for_status()
@@ -128,7 +128,7 @@ async def credential_exchange_id(
     )
 
     response = await alice_member_client.get(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     response.raise_for_status()

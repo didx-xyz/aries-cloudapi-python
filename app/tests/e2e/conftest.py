@@ -1,6 +1,8 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
+from app.facades.acapy_wallet import get_public_did
+
 # pylint: disable=unused-import
 from app.tests.e2e.test_fixtures import (
     credential_definition_id,
@@ -10,7 +12,7 @@ from app.tests.e2e.test_fixtures import (
     schema_definition,
     schema_definition_alt,
 )
-from app.tests.util.ledger import create_public_did, has_public_did
+from app.tests.util.ledger import create_public_did
 
 
 # Governace should be provisioned with public did in all e2e tests

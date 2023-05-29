@@ -14,17 +14,16 @@ from app.tests.util.constants import (
 TEST_CLIENT_TIMEOUT = 300
 
 
-def governance_client(*, app: Optional[Any] = None):
-    return AsyncClient(
-        base_url=GOVERNANCE_FASTAPI_ENDPOINT,
-        timeout=TEST_CLIENT_TIMEOUT,
-        app=app,
-        headers={
-            "x-api-key": f"governance.{GOVERNANCE_ACAPY_API_KEY}",
+def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, Any]:
+    return {
+        "timeout": TEST_CLIENT_TIMEOUT,
+        "app": app,
+        "headers": {
+            "x-api-key": api_key,
             "content-type": "application/json",
         },
-        "transport": AsyncHTTPTransport(retries=MAX_NUM_RETRIES),
-    )
+        "transport":AsyncHTTPTransport(retries=3),
+    }
 
 
 # Governance Clients

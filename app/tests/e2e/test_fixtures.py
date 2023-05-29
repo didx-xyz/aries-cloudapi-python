@@ -29,9 +29,6 @@ async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialS
         name="test_schema", version=random_version(), attribute_names=["speed"]
     )
 
-    if not await has_public_did(governance_acapy_client):
-        await create_public_did(governance_acapy_client, set_public=True)
-
     schema_definition_result = await create_schema(definition, governance_acapy_client)
 
     return schema_definition_result
@@ -44,9 +41,6 @@ async def schema_definition_alt(
     definition = CreateSchema(
         name="test_schema_alt", version=random_version(), attribute_names=["speed"]
     )
-
-    if not await has_public_did(governance_acapy_client):
-        await create_public_did(governance_acapy_client, set_public=True)
 
     schema_definition_result = await create_schema(definition, governance_acapy_client)
 

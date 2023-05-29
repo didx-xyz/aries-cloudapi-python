@@ -8,8 +8,6 @@ from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
 from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
                                      CredentialSchema)
-from app.tests.e2e.test_fixtures import *  # NOQA
-from app.tests.util.ledger import create_public_did
 from app.tests.util.string import get_random_string
 from app.tests.util.trust_registry import register_issuer
 from app.util.rich_async_client import RichAsyncClient
@@ -23,9 +21,6 @@ async def test_create_credential_definition(
     schema_send = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
-
-    if not await has_public_did(governance_acapy_client):
-        await create_public_did(governance_acapy_client, set_public=True)
 
     schema_result = (
         await definitions.create_schema(schema_send, governance_acapy_client)
@@ -52,20 +47,15 @@ async def test_create_credential_definition(
 
 
 @pytest.mark.anyio
-async def test_create_schema(governance_acapy_client: AcaPyClient):
+async def test_create_schema(
+    governance_acapy_client: AcaPyClient, governance_public_did: str
+):
     # given
     schema_send = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    try:
-        did = await get_public_did(governance_acapy_client)
-    except:
-        did = await create_public_did(governance_acapy_client, set_public=True)
-
-    result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
-    ).dict()
+    result = (await definitions.create_schema(send, governance_acapy_client)).dict()
 
     # Assert schemas has been registered in the trust registry
     assert await trust_registry.registry_has_schema(result["id"])
@@ -76,16 +66,13 @@ async def test_create_schema(governance_acapy_client: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_schema(governance_acapy_client: AcaPyClient):
+async def test_get_schema(
+    governance_acapy_client: AcaPyClient, governance_public_did: str
+):
     # given
     schema_send = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
-
-    try:
-        did = await get_public_did(governance_acapy_client)
-    except:
-        did = await create_public_did(governance_acapy_client, set_public=True)
 
     create_result = (
         await definitions.create_schema(schema_send, governance_acapy_client)
@@ -108,8 +95,6 @@ async def test_get_credential_definition(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    if not await has_public_did(governance_acapy_client):
-        await create_public_did(governance_acapy_client, set_public=True)
     schema_result = (
         await definitions.create_schema(schema_send, governance_acapy_client)
     ).dict()

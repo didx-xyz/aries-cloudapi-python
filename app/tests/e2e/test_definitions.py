@@ -18,12 +18,12 @@ async def test_create_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
 ):
     # given
-    schema_send = CreateSchema(
+    schema = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
     schema_result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
+        await definitions.create_schema(schema, governance_acapy_client)
     ).dict()
 
     await register_issuer(governance_client, schema_result["id"])
@@ -51,7 +51,7 @@ async def test_create_schema(
     governance_acapy_client: AcaPyClient, governance_public_did: str
 ):
     # given
-    schema_send = CreateSchema(
+    send = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
@@ -59,10 +59,11 @@ async def test_create_schema(
 
     # Assert schemas has been registered in the trust registry
     assert await trust_registry.registry_has_schema(result["id"])
-    assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
-    assert_that(result).has_name(schema_send.name)
-    assert_that(result).has_version(schema_send.version)
-    assert_that(result).has_attribute_names(schema_send.attribute_names)
+    expected_schema = f"{governance_public_did}:2:{send.name}:{send.version}"
+    assert_that(result).has_id(expected_schema)
+    assert_that(result).has_name(send.name)
+    assert_that(result).has_version(send.version)
+    assert_that(result).has_attribute_names(send.attribute_names)
 
 
 @pytest.mark.anyio
@@ -70,20 +71,21 @@ async def test_get_schema(
     governance_acapy_client: AcaPyClient, governance_public_did: str
 ):
     # given
-    schema_send = CreateSchema(
+    schema = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]
     )
 
     create_result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
+        await definitions.create_schema(schema, governance_acapy_client)
     ).dict()
     result = await definitions.get_schema(create_result["id"], governance_acapy_client)
 
     assert await trust_registry.registry_has_schema(result.id)
-    assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
-    assert_that(result).has_name(schema_send.name)
-    assert_that(result).has_version(schema_send.version)
-    assert_that(result).has_attribute_names(schema_send.attribute_names)
+    expected_schema = f"{governance_public_did}:2:{schema.name}:{schema.version}"
+    assert_that(result).has_id(expected_schema)
+    assert_that(result).has_name(schema.name)
+    assert_that(result).has_version(schema.version)
+    assert_that(result).has_attribute_names(schema.attribute_names)
 
 
 @pytest.mark.anyio

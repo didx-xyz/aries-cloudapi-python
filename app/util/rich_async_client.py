@@ -4,8 +4,8 @@ from httpx import AsyncClient, HTTPStatusError
 
 # Async Client with built in error handling
 class RichAsyncClient(AsyncClient):
-    def __init__(self, name: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, name: Optional[str] = None, **kwargs):
+        super().__init__(*args, **kwargs)
         self._name = (
             name + " - HTTP" if name else "HTTP"
         )  # prepend to exception messages to add context

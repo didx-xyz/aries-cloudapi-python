@@ -4,9 +4,9 @@ from app.util.rich_async_client import RichAsyncClient
 from app.util.rich_parsing import parse_with_error_handling as parse
 
 
-async def create_issuer_tenant(tenant_admin_client: AsyncClient, name: str):
-    full_name = f"{name}{get_random_string(3)}"
-    wallet_payload = {"name": full_name, "roles": ["issuer"], "group_id": "IssuerGroup"}
+def append_random_string(name):
+    return f"{name}_{get_random_string(7)}"
+
 
 async def create_issuer_tenant(tenant_admin_client: RichAsyncClient, name: str):
     request = CreateTenantRequest(

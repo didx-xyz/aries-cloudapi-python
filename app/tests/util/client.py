@@ -31,8 +31,9 @@ def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, An
 # Governance Clients
 def get_governance_client(*, app: Optional[Any] = None) -> RichAsyncClient:
     settings = get_common_settings(f"governance.{GOVERNANCE_ACAPY_API_KEY}", app)
-    client = AsyncClient(base_url=GOVERNANCE_FASTAPI_ENDPOINT, **settings)
-    return RichAsyncClient(client)
+    return RichAsyncClient(
+        base_url=GOVERNANCE_FASTAPI_ENDPOINT, name="Governance", **settings
+    )
 
 
 def get_governance_acapy_client():
@@ -42,8 +43,9 @@ def get_governance_acapy_client():
 # Tenant Admin Clients
 def get_tenant_admin_client(*, app: Optional[Any] = None) -> RichAsyncClient:
     settings = get_common_settings(f"tenant-admin.{TENANT_ACAPY_API_KEY}", app)
-    client = AsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, **settings)
-    return RichAsyncClient(client)
+    return RichAsyncClient(
+        base_url=TENANT_FASTAPI_ENDPOINT, name="Tenant Admin", **settings
+    )
 
 
 def get_tenant_admin_acapy_client():
@@ -53,8 +55,7 @@ def get_tenant_admin_acapy_client():
 # Tenant Clients
 def get_tenant_client(*, token: str, app: Optional[Any] = None) -> RichAsyncClient:
     settings = get_common_settings(token, app)
-    client = AsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, **settings)
-    return RichAsyncClient(client)
+    return RichAsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, name="Tenant", **settings)
 
 
 def get_tenant_acapy_client(*, token: str):

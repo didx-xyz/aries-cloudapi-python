@@ -2,6 +2,7 @@ from typing import Any
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
+from app.admin.tenants.models import CreateTenantResponse
 
 from app.dependencies import acapy_auth, acapy_auth_verified
 from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
@@ -145,7 +146,7 @@ async def issue_credential_to_alice(
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    alice_tenant: Any,
+    alice_tenant: CreateTenantResponse,
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
@@ -154,7 +155,7 @@ async def issue_credential_to_alice(
         "attributes": {"speed": "10"},
     }
 
-    listener = Listener(topic="credentials", wallet_id=alice_tenant["tenant_id"])
+    listener = Listener(topic="credentials", wallet_id=alice_tenant.tenant_id)
 
     # create and send credential offer- issuer
     response = await faber_client.post(

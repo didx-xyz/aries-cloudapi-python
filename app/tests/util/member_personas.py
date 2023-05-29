@@ -2,6 +2,7 @@ from typing import Any, Dict, TypedDict
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
+from app.admin.tenants.models import CreateTenantResponse
 
 from app.generic.connections.connections import CreateInvitation
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
@@ -50,7 +51,7 @@ async def alice_tenant():
 
 
 @pytest.fixture(scope="function")
-async def alice_member_client(alice_tenant: Any):
+async def alice_member_client(alice_tenant: CreateTenantResponse):
     alice_client = get_tenant_client(token=alice_tenant.access_token)
 
     yield alice_client

@@ -432,7 +432,7 @@ async def test_send_credential_request(
 async def test_revoke_credential(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    alice_tenant: Any,
+    alice_tenant: CreateTenantResponse,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
@@ -446,7 +446,7 @@ async def test_revoke_credential(
     }
 
     alice_credentials_listener = Listener(
-        topic="credentials", wallet_id=alice_tenant["tenant_id"]
+        topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
     # create and send credential offer- issuer

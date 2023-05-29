@@ -1,6 +1,7 @@
 import pytest
 from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
 from assertpy import assert_that
+from app.admin.tenants.models import CreateTenantResponse
 
 from app.generic.verifier.models import (AcceptProofRequest,
                                          PresentProofProtocolVersion,
@@ -319,13 +320,13 @@ async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
-    alice_tenant: Any,
-    acme_tenant: Any,
+    alice_tenant: CreateTenantResponse,
+    acme_tenant: CreateTenantResponse,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
+        topic="proofs", wallet_id=alice_tenant.tenant_id
     )
 
     response = await acme_client.post(
@@ -379,7 +380,7 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant["tenant_id"])
+    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant.tenant_id)
 
     response = await alice_member_client.post(
         BASE_PATH + "/accept-request",
@@ -403,10 +404,10 @@ async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
-    alice_tenant: Any,
+    alice_tenant: CreateTenantResponse,
 ):
     alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
+        topic="proofs", wallet_id=alice_tenant.tenant_id
     )
     response = await acme_client.post(
         BASE_PATH + "/send-request",
@@ -469,11 +470,11 @@ async def test_send_proof_request(
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
-    alice_tenant: Any,
+    alice_tenant: CreateTenantResponse,
     acme_client: RichAsyncClient,
 ):
     alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
+        topic="proofs", wallet_id=alice_tenant.tenant_id
     )
 
     # V1
@@ -652,11 +653,11 @@ async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
-    alice_tenant: Any,
+    alice_tenant: CreateTenantResponse,
     alice_member_client: RichAsyncClient,
 ):
     alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
+        topic="proofs", wallet_id=alice_tenant.tenant_id
     )
     # V1
     await acme_client.post(

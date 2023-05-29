@@ -29,12 +29,12 @@ async def faber_client():
     async with get_tenant_admin_client() as tenant_admin_async_client:
         faber_issuer = await create_issuer_tenant(tenant_admin_async_client, "faber")
 
-        faber_async_client = get_tenant_client(token=faber_issuer["access_token"])
+        faber_async_client = get_tenant_client(token=faber_issuer.access_token)
         yield faber_async_client
 
         await faber_async_client.aclose()
 
-        await delete_tenant(tenant_admin_async_client, faber_issuer["tenant_id"])
+        await delete_tenant(tenant_admin_async_client, faber_issuer.tenant_id)
 
 
 @pytest.fixture(scope="function")

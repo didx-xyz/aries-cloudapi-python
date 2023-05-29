@@ -41,8 +41,6 @@ async def alice_acapy_client(alice_member_client: RichAsyncClient):
 
 @pytest.fixture(scope="function")
 async def bob_acapy_client(bob_member_client: RichAsyncClient):
-    [_, token] = bob_member_client.headers.get("x-api-key").split(".", maxsplit=1)
-
     acapy_client = get_tenant_acapy_client(token=get_token(bob_member_client))
     yield acapy_client
 

@@ -54,9 +54,6 @@ async def acme_tenant():
     async with get_tenant_admin_client() as client:
         tenant = await create_verifier_tenant(client, "acme")
 
-        if "access_token" not in tenant:
-            raise Exception(f"Error creating tenant: {tenant}")
-
         yield tenant
 
         await delete_tenant(client, tenant.tenant_id)

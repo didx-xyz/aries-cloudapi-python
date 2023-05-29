@@ -1,7 +1,6 @@
 from typing import Any, TypedDict
 
 import pytest
-from httpx import AsyncClient
 
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
@@ -11,6 +10,7 @@ from app.tests.util.string import base64_to_json
 from app.tests.util.tenants import (create_issuer_tenant,
                                     create_verifier_tenant, delete_tenant)
 from app.tests.util.webhooks import check_webhook_state
+from app.util.rich_async_client import RichAsyncClient
 
 
 class FaberAliceConnect(TypedDict):
@@ -40,7 +40,7 @@ async def faber_client():
 
 
 @pytest.fixture(scope="function")
-async def faber_acapy_client(faber_client: AsyncClient):
+async def faber_acapy_client(faber_client: RichAsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
@@ -73,7 +73,7 @@ async def acme_client(acme_tenant: Any):
 
 
 @pytest.fixture(scope="function")
-async def acme_acapy_client(faber_client: AsyncClient):
+async def acme_acapy_client(faber_client: RichAsyncClient):
     # We extract the token from the x-api-key header as that's the easiest
     # method to create an AcaPyClient from an AsyncClient
     [_, token] = faber_client.headers.get("x-api-key").split(".", maxsplit=1)
@@ -86,9 +86,8 @@ async def acme_acapy_client(faber_client: AsyncClient):
 
 @pytest.fixture(scope="function")
 async def acme_and_alice_connection(
-    alice_member_client: AsyncClient, acme_tenant: Any
+    alice_member_client: RichAsyncClient, acme_tenant: Any
 ) -> AcmeAliceConnect:
-
     acme_actor = await actor_by_id(acme_tenant["tenant_id"])
 
     assert acme_actor
@@ -122,7 +121,8 @@ async def acme_and_alice_connection(
 
 @pytest.fixture(scope="function")
 async def faber_and_alice_connection(
-    alice_member_client: AsyncClient, faber_client: AsyncClient, alice_tenant: Any
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
 ) -> FaberAliceConnect:
     # create invitation on faber side
     invitation = (

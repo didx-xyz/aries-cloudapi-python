@@ -6,7 +6,7 @@ from typing import Any, List
 
 from aioredis import Redis
 from aries_cloudcontroller.model import OobRecord
-from models import (
+from webhooks.models import (
     to_connections_model,
     to_credential_hook_model,
     to_endorsement_model,

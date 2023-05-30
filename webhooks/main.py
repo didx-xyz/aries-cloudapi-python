@@ -31,7 +31,9 @@ endpoint.register_route(router, "/pubsub")
 app.include_router(router)
 
 
+# Routes are duplicated with trailing slash to avoid unnecessary redirects
 @app.api_route("/{topic}/{wallet_id}")
+@app.api_route("/{topic}/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_hooks(
     topic: str, wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -43,6 +45,7 @@ async def wallet_hooks(
 
 
 @app.api_route("/{wallet_id}")
+@app.api_route("/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -54,6 +57,7 @@ async def wallet_root(
 # 'origin' helps to distinguish where a hook is from
 # eg the admin, tenant or OP agent respectively
 @app.post("/{origin}/topic/{acapy_topic}", status_code=204)
+@app.post("/{origin}/topic/{acapy_topic}/", status_code=204, include_in_schema=False)
 @inject
 async def topic_root(
     acapy_topic: str,

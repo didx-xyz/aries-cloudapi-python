@@ -15,7 +15,7 @@ sse_manager = SSEManager()
 
 
 def get_sse_manager():
-    return sse_manager()
+    return sse_manager
 
 
 @router.get(

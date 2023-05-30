@@ -1,20 +1,18 @@
-from typing import Any
-from aries_cloudcontroller import AcaPyClient
 import pytest
+from aries_cloudcontroller import AcaPyClient
+from assertpy import assert_that
 
 import app.facades.acapy_wallet as wallet_facade
 from app.generic.wallet.models import SetDidEndpointRequest
-from app.tests.util.ledger import create_public_did, post_to_ledger
 from app.generic.wallet.wallet import (
+    get_did_endpoint,
     get_public_did,
     list_dids,
-    set_did_endpoint,
-    get_did_endpoint,
     router,
+    set_did_endpoint,
 )
+from app.tests.util.ledger import create_public_did, post_to_ledger
 from app.util.rich_async_client import RichAsyncClient
-
-from assertpy import assert_that
 
 WALLET_BASE_PATH = router.prefix
 

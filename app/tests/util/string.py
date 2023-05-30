@@ -2,6 +2,7 @@ import base64
 import json
 import random
 import string
+from random import randint
 
 
 def get_random_string(length: int):
@@ -17,3 +18,7 @@ def pad(val: str) -> str:
 
 def base64_to_json(value: str):
     return json.loads(base64.urlsafe_b64decode(pad(value)).decode("utf-8"))
+
+
+def random_version():
+    return f"{randint(1, 100)}.{randint(1, 100)}.{randint(1, 100)}"

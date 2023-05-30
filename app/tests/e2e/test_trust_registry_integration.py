@@ -1,19 +1,19 @@
 import pytest
-from httpx import AsyncClient
 
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
-from app.tests.util.client import tenant_admin_client, tenant_client
+from app.tests.util.client import get_tenant_admin_client, get_tenant_client
 from app.tests.util.string import base64_to_json, get_random_string
 from app.tests.util.tenants import (create_issuer_tenant, create_tenant,
                                     create_verifier_tenant, delete_tenant)
+from app.util.rich_async_client import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(
-    governance_client: AsyncClient,
+    governance_client: RichAsyncClient,
 ):
-    tenant_admin = tenant_admin_client()
+    tenant_admin = get_tenant_admin_client()
 
     # Create tenants
     verifier_tenant = await create_verifier_tenant(tenant_admin, "acme")
@@ -21,9 +21,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_tenant = await create_tenant(tenant_admin, "alice")
 
     # Get clients
-    verifier_client = tenant_client(token=verifier_tenant["access_token"])
-    issuer_client = tenant_client(token=issuer_tenant["access_token"])
-    holder_client = tenant_client(token=holder_tenant["access_token"])
+    verifier_client = get_tenant_client(token=verifier_tenant.access_token)
+    issuer_client = get_tenant_client(token=issuer_tenant.access_token)
+    holder_client = get_tenant_client(token=holder_tenant.access_token)
 
     # Create connection between issuer and holder
     invitation = (
@@ -31,7 +31,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     ).json()
 
     issuer_tenant_listener = Listener(
-        topic="connections", wallet_id=issuer_tenant["tenant_id"]
+        topic="connections", wallet_id=issuer_tenant.tenant_id
     )
 
     invitation_response = (
@@ -51,13 +51,13 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
-    verifier_actor = await actor_by_id(verifier_tenant["tenant_id"])
+    verifier_actor = await actor_by_id(verifier_tenant.tenant_id)
 
     assert verifier_actor
 
     verifier_tenant_listener = Listener(
         topic="connections",
-        wallet_id=verifier_tenant["tenant_id"],
+        wallet_id=verifier_tenant.tenant_id,
     )
 
     assert verifier_actor["didcomm_invitation"]
@@ -111,7 +111,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Issue credential from issuer to holder
     holder_tenant_listener = Listener(
-        topic="credentials", wallet_id=holder_tenant["tenant_id"]
+        topic="credentials", wallet_id=holder_tenant.tenant_id
     )
 
     issuer_credential_exchange = (
@@ -138,13 +138,12 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_credential_exchange_id = payload["credential_id"]
 
     issuer_tenant_cred_listener = Listener(
-        topic="credentials", wallet_id=issuer_tenant["tenant_id"]
+        topic="credentials", wallet_id=issuer_tenant.tenant_id
     )
 
     response = await holder_client.post(
         f"/generic/issuer/credentials/{holder_credential_exchange_id}/request"
     )
-    response.raise_for_status()
 
     # Wait for credential exchange to finish
     await issuer_tenant_cred_listener.wait_for_filtered_event(
@@ -156,7 +155,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     # Present proof from holder to verifier
 
     holder_tenant_proofs_listener = Listener(
-        topic="proofs", wallet_id=holder_tenant["tenant_id"]
+        topic="proofs", wallet_id=holder_tenant.tenant_id
     )
 
     response = await verifier_client.post(
@@ -185,7 +184,6 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
     )
 
-    response.raise_for_status()
     verifier_proof_exchange = response.json()
 
     payload = await holder_tenant_proofs_listener.wait_for_filtered_event(
@@ -209,7 +207,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     cred_id = available_credentials[0]["cred_info"]["referent"]
 
     verifier_tenant_proofs_listener = Listener(
-        topic="proofs", wallet_id=verifier_tenant["tenant_id"]
+        topic="proofs", wallet_id=verifier_tenant.tenant_id
     )
 
     response = await holder_client.post(
@@ -228,7 +226,6 @@ async def test_accept_proof_request_verifier_no_public_did(
             },
         },
     )
-    response.raise_for_status()
 
     await verifier_tenant_proofs_listener.wait_for_filtered_event(
         filter_map={
@@ -241,6 +238,6 @@ async def test_accept_proof_request_verifier_no_public_did(
     verifier_tenant_proofs_listener.stop()
 
     # Delete all tenants
-    await delete_tenant(tenant_admin, issuer_tenant["tenant_id"])
-    await delete_tenant(tenant_admin, verifier_tenant["tenant_id"])
-    await delete_tenant(tenant_admin, holder_tenant["tenant_id"])
+    await delete_tenant(tenant_admin, issuer_tenant.tenant_id)
+    await delete_tenant(tenant_admin, verifier_tenant.tenant_id)
+    await delete_tenant(tenant_admin, holder_tenant.tenant_id)

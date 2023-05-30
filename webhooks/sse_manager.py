@@ -70,7 +70,10 @@ class SSEManager:
             service: The service to use for storing undelivered messages.
         """
         LOGGER.debug(
-            f"Sending event to wallet '{wallet_id}' for topic '{topic}': {event}"
+            "Enqueueing event to wallet '%s' for topic '%s': %s",
+            wallet_id,
+            topic,
+            event,
         )
 
         if self.clients[wallet_id][topic]:

@@ -187,7 +187,7 @@ async def registry_has_schema(schema_id: str) -> bool:
         )
 
     schema = schema_res.json()
-    return schema_id in schema["schemas"]
+    return bool(schema_id in schema["schemas"])
 
 
 async def get_trust_registry_schemas() -> List[str]:

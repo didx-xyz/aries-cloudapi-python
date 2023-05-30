@@ -2,6 +2,7 @@ import asyncio
 import logging
 from collections import defaultdict
 from contextlib import asynccontextmanager
+from typing import Any, Generator
 
 from webhooks.services import Service
 
@@ -18,7 +19,9 @@ class SSEManager:
         self.lock = asyncio.Lock()  # Concurrency management
 
     @asynccontextmanager
-    async def sse_event_stream(self, wallet_id: str, topic: str, service: Service):
+    async def sse_event_stream(
+        self, wallet_id: str, topic: str, service: Service
+    ) -> Generator[asyncio.Queue, Any, None]:
         """
         Create a SSE event stream for a topic using a provided service.
 
@@ -52,7 +55,7 @@ class SSEManager:
 
     async def enqueue_sse_event(
         self, event: str, wallet_id: str, topic: str, service: Service
-    ):
+    ) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 

@@ -1,26 +1,23 @@
-import asyncio
 import json
 import logging
 import os
 import sys
-from collections import defaultdict
-from contextlib import asynccontextmanager
 from pprint import pformat
 from typing import Any, Dict, List
 
 from containers import Container
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, FastAPI, Request, WebSocket, status
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Depends, FastAPI, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 from services import Service
 
-from shared_models import (WEBHOOK_TOPIC_ALL, RedisItem, TopicItem,
-                           topic_mapping)
+from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
 
 OPENAPI_NAME = os.getenv(
-    "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events")
+    "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"
+)
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.1.0")
+
 LOG_LEVEL = os.getenv("LOG_LEVEL", "warning")
 LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +49,9 @@ async def wallet_hooks(
     return data
 
 
-@app.api_route("/{wallet_id}", summary="Subscribe or get all webhook events for a wallet ID")
+@app.api_route(
+    "/{wallet_id}", summary="Subscribe or get all webhook events for a wallet ID"
+)
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -63,7 +62,11 @@ async def wallet_root(
 
 # 'origin' helps to distinguish where a hook is from
 # eg the admin, tenant or OP agent respectively
-@app.post("/{origin}/topic/{acapy_topic}", status_code=status.HTTP_204_NO_CONTENT, summary="Receive webhook events from ACA-Py")
+@app.post(
+    "/{origin}/topic/{acapy_topic}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Receive webhook events from ACA-Py",
+)
 @inject
 async def topic_root(
     acapy_topic: str,

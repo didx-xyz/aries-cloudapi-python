@@ -9,7 +9,7 @@ from app.tests.util.client import (
 from app.tests.util.tenants import create_issuer_tenant, delete_tenant
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def governance_client():
     async with get_governance_client() as async_client:
         yield async_client

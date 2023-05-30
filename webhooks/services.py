@@ -5,24 +5,24 @@ import logging
 from typing import Any, List
 
 from aioredis import Redis
+from aries_cloudcontroller.model import OobRecord
+from models import (
+    to_connections_model,
+    to_credential_hook_model,
+    to_endorsement_model,
+    to_proof_hook_model,
+)
 from pydantic import ValidationError
 
-from models import (
-    to_credential_hook_model,
-    to_proof_hook_model,
-    to_connections_model,
-    to_endorsement_model,
-)
 from shared_models import (
-    TopicItem,
-    RedisItem,
+    BasicMessage,
     Connection,
     CredentialExchange,
-    PresentationExchange,
-    BasicMessage,
     PayloadType,
+    PresentationExchange,
+    RedisItem,
+    TopicItem,
 )
-from aries_cloudcontroller.model import OobRecord
 
 log = logging.getLogger(__name__)
 
@@ -55,9 +55,7 @@ class Service:
         return to_endorsement_model(item=item)
 
     def _oob(self, item: RedisItem):
-        oob = OobRecord(**item["payload"])
-
-        return oob
+        return OobRecord(**item["payload"])
 
     def _to_item(self, data: RedisItem):
         item = None

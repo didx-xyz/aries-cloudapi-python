@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
@@ -17,6 +19,7 @@ from app.util.rich_async_client import RichAsyncClient
 async def test_create_credential_definition(
     governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
 ):
+    time.sleep(2)  # todo: replace with listener
     # given
     schema = CreateSchema(
         name=get_random_string(15), version="0.1", attribute_names=["average"]

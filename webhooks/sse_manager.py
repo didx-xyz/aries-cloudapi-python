@@ -50,16 +50,23 @@ class SSEManager:
             async with self.lock:
                 self.clients[wallet_id][topic].remove(queue)
 
-    async def send_sse_event(
+    async def enqueue_sse_event(
         self, event: str, wallet_id: str, topic: str, service: Service
     ):
         """
-        Send a SSE event to a specific wallet for a specific topic.
+        Enqueue a SSE event to be sent to a specific wallet for a specific topic.
+
+        This function puts the event into the queue of the respective client.
+        These events are then fetched from the queue and sent to the client
+        via FastAPI's StreamingResponse.
+
+        If there are no active clients for the given wallet and topic,
+        it stores the event as an undelivered message using the provided service.
 
         Args:
-            event: The event to send.
-            wallet_id: The ID of the wallet to which to send the event.
-            topic: The topic to which to send the event.
+            event: The event to enqueue.
+            wallet_id: The ID of the wallet to which to enqueue the event.
+            topic: The topic to which to enqueue the event.
             service: The service to use for storing undelivered messages.
         """
         LOGGER.debug(

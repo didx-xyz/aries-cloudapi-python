@@ -1,4 +1,5 @@
 from typing import Optional
+
 from httpx import AsyncClient, HTTPStatusError
 
 from app.error.cloud_api_error import CloudApiException

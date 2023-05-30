@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
@@ -34,8 +32,6 @@ async def test_create_credential_definition(
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))
-
-    time.sleep(5)  # todo: replace with listener
 
     # when
     result = (

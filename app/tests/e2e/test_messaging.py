@@ -35,4 +35,4 @@ async def test_send_message(
         "/generic/messaging/send-message", json=message.dict()
     )
 
-    assert_that(response.status_code).is_equal_to(204)
+    assert_that(response.status_code).is_equal_to(200)

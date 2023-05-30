@@ -218,8 +218,7 @@ async def create_credential_definition(
                 filter_map={
                     "state": "transaction-acked",
                     "transaction_id": result.txn.transaction_id,
-                },
-                timeout=30,
+                }
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
@@ -292,8 +291,7 @@ async def create_credential_definition(
                         txn_record = await admin_listener.wait_for_filtered_event(
                             filter_map={
                                 "state": "request-received",
-                            },
-                            timeout=30,
+                            }
                         )
                     except TimeoutError:
                         raise CloudApiException(

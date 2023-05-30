@@ -5,13 +5,13 @@ import sys
 from pprint import pformat
 from typing import Any, Dict, List
 
-from containers import Container
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, FastAPI, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
-from services import Service
 
 from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
+from webhooks.containers import Container
+from webhooks.services import Service
 
 OPENAPI_NAME = os.getenv(
     "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"

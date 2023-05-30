@@ -259,8 +259,8 @@ async def register_actor(actor: Actor) -> None:
     """
     actor_res = httpx.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
 
-    if actor_res.status_code == 422:
-        raise TrustRegistryException(actor_res.json(), 422)
+    if actor_res.status_code == 405:
+        return None
     if actor_res.is_error:
         raise TrustRegistryException(
             f"Error registering actor: {actor_res.text}", actor_res.status_code

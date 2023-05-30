@@ -4,10 +4,10 @@ import time
 from typing import Dict, List, Optional
 
 import httpx
-from httpx import AsyncClient
 from pydantic import BaseModel
 
 from app.tests.util.constants import WEBHOOKS_URL
+from app.util.rich_async_client import RichAsyncClient
 from shared_models import CloudApiTopics
 
 
@@ -27,7 +27,7 @@ def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
     return wallet["wallet_id"]
 
 
-def get_wallet_id_from_async_client(client: AsyncClient) -> str:
+def get_wallet_id_from_async_client(client: RichAsyncClient) -> str:
     is_non_jwt = len(client.headers.get("x-api-key").split(".")) == 2
 
     if is_non_jwt:
@@ -39,7 +39,7 @@ def get_wallet_id_from_async_client(client: AsyncClient) -> str:
 
 
 def check_webhook_state(
-    client: AsyncClient,
+    client: RichAsyncClient,
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]],
     max_duration: int = 120,
@@ -77,7 +77,7 @@ def check_webhook_state(
         f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
 
 
-def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: CloudApiTopics) -> List:
+def get_hooks_per_topic_per_wallet(client: RichAsyncClient, topic: CloudApiTopics) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
         hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()

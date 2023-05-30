@@ -1,19 +1,18 @@
 import json
-from typing import Any, Dict, List
-from pprint import pformat
-
-from fastapi import FastAPI, Request, Depends, APIRouter
-from dependency_injector.wiring import inject, Provide
-from containers import Container
-from fastapi_websocket_pubsub import PubSubEndpoint
-
-from containers import Container as RedisContainer
-from services import Service
-from shared_models import TopicItem, topic_mapping, RedisItem, WEBHOOK_TOPIC_ALL
-
 import logging
 import os
 import sys
+from pprint import pformat
+from typing import Any, Dict, List
+
+from containers import Container
+from containers import Container as RedisContainer
+from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi_websocket_pubsub import PubSubEndpoint
+from services import Service
+
+from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Webhooks")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")

@@ -21,8 +21,8 @@ from shared_models import (WEBHOOK_TOPIC_ALL, RedisItem, TopicItem,
 OPENAPI_NAME = os.getenv(
     "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.1.0")
-LOG_LEVEL = os.getenv("LOG_LEVEL", "error")
-log = logging.getLogger(__name__)
+LOG_LEVEL = os.getenv("LOG_LEVEL", "warning")
+LOGGER = logging.getLogger(__name__)
 
 
 app = FastAPI(
@@ -82,7 +82,7 @@ async def topic_root(
     # webhook events as needed, without needing to break any models
     topic = topic_mapping.get(acapy_topic)
     if not topic:
-        log.debug(
+        LOGGER.debug(
             "Not publishing webhook event for acapy_topic %s as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
@@ -98,7 +98,7 @@ async def topic_root(
 
     webhook_event = await service.transform_topic_entry(redis_item)
     if not webhook_event:
-        log.debug(
+        LOGGER.debug(
             "Not publishing webhook event for topic %s as no transformer exists for the topic",
             topic,
         )
@@ -123,7 +123,7 @@ async def topic_root(
     # Add data to redis
     await service.add_topic_entry(redis_item["wallet_id"], json.dumps(redis_item))
 
-    log.debug("%s:\n%s", topic, pformat(webhook_event))
+    LOGGER.debug("%s:\n%s", topic, pformat(webhook_event))
 
 
 # Example for broadcasting from eg Redis

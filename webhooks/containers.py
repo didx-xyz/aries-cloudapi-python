@@ -2,8 +2,8 @@
 
 from dependency_injector import containers, providers
 
-import redis
-import services
+from webhooks import redis
+from webhooks import services
 
 
 class Container(containers.DeclarativeContainer):

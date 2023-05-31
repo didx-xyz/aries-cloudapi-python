@@ -11,11 +11,11 @@ from webhooks.sse_manager import SSEManager
 
 router = APIRouter()
 
-sse_manager = SSEManager()
+sse_manager_global_instance = SSEManager()
 
 
 def get_sse_manager():
-    return sse_manager
+    return sse_manager_global_instance
 
 
 @router.get(

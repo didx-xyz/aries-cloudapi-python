@@ -12,7 +12,7 @@ from shared_models import WEBHOOK_TOPIC_ALL
 logger = logging.getLogger(__name__)
 
 
-def convert_url_to_ws(url: str) -> str:
+def convert_url_to_websocket(url: str) -> str:
     """
     Convert an HTTP or HTTPS URL to WebSocket (WS or WSS) URL.
     """
@@ -43,11 +43,11 @@ class Webhooks:
         Webhooks._callbacks.append(callback)
 
     @staticmethod
-    async def register_sse_client(ws: WebSocket):
+    async def register_sse_client(websocket: WebSocket):
         """
         Register a WebSocket for Server-Sent Events (SSE).
         """
-        Webhooks.sse_clients.append(ws)
+        Webhooks.sse_clients.append(websocket)
 
     @staticmethod
     async def emit(data: Dict[str, Any]):
@@ -58,8 +58,8 @@ class Webhooks:
             await callback(data)
 
         # Send the event to SSE clients
-        for ws in Webhooks.sse_clients:
-            await ws.send_text(json.dumps(data))
+        for websocket in Webhooks.sse_clients:
+            await websocket.send_text(json.dumps(data))
 
     @staticmethod
     def unregister_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
@@ -75,12 +75,12 @@ class Webhooks:
             pass
 
     @staticmethod
-    async def unregister_sse_client(ws: WebSocket):
+    async def unregister_sse_client(websocket: WebSocket):
         """
         Unregister a WebSocket for Server-Sent Events (SSE).
         """
         try:
-            Webhooks.sse_clients.remove(ws)
+            Webhooks.sse_clients.remove(websocket)
         except ValueError:
             # WebSocket not in list
             pass
@@ -99,9 +99,9 @@ class Webhooks:
                 [WEBHOOK_TOPIC_ALL], callback=Webhooks._handle_webhook
             )
 
-            ws_url = convert_url_to_ws(WEBHOOKS_URL)
+            websocket_url = convert_url_to_websocket(WEBHOOKS_URL)
 
-            Webhooks.client.start_client(ws_url + "/pubsub")
+            Webhooks.client.start_client(websocket_url + "/pubsub")
             await Webhooks.wait_until_client_ready()
 
         if not Webhooks.client:

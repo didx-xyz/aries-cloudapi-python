@@ -11,6 +11,7 @@ from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
 from webhooks.containers import Container, get_container
+from webhooks.server_sent_events import router as sse_router
 from webhooks.services import Service
 
 OPENAPI_NAME = os.getenv(
@@ -36,7 +37,8 @@ app = FastAPI(
 router = APIRouter()
 endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")
-app.include_router(router)
+
+app.include_router(sse_router)
 
 
 # Routes are duplicated with trailing slash to avoid unnecessary redirects

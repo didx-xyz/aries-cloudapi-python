@@ -37,7 +37,7 @@ class SSEManager:
             undelivered_messages = await service.get_undelivered_messages(topic)
         except Exception as e:
             LOGGER.error(
-                f"Could not get undelivered messages for topic '{topic}': {str(e)}"
+                "Could not get undelivered messages for topic '%s': %r", topic, e
             )
             undelivered_messages = []
 
@@ -87,5 +87,8 @@ class SSEManager:
                 await service.store_undelivered_message(wallet_id, topic, event)
             except Exception as e:
                 LOGGER.error(
-                    f"Could not store undelivered message for wallet '{wallet_id}', topic '{topic}': {str(e)}"
+                    "Could not store undelivered message for wallet '%s', topic '%s': %r",
+                    wallet_id,
+                    topic,
+                    e,
                 )

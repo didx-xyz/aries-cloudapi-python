@@ -35,10 +35,12 @@ endpoint.register_route(router, "/pubsub")
 app.include_router(router)
 
 
+# Routes are duplicated with trailing slash to avoid unnecessary redirects
 @app.api_route(
     "/{topic}/{wallet_id}",
     summary="Subscribe or get all webhook events for a topic and wallet ID",
 )
+@app.api_route("/{topic}/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_hooks(
     topic: str, wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -52,6 +54,7 @@ async def wallet_hooks(
 @app.api_route(
     "/{wallet_id}", summary="Subscribe or get all webhook events for a wallet ID"
 )
+@app.api_route("/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -66,6 +69,11 @@ async def wallet_root(
     "/{origin}/topic/{acapy_topic}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Receive webhook events from ACA-Py",
+)
+@app.post(
+    "/{origin}/topic/{acapy_topic}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    include_in_schema=False,
 )
 @inject
 async def topic_root(

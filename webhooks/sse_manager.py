@@ -7,8 +7,8 @@ from typing import Any, Generator
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
+
 from webhooks.containers import Container, get_container
-from webhooks.services import Service
 
 LOGGER = logging.getLogger(__name__)
 
@@ -38,8 +38,8 @@ class SSEManager:
             topic: The topic for which to create the event stream.
             service: The service to use for fetching undelivered messages.
         """
-        queue = asyncio.Queue()
 
+        queue = asyncio.Queue()
         # Re-deliver undelivered messages
         try:
             undelivered_messages = await service.get_undelivered_messages(topic)
@@ -48,6 +48,7 @@ class SSEManager:
                 "Could not get undelivered messages for topic '%s': %r", topic, e
             )
             undelivered_messages = []
+            raise e
 
         for message in undelivered_messages:
             await queue.put(message)

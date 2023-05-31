@@ -1,19 +1,18 @@
 import json
-from typing import Any, Dict, List
-from pprint import pformat
-
-from fastapi import FastAPI, Request, Depends, APIRouter
-from dependency_injector.wiring import inject, Provide
-from containers import Container
-from fastapi_websocket_pubsub import PubSubEndpoint
-
-from containers import Container as RedisContainer
-from services import Service
-from shared_models import TopicItem, topic_mapping, RedisItem, WEBHOOK_TOPIC_ALL
-
 import logging
 import os
 import sys
+from pprint import pformat
+from typing import Any, Dict, List
+
+from containers import Container
+from containers import Container as RedisContainer
+from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends, FastAPI, Request
+from fastapi_websocket_pubsub import PubSubEndpoint
+from services import Service
+
+from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Webhooks")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
@@ -32,7 +31,9 @@ endpoint.register_route(router, "/pubsub")
 app.include_router(router)
 
 
+# Routes are duplicated with trailing slash to avoid unnecessary redirects
 @app.api_route("/{topic}/{wallet_id}")
+@app.api_route("/{topic}/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_hooks(
     topic: str, wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -44,6 +45,7 @@ async def wallet_hooks(
 
 
 @app.api_route("/{wallet_id}")
+@app.api_route("/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -55,6 +57,7 @@ async def wallet_root(
 # 'origin' helps to distinguish where a hook is from
 # eg the admin, tenant or OP agent respectively
 @app.post("/{origin}/topic/{acapy_topic}", status_code=204)
+@app.post("/{origin}/topic/{acapy_topic}/", status_code=204, include_in_schema=False)
 @inject
 async def topic_root(
     acapy_topic: str,

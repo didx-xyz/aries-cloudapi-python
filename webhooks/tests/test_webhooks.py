@@ -7,9 +7,14 @@ from webhooks.main import app, container
 from webhooks.services import Service
 
 
-@pytest.mark.anyio
-async def test_index():
+@pytest.fixture
+def client():
     client = AsyncClient(app=app, base_url="http://test")
+    yield client
+
+
+@pytest.mark.anyio
+async def test_index(client):
     service_mock = mock.AsyncMock(spec=Service)
     service_mock.add_topic_entry.return_value = None
     service_mock.get_all_by_wallet.return_value = {"test": "Foo"}

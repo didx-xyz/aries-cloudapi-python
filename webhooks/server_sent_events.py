@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends
@@ -8,6 +9,8 @@ from shared_models import WEBHOOK_TOPIC_ALL
 from webhooks.containers import Container
 from webhooks.services import Service
 from webhooks.sse_manager import SSEManager
+
+LOGGER = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -41,14 +44,13 @@ async def sse_subscribe_wallet(
         async with sse_manager.sse_event_stream(
             wallet_id, WEBHOOK_TOPIC_ALL, service
         ) as queue:
-            while True:
-                # The 'while True' loop is safe here because it is inside an async function. It
-                # doesn't block; it awaits for new events from the queue and yields them as they arrive.
+                    LOGGER.debug("SSE event_stream: client disconnected")
                 try:
                     event = await queue.get()
                     yield f"data: {event}\n\n"
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
+                    LOGGER.debug("SSE event_stream closing with CancelledError")
                     break
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
@@ -78,6 +80,7 @@ async def sse_subscribe(
     async def event_stream():
         async with sse_manager.sse_event_stream(wallet_id, topic, service) as queue:
             while True:
+                    LOGGER.debug("SSE event_stream: client disconnected")
                 try:
                     event = await queue.get()
                     yield f"data: {event}\n\n"

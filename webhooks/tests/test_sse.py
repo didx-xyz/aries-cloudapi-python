@@ -1,12 +1,11 @@
 import logging
 from typing import Any, Generator
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock
 
 import httpx
 import pytest
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Factory
-from dependency_injector.wiring import inject
 from fastapi import FastAPI
 
 from app.constants import WEBHOOKS_URL
@@ -56,7 +55,7 @@ app.include_router(router)
 
 
 @pytest.mark.anyio
-async def test_sse_subscribe(alice_member_client, acme_and_alice_connection):
+async def test_sse_subscribe(alice_member_client):
     async with httpx.AsyncClient(app=app, base_url=WEBHOOKS_URL) as ac:
         # get the wallet_id of the faber_client
         wallet_id = get_wallet_id_from_async_client(alice_member_client)

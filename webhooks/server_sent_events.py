@@ -1,6 +1,6 @@
 import asyncio
 
-from dependency_injector.wiring import Provide, inject
+from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
@@ -27,7 +27,6 @@ def get_sse_manager():
 async def sse_subscribe_wallet(
     wallet_id: str,
     sse_manager: SSEManager = Depends(get_sse_manager),
-    service: Service = Depends(Provide[Container.service]),
 ):
     """
     Subscribe to server-side events for a specific wallet ID.
@@ -65,7 +64,6 @@ async def sse_subscribe(
     topic: str,
     wallet_id: str,
     sse_manager: SSEManager = Depends(get_sse_manager),
-    service: Service = Depends(Provide[Container.service]),
 ):
     """
     Subscribe to server-side events for a specific topic and wallet ID.

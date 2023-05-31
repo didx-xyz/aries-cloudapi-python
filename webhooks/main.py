@@ -85,7 +85,7 @@ async def topic_root(
     # webhook events as needed, without needing to break any models
     topic = topic_mapping.get(acapy_topic)
     if not topic:
-        LOGGER.debug(
+        LOGGER.warning(
             "Not publishing webhook event for acapy_topic %s as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
@@ -101,7 +101,7 @@ async def topic_root(
 
     webhook_event = await service.transform_topic_entry(redis_item)
     if not webhook_event:
-        LOGGER.debug(
+        LOGGER.warning(
             "Not publishing webhook event for topic %s as no transformer exists for the topic",
             topic,
         )

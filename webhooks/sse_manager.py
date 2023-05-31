@@ -4,10 +4,12 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Any, Generator
 
+from webhooks.containers import Container, get_container
 from webhooks.services import Service
 
 LOGGER = logging.getLogger(__name__)
 
+container = get_container()
 
 class SSEManager:
     """

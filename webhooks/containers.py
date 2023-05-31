@@ -20,3 +20,12 @@ class Container(containers.DeclarativeContainer):
         services.Service,
         redis=redis_pool,
     )
+
+
+configured_container = Container()
+configured_container.config.redis_host.from_env("REDIS_HOST", "wh-redis")
+configured_container.config.redis_password.from_env("REDIS_PASSWORD", "")
+
+
+def get_container():
+    return configured_container

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, FastAPI, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
-from webhooks.containers import Container
+from webhooks.containers import Container, get_container
 from webhooks.services import Service
 
 OPENAPI_NAME = os.getenv(
@@ -147,9 +147,6 @@ async def topic_root(
 #     async with endpoint.broadcaster:
 #         await endpoint.main_loop(websocket)
 
-app.include_router(router)
 
-container = Container()
-container.config.redis_host.from_env("REDIS_HOST", "wh-redis")
-container.config.redis_password.from_env("REDIS_PASSWORD", "")
+container = get_container()
 container.wire(modules=[sys.modules[__name__]])

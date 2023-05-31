@@ -22,7 +22,7 @@ class TrustPingMsg(BaseModel):
     comment: str
 
 
-@router.post("/send-message", status_code=204)
+@router.post("/send-message")
 async def send_messages(
     message: Message,
     aries_controller: AcaPyClient = Depends(agent_selector),

@@ -2,11 +2,11 @@ import logging
 from typing import Any, Generator
 from unittest.mock import AsyncMock
 
-import httpx
 import pytest
 from dependency_injector.containers import DeclarativeContainer
 from dependency_injector.providers import Factory
 from fastapi import FastAPI
+from httpx import AsyncClient
 
 from app.constants import WEBHOOKS_URL
 from app.tests.util.webhooks import get_wallet_id_from_async_client
@@ -56,12 +56,12 @@ app.include_router(router)
 
 @pytest.mark.anyio
 async def test_sse_subscribe(alice_member_client):
-    async with httpx.AsyncClient(app=app, base_url=WEBHOOKS_URL) as ac:
+    async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as async_client:
         # get the wallet_id of the faber_client
         wallet_id = get_wallet_id_from_async_client(alice_member_client)
         topic = WEBHOOK_TOPIC_ALL
 
-        async with ac.stream("GET", f"/sse/{topic}/{wallet_id}") as response:
+        async with async_client.stream("GET", f"/sse/{topic}/{wallet_id}") as response:
             LOGGER.warning("IN EVENT")
             event = await response.aiter_text().__anext__()
             LOGGER.warning("GOT EVENT %s:", event)

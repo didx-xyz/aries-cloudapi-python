@@ -48,7 +48,7 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
         await alice_member_client.get(WALLET_BASE_PATH + "/connections")
 
     assert exc.value.status_code == 403
-    assert "Not authenticated" in exc.value.detail 
+    assert "Not authenticated" in exc.value.detail
 
 
 @pytest.mark.anyio

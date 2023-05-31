@@ -1,5 +1,6 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
+from app.error.cloud_api_error import CloudApiException
 
 from app.facades.acapy_wallet import get_public_did
 from app.facades.trust_registry import Actor, register_actor, remove_actor_by_id
@@ -21,7 +22,7 @@ from app.tests.util.ledger import create_public_did
 async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
     try:
         response = await get_public_did(governance_acapy_client)
-    except:
+    except CloudApiException:
         response = await create_public_did(governance_acapy_client, set_public=True)
 
     did = response.did
@@ -30,7 +31,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
     await register_actor(
         Actor(
             id=gov_id,
-            name=f"test-governance-actor",
+            name="test-governance-actor",
             roles=["issuer", "verifier"],
             did=f"did:sov:{did}",
         )

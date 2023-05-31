@@ -57,7 +57,7 @@ async def sse_subscribe_wallet(
 
 
 @router.get(
-    "/sse/{topic}/{wallet_id}",
+    "/sse/{wallet_id}/{topic}",
     response_class=StreamingResponse,
     summary="Subscribe to topic and wallet ID server-side events",
 )

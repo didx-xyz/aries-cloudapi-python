@@ -1,4 +1,6 @@
 import pytest
+
+from app.tests.util.ecosystem_personas import acme_and_alice_connection, acme_tenant
 from app.tests.util.member_personas import alice_member_client, alice_tenant
 
 

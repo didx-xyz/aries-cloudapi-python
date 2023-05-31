@@ -20,20 +20,24 @@ LOGGER = logging.getLogger(__name__)
 
 
 @pytest.fixture
-async def sse_manager() -> Generator[SSEManager, Any, None]:
+async def sse_manager_fixture() -> Generator[SSEManager, Any, None]:
     yield SSEManager()
 
 
 @pytest.mark.anyio
-async def test_enqueue_sse_event(sse_manager):
+async def test_enqueue_sse_event(sse_manager_fixture):
     mock_service = AsyncMock()
     mock_service.get_undelivered_messages.return_value = []
     topic = "test-topic"
     wallet_id = "test-wallet"
     event = "test-message"
 
-    async with sse_manager.sse_event_stream(wallet_id, topic, mock_service) as queue:
-        await sse_manager.enqueue_sse_event(event, wallet_id, topic, mock_service)
+    async with sse_manager_fixture.sse_event_stream(
+        wallet_id, topic, mock_service
+    ) as queue:
+        await sse_manager_fixture.enqueue_sse_event(
+            event, wallet_id, topic, mock_service
+        )
         message = await queue.get()
         assert message == event
 

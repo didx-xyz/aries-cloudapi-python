@@ -4,7 +4,7 @@ COPY trustregistry /trustregistry
 
 WORKDIR /trustregistry
 
-RUN cd /trustregistry && pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 EXPOSE 8001
 

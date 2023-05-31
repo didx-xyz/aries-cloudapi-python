@@ -143,12 +143,7 @@ async def topic_root(
     LOGGER.debug("%s:\n%s", topic, pformat(webhook_event))
 
 
-# Example for broadcasting from eg Redis
-# @router.websocket("/pubsub")
-# async def websocket_rpc_endpoint(websocket: WebSocket):
-#     async with endpoint.broadcaster:
-#         await endpoint.main_loop(websocket)
-
+app.include_router(router)
 
 container = get_container()
 container.wire(modules=[sys.modules[__name__]])

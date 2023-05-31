@@ -4,7 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from shared_models.shared_models import WEBHOOK_TOPIC_ALL
+from shared_models import WEBHOOK_TOPIC_ALL
 from webhooks.containers import Container
 from webhooks.services import Service
 from webhooks.sse_manager import SSEManager

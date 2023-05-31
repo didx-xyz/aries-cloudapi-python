@@ -6,12 +6,6 @@ from typing import Any, List
 
 from aioredis import Redis
 from aries_cloudcontroller.model import OobRecord
-from webhooks.models import (
-    to_connections_model,
-    to_credential_hook_model,
-    to_endorsement_model,
-    to_proof_hook_model,
-)
 from pydantic import ValidationError
 
 from shared_models import (
@@ -22,6 +16,12 @@ from shared_models import (
     PresentationExchange,
     RedisItem,
     TopicItem,
+)
+from webhooks.models import (
+    to_connections_model,
+    to_credential_hook_model,
+    to_endorsement_model,
+    to_proof_hook_model,
 )
 
 log = logging.getLogger(__name__)

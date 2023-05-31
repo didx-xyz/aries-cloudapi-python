@@ -2,15 +2,16 @@ import logging
 
 import pytest
 from assertpy import assert_that
-from httpx import AsyncClient
 
+from app.admin.tenants.models import CreateTenantResponse
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
-from app.tests.e2e.test_fixtures import *  # NOQA
-from app.tests.e2e.test_fixtures import BASE_PATH
-from app.tests.util.ecosystem_personas import FaberAliceConnect
-from app.tests.util.webhooks import (check_webhook_state,
-                                     get_wallet_id_from_async_client)
+from app.listener import Listener
+from app.tests.e2e.test_fixtures import CREDENTIALS_BASE_PATH
+from app.tests.util.ecosystem_connections import FaberAliceConnect
+from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
+from app.util.rich_async_client import RichAsyncClient
+from shared_models.shared_models import CredentialExchange
 
 # This import are important for tests to run!
 
@@ -19,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 @pytest.mark.anyio
 async def test_send_credential_oob_v1(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
@@ -32,7 +33,7 @@ async def test_send_credential_oob_v1(
     }
 
     response = await alice_member_client.get(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
@@ -41,10 +42,9 @@ async def test_send_credential_oob_v1(
     assert len(records) == 0
 
     response = await faber_client.post(
-        BASE_PATH + "/create-offer",
+        CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).contains("credential_id")
@@ -72,7 +72,6 @@ async def test_send_credential_oob_v1(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
-    accept_response.raise_for_status()
 
     oob_record = accept_response.json()
 
@@ -90,10 +89,10 @@ async def test_send_credential_oob_v1(
 
 @pytest.mark.anyio
 async def test_send_credential_oob_v2(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_credentials_listener = Listener(topic="credentials", wallet_id=wallet_id)
@@ -105,10 +104,9 @@ async def test_send_credential_oob_v2(
     }
 
     create_offer_response = await faber_client.post(
-        BASE_PATH + "/create-offer",
+        CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    create_offer_response.raise_for_status()
 
     data = create_offer_response.json()
     assert_that(data).contains("credential_id")
@@ -139,7 +137,6 @@ async def test_send_credential_oob_v2(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
-    accept_response.raise_for_status()
 
     oob_record = accept_response.json()
 
@@ -159,11 +156,11 @@ async def test_send_credential_oob_v2(
 
 @pytest.mark.anyio
 async def test_send_credential(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
     credential = {
         "protocol_version": "v1",
@@ -173,7 +170,7 @@ async def test_send_credential(
     }
 
     response = await alice_member_client.get(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
@@ -182,10 +179,9 @@ async def test_send_credential(
     assert len(records) == 0
 
     response = await faber_client.post(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).contains("credential_id")
@@ -196,10 +192,9 @@ async def test_send_credential(
 
     credential["protocol_version"] = "v2"
     response = await faber_client.post(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).has_state("offer-sent")
@@ -216,7 +211,7 @@ async def test_send_credential(
         topic="credentials",
     )
     response = await alice_member_client.get(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     records = response.json()
@@ -237,7 +232,7 @@ async def test_send_credential(
 
 @pytest.mark.anyio
 async def test_create_offer(
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
 ):
@@ -248,10 +243,9 @@ async def test_create_offer(
     }
 
     response = await faber_client.post(
-        BASE_PATH + "/create-offer",
+        CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).contains("credential_id")
@@ -262,10 +256,9 @@ async def test_create_offer(
 
     credential["protocol_version"] = "v2"
     response = await faber_client.post(
-        BASE_PATH + "/create-offer",
+        CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
-    response.raise_for_status()
 
     data = response.json()
     assert_that(data).has_state("offer-sent")
@@ -282,7 +275,7 @@ async def test_create_offer(
         topic="credentials",
     )
     response = await faber_client.get(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
     )
     records = response.json()
 
@@ -304,8 +297,8 @@ async def test_create_offer(
 
 @pytest.mark.anyio
 async def test_send_credential_request(
-    alice_member_client: AsyncClient,
-    faber_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     credential_definition_id: str,
 ):
@@ -317,7 +310,7 @@ async def test_send_credential_request(
     }
 
     response = await faber_client.post(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
     credential_exchange = response.json()
@@ -333,7 +326,7 @@ async def test_send_credential_request(
     )
 
     response = await alice_member_client.get(
-        BASE_PATH,
+        CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
     )
     assert check_webhook_state(
@@ -348,8 +341,8 @@ async def test_send_credential_request(
 # ACAPY_AUTO_STORE_CREDENTIAL=true
 # @pytest.mark.anyio
 # async def test_store_credential(
-#     alice_member_client: AsyncClient,
-#     faber_client: AsyncClient,
+#     alice_member_client: RichAsyncClient,
+#     faber_client: RichAsyncClient,
 #     credential_definition_id: str,
 #     faber_and_alice_connection: FaberAliceConnect,
 # ):
@@ -431,9 +424,9 @@ async def test_send_credential_request(
 
 @pytest.mark.anyio
 async def test_revoke_credential(
-    faber_client: AsyncClient,
-    alice_member_client: AsyncClient,
-    alice_tenant: Any,
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
@@ -447,18 +440,14 @@ async def test_revoke_credential(
     }
 
     alice_credentials_listener = Listener(
-        topic="credentials", wallet_id=alice_tenant["tenant_id"]
+        topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
     # create and send credential offer- issuer
-    response = await faber_client.post(
+    await faber_client.post(
         "/generic/issuer/credentials",
         json=credential,
     )
-    credential_exchange = response.json()
-    if response.is_error:
-        print(credential_exchange)
-    response.raise_for_status()
 
     payload = await alice_credentials_listener.wait_for_filtered_event(
         filter_map={
@@ -509,7 +498,5 @@ async def test_revoke_credential(
             "credential_exchange_id": cred_id,
         },
     )
-
-    response.raise_for_status()
 
     assert response.status_code == 204

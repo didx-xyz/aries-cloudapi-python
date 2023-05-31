@@ -1,27 +1,35 @@
 import mockito
 import pytest
 
-from app.tests.util.client_fixtures import (governance_acapy_client,
-                                            governance_client,
-                                            tenant_admin_acapy_client,
-                                            tenant_admin_client)
-from app.tests.util.ecosystem_personas import (acme_acapy_client,
-                                               acme_and_alice_connection,
-                                               acme_client, acme_tenant,
-                                               faber_acapy_client,
-                                               faber_and_alice_connection,
-                                               faber_client)
-from app.tests.util.member_personas import (alice_acapy_client,
-                                            alice_bob_connect_multi,
-                                            alice_member_client, alice_tenant,
-                                            bob_acapy_client,
-                                            bob_and_alice_connection,
-                                            bob_and_alice_public_did,
-                                            bob_member_client,
-                                            bob_multi_use_invitation)
+# pylint: disable=unused-import
+from app.tests.util.ecosystem_connections import (
+    acme_and_alice_connection,
+    alice_bob_connect_multi,
+    bob_and_alice_connection,
+    bob_and_alice_public_did,
+    faber_and_alice_connection,
+)
+from app.tests.util.member_acapy_clients import (
+    acme_acapy_client,
+    alice_acapy_client,
+    bob_acapy_client,
+    faber_acapy_client,
+    governance_acapy_client,
+    tenant_admin_acapy_client,
+)
+from app.tests.util.member_async_clients import (
+    acme_client,
+    alice_member_client,
+    bob_member_client,
+    faber_client,
+    governance_client,
+    tenant_admin_client,
+)
+from app.tests.util.member_wallets import acme_tenant, alice_tenant
 from app.webhooks import Webhooks
 from tests.fixtures import mock_agent_controller
-# Unused imports contain fixtures
+
+# Unused imports make pytest fixtures visible to tests within this module
 
 # In pytest, conftest.py is a special file used to share fixtures, hooks, and other configurations
 # among multiple test files. It's automatically discovered by pytest when tests are run, and the
@@ -33,7 +41,7 @@ from tests.fixtures import mock_agent_controller
 # so there is no need to explicitly include it in the test functions.
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def anyio_backend():
     return "asyncio"
 

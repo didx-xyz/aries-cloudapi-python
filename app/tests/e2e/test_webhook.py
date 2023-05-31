@@ -1,8 +1,9 @@
 import pytest
-from httpx import AsyncClient
 
+from app.error.cloud_api_error import CloudApiException
 from app.generic.webhooks import router
-from app.tests.util.member_personas import BobAliceConnect
+from app.tests.util.ecosystem_connections import BobAliceConnect
+from app.util.rich_async_client import RichAsyncClient
 from shared_models import Connection
 
 WALLET_BASE_PATH = router.prefix
@@ -10,7 +11,7 @@ WALLET_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic(
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
     result = (await alice_member_client.get(WALLET_BASE_PATH + "/connections")).json()
@@ -24,7 +25,7 @@ async def test_get_webhooks_for_wallet_by_topic(
 
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet(
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
     result = (await alice_member_client.get(WALLET_BASE_PATH)).json()
@@ -38,23 +39,26 @@ async def test_get_webhooks_for_wallet(
 
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic_tenant_error(
-    alice_member_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
-
     alice_member_client.headers.pop("x-api-key")
-    result = await alice_member_client.get(WALLET_BASE_PATH + "/connections")
 
-    assert result.status_code == 403
-    assert result.json()["detail"] == "Not authenticated"
+    with pytest.raises(CloudApiException) as exc:
+        await alice_member_client.get(WALLET_BASE_PATH + "/connections")
+
+    assert exc.value.status_code == 403
+    assert "Not authenticated" in exc.value.detail
 
 
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic_admin_error(
-    governance_client: AsyncClient,
+    governance_client: RichAsyncClient,
 ):
     governance_client.headers.pop("x-api-key")
-    result = await governance_client.get(WALLET_BASE_PATH + "/connections")
 
-    assert result.status_code == 403
-    assert result.json()["detail"] == "Not authenticated"
+    with pytest.raises(CloudApiException) as exc:
+        await governance_client.get(WALLET_BASE_PATH + "/connections")
+
+    assert exc.value.status_code == 403
+    assert "Not authenticated" in exc.value.detail

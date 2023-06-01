@@ -142,7 +142,7 @@ services:
     env_file:
       - environments/webhooks/fastapi.webhooks.env
     environment:
-      - REDIS_URL=redis://wh-redis
+      - REDIS_HOST=wh-redis
   governance-endorser:
     image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
     container_name: governance-endorser

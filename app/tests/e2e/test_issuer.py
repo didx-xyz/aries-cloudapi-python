@@ -34,7 +34,7 @@ async def test_send_credential_oob_v1(
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
     records = response.json()
 
@@ -164,14 +164,14 @@ async def test_send_credential(
 ):
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_and_alice_connection.faber_connection_id,
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "10"},
     }
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
     records = response.json()
 
@@ -212,7 +212,7 @@ async def test_send_credential(
     )
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
     records = response.json()
 
@@ -305,7 +305,7 @@ async def test_send_credential_request(
     credential = {
         "protocol_version": "v1",
         "credential_definition_id": credential_definition_id,
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_and_alice_connection.faber_connection_id,
         "attributes": {"speed": "10"},
     }
 
@@ -327,7 +327,7 @@ async def test_send_credential_request(
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
     assert check_webhook_state(
         client=alice_member_client,
@@ -430,7 +430,7 @@ async def test_revoke_credential(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
-    faber_connection_id = faber_and_alice_connection["faber_connection_id"]
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     credential = {
         "protocol_version": "v1",
@@ -451,7 +451,7 @@ async def test_revoke_credential(
 
     payload = await alice_credentials_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": faber_and_alice_connection["alice_connection_id"],
+            "connection_id": faber_and_alice_connection.alice_connection_id,
             "state": "offer-received",
         }
     )

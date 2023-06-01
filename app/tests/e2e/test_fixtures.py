@@ -97,7 +97,7 @@ async def credential_exchange_id(
     then this fixture just returns it..."""
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_and_alice_connection.faber_connection_id,
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
@@ -139,7 +139,7 @@ async def issue_credential_to_alice(
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_and_alice_connection.faber_connection_id,
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "10"},
     }

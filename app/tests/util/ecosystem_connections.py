@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any, Dict, TypedDict
 
 import pytest
@@ -14,7 +15,8 @@ from app.tests.util.webhooks import check_webhook_state
 from app.util.rich_async_client import RichAsyncClient
 
 
-class BobAliceConnect(TypedDict):
+@dataclass
+class BobAliceConnect:
     alice_connection_id: str
     bob_connection_id: str
 
@@ -67,15 +69,15 @@ async def bob_and_alice_connection(
         filter_map={"state": "transaction-acked"},
     )
 
-    return {
-        "alice_connection_id": alice_connection_id,
-        "bob_connection_id": bob_connection_id,
-    }
+    return BobAliceConnect(
+        alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id
+    )
 
 
-class AcmeAliceConnect(TypedDict):
-    acme_connection_id: str
+@dataclass
+class AcmeAliceConnect:
     alice_connection_id: str
+    acme_connection_id: str
 
 
 @pytest.fixture(scope="function")
@@ -105,15 +107,15 @@ async def acme_and_alice_connection(
     acme_connection_id = payload["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
 
-    return {
-        "alice_connection_id": alice_connection_id,
-        "acme_connection_id": acme_connection_id,
-    }
+    return AcmeAliceConnect(
+        alice_connection_id=alice_connection_id, acme_connection_id=acme_connection_id
+    )
 
 
-class FaberAliceConnect(TypedDict):
-    faber_connection_id: str
+@dataclass
+class FaberAliceConnect:
     alice_connection_id: str
+    faber_connection_id: str
 
 
 @pytest.fixture(scope="function")
@@ -149,15 +151,15 @@ async def faber_and_alice_connection(
         filter_map={"state": "completed", "connection_id": faber_connection_id},
     )
 
-    return {
-        "alice_connection_id": alice_connection_id,
-        "faber_connection_id": faber_connection_id,
-    }
+    return FaberAliceConnect(
+        alice_connection_id=alice_connection_id, faber_connection_id=faber_connection_id
+    )
 
 
-class BobAlicePublicDid(TypedDict):
-    bob_public_did: str
+@dataclass
+class BobAlicePublicDid:
     alice_public_did: str
+    bob_public_did: str
 
 
 @pytest.fixture(scope="function")
@@ -184,10 +186,7 @@ async def bob_and_alice_public_did(
     if not bob_did.did or not alice_did.did:
         raise Exception("Missing public did for alice or bob")
 
-    return {
-        "bob_public_did": bob_did.did,
-        "alice_public_did": alice_did.did,
-    }
+    return BobAlicePublicDid(alice_did=alice_did, bob_did=bob_did)
 
 
 class InvitationResultDict(TypedDict):
@@ -274,7 +273,6 @@ async def alice_bob_connect_multi(
         max_duration=120,
     )
 
-    return {
-        "alice_connection_id": alice_connection_id,
-        "bob_connection_id": bob_connection_id,
-    }
+    return BobAliceConnect(
+        alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id
+    )

@@ -39,7 +39,7 @@ async def test_accept_proof_request_v1(
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -323,7 +323,7 @@ async def test_accept_proof_request_v2(
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             # Custom proof request because v2 doesn't support proof request without restrictions
             # see: https://github.com/hyperledger/aries-cloudagent-python/issues/1755
@@ -346,7 +346,7 @@ async def test_accept_proof_request_v2(
     payload = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
             "state": "request-received",
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
         }
     )
     alice_proofs_listener.stop()
@@ -400,7 +400,7 @@ async def test_send_proof_request(
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -418,7 +418,7 @@ async def test_send_proof_request(
     # Wait for request received
     await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v1",
         }
@@ -428,7 +428,7 @@ async def test_send_proof_request(
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -446,7 +446,7 @@ async def test_send_proof_request(
     # Wait for request received
     await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v2",
         }
@@ -467,7 +467,7 @@ async def test_reject_proof_request(
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -476,7 +476,7 @@ async def test_reject_proof_request(
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v1",
         }
@@ -502,7 +502,7 @@ async def test_get_proof_single(
     proof_req_res = await acme_client.post(
         f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -523,7 +523,7 @@ async def test_get_proof_single(
     proof_req_res = await acme_client.post(
         f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -552,7 +552,7 @@ async def test_get_proofs_multi(
     await acme_client.post(
         f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -574,7 +574,7 @@ async def test_get_proofs_multi(
     await acme_client.post(
         f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -601,7 +601,7 @@ async def test_delete_proof(
     proof_req_res = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -618,7 +618,7 @@ async def test_delete_proof(
     proof_req_res = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -645,7 +645,7 @@ async def test_get_credentials_for_request(
     await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -654,7 +654,7 @@ async def test_get_credentials_for_request(
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v1",
         }
@@ -678,7 +678,7 @@ async def test_get_credentials_for_request(
     await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -687,7 +687,7 @@ async def test_get_credentials_for_request(
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v2",
         }

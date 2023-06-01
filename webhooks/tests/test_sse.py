@@ -38,9 +38,9 @@ async def test_sse_subscribe_wallet(
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
 
     async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
-        response = await client.get(f"/sse/{alice_wallet_id}")
-        assert response.status_code == 200
-        LOGGER.warning("response: %s", response.text)
+        try:
+        except asyncio.TimeoutError:
+            pytest.fail("Test timed out before an event was received.")
 
         # Create an async function to check the response
         async def check_response(response):

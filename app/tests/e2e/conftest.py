@@ -20,6 +20,7 @@ from app.tests.e2e.test_fixtures import (
     schema_definition_alt,
 )
 from app.tests.util.ledger import create_public_did
+from app.tests.util.string import random_string
 
 
 # Governace should be provisioned with public did and registered for all e2e tests
@@ -32,7 +33,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
 
     did = response.did
 
-    gov_id = "test-governance-id"
+    gov_id = f"test-governance-id-{random_string(3)}"
     if not await actor_by_id(gov_id):
         await register_actor(
             Actor(

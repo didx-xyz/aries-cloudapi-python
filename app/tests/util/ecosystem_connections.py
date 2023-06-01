@@ -186,7 +186,7 @@ async def bob_and_alice_public_did(
     if not bob_did.did or not alice_did.did:
         raise Exception("Missing public did for alice or bob")
 
-    return BobAlicePublicDid(alice_did=alice_did, bob_did=bob_did)
+    return BobAlicePublicDid(alice_public_did=alice_did, bob_public_did=bob_did)
 
 
 class InvitationResultDict(TypedDict):

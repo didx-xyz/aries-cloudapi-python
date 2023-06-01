@@ -1,8 +1,9 @@
 from typing import List
-from shared_models import CloudApiTopics
-from httpx import get, HTTPError
+
+from httpx import HTTPError, get
 
 from app.constants import WEBHOOKS_URL
+from shared_models import CloudApiTopics
 
 
 def get_hooks_per_topic_per_wallet(wallet_id: str, topic: CloudApiTopics) -> List:

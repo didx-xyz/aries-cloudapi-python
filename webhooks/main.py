@@ -1,18 +1,12 @@
-import json
 import logging
 import os
-import sys
-from pprint import pformat
-from typing import Any, Dict, List
+from typing import Container
 
-from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, FastAPI, Request, status
-from fastapi_websocket_pubsub import PubSubEndpoint
+from fastapi import FastAPI
 
-from shared_models import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
-from webhooks.containers import Container, get_container
-from webhooks.server_sent_events import router as sse_router
-from webhooks.services import Service
+from webhooks.dependencies import sse_manager
+from webhooks.dependencies.container import get_container
+from webhooks.routers import sse, webhooks
 
 OPENAPI_NAME = os.getenv(
     "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"

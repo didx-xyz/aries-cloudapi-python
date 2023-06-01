@@ -1,8 +1,15 @@
 import pytest
 
 # pylint: disable=unused-import
-from app.tests.util.ecosystem_personas import acme_and_alice_connection, acme_tenant
-from app.tests.util.member_personas import alice_member_client, alice_tenant
+from app.tests.e2e.conftest import governance_public_did
+from app.tests.util.member_acapy_clients import governance_acapy_client
+from app.tests.util.member_async_clients import (
+    alice_member_client,
+    bob_member_client,
+    governance_client,
+)
+from app.tests.util.member_wallets import alice_tenant
+from app.tests.util.ecosystem_connections import bob_and_alice_connection
 
 
 @pytest.fixture(scope="session")

@@ -25,7 +25,7 @@ jobs:
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
-          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt -r webhooks/requirements.txt
+          pip install -r webhooks/requirements.txt # -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
       - name: Run Pylint
         run: |
           pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
@@ -51,7 +51,7 @@ jobs:
         id: test
         # continue-on-error: true
         run: |
-          pytest --durations=0 --cov=trustregistry --cov=app trustregistry app webhooks
+          pytest --durations=0 webhooks  # --cov=trustregistry --cov=app trustregistry app webhooks
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

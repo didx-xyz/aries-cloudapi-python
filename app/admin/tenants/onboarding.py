@@ -38,14 +38,13 @@ async def handle_tenant_update(
 ):
     # We retrieve the wallet to verify what has changed
     wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+    if not wallet:
+        raise HTTPException(400, f"Wallet for tenant id `{tenant_id}` not found.")
 
     # Get tenant from trust registry
     actor = await actor_by_id(wallet.wallet_id)
-
     if not actor:
-        raise HTTPException(
-            404, f"actor with id {tenant_id} not registered in trust registry"
-        )
+        raise HTTPException(409, "Holder tenants cannot be updated with new roles.")
 
     updated_actor = actor.copy()
 

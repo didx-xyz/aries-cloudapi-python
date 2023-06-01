@@ -6,6 +6,11 @@ from app.dependencies import acapy_auth, acapy_auth_verified
 from app.facades import trust_registry
 from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
+from app.generic.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialSchema,
+)
 from app.tests.util.string import random_string
 from app.tests.util.trust_registry import register_issuer
 from app.util.rich_async_client import RichAsyncClient
@@ -13,7 +18,8 @@ from app.util.rich_async_client import RichAsyncClient
 
 @pytest.mark.anyio
 async def test_create_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
+    governance_acapy_client: AcaPyClient,
+    governance_client: RichAsyncClient,
 ):
     # given
     schema = CreateSchema(

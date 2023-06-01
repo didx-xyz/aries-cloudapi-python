@@ -15,15 +15,14 @@ LOGGER = logging.getLogger(__name__)
 
 router = APIRouter()
 
-router = APIRouter()
-
 endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")
 
 
 # Routes are duplicated with trailing slash to avoid unnecessary redirects
 @router.get(
-    "/webhooks/{wallet_id}", summary="Subscribe or get all webhook events for a wallet ID"
+    "/webhooks/{wallet_id}",
+    summary="Subscribe or get all webhook events for a wallet ID",
 )
 @router.get("/webhooks/{wallet_id}/", include_in_schema=False)
 @inject
@@ -106,7 +105,7 @@ async def topic_root(
     # publish the webhook to subscribers for the following topics
     #  - current wallet id
     #  - topic of the event
-    #  - topic and wallet id combined as topic-wallet_id 
+    #  - topic and wallet id combined as topic-wallet_id
     #    - this allows for fine grained subscriptions (i.e. the endorser service)
     #  - 'all' topic, which allows to subscribe to all published events
     # FIXME: wallet_id is admin for all admin wallets from different origins. We should make a difference on this

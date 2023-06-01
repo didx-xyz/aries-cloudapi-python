@@ -3,14 +3,14 @@ import time
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.tests.util.webhooks import check_webhook_state
+from app.util.rich_async_client import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_create_invitation_oob(
-    bob_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
 ):
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation", json={"create_connection": True}
@@ -24,8 +24,8 @@ async def test_create_invitation_oob(
 
 @pytest.mark.anyio
 async def test_accept_invitation_oob(
-    bob_member_client: AsyncClient,
-    alice_member_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
 ):
     invitation_response = await bob_member_client.post(
@@ -59,11 +59,10 @@ async def test_accept_invitation_oob(
 
 @pytest.mark.anyio
 async def test_oob_connect_via_public_did(
-    bob_member_client: AsyncClient,
-    faber_client: AsyncClient,
+    bob_member_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
 ):
-    time.sleep(10)
+    time.sleep(4)  # Todo replace with listener
 
     faber_public_did = await faber_acapy_client.wallet.get_public_did()
     connect_response = await bob_member_client.post(

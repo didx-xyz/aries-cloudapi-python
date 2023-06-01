@@ -3,7 +3,7 @@ import pytest
 from app.facades.trust_registry import actor_by_id
 from app.listener import Listener
 from app.tests.util.client import get_tenant_admin_client, get_tenant_client
-from app.tests.util.string import base64_to_json, get_random_string
+from app.tests.util.string import base64_to_json, random_string
 from app.tests.util.tenants import (
     create_issuer_tenant,
     create_tenant,
@@ -102,7 +102,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     credential_definition = await issuer_client.post(
         "/generic/definitions/credentials",
         json={
-            "tag": get_random_string(5),
+            "tag": random_string(5),
             "schema_id": schema_id,
             "support_revocation": True,
         },

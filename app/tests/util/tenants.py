@@ -1,11 +1,11 @@
 from app.admin.tenants.models import CreateTenantRequest, CreateTenantResponse
-from app.tests.util.string import get_random_string
+from app.tests.util.string import random_string
 from app.util.rich_async_client import RichAsyncClient
 from app.util.rich_parsing import parse_with_error_handling
 
 
 def append_random_string(name):
-    return f"{name}_{get_random_string(5)}"
+    return f"{name}_{random_string(5)}"
 
 
 async def post_tennant_request(

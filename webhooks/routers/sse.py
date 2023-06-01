@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any, Generator
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, Request
@@ -43,7 +44,7 @@ async def sse_subscribe_wallet(
         service: The service instance for fetching undelivered messages.
     """
 
-    async def event_stream():
+    async def event_stream() -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(
             wallet_id,
             WEBHOOK_TOPIC_ALL,
@@ -88,7 +89,7 @@ async def sse_subscribe(
         service: The service instance for fetching undelivered messages.
     """
 
-    async def event_stream():
+    async def event_stream() -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
             while True:
                 # If client closes connection, stop sending events

@@ -24,8 +24,9 @@ def init_container() -> Container:
 
 
 @pytest.fixture
-async def sse_manager_fixture() -> Generator[SSEManager, Any, None]:
-    yield SSEManager()
+async def get_sse_manager():
+    container = init_container()
+    return SSEManager(container.service)
 
 
 @pytest.mark.anyio

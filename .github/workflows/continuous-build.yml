@@ -52,7 +52,7 @@ jobs:
         # continue-on-error: true
         run: |
           echo "127.0.0.1 wh-redis" | sudo tee -a /etc/hosts
-          pytest --durations=0 webhooks  # --cov=trustregistry --cov=app trustregistry app webhooks
+          pytest --durations=0 --cov=trustregistry --cov=app --cov=webhooks trustregistry app webhooks
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

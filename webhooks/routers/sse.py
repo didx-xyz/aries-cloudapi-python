@@ -3,15 +3,17 @@ import logging
 
 from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 
 from shared_models import WEBHOOK_TOPIC_ALL
-from webhooks.sse_manager import SSEManager
+from webhooks.dependencies.sse_manager import SSEManager
 
 LOGGER = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/sse",
+    tags=["items"],
+)
 
 sse_manager_global_instance = SSEManager()
 
@@ -21,8 +23,8 @@ def get_sse_manager():
 
 
 @router.get(
-    "/sse/{wallet_id}",
-    response_class=StreamingResponse,
+    "/{wallet_id}",
+    response_class=EventSourceResponse,
     summary="Subscribe to wallet ID server-side events",
 )
 @inject
@@ -64,8 +66,8 @@ async def sse_subscribe_wallet(
 
 
 @router.get(
-    "/sse/{wallet_id}/{topic}",
-    response_class=StreamingResponse,
+    "/{wallet_id}/{topic}",
+    response_class=EventSourceResponse,
     summary="Subscribe to topic and wallet ID server-side events",
 )
 @inject

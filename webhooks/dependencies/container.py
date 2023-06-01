@@ -1,6 +1,6 @@
 from dependency_injector import containers, providers
 
-from webhooks import redis, services
+from webhooks.dependencies import redis, service
 
 
 class Container(containers.DeclarativeContainer):
@@ -11,7 +11,7 @@ class Container(containers.DeclarativeContainer):
         password=config.redis_password,
     )
     service = providers.Factory(
-        services.Service,
+        service.Service,
         redis=redis_pool,
     )
 

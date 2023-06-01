@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Any, Generator
@@ -8,12 +7,10 @@ from typing import Any, Generator
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
 
-from webhooks.containers import Container, get_container
+from webhooks.dependencies.container import Container
+from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
-
-container = get_container()
-container.wire(modules=[sys.modules[__name__]])
 
 
 class SSEManager:
@@ -28,7 +25,10 @@ class SSEManager:
     @asynccontextmanager
     @inject
     async def sse_event_stream(
-        self, wallet_id: str, topic: str, service=Depends(Provide[Container.service])
+        self,
+        wallet_id: str,
+        topic: str,
+        service: Service = Depends(Provide[Container.service]),
     ) -> Generator[asyncio.Queue, Any, None]:
         """
         Create a SSE event stream for a topic using a provided service.
@@ -68,7 +68,7 @@ class SSEManager:
         event: str,
         wallet_id: str,
         topic: str,
-        service=Depends(Provide[Container.service]),
+        service: Service = Depends(Provide[Container.service]),
     ) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.

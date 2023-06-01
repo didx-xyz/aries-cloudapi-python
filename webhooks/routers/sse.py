@@ -45,21 +45,22 @@ async def sse_subscribe_wallet(
         service: The service instance for fetching undelivered messages.
     """
 
-    async def event_stream() -> Generator[str, Any, None]:
+    async def event_stream(duration=1) -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(
             wallet_id,
             WEBHOOK_TOPIC_ALL,
         ) as queue:
-            # The 'while True' loop is safe here because it is inside an async function. It
-            # doesn't block; it awaits for new events from the queue and yields them as they arrive.
-            while True:
+            start_time = time.time()
+            while time.time() - start_time < duration:
                 # If client closes connection, stop sending events
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break
                 try:
-                    event = await queue.get()
-                    yield f"data: {event}"
+                    event: TopicItem = queue.get_nowait()
+                    yield event.json()
+                except asyncio.QueueEmpty:
+                    time.sleep(0.2)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug("SSE event_stream closing with CancelledError")
@@ -90,16 +91,19 @@ async def sse_subscribe(
         service: The service instance for fetching undelivered messages.
     """
 
-    async def event_stream() -> Generator[str, Any, None]:
+    async def event_stream(duration=1) -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
-            while True:
+            start_time = time.time()
+            while time.time() - start_time < duration:
                 # If client closes connection, stop sending events
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break
                 try:
-                    event = await queue.get()
-                    yield f"data: {event}"
+                    event: TopicItem = queue.get_nowait()
+                    yield event.json()
+                except asyncio.QueueEmpty:
+                    time.sleep(0.2)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     break

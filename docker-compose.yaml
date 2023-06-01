@@ -134,7 +134,6 @@ services:
     ports:
       - 0.0.0.0:3010:3010
     volumes:
-      - ./shared_models/shared_models.py:/webhooks/shared_models.py
       - ./webhooks:/webhooks
     networks:
       - governance-multitenant

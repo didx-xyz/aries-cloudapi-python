@@ -50,7 +50,7 @@ def __get_verifier_by_version(
         raise ValueError(f"Unknown protocol version {version_candidate}")
 
 
-@router.get("/proofs/{proof_id}/credentials")
+@router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
 async def get_credentials_for_request(
     proof_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -78,7 +78,7 @@ async def get_credentials_for_request(
         raise e from e
 
 
-@router.get("/proofs")
+@router.get("/proofs", response_model=List[PresentationExchange])
 async def get_proof_records(
     aries_controller: AcaPyClient = Depends(agent_selector),
 ) -> List[PresentationExchange]:
@@ -103,7 +103,7 @@ async def get_proof_records(
         raise e from e
 
 
-@router.get("/proofs/{proof_id}")
+@router.get("/proofs/{proof_id}", response_model=PresentationExchange)
 async def get_proof_record(
     proof_id: str,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -156,7 +156,7 @@ async def delete_proof(
         raise e from e
 
 
-@router.post("/send-request")
+@router.post("/send-request", response_model=PresentationExchange)
 async def send_proof_request(
     proof_request: SendProofRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -190,7 +190,7 @@ async def send_proof_request(
         raise e from e
 
 
-@router.post("/create-request")
+@router.post("/create-request", response_model=PresentationExchange)
 async def create_proof_request(
     proof_request: CreateProofRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),
@@ -219,7 +219,7 @@ async def create_proof_request(
         raise e from e
 
 
-@router.post("/accept-request")
+@router.post("/accept-request", response_model=PresentationExchange)
 async def accept_proof_request(
     presentation: AcceptProofRequest,
     aries_controller: AcaPyClient = Depends(agent_selector),

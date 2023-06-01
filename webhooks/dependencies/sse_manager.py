@@ -4,10 +4,6 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Any, Generator
 
-from dependency_injector.wiring import Provide, inject
-from fastapi import Depends
-
-from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
@@ -18,17 +14,14 @@ class SSEManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self):
+    def __init__(self, service: Service):
+        self.service = service
         self.clients = defaultdict(lambda: defaultdict(list))
         self.lock = asyncio.Lock()  # Concurrency management
 
     @asynccontextmanager
-    @inject
     async def sse_event_stream(
-        self,
-        wallet_id: str,
-        topic: str,
-        service: Service = Depends(Provide[Container.service]),
+        self, wallet_id: str, topic: str
     ) -> Generator[asyncio.Queue, Any, None]:
         """
         Create a SSE event stream for a topic using a provided service.
@@ -38,11 +31,10 @@ class SSEManager:
             topic: The topic for which to create the event stream.
             service: The service to use for fetching undelivered messages.
         """
-
         queue = asyncio.Queue()
         # Re-deliver undelivered messages
         try:
-            undelivered_messages = await service.get_undelivered_messages(topic)
+            undelivered_messages = await self.service.get_undelivered_messages(topic)
         except Exception as e:
             LOGGER.error(
                 "Could not get undelivered messages for topic '%s': %r", topic, e
@@ -62,14 +54,8 @@ class SSEManager:
             async with self.lock:
                 self.clients[wallet_id][topic].remove(queue)
 
-    @inject
-    async def enqueue_sse_event(
-        self,
-        event: str,
-        wallet_id: str,
-        topic: str,
-        service: Service = Depends(Provide[Container.service]),
-    ) -> None:
+    @asynccontextmanager
+    async def enqueue_sse_event(self, event: str, wallet_id: str, topic: str) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 
@@ -98,7 +84,7 @@ class SSEManager:
                 await queue.put(event)
         else:
             try:
-                await service.store_undelivered_message(wallet_id, topic, event)
+                await self.service.store_undelivered_message(wallet_id, topic, event)
             except Exception as e:
                 LOGGER.error(
                     "Could not store undelivered message for wallet '%s', topic '%s': %r",

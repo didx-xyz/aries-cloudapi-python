@@ -17,6 +17,12 @@ from webhooks.main import app
 LOGGER = logging.getLogger(__name__)
 
 
+def init_container() -> Container:
+    container = get_container()
+    container.wire(modules=[__name__, sse_manager])
+    return container
+
+
 @pytest.fixture
 async def sse_manager_fixture() -> Generator[SSEManager, Any, None]:
     yield SSEManager()

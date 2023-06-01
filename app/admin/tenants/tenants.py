@@ -167,8 +167,6 @@ async def update_tenant(
     aries_controller: AcaPyClient = Depends(multitenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
-    wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
-
     await handle_tenant_update(
         admin_controller=aries_controller, tenant_id=tenant_id, update=body
     )

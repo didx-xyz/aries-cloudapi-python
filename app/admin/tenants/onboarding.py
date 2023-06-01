@@ -2,20 +2,19 @@ import logging
 from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
-from aries_cloudcontroller.model.create_wallet_token_request import \
-    CreateWalletTokenRequest
+from aries_cloudcontroller.model.create_wallet_token_request import (
+    CreateWalletTokenRequest,
+)
 from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
 from app.constants import ACAPY_ENDORSER_ALIAS
-from app.dependencies import (Role, get_governance_controller,
-                              get_tenant_controller)
+from app.dependencies import Role, get_governance_controller, get_tenant_controller
 from app.error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet
-from app.facades.trust_registry import (TrustRegistryRole, actor_by_id,
-                                        update_actor)
+from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.listener import Listener
 from app.util.did import qualified_did_sov
 
@@ -39,45 +38,43 @@ async def handle_tenant_update(
 ):
     # We retrieve the wallet to verify what has changed
     wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+    if not wallet:
+        raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
     # Get tenant from trust registry
     actor = await actor_by_id(wallet.wallet_id)
-
     if not actor:
-        raise HTTPException(
-            404, f"actor with id {tenant_id} not registered in trust registry"
+        raise HTTPException(409, "Holder tenants cannot be updated with new roles.")
+
+    updated_actor = actor.copy()
+
+    if update.name:
+        updated_actor["name"] = update.name
+
+    if update.roles:
+        # We only care about the added roles, as that's what needs the setup.
+        # Teardown is not required at the moment, besides from removing it from
+        # the trust registry
+        added_roles = list(set(update.roles) - set(actor["roles"]))
+
+        # We need to pose as the tenant to onboard for the specified role
+        token_response = await admin_controller.multitenancy.get_auth_token(
+            wallet_id=tenant_id, body=CreateWalletTokenRequest()
         )
 
-    if actor:
-        updated_actor = actor.copy()
+        onboard_result = await onboard_tenant(
+            name=updated_actor["name"],
+            roles=added_roles,
+            tenant_auth_token=token_response.token,
+            tenant_id=tenant_id,
+        )
 
-        if update.name:
-            updated_actor["name"] = update.name
+        # Remove duplicates from the role list
+        updated_actor["roles"] = list(set(update.roles))
+        updated_actor["did"] = onboard_result.did
+        updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
 
-        if update.roles:
-            # We only care about the added roles, as that's what needs the setup.
-            # Teardown is not required at the moment, besides from removing it from
-            # the trust registry
-            added_roles = list(set(update.roles) - set(actor["roles"]))
-
-            # We need to pose as the tenant to onboard for the specified role
-            token_response = await admin_controller.multitenancy.get_auth_token(
-                wallet_id=tenant_id, body=CreateWalletTokenRequest()
-            )
-
-            onboard_result = await onboard_tenant(
-                name=updated_actor["name"],
-                roles=added_roles,
-                tenant_auth_token=token_response.token,
-                tenant_id=tenant_id,
-            )
-
-            # Remove duplicates from the role list
-            updated_actor["roles"] = list(set(update.roles))
-            updated_actor["did"] = onboard_result.did
-            updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
-
-        await update_actor(updated_actor)
+    await update_actor(updated_actor)
 
 
 async def onboard_tenant(

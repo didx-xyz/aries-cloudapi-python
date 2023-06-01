@@ -278,6 +278,11 @@ async def remove_actor_by_id(actor_id: str) -> None:
     """
     remove_response = httpx.delete(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
 
+    if remove_response.status_code == 404:
+        logger.warning(
+            "Tried to remove actor with id `%s`, but not found in registry.", actor_id
+        )
+        return None
     if remove_response.is_error:
         raise TrustRegistryException(
             f"Error removing actor from trust registry: {remove_response.text}",

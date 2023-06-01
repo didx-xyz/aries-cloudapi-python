@@ -20,7 +20,7 @@ def create_app() -> FastAPI:
     )
     PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.1.0")
 
-    app = FastAPI(
+    application = FastAPI(
         title=OPENAPI_NAME,
         description="""
         Welcome to the OpenAPI interface for the Aries Cloud API Webhooks and Server-Sent Events (SSE).
@@ -31,10 +31,10 @@ def create_app() -> FastAPI:
         version=PROJECT_VERSION,
     )
 
-    app.include_router(webhooks.router)
-    app.include_router(sse.router)
+    application.include_router(webhooks.router)
+    application.include_router(sse.router)
 
-    return app
+    return application
 
 
 def init_container() -> Container:

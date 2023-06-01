@@ -34,15 +34,15 @@ class SSEManager:
         queue = asyncio.Queue()
         # Re-deliver undelivered messages
         try:
-            undelivered_messages = await self.service.get_undelivered_messages(topic)
+            webhooks_to_deliver = await self.service.get_all_for_topic_by_wallet_id(topic, wallet_id)
         except Exception as e:
             LOGGER.error(
                 "Could not get undelivered messages for topic '%s': %r", topic, e
             )
-            undelivered_messages = []
+            webhooks_to_deliver = []
             raise e
 
-        for message in undelivered_messages:
+        for message in webhooks_to_deliver:
             await queue.put(message)
 
         async with self.lock:

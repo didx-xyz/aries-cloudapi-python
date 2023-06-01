@@ -17,7 +17,7 @@ from shared_models import (
     RedisItem,
     TopicItem,
 )
-from webhooks.dependencies.models import (
+from webhooks.models import (
     to_connections_model,
     to_credential_hook_model,
     to_endorsement_model,

@@ -121,7 +121,7 @@ async def credential_exchange_id(
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
     records = response.json()
     assert len(records) > 0
@@ -154,7 +154,7 @@ async def issue_credential_to_alice(
 
     payload = await listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": faber_and_alice_connection["alice_connection_id"],
+            "connection_id": faber_and_alice_connection.alice_connection_id,
             "state": "offer-received",
         }
     )

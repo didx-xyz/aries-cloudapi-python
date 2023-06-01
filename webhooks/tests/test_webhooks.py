@@ -1,26 +1,25 @@
-from unittest import mock
-
 import pytest
 from httpx import AsyncClient
 
-from webhooks.main import app, container
-from webhooks.services import Service
-
-
-@pytest.fixture
-def client():
-    client = AsyncClient(app=app, base_url="http://test")
-    yield client
+from app.constants import WEBHOOKS_URL
+from app.tests.util.ecosystem_connections import BobAliceConnect
+from app.tests.util.webhooks import get_wallet_id_from_async_client
+from app.util.rich_async_client import RichAsyncClient
+from webhooks.main import app
 
 
 @pytest.mark.anyio
-async def test_index(client):
-    service_mock = mock.AsyncMock(spec=Service)
-    service_mock.add_topic_entry.return_value = None
-    service_mock.get_all_by_wallet.return_value = {"test": "Foo"}
+async def test_connection_webhooks(
+    alice_member_client: RichAsyncClient, bob_and_alice_connection: BobAliceConnect
+):
+    client = AsyncClient(app=app, base_url=WEBHOOKS_URL)
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
 
-    with container.service.override(service_mock):
-        response = await client.get("/test")
-
+    response = await client.get(f"/webhooks/{alice_wallet_id}")
     assert response.status_code == 200
-    assert response.json() == {"test": "Foo"}
+
+    response_text = response.text
+    assert '"topic":"connections"' in response_text
+    assert f'"connection_id":"{alice_connection_id}"' in response_text
+    assert f'"wallet_id":"{alice_wallet_id}"' in response_text

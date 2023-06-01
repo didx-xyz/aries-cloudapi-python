@@ -47,36 +47,35 @@ async def handle_tenant_update(
             404, f"actor with id {tenant_id} not registered in trust registry"
         )
 
-    if actor:
-        updated_actor = actor.copy()
+    updated_actor = actor.copy()
 
-        if update.name:
-            updated_actor["name"] = update.name
+    if update.name:
+        updated_actor["name"] = update.name
 
-        if update.roles:
-            # We only care about the added roles, as that's what needs the setup.
-            # Teardown is not required at the moment, besides from removing it from
-            # the trust registry
-            added_roles = list(set(update.roles) - set(actor["roles"]))
+    if update.roles:
+        # We only care about the added roles, as that's what needs the setup.
+        # Teardown is not required at the moment, besides from removing it from
+        # the trust registry
+        added_roles = list(set(update.roles) - set(actor["roles"]))
 
-            # We need to pose as the tenant to onboard for the specified role
-            token_response = await admin_controller.multitenancy.get_auth_token(
-                wallet_id=tenant_id, body=CreateWalletTokenRequest()
-            )
+        # We need to pose as the tenant to onboard for the specified role
+        token_response = await admin_controller.multitenancy.get_auth_token(
+            wallet_id=tenant_id, body=CreateWalletTokenRequest()
+        )
 
-            onboard_result = await onboard_tenant(
-                name=updated_actor["name"],
-                roles=added_roles,
-                tenant_auth_token=token_response.token,
-                tenant_id=tenant_id,
-            )
+        onboard_result = await onboard_tenant(
+            name=updated_actor["name"],
+            roles=added_roles,
+            tenant_auth_token=token_response.token,
+            tenant_id=tenant_id,
+        )
 
-            # Remove duplicates from the role list
-            updated_actor["roles"] = list(set(update.roles))
-            updated_actor["did"] = onboard_result.did
-            updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
+        # Remove duplicates from the role list
+        updated_actor["roles"] = list(set(update.roles))
+        updated_actor["did"] = onboard_result.did
+        updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
 
-        await update_actor(updated_actor)
+    await update_actor(updated_actor)
 
 
 async def onboard_tenant(

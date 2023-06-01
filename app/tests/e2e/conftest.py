@@ -33,7 +33,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
     did = response.did
 
     gov_id = "test-governance-id"
-    if not actor_by_id(gov_id):
+    if not await actor_by_id(gov_id):
         await register_actor(
             Actor(
                 id=gov_id,

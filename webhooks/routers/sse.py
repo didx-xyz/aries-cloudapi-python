@@ -14,7 +14,7 @@ LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/sse",
-    tags=["items"],
+    tags=["sse"],
 )
 
 

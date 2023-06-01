@@ -30,49 +30,30 @@ async def get_sse_manager():
 
 
 @pytest.mark.anyio
-async def test_enqueue_sse_event(sse_manager_fixture):
-    mock_service = AsyncMock()
-    mock_service.get_undelivered_messages.return_value = []
-    topic = "test-topic"
-    wallet_id = "test-wallet"
-    event = "test-message"
+async def test_sse_subscribe_wallet(
+    alice_member_client: RichAsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+    get_sse_manager: SSEManager,
+):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
 
-    async with sse_manager_fixture.sse_event_stream(
-        wallet_id, topic, mock_service
-    ) as queue:
-        await sse_manager_fixture.enqueue_sse_event(
-            event, wallet_id, topic, mock_service
-        )
-        message = await queue.get()
-        assert message == event
+    async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
+        response = await client.get(f"/sse/{alice_wallet_id}")
+        assert response.status_code == 200
+        LOGGER.warning("response: %s", response.text)
 
+        # Create an async function to check the response
+        async def check_response(response):
+            results = []
+            async for data in response.text.split("\n"):
+                if data["id"] != "[]":
+                    results.append(data)
+                    break
+            return results
 
-class TestContainer(DeclarativeContainer):
-    service = Factory(Service)
-    sse_manager = Factory(get_sse_manager)
-
-
-app = FastAPI()
-app.container = TestContainer()
-app.dependency_overrides[SSEManager] = TestContainer.sse_manager
-app.dependency_overrides[Service] = TestContainer.service
-
-app.include_router(router)
-
-
-@pytest.mark.anyio
-async def test_sse_subscribe(alice_member_client):
-    async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as async_client:
-        # get the wallet_id of the faber_client
-        wallet_id = get_wallet_id_from_async_client(alice_member_client)
-        topic = WEBHOOK_TOPIC_ALL
-
-        async with async_client.stream("GET", f"/sse/{topic}/{wallet_id}") as response:
-            LOGGER.warning("IN EVENT")
-            event = await response.aiter_text().__anext__()
-            LOGGER.warning("GOT EVENT %s:", event)
-            assert wallet_id in event
-
-            # if you want to test the caching functionality
-            # you can trigger another event here and make sure
-            # the second event also shows up in the stream.
+        try:
+            # Use asyncio.wait_for to set a timeout
+            result = await asyncio.wait_for(check_response(response), timeout=10)
+            assert alice_wallet_id in result[0]
+        except TimeoutError:
+            pytest.fail("Test timed out before an event was received.")

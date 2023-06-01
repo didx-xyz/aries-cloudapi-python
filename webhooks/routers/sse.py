@@ -1,11 +1,13 @@
 import asyncio
 import logging
 
-from dependency_injector.wiring import inject
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
 from shared_models import WEBHOOK_TOPIC_ALL
+from webhooks.dependencies.container import Container
+from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SSEManager
 
 LOGGER = logging.getLogger(__name__)
@@ -15,11 +17,10 @@ router = APIRouter(
     tags=["items"],
 )
 
-sse_manager_global_instance = SSEManager()
 
-
-def get_sse_manager():
-    return sse_manager_global_instance
+@inject
+async def get_sse_manager(service: Service = Depends(Provide[Container.service])):
+    return SSEManager(service)
 
 
 @router.get(

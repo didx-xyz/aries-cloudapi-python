@@ -32,18 +32,22 @@ class SSEManager:
             service: The service to use for fetching undelivered messages.
         """
         queue = asyncio.Queue()
-        # Re-deliver undelivered messages
         try:
-            webhooks_to_deliver = await self.service.get_all_for_topic_by_wallet_id(topic, wallet_id)
+            events_to_deliver = await self.service.get_all_for_topic_by_wallet_id(
+                topic, wallet_id
+            )
         except Exception as e:
             LOGGER.error(
-                "Could not get undelivered messages for topic '%s': %r", topic, e
+                "Could not get events for topic '%s' and wallet_id '%s': %r",
+                topic,
+                wallet_id,
+                e,
             )
-            webhooks_to_deliver = []
+            events_to_deliver = []
             raise e
 
-        for message in webhooks_to_deliver:
-            await queue.put(message)
+        for event in events_to_deliver:
+            await queue.put(event)
 
         async with self.lock:
             self.clients[wallet_id][topic].append(queue)

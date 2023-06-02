@@ -1,4 +1,4 @@
-from shared.cloud_api_error import CloudApiException  # pylint: disable=unused-import
+from shared.cloud_api_error import CloudApiException  # noqa: unused-import
 from shared.models.conversion import *  # pylint: disable=wildcard-import
 from shared.models.protocol import *
 from shared.models.topics import *

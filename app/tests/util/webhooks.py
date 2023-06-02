@@ -55,8 +55,7 @@ def check_webhook_state(
         hooks_response = httpx.get(f"{WEBHOOKS_URL}/webhooks/{topic}/{wallet_id}")
 
         if hooks_response.is_error:
-            raise Exception(
-                f"Error retrieving webhooks: {hooks_response.text}")
+            raise Exception(f"Error retrieving webhooks: {hooks_response.text}")
 
         hooks = hooks_response.json()
 
@@ -73,11 +72,12 @@ def check_webhook_state(
                 return True
 
         time.sleep(poll_interval)
-    raise Exception(
-        f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
+    raise Exception(f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
 
 
-def get_hooks_per_topic_per_wallet(client: RichAsyncClient, topic: CloudApiTopics) -> List:
+def get_hooks_per_topic_per_wallet(
+    client: RichAsyncClient, topic: CloudApiTopics
+) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
         hooks = (httpx.get(f"{WEBHOOKS_URL}/webhooks/{topic}/{wallet_id}")).json()

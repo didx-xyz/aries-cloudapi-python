@@ -69,6 +69,6 @@ jobs:
       #     echo done
       #   env:
       #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      # - name: Tear down test harness
-      #   run: |
-      #     ./manage down || true
+      - name: Tear down test harness
+        run: |
+          ./manage down || true

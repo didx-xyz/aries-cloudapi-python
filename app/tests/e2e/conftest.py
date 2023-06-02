@@ -38,7 +38,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
         await register_actor(
             Actor(
                 id=gov_id,
-                name="test-governance-actor",
+                name=f"test-governance-actor-{random_string(3)}",
                 roles=["issuer", "verifier"],
                 did=f"did:sov:{did}",
             )

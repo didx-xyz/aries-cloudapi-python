@@ -12,11 +12,11 @@ from pydantic.networks import AnyHttpUrl
 from app.admin.tenants.models import UpdateTenantRequest
 from app.constants import ACAPY_ENDORSER_ALIAS
 from app.dependencies import Role, get_governance_controller, get_tenant_controller
-from app.error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.listener import Listener
 from app.util.did import qualified_did_sov
+from shared import CloudApiException
 
 logger = logging.getLogger(__name__)
 

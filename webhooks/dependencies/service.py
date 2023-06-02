@@ -8,7 +8,7 @@ from aioredis import Redis
 from aries_cloudcontroller.model import OobRecord
 from pydantic import ValidationError
 
-from shared_models import (
+from shared import (
     BasicMessage,
     Connection,
     CredentialExchange,

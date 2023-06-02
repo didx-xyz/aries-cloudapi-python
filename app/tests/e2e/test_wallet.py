@@ -12,7 +12,7 @@ from app.generic.wallet.wallet import (
     set_did_endpoint,
 )
 from app.tests.util.ledger import create_public_did, post_to_ledger
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 WALLET_BASE_PATH = router.prefix
 

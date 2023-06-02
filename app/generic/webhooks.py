@@ -4,11 +4,8 @@ from typing import Any, List
 from fastapi import APIRouter, Depends
 
 from app.dependencies import AcaPyAuthVerified, acapy_auth_verified
-from app.facades.webhooks import (
-    get_hooks_per_wallet,
-    get_hooks_per_topic_per_wallet,
-)
-from shared_models import TopicItem, CloudApiTopics
+from app.facades.webhooks import get_hooks_per_topic_per_wallet, get_hooks_per_wallet
+from shared import CloudApiTopics, TopicItem
 
 logger = logging.getLogger(__name__)
 

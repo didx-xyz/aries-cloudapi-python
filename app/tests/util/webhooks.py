@@ -7,8 +7,7 @@ import httpx
 from pydantic import BaseModel
 
 from app.tests.util.constants import WEBHOOKS_URL
-from app.util.rich_async_client import RichAsyncClient
-from shared_models import CloudApiTopics
+from shared import CloudApiTopics, RichAsyncClient
 
 
 class FilterMap(BaseModel):

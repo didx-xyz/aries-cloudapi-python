@@ -13,7 +13,6 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
-    PresentProofProtocolVersion,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -21,7 +20,7 @@ from app.generic.verifier.verifier_utils import (
     assert_valid_prover,
     assert_valid_verifier,
 )
-from shared_models import PresentationExchange
+from shared import PresentationExchange, PresentProofProtocolVersion
 
 logger = logging.getLogger(__name__)
 

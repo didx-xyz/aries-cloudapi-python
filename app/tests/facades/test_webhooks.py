@@ -1,8 +1,9 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 import app.facades.webhooks as whf
-from shared_models import Connection
+from shared import Connection
 
 conn_record = Connection(
     accept="auto",
@@ -18,7 +19,6 @@ conn_record = Connection(
 
 @pytest.mark.anyio
 async def test_get_hooks_per_topic_per_wallet():
-
     with patch.object(
         whf, "get_hooks_per_topic_per_wallet"
     ) as mock_hook_by_topic_wallet:

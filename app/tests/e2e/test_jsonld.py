@@ -1,11 +1,11 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
-from app.error.cloud_api_error import CloudApiException
 
+from app.error.cloud_api_error import CloudApiException
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.e2e.test_fixtures import *
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",

@@ -3,7 +3,7 @@ from typing import List
 from httpx import HTTPError, get
 
 from app.constants import WEBHOOKS_URL
-from shared_models import CloudApiTopics
+from shared import CloudApiTopics
 
 
 def get_hooks_per_topic_per_wallet(wallet_id: str, topic: CloudApiTopics) -> List:

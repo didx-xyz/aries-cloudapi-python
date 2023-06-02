@@ -13,7 +13,7 @@ from app.generic.definitions import (
 )
 from app.tests.util.string import random_string
 from app.tests.util.trust_registry import register_issuer
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio

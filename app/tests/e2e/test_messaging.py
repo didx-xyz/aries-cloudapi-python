@@ -3,7 +3,7 @@ from assertpy.assertpy import assert_that
 
 from app.generic.messaging import Message, TrustPingMsg
 from app.tests.util.ecosystem_connections import BobAliceConnect
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio

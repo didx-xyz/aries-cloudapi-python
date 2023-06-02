@@ -6,8 +6,6 @@ from aiohttp import ClientResponseError
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-# TypedDict from typing itself has some missing features for pydantic only available in 3.9
-# https://pydantic-docs.helpmanual.io/usage/types/#typeddict
 from typing_extensions import TypedDict
 
 from app.dependencies import agent_selector
@@ -21,7 +19,7 @@ from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.indy import did_from_credential_definition_id
-from shared_models import CredentialExchange, IssueCredentialProtocolVersion
+from shared import CredentialExchange, IssueCredentialProtocolVersion
 
 logger = logging.getLogger(__name__)
 

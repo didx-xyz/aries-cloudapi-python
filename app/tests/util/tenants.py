@@ -1,7 +1,6 @@
 from app.admin.tenants.models import CreateTenantRequest, CreateTenantResponse
 from app.tests.util.string import random_string
-from app.util.rich_async_client import RichAsyncClient
-from app.util.rich_parsing import parse_with_error_handling
+from shared import RichAsyncClient, parse_with_error_handling
 
 
 def append_random_string(name):

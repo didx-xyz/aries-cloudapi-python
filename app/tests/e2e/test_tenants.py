@@ -11,7 +11,7 @@ from app.role import Role
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 BASE_PATH = tenants.router.prefix
 

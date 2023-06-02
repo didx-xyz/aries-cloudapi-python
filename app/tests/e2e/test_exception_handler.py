@@ -3,6 +3,7 @@ from httpx import AsyncClient
 
 from app.tests.util.constants import CLOUDAPI_URL
 
+
 @pytest.mark.anyio
 async def test_error_handler():
     async with AsyncClient(base_url=CLOUDAPI_URL) as client:

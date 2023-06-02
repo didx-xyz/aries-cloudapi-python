@@ -3,9 +3,10 @@ from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
 
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
-from app.tests.e2e.test_fixtures import *
+from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
 from shared.cloud_api_error import CloudApiException
+from shared.models.topics.base import CredentialExchange
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
@@ -39,7 +40,7 @@ signed_doc = {
             "verificationMethod": "did:key:did:key:z6Mkq8pevWDaxgsD2DZC11JUnnjGdrLmHSh9P7waX3HR4Zwz#did:key:z6Mkq8pevWDaxgsD2DZC11JUnnjGdrLmHSh9P7waX3HR4Zwz",
             "proofPurpose": "assertionMethod",
             "created": "2022-11-24T08:20:11Z",
-            "jws": "eyJhbGciOiAiRWREU0EiLCAiYjY0IjogZmFsc2UsICJjcml0IjogWyJiNjQiXX0..Rdpq5uOCJInEMD-5G7mXalu0NiJHSgIfE5ISE7Ed451wJmkpFHR50K9Sb3nEo0P8wpXzrUQRCETqImTvqsZNDA",
+            "jws": "eyJhbGciOiAiRWREU0EiLCAiYjY0IjogZ..JHSgIfE5ISE7Ed451wJmkpFHR50K9Sb3nEo0P8wpXzrUQRCETqImTvqsZNDA",
         },
     },
     "verkey": "BgZcLFy9d9NjuiiVKSLdwhBGpH4usZSnh72egmKQ9MAc",

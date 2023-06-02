@@ -1,6 +1,7 @@
 import mockito
 import pytest
 
+# flake8: noqa
 # pylint: disable=unused-import
 from app.tests.util.ecosystem_connections import (
     acme_and_alice_connection,

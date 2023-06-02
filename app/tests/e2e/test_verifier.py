@@ -209,10 +209,12 @@ async def test_accept_proof_request_oob_v1(
             "thread_id": thread_id,
         }
     )
+    assert alice_presentation_sent
 
     bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
+    assert bob_presentation_received
 
     alice_proofs_listener.stop()
     bob_proofs_listener.stop()
@@ -306,10 +308,12 @@ async def test_accept_proof_request_oob_v2(
             "thread_id": thread_id,
         }
     )
+    assert alice_presentation_sent
 
     bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
+    assert bob_presentation_received
 
     alice_proofs_listener.stop()
     bob_proofs_listener.stop()
@@ -619,7 +623,7 @@ async def test_delete_proof(
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() == None
+    assert response.json() is None
 
     # V2
     proof_req_res = await acme_client.post(
@@ -636,7 +640,7 @@ async def test_delete_proof(
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() == None
+    assert response.json() is None
 
 
 @pytest.mark.anyio

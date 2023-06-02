@@ -491,7 +491,7 @@ async def test_revoke_credential(
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
     response = await faber_client.post(
-        f"/generic/issuer/credentials/revoke",
+        "/generic/issuer/credentials/revoke",
         json={
             "credential_definition_id": credential_definition_id_revocable,
             "credential_exchange_id": cred_id,

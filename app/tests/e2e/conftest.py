@@ -10,14 +10,12 @@ from app.facades.trust_registry import (
 )
 
 # pylint: disable=unused-import
-from app.tests.e2e.test_fixtures import (
-    credential_definition_id,
-    credential_definition_id_revocable,
-    credential_exchange_id,
-    issue_credential_to_alice,
-    schema_definition,
-    schema_definition_alt,
-)
+from app.tests.e2e.test_fixtures import credential_definition_id  # noqa: F401
+from app.tests.e2e.test_fixtures import credential_definition_id_revocable  # noqa: F401
+from app.tests.e2e.test_fixtures import credential_exchange_id  # noqa: F401
+from app.tests.e2e.test_fixtures import issue_credential_to_alice  # noqa: F401
+from app.tests.e2e.test_fixtures import schema_definition  # noqa: F401
+from app.tests.e2e.test_fixtures import schema_definition_alt  # noqa: F401
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import random_string
 from shared.cloud_api_error import CloudApiException

@@ -272,6 +272,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
+        assert public_did
 
         _connections = (await tenant_controller.connection.get_connections()).results
 

@@ -44,7 +44,7 @@ def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "verified": "done",
     }
 
-    if not state or not state in translation_dict:
+    if not state or state not in translation_dict:
         return None
 
     return translation_dict[state]

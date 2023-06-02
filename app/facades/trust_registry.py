@@ -1,8 +1,10 @@
 import logging
 from typing import List, Literal, Optional
+
 import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
+
 from app.constants import TRUST_REGISTRY_URL
 
 logger = logging.getLogger(__name__)
@@ -59,7 +61,7 @@ async def assert_valid_issuer(did: str, schema_id: str):
         raise TrustRegistryException(f"Did {did} not registered in the trust registry")
 
     actor_id = actor["id"]
-    if not "issuer" in actor["roles"]:
+    if "issuer" not in actor["roles"]:
         raise TrustRegistryException(
             f"Actor {actor_id} does not have required role 'issuer'"
         )

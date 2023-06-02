@@ -82,7 +82,7 @@ async def assert_valid_verifier(
         public_did = await assert_public_did(aries_controller=aries_controller)
     except Exception:
         # CASE: Agent has NO public DID
-        ## check via connection -> invitation key
+        # check via connection -> invitation key
         connection_record = await get_connection_record(
             aries_controller=aries_controller,
             connection_id=proof_request.connection_id,

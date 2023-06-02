@@ -1,5 +1,6 @@
-from shared.cloud_api_error import CloudApiException  # noqa: unused-import
-from shared.models.conversion import *  # pylint: disable=wildcard-import
+# flake8: noqa
+from shared.cloud_api_error import CloudApiException
+from shared.models.conversion import *
 from shared.models.protocol import *
 from shared.models.topics import *
 from shared.models.topics.base import *

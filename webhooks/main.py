@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 def create_app() -> FastAPI:
     container = get_container()
-    container.wire(modules=[__name__, sse, sse_manager, webhooks])
+    container.wire(modules=[__name__, receive_events, sse, sse_manager, webhooks])
 
     OPENAPI_NAME = os.getenv(
         "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"

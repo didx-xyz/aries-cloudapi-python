@@ -3,7 +3,6 @@ from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
 
-from app.error.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import (
     AcceptProofRequest,
@@ -17,6 +16,7 @@ from app.tests.verifier.utils import (
     v20_presentation_exchange_records,
 )
 from shared import PresentationExchange
+from shared.cloud_api_error import CloudApiException
 
 
 @pytest.mark.anyio

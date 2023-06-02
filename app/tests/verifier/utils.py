@@ -30,7 +30,6 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from mockito import mock, when
 
-from app.error.cloud_api_error import CloudApiException
 from app.facades.trust_registry import Actor
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
@@ -46,6 +45,7 @@ from app.generic.verifier.verifier_utils import (
 )
 from app.tests.util.mock import to_async
 from shared import PresentationExchange, PresentProofProtocolVersion
+from shared.cloud_api_error import CloudApiException
 
 sample_actor = Actor(
     id="abcde",
@@ -636,7 +636,9 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         side_effect=Exception("Error"),
-    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor):
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor
+    ):
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
@@ -653,7 +655,9 @@ async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClie
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         return_value="did:sov:something",
-    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor):
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor
+    ):
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
@@ -680,7 +684,9 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         side_effect=Exception("Error"),
-    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor):
+    ), patch(
+        "app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor
+    ):
         with pytest.raises(CloudApiException, match="Connection has no invitation key"):
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,

@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
-from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import get_public_did
 from app.facades.trust_registry import (
     Actor,
@@ -21,6 +20,7 @@ from app.tests.e2e.test_fixtures import (
 )
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import random_string
+from shared.cloud_api_error import CloudApiException
 
 
 # Governace should be provisioned with public did and registered for all e2e tests

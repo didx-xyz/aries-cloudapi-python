@@ -1,10 +1,10 @@
 import pytest
 from assertpy import assert_that
 
-from app.error.cloud_api_error import CloudApiException
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
+from shared.cloud_api_error import CloudApiException
 
 
 @pytest.mark.anyio

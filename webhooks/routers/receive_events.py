@@ -7,13 +7,11 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from shared import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/events")
 
 endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")

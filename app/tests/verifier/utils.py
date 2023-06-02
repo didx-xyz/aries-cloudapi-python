@@ -47,7 +47,7 @@ from app.generic.verifier.verifier_utils import (
 from app.tests.util.mock import to_async
 from shared import PresentationExchange, PresentProofProtocolVersion
 
-actor = Actor(
+sample_actor = Actor(
     id="abcde",
     name="Flint",
     roles=["verifier"],
@@ -365,7 +365,7 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
     ).thenReturn(to_async(conn_record))
 
     with patch(
-        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+        "app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor
     ), patch(
         "app.generic.verifier.verifier_utils.get_schema_ids",
         return_value=["did:schema:123"],
@@ -428,7 +428,7 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
     ).thenReturn(to_async(conn_record))
 
     with patch(
-        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+        "app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor
     ), patch(
         "app.generic.verifier.verifier_utils.get_schema_ids",
         return_value=["did:schema:123"],
@@ -566,7 +566,7 @@ async def test_assert_valid_prover_x_invalid_schemas(
     ).thenReturn(to_async(conn_record))
 
     with patch(
-        "app.generic.verifier.verifier_utils.get_actor", return_value=actor
+        "app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor
     ), patch(
         "app.generic.verifier.verifier_utils.get_schema_ids",
         return_value=["did:schema:456"],
@@ -636,7 +636,7 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         side_effect=Exception("Error"),
-    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=actor):
+    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor):
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
@@ -653,7 +653,7 @@ async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClie
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         return_value="did:sov:something",
-    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=actor):
+    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor):
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
             proof_request=SendProofRequest(
@@ -680,7 +680,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
     with patch(
         "app.generic.verifier.verifier_utils.assert_public_did",
         side_effect=Exception("Error"),
-    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=actor):
+    ), patch("app.generic.verifier.verifier_utils.get_actor", return_value=sample_actor):
         with pytest.raises(CloudApiException, match="Connection has no invitation key"):
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,

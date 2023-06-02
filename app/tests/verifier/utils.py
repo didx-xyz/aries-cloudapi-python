@@ -316,7 +316,7 @@ async def test_get_actor():
         with pytest.raises(
             CloudApiException, match=f"No actor with DID {actor['did']}"
         ):
-            await get_actor(did=actor["did"]) == actor
+            await get_actor(did=actor["did"])
 
 
 @pytest.mark.anyio

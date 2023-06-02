@@ -7,7 +7,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_websocket_pubsub import PubSubClient
 
 from app.constants import WEBHOOKS_URL
-from shared_models import WEBHOOK_TOPIC_ALL
+from shared import WEBHOOK_TOPIC_ALL
 
 logger = logging.getLogger(__name__)
 

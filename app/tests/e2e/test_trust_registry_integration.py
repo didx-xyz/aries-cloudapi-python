@@ -10,7 +10,7 @@ from app.tests.util.tenants import (
     create_verifier_tenant,
     delete_tenant,
 )
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio

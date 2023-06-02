@@ -10,7 +10,7 @@ from app.tests.util.constants import (
     TENANT_ACAPY_API_KEY,
     TENANT_FASTAPI_ENDPOINT,
 )
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 TEST_CLIENT_TIMEOUT = 300
 MAX_NUM_RETRIES = 3

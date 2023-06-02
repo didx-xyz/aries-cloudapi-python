@@ -1,6 +1,5 @@
 import pytest
-from aries_cloudcontroller import (AcaPyClient, ConnRecord, IndyCredInfo,
-                                   IndyCredPrecis)
+from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCredPrecis
 from mockito import verify, when
 
 import app.generic.verifier.verifier as test_module
@@ -8,11 +7,9 @@ from app.facades.trust_registry import Actor
 from app.generic.verifier import verifier_utils
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
-from app.generic.verifier.models import PresentProofProtocolVersion
 from app.tests.util.mock import to_async
-from app.tests.verifier.test_verifier_utils import (indy_pres_spec,
-                                                    indy_proof_request)
-from shared_models import PresentationExchange
+from app.tests.verifier.utils import indy_pres_spec, indy_proof_request
+from shared import PresentationExchange, PresentProofProtocolVersion
 
 presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",
@@ -330,7 +327,6 @@ async def test_get_proof_records(mock_agent_controller: AcaPyClient):
     ).thenReturn(
         to_async([presentation_exchange_record_2])
     ):
-
         result = await test_module.get_proof_records(
             aries_controller=mock_agent_controller
         )

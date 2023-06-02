@@ -3,18 +3,21 @@ from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
 from app.dependencies import acapy_auth, acapy_auth_verified
-from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
-                                     CredentialSchema,
-                                     create_credential_definition,
-                                     create_schema)
+from app.generic.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialSchema,
+    create_credential_definition,
+    create_schema,
+)
 from app.generic.issuer.issuer import router
 from app.listener import Listener
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
-from app.util.rich_async_client import RichAsyncClient
-from shared_models.shared_models import CredentialExchange
+from shared import RichAsyncClient
+from shared.models.topics import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 

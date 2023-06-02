@@ -1,38 +1,51 @@
 from unittest.mock import patch
 
 import pytest
-from aries_cloudcontroller import (AcaPyClient, AttachDecorator,
-                                   AttachDecoratorData, ConnRecord,
-                                   IndyCredInfo, IndyPresAttrSpec,
-                                   IndyPresPredSpec, IndyPresPreview,
-                                   IndyPresSpec, IndyProof, IndyProofProof,
-                                   IndyProofReqAttrSpec, IndyProofRequest,
-                                   IndyProofRequestedProof,
-                                   IndyProofRequestNonRevoked,
-                                   IndyRequestedCredsRequestedAttr,
-                                   IndyRequestedCredsRequestedPred,
-                                   V10PresentationExchange,
-                                   V10PresentationProposalRequest, V20Pres,
-                                   V20PresExRecord, V20PresExRecordByFormat,
-                                   V20PresFormat, V20PresProposal)
+from aries_cloudcontroller import (
+    AcaPyClient,
+    AttachDecorator,
+    AttachDecoratorData,
+    ConnRecord,
+    IndyCredInfo,
+    IndyPresAttrSpec,
+    IndyPresPredSpec,
+    IndyPresPreview,
+    IndyPresSpec,
+    IndyProof,
+    IndyProofProof,
+    IndyProofReqAttrSpec,
+    IndyProofRequest,
+    IndyProofRequestedProof,
+    IndyProofRequestNonRevoked,
+    IndyRequestedCredsRequestedAttr,
+    IndyRequestedCredsRequestedPred,
+    V10PresentationExchange,
+    V10PresentationProposalRequest,
+    V20Pres,
+    V20PresExRecord,
+    V20PresExRecordByFormat,
+    V20PresFormat,
+    V20PresProposal,
+)
 from assertpy import assert_that
 from mockito import mock, when
 
 from app.error.cloud_api_error import CloudApiException
 from app.facades.trust_registry import Actor
 from app.generic.verifier.facades.acapy_verifier import Verifier
-from app.generic.verifier.models import (AcceptProofRequest,
-                                         PresentProofProtocolVersion,
-                                         SendProofRequest)
-from app.generic.verifier.verifier_utils import (are_valid_schemas,
-                                                 assert_valid_prover,
-                                                 assert_valid_verifier,
-                                                 ed25519_verkey_to_did_key,
-                                                 get_actor,
-                                                 get_connection_record,
-                                                 get_schema_ids, is_verifier)
+from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
+from app.generic.verifier.verifier_utils import (
+    are_valid_schemas,
+    assert_valid_prover,
+    assert_valid_verifier,
+    ed25519_verkey_to_did_key,
+    get_actor,
+    get_connection_record,
+    get_schema_ids,
+    is_verifier,
+)
 from app.tests.util.mock import to_async
-from shared_models import PresentationExchange
+from shared import PresentationExchange, PresentProofProtocolVersion
 
 actor = Actor(
     id="abcde",

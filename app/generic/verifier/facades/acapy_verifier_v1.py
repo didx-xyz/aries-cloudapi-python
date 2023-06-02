@@ -10,8 +10,8 @@ from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (AcceptProofRequest,
                                          CreateProofRequest,
                                          RejectProofRequest, SendProofRequest)
-from shared_models import PresentationExchange, pres_id_no_version
-from shared_models import presentation_record_to_model as record_to_model
+from shared import PresentationExchange, pres_id_no_version
+from shared import presentation_record_to_model as record_to_model
 
 logger = logging.getLogger(__name__)
 

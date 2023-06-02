@@ -12,7 +12,7 @@ from app.listener import Listener
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import base64_to_json
 from app.tests.util.webhooks import check_webhook_state
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @dataclass

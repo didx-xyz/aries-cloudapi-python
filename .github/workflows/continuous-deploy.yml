@@ -224,7 +224,7 @@ jobs:
         run: |
           mkdir -p helm/Chart/assets
           cd helm/Chart/assets
-          ln -s ../../../shared_models .
+          ln -s ../../../shared .
 
       - name: Diff upgrade
         run: |

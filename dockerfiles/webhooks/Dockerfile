@@ -1,7 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
 COPY webhooks /webhooks
-COPY shared_models /shared_models
+COPY shared /shared
 
 WORKDIR /webhooks
 

@@ -12,6 +12,7 @@ from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
 
+router = APIRouter()
 
 endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")

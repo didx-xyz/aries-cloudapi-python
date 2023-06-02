@@ -10,8 +10,7 @@ from app.listener import Listener
 from app.tests.e2e.test_fixtures import CREDENTIALS_BASE_PATH
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
-from shared import RichAsyncClient
-from shared.models.topics import CredentialExchange
+from shared import CredentialExchange, RichAsyncClient
 
 # This import are important for tests to run!
 

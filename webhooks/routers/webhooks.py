@@ -10,7 +10,7 @@ from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/webhooks")
 
 
 # Routes are duplicated with trailing slash to avoid unnecessary redirects

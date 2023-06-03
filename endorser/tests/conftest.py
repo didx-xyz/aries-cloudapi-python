@@ -1,5 +1,6 @@
 import pytest
 
+# pylint: disable=unused-import
 from tests.fixtures import mock_agent_controller  # noqa: F401
 
 

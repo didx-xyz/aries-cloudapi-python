@@ -1,10 +1,9 @@
 import pytest
 from httpx import AsyncClient
 
-from app.constants import WEBHOOKS_URL
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
-from shared import RichAsyncClient
+from shared import WEBHOOKS_URL, RichAsyncClient
 from webhooks.main import app
 
 

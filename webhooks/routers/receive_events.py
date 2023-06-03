@@ -37,7 +37,7 @@ async def topic_root(
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
-        wallet_id = "admin"
+        wallet_id = "admin" # todo: defaults to admin ...
 
     # We need to map from the acapy webhook topic to a unified cloud api topic. If the topic doesn't exist in the topic
     # mapping it means we don't support the webhook event yet and we will ignore it for now. This allows us to add more

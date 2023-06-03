@@ -5,7 +5,7 @@ import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
-from app.constants import TRUST_REGISTRY_URL
+from shared.constants import TRUST_REGISTRY_URL
 
 logger = logging.getLogger(__name__)
 

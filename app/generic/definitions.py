@@ -17,7 +17,6 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
     create_revocation_registry,
@@ -25,6 +24,7 @@ from app.facades.revocation_registry import (
 )
 from app.listener import Listener
 from app.role import Role
+from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from shared.cloud_api_error import CloudApiException
 from shared.dependencies.auth import (
     AcaPyAuthVerified,

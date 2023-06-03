@@ -1,16 +1,24 @@
-import fastapi
 from contextlib import asynccontextmanager
 
+import fastapi
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends
 from httpx import AsyncClient
 
-import app.dependencies as dependencies
-from app.dependencies import Role, AcaPyAuth
 from app.main import app
-
-from app.tests.util.constants import TENANT_ACAPY_API_KEY, GOVERNANCE_ACAPY_API_KEY, CLOUDAPI_URL
+from app.tests.util.constants import (
+    CLOUDAPI_URL,
+    GOVERNANCE_ACAPY_API_KEY,
+    TENANT_ACAPY_API_KEY,
+)
+from shared.dependencies.auth import (
+    AcaPyAuth,
+    Role,
+    admin_agent_selector,
+    agent_role,
+    agent_selector,
+)
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"

@@ -8,7 +8,6 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
-from app.dependencies import agent_selector
 from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
@@ -20,6 +19,7 @@ from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.indy import did_from_credential_definition_id
 from shared import CredentialExchange, IssueCredentialProtocolVersion
 from shared.cloud_api_error import CloudApiException
+from shared.dependencies.auth import agent_selector
 
 logger = logging.getLogger(__name__)
 

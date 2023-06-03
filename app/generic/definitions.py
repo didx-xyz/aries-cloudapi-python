@@ -18,13 +18,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
-from app.dependencies import (
-    AcaPyAuthVerified,
-    acapy_auth_verified,
-    agent_role,
-    agent_selector,
-    get_governance_controller,
-)
 from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
     create_revocation_registry,
@@ -33,6 +26,13 @@ from app.facades.revocation_registry import (
 from app.listener import Listener
 from app.role import Role
 from shared.cloud_api_error import CloudApiException
+from shared.dependencies.auth import (
+    AcaPyAuthVerified,
+    acapy_auth_verified,
+    agent_role,
+    agent_selector,
+    get_governance_controller,
+)
 
 logger = logging.getLogger(__name__)
 

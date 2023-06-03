@@ -8,7 +8,7 @@ from shared import CloudApiTopics
 
 def get_hooks_per_topic_per_wallet(wallet_id: str, topic: CloudApiTopics) -> List:
     try:
-        hooks = (get(f"{WEBHOOKS_URL}/webhooks/{topic}/{wallet_id}")).json()
+        hooks = (get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")).json()
         return hooks if hooks else []
     except HTTPError as e:
         raise e from e

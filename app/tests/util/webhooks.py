@@ -51,7 +51,7 @@ def check_webhook_state(
 
     t_end = time.time() + max_duration
     while time.time() < t_end:
-        hooks_response = httpx.get(f"{WEBHOOKS_URL}/webhooks/{topic}/{wallet_id}")
+        hooks_response = httpx.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")
 
         if hooks_response.is_error:
             raise Exception(f"Error retrieving webhooks: {hooks_response.text}")
@@ -79,7 +79,7 @@ def get_hooks_per_topic_per_wallet(
 ) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
-        hooks = (httpx.get(f"{WEBHOOKS_URL}/webhooks/{topic}/{wallet_id}")).json()
+        hooks = (httpx.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")).json()
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e

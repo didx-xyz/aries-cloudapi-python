@@ -14,11 +14,10 @@ router = APIRouter(prefix="/webhooks")
 
 
 # Routes are duplicated with trailing slash to avoid unnecessary redirects
-@router.get(
-    "/webhooks/{wallet_id}",
+@router.get("/{wallet_id}",
     summary="Subscribe or get all webhook events for a wallet ID",
 )
-@router.get("/webhooks/{wallet_id}/", include_in_schema=False)
+@router.get("/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -27,11 +26,10 @@ async def wallet_root(
     return data
 
 
-@router.get(
-    "/webhooks/{topic}/{wallet_id}",
+@router.get("/{wallet_id}/{topic}",
     summary="Subscribe or get all webhook events for a topic and wallet ID",
 )
-@router.get("/webhooks/{topic}/{wallet_id}/", include_in_schema=False)
+@router.get("/{wallet_id}/{topic}/", include_in_schema=False)
 @inject
 async def wallet_hooks(
     topic: str,

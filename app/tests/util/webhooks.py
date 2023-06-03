@@ -6,8 +6,7 @@ from typing import Dict, List, Optional
 import httpx
 from pydantic import BaseModel
 
-from app.tests.util.constants import WEBHOOKS_URL
-from shared import CloudApiTopics, RichAsyncClient
+from shared import WEBHOOKS_URL, CloudApiTopics, RichAsyncClient
 
 
 class FilterMap(BaseModel):

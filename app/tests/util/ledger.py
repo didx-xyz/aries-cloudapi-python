@@ -4,10 +4,11 @@ from typing import Literal, Optional
 import httpx
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
-from pydantic import Field, BaseModel
-from app.facades.acapy_ledger import accept_taa_if_required
+from pydantic import BaseModel, Field
+
 from app.facades import acapy_wallet
-from app.tests.util.constants import LEDGER_TYPE, LEDGER_REGISTRATION_URL
+from app.facades.acapy_ledger import accept_taa_if_required
+from shared import LEDGER_REGISTRATION_URL, LEDGER_TYPE
 
 logger = logging.getLogger(__name__)
 

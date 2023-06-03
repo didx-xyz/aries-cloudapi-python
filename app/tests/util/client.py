@@ -3,13 +3,15 @@ from typing import Any, Dict, Optional
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncHTTPTransport
 
-from app.tests.util.constants import (
+from shared import (
     GOVERNANCE_ACAPY_API_KEY,
+    GOVERNANCE_AGENT_URL,
     GOVERNANCE_FASTAPI_ENDPOINT,
     TENANT_ACAPY_API_KEY,
+    TENANT_AGENT_URL,
     TENANT_FASTAPI_ENDPOINT,
+    RichAsyncClient,
 )
-from shared import GOVERNANCE_AGENT_URL, TENANT_AGENT_URL, RichAsyncClient
 
 TEST_CLIENT_TIMEOUT = 300
 MAX_NUM_RETRIES = 3

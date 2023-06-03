@@ -7,11 +7,7 @@ from fastapi import APIRouter, Depends
 from httpx import AsyncClient
 
 from app.main import app
-from app.tests.util.constants import (
-    CLOUDAPI_URL,
-    GOVERNANCE_ACAPY_API_KEY,
-    TENANT_ACAPY_API_KEY,
-)
+from shared import CLOUDAPI_URL, GOVERNANCE_ACAPY_API_KEY, TENANT_ACAPY_API_KEY
 from shared.dependencies.auth import (
     AcaPyAuth,
     Role,

@@ -12,7 +12,6 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
-from app.error.cloud_api_error import CloudApiException
 from app.generic import definitions, messaging, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -21,6 +20,7 @@ from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
 from app.webhooks import Webhooks
+from shared.cloud_api_error import CloudApiException
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")

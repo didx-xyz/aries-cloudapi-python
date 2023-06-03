@@ -11,19 +11,18 @@ from app.role import Role
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 BASE_PATH = tenants.router.prefix
 
 
 @pytest.mark.anyio
 async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
-    name = uuid4().hex
     response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
+            "name": uuid4().hex,
             "roles": ["verifier"],
             "group_id": "TestGroup",
         },
@@ -210,7 +209,6 @@ async def test_update_tenant_verifier_to_issuer(
             "roles": ["verifier"],
         },
     )
-    assert response.status_code == 200
 
     tenant = response.json()
     tenant_id = tenant["tenant_id"]
@@ -219,6 +217,7 @@ async def test_update_tenant_verifier_to_issuer(
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=tenant_id
     )
+    assert_that(wallet.settings["wallet.name"]).is_length(32)
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
@@ -257,9 +256,12 @@ async def test_update_tenant_verifier_to_issuer(
             "roles": new_roles,
         },
     )
-
-    assert response.status_code == 200
     new_tenant = response.json()
+    assert_that(new_tenant).has_tenant_id(wallet.wallet_id)
+    assert_that(new_tenant).has_image_url(new_image_url)
+    assert_that(new_tenant).has_tenant_name(new_name)
+    assert_that(new_tenant).has_created_at(wallet.created_at)
+
     new_actor = await trust_registry.actor_by_id(tenant_id)
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
@@ -272,6 +274,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
+        assert public_did
 
         _connections = (await tenant_controller.connection.get_connections()).results
 
@@ -304,54 +307,41 @@ async def test_update_tenant_verifier_to_issuer(
 
     assert new_actor["didcomm_invitation"] is not None
 
-    # Tenant
-    assert_that(new_tenant).has_tenant_id(wallet.wallet_id)
-    assert_that(new_tenant).has_image_url(new_image_url)
-    assert_that(new_tenant).has_tenant_name(new_name)
-    assert_that(new_tenant).has_created_at(wallet.created_at)
-    assert_that(wallet.settings["wallet.name"]).is_length(32)
-
 
 @pytest.mark.anyio
-async def test_get_tenant(tenant_admin_client: RichAsyncClient):
-    name = uuid4().hex
+async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
+            "name": uuid4().hex,
             "roles": ["verifier"],
         },
     )
 
     assert response.status_code == 200
     created_tenant = response.json()
-    tenant_id = created_tenant["tenant_id"]
+    first_tenant_id_id = created_tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}")
+    response = await tenant_admin_client.get(f"{BASE_PATH}/{first_tenant_id_id}")
 
     assert response.status_code == 200
     retrieved_tenant = response.json()
     created_tenant.pop("access_token")
     assert created_tenant == retrieved_tenant
 
-
-@pytest.mark.anyio
-async def test_get_tenants(tenant_admin_client: RichAsyncClient):
-    name = uuid4().hex
     response = await tenant_admin_client.post(
         BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
+            "name": uuid4().hex,
             "roles": ["verifier"],
             "group_id": "ac/dc",
         },
     )
 
     assert response.status_code == 200
-    created_tenant = response.json()
-    tenant_id = created_tenant["tenant_id"]
+    last_tenant_id = response.json()["tenant_id"]
 
     response = await tenant_admin_client.get(BASE_PATH)
     assert response.status_code == 200
@@ -359,7 +349,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     assert len(tenants) >= 1
 
     # Make sure created tenant is returned
-    assert_that(tenants).extracting("tenant_id").contains(tenant_id)
+    assert_that(tenants).extracting("tenant_id").contains(last_tenant_id)
     assert_that(tenants).extracting("group_id").contains("ac/dc")
 
 

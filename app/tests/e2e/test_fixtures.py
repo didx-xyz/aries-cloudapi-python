@@ -3,18 +3,20 @@ from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
 from app.dependencies import acapy_auth, acapy_auth_verified
-from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
-                                     CredentialSchema,
-                                     create_credential_definition,
-                                     create_schema)
+from app.generic.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialSchema,
+    create_credential_definition,
+    create_schema,
+)
 from app.generic.issuer.issuer import router
 from app.listener import Listener
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
-from app.util.rich_async_client import RichAsyncClient
-from shared_models.shared_models import CredentialExchange
+from shared import CredentialExchange, RichAsyncClient
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
@@ -97,7 +99,7 @@ async def credential_exchange_id(
     then this fixture just returns it..."""
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_and_alice_connection.faber_connection_id,
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "average"},
     }
@@ -121,7 +123,7 @@ async def credential_exchange_id(
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection["alice_connection_id"]},
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
     records = response.json()
     assert len(records) > 0
@@ -139,7 +141,7 @@ async def issue_credential_to_alice(
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection["faber_connection_id"],
+        "connection_id": faber_and_alice_connection.faber_connection_id,
         "credential_definition_id": credential_definition_id,
         "attributes": {"speed": "10"},
     }
@@ -154,7 +156,7 @@ async def issue_credential_to_alice(
 
     payload = await listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": faber_and_alice_connection["alice_connection_id"],
+            "connection_id": faber_and_alice_connection.alice_connection_id,
             "state": "offer-received",
         }
     )

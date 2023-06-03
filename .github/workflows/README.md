@@ -2,13 +2,13 @@
 
 :warning: WIP
 
-When deploying with [Helm repository](https://github.com/didx-xyz/cloud_api_helm), symlink the `./shared_models` dir inside `./helm/Chart/assets/shared_models`:
+When deploying with [Helm repository](https://github.com/didx-xyz/cloud_api_helm), symlink the `./shared` dir inside `./helm/Chart/assets/shared`:
 
 ```sh
 git clone git@github.com:didx-xyz/cloud_api_helm.git helm/Chart
 mkdir helm/Chart/assets
 cd helm/Chart/assets
-ln -s ../../../shared_models .
+ln -s ../../../shared .
 ```
 
 From the root of this repo:

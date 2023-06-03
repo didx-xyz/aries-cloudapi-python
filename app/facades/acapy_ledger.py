@@ -2,12 +2,16 @@ import logging
 from typing import Optional, Tuple
 
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import (AcaPyClient,
-                                   CredentialDefinitionSendRequest, TAAAccept,
-                                   TAAInfo, TAARecord,
-                                   TxnOrRegisterLedgerNymResponse)
+from aries_cloudcontroller import (
+    AcaPyClient,
+    CredentialDefinitionSendRequest,
+    TAAAccept,
+    TAAInfo,
+    TAARecord,
+    TxnOrRegisterLedgerNymResponse,
+)
 
-from app.error.cloud_api_error import CloudApiException
+from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

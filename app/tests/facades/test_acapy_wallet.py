@@ -3,9 +3,9 @@ from aries_cloudcontroller import AcaPyClient, DIDResult
 from aries_cloudcontroller.model.did import DID
 from mockito import when
 
-from app.error.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet
 from app.tests.util.mock import to_async
+from shared.cloud_api_error import CloudApiException
 
 
 @pytest.mark.anyio

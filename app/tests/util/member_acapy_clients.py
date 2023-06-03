@@ -5,7 +5,7 @@ from app.tests.util.client import (
     get_tenant_acapy_client,
     get_tenant_admin_acapy_client,
 )
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.fixture(scope="session")

@@ -5,7 +5,7 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.tests.util.webhooks import check_webhook_state
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio

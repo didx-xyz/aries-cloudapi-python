@@ -2,7 +2,7 @@ from random import random
 
 from app.facades.trust_registry import (Actor, actor_by_did, register_actor,
                                         register_schema, registry_has_schema)
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):

@@ -1,15 +1,26 @@
 import pytest
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import (AcaPyClient, ModelSchema, SchemaGetResult,
-                                   TAAAccept, TAAInfo, TAARecord, TAAResult)
+from aries_cloudcontroller import (
+    AcaPyClient,
+    ModelSchema,
+    SchemaGetResult,
+    TAAAccept,
+    TAAInfo,
+    TAARecord,
+    TAAResult,
+)
 from assertpy import assert_that
 from fastapi import HTTPException
 from mockito import mock, verify, when
 
-from app.error.cloud_api_error import CloudApiException
-from app.facades.acapy_ledger import (accept_taa, get_did_endpoint, get_taa,
-                                      schema_id_from_credential_definition_id)
+from app.facades.acapy_ledger import (
+    accept_taa,
+    get_did_endpoint,
+    get_taa,
+    schema_id_from_credential_definition_id,
+)
 from app.tests.util.mock import to_async
+from shared.cloud_api_error import CloudApiException
 
 
 @pytest.mark.anyio

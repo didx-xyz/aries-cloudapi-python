@@ -1,10 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    IndyCredPrecis,
-)
+from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 
 from app.generic.verifier.models import (
     AcceptProofRequest,
@@ -12,7 +9,7 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
-from shared_models import PresentationExchange
+from shared import PresentationExchange
 
 
 class Verifier(ABC):

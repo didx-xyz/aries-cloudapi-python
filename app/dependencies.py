@@ -31,14 +31,14 @@ class AcaPyAuthVerified(AcaPyAuth):
 
 
 def acapy_auth(auth: str = Depends(x_api_key_scheme)):
-    if not "." in auth:
+    if "." not in auth:
         raise HTTPException(401, "Unauthorized")
 
     try:
         [role_str, token] = auth.split(".", maxsplit=1)
 
         role = Role.from_str(role_str)
-    except:
+    except Exception:
         raise HTTPException(401, "Unauthorized")
 
     if not role:

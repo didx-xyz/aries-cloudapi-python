@@ -53,8 +53,7 @@ def test_get_endorsement_request_attachment():
 
     # exception
     assert (
-        get_endorsement_request_attachment(MagicMock(messages_attach={"no": "array"}))
-        == None
+        get_endorsement_request_attachment(MagicMock(messages_attach={"no": "array"})) is None
     )
 
 

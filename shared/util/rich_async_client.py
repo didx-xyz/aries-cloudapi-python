@@ -1,7 +1,7 @@
 from typing import Optional
 from httpx import AsyncClient, HTTPStatusError
 
-from app.error.cloud_api_error import CloudApiException
+from shared.cloud_api_error import CloudApiException
 
 
 # Async Client with built in error handling

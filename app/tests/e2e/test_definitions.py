@@ -6,20 +6,24 @@ from app.dependencies import acapy_auth, acapy_auth_verified
 from app.facades import trust_registry
 from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
-from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
-                                     CredentialSchema)
-from app.tests.util.string import get_random_string
+from app.generic.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialSchema,
+)
+from app.tests.util.string import random_string
 from app.tests.util.trust_registry import register_issuer
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_create_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
+    governance_acapy_client: AcaPyClient,
+    governance_client: RichAsyncClient,
 ):
     # given
     schema = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
     schema_result = (
@@ -28,7 +32,7 @@ async def test_create_credential_definition(
     schema_id = schema_result["id"]
 
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_id, tag=get_random_string(5), support_revocation=True
+        schema_id=schema_id, tag=random_string(5), support_revocation=True
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))
@@ -51,7 +55,7 @@ async def test_create_schema(
 ):
     # given
     send = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
     result = (await definitions.create_schema(send, governance_acapy_client)).dict()
@@ -71,7 +75,7 @@ async def test_get_schema(
 ):
     # given
     schema = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
     create_result = (
@@ -93,7 +97,7 @@ async def test_get_credential_definition(
 ):
     # given
     schema_send = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
     schema_result = (
@@ -102,7 +106,7 @@ async def test_get_credential_definition(
 
     await register_issuer(governance_client, schema_result["id"])
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=get_random_string(5)
+        schema_id=schema_result["id"], tag=random_string(5)
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))
@@ -133,7 +137,7 @@ async def test_create_credential_definition_issuer_tenant(
 ):
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id,
-        tag=get_random_string(5),
+        tag=random_string(5),
         support_revocation=True,
     )
 

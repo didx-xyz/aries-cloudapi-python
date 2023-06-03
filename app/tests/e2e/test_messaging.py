@@ -3,7 +3,7 @@ from assertpy.assertpy import assert_that
 
 from app.generic.messaging import Message, TrustPingMsg
 from app.tests.util.ecosystem_connections import BobAliceConnect
-from app.util.rich_async_client import RichAsyncClient
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio
@@ -11,7 +11,7 @@ async def test_send_trust_ping(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient
 ):
     trustping_msg = TrustPingMsg(
-        connection_id=bob_and_alice_connection["alice_connection_id"], comment="Donda"
+        connection_id=bob_and_alice_connection.alice_connection_id, comment="Donda"
     )
 
     response = await alice_member_client.post(
@@ -28,7 +28,7 @@ async def test_send_message(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient
 ):
     message = Message(
-        connection_id=bob_and_alice_connection["alice_connection_id"], content="Donda"
+        connection_id=bob_and_alice_connection.alice_connection_id, content="Donda"
     )
 
     response = await alice_member_client.post(

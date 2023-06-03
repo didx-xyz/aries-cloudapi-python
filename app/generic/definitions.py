@@ -5,25 +5,34 @@ from typing import List, Optional
 
 from aiohttp import ClientResponseError
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller import \
-    CredentialDefinition as AcaPyCredentialDefinition
-from aries_cloudcontroller import (ModelSchema, RevRegUpdateTailsFileUri,
-                                   SchemaSendRequest)
-from aries_cloudcontroller.model.credential_definition_send_request import \
-    CredentialDefinitionSendRequest
+from aries_cloudcontroller import CredentialDefinition as AcaPyCredentialDefinition
+from aries_cloudcontroller import (
+    ModelSchema,
+    RevRegUpdateTailsFileUri,
+    SchemaSendRequest,
+)
+from aries_cloudcontroller.model.credential_definition_send_request import (
+    CredentialDefinitionSendRequest,
+)
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.constants import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
-from app.dependencies import (AcaPyAuthVerified, acapy_auth_verified,
-                              agent_role, agent_selector,
-                              get_governance_controller)
-from app.error.cloud_api_error import CloudApiException
+from app.dependencies import (
+    AcaPyAuthVerified,
+    acapy_auth_verified,
+    agent_role,
+    agent_selector,
+    get_governance_controller,
+)
 from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
-    create_revocation_registry, publish_revocation_registry_on_ledger)
+    create_revocation_registry,
+    publish_revocation_registry_on_ledger,
+)
 from app.listener import Listener
 from app.role import Role
+from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

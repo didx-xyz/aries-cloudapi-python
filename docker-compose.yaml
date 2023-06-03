@@ -10,7 +10,7 @@ services:
     ports:
       - 0.0.0.0:8000:8000
     volumes:
-      - ./shared_models/shared_models.py:/app/shared_models.py
+      - ./shared:/shared
       - ./app:/app
       - ./environments/governance-ga/fastapi.default.env:/app/.env
     depends_on:
@@ -106,7 +106,7 @@ services:
     ports:
       - 0.0.0.0:8100:8000
     volumes:
-      - ./shared_models/shared_models.py:/app/shared_models.py
+      - ./shared:/shared
       - ./app:/app
       - ./environments/governance-multitenant/fastapi.default.env:/app/.env
     depends_on:
@@ -134,7 +134,6 @@ services:
     ports:
       - 0.0.0.0:3010:3010
     volumes:
-      - ./shared_models/shared_models.py:/webhooks/shared_models.py
       - ./webhooks:/webhooks
     networks:
       - governance-multitenant
@@ -143,7 +142,7 @@ services:
     env_file:
       - environments/webhooks/fastapi.webhooks.env
     environment:
-      - REDIS_URL=redis://wh-redis
+      - REDIS_HOST=wh-redis
   governance-endorser:
     image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
     container_name: governance-endorser
@@ -151,7 +150,7 @@ services:
       context: .
       dockerfile: ./dockerfiles/endorser/Dockerfile
     volumes:
-      - ./shared_models/shared_models.py:/shared_models.py
+      - ./shared:/shared
       - ./endorser:/endorser
     networks:
       - governance-multitenant

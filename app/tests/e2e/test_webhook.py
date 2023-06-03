@@ -1,10 +1,9 @@
 import pytest
 
-from app.error.cloud_api_error import CloudApiException
 from app.generic.webhooks import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
-from app.util.rich_async_client import RichAsyncClient
-from shared_models import Connection
+from shared import Connection, RichAsyncClient
+from shared.cloud_api_error import CloudApiException
 
 WALLET_BASE_PATH = router.prefix
 

@@ -2,9 +2,9 @@ import logging
 from typing import Any, List
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 
-from shared import TopicItem
+from shared import APIRouter, TopicItem
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
@@ -14,10 +14,10 @@ router = APIRouter(prefix="/webhooks")
 
 
 # Routes are duplicated with trailing slash to avoid unnecessary redirects
-@router.get("/{wallet_id}",
+@router.get(
+    "/{wallet_id}",
     summary="Subscribe or get all webhook events for a wallet ID",
 )
-@router.get("/{wallet_id}/", include_in_schema=False)
 @inject
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
@@ -26,10 +26,10 @@ async def wallet_root(
     return data
 
 
-@router.get("/{wallet_id}/{topic}",
+@router.get(
+    "/{wallet_id}/{topic}",
     summary="Subscribe or get all webhook events for a topic and wallet ID",
 )
-@router.get("/{wallet_id}/{topic}/", include_in_schema=False)
 @inject
 async def wallet_hooks(
     topic: str,

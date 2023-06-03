@@ -4,10 +4,10 @@ from pprint import pformat
 from typing import Any, Dict
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import Depends, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from shared import WEBHOOK_TOPIC_ALL, RedisItem, topic_mapping
+from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, topic_mapping
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
@@ -25,11 +25,6 @@ endpoint.register_route(router, "/pubsub")
     "/{origin}/topic/{acapy_topic}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Receive webhook events from ACA-Py",
-)
-@router.post(
-    "/{origin}/topic/{acapy_topic}/",
-    status_code=status.HTTP_204_NO_CONTENT,
-    include_in_schema=False,
 )
 @inject
 async def topic_root(

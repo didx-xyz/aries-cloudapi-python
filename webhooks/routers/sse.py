@@ -4,10 +4,10 @@ import time
 from typing import Any, Generator
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import APIRouter, Depends, Request
+from fastapi import Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
-from shared import WEBHOOK_TOPIC_ALL, TopicItem
+from shared import WEBHOOK_TOPIC_ALL, APIRouter, TopicItem
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SSEManager

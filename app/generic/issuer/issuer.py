@@ -16,7 +16,7 @@ from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.generic.issuer.models import Credential, CredentialNoConnection
-from app.util.indy import did_from_credential_definition_id
+from app.util.did import did_from_credential_definition_id
 from shared import CredentialExchange, IssueCredentialProtocolVersion
 from shared.cloud_api_error import CloudApiException
 from shared.dependencies.auth import agent_selector

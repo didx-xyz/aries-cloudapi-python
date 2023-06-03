@@ -8,12 +8,18 @@ from mockito import verify, when
 
 from app.tests.util.mock import to_async
 from endorser import endorser_processor as test_module
-from endorser.constants import TRUST_REGISTRY_URL
 from endorser.endorser_processor import (
-    Event, accept_endorsement, get_did_and_schema_id_from_cred_def_attachment,
-    get_endorsement_request_attachment, is_credential_definition_transaction,
-    is_governance_agent, is_valid_issuer, process_endorsement_event,
-    should_accept_endorsement)
+    Event,
+    accept_endorsement,
+    get_did_and_schema_id_from_cred_def_attachment,
+    get_endorsement_request_attachment,
+    is_credential_definition_transaction,
+    is_governance_agent,
+    is_valid_issuer,
+    process_endorsement_event,
+    should_accept_endorsement,
+)
+from shared import TRUST_REGISTRY_URL
 
 
 @pytest.mark.anyio

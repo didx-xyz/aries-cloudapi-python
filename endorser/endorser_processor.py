@@ -6,13 +6,13 @@ import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
 
-from endorser.constants import (
+from shared import (
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
     TRUST_REGISTRY_URL,
     WEBHOOKS_PUBSUB_URL,
+    Endorsement,
 )
-from shared import Endorsement
 
 logger = logging.getLogger(__name__)
 

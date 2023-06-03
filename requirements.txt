@@ -1,0 +1,5 @@
+-r requirements.dev.txt
+-r app/requirements.txt
+-r endorser/requirements.txt
+-r trustregistry/requirements.txt
+-r webhooks/requirements.txt

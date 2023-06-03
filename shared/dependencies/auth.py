@@ -1,15 +1,15 @@
-from dataclasses import dataclass
 import logging
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 from typing import List, Optional, Union
 
+import jwt
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
-from app.constants import ACAPY_MULTITENANT_JWT_SECRET
 
-import jwt
+from app.constants import ACAPY_MULTITENANT_JWT_SECRET
 from app.role import Role
 
 logger = logging.getLogger(__name__)

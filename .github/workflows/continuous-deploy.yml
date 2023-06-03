@@ -346,7 +346,7 @@ jobs:
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
           python get-pip.py
           python -m pip install --upgrade pip
-          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt -r webhooks/requirements.txt
+          pip install -r requirements.txt
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2

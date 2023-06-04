@@ -1,42 +1,38 @@
-from time import sleep
-
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
-from httpx import AsyncClient
 
 from app.dependencies import acapy_auth, acapy_auth_verified
 from app.facades import trust_registry
 from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
-from app.generic.definitions import (CreateCredentialDefinition, CreateSchema,
-                                     CredentialSchema)
-from app.tests.e2e.test_fixtures import *  # NOQA
-from app.tests.util.ledger import create_public_did
-from app.tests.util.string import get_random_string
+from app.generic.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialSchema,
+)
+from app.tests.util.string import random_string
 from app.tests.util.trust_registry import register_issuer
+from shared import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_create_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: AsyncClient
+    governance_acapy_client: AcaPyClient,
+    governance_client: RichAsyncClient,
 ):
     # given
-    schema_send = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+    schema = CreateSchema(
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    if not await has_public_did(governance_acapy_client):
-        await create_public_did(governance_acapy_client, set_public=True)
-
     schema_result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
+        await definitions.create_schema(schema, governance_acapy_client)
     ).dict()
-
-    await register_issuer(governance_client, schema_result["id"])
+    schema_id = schema_result["id"]
 
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=get_random_string(5), support_revocation=True
+        schema_id=schema_id, tag=random_string(5), support_revocation=True
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))
@@ -54,72 +50,63 @@ async def test_create_credential_definition(
 
 
 @pytest.mark.anyio
-async def test_create_schema(governance_acapy_client: AcaPyClient):
+async def test_create_schema(
+    governance_acapy_client: AcaPyClient, governance_public_did: str
+):
     # given
-    schema_send = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+    send = CreateSchema(
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    try:
-        did = await get_public_did(governance_acapy_client)
-    except:
-        did = await create_public_did(governance_acapy_client, set_public=True)
-
-    result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
-    ).dict()
+    result = (await definitions.create_schema(send, governance_acapy_client)).dict()
 
     # Assert schemas has been registered in the trust registry
     assert await trust_registry.registry_has_schema(result["id"])
-    assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
-    assert_that(result).has_name(schema_send.name)
-    assert_that(result).has_version(schema_send.version)
-    assert_that(result).has_attribute_names(schema_send.attribute_names)
+    expected_schema = f"{governance_public_did}:2:{send.name}:{send.version}"
+    assert_that(result).has_id(expected_schema)
+    assert_that(result).has_name(send.name)
+    assert_that(result).has_version(send.version)
+    assert_that(result).has_attribute_names(send.attribute_names)
 
 
 @pytest.mark.anyio
-async def test_get_schema(governance_acapy_client: AcaPyClient):
+async def test_get_schema(
+    governance_acapy_client: AcaPyClient, governance_public_did: str
+):
     # given
-    schema_send = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+    schema = CreateSchema(
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    try:
-        did = await get_public_did(governance_acapy_client)
-    except:
-        did = await create_public_did(governance_acapy_client, set_public=True)
-
     create_result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
+        await definitions.create_schema(schema, governance_acapy_client)
     ).dict()
     result = await definitions.get_schema(create_result["id"], governance_acapy_client)
 
     assert await trust_registry.registry_has_schema(result.id)
-    assert_that(result).has_id(f"{did.did}:2:{schema_send.name}:{schema_send.version}")
-    assert_that(result).has_name(schema_send.name)
-    assert_that(result).has_version(schema_send.version)
-    assert_that(result).has_attribute_names(schema_send.attribute_names)
+    expected_schema = f"{governance_public_did}:2:{schema.name}:{schema.version}"
+    assert_that(result).has_id(expected_schema)
+    assert_that(result).has_name(schema.name)
+    assert_that(result).has_version(schema.version)
+    assert_that(result).has_attribute_names(schema.attribute_names)
 
 
 @pytest.mark.anyio
 async def test_get_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: AsyncClient
+    governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
 ):
-    sleep(3)
     # given
     schema_send = CreateSchema(
-        name=get_random_string(15), version="0.1", attribute_names=["average"]
+        name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    if not await has_public_did(governance_acapy_client):
-        await create_public_did(governance_acapy_client, set_public=True)
     schema_result = (
         await definitions.create_schema(schema_send, governance_acapy_client)
     ).dict()
 
     await register_issuer(governance_client, schema_result["id"])
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_result["id"], tag=get_random_string(5)
+        schema_id=schema_result["id"], tag=random_string(5)
     )
 
     auth = acapy_auth_verified(acapy_auth(governance_client.headers["x-api-key"]))
@@ -146,11 +133,11 @@ async def test_get_credential_definition(
 async def test_create_credential_definition_issuer_tenant(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,
-    faber_client: AsyncClient,
+    faber_client: RichAsyncClient,
 ):
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id,
-        tag=get_random_string(5),
+        tag=random_string(5),
         support_revocation=True,
     )
 

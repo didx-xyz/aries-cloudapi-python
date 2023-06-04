@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.dependencies import agent_selector
-from shared_models import Connection, conn_record_to_connection
+from shared import Connection, conn_record_to_connection
 
 logger = logging.getLogger(__name__)
 

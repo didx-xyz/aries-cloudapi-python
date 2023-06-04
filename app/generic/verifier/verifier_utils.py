@@ -3,13 +3,12 @@ from typing import List, Optional, Set
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
-from app.error.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import assert_public_did
-from app.facades.trust_registry import (Actor, actor_by_did,
-                                        get_trust_registry_schemas)
+from app.facades.trust_registry import Actor, actor_by_did, get_trust_registry_schemas
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
 from app.util.did import ed25519_verkey_to_did_key
+from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +82,7 @@ async def assert_valid_verifier(
         public_did = await assert_public_did(aries_controller=aries_controller)
     except Exception:
         # CASE: Agent has NO public DID
-        ## check via connection -> invitation key
+        # check via connection -> invitation key
         connection_record = await get_connection_record(
             aries_controller=aries_controller,
             connection_id=proof_request.connection_id,

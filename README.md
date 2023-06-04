@@ -48,7 +48,7 @@ Without using `make`, you can run:
 Install the requirements:
 
 ```bash
-pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
+pip install -r requirements.txt
 ```
 
 To start the containers and run the tests:

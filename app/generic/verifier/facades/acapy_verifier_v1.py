@@ -1,17 +1,22 @@
 import logging
 
-from aries_cloudcontroller import (AcaPyClient,
-                                   V10PresentationCreateRequestRequest,
-                                   V10PresentationProblemReportRequest,
-                                   V10PresentationSendRequestRequest)
+from aries_cloudcontroller import (
+    AcaPyClient,
+    V10PresentationCreateRequestRequest,
+    V10PresentationProblemReportRequest,
+    V10PresentationSendRequestRequest,
+)
 
-from app.error.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier import Verifier
-from app.generic.verifier.models import (AcceptProofRequest,
-                                         CreateProofRequest,
-                                         RejectProofRequest, SendProofRequest)
-from shared_models import PresentationExchange, pres_id_no_version
-from shared_models import presentation_record_to_model as record_to_model
+from app.generic.verifier.models import (
+    AcceptProofRequest,
+    CreateProofRequest,
+    RejectProofRequest,
+    SendProofRequest,
+)
+from shared import PresentationExchange, pres_id_no_version
+from shared import presentation_record_to_model as record_to_model
+from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

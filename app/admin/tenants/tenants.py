@@ -14,13 +14,7 @@ from aries_cloudcontroller import (
 )
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from uplink import (
-    Consumer,
-    Query,
-    get,
-    returns,
-)
-
+from uplink import Consumer, Query, get, returns
 
 from app.admin.tenants.models import (
     CreateTenantRequest,
@@ -32,13 +26,13 @@ from app.admin.tenants.models import (
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
 from app.dependencies import AcaPyAuth, Role, acapy_auth, agent_role
-from app.error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,
     register_actor,
     remove_actor_by_id,
 )
+from shared import CloudApiException
 
 logger = logging.getLogger(__name__)
 
@@ -167,8 +161,6 @@ async def update_tenant(
     aries_controller: AcaPyClient = Depends(multitenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
-    wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
-
     await handle_tenant_update(
         admin_controller=aries_controller, tenant_id=tenant_id, update=body
     )

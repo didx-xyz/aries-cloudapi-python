@@ -5,7 +5,7 @@ import string
 from random import randint
 
 
-def get_random_string(length: int):
+def random_string(length: int):
     letters = string.ascii_uppercase
     return "".join(random.choice(letters) for _ in range(length))
 

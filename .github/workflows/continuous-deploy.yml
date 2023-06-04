@@ -224,7 +224,7 @@ jobs:
         run: |
           mkdir -p helm/Chart/assets
           cd helm/Chart/assets
-          ln -s ../../../shared_models .
+          ln -s ../../../shared .
 
       - name: Diff upgrade
         run: |
@@ -346,7 +346,7 @@ jobs:
           curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
           python get-pip.py
           python -m pip install --upgrade pip
-          pip install -r app/requirements.txt -r requirements.dev.txt -r trustregistry/requirements.txt
+          pip install -r requirements.txt
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -358,7 +358,7 @@ jobs:
       - name: Test with pytest
         id: test
         run: |
-          pytest --cov=trustregistry --cov=app trustregistry app
+          pytest --cov=trustregistry --cov=app --cov=webhooks trustregistry app webhooks
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

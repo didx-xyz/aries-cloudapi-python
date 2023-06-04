@@ -1,5 +1,3 @@
-from typing import Any, Optional
-
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
@@ -8,7 +6,7 @@ import app.generic.issuer.issuer as test_module
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
-from shared_models import CredentialExchange, IssueCredentialProtocolVersion
+from shared import CredentialExchange, IssueCredentialProtocolVersion
 
 
 @pytest.mark.anyio

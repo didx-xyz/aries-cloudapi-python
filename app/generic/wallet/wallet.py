@@ -1,19 +1,13 @@
 import logging
 from typing import List
 
-from aries_cloudcontroller import (
-    DID,
-    AcaPyClient,
-    DIDEndpoint,
-    DIDEndpointWithType,
-)
+from aries_cloudcontroller import DID, AcaPyClient, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
 from app.dependencies import agent_selector
 from app.facades import acapy_wallet
-from app.error import CloudApiException
-
 from app.generic.wallet.models import SetDidEndpointRequest
+from shared import CloudApiException
 
 logger = logging.getLogger(__name__)
 

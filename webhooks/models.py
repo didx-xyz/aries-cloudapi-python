@@ -1,13 +1,22 @@
-from aries_cloudcontroller import (ConnRecord, V10CredentialExchange,
-                                   V10PresentationExchange, V20CredExRecord,
-                                   V20PresExRecord)
+from aries_cloudcontroller import (
+    ConnRecord,
+    V10CredentialExchange,
+    V10PresentationExchange,
+    V20CredExRecord,
+    V20PresExRecord,
+)
 
-from shared_models import (Connection, CredentialExchange, Endorsement,
-                           PresentationExchange, RedisItem,
-                           conn_record_to_connection,
-                           credential_record_to_model_v1,
-                           credential_record_to_model_v2,
-                           presentation_record_to_model)
+from shared import (
+    Connection,
+    CredentialExchange,
+    Endorsement,
+    PresentationExchange,
+    RedisItem,
+    conn_record_to_connection,
+    credential_record_to_model_v1,
+    credential_record_to_model_v2,
+    presentation_record_to_model,
+)
 
 
 def to_endorsement_model(item: RedisItem) -> Endorsement:

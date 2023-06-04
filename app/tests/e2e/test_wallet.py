@@ -1,26 +1,23 @@
-from typing import Any
-from aries_cloudcontroller import AcaPyClient
-from httpx import AsyncClient
 import pytest
+from aries_cloudcontroller import AcaPyClient
+from assertpy import assert_that
 
 import app.facades.acapy_wallet as wallet_facade
 from app.generic.wallet.models import SetDidEndpointRequest
-from app.tests.util.ledger import create_public_did, post_to_ledger
 from app.generic.wallet.wallet import (
+    get_did_endpoint,
     get_public_did,
     list_dids,
-    set_did_endpoint,
-    get_did_endpoint,
     router,
+    set_did_endpoint,
 )
-
-from assertpy import assert_that
+from app.tests.util.ledger import create_public_did, post_to_ledger
+from shared import RichAsyncClient
 
 WALLET_BASE_PATH = router.prefix
 
 
-@pytest.fixture()
-async def create_did_mock(governance_client: AsyncClient):
+async def create_did_mock(governance_client: RichAsyncClient):
     did_response = await governance_client.post(WALLET_BASE_PATH)
     did_response = did_response.json()
     did = did_response["did"]
@@ -29,7 +26,7 @@ async def create_did_mock(governance_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_list_dids(
-    governance_client: AsyncClient, governance_acapy_client: AcaPyClient
+    governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
 ):
     response = await governance_client.get(WALLET_BASE_PATH)
 
@@ -41,7 +38,7 @@ async def test_list_dids(
 
 
 @pytest.mark.anyio
-async def test_create_local_did(governance_client: AsyncClient):
+async def test_create_local_did(governance_client: RichAsyncClient):
     response = await governance_client.post(WALLET_BASE_PATH)
 
     assert_that(response.status_code).is_equal_to(200)
@@ -52,7 +49,7 @@ async def test_create_local_did(governance_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_get_public_did(
-    governance_client: AsyncClient, governance_acapy_client: AcaPyClient
+    governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
 ):
     response = await governance_client.get(f"{WALLET_BASE_PATH}/public")
 
@@ -66,8 +63,8 @@ async def test_get_public_did(
 
 
 @pytest.mark.anyio
-async def test_get_did_endpoint(governance_client: AsyncClient, create_did_mock: Any):
-    did = create_did_mock
+async def test_get_did_endpoint(governance_client: RichAsyncClient):
+    did = await create_did_mock(governance_client)
     response = await governance_client.get(f"{WALLET_BASE_PATH}/{did}/endpoint")
     assert_that(response.status_code).is_equal_to(200)
 
@@ -77,7 +74,7 @@ async def test_get_did_endpoint(governance_client: AsyncClient, create_did_mock:
 
 @pytest.mark.anyio
 async def test_set_public_did(
-    governance_client: AsyncClient, governance_acapy_client: AcaPyClient
+    governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
 ):
     did_object = await wallet_facade.create_did(governance_acapy_client)
     await post_to_ledger(did=did_object.did, verkey=did_object.verkey)

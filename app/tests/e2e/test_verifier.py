@@ -1,21 +1,29 @@
 import pytest
-from aries_cloudcontroller import IndyPresSpec, IndyRequestedCredsRequestedAttr
+from aries_cloudcontroller import (
+    AcaPyClient,
+    IndyPresSpec,
+    IndyRequestedCredsRequestedAttr,
+)
 from assertpy import assert_that
-from httpx import AsyncClient
 
-from app.generic.verifier.models import (AcceptProofRequest,
-                                         PresentProofProtocolVersion,
-                                         RejectProofRequest, SendProofRequest)
+from app.admin.tenants.models import CreateTenantResponse
+from app.generic.verifier.models import (
+    AcceptProofRequest,
+    RejectProofRequest,
+    SendProofRequest,
+)
 from app.listener import Listener
-from app.tests.e2e.test_fixtures import *
-from app.tests.util.ecosystem_personas import AcmeAliceConnect
-from app.tests.util.webhooks import (check_webhook_state,
-                                     get_wallet_id_from_async_client)
-from app.tests.verifier.test_verifier_utils import indy_proof_request
-from shared_models.shared_models import CredentialExchange  # NOQA
-from shared_models.shared_models import PresentationExchange
+from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
+from app.tests.verifier.utils import indy_proof_request
+from shared import (
+    CredentialExchange,
+    PresentationExchange,
+    PresentProofProtocolVersion,
+    RichAsyncClient,
+)
 
-BASE_PATH = "/generic/verifier"
+VERIFIER_BASE_PATH = "/generic/verifier"
 
 
 def create_send_request(
@@ -31,19 +39,18 @@ def create_send_request(
 @pytest.mark.anyio
 async def test_accept_proof_request_v1(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     response = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
     )
-    response.raise_for_status()
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
@@ -53,7 +60,7 @@ async def test_accept_proof_request_v1(
         topic="proofs",
         max_duration=240,
     )
-    proof_records_alice = await alice_member_client.get(BASE_PATH + "/proofs")
+    proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
 
     requested_credentials = await alice_member_client.get(
@@ -82,7 +89,7 @@ async def test_accept_proof_request_v1(
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/accept-request",
+        VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
 
@@ -110,9 +117,9 @@ async def test_accept_proof_request_v1(
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    bob_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
@@ -124,7 +131,7 @@ async def test_accept_proof_request_oob_v1(
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
-        BASE_PATH + "/create-request",
+        VERIFIER_BASE_PATH + "/create-request",
         json={
             "comment": "some comment",
             "protocol_version": "v1",
@@ -132,7 +139,6 @@ async def test_accept_proof_request_oob_v1(
         },
     )
 
-    response.raise_for_status()
     bob_exchange = response.json()
 
     thread_id = bob_exchange["thread_id"]
@@ -154,8 +160,6 @@ async def test_accept_proof_request_oob_v1(
         },
     )
 
-    invitation_response.raise_for_status()
-
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
@@ -194,7 +198,7 @@ async def test_accept_proof_request_oob_v1(
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/accept-request",
+        VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
 
@@ -205,10 +209,12 @@ async def test_accept_proof_request_oob_v1(
             "thread_id": thread_id,
         }
     )
+    assert alice_presentation_sent
 
     bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
+    assert bob_presentation_received
 
     alice_proofs_listener.stop()
     bob_proofs_listener.stop()
@@ -217,9 +223,9 @@ async def test_accept_proof_request_oob_v1(
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    bob_member_client: AsyncClient,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    bob_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
     alice_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
@@ -231,14 +237,13 @@ async def test_accept_proof_request_oob_v2(
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
-        BASE_PATH + "/create-request",
+        VERIFIER_BASE_PATH + "/create-request",
         json={
             "comment": "some comment",
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
     )
-    response.raise_for_status()
     bob_exchange = response.json()
 
     thread_id = bob_exchange["thread_id"]
@@ -254,8 +259,6 @@ async def test_accept_proof_request_oob_v2(
         },
     )
 
-    invitation_response.raise_for_status()
-
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
@@ -294,7 +297,7 @@ async def test_accept_proof_request_oob_v2(
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/accept-request",
+        VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
 
@@ -305,10 +308,12 @@ async def test_accept_proof_request_oob_v2(
             "thread_id": thread_id,
         }
     )
+    assert alice_presentation_sent
 
     bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
         filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
     )
+    assert bob_presentation_received
 
     alice_proofs_listener.stop()
     bob_proofs_listener.stop()
@@ -317,21 +322,19 @@ async def test_accept_proof_request_oob_v2(
 @pytest.mark.anyio
 async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,
-    alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
-    alice_tenant: Any,
-    acme_tenant: Any,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    acme_tenant: CreateTenantResponse,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
 
     response = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             # Custom proof request because v2 doesn't support proof request without restrictions
             # see: https://github.com/hyperledger/aries-cloudagent-python/issues/1755
@@ -348,14 +351,13 @@ async def test_accept_proof_request_v2(
             },
         },
     )
-    response.raise_for_status()
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
     payload = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
             "state": "request-received",
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
         }
     )
     alice_proofs_listener.stop()
@@ -379,10 +381,10 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant["tenant_id"])
+    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant.tenant_id)
 
     response = await alice_member_client.post(
-        BASE_PATH + "/accept-request",
+        VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
 
@@ -401,17 +403,15 @@ async def test_accept_proof_request_v2(
 @pytest.mark.anyio
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
-    alice_member_client: AsyncClient,
-    acme_client: AsyncClient,
-    alice_tenant: Any,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
     response = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -429,7 +429,7 @@ async def test_send_proof_request(
     # Wait for request received
     await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v1",
         }
@@ -437,9 +437,9 @@ async def test_send_proof_request(
 
     # V2
     response = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -457,7 +457,7 @@ async def test_send_proof_request(
     # Wait for request received
     await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v2",
         }
@@ -468,29 +468,26 @@ async def test_send_proof_request(
 @pytest.mark.anyio
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
-    alice_member_client: AsyncClient,
-    alice_tenant: Any,
-    acme_client: AsyncClient,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    acme_client: RichAsyncClient,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
 
     # V1
     response = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
     )
-    response.raise_for_status()
 
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v1",
         }
@@ -502,22 +499,21 @@ async def test_reject_proof_request(
     )
 
     response = await alice_member_client.post(
-        BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
+        VERIFIER_BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
     )
     result = response.json()
-    response.raise_for_status()
     assert result is None
 
 
 @pytest.mark.anyio
 async def test_get_proof_single(
-    acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
+    acme_and_alice_connection: AcmeAliceConnect, acme_client: RichAsyncClient
 ):
     # V1
     proof_req_res = await acme_client.post(
-        f"{BASE_PATH}/send-request",
+        f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -525,7 +521,7 @@ async def test_get_proof_single(
 
     proof_id = proof_req_res.json()["proof_id"]
     response = await acme_client.get(
-        f"{BASE_PATH}/proofs/{proof_id}",
+        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}",
     )
     result = response.json()
     assert "connection_id" in result
@@ -536,9 +532,9 @@ async def test_get_proof_single(
 
     # V2
     proof_req_res = await acme_client.post(
-        f"{BASE_PATH}/send-request",
+        f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -547,7 +543,7 @@ async def test_get_proof_single(
     proof_id = proof_req_res.json()["proof_id"]
 
     response = await acme_client.get(
-        f"{BASE_PATH}/proofs/{proof_id}",
+        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}",
     )
 
     result = response.json()
@@ -561,20 +557,20 @@ async def test_get_proof_single(
 
 @pytest.mark.anyio
 async def test_get_proofs_multi(
-    acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
+    acme_and_alice_connection: AcmeAliceConnect, acme_client: RichAsyncClient
 ):
     # V1
     await acme_client.post(
-        f"{BASE_PATH}/send-request",
+        f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
     )
 
     response = await acme_client.get(
-        f"{BASE_PATH}/proofs",
+        f"{VERIFIER_BASE_PATH}/proofs",
     )
 
     result = response.json()[0]
@@ -587,16 +583,16 @@ async def test_get_proofs_multi(
 
     # V2
     await acme_client.post(
-        f"{BASE_PATH}/send-request",
+        f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
     )
 
     response = await acme_client.get(
-        BASE_PATH + "/proofs",
+        VERIFIER_BASE_PATH + "/proofs",
     )
 
     result = response.json()[-1]
@@ -610,13 +606,13 @@ async def test_get_proofs_multi(
 
 @pytest.mark.anyio
 async def test_delete_proof(
-    acme_and_alice_connection: AcmeAliceConnect, acme_client: AsyncClient
+    acme_and_alice_connection: AcmeAliceConnect, acme_client: RichAsyncClient
 ):
     # V1
     proof_req_res = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -625,15 +621,15 @@ async def test_delete_proof(
     proof_id = (proof_req_res.json())["proof_id"]
 
     response = await acme_client.delete(
-        BASE_PATH + f"/proofs/{proof_id}",
+        VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() == None
+    assert response.json() is None
 
     # V2
     proof_req_res = await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -642,27 +638,25 @@ async def test_delete_proof(
     proof_id = (proof_req_res.json())["proof_id"]
 
     response = await acme_client.delete(
-        BASE_PATH + f"/proofs/{proof_id}",
+        VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() == None
+    assert response.json() is None
 
 
 @pytest.mark.anyio
 async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,
     acme_and_alice_connection: AcmeAliceConnect,
-    acme_client: AsyncClient,
-    alice_tenant: Any,
-    alice_member_client: AsyncClient,
+    acme_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    alice_member_client: RichAsyncClient,
 ):
-    alice_proofs_listener = Listener(
-        topic="proofs", wallet_id=alice_tenant["tenant_id"]
-    )
+    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
     # V1
     await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
             "proof_request": indy_proof_request.dict(),
         },
@@ -671,7 +665,7 @@ async def test_get_credentials_for_request(
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v1",
         }
@@ -680,7 +674,7 @@ async def test_get_credentials_for_request(
     proof_id = alice_exchange["proof_id"]
 
     requested_credentials = await alice_member_client.get(
-        f"{BASE_PATH}/proofs/{proof_id}/credentials",
+        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
     result = requested_credentials.json()[-1]
@@ -693,9 +687,9 @@ async def test_get_credentials_for_request(
 
     # V2
     await acme_client.post(
-        BASE_PATH + "/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
-            "connection_id": acme_and_alice_connection["acme_connection_id"],
+            "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
             "proof_request": indy_proof_request.dict(),
         },
@@ -704,7 +698,7 @@ async def test_get_credentials_for_request(
     # Wait for request received
     alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
         filter_map={
-            "connection_id": acme_and_alice_connection["alice_connection_id"],
+            "connection_id": acme_and_alice_connection.alice_connection_id,
             "state": "request-received",
             "protocol_version": "v2",
         }
@@ -714,7 +708,7 @@ async def test_get_credentials_for_request(
     proof_id = alice_exchange["proof_id"]
 
     response = await alice_member_client.get(
-        f"{BASE_PATH}/proofs/{proof_id}/credentials",
+        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
     result = response.json()[-1]

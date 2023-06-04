@@ -4,11 +4,10 @@ import time
 from typing import Dict, List, Optional
 
 import httpx
-from httpx import AsyncClient
 from pydantic import BaseModel
 
 from app.tests.util.constants import WEBHOOKS_URL
-from shared_models import CloudApiTopics
+from shared import CloudApiTopics, RichAsyncClient
 
 
 class FilterMap(BaseModel):
@@ -27,7 +26,7 @@ def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
     return wallet["wallet_id"]
 
 
-def get_wallet_id_from_async_client(client: AsyncClient) -> str:
+def get_wallet_id_from_async_client(client: RichAsyncClient) -> str:
     is_non_jwt = len(client.headers.get("x-api-key").split(".")) == 2
 
     if is_non_jwt:
@@ -39,7 +38,7 @@ def get_wallet_id_from_async_client(client: AsyncClient) -> str:
 
 
 def check_webhook_state(
-    client: AsyncClient,
+    client: RichAsyncClient,
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]],
     max_duration: int = 120,
@@ -52,11 +51,10 @@ def check_webhook_state(
 
     t_end = time.time() + max_duration
     while time.time() < t_end:
-        hooks_response = httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")
+        hooks_response = httpx.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")
 
         if hooks_response.is_error:
-            raise Exception(
-                f"Error retrieving webhooks: {hooks_response.text}")
+            raise Exception(f"Error retrieving webhooks: {hooks_response.text}")
 
         hooks = hooks_response.json()
 
@@ -73,14 +71,15 @@ def check_webhook_state(
                 return True
 
         time.sleep(poll_interval)
-    raise Exception(
-        f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
+    raise Exception(f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
 
 
-def get_hooks_per_topic_per_wallet(client: AsyncClient, topic: CloudApiTopics) -> List:
+def get_hooks_per_topic_per_wallet(
+    client: RichAsyncClient, topic: CloudApiTopics
+) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
-        hooks = (httpx.get(f"{WEBHOOKS_URL}/{topic}/{wallet_id}")).json()
+        hooks = (httpx.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")).json()
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e

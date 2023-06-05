@@ -13,8 +13,8 @@ from mockito import verify, when
 
 from app.admin.tenants import onboarding
 from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
+from app.event_handling.listener import Listener
 from app.facades.acapy_wallet import Did
-from app.listener import Listener
 from app.tests.util.mock import to_async
 from shared.cloud_api_error import CloudApiException
 from shared.models.topics import CloudApiTopics

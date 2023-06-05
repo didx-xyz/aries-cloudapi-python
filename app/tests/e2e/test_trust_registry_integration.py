@@ -1,7 +1,7 @@
 import pytest
 
+from app.event_handling.listener import Listener
 from app.facades.trust_registry import actor_by_id
-from app.listener import Listener
 from app.tests.util.client import get_tenant_admin_client, get_tenant_client
 from app.tests.util.string import base64_to_json, random_string
 from app.tests.util.tenants import (

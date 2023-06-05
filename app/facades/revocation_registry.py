@@ -14,7 +14,7 @@ from aries_cloudcontroller import (
     TxnOrRevRegResult,
 )
 
-from app.listener import Listener
+from app.event_handling.listener import Listener
 from shared.cloud_api_error import CloudApiException
 from shared.dependencies.auth import get_governance_controller
 

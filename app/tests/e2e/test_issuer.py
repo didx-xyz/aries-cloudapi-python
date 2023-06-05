@@ -4,9 +4,9 @@ import pytest
 from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.event_handling.listener import Listener
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
-from app.listener import Listener
 from app.tests.e2e.test_fixtures import CREDENTIALS_BASE_PATH
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client

@@ -7,12 +7,12 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.event_handling.listener import Listener
 from app.generic.verifier.models import (
     AcceptProofRequest,
     RejectProofRequest,
     SendProofRequest,
 )
-from app.listener import Listener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request

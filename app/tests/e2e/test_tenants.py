@@ -6,12 +6,12 @@ from assertpy.assertpy import assert_that
 
 from app.admin.tenants import tenants
 from app.facades import acapy_wallet, trust_registry
-from app.role import Role
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
 from shared.dependencies.auth import get_tenant_controller
+from shared.dependencies.role import Role
 
 BASE_PATH = tenants.router.prefix
 

@@ -2,6 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.event_handling.listener import Listener
 from app.generic.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -10,7 +11,6 @@ from app.generic.definitions import (
     create_schema,
 )
 from app.generic.issuer.issuer import router
-from app.listener import Listener
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer

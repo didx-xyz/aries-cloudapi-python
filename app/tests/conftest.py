@@ -1,6 +1,8 @@
 import mockito
 import pytest
 
+from app.event_handling.webhooks import Webhooks
+
 # flake8: noqa
 # pylint: disable=unused-import
 from app.tests.util.ecosystem_connections import (
@@ -27,7 +29,6 @@ from app.tests.util.member_async_clients import (
     tenant_admin_client,
 )
 from app.tests.util.member_wallets import acme_tenant, alice_tenant
-from app.webhooks import Webhooks
 from tests.fixtures import mock_agent_controller
 
 # Unused imports make pytest fixtures visible to tests within this module

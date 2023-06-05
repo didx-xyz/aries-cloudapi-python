@@ -11,16 +11,6 @@ from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
 logger = logging.getLogger(__name__)
 
 
-def convert_url_to_websocket(url: str) -> str:
-    """
-    Convert an HTTP or HTTPS URL to WebSocket (WS or WSS) URL.
-    """
-    if url.startswith("http"):
-        return "ws" + url[4:]
-    else:
-        return url
-
-
 class Webhooks:
     """
     A class for managing webhook callbacks, emitting webhook events, and handling the underlying
@@ -171,3 +161,13 @@ class Webhooks:
 
 class WebhooksTimeout(Exception):
     """Exception raised when Webhooks functions time out."""
+
+
+def convert_url_to_websocket(url: str) -> str:
+    """
+    Convert an HTTP or HTTPS URL to WebSocket (WS or WSS) URL.
+    """
+    if url.startswith("http"):
+        return "ws" + url[4:]
+    else:
+        return url

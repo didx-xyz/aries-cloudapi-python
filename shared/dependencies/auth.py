@@ -9,8 +9,8 @@ from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
 
-from app.role import Role
 from shared import ACAPY_MULTITENANT_JWT_SECRET
+from shared.dependencies.role import Role
 
 logger = logging.getLogger(__name__)
 

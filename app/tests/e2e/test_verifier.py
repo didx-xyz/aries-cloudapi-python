@@ -325,7 +325,7 @@ async def test_accept_proof_request_v2(
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
-    acme_tenant: CreateTenantResponse,
+    acme_verifier: CreateTenantResponse,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
@@ -381,7 +381,7 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant.tenant_id)
+    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_verifier.tenant_id)
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",

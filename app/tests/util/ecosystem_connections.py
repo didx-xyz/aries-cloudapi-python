@@ -82,16 +82,16 @@ class AcmeAliceConnect:
 
 @pytest.fixture(scope="function")
 async def acme_and_alice_connection(
-    alice_member_client: RichAsyncClient, acme_tenant: CreateTenantResponse
+    alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
 ) -> AcmeAliceConnect:
-    acme_actor = await actor_by_id(acme_tenant.tenant_id)
+    acme_actor = await actor_by_id(acme_verifier.tenant_id)
 
     assert acme_actor
     assert acme_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    listener = Listener(topic="connections", wallet_id=acme_tenant.tenant_id)
+    listener = Listener(topic="connections", wallet_id=acme_verifier.tenant_id)
 
     # accept invitation on alice side
     invitation_response = (

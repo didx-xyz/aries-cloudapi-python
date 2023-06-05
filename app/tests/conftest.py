@@ -28,7 +28,7 @@ from app.tests.util.member_async_clients import (
     governance_client,
     tenant_admin_client,
 )
-from app.tests.util.member_wallets import acme_tenant, alice_tenant
+from app.tests.util.member_wallets import acme_verifier, alice_tenant
 from tests.fixtures import mock_agent_controller
 
 # Unused imports make pytest fixtures visible to tests within this module
@@ -49,7 +49,7 @@ def anyio_backend():
 
 
 @pytest.fixture(autouse=True)
-def run_around_tests():
+def unstub_mockito():
     """
     Automatically unstub all stubbed methods after each test.
 

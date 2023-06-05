@@ -7,7 +7,7 @@ def append_random_string(name):
     return f"{name}_{random_string(5)}"
 
 
-async def post_tennant_request(
+async def post_tenant_request(
     admin_client: RichAsyncClient, request: CreateTenantRequest
 ) -> CreateTenantResponse:
     response = await admin_client.post("/admin/tenants", json=request.dict())
@@ -18,7 +18,7 @@ async def create_issuer_tenant(admin_client: RichAsyncClient, name: str):
     request = CreateTenantRequest(
         name=append_random_string(name), roles=["issuer"], group_id="IssuerGroup"
     )
-    return await post_tennant_request(admin_client, request)
+    return await post_tenant_request(admin_client, request)
 
 
 async def create_verifier_tenant(admin_client: RichAsyncClient, name: str):
@@ -27,7 +27,7 @@ async def create_verifier_tenant(admin_client: RichAsyncClient, name: str):
         roles=["verifier"],
         group_id="VerifierGroup",
     )
-    return await post_tennant_request(admin_client, request)
+    return await post_tenant_request(admin_client, request)
 
 
 async def create_tenant(admin_client: RichAsyncClient, name: str):
@@ -36,7 +36,7 @@ async def create_tenant(admin_client: RichAsyncClient, name: str):
         name=append_random_string(name),
         group_id="TenantGroup",
     )
-    return await post_tennant_request(admin_client, request)
+    return await post_tenant_request(admin_client, request)
 
 
 async def delete_tenant(admin_client: RichAsyncClient, tenant_id: str):

@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Any, Dict, Optional
 
-from app.webhooks import Webhooks
+from app.webhooks.webhooks import Webhooks
 from shared import CloudApiTopics
 
 logger = logging.getLogger(__name__)

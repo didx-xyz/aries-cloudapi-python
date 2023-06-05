@@ -1,7 +1,7 @@
 aiohttp~=3.8.4
 aries-cloudcontroller==0.8.0
 base58~=2.1.1
-fastapi~=0.95.2
+fastapi~=0.96.0
 fastapi_websocket_pubsub~=0.3.3
 httpx~=0.24.1
 pydantic~=1.10.8

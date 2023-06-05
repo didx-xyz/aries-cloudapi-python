@@ -28,7 +28,12 @@ from app.tests.util.member_async_clients import (
     governance_client,
     tenant_admin_client,
 )
-from app.tests.util.member_wallets import acme_verifier, alice_tenant
+from app.tests.util.member_wallets import (
+    acme_verifier,
+    alice_tenant,
+    bob_tenant,
+    faber_issuer,
+)
 from tests.fixtures import mock_agent_controller
 
 # Unused imports make pytest fixtures visible to tests within this module

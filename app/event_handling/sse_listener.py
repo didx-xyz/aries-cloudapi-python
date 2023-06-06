@@ -24,6 +24,24 @@ class SseListener:
         self.wallet_id = wallet_id
         self.topic = topic
 
+    async def wait_for_state(self, desired_state, duration: int = 150):
+        """
+        Start listening for SSE events. When an event is received that matches the specified parameters.
+        """
+        url = f"{base_url}/{self.wallet_id}/{self.topic}/{desired_state}"
+
+        timeout = httpx.Timeout(duration)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            async with client.stream("GET", url) as response:
+                async for line in response.aiter_lines():
+                    if line.startswith("data: "):
+                        data = line[6:]
+                        return json.loads(data)
+                    elif line == "" or line.startswith(": ping"):
+                        pass  # ignore newlines and pings
+                    else:
+                        LOGGER.warning(f"Unexpected SSE line: {line}")
+
     async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.

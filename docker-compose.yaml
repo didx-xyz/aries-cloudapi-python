@@ -289,7 +289,7 @@ services:
       - host
     healthcheck:
       test: ["CMD-SHELL", "/home/indy/indy_healthcheck.sh"]
-      interval: 15s
+      interval: 60s
       timeout: 5s
       retries: 10
       start_period: 30s

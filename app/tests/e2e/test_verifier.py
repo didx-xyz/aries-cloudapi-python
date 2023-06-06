@@ -436,7 +436,7 @@ async def test_send_proof_request(
         field_id=acme_and_alice_connection.alice_connection_id,
         desired_state="request-received",
     )
-    assert alice_connection_event["payload"]["protocol_version"] == "v1"
+    assert alice_connection_event["protocol_version"] == "v1"
 
     # V2
     response = await acme_client.post(
@@ -463,7 +463,7 @@ async def test_send_proof_request(
         field_id=acme_and_alice_connection.alice_connection_id,
         desired_state="request-received",
     )
-    assert alice_connection_event["payload"]["protocol_version"] == "v2"
+    assert alice_connection_event["protocol_version"] == "v2"
 
 
 @pytest.mark.anyio

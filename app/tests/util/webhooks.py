@@ -62,12 +62,12 @@ async def check_webhook_state(
             field=field,
             field_id=field_id,
             desired_state=desired_state,
-            duration=max_duration,
+            timeout=max_duration,
         )
     else:
         # No other key means we are only asserting the state
         event = await listener.wait_for_state(
-            desired_state=desired_state, duration=max_duration
+            desired_state=desired_state, timeout=max_duration
         )
 
     if event:

@@ -24,7 +24,7 @@ class SseListener:
         self.wallet_id = wallet_id
         self.topic = topic
 
-    async def listen(self, field, field_id, desired_state, duration: int = 150):
+    async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """

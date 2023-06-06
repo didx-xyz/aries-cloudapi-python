@@ -58,7 +58,7 @@ async def bob_and_alice_connection(
         topic="connections",
         filter_map={"state": "completed"},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         bob_member_client,
         topic="endorsements",
         filter_map={"state": "transaction-acked"},

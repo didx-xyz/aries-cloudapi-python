@@ -251,10 +251,10 @@ class MockSseListener(SseListener):
 
 
 class MockListenerEndorserConnectionId(MockSseListener):
-    async def wait_for_state(self, desired_state, duration: int = 150):
+    async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
         return {"connection_id": "endorser_connection_id"}
 
 
 class MockListenerRequestReceived(MockSseListener):
-    async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
+    async def wait_for_state(self, desired_state, duration: int = 150):
         return {"state": "request-received", "transaction_id": "abcde"}

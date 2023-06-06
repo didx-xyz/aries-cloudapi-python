@@ -85,8 +85,6 @@ async def acme_and_alice_connection(
     alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
 ) -> AcmeAliceConnect:
     acme_actor = await actor_by_id(acme_verifier.tenant_id)
-
-    assert acme_actor
     assert acme_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
@@ -101,7 +99,7 @@ async def acme_and_alice_connection(
         )
     ).json()
 
-    payload = await acme_listener.wait_for_event(desired_state="completed")
+    payload = await acme_listener.wait_for_state(desired_state="completed")
 
     acme_connection_id = payload["connection_id"]
     alice_connection_id = invitation_response["connection_id"]

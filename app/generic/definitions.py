@@ -294,7 +294,7 @@ async def create_credential_definition(
                 admin_listener = SseListener(topic="endorsements", wallet_id="admin")
                 async with get_governance_controller() as endorser_controller:
                     try:
-                        txn_record = await admin_listener.wait_for_event(
+                        txn_record = await admin_listener.wait_for_state(
                             desired_state="request-received"
                         )
                     except TimeoutError:

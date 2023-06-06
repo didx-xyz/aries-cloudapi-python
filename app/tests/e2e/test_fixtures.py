@@ -2,7 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -144,7 +144,7 @@ async def issue_credential_to_alice(
         "attributes": {"speed": "10"},
     }
 
-    listener = Listener(topic="credentials", wallet_id=alice_tenant.tenant_id)
+    listener = SseListener(topic="credentials", wallet_id=alice_tenant.tenant_id)
 
     # create and send credential offer- issuer
     await faber_client.post(
@@ -152,11 +152,10 @@ async def issue_credential_to_alice(
         json=credential,
     )
 
-    payload = await listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
-        }
+    payload = await listener.wait_for_event(
+        field="connection_id",
+        field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
     )
 
     alice_credential_id = payload["credential_id"]
@@ -166,10 +165,9 @@ async def issue_credential_to_alice(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await listener.wait_for_filtered_event(
-        filter_map={"credential_id": alice_credential_id, "state": "done"}
+    await listener.wait_for_event(
+        field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
-    listener.stop()
 
     # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
 

@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
@@ -29,9 +29,9 @@ class OnboardResult(BaseModel):
     didcomm_invitation: Optional[AnyHttpUrl]
 
 
-def create_listener(topic: str, wallet_id: str) -> Listener:
+def create_sse_listener(wallet_id: str, topic: str) -> SseListener:
     # Helper method for passing MockListener to class
-    return Listener(topic=topic, wallet_id=wallet_id)
+    return SseListener(topic=topic, wallet_id=wallet_id)
 
 
 async def handle_tenant_update(
@@ -194,7 +194,9 @@ async def onboard_issuer_no_public_did(
             issuer_wallet_id,
         )
 
-        connections_listener = create_listener(topic="connections", wallet_id="admin")
+        connections_listener = create_sse_listener(
+            topic="connections", wallet_id="admin"
+        )
 
         # FIXME: make sure the connection with this alias doesn't exist yet
         # Or does use_existing_connection take care of this?
@@ -206,19 +208,16 @@ async def onboard_issuer_no_public_did(
         )
 
         try:
-            endorser_connection = await connections_listener.wait_for_filtered_event(
-                filter_map={
-                    "invitation_msg_id": invitation.invi_msg_id,
-                    "state": "completed",
-                }
+            endorser_connection = await connections_listener.wait_for_event(
+                field="invitation_msg_id",
+                field_id=invitation.invi_msg_id,
+                desired_state="completed",
             )
         except TimeoutError as e:
             raise CloudApiException(
                 "Timeout occurred while waiting for connection with endorser to complete",
                 504,
             ) from e
-        finally:
-            connections_listener.stop()
 
         return endorser_connection, connection_record
 
@@ -261,20 +260,18 @@ async def onboard_issuer_no_public_did(
             create_transaction_for_endorser=True,
         )
 
-        endorsements_listener = create_listener(topic="endorsements", wallet_id="admin")
+        endorsements_listener = create_sse_listener(
+            topic="endorsements", wallet_id="admin"
+        )
 
         try:
-            txn_record = await endorsements_listener.wait_for_filtered_event(
-                filter_map={
-                    "state": "request-received",
-                }
+            txn_record = await endorsements_listener.wait_for_state(
+                desired_state="request-received"
             )
         except TimeoutError as e:
             raise CloudApiException(
                 "Timeout occured while waiting to create connection with endorser", 504
             ) from e
-        finally:
-            endorsements_listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

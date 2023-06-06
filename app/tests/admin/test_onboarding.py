@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -13,11 +11,10 @@ from mockito import verify, when
 
 from app.admin.tenants import onboarding
 from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.facades.acapy_wallet import Did
 from app.tests.util.mock import to_async
 from shared.cloud_api_error import CloudApiException
-from shared.models.topics import CloudApiTopics
 from tests.fixtures import get_mock_agent_controller
 
 

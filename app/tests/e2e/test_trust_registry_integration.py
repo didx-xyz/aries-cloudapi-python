@@ -1,6 +1,6 @@
 import pytest
 
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.facades.trust_registry import actor_by_id
 from app.tests.util.client import get_tenant_admin_client, get_tenant_client
 from app.tests.util.string import base64_to_json, random_string
@@ -34,7 +34,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         await issuer_client.post("/generic/connections/create-invitation")
     ).json()
 
-    issuer_tenant_listener = Listener(
+    issuer_tenant_listener = SseListener(
         topic="connections", wallet_id=issuer_tenant.tenant_id
     )
 
@@ -48,10 +48,11 @@ async def test_accept_proof_request_verifier_no_public_did(
     issuer_holder_connection_id = invitation["connection_id"]
     holder_issuer_connection_id = invitation_response["connection_id"]
 
-    await issuer_tenant_listener.wait_for_filtered_event(
-        filter_map={"state": "completed", "connection_id": issuer_holder_connection_id}
+    await issuer_tenant_listener.wait_for_event(
+        field="connection_id",
+        field_id=issuer_holder_connection_id,
+        desired_state="completed",
     )
-    issuer_tenant_listener.stop()
 
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
@@ -59,7 +60,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     assert verifier_actor
 
-    verifier_tenant_listener = Listener(
+    verifier_tenant_listener = SseListener(
         topic="connections",
         wallet_id=verifier_tenant.tenant_id,
     )
@@ -76,10 +77,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         )
     ).json()
 
-    payload = await verifier_tenant_listener.wait_for_filtered_event(
-        filter_map={"state": "completed"}, timeout=100
-    )
-    verifier_tenant_listener.stop()
+    payload = await verifier_tenant_listener.wait_for_state(desired_state="completed")
 
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
@@ -114,7 +112,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     credential_definition_id = credential_definition.json()["id"]
 
     # Issue credential from issuer to holder
-    holder_tenant_listener = Listener(
+    holder_tenant_listener = SseListener(
         topic="credentials", wallet_id=holder_tenant.tenant_id
     )
 
@@ -130,18 +128,16 @@ async def test_accept_proof_request_verifier_no_public_did(
         )
     ).json()
 
-    payload = await holder_tenant_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "offer-received",
-            "connection_id": holder_issuer_connection_id,
-        },
+    payload = await holder_tenant_listener.wait_for_event(
+        field="connection_id",
+        field_id=holder_issuer_connection_id,
+        desired_state="offer-received",
     )
-    holder_tenant_listener.stop()
 
     issuer_credential_exchange_id = issuer_credential_exchange["credential_id"]
     holder_credential_exchange_id = payload["credential_id"]
 
-    issuer_tenant_cred_listener = Listener(
+    issuer_tenant_cred_listener = SseListener(
         topic="credentials", wallet_id=issuer_tenant.tenant_id
     )
 
@@ -150,15 +146,15 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
 
     # Wait for credential exchange to finish
-    await issuer_tenant_cred_listener.wait_for_filtered_event(
-        filter_map={"state": "done", "credential_id": issuer_credential_exchange_id},
-        timeout=300,
+    await issuer_tenant_cred_listener.wait_for_event(
+        field="credential_id",
+        field_id=issuer_credential_exchange_id,
+        desired_state="done",
     )
-    issuer_tenant_cred_listener.stop()
 
     # Present proof from holder to verifier
 
-    holder_tenant_proofs_listener = Listener(
+    holder_tenant_proofs_listener = SseListener(
         topic="proofs", wallet_id=holder_tenant.tenant_id
     )
 
@@ -190,14 +186,11 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     verifier_proof_exchange = response.json()
 
-    payload = await holder_tenant_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "request-received",
-            "connection_id": holder_verifier_connection_id,
-        },
-        timeout=300,
+    payload = await holder_tenant_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=holder_verifier_connection_id,
+        desired_state="request-received",
     )
-    holder_tenant_proofs_listener.stop()
 
     verifier_proof_exchange_id = verifier_proof_exchange["proof_id"]
     holder_proof_exchange_id = payload["proof_id"]
@@ -210,7 +203,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     cred_id = available_credentials[0]["cred_info"]["referent"]
 
-    verifier_tenant_proofs_listener = Listener(
+    verifier_tenant_proofs_listener = SseListener(
         topic="proofs", wallet_id=verifier_tenant.tenant_id
     )
 
@@ -231,15 +224,12 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
     )
 
-    await verifier_tenant_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "done",
-            "proof_id": verifier_proof_exchange_id,
-            "verified": True,
-        },
-        timeout=300,
+    event = await verifier_tenant_proofs_listener.wait_for_event(
+        field="proof_id",
+        field_id=verifier_proof_exchange_id,
+        desired_state="done",
     )
-    verifier_tenant_proofs_listener.stop()
+    assert event["payload"]["verified"]
 
     # Delete all tenants
     await delete_tenant(tenant_admin, issuer_tenant.tenant_id)

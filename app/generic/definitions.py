@@ -17,7 +17,7 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
     create_revocation_registry,
@@ -210,7 +210,7 @@ async def create_credential_definition(
         public_did, credential_definition.schema_id
     )
 
-    listener = Listener(topic="endorsements", wallet_id=auth.wallet_id)
+    listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
 
     result = await aries_controller.credential_definition.publish_cred_def(
         body=CredentialDefinitionSendRequest(
@@ -223,19 +223,15 @@ async def create_credential_definition(
     if result.txn and result.txn.transaction_id:
         try:
             # Wait for transaction to be acknowledged and written to the ledger
-            await listener.wait_for_filtered_event(
-                filter_map={
-                    "state": "transaction-acked",
-                    "transaction_id": result.txn.transaction_id,
-                },
-                timeout=30,
+            await listener.wait_for_event(
+                field="transaction_id",
+                field_id=result.txn.transaction_id,
+                desired_state="transaction-acked",
             )
         except asyncio.TimeoutError:
             raise CloudApiException(
                 "Timeout waiting for endorser to accept the endorsement request", 504
             )
-        finally:
-            listener.stop()
 
         try:
             transaction = await aries_controller.endorse_transaction.get_transaction(
@@ -295,22 +291,17 @@ async def create_credential_definition(
                 create_transaction_for_endorser=has_connections,
             )
             if has_connections:
-                admin_listener = Listener(topic="endorsements", wallet_id="admin")
+                admin_listener = SseListener(topic="endorsements", wallet_id="admin")
                 async with get_governance_controller() as endorser_controller:
                     try:
-                        txn_record = await admin_listener.wait_for_filtered_event(
-                            filter_map={
-                                "state": "request-received",
-                            },
-                            timeout=30,
+                        txn_record = await admin_listener.wait_for_event(
+                            desired_state="request-received"
                         )
                     except TimeoutError:
                         raise CloudApiException(
                             "Timeout occurred while waiting to retrieve transaction record for endorser",
                             504,
                         )
-                    finally:
-                        admin_listener.stop()
 
                     await endorser_controller.endorse_transaction.endorse_transaction(
                         tran_id=txn_record["transaction_id"]

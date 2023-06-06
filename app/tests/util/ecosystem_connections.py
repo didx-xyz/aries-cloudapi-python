@@ -5,7 +5,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.facades.trust_registry import actor_by_id
 from app.generic.connections.connections import CreateInvitation
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
@@ -91,7 +91,7 @@ async def acme_and_alice_connection(
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    listener = Listener(topic="connections", wallet_id=acme_verifier.tenant_id)
+    acme_listener = SseListener(topic="connections", wallet_id=acme_verifier.tenant_id)
 
     # accept invitation on alice side
     invitation_response = (
@@ -101,8 +101,7 @@ async def acme_and_alice_connection(
         )
     ).json()
 
-    payload = await listener.wait_for_filtered_event(filter_map={"state": "completed"})
-    listener.stop()
+    payload = await acme_listener.wait_for_event(desired_state="completed")
 
     acme_connection_id = payload["connection_id"]
     alice_connection_id = invitation_response["connection_id"]

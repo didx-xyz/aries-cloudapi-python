@@ -4,7 +4,7 @@ import pytest
 from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
-from app.event_handling.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from app.tests.e2e.test_fixtures import CREDENTIALS_BASE_PATH
@@ -94,7 +94,7 @@ async def test_send_credential_oob_v2(
     alice_member_client: RichAsyncClient,
 ):
     wallet_id = get_wallet_id_from_async_client(alice_member_client)
-    alice_credentials_listener = Listener(topic="credentials", wallet_id=wallet_id)
+    alice_credentials_listener = SseListener(topic="credentials", wallet_id=wallet_id)
 
     credential = {
         "protocol_version": "v2",
@@ -142,13 +142,11 @@ async def test_send_credential_oob_v2(
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
 
-    result = await alice_credentials_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "offer-received",
-            "thread_id": thread_id,
-        },
+    result = await alice_credentials_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="offer-received",
     )
-    alice_credentials_listener.stop()
 
     assert result["credential_id"]
 
@@ -438,7 +436,7 @@ async def test_revoke_credential(
         "attributes": {"speed": "10"},
     }
 
-    alice_credentials_listener = Listener(
+    alice_credentials_listener = SseListener(
         topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
@@ -448,11 +446,10 @@ async def test_revoke_credential(
         json=credential,
     )
 
-    payload = await alice_credentials_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
-        }
+    payload = await alice_credentials_listener.wait_for_event(
+        field="connection_id",
+        field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
     )
 
     alice_credential_id = payload["credential_id"]
@@ -462,10 +459,11 @@ async def test_revoke_credential(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await alice_credentials_listener.wait_for_filtered_event(
-        filter_map={"credential_id": alice_credential_id, "state": "done"}
+    await alice_credentials_listener.wait_for_event(
+        field="credential_id",
+        field_id=alice_credential_id,
+        desired_state="done",
     )
-    alice_credentials_listener.stop()
 
     # Retrieve an issued credential
     records = (await faber_client.get("/generic/issuer/credentials")).json()

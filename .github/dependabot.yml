@@ -9,3 +9,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "Saturday"
+      time: "12:00"
+      
+#   - package-ecosystem: "pip"
+#     directory: "/"
+#     schedule:
+#       interval: "daily"
+#       time: "00:00"
+#     allow:
+#       - dependency-name: "fastapi"
+#       - dependency-name: "starlette"
+#       - dependency-name: "httpx"

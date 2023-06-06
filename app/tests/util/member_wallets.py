@@ -22,7 +22,7 @@ async def alice_tenant():
 @pytest.fixture(scope="session")
 async def bob_tenant():
     async with get_tenant_admin_client() as admin_client:
-        tenant = await create_tenant(admin_client, "bob")
+        tenant = await create_issuer_tenant(admin_client, "bob")
 
         yield tenant
 

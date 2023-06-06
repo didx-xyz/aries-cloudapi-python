@@ -37,7 +37,9 @@ async def topic_root(
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
-        wallet_id = "admin" # todo: defaults to admin ...
+        wallet_id = "admin"  # todo: defaults to admin ...
+    # FIXME: wallet_id is admin for all admin wallets from different origins. We should make a difference on this
+    # Maybe the wallet id should be the role (governance, tenant-admin)?
 
     # We need to map from the acapy webhook topic to a unified cloud api topic. If the topic doesn't exist in the topic
     # mapping it means we don't support the webhook event yet and we will ignore it for now. This allows us to add more
@@ -73,8 +75,6 @@ async def topic_root(
     #  - topic and wallet id combined as topic-wallet_id
     #    - this allows for fine grained subscriptions (i.e. the endorser service)
     #  - 'all' topic, which allows to subscribe to all published events
-    # FIXME: wallet_id is admin for all admin wallets from different origins. We should make a difference on this
-    # Maybe the wallet id should be the role (governance, tenant-admin)?
     await endpoint.publish(
         topics=[
             topic,

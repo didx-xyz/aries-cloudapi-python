@@ -42,7 +42,7 @@ class SseListener:
                     else:
                         LOGGER.warning(f"Unexpected SSE line: {line}")
 
-    async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
+        raise SseListenerTimeout("Event with request state was not returned by server")
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
@@ -59,3 +59,9 @@ class SseListener:
                         pass  # ignore newlines and pings
                     else:
                         LOGGER.warning(f"Unexpected SSE line: {line}")
+
+        raise SseListenerTimeout("Requested filtered event was not returned by server")
+
+
+class SseListenerTimeout(Exception):
+    """Exception raised when the Listener times out waiting for a matching event."""

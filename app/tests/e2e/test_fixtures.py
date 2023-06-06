@@ -48,7 +48,7 @@ async def schema_definition_alt(
     return schema_definition_result
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -68,7 +68,7 @@ async def credential_definition_id(
     return result.id
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -88,15 +88,13 @@ async def credential_definition_id_revocable(
     return result.id
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def credential_exchange_id(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
-    """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
-    then this fixture just returns it..."""
     credential = {
         "protocol_version": "v1",
         "connection_id": faber_and_alice_connection.faber_connection_id,
@@ -131,7 +129,7 @@ async def credential_exchange_id(
     return credential_exchange_id
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def issue_credential_to_alice(
     faber_client: RichAsyncClient,
     credential_definition_id: str,

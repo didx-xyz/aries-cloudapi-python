@@ -21,7 +21,7 @@ class BobAliceConnect:
     bob_connection_id: str
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def bob_and_alice_connection(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
@@ -80,7 +80,7 @@ class AcmeAliceConnect:
     acme_connection_id: str
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def acme_and_alice_connection(
     alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
 ) -> AcmeAliceConnect:
@@ -118,7 +118,7 @@ class FaberAliceConnect:
     faber_connection_id: str
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def faber_and_alice_connection(
     alice_member_client: RichAsyncClient, faber_client: RichAsyncClient
 ) -> FaberAliceConnect:
@@ -162,7 +162,7 @@ class BobAlicePublicDid:
     bob_public_did: str
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def bob_and_alice_public_did(
     alice_acapy_client: AcaPyClient,
     bob_acapy_client: AcaPyClient,
@@ -226,7 +226,7 @@ async def bob_multi_use_invitation(
     return bob_multi_invite
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def alice_bob_connect_multi(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,

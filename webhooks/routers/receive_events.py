@@ -7,7 +7,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, topic_mapping
+from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, TopicItem, topic_mapping
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SseManager
@@ -62,7 +62,7 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    webhook_event = await service.transform_topic_entry(redis_item)
+    webhook_event: TopicItem = await service.transform_topic_entry(redis_item)
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
         LOGGER.warning(

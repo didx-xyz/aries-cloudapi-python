@@ -69,7 +69,7 @@ async def sse_subscribe_wallet(
     summary="Subscribe to topic and wallet ID server-side events",
 )
 @inject
-async def sse_subscribe(
+async def sse_subscribe_wallet_topic(
     request: Request,
     wallet_id: str,
     topic: str,
@@ -151,7 +151,7 @@ async def sse_subscribe_desired_state(
     "`desired_state` may be `offer-received`, `transaction-acked`, or `done`.",
 )
 @inject
-async def sse_subscribe_desired_event(
+async def sse_subscribe_filtered_event(
     request: Request,
     wallet_id: str,
     topic: str,

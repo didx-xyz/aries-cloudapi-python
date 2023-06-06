@@ -7,7 +7,7 @@ import httpx
 from shared import WEBHOOKS_URL
 
 LOGGER = logging.getLogger(__name__)
-base_url = url = f"{WEBHOOKS_URL}/sse"
+base_url = f"{WEBHOOKS_URL}/sse"
 
 
 class SseListener:

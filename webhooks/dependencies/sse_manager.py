@@ -16,7 +16,7 @@ class SseManager:
 
     def __init__(self, service: Service):
         self.service = service
-        self.clients = defaultdict(lambda: defaultdict(list))
+        self.clients = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=200)))
         self.locks = ddict(asyncio.Lock)  # Concurrency management per wallet
 
     @asynccontextmanager

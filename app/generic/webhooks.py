@@ -3,7 +3,7 @@ from typing import Any, List
 
 from fastapi import APIRouter, Depends
 
-from app.facades.webhooks import get_hooks_per_topic_per_wallet, get_hooks_per_wallet
+from app.facades.webhooks import get_hooks_for_wallet_by_topic, get_hooks_for_wallet
 from shared import CloudApiTopics, TopicItem
 from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 
@@ -28,7 +28,7 @@ async def get_webhooks_for_wallet(
     List of webhooks belonging to the wallet
     """
 
-    return get_hooks_per_wallet(wallet_id=auth.wallet_id)
+    return get_hooks_for_wallet(wallet_id=auth.wallet_id)
 
 
 @router.get("/{topic}")
@@ -47,4 +47,4 @@ async def get_webhooks_for_wallet_by_topic(
     ---------
     List of webhooks belonging to the wallet
     """
-    return get_hooks_per_topic_per_wallet(wallet_id=auth.wallet_id, topic=topic)
+    return get_hooks_for_wallet_by_topic(wallet_id=auth.wallet_id, topic=topic)

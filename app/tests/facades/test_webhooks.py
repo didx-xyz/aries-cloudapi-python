@@ -18,22 +18,22 @@ conn_record = Connection(
 
 
 @pytest.mark.anyio
-async def test_get_hooks_per_topic_per_wallet():
+async def test_get_hooks_for_wallet_by_topic():
     with patch.object(
-        whf, "get_hooks_per_topic_per_wallet"
-    ) as mock_hook_by_topic_wallet:
-        mock_hook_by_topic_wallet.return_value = [conn_record]
-        whf.get_hooks_per_topic_per_wallet(wallet_id="wallet_id", topic="connections")
+        whf, "get_hooks_for_wallet_by_topic"
+    ) as mock_hook_by_wallet_and_topic:
+        mock_hook_by_wallet_and_topic.return_value = [conn_record]
+        whf.get_hooks_for_wallet_by_topic(wallet_id="wallet_id", topic="connections")
 
-        mock_hook_by_topic_wallet.assert_called_once_with(
+        mock_hook_by_wallet_and_topic.assert_called_once_with(
             wallet_id="wallet_id", topic="connections"
         )
 
 
 @pytest.mark.anyio
-async def test_get_hooks_per_wallet():
-    with patch.object(whf, "get_hooks_per_wallet") as mock_get_hooks_per_wallet:
-        whf.get_hooks_per_wallet.return_value = [conn_record]
-        whf.get_hooks_per_wallet(wallet_id="wallet_id")
+async def test_get_hooks_for_wallet():
+    with patch.object(whf, "get_hooks_for_wallet") as mock_get_hooks_for_wallet:
+        whf.get_hooks_for_wallet.return_value = [conn_record]
+        whf.get_hooks_for_wallet(wallet_id="wallet_id")
 
-        mock_get_hooks_per_wallet.assert_called_once_with(wallet_id="wallet_id")
+        mock_get_hooks_for_wallet.assert_called_once_with(wallet_id="wallet_id")

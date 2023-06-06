@@ -60,6 +60,7 @@ async def topic_root(
 
     webhook_event = await service.transform_topic_entry(redis_item)
     if not webhook_event:
+        # Note: Topic `revocation` not being handled properly
         LOGGER.warning(
             "Not publishing webhook event for topic %s as no transformer exists for the topic",
             topic,

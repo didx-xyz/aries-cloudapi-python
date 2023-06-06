@@ -33,13 +33,8 @@ class SseManager:
         async with self.locks[wallet_id]:
             queue = self.clients[wallet_id][topic]
 
-        try:
-            yield queue
-        finally:
-            async with self.locks[wallet_id]:
-                self.clients[wallet_id][topic] = asyncio.Queue()  # reset the queue
+        yield queue
 
-    @asynccontextmanager
     async def enqueue_sse_event(self, event: str, wallet_id: str, topic: str) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.

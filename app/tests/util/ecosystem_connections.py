@@ -39,7 +39,7 @@ async def bob_and_alice_connection(
         )
     ).json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         alice_member_client, topic="connections", filter_map={"state": "completed"}
     )
 
@@ -48,21 +48,16 @@ async def bob_and_alice_connection(
 
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
-    assert check_webhook_state(
+    assert await check_webhook_state(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed"},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         bob_member_client,
         topic="connections",
         filter_map={"state": "completed"},
     )
-    # assert check_webhook_state(
-    #     alice_member_client,
-    #     topic="endorsements",
-    #     filter_map={"state": "transaction-acked"},
-    # )
     assert check_webhook_state(
         bob_member_client,
         topic="endorsements",
@@ -137,12 +132,12 @@ async def faber_and_alice_connection(
 
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
-    assert check_webhook_state(
+    assert await check_webhook_state(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": alice_connection_id},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         faber_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": faber_connection_id},
@@ -239,7 +234,7 @@ async def alice_bob_connect_multi(
         )
     ).json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="connections",
@@ -257,13 +252,13 @@ async def alice_bob_connect_multi(
 
     bob_connection_id = bob_connection_records[0]["connection_id"]
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "completed"},
         topic="connections",
         max_duration=120,
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "completed"},
         topic="connections",

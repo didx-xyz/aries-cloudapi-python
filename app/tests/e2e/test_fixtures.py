@@ -110,13 +110,13 @@ async def credential_exchange_id(
     credential_exchange_id = credential_exchange["credential_id"]
     assert credential_exchange["protocol_version"] == "v1"
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="credentials",
     )
 
     response = await alice_member_client.get(

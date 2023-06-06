@@ -76,13 +76,13 @@ async def test_send_credential_oob_v1(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
+        topic="credentials",
         filter_map={
             "state": "offer-received",
             "credential_definition_id": credential_definition_id,
         },
-        topic="credentials",
     )
 
 
@@ -199,13 +199,13 @@ async def test_send_credential(
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
-        topic="credentials",
     )
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
@@ -213,13 +213,13 @@ async def test_send_credential(
     )
     records = response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
+        topic="credentials",
         filter_map={
             "state": "offer-received",
             "credential_id": records[-1]["credential_id"],
         },
-        topic="credentials",
     )
     assert len(records) == 2
 
@@ -263,26 +263,26 @@ async def test_create_offer(
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
-        topic="credentials",
     )
     response = await faber_client.get(
         CREDENTIALS_BASE_PATH,
     )
     records = response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": records[-1]["credential_id"],
         },
-        topic="credentials",
     )
     # Two from this and two from previous test potentially. Depending on order.
     # So let's do >= 2 instead of == 2 or == 4
@@ -313,20 +313,20 @@ async def test_send_credential_request(
     credential_exchange = response.json()
     assert credential_exchange["protocol_version"] == "v1"
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="credentials",
     )
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
         topic="credentials",

@@ -118,10 +118,10 @@ async def test_create_tenant_issuer(
 
     async with get_tenant_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
-        assert check_webhook_state(
-            client,
-            "connections",
-            {
+        assert await check_webhook_state(
+            client=client,
+            topic="connections",
+            filter_map={
                 "state": "completed",
                 "connection_id": connection.connection_id,
             },
@@ -287,10 +287,10 @@ async def test_update_tenant_verifier_to_issuer(
 
     async with get_tenant_client(token=verifier_tenant["access_token"]) as client:
         # Wait for connection to be completed
-        assert check_webhook_state(
-            client,
-            "connections",
-            {
+        assert await check_webhook_state(
+            client=client,
+            topic="connections",
+            filter_map={
                 "state": "completed",
                 "connection_id": endorser_connection.connection_id,
             },

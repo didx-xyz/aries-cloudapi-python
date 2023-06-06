@@ -279,7 +279,7 @@ services:
       - 0.0.0.0:9708:9708
     environment:
       - DOCKERHOST=${DOCKERHOST}
-      - LOG-LEVEL=info
+      - LOG-LEVEL=warning
     volumes:
       - nodes-data:/home/indy/ledger
       - ./scripts/indy_healthcheck.sh:/home/indy/indy_healthcheck.sh

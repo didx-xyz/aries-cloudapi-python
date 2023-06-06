@@ -4,10 +4,6 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Any, Generator
 
-from dependency_injector.wiring import Provide, inject
-from fastapi import Depends
-
-from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
@@ -64,8 +60,3 @@ class SseManager:
 
         async with self.locks[wallet_id]:
             await self.clients[wallet_id][topic].put(event)
-
-
-@inject
-async def get_sse_manager(service: Service = Depends(Provide[Container.service])):
-    return SseManager(service)

@@ -3,12 +3,13 @@ import logging
 import time
 from typing import Any, Generator
 
-from dependency_injector.wiring import inject
+from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
 from shared import WEBHOOK_TOPIC_ALL, APIRouter, TopicItem
-from webhooks.dependencies.sse_manager import SseManager, get_sse_manager
+from webhooks.dependencies.container import Container
+from webhooks.dependencies.sse_manager import SseManager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ router = APIRouter(
 async def sse_subscribe_wallet(
     request: Request,
     wallet_id: str,
-    sse_manager: SseManager = Depends(get_sse_manager),
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     """
     Subscribe to server-side events for a specific wallet ID.
@@ -72,7 +73,7 @@ async def sse_subscribe(
     request: Request,
     wallet_id: str,
     topic: str,
-    sse_manager: SseManager = Depends(get_sse_manager),
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     """
     Subscribe to server-side events for a specific topic and wallet ID.
@@ -116,7 +117,7 @@ async def sse_subscribe_desired_state(
     wallet_id: str,
     topic: str,
     desired_state: str,
-    sse_manager: SseManager = Depends(get_sse_manager),
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     async def event_stream(duration=150):
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
@@ -157,7 +158,7 @@ async def sse_subscribe_desired_event(
     field: str,
     field_id: str,
     desired_state: str,
-    sse_manager: SseManager = Depends(get_sse_manager),
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     async def event_stream(duration=150):
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:

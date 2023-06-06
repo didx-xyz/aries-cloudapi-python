@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from webhooks.dependencies import redis, service
+from webhooks.dependencies.sse_manager import SseManager
 
 
 class Container(containers.DeclarativeContainer):
@@ -13,6 +14,10 @@ class Container(containers.DeclarativeContainer):
     service = providers.Factory(
         service.Service,
         redis=redis_pool,
+    )
+    sse_manager = providers.Singleton(
+        SseManager,
+        service=service,
     )
 
 

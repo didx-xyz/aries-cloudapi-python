@@ -10,7 +10,7 @@ from fastapi_websocket_pubsub import PubSubEndpoint
 from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, topic_mapping
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
-from webhooks.dependencies.sse_manager import SseManager, get_sse_manager
+from webhooks.dependencies.sse_manager import SseManager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ async def topic_root(
     body: Dict[str, Any],
     request: Request,
     service: Service = Depends(Provide[Container.service]),
-    sse_manager: SseManager = Depends(get_sse_manager),
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     try:
         wallet_id = request.headers["x-wallet-id"]

@@ -86,8 +86,8 @@ class Service:
             payload=payload,
         )
 
-    async def add_topic_entry(self, topic: str, hook: str):
-        await self._redis.sadd(topic, hook)
+    async def add_wallet_entry(self, wallet_id: str, hook: str):
+        await self._redis.sadd(wallet_id, hook)
 
     async def transform_topic_entry(self, data: RedisItem):
         """Transforms an entry from the redis cache into model."""

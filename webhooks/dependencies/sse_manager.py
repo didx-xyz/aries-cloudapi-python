@@ -33,7 +33,6 @@ class SseManager:
         Args:
             wallet_id: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
-            service: The service to use for fetching undelivered messages.
         """
         queue = asyncio.Queue()
 
@@ -80,17 +79,11 @@ class SseManager:
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 
         This function puts the event into the queue of the respective client.
-        These events are then fetched from the queue and sent to the client
-        via FastAPI's StreamingResponse.
-
-        If there are no active clients for the given wallet and topic,
-        it stores the event as an undelivered message using the provided service.
 
         Args:
             event: The event to enqueue.
             wallet_id: The ID of the wallet to which to enqueue the event.
             topic: The topic to which to enqueue the event.
-            service: The service to use for storing undelivered messages.
         """
         LOGGER.debug(
             "Enqueueing event to wallet '%s' for topic '%s': %s",

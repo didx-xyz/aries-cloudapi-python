@@ -72,7 +72,7 @@ async def topic_root(
         return
 
     # Enqueue the event for SSE
-    await sse_manager.enqueue_sse_event(webhook_event.json(), wallet_id, topic)
+    await sse_manager.enqueue_sse_event(webhook_event, wallet_id, topic)
 
     # publish the webhook to subscribers for the following topics
     #  - current wallet id

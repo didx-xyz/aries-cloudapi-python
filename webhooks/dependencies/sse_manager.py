@@ -4,6 +4,10 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Any, Generator
 
+from dependency_injector.wiring import Provide, inject
+from fastapi import Depends
+
+from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
@@ -95,16 +99,6 @@ class SseManager:
             event,
         )
 
-        if self.clients[wallet_id][topic]:
-            for queue in self.clients[wallet_id][topic]:
-                await queue.put(event)
-        else:
-            try:
-                await self.service.store_undelivered_message(wallet_id, topic, event)
-            except Exception as e:
-                LOGGER.error(
-                    "Could not store undelivered message for wallet '%s', topic '%s': %r",
-                    wallet_id,
-                    topic,
-                    e,
-                )
+@inject
+async def get_sse_manager(service: Service = Depends(Provide[Container.service])):
+    return SseManager(service)

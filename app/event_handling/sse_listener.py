@@ -24,7 +24,7 @@ class SseListener:
         self.wallet_id = wallet_id
         self.topic = topic
 
-    async def wait_for_state(self, desired_state, duration: int = 150):
+    async def wait_for_state(self, desired_state, duration: int = 60):
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
@@ -43,6 +43,8 @@ class SseListener:
                         LOGGER.warning(f"Unexpected SSE line: {line}")
 
         raise SseListenerTimeout("Event with request state was not returned by server")
+
+    async def wait_for_event(self, field, field_id, desired_state, duration: int = 60):
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """

@@ -93,4 +93,4 @@ async def topic_root(
     # Add data to redis
     await service.add_wallet_entry(wallet_id, json.dumps(redis_item))
 
-    LOGGER.debug("%s:\n%s", topic, pformat(webhook_event))
+    LOGGER.debug("Processed received webhook:\n%s", pformat(webhook_event))

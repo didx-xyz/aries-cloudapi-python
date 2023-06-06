@@ -151,8 +151,8 @@ async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
         )
         yield agent
     except Exception as e:
-        # We can only log this here and not raise an HTTPException as
-        # we are past the yield. See here: https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
+        # We can only log this here and not raise an HTTPException as we are past the yield. See here:
+        # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error("%s", e, exc_info=e)
         raise e
     finally:

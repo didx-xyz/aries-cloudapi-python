@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 
@@ -40,11 +39,11 @@ class SseListener:
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
-                        LOGGER.warning(f"Unexpected SSE line: {line}")
+                        LOGGER.warning("Unexpected SSE line: %s", line)
 
         raise SseListenerTimeout("Event with request state was not returned by server")
 
-    async def wait_for_event(self, field, field_id, desired_state, duration: int = 60):
+    async def wait_for_event(self, field, field_id, desired_state, duration: int = 30):
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
@@ -60,7 +59,7 @@ class SseListener:
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
-                        LOGGER.warning(f"Unexpected SSE line: {line}")
+                        LOGGER.warning("Unexpected SSE line: %s", line)
 
         raise SseListenerTimeout("Requested filtered event was not returned by server")
 

@@ -63,6 +63,7 @@ async def test_sse_subscribe_state(
     bob_and_alice_connection: BobAliceConnect,
 ):
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     topic = "connections"
     state = "completed"
@@ -74,6 +75,7 @@ async def test_sse_subscribe_state(
         sse_response["topic"] == topic
         and sse_response["wallet_id"] == alice_wallet_id
         and sse_response["payload"]["state"] == state
+        and sse_response["payload"]["connection_id"] == alice_connection_id
     )
 
 
@@ -107,4 +109,4 @@ async def listen_for_event(url, duration=10):
                 elif line == "" or line.startswith(": ping"):
                     pass  # ignore newlines and pings
                 else:
-                    LOGGER.warning(f"Unexpected SSE line: {line}")
+                    LOGGER.warning("Unexpected SSE line: %s", line)

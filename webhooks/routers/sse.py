@@ -78,8 +78,8 @@ async def sse_subscribe_wallet(
 @inject
 async def sse_subscribe(
     request: Request,
-    topic: str,
     wallet_id: str,
+    topic: str,
     sse_manager: SSEManager = Depends(get_sse_manager),
 ):
     """
@@ -121,8 +121,8 @@ async def sse_subscribe(
 @inject
 async def sse_subscribe_desired_state(
     request: Request,
-    topic: str,
     wallet_id: str,
+    topic: str,
     desired_state: str,
     sse_manager: SSEManager = Depends(get_sse_manager),
 ):
@@ -160,8 +160,8 @@ async def sse_subscribe_desired_state(
 @inject
 async def sse_subscribe_desired_event(
     request: Request,
-    topic: str,
     wallet_id: str,
+    topic: str,
     field: str,
     field_id: str,
     desired_state: str,

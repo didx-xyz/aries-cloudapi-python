@@ -84,7 +84,7 @@ async def listen_for_event(url, duration=10):
                 if line.startswith("data: "):
                     data = line[6:]
                     return json.loads(data)
-                elif line == "" or line.startswith(": ping - "):
+                elif line == "" or line.startswith(": ping"):
                     pass  # ignore newlines and pings
                 else:
                     LOGGER.warning(f"Unexpected SSE line: {line}")

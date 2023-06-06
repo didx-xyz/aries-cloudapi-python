@@ -60,7 +60,7 @@ async def sse_subscribe_wallet(
                     event: TopicItem = queue.get_nowait()
                     yield event.json()
                 except asyncio.QueueEmpty:
-                    time.sleep(0.2)
+                    await asyncio.sleep(0.2)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug("SSE event_stream closing with CancelledError")
@@ -103,7 +103,7 @@ async def sse_subscribe(
                     event: TopicItem = queue.get_nowait()
                     yield event.json()
                 except asyncio.QueueEmpty:
-                    time.sleep(0.2)
+                    await asyncio.sleep(0.2)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     break

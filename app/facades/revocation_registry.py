@@ -52,7 +52,7 @@ async def create_revocation_registry(
             f"Error creating revocation registry for credential with ID {credential_definition_id}"
         )
 
-    logger.info("Created revocation registry:\n%s", result.result)
+    logger.debug("Created revocation registry:\n%s", result.result)
 
     return result.result
 
@@ -85,7 +85,7 @@ async def get_active_revocation_registry_for_credential(
             f"Error retrieving revocation registry for credential with ID {credential_definition_id}"
         )
 
-    logger.info(
+    logger.debug(
         "Retrieved revocation registry for credential definition with ID %s:\n%s",
         credential_definition_id,
         result.result,
@@ -124,7 +124,7 @@ async def get_credential_revocation_status(
     else:
         result = result.result
 
-    logger.info(
+    logger.debug(
         "Credential exchange %s has status:%s:\n%s",
         credential_exchange_id,
         result.state,
@@ -176,7 +176,7 @@ async def publish_revocation_registry_on_ledger(
         )
         raise CloudApiException("Failed to publish revocation registry to ledger.")
 
-    logger.info(
+    logger.debug(
         "Published revocation registry for registry with ID %s\n%s",
         revocation_registry_id,
         result,
@@ -236,7 +236,7 @@ async def publish_revocation_entry_to_ledger(
         )
         raise CloudApiException("Failed to publish revocation entry to ledger.")
 
-    logger.info(
+    logger.debug(
         "Published revocation entry for registry with ID %s:\n%s",
         revocation_registry_id,
         result.result,
@@ -307,7 +307,7 @@ async def revoke_credential(
             # It still creates the transaction record though that can be endorsed below.
             await endorser_revoke()
 
-    logger.info(
+    logger.debug(
         "Revoked credential with ID %s for exchange ID %s.",
         credential_definition_id,
         credential_exchange_id,

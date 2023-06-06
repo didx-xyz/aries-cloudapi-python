@@ -78,12 +78,13 @@ async def topic_root(
     await endpoint.publish(
         topics=[
             topic,
-            redis_item["wallet_id"],
-            f"{topic}-{redis_item['wallet_id']}",
+            wallet_id,
+            f"{topic}-{wallet_id}",
             WEBHOOK_TOPIC_ALL,
         ],
         data=webhook_event.json(),
     )
+
     # Add data to redis
     await service.add_wallet_entry(wallet_id, json.dumps(redis_item))
 

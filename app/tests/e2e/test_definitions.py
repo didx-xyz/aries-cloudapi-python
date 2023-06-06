@@ -143,7 +143,6 @@ async def test_create_credential_definition_issuer_tenant(
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
 
-    # when
     result = (
         await definitions.create_credential_definition(
             credential_definition, faber_acapy_client, auth

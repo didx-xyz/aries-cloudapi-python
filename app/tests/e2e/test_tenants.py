@@ -234,7 +234,9 @@ async def test_update_tenant_verifier_to_issuer(
 
     # Connection invitation
     assert_that(connection).has_state("invitation")
-    assert_that(verifier_actor).has_did(ed25519_verkey_to_did_key(connection.invitation_key))
+    assert_that(verifier_actor).has_did(
+        ed25519_verkey_to_did_key(connection.invitation_key)
+    )
 
     # Tenant
     assert_that(verifier_tenant).has_tenant_id(wallet.wallet_id)
@@ -266,7 +268,11 @@ async def test_update_tenant_verifier_to_issuer(
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
     acapy_token = (
-        (await tenant_admin_client.get(f"{BASE_PATH}/{verifier_tenant_id}/access-token"))
+        (
+            await tenant_admin_client.get(
+                f"{BASE_PATH}/{verifier_tenant_id}/access-token"
+            )
+        )
         .json()["access_token"]
         .split(".", 1)[1]
     )

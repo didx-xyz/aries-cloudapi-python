@@ -55,10 +55,10 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     # Mock event listeners
-    when(onboarding).create_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockListener(topic="connections", wallet_id="admin")
-    )
-    when(onboarding).create_listener(
+    when(onboarding).create_sse_listener(
+        topic="connections", wallet_id="admin"
+    ).thenReturn(MockSseListener(topic="connections", wallet_id="admin"))
+    when(onboarding).create_sse_listener(
         topic="endorsements", wallet_id="admin"
     ).thenReturn(
         MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
@@ -102,10 +102,12 @@ async def test_onboard_issuer_no_public_did(
     )
 
     # Mock event listeners
-    when(onboarding).create_listener(topic="connections", wallet_id="admin").thenReturn(
+    when(onboarding).create_sse_listener(
+        topic="connections", wallet_id="admin"
+    ).thenReturn(
         MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
     )
-    when(onboarding).create_listener(
+    when(onboarding).create_sse_listener(
         topic="endorsements", wallet_id="admin"
     ).thenReturn(MockListenerRequestReceived(topic="endorsements", wallet_id="admin"))
 
@@ -243,29 +245,16 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
         )
 
 
-class MockListener(Listener):
-    def __init__(self, topic: CloudApiTopics, wallet_id: str):
-        # Override init method, to prevent asyncio tasks from being created
-        pass
-
-    async def wait_for_filtered_event(
-        self, filter_map: Dict[str, Any], timeout: float = 300
-    ):
-        pass
-
-    def stop(self):
+class MockSseListener(SseListener):
+    async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
         pass
 
 
-class MockListenerEndorserConnectionId(MockListener):
-    async def wait_for_filtered_event(
-        self, filter_map: Dict[str, Any], timeout: float = 300
-    ):
+class MockListenerEndorserConnectionId(MockSseListener):
+    async def wait_for_state(self, desired_state, duration: int = 150):
         return {"connection_id": "endorser_connection_id"}
 
 
-class MockListenerRequestReceived(MockListener):
-    async def wait_for_filtered_event(
-        self, filter_map: Dict[str, Any], timeout: float = 300
-    ):
+class MockListenerRequestReceived(MockSseListener):
+    async def wait_for_event(self, field, field_id, desired_state, duration: int = 150):
         return {"state": "request-received", "transaction_id": "abcde"}

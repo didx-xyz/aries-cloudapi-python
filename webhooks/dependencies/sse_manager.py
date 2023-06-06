@@ -21,7 +21,7 @@ class SseManager:
     def __init__(self, service: Service):
         self.service = service
         self.clients = defaultdict(lambda: defaultdict(list))
-        self.lock = asyncio.Lock()  # Concurrency management
+        self.locks = defaultdict(asyncio.Lock)  # Concurrency management per wallet
 
     @asynccontextmanager
     async def sse_event_stream(
@@ -34,44 +34,14 @@ class SseManager:
             wallet_id: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
         """
-        queue = asyncio.Queue()
-
-        async def fetch_events():
-            while True:
-                try:
-                    events_to_deliver = (
-                        await self.service.get_all_for_topic_by_wallet_id(
-                            topic=topic, wallet_id=wallet_id
-                        )
-                    )
-                except Exception as e:
-                    LOGGER.error(
-                        "Could not get events for topic '%s' and wallet_id '%s': %r",
-                        topic,
-                        wallet_id,
-                        e,
-                    )
-                    events_to_deliver = []
-                    raise e
-
-                for event in events_to_deliver:
-                    await queue.put(event)
-
-                await asyncio.sleep(0.5)  # period at which service is polled
-
-        # start the background task
-        fetch_task = asyncio.create_task(fetch_events())
-
-        async with self.lock:
-            self.clients[wallet_id][topic].append(queue)
+        async with self.locks[wallet_id]:
+            queue = self.clients[wallet_id][topic]
 
         try:
             yield queue
         finally:
-            # cancel the background task when the context manager exits
-            fetch_task.cancel()
-            async with self.lock:
-                self.clients[wallet_id][topic].remove(queue)
+            async with self.locks[wallet_id]:
+                self.clients[wallet_id][topic] = asyncio.Queue()  # reset the queue
 
     @asynccontextmanager
     async def enqueue_sse_event(self, event: str, wallet_id: str, topic: str) -> None:
@@ -91,6 +61,10 @@ class SseManager:
             topic,
             event,
         )
+
+        async with self.locks[wallet_id]:
+            await self.clients[wallet_id][topic].put(event)
+
 
 @inject
 async def get_sse_manager(service: Service = Depends(Provide[Container.service])):

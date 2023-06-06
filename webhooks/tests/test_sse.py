@@ -3,7 +3,7 @@ import json
 import logging
 
 import pytest
-from httpx import AsyncClient, Response
+from httpx import AsyncClient, Response, Timeout
 
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
@@ -34,6 +34,29 @@ async def test_sse_subscribe_wallet(
     )
 
 
+@pytest.mark.anyio
+async def test_sse_subscribe_event(
+    alice_member_client: RichAsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
+
+    topic = "connections"
+    field = "connection_id"
+    state = "completed"
+
+    url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{field}/{alice_connection_id}/{state}"
+    sse_response = await listen_for_event(url)
+
+    assert (
+        sse_response["topic"] == topic
+        and sse_response["wallet_id"] == alice_wallet_id
+        and sse_response["payload"][field] == alice_connection_id
+        and sse_response["payload"]["state"] == state
+    )
+
+
 async def get_sse_response(wallet_id, topic) -> Response:
     async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
         async with client.stream("GET", f"/sse/{wallet_id}/{topic}") as response:
@@ -51,3 +74,17 @@ def response_to_json(response_text):
     json_lines = [json.loads(line) for line in lines if line]
 
     return json_lines
+
+
+async def listen_for_event(url, duration=10):
+    timeout = Timeout(duration)
+    async with AsyncClient(timeout=timeout) as client:
+        async with client.stream("GET", url) as response:
+            async for line in response.aiter_lines():
+                if line.startswith("data: "):
+                    data = line[6:]
+                    return json.loads(data)
+                elif line == "" or line.startswith(": ping - "):
+                    pass  # ignore newlines and pings
+                else:
+                    LOGGER.warning(f"Unexpected SSE line: {line}")

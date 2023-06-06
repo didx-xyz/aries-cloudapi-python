@@ -9,7 +9,7 @@ from webhooks.dependencies.service import Service
 LOGGER = logging.getLogger(__name__)
 
 
-class SSEManager:
+class SseManager:
     """
     Class to manage Server-Sent Events (SSE).
     """

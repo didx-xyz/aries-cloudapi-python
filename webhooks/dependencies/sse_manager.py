@@ -32,22 +32,32 @@ class SSEManager:
             service: The service to use for fetching undelivered messages.
         """
         queue = asyncio.Queue()
-        try:
-            events_to_deliver = await self.service.get_all_for_topic_by_wallet_id(
-                topic, wallet_id
-            )
-        except Exception as e:
-            LOGGER.error(
-                "Could not get events for topic '%s' and wallet_id '%s': %r",
-                topic,
-                wallet_id,
-                e,
-            )
-            events_to_deliver = []
-            raise e
 
-        for event in events_to_deliver:
-            await queue.put(event)
+        async def fetch_events():
+            while True:
+                try:
+                    events_to_deliver = (
+                        await self.service.get_all_for_topic_by_wallet_id(
+                            topic=topic, wallet_id=wallet_id
+                        )
+                    )
+                except Exception as e:
+                    LOGGER.error(
+                        "Could not get events for topic '%s' and wallet_id '%s': %r",
+                        topic,
+                        wallet_id,
+                        e,
+                    )
+                    events_to_deliver = []
+                    raise e
+
+                for event in events_to_deliver:
+                    await queue.put(event)
+
+                await asyncio.sleep(0.5)  # period at which service is polled
+
+        # start the background task
+        fetch_task = asyncio.create_task(fetch_events())
 
         async with self.lock:
             self.clients[wallet_id][topic].append(queue)
@@ -55,6 +65,8 @@ class SSEManager:
         try:
             yield queue
         finally:
+            # cancel the background task when the context manager exits
+            fetch_task.cancel()
             async with self.lock:
                 self.clients[wallet_id][topic].remove(queue)
 

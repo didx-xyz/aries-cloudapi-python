@@ -57,6 +57,26 @@ async def test_sse_subscribe_event(
     )
 
 
+@pytest.mark.anyio
+async def test_sse_subscribe_state(
+    alice_member_client: RichAsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+
+    topic = "connections"
+    state = "completed"
+
+    url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{state}"
+    sse_response = await listen_for_event(url)
+
+    assert (
+        sse_response["topic"] == topic
+        and sse_response["wallet_id"] == alice_wallet_id
+        and sse_response["payload"]["state"] == state
+    )
+
+
 async def get_sse_response(wallet_id, topic) -> Response:
     async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
         async with client.stream("GET", f"/sse/{wallet_id}/{topic}") as response:

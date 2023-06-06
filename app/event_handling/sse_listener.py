@@ -35,8 +35,8 @@ class SseListener:
             async with client.stream("GET", url) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
-                        data = line[6:]
-                        return json.loads(data)
+                        data = json.loads(line[6:])
+                        return data["payload"]
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
@@ -53,8 +53,8 @@ class SseListener:
             async with client.stream("GET", url) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
-                        data = line[6:]
-                        return json.loads(data)
+                        data = json.loads(line[6:])
+                        return data["payload"]
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:

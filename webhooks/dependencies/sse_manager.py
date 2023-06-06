@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from collections import defaultdict
+from collections import defaultdict as ddict
 from contextlib import asynccontextmanager
 from typing import Any, Generator
 
@@ -17,7 +17,7 @@ class SseManager:
     def __init__(self, service: Service):
         self.service = service
         self.clients = defaultdict(lambda: defaultdict(list))
-        self.locks = defaultdict(asyncio.Lock)  # Concurrency management per wallet
+        self.locks = ddict(asyncio.Lock)  # Concurrency management per wallet
 
     @asynccontextmanager
     async def sse_event_stream(

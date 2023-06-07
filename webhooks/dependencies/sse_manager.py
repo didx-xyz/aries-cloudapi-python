@@ -38,16 +38,12 @@ class SseManager:
             topic: The topic for which to create the event stream.
         """
         async with self.locks[wallet]:
-            queue = self.events[wallet][topic]
+            queue_lifo, queue_fifo = await _copy_queue(
+                self.cache[wallet][topic], self.max
+            )
+            self.cache[wallet][topic] = queue_fifo
 
-        try:
-            yield queue
-        finally:
-            # refill the queue from the copy
-            async with self.locks[wallet]:
-                queue1, queue2 = await _copy_queue(self.cache[wallet][topic], self.max)
-                self.events[wallet][topic] = queue1
-                self.cache[wallet][topic] = queue2
+        yield queue_lifo  # Yield LIFO Queue so newest event are processed first
 
     async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
         """
@@ -82,10 +78,10 @@ async def _copy_queue(
     queue: asyncio.Queue, maxsize: int
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
-    queue1, queue2 = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
+    queue_lifo, queue_fifo = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while not queue.empty():
         item = await queue.get()
-        await queue1.put(item)
-        await queue2.put(item)
+        await queue_lifo.put(item)
+        await queue_fifo.put(item)
 
-    return queue1, queue2
+    return queue_lifo, queue_fifo

@@ -5,6 +5,7 @@ from collections import defaultdict as ddict
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, Generator, Tuple
 
+from shared import TopicItem
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
@@ -66,7 +67,9 @@ class SseManager:
                 self.fifo_cache[wallet][topic] = fifo_queue
                 self.lifo_cache[wallet][topic] = lifo_queue
 
-    async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
+    async def enqueue_sse_event(
+        self, event: TopicItem, wallet: str, topic: str
+    ) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 

@@ -33,10 +33,10 @@ class SseManager:
         Create a SSE event stream for a topic using a provided service.
 
         Args:
-            wallet_id: The ID of the wallet subscribing to the topic.
+            wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
         """
-        async with self.locks[wallet_id]:
+        async with self.locks[wallet]:
             queue = self.clients[wallet_id][topic]
 
         try:
@@ -56,7 +56,7 @@ class SseManager:
 
         Args:
             event: The event to enqueue.
-            wallet_id: The ID of the wallet to which to enqueue the event.
+            wallet: The ID of the wallet to which to enqueue the event.
             topic: The topic to which to enqueue the event.
         """
         LOGGER.debug(

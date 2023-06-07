@@ -45,7 +45,7 @@ class SseManager:
             async with self.locks[wallet]:
                 # LIFO cache has been consumed; repopulate with events from FIFO cache:
                 queue_lifo, queue_fifo = await _copy_queue(
-                    self.cache_lifo[wallet][topic], self.max
+                    self.cache_fifo[wallet][topic], self.max
                 )
                 self.cache_fifo[wallet][topic] = queue_fifo
                 self.cache_lifo[wallet][topic] = queue_lifo

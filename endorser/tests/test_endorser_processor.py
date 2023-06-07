@@ -1,9 +1,10 @@
 import json
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, MagicMock, Mock
 
 import httpx
 import pytest
 from aries_cloudcontroller import AcaPyClient
+from httpx import Response
 from mockito import verify, when
 
 from app.tests.util.mock import to_async
@@ -115,30 +116,34 @@ def test_is_governance_agent():
 
 
 @pytest.mark.anyio
-async def test_is_valid_issuer():
+async def test_is_valid_issuer(mocker):
     did = "did:sov:123"
     schema_id = "the-schema-id"
 
-    actor_res = Mock(
-        status_code=200,
-        is_error=False,
-        json=Mock(return_value={"roles": ["issuer"]}),
+    # Mock responses
+    actor_res = Response(
+        200,
+        json={"roles": ["issuer"]},
     )
-    when(httpx).get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}").thenReturn(
-        actor_res
+    schema_res = Response(
+        200,
+        json={"schemas": [schema_id]},
     )
 
-    schema_res = Mock(
-        status_code=200,
-        is_error=False,
-        json=Mock(return_value={"schemas": [schema_id]}),
-    )
-    when(httpx).get(f"{TRUST_REGISTRY_URL}/registry/schemas").thenReturn(schema_res)
+    # Mock httpx.AsyncClient
+    mocked_AsyncClient = mocker.patch("httpx.AsyncClient")
+
+    mocked_async_client = MagicMock()
+    mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
+    mocked_AsyncClient.return_value.__aenter__.return_value = mocked_async_client
 
     assert await is_valid_issuer(did, schema_id)
 
-    verify(httpx).get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
-    verify(httpx).get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    # Verify the calls
+    mocked_async_client.get.assert_any_call(
+        f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
+    )
+    mocked_async_client.get.assert_any_call(f"{TRUST_REGISTRY_URL}/registry/schemas")
 
 
 @pytest.mark.anyio

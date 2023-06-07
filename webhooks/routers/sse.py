@@ -7,7 +7,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
-from shared import WEBHOOK_TOPIC_ALL, APIRouter, TopicItem
+from shared import WEBHOOK_TOPIC_ALL, APIRouter
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.sse_manager import SseManager
 
@@ -18,7 +18,7 @@ router = APIRouter(
     tags=["sse"],
 )
 
-timeout_duration = 150  # maximum duration of an SSE connection
+SSE_TIMEOUT = 150  # maximum duration of an SSE connection
 queue_poll_period = 0.1  # period in seconds to retry reading empty queues
 
 
@@ -43,17 +43,13 @@ async def sse_subscribe_wallet(
 
     async def event_stream(duration=1) -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(
-            wallet_id,
-            WEBHOOK_TOPIC_ALL,
-        ) as queue:
-            start_time = time.time()
-            while time.time() - start_time < duration:
-                # If client closes connection, stop sending events
+            wallet_id, WEBHOOK_TOPIC_ALL, duration=2  # So far only used in tests
+        ) as event_generator:
+            async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break
                 try:
-                    event: TopicItem = queue.get_nowait()
                     yield event.json()
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(queue_poll_period)
@@ -86,11 +82,11 @@ async def sse_subscribe_wallet_topic(
         sse_manager: The SSEManager instance managing the server-sent events.
     """
 
-    async def event_stream(duration=1) -> Generator[str, Any, None]:
-        async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
-            start_time = time.time()
-            while time.time() - start_time < duration:
-                # If client closes connection, stop sending events
+    async def event_stream() -> Generator[str, Any, None]:
+        async with sse_manager.sse_event_stream(
+            wallet_id, topic, duration=2  # So far only used in tests
+        ) as event_generator:
+            async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break
@@ -128,11 +124,11 @@ async def sse_subscribe_desired_state(
     # we will instead only return endorsement records if their state in cache isn't also acked or endorsed
     # Therefore, before sending events, we will check the state, and use an ignore list, as follows.
 
-    async def event_stream(duration=timeout_duration):
+    async def event_stream():
         ignore_list = []
-        async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
-            start_time = time.time()
-            while time.time() - start_time < duration:
+        async with sse_manager.sse_event_stream(
+            wallet_id, topic, SSE_TIMEOUT
+        ) as event_generator:
                 # If client closes connection, stop sending events
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
@@ -182,11 +178,11 @@ async def sse_subscribe_filtered_event(
     desired_state: str,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
-    async def event_stream(duration=timeout_duration):
-        async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
-            start_time = time.time()
-            while time.time() - start_time < duration:
-                # If client closes connection, stop sending events
+    async def event_stream():
+        async with sse_manager.sse_event_stream(
+            wallet_id, topic, SSE_TIMEOUT
+        ) as event_generator:
+            async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break

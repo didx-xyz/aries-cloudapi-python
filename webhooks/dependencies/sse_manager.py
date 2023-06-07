@@ -20,10 +20,6 @@ class SseManager:
         self.max = max_queue_size
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        # LifoQueue is used here so newest events are yielded first.
-        self.events = ddict(lambda: ddict(lambda: asyncio.LifoQueue(maxsize=self.max)))
-        # A copy is maintained so that events consumed from the above queue can be re-added.
-        # This is so repeated requests can receive the same events. Regular Queue to preserve ordering.
         self.cache = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=self.max)))
 
     @asynccontextmanager
@@ -64,13 +60,9 @@ class SseManager:
 
         async with self.locks[wallet]:
             # Check if queue is full and make room before adding events
-            if self.events[wallet][topic].full():
-                await self.events[wallet][topic].get()
-
             if self.cache[wallet][topic].full():
                 await self.cache[wallet][topic].get()
 
-            await self.events[wallet][topic].put(event)
             await self.cache[wallet][topic].put(event)
 
 

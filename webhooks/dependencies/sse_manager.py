@@ -69,3 +69,16 @@ class SseManager:
         async with self.locks[wallet]:
             await self.clients[wallet][topic].put(event)
             await self.cache[wallet][topic].put(event)
+
+
+async def _copy_queue(
+    queue: asyncio.Queue, maxsize: int
+) -> Tuple[asyncio.Queue, asyncio.Queue]:
+    # Consuming a queue removes its content. Therefore, we create two new queues to copy one
+    queue1, queue2 = asyncio.Queue(maxsize), asyncio.Queue(maxsize)
+    while not queue.empty():
+        item = await queue.get()
+        await queue1.put(item)
+        await queue2.put(item)
+
+    return queue1, queue2

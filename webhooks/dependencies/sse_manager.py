@@ -72,7 +72,7 @@ class SseManager:
                 await self.events[wallet][topic].get()
 
             if self.cache[wallet][topic].full():
-                await self.events[wallet][topic].get()
+                await self.cache[wallet][topic].get()
 
             await self.events[wallet][topic].put(event)
             await self.cache[wallet][topic].put(event)

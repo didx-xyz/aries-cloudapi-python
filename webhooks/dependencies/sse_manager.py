@@ -81,14 +81,19 @@ class SseManager:
 
         async with self.locks[wallet][topic]:
             # Check if queue is full and make room before adding events
-            if self.lifo_cache[wallet][topic].full():
-                await self.lifo_cache[wallet][topic].get()
-
             if self.fifo_cache[wallet][topic].full():
                 await self.fifo_cache[wallet][topic].get()
 
-            await self.lifo_cache[wallet][topic].put(event)
-            await self.fifo_cache[wallet][topic].put(event)
+                # cannot pop from lifo queue; rebuild from fifo queue
+                lifo_queue, fifo_queue = await _copy_queue(
+                    self.fifo_cache[wallet][topic], self.max
+                )
+                self.fifo_cache[wallet][topic] = fifo_queue
+                self.lifo_cache[wallet][topic] = lifo_queue
+
+            timestamped_event: Tuple(float, TopicItem) = (time.time(), event)
+            await self.lifo_cache[wallet][topic].put(timestamped_event)
+            await self.fifo_cache[wallet][topic].put(timestamped_event)
 
 
 async def _copy_queue(
@@ -97,8 +102,11 @@ async def _copy_queue(
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
     lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while not queue.empty():
-        item = await queue.get()
-        await lifo_queue.put(item)
-        await fifo_queue.put(item)
+        timestamp, item = await queue.get()
+        if (
+            time.time() - timestamp <= MAX_EVENT_AGE_SECONDS
+        ):  # only copy events that are less than a minute old
+            await lifo_queue.put((timestamp, item))
+            await fifo_queue.put((timestamp, item))
 
     return lifo_queue, fifo_queue

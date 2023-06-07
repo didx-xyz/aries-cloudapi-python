@@ -61,28 +61,28 @@ async def test_assert_valid_issuer():
 
 @pytest.mark.anyio
 async def test_actor_has_role():
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         assert await trf.actor_has_role("governance", "issuer") is False
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.json.return_value = {"roles": ["verifier"]}
 
         with pytest.raises(trf.TrustRegistryException):
             await trf.actor_has_role("governance", "issuer")
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         mock_request.return_value.status_code = 428
         mock_request.return_value.json.return_value = {"roles": ["issuer"]}
 
         with pytest.raises(trf.TrustRegistryException):
             await trf.actor_has_role("governance", "issuer")
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = {"roles": ["issuer"]}
@@ -92,7 +92,7 @@ async def test_actor_has_role():
 
 @pytest.mark.anyio
 async def test_actor_by_did():
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         res = {
             "id": "governance",
             "roles": ["verifier"],
@@ -108,7 +108,7 @@ async def test_actor_by_did():
         )
         assert actor is res
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         res = {
             "id": "governance",
             "roles": ["verifier"],
@@ -125,7 +125,7 @@ async def test_actor_by_did():
             trf.TRUST_REGISTRY_URL + "/registry/actors/did/did:sov:xxx"
         )
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         mock_request.return_value.status_code = 404
         mock_request.return_value.json.return_value = {}
 
@@ -138,7 +138,7 @@ async def test_actor_by_did():
 
 @pytest.mark.anyio
 async def test_actor_with_role():
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         actors = [
             {"id": "governance", "roles": ["issuer"]},
             {"id": "governance2", "roles": ["issuer"]},
@@ -149,7 +149,7 @@ async def test_actor_with_role():
 
         assert await trf.actors_with_role("issuer") == actors
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         actors = [
             {"id": "governance", "roles": ["issuer"]},
             {"id": "governance2", "roles": ["verifier"]},
@@ -160,7 +160,9 @@ async def test_actor_with_role():
 
         assert await trf.actors_with_role("issuer") == [actors[0]]
 
-    with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
+    with patch("httpx.Client.get") as mock_request, pytest.raises(
+        trf.TrustRegistryException
+    ):
         actors = [
             {"id": "governance", "roles": ["verifier"]},
             {"id": "governance2", "roles": ["verifier"]},
@@ -171,7 +173,7 @@ async def test_actor_with_role():
 
         assert await trf.actors_with_role("issuer") == []
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         actors = [
             {"id": "governance", "roles": ["verifier"]},
             {"id": "governance2", "roles": ["verifier"]},
@@ -185,7 +187,7 @@ async def test_actor_with_role():
 
 @pytest.mark.anyio
 async def test_registry_has_schema():
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did:name:version"
         mock_request.return_value.status_code = 200
@@ -194,7 +196,7 @@ async def test_registry_has_schema():
 
         assert await trf.registry_has_schema(schema_id) is True
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did_3:name:version"
         mock_request.return_value.status_code = 200
@@ -203,7 +205,7 @@ async def test_registry_has_schema():
 
         assert await trf.registry_has_schema(schema_id) is False
 
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did_3:name:version"
         mock_request.return_value.is_error = True
@@ -211,7 +213,9 @@ async def test_registry_has_schema():
 
         assert await trf.registry_has_schema(schema_id) is False
 
-    with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
+    with patch("httpx.Client.get") as mock_request, pytest.raises(
+        trf.TrustRegistryException
+    ):
         schemas = ["did:name:version", "did_2:name_2:version_2"]
         schema_id = "did_3:name:version"
         mock_request.return_value.is_error = True
@@ -222,7 +226,7 @@ async def test_registry_has_schema():
 
 @pytest.mark.anyio
 async def test_register_schema():
-    with patch("httpx.post") as mock_request:
+    with patch("httpx.Client.post") as mock_request:
         schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
@@ -234,7 +238,7 @@ async def test_register_schema():
             json={"schema_id": schema_id},
         )
 
-    with patch("httpx.post") as mock_request, pytest.raises(
+    with patch("httpx.Client.post") as mock_request, pytest.raises(
         trf.TrustRegistryException,
         match="Error registering schema WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0: ",
     ):
@@ -254,7 +258,7 @@ async def test_register_actor():
         did="actor-did",
         didcomm_invitation="actor-didcomm-invitation",
     )
-    with patch("httpx.post") as mock_request:
+    with patch("httpx.Client.post") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
 
@@ -264,7 +268,7 @@ async def test_register_actor():
             trf.TRUST_REGISTRY_URL + "/registry/actors", json=actor
         )
 
-    with patch("httpx.post") as mock_request, pytest.raises(
+    with patch("httpx.Client.post") as mock_request, pytest.raises(
         trf.TrustRegistryException, match="Error registering actor: "
     ):
         mock_request.return_value.status_code = 500
@@ -272,7 +276,9 @@ async def test_register_actor():
 
         await trf.register_actor(actor=actor)
 
-    with patch("httpx.post") as mock_request, pytest.raises(trf.TrustRegistryException):
+    with patch("httpx.Client.post") as mock_request, pytest.raises(
+        trf.TrustRegistryException
+    ):
         mock_request.return_value.status_code = 422
 
         await trf.register_actor(actor=actor)
@@ -280,7 +286,7 @@ async def test_register_actor():
 
 @pytest.mark.anyio
 async def test_remove_actor_by_id():
-    with patch("httpx.delete") as mock_request:
+    with patch("httpx.Client.delete") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
 
@@ -291,7 +297,7 @@ async def test_remove_actor_by_id():
             trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}"
         )
 
-    with patch("httpx.delete") as mock_request, pytest.raises(
+    with patch("httpx.Client.delete") as mock_request, pytest.raises(
         trf.TrustRegistryException,
         match="Error removing actor from trust registry: The error",
     ):
@@ -304,7 +310,7 @@ async def test_remove_actor_by_id():
 
 @pytest.mark.anyio
 async def test_remove_schema_by_id():
-    with patch("httpx.delete") as mock_request:
+    with patch("httpx.Client.delete") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
 
@@ -315,7 +321,7 @@ async def test_remove_schema_by_id():
             trf.TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
         )
 
-    with patch("httpx.delete") as mock_request, pytest.raises(
+    with patch("httpx.Client.delete") as mock_request, pytest.raises(
         trf.TrustRegistryException,
         match="Error removing schema from trust registry: The error",
     ):
@@ -328,7 +334,7 @@ async def test_remove_schema_by_id():
 
 @pytest.mark.anyio
 async def test_get_actor_by_did():
-    with patch("httpx.get") as mock_request:
+    with patch("httpx.Client.get") as mock_request:
         res = {
             "actors": [],
             "schemas": [],
@@ -342,7 +348,9 @@ async def test_get_actor_by_did():
         mock_request.assert_called_once_with(trf.TRUST_REGISTRY_URL + "/registry")
         assert tr is res
 
-    with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
+    with patch("httpx.Client.get") as mock_request, pytest.raises(
+        trf.TrustRegistryException
+    ):
         res = {
             "actors": [],
             "schemas": [],
@@ -354,7 +362,9 @@ async def test_get_actor_by_did():
 
         tr = await trf.get_trust_registry()
 
-    with patch("httpx.get") as mock_request, pytest.raises(trf.TrustRegistryException):
+    with patch("httpx.Client.get") as mock_request, pytest.raises(
+        trf.TrustRegistryException
+    ):
         mock_request.return_value.status_code = 404
         mock_request.return_value.is_error = True
         mock_request.return_value.json.return_value = {}
@@ -373,7 +383,7 @@ async def test_update_actor():
         didcomm_invitation="actor-didcomm-invitation",
     )
 
-    with patch("httpx.post") as mock_request:
+    with patch("httpx.Client.post") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
 
@@ -383,7 +393,7 @@ async def test_update_actor():
             trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}", json=actor
         )
 
-    with patch("httpx.post") as mock_request, pytest.raises(
+    with patch("httpx.Client.post") as mock_request, pytest.raises(
         trf.TrustRegistryException,
         match="Error updating actor in trust registry: The error",
     ):
@@ -393,7 +403,9 @@ async def test_update_actor():
 
         await trf.update_actor(actor=actor)
 
-    with patch("httpx.post") as mock_request, pytest.raises(trf.TrustRegistryException):
+    with patch("httpx.Client.post") as mock_request, pytest.raises(
+        trf.TrustRegistryException
+    ):
         mock_request.return_value.status_code = 422
 
         await trf.update_actor(actor=actor)

@@ -67,6 +67,13 @@ class SseManager:
         )
 
         async with self.locks[wallet]:
+            # Check if queue is full and make room before adding events
+            if self.events[wallet][topic].full():
+                await self.events[wallet][topic].get()
+
+            if self.cache[wallet][topic].full():
+                await self.events[wallet][topic].get()
+
             await self.events[wallet][topic].put(event)
             await self.cache[wallet][topic].put(event)
 

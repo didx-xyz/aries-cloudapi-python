@@ -20,15 +20,16 @@ class SseManager:
         self.max = max_queue_size
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        self.events = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=self.max)))
-        # A copy is maintained so that events consumed from the above queue can be re-added. Alternatively,
-        # consumed events can be individually re-added. This is so repeated requests can receive same events.
+        # LifoQueue is used here so newest events are yielded first.
+        self.events = ddict(lambda: ddict(lambda: asyncio.LifoQueue(maxsize=self.max)))
+        # A copy is maintained so that events consumed from the above queue can be re-added.
+        # This is so repeated requests can receive the same events. Regular Queue to preserve ordering.
         self.cache = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=self.max)))
 
     @asynccontextmanager
     async def sse_event_stream(
         self, wallet: str, topic: str
-    ) -> Generator[asyncio.Queue, Any, None]:
+    ) -> Generator[asyncio.LifoQueue, Any, None]:
         """
         Create a SSE event stream for a topic using a provided service.
 
@@ -72,9 +73,9 @@ class SseManager:
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int
-) -> Tuple[asyncio.Queue, asyncio.Queue]:
+) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
-    queue1, queue2 = asyncio.Queue(maxsize), asyncio.Queue(maxsize)
+    queue1, queue2 = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while not queue.empty():
         item = await queue.get()
         await queue1.put(item)

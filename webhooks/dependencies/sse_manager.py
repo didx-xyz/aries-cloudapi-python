@@ -2,7 +2,7 @@ import asyncio
 import logging
 from collections import defaultdict as ddict
 from contextlib import asynccontextmanager
-from typing import Any, Generator
+from typing import Any, Generator, Tuple
 
 from webhooks.dependencies.service import Service
 

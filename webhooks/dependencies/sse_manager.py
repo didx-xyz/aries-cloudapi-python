@@ -69,14 +69,14 @@ class SseManager:
 
         async with self.locks[wallet]:
             # Check if queue is full and make room before adding events
-            if self.cache_fifo[wallet][topic].full():
-                await self.cache_fifo[wallet][topic].get()
-
             if self.cache_lifo[wallet][topic].full():
                 await self.cache_lifo[wallet][topic].get()
 
-            await self.cache_fifo[wallet][topic].put(event)
+            if self.cache_fifo[wallet][topic].full():
+                await self.cache_fifo[wallet][topic].get()
+
             await self.cache_lifo[wallet][topic].put(event)
+            await self.cache_fifo[wallet][topic].put(event)
 
 
 async def _copy_queue(

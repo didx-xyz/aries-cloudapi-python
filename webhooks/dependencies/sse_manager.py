@@ -16,7 +16,7 @@ class SseManager:
 
     def __init__(self, service: Service, max_queue_size=20):
         self.service = service
-        self.locks = ddict(asyncio.Lock)  # Concurrency management per wallet
+        self.locks = ddict(lambda: ddict(asyncio.Lock))  # Concurrency per wallet/topic
         self.max = max_queue_size
 
         # The following nested defaultdict stores events per wallet_id, per topic
@@ -36,13 +36,13 @@ class SseManager:
             wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
         """
-        async with self.locks[wallet]:
+        async with self.locks[wallet][topic]:
             queue_lifo = self.cache_lifo[wallet][topic]
 
         try:
             yield queue_lifo  # Will include any new events added to queue_lifo after generator starts
         finally:
-            async with self.locks[wallet]:
+            async with self.locks[wallet][topic]:
                 # LIFO cache has been consumed; repopulate with events from FIFO cache:
                 queue_lifo, queue_fifo = await _copy_queue(
                     self.cache_fifo[wallet][topic], self.max
@@ -67,7 +67,7 @@ class SseManager:
             event,
         )
 
-        async with self.locks[wallet]:
+        async with self.locks[wallet][topic]:
             # Check if queue is full and make room before adding events
             if self.cache_lifo[wallet][topic].full():
                 await self.cache_lifo[wallet][topic].get()

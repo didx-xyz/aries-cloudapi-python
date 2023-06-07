@@ -208,8 +208,11 @@ async def is_valid_issuer(did: str, schema_id: str):
         Exception: When the did is not registered, the actor doesn't have the issuer role
             or the schema is not registered in the registry.
     """
-
-    actor_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+    try:
+        with httpx.Client() as client:
+            actor_res = client.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+    except httpx.HTTPError as e:
+        raise e from e
 
     if actor_res.is_error:
         logger.error(
@@ -226,7 +229,11 @@ async def is_valid_issuer(did: str, schema_id: str):
         logger.error("Actor %s does not have required role 'issuer'", actor_id)
         return False
 
-    schema_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    try:
+        with httpx.Client() as client:
+            schema_res = client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    except httpx.HTTPError as e:
+        raise e from e
 
     if schema_res.is_error:
         logger.error(

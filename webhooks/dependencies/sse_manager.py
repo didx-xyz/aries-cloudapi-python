@@ -20,7 +20,10 @@ class SseManager:
         self.max = max_queue_size
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        self.cache = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=self.max)))
+        self.cache_fifo = ddict(lambda: ddict(lambda: asyncio.Queue(self.max)))
+        self.cache_lifo = ddict(lambda: ddict(lambda: asyncio.LifoQueue(self.max)))
+        # LIFO Queue is to be used for consumption, so that newest events are yielded first
+        # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
     @asynccontextmanager
     async def sse_event_stream(
@@ -34,12 +37,18 @@ class SseManager:
             topic: The topic for which to create the event stream.
         """
         async with self.locks[wallet]:
-            queue_lifo, queue_fifo = await _copy_queue(
-                self.cache[wallet][topic], self.max
-            )
-            self.cache[wallet][topic] = queue_fifo
+            queue_lifo = self.cache_lifo[wallet][topic]
 
-        yield queue_lifo  # Yield LIFO Queue so newest event are processed first
+        try:
+            yield queue_lifo  # Will include any new events added to queue_lifo after generator starts
+        finally:
+            async with self.locks[wallet]:
+                # LIFO cache has been consumed; repopulate with events from FIFO cache:
+                queue_lifo, queue_fifo = await _copy_queue(
+                    self.cache_lifo[wallet][topic], self.max
+                )
+                self.cache_fifo[wallet][topic] = queue_fifo
+                self.cache_lifo[wallet][topic] = queue_lifo
 
     async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
         """
@@ -60,10 +69,14 @@ class SseManager:
 
         async with self.locks[wallet]:
             # Check if queue is full and make room before adding events
-            if self.cache[wallet][topic].full():
-                await self.cache[wallet][topic].get()
+            if self.cache_fifo[wallet][topic].full():
+                await self.cache_fifo[wallet][topic].get()
 
-            await self.cache[wallet][topic].put(event)
+            if self.cache_lifo[wallet][topic].full():
+                await self.cache_lifo[wallet][topic].get()
+
+            await self.cache_fifo[wallet][topic].put(event)
+            await self.cache_lifo[wallet][topic].put(event)
 
 
 async def _copy_queue(

@@ -30,7 +30,7 @@ class SseManager:
         self, wallet: str, topic: str
     ) -> Generator[asyncio.LifoQueue, Any, None]:
         """
-        Create a SSE event stream for a topic using a provided service.
+        Create a SSE stream of events for a wallet_id on a specific topic
 
         Args:
             wallet: The ID of the wallet subscribing to the topic.
@@ -53,8 +53,6 @@ class SseManager:
     async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
-
-        This function puts the event into the queue of the respective client.
 
         Args:
             event: The event to enqueue.

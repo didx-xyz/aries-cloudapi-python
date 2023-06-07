@@ -216,7 +216,7 @@ async def test_accept_proof_request_oob_v1(
         field_id=thread_id,
         desired_state="done",
     )
-    assert bob_presentation_received["payload"]["role"] == "verifier"
+    assert bob_presentation_received["role"] == "verifier"
 
 
 @pytest.mark.anyio
@@ -314,7 +314,7 @@ async def test_accept_proof_request_oob_v2(
         field_id=thread_id,
         desired_state="done",
     )
-    assert bob_presentation_received["payload"]["role"] == "verifier"
+    assert bob_presentation_received["role"] == "verifier"
 
 
 @pytest.mark.anyio
@@ -393,7 +393,7 @@ async def test_accept_proof_request_v2(
         field_id=acme_proof_id,
         desired_state="done",
     )
-    assert acme_proof_event["payload"]["verified"]
+    assert acme_proof_event["verified"]
 
     result = response.json()
 
@@ -493,7 +493,7 @@ async def test_reject_proof_request(
         field_id=acme_and_alice_connection.alice_connection_id,
         desired_state="request-received",
     )
-    assert alice_exchange["payload"]["protocol_version"] == "v1"
+    assert alice_exchange["protocol_version"] == "v1"
 
     reject_proof_request_v1 = RejectProofRequest(
         proof_id=alice_exchange["proof_id"], problem_report=None
@@ -671,7 +671,7 @@ async def test_get_credentials_for_request(
         field_id=acme_and_alice_connection.alice_connection_id,
         desired_state="request-received",
     )
-    assert alice_exchange["payload"]["protocol_version"] == "v1"
+    assert alice_exchange["protocol_version"] == "v1"
 
     proof_id = alice_exchange["proof_id"]
 
@@ -703,7 +703,7 @@ async def test_get_credentials_for_request(
         field_id=acme_and_alice_connection.alice_connection_id,
         desired_state="request-received",
     )
-    assert alice_exchange["payload"]["protocol_version"] == "v2"
+    assert alice_exchange["protocol_version"] == "v2"
 
     proof_id = alice_exchange["proof_id"]
 

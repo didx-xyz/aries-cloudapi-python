@@ -229,7 +229,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         field_id=verifier_proof_exchange_id,
         desired_state="done",
     )
-    assert event["payload"]["verified"]
+    assert event["verified"]
 
     # Delete all tenants
     await delete_tenant(tenant_admin, issuer_tenant.tenant_id)

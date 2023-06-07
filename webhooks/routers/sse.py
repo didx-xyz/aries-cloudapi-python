@@ -18,6 +18,9 @@ router = APIRouter(
     tags=["sse"],
 )
 
+timeout_duration = 150  # maximum duration of an SSE connection
+queue_poll_period = 0.1  # period in seconds to retry reading empty queues
+
 
 @router.get(
     "/{wallet_id}",
@@ -54,7 +57,7 @@ async def sse_subscribe_wallet(
                     event: TopicItem = queue.get_nowait()
                     yield event.json()
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(queue_poll_period)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug("SSE event_stream closing with CancelledError")
@@ -97,7 +100,7 @@ async def sse_subscribe_wallet_topic(
                     event: TopicItem = queue.get_nowait()
                     yield event.json()
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(queue_poll_period)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     break
@@ -126,7 +129,8 @@ async def sse_subscribe_desired_state(
     # So, instead of imposing an arbitrary sleep duration for the listeners, for the event to arrive,
     # we will instead only return endorsement records if their state in cache isn't also acked or endorsed
     # Therefore, before sending events, we will check the state, and use an ignore list, as follows.
-    async def event_stream(duration=150):
+
+    async def event_stream(duration=timeout_duration):
         ignore_list = []
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
             start_time = time.time()
@@ -154,7 +158,7 @@ async def sse_subscribe_desired_state(
                         yield event.json()  # Send the event
                         break  # End the generator
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(queue_poll_period)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     break
@@ -180,7 +184,7 @@ async def sse_subscribe_filtered_event(
     desired_state: str,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
-    async def event_stream(duration=150):
+    async def event_stream(duration=timeout_duration):
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
             start_time = time.time()
             while time.time() - start_time < duration:
@@ -199,7 +203,7 @@ async def sse_subscribe_filtered_event(
                         yield event.json()  # Send the event
                         break  # End the generator
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(0.2)
+                    await asyncio.sleep(queue_poll_period)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     break

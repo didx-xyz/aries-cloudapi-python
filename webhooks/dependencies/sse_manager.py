@@ -14,10 +14,11 @@ class SseManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self, service: Service):
+    def __init__(self, service: Service, max_queue_size=20):
         self.service = service
         self.clients = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=200)))
         self.locks = ddict(asyncio.Lock)  # Concurrency management per wallet
+        self.max = max_queue_size
 
     @asynccontextmanager
     async def sse_event_stream(

@@ -37,7 +37,7 @@ class SseManager:
             topic: The topic for which to create the event stream.
         """
         async with self.locks[wallet]:
-            queue = self.clients[wallet_id][topic]
+            queue = self.events[wallet][topic]
 
         try:
             yield queue
@@ -45,7 +45,7 @@ class SseManager:
             # refill the queue from the copy
             async with self.locks[wallet]:
                 queue1, queue2 = await _copy_queue(self.cache[wallet][topic], self.max)
-                self.clients[wallet][topic] = queue1
+                self.events[wallet][topic] = queue1
                 self.cache[wallet][topic] = queue2
 
     async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
@@ -67,7 +67,7 @@ class SseManager:
         )
 
         async with self.locks[wallet]:
-            await self.clients[wallet][topic].put(event)
+            await self.events[wallet][topic].put(event)
             await self.cache[wallet][topic].put(event)
 
 

@@ -176,7 +176,7 @@ async def test_are_valid_schemas():
             "WoWSMfxTHA14GR2FdJJcHk:2:test_schema:0.3",
         ]
     }
-    with patch("httpx.Client.get") as mock_request:
+    with patch("httpx.AsyncClient.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = schemas
@@ -184,7 +184,7 @@ async def test_are_valid_schemas():
         assert await are_valid_schemas(schema_ids=schemas["schemas"]) is True
 
     # has invalid schema
-    with patch("httpx.Client.get") as mock_request:
+    with patch("httpx.AsyncClient.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = schemas
@@ -300,7 +300,7 @@ async def test_is_verifier():
 async def test_get_actor():
     # gets actor
     actor = Actor(id="abcde", name="Flint", roles=["verifier"], did="did:sov:abcde")
-    with patch("httpx.Client.get") as mock_request:
+    with patch("httpx.AsyncClient.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = actor
@@ -308,7 +308,7 @@ async def test_get_actor():
         assert await get_actor(did=actor["did"]) == actor
 
     # no actor
-    with patch("httpx.Client.get") as mock_request:
+    with patch("httpx.AsyncClient.get") as mock_request:
         mock_request.return_value.status_code = 200
         mock_request.return_value.is_error = False
         mock_request.return_value.json.return_value = None

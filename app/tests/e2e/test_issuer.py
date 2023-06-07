@@ -65,8 +65,7 @@ async def test_send_credential_oob_v1(
     assert_that(invitation_response.status_code).is_equal_to(200)
 
     invitation = (invitation_response.json())["invitation"]
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
+
     accept_response = await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
@@ -127,8 +126,6 @@ async def test_send_credential_oob_v2(
     assert_that(invitation_response.status_code).is_equal_to(200)
 
     invitation = (invitation_response.json())["invitation"]
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
 
     thread_id = invitation["requests~attach"][0]["data"]["json"]["@id"]
 

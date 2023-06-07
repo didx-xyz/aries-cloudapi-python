@@ -165,9 +165,6 @@ async def test_accept_proof_request_oob_v1(
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
-
     await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
@@ -249,8 +246,6 @@ async def test_accept_proof_request_oob_v2(
 
     thread_id = bob_exchange["thread_id"]
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"]
-
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation",
         json={
@@ -262,9 +257,6 @@ async def test_accept_proof_request_oob_v2(
 
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
-
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
 
     await alice_member_client.post(
         "/generic/oob/accept-invitation",

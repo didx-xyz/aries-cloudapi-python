@@ -39,7 +39,6 @@ async def sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
-        service: The service instance for fetching undelivered messages.
     """
 
     async def event_stream(duration=1) -> Generator[str, Any, None]:
@@ -85,7 +84,6 @@ async def sse_subscribe_wallet_topic(
         topic: The topic to which the wallet is subscribing.
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
-        service: The service instance for fetching undelivered messages.
     """
 
     async def event_stream(duration=1) -> Generator[str, Any, None]:

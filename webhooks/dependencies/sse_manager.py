@@ -10,13 +10,15 @@ from webhooks.dependencies.service import Service
 LOGGER = logging.getLogger(__name__)
 
 MAX_EVENT_AGE_SECONDS = 15
+MAX_QUEUE_SIZE = 50
+
 
 class SseManager:
     """
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self, service: Service, max_queue_size=20):
+    def __init__(self, service: Service, max_queue_size=MAX_QUEUE_SIZE):
         self.service = service
         self.locks = ddict(lambda: ddict(asyncio.Lock))  # Concurrency per wallet/topic
         self.max = max_queue_size

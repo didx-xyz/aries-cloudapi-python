@@ -104,8 +104,8 @@ async def actor_by_did(did: str) -> Optional[Actor]:
         Actor: The actor with specified did.
     """
     try:
-        with httpx.Client() as client:
-            actor_res = client.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+        async with httpx.AsyncClient() as client:
+            actor_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
     except httpx.HTTPError as e:
         raise e from e
 
@@ -132,8 +132,8 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
         Actor: The actor with specified id.
     """
     try:
-        with httpx.Client() as client:
-            actor_res = client.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
+        async with httpx.AsyncClient() as client:
+            actor_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
     except httpx.HTTPError as e:
         raise e from e
 
@@ -160,8 +160,8 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
         List[Actor]: List of actors with specified role
     """
     try:
-        with httpx.Client() as client:
-            actors_res = client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+        async with httpx.AsyncClient() as client:
+            actors_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
     except httpx.HTTPError as e:
         raise e from e
 
@@ -191,8 +191,8 @@ async def registry_has_schema(schema_id: str) -> bool:
         bool: whether the schema exists in the trust registry
     """
     try:
-        with httpx.Client() as client:
-            schema_res = client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+        async with httpx.AsyncClient() as client:
+            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
         raise e from e
 
@@ -218,8 +218,8 @@ async def get_trust_registry_schemas() -> List[str]:
         A list of schemas
     """
     try:
-        with httpx.Client() as client:
-            trust_registry_schemas_res = client.get(
+        async with httpx.AsyncClient() as client:
+            trust_registry_schemas_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/schemas"
             )
     except httpx.HTTPError as e:
@@ -243,8 +243,8 @@ async def get_trust_registry() -> TrustRegistry:
         TrustRegistry: the trust registries
     """
     try:
-        with httpx.Client() as client:
-            trust_registry_res = client.get(f"{TRUST_REGISTRY_URL}/registry")
+        async with httpx.AsyncClient() as client:
+            trust_registry_res = await client.get(f"{TRUST_REGISTRY_URL}/registry")
     except httpx.HTTPError as e:
         raise e from e
 
@@ -266,8 +266,8 @@ async def register_schema(schema_id: str) -> None:
         TrustRegistryException: If an error ocurred while registering the schema
     """
     try:
-        with httpx.Client() as client:
-            schema_res = client.post(
+        async with httpx.AsyncClient() as client:
+            schema_res = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/schemas", json={"schema_id": schema_id}
             )
     except httpx.HTTPError as e:
@@ -290,8 +290,8 @@ async def register_actor(actor: Actor) -> None:
         TrustRegistryException: If an error ocurred while registering the schema
     """
     try:
-        with httpx.Client() as client:
-            actor_res = client.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
+        async with httpx.AsyncClient() as client:
+            actor_res = await client.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
     except httpx.HTTPError as e:
         raise e from e
 
@@ -313,8 +313,8 @@ async def remove_actor_by_id(actor_id: str) -> None:
         TrustRegistryException: If an error occurred while removing the actor
     """
     try:
-        with httpx.Client() as client:
-            remove_response = client.delete(
+        async with httpx.AsyncClient() as client:
+            remove_response = await client.delete(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
             )
     except httpx.HTTPError as e:
@@ -342,8 +342,8 @@ async def remove_schema_by_id(schema_id: str) -> None:
         TrustRegistryException: If an error occurred while removing the schema
     """
     try:
-        with httpx.Client() as client:
-            remove_response = client.delete(
+        async with httpx.AsyncClient() as client:
+            remove_response = await client.delete(
                 f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
             )
     except httpx.HTTPError as e:
@@ -360,8 +360,8 @@ async def update_actor(actor: Actor) -> None:
     actor_id = actor["id"]
 
     try:
-        with httpx.Client() as client:
-            update_response = client.post(
+        async with httpx.AsyncClient() as client:
+            update_response = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}", json=actor
             )
     except httpx.HTTPError as e:

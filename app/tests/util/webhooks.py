@@ -76,13 +76,15 @@ async def check_webhook_state(
         raise Exception(f"Could not satisfy webhook filter: {filter_map}.")
 
 
-def get_hooks_per_topic_per_wallet(
+async def get_hooks_per_topic_per_wallet(
     client: RichAsyncClient, topic: CloudApiTopics
 ) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
-        with httpx.Client() as client:
-            hooks = client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}").json()
+        async with httpx.AsyncClient() as client:
+            hooks = await client.get(
+                f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}"
+            ).json()
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e

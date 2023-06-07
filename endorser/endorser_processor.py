@@ -209,8 +209,10 @@ async def is_valid_issuer(did: str, schema_id: str):
             or the schema is not registered in the registry.
     """
     try:
-        with httpx.Client() as client:
-            actor_res = client.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+        async with httpx.AsyncClient() as client:
+            actor_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
+            )
     except httpx.HTTPError as e:
         raise e from e
 
@@ -230,8 +232,8 @@ async def is_valid_issuer(did: str, schema_id: str):
         return False
 
     try:
-        with httpx.Client() as client:
-            schema_res = client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+        async with httpx.AsyncClient() as client:
+            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
         raise e from e
 

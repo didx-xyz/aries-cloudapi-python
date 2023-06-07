@@ -127,6 +127,7 @@ async def sse_subscribe_desired_state(
     # we will instead only return endorsement records if their state in cache isn't also acked or endorsed
     # Therefore, before sending events, we will check the state, and use an ignore list, as follows.
     async def event_stream(duration=150):
+        ignore_list = []
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
             start_time = time.time()
             while time.time() - start_time < duration:
@@ -137,6 +138,18 @@ async def sse_subscribe_desired_state(
                 try:
                     event: TopicItem = queue.get_nowait()
                     payload = dict(event.payload)  # to check if keys exist in payload
+
+                    if topic == "endorsements" and desired_state == "request-received":
+                        if (
+                            payload["state"]
+                            in ["transaction-acked", "transaction-endorsed"]
+                            and payload["transaction_id"] not in ignore_list
+                        ):
+                            ignore_list += (payload["transaction_id"],)
+                            continue
+                        if payload["transaction_id"] in ignore_list:
+                            continue
+
                     if "state" in payload and payload["state"] == desired_state:
                         yield event.json()  # Send the event
                         break  # End the generator

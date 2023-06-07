@@ -16,9 +16,14 @@ class SseManager:
 
     def __init__(self, service: Service, max_queue_size=20):
         self.service = service
-        self.clients = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=200)))
         self.locks = ddict(asyncio.Lock)  # Concurrency management per wallet
         self.max = max_queue_size
+
+        # The following nested defaultdict stores events per wallet_id, per topic
+        self.events = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=self.max)))
+        # A copy is maintained so that events consumed from the above queue can be re-added. Alternatively,
+        # consumed events can be individually re-added. This is so repeated requests can receive same events.
+        self.cache = ddict(lambda: ddict(lambda: asyncio.Queue(maxsize=self.max)))
 
     @asynccontextmanager
     async def sse_event_stream(
@@ -34,7 +39,14 @@ class SseManager:
         async with self.locks[wallet_id]:
             queue = self.clients[wallet_id][topic]
 
-        yield queue
+        try:
+            yield queue
+        finally:
+            # refill the queue from the copy
+            async with self.locks[wallet]:
+                queue1, queue2 = await _copy_queue(self.cache[wallet][topic], self.max)
+                self.clients[wallet][topic] = queue1
+                self.cache[wallet][topic] = queue2
 
     async def enqueue_sse_event(self, event: str, wallet_id: str, topic: str) -> None:
         """
@@ -54,5 +66,6 @@ class SseManager:
             event,
         )
 
-        async with self.locks[wallet_id]:
-            await self.clients[wallet_id][topic].put(event)
+        async with self.locks[wallet]:
+            await self.clients[wallet][topic].put(event)
+            await self.cache[wallet][topic].put(event)

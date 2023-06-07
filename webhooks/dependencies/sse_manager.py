@@ -20,9 +20,9 @@ class SseManager:
         self.max = max_queue_size
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        self.cache_fifo = ddict(lambda: ddict(lambda: asyncio.Queue(self.max)))
-        self.cache_lifo = ddict(lambda: ddict(lambda: asyncio.LifoQueue(self.max)))
-        # LIFO Queue is to be used for consumption, so that newest events are yielded first
+        self.fifo_cache = ddict(lambda: ddict(lambda: asyncio.Queue(self.max)))
+        self.lifo_cache = ddict(lambda: ddict(lambda: asyncio.LifoQueue(self.max)))
+        # Last In First Out Queue is to be used for consumption, so that newest events are yielded first
         # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
     @asynccontextmanager
@@ -37,18 +37,18 @@ class SseManager:
             topic: The topic for which to create the event stream.
         """
         async with self.locks[wallet][topic]:
-            queue_lifo = self.cache_lifo[wallet][topic]
+            lifo_queue = self.lifo_cache[wallet][topic]
 
         try:
-            yield queue_lifo  # Will include any new events added to queue_lifo after generator starts
+            yield lifo_queue  # Will include any new events added to lifo_queue after generator starts
         finally:
             async with self.locks[wallet][topic]:
                 # LIFO cache has been consumed; repopulate with events from FIFO cache:
-                queue_lifo, queue_fifo = await _copy_queue(
-                    self.cache_fifo[wallet][topic], self.max
+                lifo_queue, fifo_queue = await _copy_queue(
+                    self.fifo_cache[wallet][topic], self.max
                 )
-                self.cache_fifo[wallet][topic] = queue_fifo
-                self.cache_lifo[wallet][topic] = queue_lifo
+                self.fifo_cache[wallet][topic] = fifo_queue
+                self.lifo_cache[wallet][topic] = lifo_queue
 
     async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
         """
@@ -67,24 +67,24 @@ class SseManager:
 
         async with self.locks[wallet][topic]:
             # Check if queue is full and make room before adding events
-            if self.cache_lifo[wallet][topic].full():
-                await self.cache_lifo[wallet][topic].get()
+            if self.lifo_cache[wallet][topic].full():
+                await self.lifo_cache[wallet][topic].get()
 
-            if self.cache_fifo[wallet][topic].full():
-                await self.cache_fifo[wallet][topic].get()
+            if self.fifo_cache[wallet][topic].full():
+                await self.fifo_cache[wallet][topic].get()
 
-            await self.cache_lifo[wallet][topic].put(event)
-            await self.cache_fifo[wallet][topic].put(event)
+            await self.lifo_cache[wallet][topic].put(event)
+            await self.fifo_cache[wallet][topic].put(event)
 
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
-    queue_lifo, queue_fifo = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
+    lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while not queue.empty():
         item = await queue.get()
-        await queue_lifo.put(item)
-        await queue_fifo.put(item)
+        await lifo_queue.put(item)
+        await fifo_queue.put(item)
 
-    return queue_lifo, queue_fifo
+    return lifo_queue, fifo_queue

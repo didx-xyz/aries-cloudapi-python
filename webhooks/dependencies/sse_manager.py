@@ -27,7 +27,7 @@ class SseManager:
 
     @asynccontextmanager
     async def sse_event_stream(
-        self, wallet_id: str, topic: str
+        self, wallet: str, topic: str
     ) -> Generator[asyncio.Queue, Any, None]:
         """
         Create a SSE event stream for a topic using a provided service.
@@ -48,7 +48,7 @@ class SseManager:
                 self.clients[wallet][topic] = queue1
                 self.cache[wallet][topic] = queue2
 
-    async def enqueue_sse_event(self, event: str, wallet_id: str, topic: str) -> None:
+    async def enqueue_sse_event(self, event: str, wallet: str, topic: str) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 
@@ -61,7 +61,7 @@ class SseManager:
         """
         LOGGER.debug(
             "Enqueueing event for wallet '%s' with topic '%s': %s",
-            wallet_id,
+            wallet,
             topic,
             event,
         )

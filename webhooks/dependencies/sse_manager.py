@@ -60,9 +60,8 @@ class SseManager:
             topic: The topic to which to enqueue the event.
         """
         LOGGER.debug(
-            "Enqueueing event for wallet '%s' with topic '%s': %s",
+            "Enqueueing event for wallet '%s': %s",
             wallet,
-            topic,
             event,
         )
 

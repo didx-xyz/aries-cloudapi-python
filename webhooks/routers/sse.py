@@ -119,6 +119,13 @@ async def sse_subscribe_desired_state(
     desired_state: str,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
+    # Special case: Endorsements only contain two fields: `state` and `transaction_id`.
+    # Endorsement Listeners will query by state only, in order to get the relevant transaction id.
+    # So, a problem arises because the Admin wallet can listen for "request-received",
+    # and we may return transaction_ids matching that state, but they have already been endorsed.
+    # So, instead of imposing an arbitrary sleep duration for the listeners, for the event to arrive,
+    # we will instead only return endorsement records if their state in cache isn't also acked or endorsed
+    # Therefore, before sending events, we will check the state, and use an ignore list, as follows.
     async def event_stream(duration=150):
         async with sse_manager.sse_event_stream(wallet_id, topic) as queue:
             start_time = time.time()

@@ -459,9 +459,10 @@ async def test_send_proof_request(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    time.sleep(0.05)
+    time.sleep(0.2)
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
+
     alice_connection_event = await alice_proofs_listener.wait_for_event(
         field="connection_id",
         field_id=acme_and_alice_connection.alice_connection_id,
@@ -491,7 +492,7 @@ async def test_reject_proof_request(
         },
     )
 
-    time.sleep(0.05)
+    time.sleep(0.2)
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
 
@@ -704,7 +705,10 @@ async def test_get_credentials_for_request(
         },
     )
 
-    # Wait for request received
+    time.sleep(0.2)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+
     alice_exchange = await alice_proofs_listener.wait_for_event(
         field="connection_id",
         field_id=acme_and_alice_connection.alice_connection_id,

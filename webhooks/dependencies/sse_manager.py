@@ -1,13 +1,15 @@
 import asyncio
 import logging
+import time
 from collections import defaultdict as ddict
 from contextlib import asynccontextmanager
-from typing import Any, Generator, Tuple
+from typing import Any, AsyncGenerator, Generator, Tuple
 
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
 
+MAX_EVENT_AGE_SECONDS = 15
 
 class SseManager:
     """
@@ -27,8 +29,8 @@ class SseManager:
 
     @asynccontextmanager
     async def sse_event_stream(
-        self, wallet: str, topic: str
-    ) -> Generator[asyncio.LifoQueue, Any, None]:
+        self, wallet: str, topic: str, duration: int
+    ) -> Generator[AsyncGenerator[TopicItem, Any], Any, None]:
         """
         Create a SSE stream of events for a wallet_id on a specific topic
 
@@ -39,8 +41,20 @@ class SseManager:
         async with self.locks[wallet][topic]:
             lifo_queue = self.lifo_cache[wallet][topic]
 
+        async def event_generator() -> Generator[TopicItem, Any, None]:
+            start_time = time.time()
+            while True:
+                try:
+                    timestamp, event = await asyncio.wait_for(lifo_queue.get(), timeout=1)
+                    if time.time() - timestamp > MAX_EVENT_AGE_SECONDS:
+                        continue
+                    yield event
+                except asyncio.TimeoutError:
+                    if time.time() - start_time > duration:
+                        LOGGER.error("\n\n\nBREAKING\n\n")
+                        break
         try:
-            yield lifo_queue  # Will include any new events added to lifo_queue after generator starts
+            yield event_generator()
         finally:
             async with self.locks[wallet][topic]:
                 # LIFO cache has been consumed; repopulate with events from FIFO cache:

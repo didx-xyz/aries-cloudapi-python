@@ -108,8 +108,8 @@ async def sse_subscribe_wallet_topic(
 @router.get(
     "/{wallet_id}/{topic}/{desired_state}",
     response_class=EventSourceResponse,
-    summary="Wait for a desired state to be reached. "
-    "`desired_state` may be `offer-received`, `transaction-acked`, or `done`.",
+    summary="Wait for a desired state to be reached for some event for this wallet and topic "
+    "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
 )
 @inject
 async def sse_subscribe_desired_state(
@@ -145,10 +145,10 @@ async def sse_subscribe_desired_state(
 @router.get(
     "/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
     response_class=EventSourceResponse,
-    summary="Wait for a desired state to be reached. "
+    summary="Wait for a desired state to be reached for some event for this wallet and topic "
     "The `relevant_id` refers to a `transaction_id` when using topic `endorsements,"
-    "or a `connection_id` on topics: `connections`, `credentials`, or `proofs`."
-    "`desired_state` may be `offer-received`, `transaction-acked`, or `done`.",
+    "or a `connection_id` on topics: `connections`, `credentials`, or `proofs`, etc."
+    "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
 )
 @inject
 async def sse_subscribe_filtered_event(

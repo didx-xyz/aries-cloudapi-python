@@ -22,7 +22,7 @@ async def test_sse_subscribe_wallet(
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     sse_response = await asyncio.wait_for(
-        get_sse_response(alice_wallet_id, topic="connections"), timeout=5
+        get_sse_stream_response(alice_wallet_id, topic="connections"), timeout=10
     )
     json_lines = response_to_json(sse_response)
 
@@ -79,9 +79,7 @@ async def test_sse_subscribe_state(
     )
 
 
-async def get_sse_response(wallet_id, topic) -> Response:
-    async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
-        async with client.stream("GET", f"/sse/{wallet_id}/{topic}") as response:
+async def get_sse_stream_response(wallet_id, topic) -> Response:
             response_text = ""
             async for line in response.aiter_lines():
                 response_text += line

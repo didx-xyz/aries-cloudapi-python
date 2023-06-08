@@ -55,7 +55,7 @@ async def sse_subscribe_wallet(
                     LOGGER.debug(
                         "SSE event for wallet `%s`. Yielding: %s",
                         wallet_id,
-                        event.json,
+                        event.json(),
                     )
                     yield event.json()
                 except asyncio.QueueEmpty:
@@ -107,7 +107,7 @@ async def sse_subscribe_wallet_topic(
                         "Yielding SSE event for wallet `%s` on topic `%s`. Event: %s",
                         wallet_id,
                         topic,
-                        event.json,
+                        event.json(),
                     )
                     yield event.json()
                 except asyncio.QueueEmpty:
@@ -182,7 +182,7 @@ async def sse_subscribe_desired_state(
                             wallet_id,
                             topic,
                             desired_state,
-                            event.json,
+                            event.json(),
                         )
                         yield event.json()  # Send the event
                         break  # End the generator
@@ -249,7 +249,7 @@ async def sse_subscribe_filtered_event(
                             desired_state,
                             field,
                             field_id,
-                            event.json,
+                            event.json(),
                         )
                         yield event.json()  # Send the event
                         break  # End the generator

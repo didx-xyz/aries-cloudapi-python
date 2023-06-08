@@ -10,7 +10,7 @@ from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
 
-MAX_EVENT_AGE_SECONDS = 10
+MAX_EVENT_AGE_SECONDS = 5
 MAX_QUEUE_SIZE = 50
 
 

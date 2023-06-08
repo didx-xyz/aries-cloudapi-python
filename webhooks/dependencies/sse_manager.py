@@ -57,7 +57,7 @@ class SseManager:
                     yield event
                 except asyncio.TimeoutError:
                     if time.time() - start_time > duration:
-                        LOGGER.debug("\nSSE Event Stream: closing with timeout error")
+                        LOGGER.info("\nSSE Event Stream: closing with timeout error")
                         break
 
         try:

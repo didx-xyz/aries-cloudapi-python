@@ -48,7 +48,9 @@ class SseManager:
             start_time = time.time()
             while True:
                 try:
-                    timestamp, event = await asyncio.wait_for(lifo_queue.get(), timeout=1)
+                    timestamp, event = await asyncio.wait_for(
+                        lifo_queue.get(), timeout=1
+                    )
                     if time.time() - timestamp > MAX_EVENT_AGE_SECONDS:
                         continue
                     yield event
@@ -56,6 +58,7 @@ class SseManager:
                     if time.time() - start_time > duration:
                         LOGGER.error("\n\n\nBREAKING\n\n")
                         break
+
         try:
             yield event_generator()
         finally:

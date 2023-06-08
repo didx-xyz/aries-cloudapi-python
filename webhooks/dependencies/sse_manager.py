@@ -40,6 +40,7 @@ class SseManager:
         Args:
             wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
+            duration: Timeout duration in seconds. 0 means no timeout.
         """
         async with self.locks[wallet][topic]:
             lifo_queue = self.lifo_cache[wallet][topic]
@@ -56,7 +57,7 @@ class SseManager:
                     yield event
                 except asyncio.TimeoutError:
                     if time.time() - start_time > duration:
-                        LOGGER.error("\n\n\nBREAKING\n\n")
+                        LOGGER.debug("\nSSE Event Stream: closing with timeout error")
                         break
 
         try:

@@ -83,6 +83,30 @@ async def test_sse_subscribe_event_state(
     )
 
 
+@pytest.mark.anyio
+async def test_sse_subscribe_filtered_stream(
+    alice_member_client: RichAsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
+
+    topic = "connections"
+    field = "connection_id"
+
+    url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{field}/{alice_connection_id}"
+
+    sse_response = await get_sse_stream_response(url)
+
+    LOGGER.debug("SSE stream response: %s", sse_response)
+    json_lines = response_to_json(sse_response)
+    LOGGER.debug("Response as json: %s", json_lines)
+    assert all(
+        line["topic"] == topic
+        and line["wallet_id"] == alice_wallet_id
+        and line["payload"]["connection_id"] == alice_connection_id
+        for line in json_lines
+    )
 
 
 async def get_sse_stream_response(url, duration=2) -> Response:

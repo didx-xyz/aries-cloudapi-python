@@ -32,7 +32,7 @@ class SseManager:
 
     @asynccontextmanager
     async def sse_event_stream(
-        self, wallet: str, topic: str, duration: int
+        self, wallet: str, topic: str, duration: int = 0
     ) -> Generator[AsyncGenerator[TopicItem, Any], Any, None]:
         """
         Create a SSE stream of events for a wallet_id on a specific topic
@@ -56,7 +56,7 @@ class SseManager:
                         continue
                     yield event
                 except asyncio.TimeoutError:
-                    if time.time() - start_time > duration:
+                    if duration > 0 and time.time() - start_time > duration:
                         LOGGER.info("\nSSE Event Stream: closing with timeout error")
                         break
 

@@ -6,6 +6,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import Response
 from mockito import verify, when
+from pytest_mock import MockerFixture
 
 from app.tests.util.mock import to_async
 from endorser import endorser_processor as test_module
@@ -116,25 +117,19 @@ def test_is_governance_agent():
 
 
 @pytest.mark.anyio
-async def test_is_valid_issuer(mocker):
+async def test_is_valid_issuer(mocker: MockerFixture):
+    patch_async_client = mocker.patch("httpx.AsyncClient")
+    mocked_async_client = MagicMock()
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+
     did = "did:sov:123"
     schema_id = "the-schema-id"
 
     # Mock responses
-    actor_res = Response(
-        200,
-        json={"roles": ["issuer"]},
-    )
-    schema_res = Response(
-        200,
-        json={"schemas": [schema_id]},
-    )
+    actor_res = Response(200, json={"roles": ["issuer"]})
+    schema_res = Response(200, json={"schemas": [schema_id]})
 
-    patch_async_client = mocker.patch("httpx.AsyncClient")
-
-    mocked_async_client = MagicMock()
     mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
-    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
     # Mock the `async with httpx.AsyncClient` to return mocked_async_client
 
     assert await is_valid_issuer(did, schema_id)
@@ -147,49 +142,59 @@ async def test_is_valid_issuer(mocker):
 
 
 @pytest.mark.anyio
-async def test_is_valid_issuer_x_res_errors():
+async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
+    patch_async_client = mocker.patch("httpx.AsyncClient")
+    mocked_async_client = MagicMock()
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+
     did = "did:sov:123"
     schema_id = "the-schema-id"
 
-    actor_res = Mock(
-        status_code=200,
-        is_error=True,
-        json=Mock(return_value={"roles": ["issuer"]}),
-    )
-    when(httpx).get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}").thenReturn(
-        actor_res
-    )
-
-    schema_res = Mock(
-        status_code=200,
-        is_error=False,
-        json=Mock(return_value={"schemas": [schema_id]}),
-    )
-    when(httpx).get(f"{TRUST_REGISTRY_URL}/registry/schemas").thenReturn(schema_res)
-
+    actor_res = Response(200, json={"roles": ["issuer"]})
+    schema_res = Response(200, json={"schemas": [schema_id]})
     # Error actor res
+    mocked_async_client.get = AsyncMock(
+        side_effect=[
+            Response(400, json={}),
+            schema_res,
+        ]
+    )
     assert not await is_valid_issuer(did, schema_id)
 
     # Error schema res
-    actor_res.is_error = False
-    schema_res.is_error = True
+    mocked_async_client.get = AsyncMock(
+        side_effect=[
+            actor_res,
+            Response(400, json={}),
+        ]
+    )
     assert not await is_valid_issuer(did, schema_id)
 
-    # Back to valid again
-    schema_res.is_error = False
-    assert await is_valid_issuer(did, schema_id)
-
     # Invalid role
-    actor_res.json = Mock(return_value={"roles": ["verifier"], "id": "the-actor-id"})
+    mocked_async_client.get = AsyncMock(
+        side_effect=[
+            Response(200, json={"roles": ["verifier"], "id": "the-actor-id"}),
+            schema_res,
+        ]
+    )
     assert not await is_valid_issuer(did, schema_id)
 
     # schema not registered
-    actor_res.json = Mock(return_value={"roles": ["issuer"]})
-    schema_res.json = Mock(return_value={"schemas": ["another-schema-id"]})
+    mocked_async_client.get = AsyncMock(
+        side_effect=[
+            actor_res,
+            Response(200, json={"schemas": ["another-schema-id"]}),
+        ]
+    )
     assert not await is_valid_issuer(did, schema_id)
 
     # Back to valid again
-    schema_res.json = Mock(return_value={"schemas": [schema_id]})
+    mocked_async_client.get = AsyncMock(
+        side_effect=[
+            actor_res,
+            schema_res,
+        ]
+    )
     assert await is_valid_issuer(did, schema_id)
 
 

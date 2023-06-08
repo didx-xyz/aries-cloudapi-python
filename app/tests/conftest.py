@@ -1,5 +1,9 @@
+from unittest.mock import AsyncMock, Mock
+
 import mockito
 import pytest
+from httpx import Response
+from pytest_mock import MockerFixture
 
 from app.event_handling.webhooks import Webhooks
 
@@ -82,3 +86,15 @@ async def shutdown_webhooks_listener():
 
     # Teardown phase: After each test, shut down the Webhooks listener
     await Webhooks.shutdown()
+
+
+@pytest.fixture
+def mock_async_client(mocker: MockerFixture) -> Mock:
+    patch_async_client = mocker.patch("httpx.AsyncClient")
+
+    mocked_async_client = Mock()
+    response = Response(status_code=200)
+    mocked_async_client.get = AsyncMock(return_value=response)
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+
+    return mocked_async_client

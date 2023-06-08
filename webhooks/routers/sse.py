@@ -41,7 +41,7 @@ async def sse_subscribe_wallet(
         sse_manager: The SSEManager instance managing the server-sent events.
     """
 
-    async def event_stream(duration=1) -> Generator[str, Any, None]:
+    async def event_stream() -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(
             wallet_id, WEBHOOK_TOPIC_ALL, duration=2  # So far only used in tests
         ) as event_generator:

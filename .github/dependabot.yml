@@ -9,7 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "Saturday"
+      day: "saturday"
       time: "12:00"
       
 #   - package-ecosystem: "pip"

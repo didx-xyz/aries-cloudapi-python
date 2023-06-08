@@ -14,7 +14,7 @@ on:
 
   push:
     branches:
-      - "developement"
+      - "development"
     tags:
       - "v*"
   pull_request:
@@ -176,6 +176,15 @@ jobs:
         governance-webhooks-web
         governance-endorser
         tails-server
+      workaround: |
+        ledger-browser
+        governance-ga-agent
+        governance-multitenant-agent
+        governance-multitenant-web
+        governance-trust-registry
+        governance-webhooks-web
+        governance-endorser
+        tails-server
       KUBECONFIG: /root/.kube/config
     steps:
       - name: Checkout code
@@ -220,12 +229,6 @@ jobs:
           # helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
           helm plugin install https://github.com/databus23/helm-diff
 
-      - name: Symlink shared models
-        run: |
-          mkdir -p helm/Chart/assets
-          cd helm/Chart/assets
-          ln -s ../../../shared .
-
       - name: Diff upgrade
         run: |
           for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
@@ -246,7 +249,7 @@ jobs:
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
         continue-on-error: true
         run: |
-          for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
+          for project in $(echo "${{ env.workaround }}" | sed 's/\n/ /g'); do
             if helm -n dev-cloudapi ls --filter "^${project}$" | grep -q ${project}; then
               helm -n dev-cloudapi delete ${project}
             else

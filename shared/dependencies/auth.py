@@ -94,37 +94,31 @@ def agent_role(role: Union["Role", List["Role"]]):
 @asynccontextmanager
 async def get_governance_controller():
     # TODO: would be good to support this natively in AcaPyClient
-    client = AcaPyClient(
+    async with AcaPyClient(
         Role.GOVERNANCE.agent_type.base_url,
         api_key=Role.GOVERNANCE.agent_type.x_api_key,
-    )
-
-    yield client
-    await client.close()
+    ) as client:
+        yield client
 
 
 @asynccontextmanager
 async def get_tenant_admin_controller():
     # TODO: would be good to support this natively in AcaPyClient
-    client = AcaPyClient(
+    async with AcaPyClient(
         Role.TENANT_ADMIN.agent_type.base_url,
         api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
-    )
-
-    yield client
-    await client.close()
+    ) as client:
+        yield client
 
 
 @asynccontextmanager
 async def get_tenant_controller(role: "Role", auth_token: str):
-    client = AcaPyClient(
+    async with AcaPyClient(
         role.agent_type.base_url,
         api_key=role.agent_type.x_api_key,
         tenant_jwt=auth_token,
-    )
-
-    yield client
-    await client.close()
+    ) as client:
+        yield client
 
 
 async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
@@ -144,17 +138,14 @@ async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     agent = None
     try:
         # yield the controller
-        agent = AcaPyClient(
+        async with AcaPyClient(
             base_url=auth.role.agent_type.base_url,
             api_key=x_api_key,
             tenant_jwt=tenant_jwt,
-        )
-        yield agent
+        ) as agent:
+            yield agent
     except Exception as e:
         # We can only log this here and not raise an HTTPException as we are past the yield. See here:
         # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
         logger.error("%s", e, exc_info=e)
         raise e
-    finally:
-        if agent:
-            await agent.close()

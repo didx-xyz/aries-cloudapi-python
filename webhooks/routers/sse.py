@@ -129,12 +129,11 @@ async def sse_subscribe_desired_state(
         async with sse_manager.sse_event_stream(
             wallet_id, topic, SSE_TIMEOUT
         ) as event_generator:
-                # If client closes connection, stop sending events
+            async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break
                 try:
-                    event: TopicItem = queue.get_nowait()
                     payload = dict(event.payload)  # to check if keys exist in payload
 
                     if topic == "endorsements" and desired_state == "request-received":
@@ -187,7 +186,6 @@ async def sse_subscribe_filtered_event(
                     LOGGER.debug("SSE event_stream: client disconnected")
                     break
                 try:
-                    event: TopicItem = queue.get_nowait()
                     payload = dict(event.payload)  # to check if keys exist in payload
                     if (
                         field in payload

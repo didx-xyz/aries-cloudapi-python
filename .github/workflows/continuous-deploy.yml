@@ -14,7 +14,7 @@ on:
 
   push:
     branches:
-      - "developement"
+      - "development"
     tags:
       - "v*"
   pull_request:
@@ -219,12 +219,6 @@ jobs:
         run: |
           # helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
           helm plugin install https://github.com/databus23/helm-diff
-
-      - name: Symlink shared models
-        run: |
-          mkdir -p helm/Chart/assets
-          cd helm/Chart/assets
-          ln -s ../../../shared .
 
       - name: Diff upgrade
         run: |

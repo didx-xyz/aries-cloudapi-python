@@ -1,5 +1,8 @@
+from typing import Any, Generator
+
 import pytest
 
+from app.admin.tenants.models import CreateTenantResponse
 from app.tests.util.client import get_tenant_admin_client
 from app.tests.util.tenants import (
     create_issuer_tenant,
@@ -10,7 +13,7 @@ from app.tests.util.tenants import (
 
 
 @pytest.fixture(scope="function")
-async def alice_tenant():
+async def alice_tenant() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
         tenant = await create_tenant(admin_client, "alice")
 
@@ -20,7 +23,7 @@ async def alice_tenant():
 
 
 @pytest.fixture(scope="function")
-async def bob_tenant():
+async def bob_tenant() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
         tenant = await create_issuer_tenant(admin_client, "bob")
 
@@ -30,7 +33,7 @@ async def bob_tenant():
 
 
 @pytest.fixture(scope="function")
-async def acme_verifier():
+async def acme_verifier() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
         verifier_tenant = await create_verifier_tenant(admin_client, "acme")
 
@@ -40,7 +43,7 @@ async def acme_verifier():
 
 
 @pytest.fixture(scope="function")
-async def faber_issuer():
+async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
         issuer_tenant = await create_issuer_tenant(admin_client, "faber")
 

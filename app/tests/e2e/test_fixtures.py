@@ -24,7 +24,7 @@ CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 # OR abstract the persona specific parts out of it
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
@@ -35,7 +35,7 @@ async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialS
     return schema_definition_result
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def schema_definition_alt(
     governance_acapy_client: AcaPyClient,
 ) -> CredentialSchema:
@@ -48,7 +48,7 @@ async def schema_definition_alt(
     return schema_definition_result
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -68,7 +68,7 @@ async def credential_definition_id(
     return result.id
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -88,7 +88,7 @@ async def credential_definition_id_revocable(
     return result.id
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def credential_exchange_id(
     faber_client: RichAsyncClient,
     credential_definition_id: str,
@@ -129,7 +129,7 @@ async def credential_exchange_id(
     return credential_exchange_id
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def issue_credential_to_alice(
     faber_client: RichAsyncClient,
     credential_definition_id: str,

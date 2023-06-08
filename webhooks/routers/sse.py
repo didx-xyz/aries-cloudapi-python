@@ -197,6 +197,65 @@ async def sse_subscribe_desired_state(
 
 
 @router.get(
+    "/{wallet_id}/{topic}/{field}/{field_id}",
+    response_class=EventSourceResponse,
+    summary="Wait for a desired state to be reached for some event for this wallet and topic "
+    "The `relevant_id` refers to a `transaction_id` when using topic `endorsements,"
+    "or a `connection_id` on topics: `connections`, `credentials`, or `proofs`, etc."
+    "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
+)
+@inject
+async def sse_subscribe_filtered_stream(
+    request: Request,
+    wallet_id: str,
+    topic: str,
+    field: str,
+    field_id: str,
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
+):
+    LOGGER.debug(
+        "SSE Request: subscribe to wallet `%s` and topic `%s`, stream events with `%s`:`%s`",
+        wallet_id,
+        topic,
+        field,
+        field_id,
+    )
+
+    async def event_stream():
+        async with sse_manager.sse_event_stream(
+            wallet_id, topic, SSE_TIMEOUT
+        ) as event_generator:
+            async for event in event_generator:
+                if await request.is_disconnected():
+                    LOGGER.debug(
+                        "SSE event_stream: client disconnected from `sse_subscribe_filtered_event`"
+                    )
+                    break
+                try:
+                    payload = dict(event.payload)  # to check if keys exist in payload
+                    if field in payload and payload[field] == field_id:
+                        LOGGER.debug(
+                            "Yielding SSE event for wallet `%s` on topic `%s` with `%s`:`%s`. Event: %s",
+                            wallet_id,
+                            topic,
+                            field,
+                            field_id,
+                            event.json(),
+                        )
+                        yield event.json()  # Send the event
+                except asyncio.QueueEmpty:
+                    await asyncio.sleep(QUEUE_POLL_PERIOD)
+                except asyncio.CancelledError:
+                    # This exception is thrown when the client disconnects.
+                    LOGGER.debug(
+                        "SSE event_stream cancelled in `sse_subscribe_filtered_event`"
+                    )
+                    break
+
+    return EventSourceResponse(event_stream())
+
+
+@router.get(
     "/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
     response_class=EventSourceResponse,
     summary="Wait for a desired state to be reached for some event for this wallet and topic "

@@ -222,22 +222,6 @@ async def test_remove_schema_by_id(mock_async_client):
         trf.TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
     )
 
-    mock_async_client.delete = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.remove_schema_by_id(schema_id="schema_id")
-
-
-@pytest.mark.anyio
-async def test_remove_schema_by_id(mock_async_client):
-    schema_id = "schema_id"
-    mock_async_client.delete = AsyncMock(return_value=Response(200))
-
-    await trf.remove_schema_by_id(schema_id=schema_id)
-
-    mock_async_client.delete.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
-    )
-
     mock_async_client.delete = AsyncMock(return_value=Response(500, text="The error"))
     with pytest.raises(
         trf.TrustRegistryException,

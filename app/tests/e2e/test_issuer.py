@@ -12,8 +12,6 @@ from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from shared import CredentialExchange, RichAsyncClient
 
-# This import are important for tests to run!
-
 logger = logging.getLogger(__name__)
 
 

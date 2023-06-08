@@ -1,6 +1,7 @@
 import json
 import logging
 
+import httpx
 import pytest
 from httpx import AsyncClient, Response, Timeout
 
@@ -19,7 +20,13 @@ async def test_sse_subscribe_wallet_topic(
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
-    sse_response = await get_sse_stream_response(alice_wallet_id, topic="connections")
+    try:
+        sse_response = await get_sse_stream_response(
+            alice_wallet_id, topic="connections"
+        )
+    except httpx.ReadTimeout:
+        pass
+
     LOGGER.debug("SSE stream response: %s", sse_response)
     json_lines = response_to_json(sse_response)
     LOGGER.debug("Response as json: %s", json_lines)
@@ -78,19 +85,24 @@ async def test_sse_subscribe_state(
     )
 
 
-async def get_sse_stream_response(wallet_id, topic, duration=10) -> Response:
+async def get_sse_stream_response(wallet_id, topic, duration=2) -> Response:
     timeout = Timeout(duration)
-    async with AsyncClient(timeout=timeout) as client:
-        async with client.stream(
-            "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
-        ) as response:
-            response_text = ""
-            try:
-                async for line in response.aiter_lines():
-                    response_text += line
-            except TimeoutError:
-                pass  # Timeout reached, return the response text read so far
-            return response_text
+    try:
+        async with AsyncClient(timeout=timeout) as client:
+            async with client.stream(
+                "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
+            ) as response:
+                response_text = ""
+                try:
+                    async for line in response.aiter_lines():
+                        response_text += line
+                except TimeoutError:
+                    pass  # Timeout reached, return the response text read so far
+    except httpx.ReadTimeout:
+        # Closing connection gracefully, as event_stream is infinite
+        pass
+    finally:
+        return response_text
 
 
 def response_to_json(response_text):

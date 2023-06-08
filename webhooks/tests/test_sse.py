@@ -83,13 +83,13 @@ async def test_sse_subscribe_event_state(
     )
 
 
-async def get_sse_stream_response(wallet_id, topic, duration=2) -> Response:
+
+
+async def get_sse_stream_response(url, duration=2) -> Response:
     timeout = Timeout(duration)
     try:
         async with AsyncClient(timeout=timeout) as client:
-            async with client.stream(
-                "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
-            ) as response:
+            async with client.stream("GET", url) as response:
                 response_text = ""
                 try:
                     async for line in response.aiter_lines():

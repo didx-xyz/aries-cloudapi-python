@@ -22,8 +22,9 @@ async def test_sse_subscribe_wallet_topic(
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
     sse_response = await get_sse_stream_response(alice_wallet_id, topic="connections")
+    LOGGER.debug("SSE stream response: %s", sse_response)
     json_lines = response_to_json(sse_response)
-
+    LOGGER.debug("Response as json: %s", json_lines)
     assert any(
         line["topic"] == "connections"
         and line["wallet_id"] == alice_wallet_id
@@ -46,6 +47,7 @@ async def test_sse_subscribe_event(
 
     url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{field}/{alice_connection_id}/{state}"
     sse_response = await listen_for_event(url)
+    LOGGER.debug("SSE stream response: %s", sse_response)
 
     assert (
         sse_response["topic"] == topic
@@ -68,6 +70,7 @@ async def test_sse_subscribe_state(
 
     url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{state}"
     sse_response = await listen_for_event(url)
+    LOGGER.debug("SSE stream response: %s", sse_response)
 
     assert (
         sse_response["topic"] == topic

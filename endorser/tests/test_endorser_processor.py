@@ -1,7 +1,6 @@
 import json
 from unittest.mock import AsyncMock, MagicMock, Mock
 
-import httpx
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from httpx import Response

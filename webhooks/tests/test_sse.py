@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 
@@ -8,7 +7,6 @@ from httpx import AsyncClient, Response, Timeout
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
 from shared import WEBHOOKS_URL, RichAsyncClient
-from webhooks.main import app
 
 LOGGER = logging.getLogger(__name__)
 

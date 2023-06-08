@@ -20,18 +20,16 @@ async def test_sse_subscribe_wallet_topic(
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
-    try:
-        sse_response = await get_sse_stream_response(
-            alice_wallet_id, topic="connections"
-        )
-    except httpx.ReadTimeout:
-        pass
+    topic = "connections"
+    url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}"
+
+    sse_response = await get_sse_stream_response(url)
 
     LOGGER.debug("SSE stream response: %s", sse_response)
     json_lines = response_to_json(sse_response)
     LOGGER.debug("Response as json: %s", json_lines)
     assert any(
-        line["topic"] == "connections"
+        line["topic"] == topic
         and line["wallet_id"] == alice_wallet_id
         and line["payload"]["connection_id"] == alice_connection_id
         for line in json_lines

@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 SSE_TIMEOUT = 150  # maximum duration of an SSE connection
-queue_poll_period = 0.1  # period in seconds to retry reading empty queues
+QUEUE_POLL_PERIOD = 0.1  # period in seconds to retry reading empty queues
 
 
 @router.get(
@@ -59,7 +59,7 @@ async def sse_subscribe_wallet(
                     )
                     yield event.json()
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(queue_poll_period)
+                    await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug("SSE event_stream cancelled in `sse_subscribe_wallet`")
@@ -111,7 +111,7 @@ async def sse_subscribe_wallet_topic(
                     )
                     yield event.json()
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(queue_poll_period)
+                    await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(
@@ -187,7 +187,7 @@ async def sse_subscribe_desired_state(
                         yield event.json()  # Send the event
                         break  # End the generator
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(queue_poll_period)
+                    await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(
@@ -254,7 +254,7 @@ async def sse_subscribe_filtered_event(
                         yield event.json()  # Send the event
                         break  # End the generator
                 except asyncio.QueueEmpty:
-                    await asyncio.sleep(queue_poll_period)
+                    await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(

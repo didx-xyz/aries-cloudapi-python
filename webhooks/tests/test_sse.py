@@ -61,7 +61,7 @@ async def test_sse_subscribe_event(
 
 
 @pytest.mark.anyio
-async def test_sse_subscribe_state(
+async def test_sse_subscribe_event_state(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):

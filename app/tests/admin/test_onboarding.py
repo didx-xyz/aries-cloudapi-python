@@ -15,7 +15,7 @@ from app.event_handling.sse_listener import SseListener
 from app.facades.acapy_wallet import Did
 from app.tests.util.mock import to_async
 from shared.cloud_api_error import CloudApiException
-from tests.fixtures import get_mock_agent_controller
+from shared.util.mock_agent_controller import get_mock_agent_controller
 
 
 @pytest.mark.anyio

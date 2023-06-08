@@ -130,12 +130,12 @@ async def test_is_valid_issuer(mocker):
         json={"schemas": [schema_id]},
     )
 
-    # Mock httpx.AsyncClient
-    mocked_AsyncClient = mocker.patch("httpx.AsyncClient")
+    patch_async_client = mocker.patch("httpx.AsyncClient")
 
     mocked_async_client = MagicMock()
     mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
-    mocked_AsyncClient.return_value.__aenter__.return_value = mocked_async_client
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+    # Mock the `async with httpx.AsyncClient` to return mocked_async_client
 
     assert await is_valid_issuer(did, schema_id)
 

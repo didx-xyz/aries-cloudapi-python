@@ -43,7 +43,7 @@ async def sse_subscribe_wallet(
 
     async def event_stream() -> Generator[str, Any, None]:
         async with sse_manager.sse_event_stream(
-            wallet_id, WEBHOOK_TOPIC_ALL, duration=2  # So far only used in tests
+            wallet_id, WEBHOOK_TOPIC_ALL
         ) as event_generator:
             async for event in event_generator:
                 if await request.is_disconnected():
@@ -93,9 +93,7 @@ async def sse_subscribe_wallet_topic(
     )
 
     async def event_stream() -> Generator[str, Any, None]:
-        async with sse_manager.sse_event_stream(
-            wallet_id, topic, duration=2  # So far only used in tests
-        ) as event_generator:
+        async with sse_manager.sse_event_stream(wallet_id, topic) as event_generator:
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(

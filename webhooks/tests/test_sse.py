@@ -37,30 +37,6 @@ async def test_sse_subscribe_wallet_topic(
 
 
 @pytest.mark.anyio
-async def test_sse_subscribe_event(
-    alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
-):
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
-    alice_connection_id = bob_and_alice_connection.alice_connection_id
-
-    topic = "connections"
-    field = "connection_id"
-    state = "completed"
-
-    url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{field}/{alice_connection_id}/{state}"
-    sse_response = await listen_for_event(url)
-    LOGGER.debug("SSE stream response: %s", sse_response)
-
-    assert (
-        sse_response["topic"] == topic
-        and sse_response["wallet_id"] == alice_wallet_id
-        and sse_response["payload"][field] == alice_connection_id
-        and sse_response["payload"]["state"] == state
-    )
-
-
-@pytest.mark.anyio
 async def test_sse_subscribe_event_state(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
@@ -106,6 +82,30 @@ async def test_sse_subscribe_filtered_stream(
         and line["wallet_id"] == alice_wallet_id
         and line["payload"]["connection_id"] == alice_connection_id
         for line in json_lines
+    )
+
+
+@pytest.mark.anyio
+async def test_sse_subscribe_event(
+    alice_member_client: RichAsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+):
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
+
+    topic = "connections"
+    field = "connection_id"
+    state = "completed"
+
+    url = f"{WEBHOOKS_URL}/sse/{alice_wallet_id}/{topic}/{field}/{alice_connection_id}/{state}"
+    sse_response = await listen_for_event(url)
+    LOGGER.debug("SSE stream response: %s", sse_response)
+
+    assert (
+        sse_response["topic"] == topic
+        and sse_response["wallet_id"] == alice_wallet_id
+        and sse_response["payload"][field] == alice_connection_id
+        and sse_response["payload"]["state"] == state
     )
 
 

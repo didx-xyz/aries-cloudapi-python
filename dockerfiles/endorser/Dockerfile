@@ -1,6 +1,7 @@
 FROM python:3.8
 
 COPY endorser /endorser
+COPY shared /shared
 
 WORKDIR /endorser
 

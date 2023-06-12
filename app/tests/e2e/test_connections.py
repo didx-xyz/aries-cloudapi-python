@@ -37,7 +37,7 @@ async def test_accept_invitation(
     )
     connection_record = accept_response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
         filter_map={
@@ -120,7 +120,7 @@ async def test_bob_and_alice_connect(
     )
     connection_record = accept_response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
         filter_map={

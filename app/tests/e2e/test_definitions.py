@@ -2,7 +2,6 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
-from app.dependencies import acapy_auth, acapy_auth_verified
 from app.facades import trust_registry
 from app.facades.acapy_wallet import get_public_did
 from app.generic import definitions
@@ -14,6 +13,7 @@ from app.generic.definitions import (
 from app.tests.util.string import random_string
 from app.tests.util.trust_registry import register_issuer
 from shared import RichAsyncClient
+from shared.dependencies.auth import acapy_auth, acapy_auth_verified
 
 
 @pytest.mark.anyio
@@ -143,7 +143,6 @@ async def test_create_credential_definition_issuer_tenant(
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
 
-    # when
     result = (
         await definitions.create_credential_definition(
             credential_definition, faber_acapy_client, auth

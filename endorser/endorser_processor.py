@@ -6,13 +6,13 @@ import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
 
-from endorser.constants import (
+from shared import (
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
     TRUST_REGISTRY_URL,
     WEBHOOKS_PUBSUB_URL,
+    Endorsement,
 )
-from shared import Endorsement
 
 logger = logging.getLogger(__name__)
 
@@ -208,8 +208,13 @@ async def is_valid_issuer(did: str, schema_id: str):
         Exception: When the did is not registered, the actor doesn't have the issuer role
             or the schema is not registered in the registry.
     """
-
-    actor_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+    try:
+        async with httpx.AsyncClient() as client:
+            actor_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
+            )
+    except httpx.HTTPError as e:
+        raise e from e
 
     if actor_res.is_error:
         logger.error(
@@ -226,7 +231,11 @@ async def is_valid_issuer(did: str, schema_id: str):
         logger.error("Actor %s does not have required role 'issuer'", actor_id)
         return False
 
-    schema_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    try:
+        async with httpx.AsyncClient() as client:
+            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    except httpx.HTTPError as e:
+        raise e from e
 
     if schema_res.is_error:
         logger.error(

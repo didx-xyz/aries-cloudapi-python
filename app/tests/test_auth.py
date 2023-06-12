@@ -1,16 +1,20 @@
-import fastapi
 from contextlib import asynccontextmanager
 
+import fastapi
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends
 from httpx import AsyncClient
 
-import app.dependencies as dependencies
-from app.dependencies import Role, AcaPyAuth
 from app.main import app
-
-from app.tests.util.constants import TENANT_ACAPY_API_KEY, GOVERNANCE_ACAPY_API_KEY, CLOUDAPI_URL
+from shared import CLOUDAPI_URL, GOVERNANCE_ACAPY_API_KEY, TENANT_ACAPY_API_KEY
+from shared.dependencies.auth import (
+    AcaPyAuth,
+    Role,
+    admin_agent_selector,
+    agent_role,
+    agent_selector,
+)
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"
@@ -19,7 +23,7 @@ BEARER_TOKEN = "12345"
 
 @pytest.mark.anyio
 async def test_governance_agent():
-    async with asynccontextmanager(dependencies.agent_selector)(
+    async with asynccontextmanager(agent_selector)(
         auth=AcaPyAuth(role=Role.GOVERNANCE, token=GOVERNANCE_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)
@@ -30,7 +34,7 @@ async def test_governance_agent():
 
 @pytest.mark.anyio
 async def test_tenant_agent():
-    async with asynccontextmanager(dependencies.agent_role(Role.TENANT))(
+    async with asynccontextmanager(agent_role(Role.TENANT))(
         AcaPyAuth(role=Role.TENANT, token=BEARER_TOKEN)
     ) as c:
         assert isinstance(c, AcaPyClient)
@@ -46,22 +50,14 @@ async def async_next(param):
         return None
 
 
-agent_selector_data = [
-    (dependencies.agent_selector),
-    (dependencies.admin_agent_selector),
-]
-
-
 @pytest.mark.anyio
 async def test_agent_selector():
-    c = await async_next(
-        dependencies.agent_selector(AcaPyAuth(token="apiKey", role=Role.TENANT))
-    )
+    c = await async_next(agent_selector(AcaPyAuth(token="apiKey", role=Role.TENANT)))
     assert isinstance(c, AcaPyClient)
     assert c.base_url == Role.TENANT.agent_type.base_url
 
     c = await async_next(
-        dependencies.agent_selector(AcaPyAuth(token="apiKey", role=Role.GOVERNANCE))
+        agent_selector(AcaPyAuth(token="apiKey", role=Role.GOVERNANCE))
     )
     assert isinstance(c, AcaPyClient)
     assert c.base_url == Role.GOVERNANCE.agent_type.base_url
@@ -70,9 +66,7 @@ async def test_agent_selector():
 @pytest.mark.anyio
 async def test_admin_agent_selector():
     c = await async_next(
-        dependencies.admin_agent_selector(
-            AcaPyAuth(token="apiKey", role=Role.TENANT_ADMIN)
-        )
+        admin_agent_selector(AcaPyAuth(token="apiKey", role=Role.TENANT_ADMIN))
     )
     assert isinstance(c, AcaPyClient)
     assert c.base_url == Role.TENANT.agent_type.base_url
@@ -80,9 +74,7 @@ async def test_admin_agent_selector():
     assert "Authorization" not in c.client.headers
 
     c = await async_next(
-        dependencies.admin_agent_selector(
-            AcaPyAuth(token="apiKey", role=Role.GOVERNANCE)
-        )
+        admin_agent_selector(AcaPyAuth(token="apiKey", role=Role.GOVERNANCE))
     )
     assert isinstance(c, AcaPyClient)
     assert c.base_url == Role.GOVERNANCE.agent_type.base_url
@@ -91,9 +83,7 @@ async def test_admin_agent_selector():
 
     with pytest.raises(fastapi.exceptions.HTTPException):
         await async_next(
-            dependencies.admin_agent_selector(
-                AcaPyAuth(token="apiKey", role=Role.TENANT)
-            )
+            admin_agent_selector(AcaPyAuth(token="apiKey", role=Role.TENANT))
         )
 
 
@@ -113,14 +103,14 @@ async def test_web_tenant():
 
     @router.get("/admin")
     async def call_admin(
-        aries_controller: AcaPyClient = Depends(dependencies.admin_agent_selector),
+        aries_controller: AcaPyClient = Depends(admin_agent_selector),
     ):
         nonlocal injected_controller
         injected_controller = aries_controller
 
     @router.get("")
     async def call(
-        aries_controller: AcaPyClient = Depends(dependencies.agent_selector),
+        aries_controller: AcaPyClient = Depends(agent_selector),
     ):
         nonlocal injected_controller
         injected_controller = aries_controller
@@ -204,7 +194,7 @@ async def test_web_tenant():
 
 @pytest.mark.anyio
 async def test_tenant_admin_agent():
-    async with asynccontextmanager(dependencies.agent_role(role=Role.TENANT_ADMIN))(
+    async with asynccontextmanager(agent_role(role=Role.TENANT_ADMIN))(
         auth=AcaPyAuth(role=Role.TENANT_ADMIN, token=TENANT_ACAPY_API_KEY)
     ) as c:
         assert isinstance(c, AcaPyClient)

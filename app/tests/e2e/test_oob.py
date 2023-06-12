@@ -39,8 +39,6 @@ async def test_accept_invitation_oob(
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
     accept_response = await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
@@ -71,7 +69,7 @@ async def test_oob_connect_via_public_did(
     )
     bob_oob_record = connect_response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=bob_member_client,
         topic="connections",
         filter_map={

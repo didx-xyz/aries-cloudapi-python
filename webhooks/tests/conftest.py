@@ -10,7 +10,7 @@ from app.tests.util.member_async_clients import (
     bob_member_client,
     governance_client,
 )
-from app.tests.util.member_wallets import alice_tenant
+from app.tests.util.member_wallets import alice_tenant, bob_tenant
 
 
 @pytest.fixture(scope="session")

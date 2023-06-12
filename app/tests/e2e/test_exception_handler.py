@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.tests.util.constants import CLOUDAPI_URL
+from shared import CLOUDAPI_URL
 
 
 @pytest.mark.anyio

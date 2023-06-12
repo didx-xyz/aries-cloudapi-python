@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import NamedTuple, Optional
 
-from app.constants import (
+from shared.constants import (
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
     TENANT_AGENT_API_KEY,

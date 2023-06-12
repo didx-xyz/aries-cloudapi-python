@@ -1,5 +1,11 @@
+from unittest.mock import AsyncMock, Mock
+
 import mockito
 import pytest
+from httpx import Response
+from pytest_mock import MockerFixture
+
+from app.event_handling.webhooks import Webhooks
 
 # flake8: noqa
 # pylint: disable=unused-import
@@ -26,9 +32,13 @@ from app.tests.util.member_async_clients import (
     governance_client,
     tenant_admin_client,
 )
-from app.tests.util.member_wallets import acme_tenant, alice_tenant
-from app.webhooks import Webhooks
-from tests.fixtures import mock_agent_controller
+from app.tests.util.member_wallets import (
+    acme_verifier,
+    alice_tenant,
+    bob_tenant,
+    faber_issuer,
+)
+from shared.util.mock_agent_controller import mock_agent_controller
 
 # Unused imports make pytest fixtures visible to tests within this module
 
@@ -48,7 +58,7 @@ def anyio_backend():
 
 
 @pytest.fixture(autouse=True)
-def run_around_tests():
+def unstub_mockito():
     """
     Automatically unstub all stubbed methods after each test.
 
@@ -76,3 +86,15 @@ async def shutdown_webhooks_listener():
 
     # Teardown phase: After each test, shut down the Webhooks listener
     await Webhooks.shutdown()
+
+
+@pytest.fixture
+def mock_async_client(mocker: MockerFixture) -> Mock:
+    patch_async_client = mocker.patch("httpx.AsyncClient")
+
+    mocked_async_client = Mock()
+    response = Response(status_code=200)
+    mocked_async_client.get = AsyncMock(return_value=response)
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+
+    return mocked_async_client

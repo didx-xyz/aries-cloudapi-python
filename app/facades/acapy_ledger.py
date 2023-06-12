@@ -31,7 +31,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
         The TAA object
     """
     taa_response = await controller.ledger.fetch_taa()
-    logger.info("taa_response:\n %s", taa_response)
+    logger.debug("taa_response:\n %s", taa_response)
     if isinstance(taa_response, TAAInfo) or isinstance(taa_response.result, TAAInfo):
         if taa_response.result:
             taa_response = taa_response.result

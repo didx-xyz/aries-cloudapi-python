@@ -5,13 +5,13 @@ from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 
 from app.admin.tenants import tenants
-from app.dependencies import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
-from app.role import Role
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
+from shared.dependencies.auth import get_tenant_controller
+from shared.dependencies.role import Role
 
 BASE_PATH = tenants.router.prefix
 
@@ -118,10 +118,10 @@ async def test_create_tenant_issuer(
 
     async with get_tenant_client(token=tenant["access_token"]) as client:
         # Wait for connection to be completed
-        assert check_webhook_state(
-            client,
-            "connections",
-            {
+        assert await check_webhook_state(
+            client=client,
+            topic="connections",
+            filter_map={
                 "state": "completed",
                 "connection_id": connection.connection_id,
             },
@@ -201,25 +201,29 @@ async def test_update_tenant_verifier_to_issuer(
     governance_acapy_client: AcaPyClient,
 ):
     name = uuid4().hex
+    image_url = "https://image.ca"
     response = await tenant_admin_client.post(
         BASE_PATH,
         json={
-            "image_url": "https://image.ca",
+            "image_url": image_url,
             "name": name,
             "roles": ["verifier"],
         },
     )
 
-    tenant = response.json()
-    tenant_id = tenant["tenant_id"]
-    actor = await trust_registry.actor_by_id(tenant_id)
+    verifier_tenant = response.json()
+    verifier_tenant_id = verifier_tenant["tenant_id"]
+    verifier_actor = await trust_registry.actor_by_id(verifier_tenant_id)
+    assert verifier_actor
+    assert_that(verifier_actor).has_name(name)
+    assert_that(verifier_actor).has_roles(["verifier"])
 
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
-        wallet_id=tenant_id
+        wallet_id=verifier_tenant_id
     )
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
-    acapy_token: str = tenant["access_token"].split(".", 1)[1]
+    acapy_token: str = verifier_tenant["access_token"].split(".", 1)[1]
 
     async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
@@ -230,26 +234,23 @@ async def test_update_tenant_verifier_to_issuer(
 
     # Connection invitation
     assert_that(connection).has_state("invitation")
-
-    assert actor
-    assert_that(actor).has_name(name)
-    assert_that(actor).has_did(ed25519_verkey_to_did_key(connection.invitation_key))
-    assert_that(actor).has_roles(["verifier"])
+    assert_that(verifier_actor).has_did(
+        ed25519_verkey_to_did_key(connection.invitation_key)
+    )
 
     # Tenant
-    assert_that(tenant).has_tenant_id(wallet.wallet_id)
-    assert_that(tenant).has_image_url("https://image.ca")
-    assert_that(tenant).has_tenant_name(name)
-    assert_that(tenant).has_created_at(wallet.created_at)
-    assert_that(tenant).has_updated_at(wallet.updated_at)
-    assert_that(wallet.settings["wallet.name"]).is_length(32)
+    assert_that(verifier_tenant).has_tenant_id(wallet.wallet_id)
+    assert_that(verifier_tenant).has_image_url(image_url)
+    assert_that(verifier_tenant).has_tenant_name(name)
+    assert_that(verifier_tenant).has_created_at(wallet.created_at)
+    assert_that(verifier_tenant).has_updated_at(wallet.updated_at)
 
     new_name = uuid4().hex
     new_image_url = "https://some-ssi-site.org/image.png"
     new_roles = ["issuer", "verifier"]
 
     response = await tenant_admin_client.put(
-        f"{BASE_PATH}/{tenant_id}",
+        f"{BASE_PATH}/{verifier_tenant_id}",
         json={
             "image_url": new_image_url,
             "name": new_name,
@@ -262,12 +263,16 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(new_tenant).has_tenant_name(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
 
-    new_actor = await trust_registry.actor_by_id(tenant_id)
+    new_actor = await trust_registry.actor_by_id(verifier_tenant_id)
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
     acapy_token = (
-        (await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}/access-token"))
+        (
+            await tenant_admin_client.get(
+                f"{BASE_PATH}/{verifier_tenant_id}/access-token"
+            )
+        )
         .json()["access_token"]
         .split(".", 1)[1]
     )
@@ -286,12 +291,12 @@ async def test_update_tenant_verifier_to_issuer(
 
     endorser_connection = connections[0]
 
-    async with get_tenant_client(token=tenant["access_token"]) as client:
+    async with get_tenant_client(token=verifier_tenant["access_token"]) as client:
         # Wait for connection to be completed
-        assert check_webhook_state(
-            client,
-            "connections",
-            {
+        assert await check_webhook_state(
+            client=client,
+            topic="connections",
+            filter_map={
                 "state": "completed",
                 "connection_id": endorser_connection.connection_id,
             },

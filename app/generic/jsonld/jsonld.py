@@ -14,8 +14,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from uplink import Body, Consumer, json, post, returns
 
-from app.dependencies import agent_selector
 from shared.cloud_api_error import CloudApiException
+from shared.dependencies.auth import agent_selector
 
 logger = logging.getLogger(__name__)
 

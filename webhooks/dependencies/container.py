@@ -1,6 +1,7 @@
 from dependency_injector import containers, providers
 
 from webhooks.dependencies import redis, service
+from webhooks.dependencies.sse_manager import SseManager
 
 
 class Container(containers.DeclarativeContainer):
@@ -14,10 +15,14 @@ class Container(containers.DeclarativeContainer):
         service.Service,
         redis=redis_pool,
     )
+    sse_manager = providers.Singleton(
+        SseManager,
+        service=service,
+    )
 
 
 def get_container():
     configured_container = Container()
-    configured_container.config.redis_host.from_env("REDIS_HOST", "wh-redis")
+    configured_container.config.redis_host.from_env("REDIS_HOST", "localhost")
     configured_container.config.redis_password.from_env("REDIS_PASSWORD", "")
     return configured_container

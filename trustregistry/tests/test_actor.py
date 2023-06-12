@@ -3,7 +3,7 @@ import json
 import pytest
 from httpx import AsyncClient
 
-from app.constants import TRUST_REGISTRY_URL
+from shared import TRUST_REGISTRY_URL
 
 new_actor = {
     "id": "darth-vader",

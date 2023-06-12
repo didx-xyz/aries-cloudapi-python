@@ -15,3 +15,9 @@ def qualified_did_sov(did: str) -> str:
         return f"did:sov:{did}"
 
     return did
+
+
+def did_from_credential_definition_id(credential_definition_id: str) -> str:
+    parts = credential_definition_id.split(":")
+
+    return parts[0]

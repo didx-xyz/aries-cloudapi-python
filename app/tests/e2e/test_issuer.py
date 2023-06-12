@@ -4,15 +4,13 @@ import pytest
 from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import CredentialSchema
 from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
-from app.listener import Listener
 from app.tests.e2e.test_fixtures import CREDENTIALS_BASE_PATH
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from shared import CredentialExchange, RichAsyncClient
-
-# This import are important for tests to run!
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +63,7 @@ async def test_send_credential_oob_v1(
     assert_that(invitation_response.status_code).is_equal_to(200)
 
     invitation = (invitation_response.json())["invitation"]
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
+
     accept_response = await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
@@ -76,13 +73,13 @@ async def test_send_credential_oob_v1(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
+        topic="credentials",
         filter_map={
             "state": "offer-received",
             "credential_definition_id": credential_definition_id,
         },
-        topic="credentials",
     )
 
 
@@ -94,7 +91,7 @@ async def test_send_credential_oob_v2(
     alice_member_client: RichAsyncClient,
 ):
     wallet_id = get_wallet_id_from_async_client(alice_member_client)
-    alice_credentials_listener = Listener(topic="credentials", wallet_id=wallet_id)
+    alice_credentials_listener = SseListener(topic="credentials", wallet_id=wallet_id)
 
     credential = {
         "protocol_version": "v2",
@@ -127,8 +124,6 @@ async def test_send_credential_oob_v2(
     assert_that(invitation_response.status_code).is_equal_to(200)
 
     invitation = (invitation_response.json())["invitation"]
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
 
     thread_id = invitation["requests~attach"][0]["data"]["json"]["@id"]
 
@@ -142,13 +137,11 @@ async def test_send_credential_oob_v2(
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
 
-    result = await alice_credentials_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "offer-received",
-            "thread_id": thread_id,
-        },
+    result = await alice_credentials_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="offer-received",
     )
-    alice_credentials_listener.stop()
 
     assert result["credential_id"]
 
@@ -201,13 +194,13 @@ async def test_send_credential(
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
-        topic="credentials",
     )
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
@@ -215,13 +208,13 @@ async def test_send_credential(
     )
     records = response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
+        topic="credentials",
         filter_map={
             "state": "offer-received",
             "credential_id": records[-1]["credential_id"],
         },
-        topic="credentials",
     )
     assert len(records) == 2
 
@@ -265,26 +258,26 @@ async def test_create_offer(
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
-        topic="credentials",
     )
     response = await faber_client.get(
         CREDENTIALS_BASE_PATH,
     )
     records = response.json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": records[-1]["credential_id"],
         },
-        topic="credentials",
     )
     # Two from this and two from previous test potentially. Depending on order.
     # So let's do >= 2 instead of == 2 or == 4
@@ -315,20 +308,20 @@ async def test_send_credential_request(
     credential_exchange = response.json()
     assert credential_exchange["protocol_version"] == "v1"
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="credentials",
     )
 
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
         topic="credentials",
@@ -438,7 +431,7 @@ async def test_revoke_credential(
         "attributes": {"speed": "10"},
     }
 
-    alice_credentials_listener = Listener(
+    alice_credentials_listener = SseListener(
         topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
@@ -448,11 +441,10 @@ async def test_revoke_credential(
         json=credential,
     )
 
-    payload = await alice_credentials_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
-        }
+    payload = await alice_credentials_listener.wait_for_event(
+        field="connection_id",
+        field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
     )
 
     alice_credential_id = payload["credential_id"]
@@ -462,10 +454,11 @@ async def test_revoke_credential(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await alice_credentials_listener.wait_for_filtered_event(
-        filter_map={"credential_id": alice_credential_id, "state": "done"}
+    await alice_credentials_listener.wait_for_event(
+        field="credential_id",
+        field_id=alice_credential_id,
+        desired_state="done",
     )
-    alice_credentials_listener.stop()
 
     # Retrieve an issued credential
     records = (await faber_client.get("/generic/issuer/credentials")).json()

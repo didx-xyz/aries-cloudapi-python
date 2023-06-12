@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -7,12 +9,12 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.event_handling.sse_listener import SseListener
 from app.generic.verifier.models import (
     AcceptProofRequest,
     RejectProofRequest,
     SendProofRequest,
 )
-from app.listener import Listener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
@@ -54,7 +56,7 @@ async def test_accept_proof_request_v1(
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
@@ -67,7 +69,7 @@ async def test_accept_proof_request_v1(
         f"/generic/verifier/proofs/{alice_proof_id}/credentials"
     )
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-received", "proof_id": alice_proof_id},
         topic="proofs",
@@ -93,14 +95,14 @@ async def test_accept_proof_request_v1(
         json=proof_accept.dict(),
     )
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
         max_duration=240,
     )
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
         topic="proofs",
@@ -126,8 +128,8 @@ async def test_accept_proof_request_oob_v1(
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
 
-    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant_id)
-    bob_proofs_listener = Listener(topic="proofs", wallet_id=bob_tenant_id)
+    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_tenant_id)
+    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_tenant_id)
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
@@ -163,16 +165,15 @@ async def test_accept_proof_request_oob_v1(
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
-
     await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
 
-    alice_request_received = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={"state": "request-received", "thread_id": thread_id}
+    alice_request_received = await alice_proofs_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="request-received",
     )
 
     alice_proof_id = alice_request_received["proof_id"]
@@ -202,22 +203,19 @@ async def test_accept_proof_request_oob_v1(
         json=proof_accept.dict(),
     )
 
-    alice_presentation_sent = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "presentation-sent",
-            "proof_id": alice_proof_id,
-            "thread_id": thread_id,
-        }
+    alice_presentation_sent = await alice_proofs_listener.wait_for_event(
+        field="proof_id",
+        field_id=alice_proof_id,
+        desired_state="presentation-sent",
     )
     assert alice_presentation_sent
 
-    bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
-        filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
+    bob_presentation_received = await bob_proofs_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="done",
     )
-    assert bob_presentation_received
-
-    alice_proofs_listener.stop()
-    bob_proofs_listener.stop()
+    assert bob_presentation_received["role"] == "verifier"
 
 
 @pytest.mark.anyio
@@ -232,8 +230,8 @@ async def test_accept_proof_request_oob_v2(
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
 
-    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant_id)
-    bob_proofs_listener = Listener(topic="proofs", wallet_id=bob_tenant_id)
+    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_tenant_id)
+    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_tenant_id)
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
@@ -248,8 +246,6 @@ async def test_accept_proof_request_oob_v2(
 
     thread_id = bob_exchange["thread_id"]
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"]
-
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation",
         json={
@@ -262,16 +258,15 @@ async def test_accept_proof_request_oob_v2(
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
-    invitation["id"] = invitation.pop("@id")
-    invitation["type"] = invitation.pop("@type")
-
     await alice_member_client.post(
         "/generic/oob/accept-invitation",
         json={"invitation": invitation},
     )
 
-    alice_request_received = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={"state": "request-received", "thread_id": thread_id}
+    alice_request_received = await alice_proofs_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="request-received",
     )
 
     alice_proof_id = alice_request_received["proof_id"]
@@ -301,22 +296,19 @@ async def test_accept_proof_request_oob_v2(
         json=proof_accept.dict(),
     )
 
-    alice_presentation_sent = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "presentation-sent",
-            "proof_id": alice_proof_id,
-            "thread_id": thread_id,
-        }
+    alice_presentation_sent = await alice_proofs_listener.wait_for_event(
+        field="proof_id",
+        field_id=alice_proof_id,
+        desired_state="presentation-sent",
     )
     assert alice_presentation_sent
 
-    bob_presentation_received = await bob_proofs_listener.wait_for_filtered_event(
-        filter_map={"state": "done", "role": "verifier", "thread_id": thread_id}
+    bob_presentation_received = await bob_proofs_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="done",
     )
-    assert bob_presentation_received
-
-    alice_proofs_listener.stop()
-    bob_proofs_listener.stop()
+    assert bob_presentation_received["role"] == "verifier"
 
 
 @pytest.mark.anyio
@@ -325,11 +317,13 @@ async def test_accept_proof_request_v2(
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
-    acme_tenant: CreateTenantResponse,
+    acme_verifier: CreateTenantResponse,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.tenant_id
+    )
 
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -354,13 +348,11 @@ async def test_accept_proof_request_v2(
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
-    payload = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "state": "request-received",
-            "connection_id": acme_and_alice_connection.alice_connection_id,
-        }
+    payload = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
     )
-    alice_proofs_listener.stop()
 
     alice_proof_id = payload["proof_id"]
 
@@ -381,17 +373,21 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = Listener(topic="proofs", wallet_id=acme_tenant.tenant_id)
+    acme_proofs_listener = SseListener(
+        topic="proofs", wallet_id=acme_verifier.tenant_id
+    )
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
 
-    await acme_proofs_listener.wait_for_filtered_event(
-        filter_map={"proof_id": acme_proof_id, "state": "done", "verified": True}
+    acme_proof_event = await acme_proofs_listener.wait_for_event(
+        field="proof_id",
+        field_id=acme_proof_id,
+        desired_state="done",
     )
-    acme_proofs_listener.stop()
+    assert acme_proof_event["verified"]
 
     result = response.json()
 
@@ -407,7 +403,9 @@ async def test_send_proof_request(
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
 ):
-    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.tenant_id
+    )
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
@@ -426,14 +424,15 @@ async def test_send_proof_request(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    # Wait for request received
-    await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
-            "protocol_version": "v1",
-        }
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+    alice_connection_event = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
     )
+    assert alice_connection_event["protocol_version"] == "v1"
 
     # V2
     response = await acme_client.post(
@@ -454,15 +453,16 @@ async def test_send_proof_request(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    # Wait for request received
-    await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
-            "protocol_version": "v2",
-        }
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+
+    alice_connection_event = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
     )
-    alice_proofs_listener.stop()
+    assert alice_connection_event["protocol_version"] == "v2"
 
 
 @pytest.mark.anyio
@@ -472,7 +472,9 @@ async def test_reject_proof_request(
     alice_tenant: CreateTenantResponse,
     acme_client: RichAsyncClient,
 ):
-    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.tenant_id
+    )
 
     # V1
     response = await acme_client.post(
@@ -484,15 +486,16 @@ async def test_reject_proof_request(
         },
     )
 
-    # Wait for request received
-    alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
-            "protocol_version": "v1",
-        }
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+
+    alice_exchange = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
     )
-    alice_proofs_listener.stop()
+    assert alice_exchange["protocol_version"] == "v1"
 
     reject_proof_request_v1 = RejectProofRequest(
         proof_id=alice_exchange["proof_id"], problem_report=None
@@ -651,7 +654,9 @@ async def test_get_credentials_for_request(
     alice_tenant: CreateTenantResponse,
     alice_member_client: RichAsyncClient,
 ):
-    alice_proofs_listener = Listener(topic="proofs", wallet_id=alice_tenant.tenant_id)
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.tenant_id
+    )
     # V1
     await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -662,14 +667,16 @@ async def test_get_credentials_for_request(
         },
     )
 
-    # Wait for request received
-    alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
-            "protocol_version": "v1",
-        }
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+
+    alice_exchange = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
     )
+    assert alice_exchange["protocol_version"] == "v1"
 
     proof_id = alice_exchange["proof_id"]
 
@@ -695,15 +702,16 @@ async def test_get_credentials_for_request(
         },
     )
 
-    # Wait for request received
-    alice_exchange = await alice_proofs_listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
-            "protocol_version": "v2",
-        }
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+
+    alice_exchange = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
     )
-    alice_proofs_listener.stop()
+    assert alice_exchange["protocol_version"] == "v2"
 
     proof_id = alice_exchange["proof_id"]
 

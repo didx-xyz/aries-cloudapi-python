@@ -14,9 +14,9 @@ from aries_cloudcontroller import (
     TxnOrRevRegResult,
 )
 
-from app.dependencies import get_governance_controller
-from app.listener import Listener
+from app.event_handling.sse_listener import SseListener
 from shared.cloud_api_error import CloudApiException
+from shared.dependencies.auth import get_governance_controller
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ async def create_revocation_registry(
             f"Error creating revocation registry for credential with ID {credential_definition_id}"
         )
 
-    logger.info("Created revocation registry:\n%s", result.result)
+    logger.debug("Created revocation registry:\n%s", result.result)
 
     return result.result
 
@@ -85,7 +85,7 @@ async def get_active_revocation_registry_for_credential(
             f"Error retrieving revocation registry for credential with ID {credential_definition_id}"
         )
 
-    logger.info(
+    logger.debug(
         "Retrieved revocation registry for credential definition with ID %s:\n%s",
         credential_definition_id,
         result.result,
@@ -124,7 +124,7 @@ async def get_credential_revocation_status(
     else:
         result = result.result
 
-    logger.info(
+    logger.debug(
         "Credential exchange %s has status:%s:\n%s",
         credential_exchange_id,
         result.state,
@@ -176,7 +176,7 @@ async def publish_revocation_registry_on_ledger(
         )
         raise CloudApiException("Failed to publish revocation registry to ledger.")
 
-    logger.info(
+    logger.debug(
         "Published revocation registry for registry with ID %s\n%s",
         revocation_registry_id,
         result,
@@ -236,7 +236,7 @@ async def publish_revocation_entry_to_ledger(
         )
         raise CloudApiException("Failed to publish revocation entry to ledger.")
 
-    logger.info(
+    logger.debug(
         "Published revocation entry for registry with ID %s:\n%s",
         revocation_registry_id,
         result.result,
@@ -307,7 +307,7 @@ async def revoke_credential(
             # It still creates the transaction record though that can be endorsed below.
             await endorser_revoke()
 
-    logger.info(
+    logger.debug(
         "Revoked credential with ID %s for exchange ID %s.",
         credential_definition_id,
         credential_exchange_id,
@@ -315,21 +315,15 @@ async def revoke_credential(
 
 
 async def endorser_revoke():
-    listener = Listener(topic="endorsements", wallet_id="admin")
+    listener = SseListener(topic="endorsements", wallet_id="admin")
     async with get_governance_controller() as endorser_controller:
         try:
-            txn_record = await listener.wait_for_filtered_event(
-                filter_map={
-                    "state": "request-received",
-                }
-            )
+            txn_record = await listener.wait_for_state(desired_state="request-received")
         except TimeoutError as e:
             raise CloudApiException(
                 "Timeout occured while waiting to retrieve transaction record for endorser",
                 504,
             ) from e
-        finally:
-            listener.stop()
 
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]

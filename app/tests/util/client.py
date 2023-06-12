@@ -3,14 +3,15 @@ from typing import Any, Dict, Optional
 from aries_cloudcontroller import AcaPyClient
 from httpx import AsyncHTTPTransport
 
-from app.constants import GOVERNANCE_AGENT_URL, TENANT_AGENT_URL
-from app.tests.util.constants import (
+from shared import (
     GOVERNANCE_ACAPY_API_KEY,
+    GOVERNANCE_AGENT_URL,
     GOVERNANCE_FASTAPI_ENDPOINT,
     TENANT_ACAPY_API_KEY,
+    TENANT_AGENT_URL,
     TENANT_FASTAPI_ENDPOINT,
+    RichAsyncClient,
 )
-from shared import RichAsyncClient
 
 TEST_CLIENT_TIMEOUT = 300
 MAX_NUM_RETRIES = 3
@@ -36,7 +37,7 @@ def get_governance_client(*, app: Optional[Any] = None) -> RichAsyncClient:
     )
 
 
-def get_governance_acapy_client():
+def get_governance_acapy_client() -> AcaPyClient:
     return AcaPyClient(base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_ACAPY_API_KEY)
 
 
@@ -48,7 +49,7 @@ def get_tenant_admin_client(*, app: Optional[Any] = None) -> RichAsyncClient:
     )
 
 
-def get_tenant_admin_acapy_client():
+def get_tenant_admin_acapy_client() -> AcaPyClient:
     return AcaPyClient(base_url=TENANT_AGENT_URL, api_key=TENANT_ACAPY_API_KEY)
 
 
@@ -58,7 +59,7 @@ def get_tenant_client(*, token: str, app: Optional[Any] = None) -> RichAsyncClie
     return RichAsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, name="Tenant", **settings)
 
 
-def get_tenant_acapy_client(*, token: str):
+def get_tenant_acapy_client(*, token: str) -> AcaPyClient:
     return AcaPyClient(
         base_url=TENANT_AGENT_URL,
         api_key=TENANT_ACAPY_API_KEY,

@@ -1,13 +1,12 @@
 import base64
 import json
-import time
 from typing import Dict, List, Optional
 
 import httpx
 from pydantic import BaseModel
 
-from app.tests.util.constants import WEBHOOKS_URL
-from shared import CloudApiTopics, RichAsyncClient
+from app.event_handling.sse_listener import SseListener
+from shared import WEBHOOKS_URL, CloudApiTopics, RichAsyncClient
 
 
 class FilterMap(BaseModel):
@@ -37,49 +36,55 @@ def get_wallet_id_from_async_client(client: RichAsyncClient) -> str:
     return get_wallet_id_from_b64encoded_jwt(jwt)
 
 
-def check_webhook_state(
+async def check_webhook_state(
     client: RichAsyncClient,
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]],
     max_duration: int = 120,
-    poll_interval: int = 1,
 ) -> bool:
-    assert poll_interval >= 0, "Poll interval cannot be negative"
     assert max_duration >= 0, "Poll duration cannot be negative"
 
     wallet_id = get_wallet_id_from_async_client(client)
 
-    t_end = time.time() + max_duration
-    while time.time() < t_end:
-        hooks_response = httpx.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")
+    listener = SseListener(wallet_id, topic)
 
-        if hooks_response.is_error:
-            raise Exception(f"Error retrieving webhooks: {hooks_response.text}")
+    desired_state = filter_map["state"]
 
-        hooks = hooks_response.json()
+    other_keys = dict(filter_map)
+    other_keys.pop("state", None)
 
-        # Loop through all hooks
-        for hook in hooks:
-            payload = hook["payload"]
-            # Find the right hook
-            match = all(
-                payload.get(filter_key, None) == filter_value
-                for filter_key, filter_value in filter_map.items()
-            )
+    # Check if there are any other keys
+    if other_keys:
+        # Assuming that filter_map contains max 1 other key-value pair
+        field, field_id = list(other_keys.items())[0]
 
-            if match:
-                return True
+        event = await listener.wait_for_event(
+            field=field,
+            field_id=field_id,
+            desired_state=desired_state,
+            timeout=max_duration,
+        )
+    else:
+        # No other key means we are only asserting the state
+        event = await listener.wait_for_state(
+            desired_state=desired_state, timeout=max_duration
+        )
 
-        time.sleep(poll_interval)
-    raise Exception(f"Cannot satisfy webhook filter \n{filter_map}\n. Found \n{hooks}")
+    if event:
+        return True
+    else:
+        raise Exception(f"Could not satisfy webhook filter: {filter_map}.")
 
 
-def get_hooks_per_topic_per_wallet(
+async def get_hooks_per_topic_per_wallet(
     client: RichAsyncClient, topic: CloudApiTopics
 ) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
-        hooks = (httpx.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")).json()
+        async with httpx.AsyncClient() as client:
+            hooks = await client.get(
+                f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}"
+            ).json()
         return hooks if hooks else []
     except httpx.HTTPError as e:
         raise e from e

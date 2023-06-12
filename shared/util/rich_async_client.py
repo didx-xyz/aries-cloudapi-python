@@ -1,4 +1,5 @@
 from typing import Optional
+
 from httpx import AsyncClient, HTTPStatusError
 
 from shared.cloud_api_error import CloudApiException
@@ -21,7 +22,7 @@ class RichAsyncClient(AsyncClient):
             raise CloudApiException(
                 f"{self._name} post to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            )
+            ) from e
         return response
 
     async def get(self, url: str, **kwargs):
@@ -33,7 +34,7 @@ class RichAsyncClient(AsyncClient):
             raise CloudApiException(
                 f"{self._name} get to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            )
+            ) from e
         return response
 
     async def delete(self, url: str, **kwargs):
@@ -45,5 +46,17 @@ class RichAsyncClient(AsyncClient):
             raise CloudApiException(
                 f"{self._name} delete to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            )
+            ) from e
+        return response
+
+    async def put(self, url: str, **kwargs):
+        try:
+            response = await super().put(url, **kwargs)
+            response.raise_for_status()
+        except HTTPStatusError as e:
+            code = e.response.status_code
+            raise CloudApiException(
+                f"{self._name} put to `{url}` failed. Status code: {code}. Response: {e.response.text}",
+                status_code=code,
+            ) from e
         return response

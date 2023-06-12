@@ -5,7 +5,7 @@ from aries_cloudcontroller.model.ping_request_response import PingRequestRespons
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from app.dependencies import agent_selector
+from shared.dependencies.auth import agent_selector
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from aries_cloudcontroller import (
@@ -28,6 +28,7 @@ from aries_cloudcontroller import (
     V20PresProposal,
 )
 from assertpy import assert_that
+from httpx import Response
 from mockito import mock, when
 
 from app.facades.trust_registry import Actor
@@ -167,7 +168,7 @@ indy_pres_spec = IndyPresSpec(
 
 
 @pytest.mark.anyio
-async def test_are_valid_schemas():
+async def test_are_valid_schemas(mock_async_client):
     # schemas are valid
     schemas = {
         "schemas": [
@@ -176,23 +177,16 @@ async def test_are_valid_schemas():
             "WoWSMfxTHA14GR2FdJJcHk:2:test_schema:0.3",
         ]
     }
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.is_error = False
-        mock_request.return_value.json.return_value = schemas
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
 
-        assert await are_valid_schemas(schema_ids=schemas["schemas"]) is True
+    assert await are_valid_schemas(schema_ids=schemas["schemas"]) is True
 
     # has invalid schema
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.is_error = False
-        mock_request.return_value.json.return_value = schemas
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
 
-        assert (
-            await are_valid_schemas(schema_ids=["SomeRandomDid:2:test_schema:0.3"])
-            is False
-        )
+    assert (
+        await are_valid_schemas(schema_ids=["SomeRandomDid:2:test_schema:0.3"]) is False
+    )
 
 
 @pytest.mark.anyio
@@ -297,26 +291,18 @@ async def test_is_verifier():
 
 
 @pytest.mark.anyio
-async def test_get_actor():
+async def test_get_actor(mock_async_client):
     # gets actor
     actor = Actor(id="abcde", name="Flint", roles=["verifier"], did="did:sov:abcde")
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.is_error = False
-        mock_request.return_value.json.return_value = actor
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=actor))
 
-        assert await get_actor(did=actor["did"]) == actor
+    assert await get_actor(did=actor["did"]) == actor
 
     # no actor
-    with patch("httpx.get") as mock_request:
-        mock_request.return_value.status_code = 200
-        mock_request.return_value.is_error = False
-        mock_request.return_value.json.return_value = None
+    mock_async_client.get = AsyncMock(return_value=Response(200, json={}))
 
-        with pytest.raises(
-            CloudApiException, match=f"No actor with DID {actor['did']}"
-        ):
-            await get_actor(did=actor["did"])
+    with pytest.raises(CloudApiException, match=f"No actor with DID {actor['did']}"):
+        await get_actor(did=actor["did"])
 
 
 @pytest.mark.anyio

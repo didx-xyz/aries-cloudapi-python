@@ -5,10 +5,10 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.event_handling.sse_listener import SseListener
 from app.facades.trust_registry import actor_by_id
 from app.generic.connections.connections import CreateInvitation
 from app.generic.verifier.verifier_utils import ed25519_verkey_to_did_key
-from app.listener import Listener
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import base64_to_json
 from app.tests.util.webhooks import check_webhook_state
@@ -39,7 +39,7 @@ async def bob_and_alice_connection(
         )
     ).json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         alice_member_client, topic="connections", filter_map={"state": "completed"}
     )
 
@@ -48,22 +48,17 @@ async def bob_and_alice_connection(
 
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
-    assert check_webhook_state(
+    assert await check_webhook_state(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed"},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         bob_member_client,
         topic="connections",
         filter_map={"state": "completed"},
     )
-    # assert check_webhook_state(
-    #     alice_member_client,
-    #     topic="endorsements",
-    #     filter_map={"state": "transaction-acked"},
-    # )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         bob_member_client,
         topic="endorsements",
         filter_map={"state": "transaction-acked"},
@@ -82,16 +77,14 @@ class AcmeAliceConnect:
 
 @pytest.fixture(scope="function")
 async def acme_and_alice_connection(
-    alice_member_client: RichAsyncClient, acme_tenant: CreateTenantResponse
+    alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
 ) -> AcmeAliceConnect:
-    acme_actor = await actor_by_id(acme_tenant.tenant_id)
-
-    assert acme_actor
+    acme_actor = await actor_by_id(acme_verifier.tenant_id)
     assert acme_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    listener = Listener(topic="connections", wallet_id=acme_tenant.tenant_id)
+    acme_listener = SseListener(topic="connections", wallet_id=acme_verifier.tenant_id)
 
     # accept invitation on alice side
     invitation_response = (
@@ -101,8 +94,7 @@ async def acme_and_alice_connection(
         )
     ).json()
 
-    payload = await listener.wait_for_filtered_event(filter_map={"state": "completed"})
-    listener.stop()
+    payload = await acme_listener.wait_for_state(desired_state="completed")
 
     acme_connection_id = payload["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
@@ -140,12 +132,12 @@ async def faber_and_alice_connection(
 
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
-    assert check_webhook_state(
+    assert await check_webhook_state(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": alice_connection_id},
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         faber_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": faber_connection_id},
@@ -242,7 +234,7 @@ async def alice_bob_connect_multi(
         )
     ).json()
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="connections",
@@ -260,13 +252,13 @@ async def alice_bob_connect_multi(
 
     bob_connection_id = bob_connection_records[0]["connection_id"]
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "completed"},
         topic="connections",
         max_duration=120,
     )
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "completed"},
         topic="connections",

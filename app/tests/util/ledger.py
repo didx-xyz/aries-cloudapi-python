@@ -4,10 +4,11 @@ from typing import Literal, Optional
 import httpx
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
-from pydantic import Field, BaseModel
-from app.facades.acapy_ledger import accept_taa_if_required
+from pydantic import BaseModel, Field
+
 from app.facades import acapy_wallet
-from app.tests.util.constants import LEDGER_TYPE, LEDGER_REGISTRATION_URL
+from app.facades.acapy_ledger import accept_taa_if_required
+from shared import LEDGER_REGISTRATION_URL, LEDGER_TYPE
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,13 @@ async def post_to_ledger(
             detail="Cannot resolve ledger type. Should be either von or sovrin",
         )
 
-    response = httpx.post(LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300)
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300
+            )
+    except httpx.HTTPError as e:
+        raise e from e
 
     if response.is_error:
         logger.error("Failed to write to ledger:\n %s", response.text)

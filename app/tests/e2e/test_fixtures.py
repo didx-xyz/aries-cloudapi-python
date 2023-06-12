@@ -2,7 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
-from app.dependencies import acapy_auth, acapy_auth_verified
+from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -11,12 +11,12 @@ from app.generic.definitions import (
     create_schema,
 )
 from app.generic.issuer.issuer import router
-from app.listener import Listener
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
 from shared import CredentialExchange, RichAsyncClient
+from shared.dependencies.auth import acapy_auth, acapy_auth_verified
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
@@ -24,7 +24,7 @@ CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 # OR abstract the persona specific parts out of it
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
@@ -35,7 +35,7 @@ async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialS
     return schema_definition_result
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def schema_definition_alt(
     governance_acapy_client: AcaPyClient,
 ) -> CredentialSchema:
@@ -95,8 +95,6 @@ async def credential_exchange_id(
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
-    """this fixture produces the CRED_X_ID but if the test that produces the CRED_X_ID has already run
-    then this fixture just returns it..."""
     credential = {
         "protocol_version": "v1",
         "connection_id": faber_and_alice_connection.faber_connection_id,
@@ -112,13 +110,13 @@ async def credential_exchange_id(
     credential_exchange_id = credential_exchange["credential_id"]
     assert credential_exchange["protocol_version"] == "v1"
 
-    assert check_webhook_state(
+    assert await check_webhook_state(
         client=faber_client,
+        topic="credentials",
         filter_map={
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
-        topic="credentials",
     )
 
     response = await alice_member_client.get(
@@ -146,7 +144,7 @@ async def issue_credential_to_alice(
         "attributes": {"speed": "10"},
     }
 
-    listener = Listener(topic="credentials", wallet_id=alice_tenant.tenant_id)
+    listener = SseListener(topic="credentials", wallet_id=alice_tenant.tenant_id)
 
     # create and send credential offer- issuer
     await faber_client.post(
@@ -154,11 +152,10 @@ async def issue_credential_to_alice(
         json=credential,
     )
 
-    payload = await listener.wait_for_filtered_event(
-        filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
-        }
+    payload = await listener.wait_for_event(
+        field="connection_id",
+        field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
     )
 
     alice_credential_id = payload["credential_id"]
@@ -168,10 +165,9 @@ async def issue_credential_to_alice(
         f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
     )
 
-    await listener.wait_for_filtered_event(
-        filter_map={"credential_id": alice_credential_id, "state": "done"}
+    await listener.wait_for_event(
+        field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
-    listener.stop()
 
     # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
 

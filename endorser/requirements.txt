@@ -1,4 +1,4 @@
-aries-cloudcontroller==0.8.1rc5
+aries-cloudcontroller==0.8.1b0
 fastapi_websocket_pubsub~=0.3.3
 httpx~=0.24.1
 typing-extensions~=4.6.3

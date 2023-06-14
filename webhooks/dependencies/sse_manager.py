@@ -56,8 +56,8 @@ class SseManager:
             event,
         )
 
-        # Add the event to the incoming events queue, with timestamp
-        await self.incoming_events.put((event, wallet, topic, time.time()))
+        # Add the event to the incoming events queue
+        await self.incoming_events.put((event, wallet, topic))
 
     async def _process_incoming_events(self):
         while True:
@@ -77,7 +77,7 @@ class SseManager:
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
-                timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
+                timestamped_event: Tuple(float, TopicItem) = (time.time(), event)
                 await self.lifo_cache[wallet][topic].put(timestamped_event)
                 await self.fifo_cache[wallet][topic].put(timestamped_event)
 

@@ -74,7 +74,8 @@ async def create_oob_invitation(
 
     if body.attachments:
         for item in body.attachments:
-            item.id = strip_protocol_prefix(item.id)
+            if item.id:  # Optional field
+                item.id = strip_protocol_prefix(item.id)
 
     oob_body = InvitationCreateRequest(
         alias=body.alias,

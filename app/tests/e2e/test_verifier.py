@@ -389,7 +389,6 @@ async def test_accept_proof_request_v2(
 @pytest.mark.anyio
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
-    alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
 ):

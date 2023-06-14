@@ -2,7 +2,7 @@ import time
 
 import pytest
 from aries_cloudcontroller import (
-    AcaPyClient,
+    AttachmentDef,
     IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
 )
@@ -10,8 +10,10 @@ from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
+from app.generic.oob.oob import AcceptOobInvitation, CreateOobInvitation
 from app.generic.verifier.models import (
     AcceptProofRequest,
+    CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -151,8 +153,7 @@ async def test_accept_proof_request_oob_v1(
     invitation_response = await bob_member_client.post(
         "/generic/oob/create-invitation", json=create_oob_invitation_request.dict()
     )
-
-    assert_that(invitation_response.status_code).is_equal_to(200)
+    assert invitation_response.status_code == 200
     invitation = (invitation_response.json())["invitation"]
 
     accept_oob_invitation_request = AcceptOobInvitation(invitation=invitation)
@@ -189,10 +190,11 @@ async def test_accept_proof_request_oob_v1(
         ),
     )
 
-    response = await alice_member_client.post(
+    accept_response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
+    assert accept_response.status_code == 200
 
     alice_presentation_sent = await alice_proofs_listener.wait_for_event(
         field="proof_id",

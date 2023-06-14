@@ -129,17 +129,17 @@ async def test_accept_proof_request_oob_v1(
     bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_tenant_id)
 
     # Create the proof request against aca-py
-    response = await bob_member_client.post(
-        VERIFIER_BASE_PATH + "/create-request",
-        json={
-            "comment": "some comment",
-            "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
-        },
+    create_proof_request = CreateProofRequest(
+        proof_request=indy_proof_request,
+        auto_verify=True,
+        comment="some comment",
+        protocol_version=PresentProofProtocolVersion.v1.value,
     )
 
-    bob_exchange = response.json()
-
+    create_proof_response = await bob_member_client.post(
+        VERIFIER_BASE_PATH + "/create-request", json=create_proof_request.dict()
+    )
+    bob_exchange = create_proof_response.json()
     thread_id = bob_exchange["thread_id"]
 
     bob_exchange["proof_id"] = bob_exchange["proof_id"]

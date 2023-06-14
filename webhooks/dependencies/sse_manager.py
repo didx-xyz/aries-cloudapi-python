@@ -132,7 +132,7 @@ async def _copy_queue(
         timestamp, item = await queue.get()
         if (
             time.time() - timestamp <= MAX_EVENT_AGE_SECONDS
-        ):  # only copy events that are less than a minute old
+        ):  # only copy events that are less than our max event duration
             await lifo_queue.put((timestamp, item))
             await fifo_queue.put((timestamp, item))
 

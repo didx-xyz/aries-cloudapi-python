@@ -30,6 +30,57 @@ class SseManager:
         # Last In First Out Queue is to be used for consumption, so that newest events are yielded first
         # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
+        # Define incoming events queue, to decouple the process of receiving events,
+        # from the process of storing them in the per-wallet queues
+        self.incoming_events = asyncio.Queue()
+
+        # Start a background task to process incoming events
+        self._incoming_events_task = asyncio.create_task(
+            self._process_incoming_events()
+        )
+
+    async def enqueue_sse_event(
+        self, event: TopicItem, wallet: str, topic: str
+    ) -> None:
+        """
+        Enqueue a SSE event to be sent to a specific wallet for a specific topic.
+
+        Args:
+            event: The event to enqueue.
+            wallet: The ID of the wallet to which to enqueue the event.
+            topic: The topic to which to enqueue the event.
+        """
+        LOGGER.debug(
+            "Enqueueing event for wallet '%s': %s",
+            wallet,
+            event,
+        )
+
+        # Add the event to the incoming events queue, with timestamp
+        await self.incoming_events.put((event, wallet, topic, time.time()))
+
+    async def _process_incoming_events(self):
+        while True:
+            # Wait for an event to be added to the incoming events queue
+            event, wallet, topic, timestamp = await self.incoming_events.get()
+
+            # Process the event into the per-wallet queues
+            async with self.locks[wallet][topic]:
+                # Check if queue is full and make room before adding events
+                if self.fifo_cache[wallet][topic].full():
+                    await self.fifo_cache[wallet][topic].get()
+
+                    # cannot pop from lifo queue; rebuild from fifo queue
+                    lifo_queue, fifo_queue = await _copy_queue(
+                        self.fifo_cache[wallet][topic], self.max
+                    )
+                    self.fifo_cache[wallet][topic] = fifo_queue
+                    self.lifo_cache[wallet][topic] = lifo_queue
+
+                timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
+                await self.lifo_cache[wallet][topic].put(timestamped_event)
+                await self.fifo_cache[wallet][topic].put(timestamped_event)
+
     @asynccontextmanager
     async def sse_event_stream(
         self, wallet: str, topic: str, duration: int = 0
@@ -70,39 +121,6 @@ class SseManager:
                 )
                 self.fifo_cache[wallet][topic] = fifo_queue
                 self.lifo_cache[wallet][topic] = lifo_queue
-
-    async def enqueue_sse_event(
-        self, event: TopicItem, wallet: str, topic: str
-    ) -> None:
-        """
-        Enqueue a SSE event to be sent to a specific wallet for a specific topic.
-
-        Args:
-            event: The event to enqueue.
-            wallet: The ID of the wallet to which to enqueue the event.
-            topic: The topic to which to enqueue the event.
-        """
-        LOGGER.debug(
-            "Enqueueing event for wallet '%s': %s",
-            wallet,
-            event,
-        )
-
-        async with self.locks[wallet][topic]:
-            # Check if queue is full and make room before adding events
-            if self.fifo_cache[wallet][topic].full():
-                await self.fifo_cache[wallet][topic].get()
-
-                # cannot pop from lifo queue; rebuild from fifo queue
-                lifo_queue, fifo_queue = await _copy_queue(
-                    self.fifo_cache[wallet][topic], self.max
-                )
-                self.fifo_cache[wallet][topic] = fifo_queue
-                self.lifo_cache[wallet][topic] = lifo_queue
-
-            timestamped_event: Tuple(float, TopicItem) = (time.time(), event)
-            await self.lifo_cache[wallet][topic].put(timestamped_event)
-            await self.fifo_cache[wallet][topic].put(timestamped_event)
 
 
 async def _copy_queue(

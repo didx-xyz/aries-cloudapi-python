@@ -142,29 +142,23 @@ async def test_accept_proof_request_oob_v1(
     bob_exchange = create_proof_response.json()
     thread_id = bob_exchange["thread_id"]
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"]
+    create_oob_invitation_request = CreateOobInvitation(
+        create_connection=False,
+        use_public_did=False,
+        attachments=[AttachmentDef(id=bob_exchange["proof_id"], type="present-proof")],
+    )
 
     invitation_response = await bob_member_client.post(
-        "/generic/oob/create-invitation",
-        json={
-            "create_connection": False,
-            "use_public_did": False,
-            "attachments": [
-                {
-                    "id": bob_exchange["proof_id"],
-                    "type": "present-proof",
-                    "auto_verify": True,
-                }
-            ],
-        },
+        "/generic/oob/create-invitation", json=create_oob_invitation_request.dict()
     )
 
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = (invitation_response.json())["invitation"]
 
+    accept_oob_invitation_request = AcceptOobInvitation(invitation=invitation)
     await alice_member_client.post(
         "/generic/oob/accept-invitation",
-        json={"invitation": invitation},
+        json=accept_oob_invitation_request.dict(by_alias=True),
     )
 
     alice_request_received = await alice_proofs_listener.wait_for_event(

@@ -52,7 +52,7 @@ def strip_protocol_prefix(id: str):
 async def create_oob_invitation(
     body: Optional[CreateOobInvitation] = None,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> InvitationRecord:
     """
     Create connection invitation out-of-band.
     """
@@ -99,11 +99,10 @@ async def create_oob_invitation(
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> OobRecord:
     """
     Receive out-of-band invitation.
     """
-
     oob_record = await aries_controller.out_of_band.receive_invitation(
         auto_accept=True,
         use_existing_connection=body.use_existing_connection,
@@ -117,7 +116,7 @@ async def accept_oob_invitation(
 async def connect_to_public_did(
     body: ConnectToPublicDid,
     aries_controller: AcaPyClient = Depends(agent_selector),
-):
+) -> Connection:
     """
     Connect using public DID as implicit invitation.
 

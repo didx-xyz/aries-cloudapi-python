@@ -58,9 +58,7 @@ class VerifierV2(Verifier):
             )
             return record_to_model(presentation_exchange)
         except Exception as e:
-            logger.exception(
-                "An unexpected error occurred while getting record: %r", e
-            )
+            logger.exception("An unexpected error occurred while getting record: %r", e)
             raise CloudApiException("Failed to get proof record.") from e
 
     @classmethod
@@ -94,7 +92,8 @@ class VerifierV2(Verifier):
             return record_to_model(proof_record)
         except Exception as e:
             logger.exception(
-                "An unexpected error occurred while creating presentation request: %r", e
+                "An unexpected error occurred while creating presentation request: %r",
+                e,
             )
             raise CloudApiException("Failed to create presentation request.") from e
 

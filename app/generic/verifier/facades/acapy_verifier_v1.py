@@ -32,8 +32,9 @@ class VerifierV1(Verifier):
             await controller.present_proof_v1_0.create_proof_request(
                 body=V10PresentationCreateRequestRequest(
                     proof_request=proof_request.proof_request,
+                    auto_verify=proof_request.auto_verify,
                     comment=proof_request.comment,
-                    trace=False,
+                    trace=proof_request.trace,
                 )
             )
         )
@@ -100,6 +101,9 @@ class VerifierV1(Verifier):
                     body=V10PresentationSendRequestRequest(
                         connection_id=proof_request.connection_id,
                         proof_request=proof_request.proof_request,
+                        auto_verify=proof_request.auto_verify,
+                        comment=proof_request.comment,
+                        trace=proof_request.trace,
                     )
                 )
             )

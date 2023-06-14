@@ -79,7 +79,6 @@ class VerifierV2(Verifier):
         cls,
         controller: AcaPyClient,
         proof_request: CreateProofRequest,
-        comment: Optional[str] = None,
     ) -> PresentationExchange:
         try:
             proof_record = await controller.present_proof_v2_0.create_proof_request(
@@ -87,8 +86,9 @@ class VerifierV2(Verifier):
                     presentation_request=V20PresRequestByFormat(
                         indy=proof_request.proof_request
                     ),
-                    comment=comment,
-                    trace=False,
+                    auto_verify=proof_request.auto_verify,
+                    comment=proof_request.comment,
+                    trace=proof_request.trace,
                 )
             )
             return record_to_model(proof_record)
@@ -112,6 +112,9 @@ class VerifierV2(Verifier):
                         presentation_request=V20PresRequestByFormat(
                             dif=None, indy=proof_request.proof_request
                         ),
+                        auto_verify=proof_request.auto_verify,
+                        comment=proof_request.comment,
+                        trace=proof_request.trace,
                     )
                 )
             )

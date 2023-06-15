@@ -2,12 +2,12 @@ import asyncio
 import logging
 import time
 from collections import defaultdict as ddict
-from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
-from typing import Any, AsyncGenerator, Generator, Tuple
+from typing import Any, AsyncGenerator, Tuple
 
 from shared import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL
+from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
@@ -95,10 +95,9 @@ class SseManager:
                 await self.lifo_cache[wallet][topic].put(timestamped_event)
                 await self.fifo_cache[wallet][topic].put(timestamped_event)
 
-    @asynccontextmanager
     async def sse_event_stream(
         self, wallet: str, topic: str, duration: int = 0
-    ) -> Generator[AsyncGenerator[TopicItem, Any], Any, None]:
+    ) -> EventGeneratorWrapper:
         """
         Create a SSE stream of events for a wallet_id on a specific topic
 
@@ -131,17 +130,9 @@ class SseManager:
                     LOGGER.warning("Event generator timed out")
                     break
 
-        try:
-            yield event_generator()
-        finally:
-            populate_task.cancel()
-            async with self.cache_locks[wallet][topic]:
-                # LIFO cache has been consumed; repopulate with events from FIFO cache:
-                lifo_queue, fifo_queue = await _copy_queue(
-                    self.fifo_cache[wallet][topic], self.max
-                )
-                self.fifo_cache[wallet][topic] = fifo_queue
-                self.lifo_cache[wallet][topic] = lifo_queue
+        return EventGeneratorWrapper(
+            event_generator(), self, wallet, topic, populate_task
+        )
 
     async def _populate_client_queue(
         self, wallet: str, topic: str, client_queue: asyncio.Queue

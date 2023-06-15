@@ -40,7 +40,8 @@ async def sse_subscribe_wallet(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}"
             ) as response:
-                yield_lines_with_disconnect_check(request, response)
+                async for line in yield_lines_with_disconnect_check(request, response):
+                    yield line
     except HTTPError as e:
         raise e from e
 
@@ -60,7 +61,8 @@ async def sse_subscribe_wallet_topic(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
             ) as response:
-                yield_lines_with_disconnect_check(request, response)
+                async for line in yield_lines_with_disconnect_check(request, response):
+                    yield line
     except HTTPError as e:
         raise e from e
 
@@ -83,7 +85,8 @@ async def sse_subscribe_event_with_state(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{desired_state}"
             ) as response:
-                yield_lines_with_disconnect_check(request, response)
+                async for line in yield_lines_with_disconnect_check(request, response):
+                    yield line
     except HTTPError as e:
         raise e from e
 
@@ -107,7 +110,8 @@ async def sse_subscribe_stream_with_fields(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}"
             ) as response:
-                yield_lines_with_disconnect_check(request, response)
+                async for line in yield_lines_with_disconnect_check(request, response):
+                    yield line
     except HTTPError as e:
         raise e from e
 
@@ -133,6 +137,7 @@ async def sse_subscribe_event_with_field_and_state(
                 "GET",
                 f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
             ) as response:
-                yield_lines_with_disconnect_check(request, response)
+                async for line in yield_lines_with_disconnect_check(request, response):
+                    yield line
     except HTTPError as e:
         raise e from e

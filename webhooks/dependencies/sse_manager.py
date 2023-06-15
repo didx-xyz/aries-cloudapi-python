@@ -152,6 +152,29 @@ class SseManager:
                     async with self.cache_locks[wallet][topic_key]:
                         lifo_queue = self.lifo_cache[wallet][topic_key]
                         try:
+                            while True:
+                                timestamp, event = lifo_queue.get_nowait()
+                                if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
+                                    async with self.client_locks[(wallet, topic)]:
+                                        await client_queue.put(event)
+                                        self._client_last_accessed[
+                                            (wallet, topic)
+                                        ] = datetime.now()
+                        except asyncio.QueueEmpty:
+                            # No event on lifo_queue, so we can continue
+                            pass
+
+                        # We've consumed from the lifo_queue, so we should repopulate it:
+                        lifo_queue, fifo_queue = await _copy_queue(
+                            self.fifo_cache[wallet][topic_key], self.max
+                        )
+                        self.fifo_cache[wallet][topic_key] = fifo_queue
+                        self.lifo_cache[wallet][topic_key] = lifo_queue
+            else:
+                async with self.cache_locks[wallet][topic]:
+                    lifo_queue = self.lifo_cache[wallet][topic]
+                    try:
+                        while True:
                             timestamp, event = lifo_queue.get_nowait()
                             if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
                                 async with self.client_locks[(wallet, topic)]:
@@ -159,35 +182,15 @@ class SseManager:
                                     self._client_last_accessed[
                                         (wallet, topic)
                                     ] = datetime.now()
-                            # We've consumed from the lifo_queue, so we should repopulate it:
-                            lifo_queue, fifo_queue = await _copy_queue(
-                                self.fifo_cache[wallet][topic_key], self.max
-                            )
-                            self.fifo_cache[wallet][topic_key] = fifo_queue
-                            self.lifo_cache[wallet][topic_key] = lifo_queue
-                        except asyncio.QueueEmpty:
-                            # No event on lifo_queue, so we can continue
-                            pass
-            else:
-                async with self.cache_locks[wallet][topic]:
-                    lifo_queue = self.lifo_cache[wallet][topic]
-                    try:
-                        timestamp, event = lifo_queue.get_nowait()
-                        if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
-                            async with self.client_locks[(wallet, topic)]:
-                                await client_queue.put(event)
-                                self._client_last_accessed[
-                                    (wallet, topic)
-                                ] = datetime.now()
-                        # We've consumed from the lifo_queue, so we should repopulate it:
-                        lifo_queue, fifo_queue = await _copy_queue(
-                            self.fifo_cache[wallet][topic], self.max
-                        )
-                        self.fifo_cache[wallet][topic] = fifo_queue
-                        self.lifo_cache[wallet][topic] = lifo_queue
                     except asyncio.QueueEmpty:
                         # No event on lifo_queue, so we can continue
                         pass
+                    # We've consumed from the lifo_queue, so we should repopulate it:
+                    lifo_queue, fifo_queue = await _copy_queue(
+                        self.fifo_cache[wallet][topic], self.max
+                    )
+                    self.fifo_cache[wallet][topic] = fifo_queue
+                    self.lifo_cache[wallet][topic] = lifo_queue
 
     async def _cleanup_queues(self):
         while True:

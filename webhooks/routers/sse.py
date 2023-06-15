@@ -22,13 +22,11 @@ SSE_TIMEOUT = 150  # maximum duration of an SSE connection
 QUEUE_POLL_PERIOD = 0.1  # period in seconds to retry reading empty queues
 
 
-async def check_disconnection(request: Request, task: asyncio.Task):
+async def check_disconnection(request: Request):
     while True:
-        LOGGER.warning("Check disconnection")
         if await request.is_disconnected():
             LOGGER.warning("SSE event_stream: client disconnected")
-            task.cancel()
-            break
+            raise asyncio.CancelledError
         await asyncio.sleep(0.5)
 
 

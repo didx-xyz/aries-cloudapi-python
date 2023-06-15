@@ -23,7 +23,7 @@ from app.generic.wallet import wallet
 from shared.cloud_api_error import CloudApiException
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))

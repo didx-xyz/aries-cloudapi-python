@@ -35,7 +35,7 @@ async def get_sse_subscribe_wallet(
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_wallet(wallet_id), media_type="text/event-stream"
+        sse_subscribe_wallet(request, wallet_id), media_type="text/event-stream"
     )
 
 
@@ -60,7 +60,8 @@ async def get_sse_subscribe_wallet_topic(
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_wallet_topic(wallet_id, topic), media_type="text/event-stream"
+        sse_subscribe_wallet_topic(request, wallet_id, topic),
+        media_type="text/event-stream",
     )
 
 
@@ -88,7 +89,7 @@ async def get_sse_subscribe_event_with_state(
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_event_with_state(wallet_id, topic, desired_state),
+        sse_subscribe_event_with_state(request, wallet_id, topic, desired_state),
         media_type="text/event-stream",
     )
 
@@ -119,7 +120,7 @@ async def get_sse_subscribe_stream_with_fields(
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_stream_with_fields(wallet_id, topic, field, field_id),
+        sse_subscribe_stream_with_fields(request, wallet_id, topic, field, field_id),
         media_type="text/event-stream",
     )
 
@@ -153,7 +154,7 @@ async def get_sse_subscribe_event_with_field_and_state(
 
     return StreamingResponse(
         sse_subscribe_event_with_field_and_state(
-            wallet_id, topic, field, field_id, desired_state
+            request, wallet_id, topic, field, field_id, desired_state
         ),
         media_type="text/event-stream",
     )

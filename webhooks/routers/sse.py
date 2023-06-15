@@ -8,6 +8,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from shared import WEBHOOK_TOPIC_ALL, APIRouter
 from webhooks.dependencies.container import Container
+from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.sse_manager import SseManager
 
 LOGGER = logging.getLogger(__name__)
@@ -53,6 +54,10 @@ async def sse_subscribe_wallet(
     LOGGER.debug("SSE Request: subscribe to wallet `%s` on all topics", wallet_id)
 
     async def event_stream() -> Generator[str, Any, None]:
+        event_generator_wrapper: EventGeneratorWrapper = (
+            await sse_manager.sse_event_stream(wallet_id, WEBHOOK_TOPIC_ALL)
+        )
+        async with event_generator_wrapper as event_generator:
             disconnection_check_task = asyncio.create_task(check_disconnection(request))
             background_tasks.add_task(disconnection_check_task)
 
@@ -107,6 +112,10 @@ async def sse_subscribe_wallet_topic(
     )
 
     async def event_stream() -> Generator[str, Any, None]:
+        event_generator_wrapper: EventGeneratorWrapper = (
+            await sse_manager.sse_event_stream(wallet_id, topic)
+        )
+        async with event_generator_wrapper as event_generator:
             disconnection_check_task = asyncio.create_task(check_disconnection(request))
             background_tasks.add_task(disconnection_check_task)
 
@@ -170,6 +179,11 @@ async def sse_subscribe_event_with_state(
 
     async def event_stream():
         ignore_list = []
+
+        event_generator_wrapper: EventGeneratorWrapper = (
+            await sse_manager.sse_event_stream(wallet_id, topic, SSE_TIMEOUT)
+        )
+        async with event_generator_wrapper as event_generator:
             disconnection_check_task = asyncio.create_task(check_disconnection(request))
             background_tasks.add_task(disconnection_check_task)
 
@@ -244,6 +258,10 @@ async def sse_subscribe_stream_with_fields(
     )
 
     async def event_stream():
+        event_generator_wrapper: EventGeneratorWrapper = (
+            await sse_manager.sse_event_stream(wallet_id, topic, SSE_TIMEOUT)
+        )
+        async with event_generator_wrapper as event_generator:
             disconnection_check_task = asyncio.create_task(check_disconnection(request))
             background_tasks.add_task(disconnection_check_task)
 
@@ -308,6 +326,10 @@ async def sse_subscribe_event_with_field_and_state(
     )
 
     async def event_stream():
+        event_generator_wrapper: EventGeneratorWrapper = (
+            await sse_manager.sse_event_stream(wallet_id, topic, SSE_TIMEOUT)
+        )
+        async with event_generator_wrapper as event_generator:
             disconnection_check_task = asyncio.create_task(check_disconnection(request))
             background_tasks.add_task(disconnection_check_task)
 

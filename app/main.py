@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
 from app.event_handling.webhooks import Webhooks
-from app.generic import definitions, messaging, trust_registry, webhooks
+from app.generic import definitions, messaging, sse, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.jsonld import jsonld
@@ -46,6 +46,7 @@ app.include_router(trust_registry.router)
 app.include_router(verifier.router)
 app.include_router(wallet.router)
 app.include_router(webhooks.router)
+app.include_router(sse.router)
 
 
 @app.on_event("shutdown")

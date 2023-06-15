@@ -127,7 +127,7 @@ async def sse_subscribe_wallet_topic(
     "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
 )
 @inject
-async def sse_subscribe_desired_state(
+async def sse_subscribe_event_with_state(
     request: Request,
     wallet_id: str,
     topic: str,
@@ -157,7 +157,7 @@ async def sse_subscribe_desired_state(
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_desired_state`"
+                        "SSE event_stream: client disconnected from `sse_subscribe_event_with_state`"
                     )
                     break
                 try:
@@ -189,7 +189,7 @@ async def sse_subscribe_desired_state(
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_desired_state`"
+                        "SSE event_stream cancelled in `sse_subscribe_event_with_state`"
                     )
                     break
 
@@ -205,7 +205,7 @@ async def sse_subscribe_desired_state(
     "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
 )
 @inject
-async def sse_subscribe_filtered_stream(
+async def sse_subscribe_stream_with_fields(
     request: Request,
     wallet_id: str,
     topic: str,
@@ -228,7 +228,7 @@ async def sse_subscribe_filtered_stream(
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_filtered_event`"
+                        "SSE event_stream: client disconnected from `sse_subscribe_filtered_stream`"
                     )
                     break
                 try:
@@ -248,7 +248,7 @@ async def sse_subscribe_filtered_stream(
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_filtered_event`"
+                        "SSE event_stream cancelled in `sse_subscribe_filtered_stream`"
                     )
                     break
 
@@ -264,7 +264,7 @@ async def sse_subscribe_filtered_stream(
     "`desired_state` may be `offer-received`, `transaction-acked`, `done`, etc.",
 )
 @inject
-async def sse_subscribe_filtered_event(
+async def sse_subscribe_event_with_field_and_state(
     request: Request,
     wallet_id: str,
     topic: str,
@@ -289,7 +289,7 @@ async def sse_subscribe_filtered_event(
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_filtered_event`"
+                        "SSE event_stream: client disconnected from `sse_subscribe_event_with_field_and_state`"
                     )
                     break
                 try:
@@ -315,7 +315,7 @@ async def sse_subscribe_filtered_event(
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_filtered_event`"
+                        "SSE event_stream cancelled in `sse_subscribe_event_with_field_and_state`"
                     )
                     break
 

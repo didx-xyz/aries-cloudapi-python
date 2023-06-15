@@ -134,11 +134,9 @@ async def get_sse_subscribe_event_with_field_and_state(
         desired_state: The desired state to be reached.
     """
 
-    async def single_event_stream():
-        async for event in sse_subscribe_event_with_field_and_state(
+    return StreamingResponse(
+        sse_subscribe_event_with_field_and_state(
             wallet_id, topic, field, field_id, desired_state
-        ):
-            yield event
-            break  # Stop processing the stream after the first event
-
-    return StreamingResponse(single_event_stream(), media_type="text/event-stream")
+        ),
+        media_type="text/event-stream",
+    )

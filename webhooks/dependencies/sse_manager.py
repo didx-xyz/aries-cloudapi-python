@@ -12,6 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 MAX_EVENT_AGE_SECONDS = 5
 MAX_QUEUE_SIZE = 50
+QUEUE_CLEANUP_PERIOD = 60
 
 
 class SseManager:
@@ -44,6 +45,11 @@ class SseManager:
         # To handles queues for incoming client request
         self.client_queues = ddict(asyncio.Queue)
         self.client_locks = ddict(asyncio.Lock)
+
+        # To clean up queues that are no longer used
+        self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
+        self._client_last_accessed = ddict(datetime.now)
+        self._cleanup_task = asyncio.create_task(self._cleanup_queues())
 
     async def enqueue_sse_event(
         self, event: TopicItem, wallet: str, topic: str
@@ -178,6 +184,35 @@ class SseManager:
                     except asyncio.QueueEmpty:
                         # No event on lifo_queue, so we can continue
                         pass
+
+    async def _cleanup_queues(self):
+        while True:
+            # Wait for a while between cleanup operations
+            await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
+
+            # Iterate over all client queues
+            for key in list(self.client_queues.keys()):
+                # If a client queue hasn't been accessed in a while, remove it
+                if datetime.now() - self.last_accessed[key] > timedelta(
+                    seconds=MAX_EVENT_AGE_SECONDS
+                ):  # Adjust this as needed
+                    async with self.client_locks[key]:
+                        del self.client_queues[key]
+                        del self._client_last_accessed[key]
+                    del self.client_locks[key]
+
+            # Iterate over all cache queues
+            for wallet in list(self.lifo_cache.keys()):
+                for topic in list(self.lifo_cache[wallet].keys()):
+                    if datetime.now() - self._cache_last_accessed[wallet][
+                        topic
+                    ] > timedelta(seconds=MAX_EVENT_AGE_SECONDS):
+                        async with self.cache_locks[wallet][topic]:
+                            del self.lifo_cache[wallet][topic]
+                            del self.fifo_cache[wallet][topic]
+                            del self._cache_last_accessed[wallet][topic]
+                        del self.cache_locks[wallet][topic]
+
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int

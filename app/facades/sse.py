@@ -11,7 +11,24 @@ SSE_PING_PERIOD = 15
 default_timeout = Timeout(SSE_PING_PERIOD, read=3600.0)  # 1 hour read timeout
 
 
-async def sse_subscribe_wallet(wallet_id: str) -> AsyncGenerator[str, None]:
+async def yield_lines_with_disconnect_check(
+    request: Request, response: Response
+) -> AsyncGenerator[str, None]:
+    line_generator = response.aiter_lines().__aiter__()
+    while True:
+        if await request.is_disconnected():
+            break  # Client has disconnected, stop sending events
+        try:
+            line = await asyncio.wait_for(line_generator.__anext__(), timeout=1)
+            yield line + "\n"
+        except asyncio.TimeoutError:
+            # No new line within the last second, check for disconnection again
+            pass
+
+
+async def sse_subscribe_wallet(
+    request: Request, wallet_id: str
+) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID.
 
@@ -23,14 +40,13 @@ async def sse_subscribe_wallet(wallet_id: str) -> AsyncGenerator[str, None]:
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}"
             ) as response:
-                async for line in response.aiter_lines():
-                    yield line + "/n"
+                yield_lines_with_disconnect_check(request, response)
     except HTTPError as e:
         raise e from e
 
 
 async def sse_subscribe_wallet_topic(
-    wallet_id: str, topic: str
+    request: Request, wallet_id: str, topic: str
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
@@ -44,13 +60,13 @@ async def sse_subscribe_wallet_topic(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
             ) as response:
-                async for line in response.aiter_lines():
-                    yield line
+                yield_lines_with_disconnect_check(request, response)
     except HTTPError as e:
         raise e from e
 
 
 async def sse_subscribe_event_with_state(
+    request: Request,
     wallet_id: str,
     topic: str,
     desired_state: str,
@@ -67,13 +83,13 @@ async def sse_subscribe_event_with_state(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{desired_state}"
             ) as response:
-                async for line in response.aiter_lines():
-                    yield line
+                yield_lines_with_disconnect_check(request, response)
     except HTTPError as e:
         raise e from e
 
 
 async def sse_subscribe_stream_with_fields(
+    request: Request,
     wallet_id: str,
     topic: str,
     field: str,
@@ -91,13 +107,13 @@ async def sse_subscribe_stream_with_fields(
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}"
             ) as response:
-                async for line in response.aiter_lines():
-                    yield line
+                yield_lines_with_disconnect_check(request, response)
     except HTTPError as e:
         raise e from e
 
 
 async def sse_subscribe_event_with_field_and_state(
+    request: Request,
     wallet_id: str,
     topic: str,
     field: str,
@@ -117,7 +133,6 @@ async def sse_subscribe_event_with_field_and_state(
                 "GET",
                 f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
             ) as response:
-                async for line in response.aiter_lines():
-                    yield line
+                yield_lines_with_disconnect_check(request, response)
     except HTTPError as e:
         raise e from e

@@ -78,7 +78,7 @@ async def get_sse_subscribe_event_with_state(
 ):
     """
     Subscribe to server-side events for a specific wallet ID and topic,
-    and wait for a desired state to be reached.
+    and wait for an event that matches the desired state.
 
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
@@ -107,8 +107,8 @@ async def get_sse_subscribe_stream_with_fields(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
-    Subscribe to server-side events for a specific wallet ID and topic,
-    and filter the events by a specific field and field ID.
+    Subscribe to server-side events for a specific wallet ID and topic, and
+    filter the events for payloads containing a specific field and field ID pair.
 
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
@@ -139,7 +139,8 @@ async def get_sse_subscribe_event_with_field_and_state(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
-    Wait for a desired state to be reached for some event for this wallet and topic.
+    Wait for a desired state to be reached for some event for this wallet and topic,
+    filtering for payloads that contain `field:field_id`.
 
     Args:
         wallet_id: The ID of the wallet subscribing to the events.

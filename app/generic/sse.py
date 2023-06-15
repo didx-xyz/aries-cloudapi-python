@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from app.facades.sse import (
@@ -11,6 +11,11 @@ from app.facades.sse import (
 from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 
 router = APIRouter(prefix="/sse", tags=["sse"])
+
+
+def verify_wallet_access(auth: AcaPyAuthVerified, wallet_id: str):
+    if auth.wallet_id != "admin" and auth.wallet_id != wallet_id:
+        raise HTTPException(403, "Unauthorized")
 
 
 @router.get(
@@ -27,6 +32,8 @@ async def get_sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
     """
+    verify_wallet_access(auth, wallet_id)
+
     return StreamingResponse(
         sse_subscribe_wallet(wallet_id), media_type="text/event-stream"
     )
@@ -50,6 +57,8 @@ async def get_sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
+    verify_wallet_access(auth, wallet_id)
+
     return StreamingResponse(
         sse_subscribe_wallet_topic(wallet_id, topic), media_type="text/event-stream"
     )
@@ -75,6 +84,8 @@ async def get_sse_subscribe_event_with_state(
         topic: The topic to which the wallet is subscribing.
         desired_state: The desired state to be reached.
     """
+    verify_wallet_access(auth, wallet_id)
+
     return StreamingResponse(
         sse_subscribe_event_with_state(wallet_id, topic, desired_state),
         media_type="text/event-stream",
@@ -103,6 +114,8 @@ async def get_sse_subscribe_stream_with_fields(
         field: The field to which the wallet is subscribing.
         field_id: The ID of the field subscribing to the events.
     """
+    verify_wallet_access(auth, wallet_id)
+
     return StreamingResponse(
         sse_subscribe_stream_with_fields(wallet_id, topic, field, field_id),
         media_type="text/event-stream",
@@ -133,6 +146,7 @@ async def get_sse_subscribe_event_with_field_and_state(
         field_id: The ID of the field subscribing to the events.
         desired_state: The desired state to be reached.
     """
+    verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
         sse_subscribe_event_with_field_and_state(

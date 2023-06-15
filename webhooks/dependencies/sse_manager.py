@@ -115,19 +115,19 @@ class SseManager:
             self._populate_client_queue(wallet, topic, client_queue)
         )
 
+        async def event_generator() -> AsyncGenerator[TopicItem, Any]:
             start_time = time.time()
             while True:
                 try:
-                    timestamp, event = await asyncio.wait_for(
-                        lifo_queue.get(), timeout=1
-                    )
-                    if time.time() - timestamp > MAX_EVENT_AGE_SECONDS:
-                        continue
-                    yield event
-                except asyncio.TimeoutError:
                     if duration > 0 and time.time() - start_time > duration:
-                        LOGGER.info("\nSSE Event Stream: closing with timeout error")
                         break
+                    event = client_queue.get_nowait()
+                    yield event
+                except asyncio.QueueEmpty:
+                    asyncio.sleep(0.2)
+                except asyncio.TimeoutError:
+                    LOGGER.info("\nSSE Event Stream: closing with timeout error")
+                    break
 
         try:
             yield event_generator()

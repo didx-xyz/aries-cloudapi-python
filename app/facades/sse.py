@@ -20,9 +20,12 @@ async def yield_lines_with_disconnect_check(
             break  # Client has disconnected, stop sending events
         try:
             line = await asyncio.wait_for(line_generator.__anext__(), timeout=1)
-            yield line + "\n"
+            yield line
         except asyncio.TimeoutError:
             # No new line within the last second, check for disconnection again
+            pass
+        except StopAsyncIteration:
+            # No more lines to read from the response
             pass
 
 

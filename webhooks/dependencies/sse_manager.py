@@ -211,6 +211,16 @@ class SseManager:
                             del self._cache_last_accessed[wallet][topic]
                         del self.cache_locks[wallet][topic]
 
+    async def cleanup(self, wallet: str, topic: str, populate_task: asyncio.Task):
+        populate_task.cancel()
+        async with self.cache_locks[wallet][topic]:
+            # LIFO cache has been consumed; repopulate with events from FIFO cache:
+            lifo_queue, fifo_queue = await _copy_queue(
+                self.fifo_cache[wallet][topic], self.max
+            )
+            self.fifo_cache[wallet][topic] = fifo_queue
+            self.lifo_cache[wallet][topic] = lifo_queue
+
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int

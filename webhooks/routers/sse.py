@@ -25,7 +25,7 @@ QUEUE_POLL_PERIOD = 0.1  # period in seconds to retry reading empty queues
 async def check_disconnection(request: Request):
     while True:
         if await request.is_disconnected():
-            LOGGER.warning("SSE event_stream: client disconnected")
+            LOGGER.debug("SSE event_stream: client disconnected")
             raise asyncio.CancelledError
         await asyncio.sleep(0.5)
 

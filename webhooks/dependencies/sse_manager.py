@@ -115,20 +115,22 @@ class SseManager:
         )
 
         async def event_generator() -> AsyncGenerator[TopicItem, Any]:
+            LOGGER.debug("SSE Manager: Starting event_generator")
             end_time = time.time() + duration
             while True:
                 try:
                     remaining_time = end_time - time.time()
                     if remaining_time <= 0:
-                        LOGGER.warning("Event generator timed out")
+                        LOGGER.debug("Event generator timed out")
                         break
                     event = await asyncio.wait_for(
                         client_queue.get(), timeout=remaining_time
                     )
                     yield event
                 except asyncio.TimeoutError:
-                    LOGGER.warning("Event generator timed out")
+                    LOGGER.debug("Event generator timed out")
                     break
+                    LOGGER.debug("Task cancelled")
 
         return EventGeneratorWrapper(
             event_generator(), self, wallet, topic, populate_task

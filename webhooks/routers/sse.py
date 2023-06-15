@@ -40,6 +40,7 @@ async def check_disconnection(request: Request, task: asyncio.Task):
 async def sse_subscribe_wallet(
     request: Request,
     wallet_id: str,
+    background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     """
@@ -90,6 +91,7 @@ async def sse_subscribe_wallet_topic(
     request: Request,
     wallet_id: str,
     topic: str,
+    background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     """
@@ -148,6 +150,7 @@ async def sse_subscribe_event_with_state(
     wallet_id: str,
     topic: str,
     desired_state: str,
+    background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     LOGGER.debug(
@@ -229,6 +232,7 @@ async def sse_subscribe_stream_with_fields(
     topic: str,
     field: str,
     field_id: str,
+    background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     LOGGER.debug(
@@ -291,6 +295,7 @@ async def sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
+    background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     LOGGER.debug(

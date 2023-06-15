@@ -3,7 +3,7 @@ import logging
 from typing import Any, Generator
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import Depends, Request
+from fastapi import BackgroundTasks, Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
 from shared import WEBHOOK_TOPIC_ALL, APIRouter
@@ -19,6 +19,16 @@ router = APIRouter(
 
 SSE_TIMEOUT = 150  # maximum duration of an SSE connection
 QUEUE_POLL_PERIOD = 0.1  # period in seconds to retry reading empty queues
+
+
+async def check_disconnection(request: Request, task: asyncio.Task):
+    while True:
+        LOGGER.warning("Check disconnection")
+        if await request.is_disconnected():
+            LOGGER.warning("SSE event_stream: client disconnected")
+            task.cancel()
+            break
+        await asyncio.sleep(0.5)
 
 
 @router.get(
@@ -42,9 +52,9 @@ async def sse_subscribe_wallet(
     LOGGER.debug("SSE Request: subscribe to wallet `%s` on all topics", wallet_id)
 
     async def event_stream() -> Generator[str, Any, None]:
-        async with sse_manager.sse_event_stream(
-            wallet_id, WEBHOOK_TOPIC_ALL
-        ) as event_generator:
+            disconnection_check_task = asyncio.create_task(check_disconnection(request))
+            background_tasks.add_task(disconnection_check_task)
+
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
@@ -64,6 +74,8 @@ async def sse_subscribe_wallet(
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug("SSE event_stream cancelled in `sse_subscribe_wallet`")
                     break
+                finally:
+                    disconnection_check_task.cancel()
 
     return EventSourceResponse(event_stream())
 
@@ -93,7 +105,9 @@ async def sse_subscribe_wallet_topic(
     )
 
     async def event_stream() -> Generator[str, Any, None]:
-        async with sse_manager.sse_event_stream(wallet_id, topic) as event_generator:
+            disconnection_check_task = asyncio.create_task(check_disconnection(request))
+            background_tasks.add_task(disconnection_check_task)
+
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
@@ -116,6 +130,8 @@ async def sse_subscribe_wallet_topic(
                         "SSE event_stream cancelled in `sse_subscribe_wallet_topic`"
                     )
                     break
+                finally:
+                    disconnection_check_task.cancel()
 
     return EventSourceResponse(event_stream())
 
@@ -151,9 +167,9 @@ async def sse_subscribe_event_with_state(
 
     async def event_stream():
         ignore_list = []
-        async with sse_manager.sse_event_stream(
-            wallet_id, topic, SSE_TIMEOUT
-        ) as event_generator:
+            disconnection_check_task = asyncio.create_task(check_disconnection(request))
+            background_tasks.add_task(disconnection_check_task)
+
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
@@ -192,6 +208,8 @@ async def sse_subscribe_event_with_state(
                         "SSE event_stream cancelled in `sse_subscribe_event_with_state`"
                     )
                     break
+                finally:
+                    disconnection_check_task.cancel()
 
     return EventSourceResponse(event_stream())
 
@@ -222,9 +240,9 @@ async def sse_subscribe_stream_with_fields(
     )
 
     async def event_stream():
-        async with sse_manager.sse_event_stream(
-            wallet_id, topic, SSE_TIMEOUT
-        ) as event_generator:
+            disconnection_check_task = asyncio.create_task(check_disconnection(request))
+            background_tasks.add_task(disconnection_check_task)
+
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
@@ -251,6 +269,8 @@ async def sse_subscribe_stream_with_fields(
                         "SSE event_stream cancelled in `sse_subscribe_filtered_stream`"
                     )
                     break
+                finally:
+                    disconnection_check_task.cancel()
 
     return EventSourceResponse(event_stream())
 
@@ -283,9 +303,9 @@ async def sse_subscribe_event_with_field_and_state(
     )
 
     async def event_stream():
-        async with sse_manager.sse_event_stream(
-            wallet_id, topic, SSE_TIMEOUT
-        ) as event_generator:
+            disconnection_check_task = asyncio.create_task(check_disconnection(request))
+            background_tasks.add_task(disconnection_check_task)
+
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
@@ -318,5 +338,7 @@ async def sse_subscribe_event_with_field_and_state(
                         "SSE event_stream cancelled in `sse_subscribe_event_with_field_and_state`"
                     )
                     break
+                finally:
+                    disconnection_check_task.cancel()
 
     return EventSourceResponse(event_stream())

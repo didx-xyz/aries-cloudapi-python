@@ -76,13 +76,13 @@ async def client_response_error_exception_handler(
 
     if isinstance(exception, ClientResponseError):
         return JSONResponse(
-            {"detail": exception.message, **
-                (stacktrace if debug else {})}, exception.status or 500
+            {"detail": exception.message, **(stacktrace if debug else {})},
+            exception.status or 500,
         )
     if isinstance(exception, CloudApiException):
         return JSONResponse(
-            {"detail": exception.detail, **
-                (stacktrace if debug else {})}, exception.status_code
+            {"detail": exception.detail, **(stacktrace if debug else {})},
+            exception.status_code,
         )
     if isinstance(exception, HTTPException):
         return JSONResponse(
@@ -94,6 +94,5 @@ async def client_response_error_exception_handler(
         return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
         return JSONResponse(
-            {"detail": "Internal server error",
-                "exception": str(exception)}, 500
+            {"detail": "Internal server error", "exception": str(exception)}, 500
         )

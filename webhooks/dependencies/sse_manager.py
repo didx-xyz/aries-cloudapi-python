@@ -130,7 +130,9 @@ class SseManager:
                 except asyncio.TimeoutError:
                     LOGGER.debug("Event generator timed out")
                     break
+                except asyncio.CancelledError:
                     LOGGER.debug("Task cancelled")
+                    break
 
         return EventGeneratorWrapper(
             event_generator(), self, wallet, topic, populate_task

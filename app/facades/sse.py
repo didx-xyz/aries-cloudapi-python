@@ -1,6 +1,8 @@
+import asyncio
 from typing import AsyncGenerator
 
-from httpx import AsyncClient, HTTPError, Timeout
+from fastapi import Request
+from httpx import AsyncClient, HTTPError, Response, Timeout
 
 from shared import WEBHOOKS_URL
 

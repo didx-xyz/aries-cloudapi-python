@@ -19,7 +19,7 @@ def verify_wallet_access(auth: AcaPyAuthVerified, wallet_id: str):
 
 
 @router.get(
-    "/{wallet_id}", response_class=StreamingResponse, name="sse:subscribe_wallet"
+    "/{wallet_id}", response_class=StreamingResponse, name="Subscribe to Wallet Events"
 )
 async def get_sse_subscribe_wallet(
     request: Request,
@@ -42,7 +42,7 @@ async def get_sse_subscribe_wallet(
 @router.get(
     "/{wallet_id}/{topic}",
     response_class=StreamingResponse,
-    name="sse:subscribe_wallet_topic",
+    name="Subscribe to Wallet Events by Topic",
 )
 async def get_sse_subscribe_wallet_topic(
     request: Request,
@@ -67,7 +67,7 @@ async def get_sse_subscribe_wallet_topic(
 @router.get(
     "/{wallet_id}/{topic}/{desired_state}",
     response_class=StreamingResponse,
-    name="sse:subscribe_event_with_state",
+    name="Subscribe to a Wallet Event by Topic and Desired State",
 )
 async def get_sse_subscribe_event_with_state(
     request: Request,
@@ -96,7 +96,7 @@ async def get_sse_subscribe_event_with_state(
 @router.get(
     "/{wallet_id}/{topic}/{field}/{field_id}",
     response_class=StreamingResponse,
-    name="sse:subscribe_stream_with_fields",
+    name="Subscribe to Wallet Events by Topic and Field",
 )
 async def get_sse_subscribe_stream_with_fields(
     request: Request,
@@ -127,7 +127,7 @@ async def get_sse_subscribe_stream_with_fields(
 @router.get(
     "/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",
     response_class=StreamingResponse,
-    name="sse:subscribe_event_with_field_and_state",
+    name="Subscribe to a Wallet Event by Topic, Field, and Desired State",
 )
 async def get_sse_subscribe_event_with_field_and_state(
     request: Request,

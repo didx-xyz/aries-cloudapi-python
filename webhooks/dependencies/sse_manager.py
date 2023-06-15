@@ -116,17 +116,19 @@ class SseManager:
         )
 
         async def event_generator() -> AsyncGenerator[TopicItem, Any]:
-            start_time = time.time()
+            end_time = time.time() + duration
             while True:
                 try:
-                    if duration > 0 and time.time() - start_time > duration:
+                    remaining_time = end_time - time.time()
+                    if remaining_time <= 0:
+                        LOGGER.warning("Event generator timed out")
                         break
-                    event = client_queue.get_nowait()
+                    event = await asyncio.wait_for(
+                        client_queue.get(), timeout=remaining_time
+                    )
                     yield event
-                except asyncio.QueueEmpty:
-                    asyncio.sleep(0.2)
                 except asyncio.TimeoutError:
-                    LOGGER.info("\nSSE Event Stream: closing with timeout error")
+                    LOGGER.warning("Event generator timed out")
                     break
 
         try:

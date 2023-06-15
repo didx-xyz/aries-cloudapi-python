@@ -184,12 +184,15 @@ async def _copy_queue(
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
     lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
-    while not queue.empty():
-        timestamp, item = await queue.get()
-        if (
-            time.time() - timestamp <= MAX_EVENT_AGE_SECONDS
-        ):  # only copy events that are less than a minute old
-            await lifo_queue.put((timestamp, item))
-            await fifo_queue.put((timestamp, item))
+    while True:
+        try:
+            timestamp, item = queue.get_nowait()
+            if (
+                time.time() - timestamp <= MAX_EVENT_AGE_SECONDS
+            ):  # only copy events that are less than a minute old
+                await lifo_queue.put((timestamp, item))
+                await fifo_queue.put((timestamp, item))
+        except asyncio.QueueEmpty:
+            break
 
     return lifo_queue, fifo_queue

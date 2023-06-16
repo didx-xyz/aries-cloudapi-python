@@ -16,6 +16,7 @@ LOGGER = logging.getLogger(__name__)
 MAX_EVENT_AGE_SECONDS = 5
 MAX_QUEUE_SIZE = 50
 QUEUE_CLEANUP_PERIOD = 60
+CLIENT_QUEUE_POLL_PERIOD = 0.1
 
 
 class SseManager:
@@ -200,6 +201,8 @@ class SseManager:
                     )
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
+
+            await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
 
     async def _cleanup_queues(self):
         while True:

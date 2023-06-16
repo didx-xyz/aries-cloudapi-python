@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, TypedDict
 
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
+from aries_cloudcontroller.util.create_client_session import create_client_session
 from fastapi_websocket_pubsub import PubSubClient
 
 from shared import (
@@ -53,22 +54,28 @@ async def process_endorsement_event(data: str, topic: str):
 
     endorsement = Endorsement(**event["payload"])
 
-    async with AcaPyClient(
-        base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
-    ) as client:
-        # Not interested in this endorsement request
-        if not await should_accept_endorsement(client, endorsement):
+    session = create_client_session(api_key=GOVERNANCE_AGENT_API_KEY)
+
+    try:
+        async with AcaPyClient(
+            base_url=GOVERNANCE_AGENT_URL, client_session=session
+        ) as client:
+            # Not interested in this endorsement request
+            if not await should_accept_endorsement(client, endorsement):
+                logger.debug(
+                    "Endorsement request with transaction id %s is not applicable for endorsement.",
+                    endorsement.transaction_id,
+                )
+                return
+
             logger.debug(
-                "Endorsement request with transaction id %s is not applicable for endorsement.",
+                "Endorsement request with transaction id %s is applicable for endorsement, accepting request.",
                 endorsement.transaction_id,
             )
-            return
-
-        logger.debug(
-            "Endorsement request with transaction id %s is applicable for endorsement, accepting request.",
-            endorsement.transaction_id,
-        )
-        await accept_endorsement(client, endorsement)
+            await accept_endorsement(client, endorsement)
+    finally:
+        if not session.closed:
+            await session.close()
 
 
 def is_governance_agent(event: Event):

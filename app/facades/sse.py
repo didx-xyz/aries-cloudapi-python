@@ -9,6 +9,7 @@ from shared import WEBHOOKS_URL
 SSE_PING_PERIOD = 15
 # SSE sends a ping every 15 seconds, so user will get at least one message within this timeout
 default_timeout = Timeout(SSE_PING_PERIOD, read=3600.0)  # 1 hour read timeout
+event_timeout = Timeout(SSE_PING_PERIOD, read=180)  # 3 minute timeout
 
 
 async def yield_lines_with_disconnect_check(
@@ -84,7 +85,7 @@ async def sse_subscribe_event_with_state(
         topic: The topic to which the wallet is subscribing.
     """
     try:
-        async with AsyncClient(timeout=default_timeout) as client:
+        async with AsyncClient(timeout=event_timeout) as client:
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{desired_state}"
             ) as response:
@@ -135,7 +136,7 @@ async def sse_subscribe_event_with_field_and_state(
         topic: The topic to which the wallet is subscribing.
     """
     try:
-        async with AsyncClient(timeout=default_timeout) as client:
+        async with AsyncClient(timeout=event_timeout) as client:
             async with client.stream(
                 "GET",
                 f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",

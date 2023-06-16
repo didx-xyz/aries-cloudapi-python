@@ -111,7 +111,7 @@ class SseManager:
                 await self.fifo_cache[wallet][topic].put(timestamped_event)
 
     async def sse_event_stream(
-        self, wallet: str, topic: str, duration: int = 0
+        self, wallet: str, topic: str, stop_event: asyncio.Event, duration: int = 0
     ) -> EventGeneratorWrapper:
         """
         Create a SSE stream of events for a wallet_id on a specific topic
@@ -131,20 +131,21 @@ class SseManager:
 
         async def event_generator() -> AsyncGenerator[TopicItem, Any]:
             LOGGER.debug("SSE Manager: Starting event_generator")
-            end_time = time.time() + duration
-            while True:
+            while not stop_event.is_set():
                 try:
                             LOGGER.debug("Event generator timeout: remaining_time < 0")
+                            stop_event.set()
+                            break
                     event = await asyncio.wait_for(
                         client_queue.get(), timeout=remaining_time
                     )
                     yield event
                 except asyncio.TimeoutError:
                     LOGGER.debug("Event generator timeout: waiting for event on queue")
-                    break
+                    stop_event.set()
                 except asyncio.CancelledError:
                     LOGGER.debug("Task cancelled")
-                    break
+                    stop_event.set()
 
         return EventGeneratorWrapper(
             event_generator(), self, wallet, topic, populate_task

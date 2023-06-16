@@ -5,5 +5,5 @@ fastapi~=0.95.2
 fastapi_websocket_pubsub~=0.3.3
 sse-starlette~=1.6.1
 starlette>=0.27.0
-typing-extensions~=4.5.0
+typing-extensions~=4.6.3
 uvicorn[standard]~=0.22.0

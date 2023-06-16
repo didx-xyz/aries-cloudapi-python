@@ -14,7 +14,7 @@ router = APIRouter(prefix="/sse", tags=["sse"])
 
 
 def verify_wallet_access(auth: AcaPyAuthVerified, wallet_id: str):
-    if auth.wallet_id != "admin" and auth.wallet_id != wallet_id:
+    if auth.wallet_id not in ("admin", wallet_id):
         raise HTTPException(403, "Unauthorized")
 
 

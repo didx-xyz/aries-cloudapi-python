@@ -25,7 +25,7 @@ QUEUE_POLL_PERIOD = 0.1  # period in seconds to retry reading empty queues
 async def check_disconnection(request: Request, stop_event: asyncio.Event):
     while not stop_event.is_set():
         if await request.is_disconnected():
-            LOGGER.debug("SSE event_stream: client disconnected")
+            LOGGER.debug("SSE check_disconnection: request has disconnected.")
             stop_event.set()
         await asyncio.sleep(0.5)
 
@@ -79,6 +79,7 @@ async def sse_subscribe_wallet(
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
+                    LOGGER.debug("SSE event_stream cancelled in `sse_subscribe_wallet`")
                     stop_event.set()
                     break
 
@@ -272,7 +273,7 @@ async def sse_subscribe_stream_with_fields(
             async for event in event_generator:
                 if await request.is_disconnected():
                     LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_filtered_stream`"
+                        "SSE event_stream: client disconnected from `sse_subscribe_stream_with_fields`"
                     )
                     stop_event.set()
                     break
@@ -293,7 +294,7 @@ async def sse_subscribe_stream_with_fields(
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
                     LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_filtered_stream`"
+                        "SSE event_stream cancelled in `sse_subscribe_stream_with_fields`"
                     )
                     stop_event.set()
                     break

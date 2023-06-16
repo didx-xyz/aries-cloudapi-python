@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import time
@@ -7,7 +9,6 @@ from typing import Any, AsyncGenerator, Tuple
 
 from shared import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL
-from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
@@ -243,3 +244,28 @@ async def _copy_queue(
             break
 
     return lifo_queue, fifo_queue
+
+
+class EventGeneratorWrapper:
+    def __init__(
+        self,
+        generator: AsyncGenerator[TopicItem, Any],
+        sse_manager: SseManager,
+        wallet: str,
+        topic: str,
+        populate_task: asyncio.Task,
+    ):
+        self.generator = generator
+        self.sse_manager = sse_manager
+        self.wallet = wallet
+        self.topic = topic
+        self.populate_task = populate_task
+
+    async def __aenter__(self):
+        return self.generator
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.generator.aclose()  # Close the async generator
+        await self.sse_manager.cleanup_task(
+            self.wallet, self.topic, self.populate_task
+        )  # Call the cleanup method on the SseManager instance

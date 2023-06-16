@@ -157,6 +157,7 @@ class SseManager:
             wallet,
             topic,
         )
+        client = (wallet, topic)
         while True:
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():
@@ -166,11 +167,10 @@ class SseManager:
                             while True:
                                 timestamp, event = lifo_queue.get_nowait()
                                 if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
-                                    async with self.client_locks[(wallet, topic)]:
+                                    async with self.client_locks[client]:
                                         await client_queue.put(event)
-                                        self._client_last_accessed[
-                                            (wallet, topic)
-                                        ] = datetime.now()
+
+                                    self._client_last_accessed[client] = datetime.now()
                         except asyncio.QueueEmpty:
                             # No event on lifo_queue, so we can continue
                             pass
@@ -188,11 +188,9 @@ class SseManager:
                         while True:
                             timestamp, event = lifo_queue.get_nowait()
                             if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
-                                async with self.client_locks[(wallet, topic)]:
+                                async with self.client_locks[client]:
                                     await client_queue.put(event)
-                                    self._client_last_accessed[
-                                        (wallet, topic)
-                                    ] = datetime.now()
+                                self._client_last_accessed[client] = datetime.now()
                     except asyncio.QueueEmpty:
                         # No event on lifo_queue, so we can continue
                         pass
@@ -214,7 +212,7 @@ class SseManager:
                 # If a client queue hasn't been accessed in a while, remove it
                 if datetime.now() - self.last_accessed[key] > timedelta(
                     seconds=MAX_EVENT_AGE_SECONDS
-                ):  # Adjust this as needed
+                ):
                     async with self.client_locks[key]:
                         del self.client_queues[key]
                         del self._client_last_accessed[key]
@@ -232,6 +230,7 @@ class SseManager:
                             del self._cache_last_accessed[wallet][topic]
                         del self.cache_locks[wallet][topic]
 
+    async def cleanup_task(self, wallet: str, topic: str, populate_task: asyncio.Task):
         LOGGER.debug("SSE Manager: cleanup operation called for a populate_task")
         populate_task.cancel()
         async with self.cache_locks[wallet][topic]:

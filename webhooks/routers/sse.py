@@ -20,6 +20,7 @@ router = APIRouter(
 
 SSE_TIMEOUT = 150  # maximum duration of an SSE connection
 QUEUE_POLL_PERIOD = 0.1  # period in seconds to retry reading empty queues
+CHECK_DISCONN_PERIOD = 0.2  # period in seconds to check for disconnection
 
 
 async def check_disconnection(request: Request, stop_event: asyncio.Event):
@@ -27,7 +28,7 @@ async def check_disconnection(request: Request, stop_event: asyncio.Event):
         if await request.is_disconnected():
             LOGGER.debug("SSE check_disconnection: request has disconnected.")
             stop_event.set()
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(CHECK_DISCONN_PERIOD)
 
 
 @router.get(

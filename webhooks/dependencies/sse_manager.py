@@ -131,8 +131,13 @@ class SseManager:
 
         async def event_generator() -> AsyncGenerator[TopicItem, Any]:
             LOGGER.debug("SSE Manager: Starting event_generator")
+            end_time = time.time() + duration if duration > 0 else None
+            remaining_time = None
             while not stop_event.is_set():
                 try:
+                    if end_time:
+                        remaining_time = end_time - time.time()
+                        if remaining_time <= 0:
                             LOGGER.debug("Event generator timeout: remaining_time < 0")
                             stop_event.set()
                             break

@@ -160,6 +160,7 @@ class SseManager:
         )
         client = (wallet, topic)
         while True:
+            queue_is_read = False
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():
                     async with self.cache_locks[wallet][topic_key]:
@@ -167,6 +168,7 @@ class SseManager:
                         try:
                             while True:
                                 timestamp, event = lifo_queue.get_nowait()
+                                queue_is_read = True
                                 if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
                                     async with self.client_locks[client]:
                                         await client_queue.put(event)
@@ -176,18 +178,20 @@ class SseManager:
                             # No event on lifo_queue, so we can continue
                             pass
 
-                        # We've consumed from the lifo_queue, so we should repopulate it:
-                        lifo_queue, fifo_queue = await _copy_queue(
-                            self.fifo_cache[wallet][topic_key], self.max
-                        )
-                        self.fifo_cache[wallet][topic_key] = fifo_queue
-                        self.lifo_cache[wallet][topic_key] = lifo_queue
+                        if queue_is_read:
+                            # We've consumed from the lifo_queue, so repopulate it before exiting lock:
+                            lifo_queue, fifo_queue = await _copy_queue(
+                                self.fifo_cache[wallet][topic], self.max
+                            )
+                            self.fifo_cache[wallet][topic] = fifo_queue
+                            self.lifo_cache[wallet][topic] = lifo_queue
             else:
                 async with self.cache_locks[wallet][topic]:
                     lifo_queue = self.lifo_cache[wallet][topic]
                     try:
                         while True:
                             timestamp, event = lifo_queue.get_nowait()
+                            queue_is_read = True
                             if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
                                 async with self.client_locks[client]:
                                     await client_queue.put(event)
@@ -195,12 +199,14 @@ class SseManager:
                     except asyncio.QueueEmpty:
                         # No event on lifo_queue, so we can continue
                         pass
-                    # We've consumed from the lifo_queue, so we should repopulate it:
-                    lifo_queue, fifo_queue = await _copy_queue(
-                        self.fifo_cache[wallet][topic], self.max
-                    )
-                    self.fifo_cache[wallet][topic] = fifo_queue
-                    self.lifo_cache[wallet][topic] = lifo_queue
+
+                    if queue_is_read:
+                        # We've consumed from the lifo_queue, so repopulate it before exiting lock:
+                        lifo_queue, fifo_queue = await _copy_queue(
+                            self.fifo_cache[wallet][topic], self.max
+                        )
+                        self.fifo_cache[wallet][topic] = fifo_queue
+                        self.lifo_cache[wallet][topic] = lifo_queue
 
             await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
 

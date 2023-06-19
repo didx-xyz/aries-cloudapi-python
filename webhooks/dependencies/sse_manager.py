@@ -175,9 +175,7 @@ class SseManager:
                         lifo_queue_for_topic = self.lifo_cache[wallet][topic_key]
                         try:
                             while True:
-                                timestamp, event = lifo_queue.get_nowait()
-                                queue_is_read = True
-                                if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
+                                timestamp, event = lifo_queue_for_topic.get_nowait()
                                     await client_queue.put(event)
                         except asyncio.QueueEmpty:
                             # No event on lifo_queue, so we can continue

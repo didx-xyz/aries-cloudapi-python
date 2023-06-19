@@ -112,7 +112,13 @@ class SseManager:
                 await self.fifo_cache[wallet][topic].put(timestamped_event)
 
     async def sse_event_stream(
-        self, wallet: str, topic: str, stop_event: asyncio.Event, duration: int = 0
+        self,
+        *,
+        wallet: str,
+        topic: str,
+        client_id: UUID,
+        stop_event: asyncio.Event,
+        duration: int = 0,
     ) -> EventGeneratorWrapper:
         """
         Create a SSE stream of events for a wallet_id on a specific topic
@@ -127,7 +133,12 @@ class SseManager:
             self._client_last_accessed[client_id] = datetime.now()
 
         populate_task = asyncio.create_task(
-            self._populate_client_queue(wallet, topic, client_queue)
+            self._populate_client_queue(
+                wallet=wallet,
+                topic=topic,
+                client_id=client_id,
+                client_queue=client_queue,
+            )
         )
 
         async def event_generator() -> AsyncGenerator[TopicItem, Any]:

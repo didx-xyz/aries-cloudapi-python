@@ -220,7 +220,7 @@ class SseManager:
         while True:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
-            
+            LOGGER.debug("SSE Manager: Running periodic cleanup task")
 
             # Iterate over all cache queues
             for wallet in list(self.lifo_cache.keys()):
@@ -262,6 +262,7 @@ async def _copy_queue(
                 await fifo_queue.put((timestamp, item))
         except asyncio.QueueEmpty:
             break
+    LOGGER.debug("SSE Manager: Finished repopulating cache")
 
     return lifo_queue, fifo_queue
 

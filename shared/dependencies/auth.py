@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Union
 
 import jwt
 from aries_cloudcontroller import AcaPyClient

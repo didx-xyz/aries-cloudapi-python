@@ -467,7 +467,7 @@ async def test_revoke_credential(
         for rec in records
         if (
             rec["role"] == "issuer"
-            and rec["state"] == "credential-issued"
+            and (rec["state"] == "credential-issued" or rec["state"] == "done")
             and rec["connection_id"] == faber_connection_id
         )
     ]

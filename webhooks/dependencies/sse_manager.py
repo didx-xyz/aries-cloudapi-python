@@ -47,13 +47,8 @@ class SseManager:
             self._process_incoming_events()
         )
 
-        # To handles queues for incoming client request
-        self.client_queues = ddict(asyncio.Queue)
-        self.client_locks = ddict(asyncio.Lock)
-
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
-        self._client_last_accessed = ddict(datetime.now)
         self._cleanup_task = asyncio.create_task(self._cleanup_queues())
 
     async def enqueue_sse_event(
@@ -116,7 +111,6 @@ class SseManager:
         *,
         wallet: str,
         topic: str,
-        client_id: UUID,
         stop_event: asyncio.Event,
         duration: int = 0,
     ) -> EventGeneratorWrapper:
@@ -128,15 +122,12 @@ class SseManager:
             topic: The topic for which to create the event stream.
             duration: Timeout duration in seconds. 0 means no timeout.
         """
-        async with self.client_locks[client_id]:
-            client_queue = self.client_queues[client_id]
-            self._client_last_accessed[client_id] = datetime.now()
+        client_queue = asyncio.Queue()
 
         populate_task = asyncio.create_task(
             self._populate_client_queue(
                 wallet=wallet,
                 topic=topic,
-                client_id=client_id,
                 client_queue=client_queue,
             )
         )
@@ -169,7 +160,7 @@ class SseManager:
         )
 
     async def _populate_client_queue(
-        self, *, wallet: str, topic: str, client_id, client_queue: asyncio.Queue
+        self, *, wallet: str, topic: str, client_queue: asyncio.Queue
     ):
         LOGGER.debug(
             "SSE Manager: start _populate_client_queue for wallet %s and topic %s",
@@ -187,12 +178,7 @@ class SseManager:
                                 timestamp, event = lifo_queue.get_nowait()
                                 queue_is_read = True
                                 if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
-                                    async with self.client_locks[client_id]:
-                                        await client_queue.put(event)
-
-                                    self._client_last_accessed[
-                                        client_id
-                                    ] = datetime.now()
+                                    await client_queue.put(event)
                         except asyncio.QueueEmpty:
                             # No event on lifo_queue, so we can continue
                             pass
@@ -212,9 +198,7 @@ class SseManager:
                             timestamp, event = lifo_queue.get_nowait()
                             queue_is_read = True
                             if time.time() - timestamp <= MAX_EVENT_AGE_SECONDS:
-                                async with self.client_locks[client_id]:
-                                    await client_queue.put(event)
-                                self._client_last_accessed[client_id] = datetime.now()
+                                await client_queue.put(event)
                     except asyncio.QueueEmpty:
                         # No event on lifo_queue, so we can continue
                         pass
@@ -233,18 +217,7 @@ class SseManager:
         while True:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
-            LOGGER.debug("SSE Manager: Running periodic cleanup task")
-
-            # Iterate over all client queues
-            for client_key in list(self.client_queues.keys()):
-                # If a client queue hasn't been accessed in a while, remove it
-                if datetime.now() - self.last_accessed[client_key] > timedelta(
-                    seconds=MAX_EVENT_AGE_SECONDS
-                ):
-                    async with self.client_locks[client_key]:
-                        del self.client_queues[client_key]
-                        del self._client_last_accessed[client_key]
-                    del self.client_locks[client_key]
+            
 
             # Iterate over all cache queues
             for wallet in list(self.lifo_cache.keys()):

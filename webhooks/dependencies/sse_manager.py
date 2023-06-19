@@ -167,6 +167,8 @@ class SseManager:
             wallet,
             topic,
         )
+        event_log = []  # to keep track of events already added for this client queue
+
         while True:
             queue_is_read = False
             if topic == WEBHOOK_TOPIC_ALL:
@@ -176,6 +178,9 @@ class SseManager:
                         try:
                             while True:
                                 timestamp, event = lifo_queue_for_topic.get_nowait()
+                                if (timestamp, event) not in event_log:
+                                    event_log += ((timestamp, event),)
+                                    queue_is_read = True
                                     await client_queue.put(event)
                         except asyncio.QueueEmpty:
                             # No event on lifo_queue, so we can continue
@@ -194,6 +199,9 @@ class SseManager:
                     try:
                         while True:
                             timestamp, event = lifo_queue_for_topic.get_nowait()
+                            if (timestamp, event) not in event_log:
+                                event_log += ((timestamp, event),)
+                                queue_is_read = True
                                 await client_queue.put(event)
                     except asyncio.QueueEmpty:
                         # No event on lifo_queue, so we can continue

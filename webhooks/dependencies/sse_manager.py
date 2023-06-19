@@ -6,7 +6,6 @@ import time
 from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Tuple
-from uuid import UUID
 
 from shared import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL

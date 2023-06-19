@@ -53,13 +53,11 @@ async def sse_subscribe_wallet(
     LOGGER.debug("SSE Request: subscribe to wallet `%s` on all topics", wallet_id)
 
     async def event_stream() -> Generator[str, Any, None]:
-        client_id = uuid.uuid4()
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=WEBHOOK_TOPIC_ALL,
-                client_id=client_id,
                 stop_event=stop_event,
             )
         )
@@ -117,13 +115,11 @@ async def sse_subscribe_wallet_topic(
     )
 
     async def event_stream() -> Generator[str, Any, None]:
-        client_id = uuid.uuid4()
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                client_id=client_id,
                 stop_event=stop_event,
             )
         )
@@ -191,13 +187,11 @@ async def sse_subscribe_event_with_state(
     async def event_stream():
         ignore_list = []
 
-        client_id = uuid.uuid4()
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                client_id=client_id,
                 stop_event=stop_event,
                 duration=SSE_TIMEOUT,
             )
@@ -277,13 +271,11 @@ async def sse_subscribe_stream_with_fields(
     )
 
     async def event_stream():
-        client_id = uuid.uuid4()
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                client_id=client_id,
                 stop_event=stop_event,
                 duration=SSE_TIMEOUT,
             )
@@ -352,13 +344,11 @@ async def sse_subscribe_event_with_field_and_state(
     )
 
     async def event_stream():
-        client_id = uuid.uuid4()
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                client_id=client_id,
                 stop_event=stop_event,
                 duration=SSE_TIMEOUT,
             )

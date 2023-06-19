@@ -8,7 +8,6 @@ from typing import Any, AsyncGenerator, Tuple
 from shared import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
-from webhooks.dependencies.service import Service
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,10 +22,7 @@ class SseManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self, service: Service, max_queue_size=MAX_QUEUE_SIZE):
-        self.service = service
-        self.max = max_queue_size
-
+    def __init__(self):
         # Concurrency per wallet/topic
         self.cache_locks = ddict(lambda: ddict(asyncio.Lock))
 

@@ -15,19 +15,10 @@ event_timeout = Timeout(SSE_PING_PERIOD, read=180)  # 3 minute timeout
 async def yield_lines_with_disconnect_check(
     request: Request, response: Response
 ) -> AsyncGenerator[str, None]:
-    line_generator = response.aiter_lines().__aiter__()
-    while True:
+    async for line in response.aiter_lines():
         if await request.is_disconnected():
             break  # Client has disconnected, stop sending events
-        try:
-            line = await asyncio.wait_for(line_generator.__anext__(), timeout=1)
-            yield line
-        except asyncio.TimeoutError:
-            # No new line within the last second, check for disconnection again
-            pass
-        except StopAsyncIteration:
-            # No more lines to read from the response
-            pass
+        yield line + "\n"
 
 
 async def sse_subscribe_wallet(

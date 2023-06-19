@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import uuid
 from typing import Any, Generator
 
 from dependency_injector.wiring import Provide, inject

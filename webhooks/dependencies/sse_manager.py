@@ -40,14 +40,12 @@ class SseManager:
         # from the process of storing them in the per-wallet queues
         self.incoming_events = asyncio.Queue()
 
-        # Start a background task to process incoming events
-        self._incoming_events_task = asyncio.create_task(
-            self._process_incoming_events()
-        )
-
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
-        self._cleanup_task = asyncio.create_task(self._cleanup_queues())
+
+        # Start background tasks to process incoming events and cleanup queues
+        asyncio.create_task(self._process_incoming_events())
+        asyncio.create_task(self._cleanup_queues())
 
     async def enqueue_sse_event(
         self, event: TopicItem, wallet: str, topic: str
@@ -89,7 +87,7 @@ class SseManager:
 
                     # cannot pop from lifo queue; rebuild from fifo queue
                     lifo_queue, fifo_queue = await _copy_queue(
-                        self.fifo_cache[wallet][topic], self.max
+                        self.fifo_cache[wallet][topic]
                     )
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
@@ -189,7 +187,7 @@ class SseManager:
                         if queue_is_read:
                             # We've consumed from the lifo_queue, so repopulate it before exiting lock:
                             lifo_queue, fifo_queue = await _copy_queue(
-                                self.fifo_cache[wallet][topic_key], self.max
+                                self.fifo_cache[wallet][topic_key]
                             )
                             self.fifo_cache[wallet][topic_key] = fifo_queue
                             self.lifo_cache[wallet][topic_key] = lifo_queue

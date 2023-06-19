@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, TypedDict
 
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
-from aries_cloudcontroller.util.create_client_session import create_client_session
+from aries_cloudcontroller.util.acapy_client_session import AcaPyClientSession
 from fastapi_websocket_pubsub import PubSubClient
 
 from shared import (
@@ -54,9 +54,7 @@ async def process_endorsement_event(data: str, topic: str):
 
     endorsement = Endorsement(**event["payload"])
 
-    session = create_client_session(api_key=GOVERNANCE_AGENT_API_KEY)
-
-    try:
+    async with AcaPyClientSession(api_key=GOVERNANCE_AGENT_API_KEY) as session:
         async with AcaPyClient(
             base_url=GOVERNANCE_AGENT_URL, client_session=session
         ) as client:
@@ -73,9 +71,6 @@ async def process_endorsement_event(data: str, topic: str):
                 endorsement.transaction_id,
             )
             await accept_endorsement(client, endorsement)
-    finally:
-        if not session.closed:
-            await session.close()
 
 
 def is_governance_agent(event: Event):

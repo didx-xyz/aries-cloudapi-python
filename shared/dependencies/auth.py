@@ -5,7 +5,7 @@ from typing import List, Union
 
 import jwt
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.util.create_client_session import create_client_session
+from aries_cloudcontroller.util.acapy_client_session import AcaPyClientSession
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
@@ -95,47 +95,36 @@ def agent_role(role: Union[Role, List[Role]]):
 @asynccontextmanager
 async def get_governance_controller():
     # TODO: would be good to support this natively in AcaPyClient
-    session = create_client_session(api_key=Role.GOVERNANCE.agent_type.x_api_key)
-
-    try:
+    async with AcaPyClientSession(
+        api_key=Role.GOVERNANCE.agent_type.x_api_key
+    ) as session:
         async with AcaPyClient(
             Role.GOVERNANCE.agent_type.base_url, client_session=session
         ) as client:
             yield client
-    finally:
-        if not session.closed:
-            await session.close()
 
 
 @asynccontextmanager
 async def get_tenant_admin_controller():
     # TODO: would be good to support this natively in AcaPyClient
-    session = create_client_session(api_key=Role.TENANT_ADMIN.agent_type.x_api_key)
-
-    try:
+    async with AcaPyClientSession(
+        api_key=Role.TENANT_ADMIN.agent_type.x_api_key
+    ) as session:
         async with AcaPyClient(
             Role.TENANT_ADMIN.agent_type.base_url, client_session=session
         ) as client:
             yield client
-    finally:
-        if not session.closed:
-            await session.close()
 
 
 @asynccontextmanager
 async def get_tenant_controller(role: Role, auth_token: str):
-    session = create_client_session(
+    async with AcaPyClientSession(
         api_key=role.agent_type.x_api_key, tenant_jwt=auth_token
-    )
-
-    try:
+    ) as session:
         async with AcaPyClient(
             role.agent_type.base_url, client_session=session
         ) as client:
             yield client
-    finally:
-        if not session.closed:
-            await session.close()
 
 
 async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
@@ -150,18 +139,8 @@ async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     else:
         x_api_key = auth.token
 
-    session = create_client_session(api_key=x_api_key, tenant_jwt=tenant_jwt)
-
-    try:
+    async with AcaPyClientSession(api_key=x_api_key, tenant_jwt=tenant_jwt) as session:
         async with AcaPyClient(
             base_url=auth.role.agent_type.base_url, client_session=session
         ) as agent:
             yield agent
-    except Exception as e:
-        # We can only log this here and not raise an HTTPException as we are past the yield. See here:
-        # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        logger.error("%s", e, exc_info=e)
-        raise e
-    finally:
-        if not session.closed:
-            await session.close()

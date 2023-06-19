@@ -186,10 +186,10 @@ class SseManager:
                         if queue_is_read:
                             # We've consumed from the lifo_queue, so repopulate it before exiting lock:
                             lifo_queue, fifo_queue = await _copy_queue(
-                                self.fifo_cache[wallet][topic], self.max
+                                self.fifo_cache[wallet][topic_key], self.max
                             )
-                            self.fifo_cache[wallet][topic] = fifo_queue
-                            self.lifo_cache[wallet][topic] = lifo_queue
+                            self.fifo_cache[wallet][topic_key] = fifo_queue
+                            self.lifo_cache[wallet][topic_key] = lifo_queue
             else:
                 async with self.cache_locks[wallet][topic]:
                     lifo_queue = self.lifo_cache[wallet][topic]

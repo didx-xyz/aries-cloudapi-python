@@ -476,7 +476,7 @@ async def test_revoke_credential(
         record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
     else:
         logger.warning(
-            "No records matched state: `credential-issued` with role: `issuer`."
+            "No records matched state: `credential-issued` or `done` with role: `issuer`."
             + f"Looking for connection_id = {faber_connection_id}. List of records retreived: {records}.\n"
         )
         raise Exception("No issued credential retreived.")

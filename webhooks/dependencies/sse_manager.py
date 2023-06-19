@@ -27,8 +27,12 @@ class SseManager:
         self.cache_locks = ddict(lambda: ddict(asyncio.Lock))
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        self.fifo_cache = ddict(lambda: ddict(lambda: asyncio.Queue(self.max)))
-        self.lifo_cache = ddict(lambda: ddict(lambda: asyncio.LifoQueue(self.max)))
+        self.fifo_cache = ddict(
+            lambda: ddict(lambda: asyncio.Queue(maxsize=MAX_QUEUE_SIZE))
+        )
+        self.lifo_cache = ddict(
+            lambda: ddict(lambda: asyncio.LifoQueue(maxsize=MAX_QUEUE_SIZE))
+        )
         # Last In First Out Queue is to be used for consumption, so that newest events are yielded first
         # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
@@ -78,7 +82,7 @@ class SseManager:
                         "SSE Manager: fifo_cache is full for wallet %s and topic %s with max queue length %s",
                         wallet,
                         topic,
-                        self.max,
+                        MAX_QUEUE_SIZE,
                     )
 
                     await self.fifo_cache[wallet][topic].get()
@@ -206,7 +210,7 @@ class SseManager:
                     if queue_is_read:
                         # We've consumed from the lifo_queue, so repopulate it before exiting lock:
                         lifo_queue, fifo_queue = await _copy_queue(
-                            self.fifo_cache[wallet][topic], self.max
+                            self.fifo_cache[wallet][topic]
                         )
                         self.fifo_cache[wallet][topic] = fifo_queue
                         self.lifo_cache[wallet][topic] = lifo_queue
@@ -233,7 +237,7 @@ class SseManager:
 
 
 async def _copy_queue(
-    queue: asyncio.Queue, maxsize: int
+    queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
     LOGGER.debug("SSE Manager: Repopulating cache")

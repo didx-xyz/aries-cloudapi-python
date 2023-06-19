@@ -2,16 +2,19 @@ import asyncio
 import logging
 import time
 from collections import defaultdict as ddict
-from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Generator, Tuple
+from datetime import datetime, timedelta
+from typing import Any, AsyncGenerator, Tuple
 
 from shared import TopicItem
-from webhooks.dependencies.service import Service
+from shared.models.topics import WEBHOOK_TOPIC_ALL
+from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
 LOGGER = logging.getLogger(__name__)
 
 MAX_EVENT_AGE_SECONDS = 5
-MAX_QUEUE_SIZE = 50
+MAX_QUEUE_SIZE = 200
+QUEUE_CLEANUP_PERIOD = 30
+CLIENT_QUEUE_POLL_PERIOD = 0.2
 
 
 class SseManager:
@@ -19,14 +22,17 @@ class SseManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self, service: Service, max_queue_size=MAX_QUEUE_SIZE):
-        self.service = service
-        self.locks = ddict(lambda: ddict(asyncio.Lock))  # Concurrency per wallet/topic
-        self.max = max_queue_size
+    def __init__(self):
+        # Concurrency per wallet/topic
+        self.cache_locks = ddict(lambda: ddict(asyncio.Lock))
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        self.fifo_cache = ddict(lambda: ddict(lambda: asyncio.Queue(self.max)))
-        self.lifo_cache = ddict(lambda: ddict(lambda: asyncio.LifoQueue(self.max)))
+        self.fifo_cache = ddict(
+            lambda: ddict(lambda: asyncio.Queue(maxsize=MAX_QUEUE_SIZE))
+        )
+        self.lifo_cache = ddict(
+            lambda: ddict(lambda: asyncio.LifoQueue(maxsize=MAX_QUEUE_SIZE))
+        )
         # Last In First Out Queue is to be used for consumption, so that newest events are yielded first
         # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
@@ -34,10 +40,12 @@ class SseManager:
         # from the process of storing them in the per-wallet queues
         self.incoming_events = asyncio.Queue()
 
-        # Start a background task to process incoming events
-        self._incoming_events_task = asyncio.create_task(
-            self._process_incoming_events()
-        )
+        # To clean up queues that are no longer used
+        self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
+
+        # Start background tasks to process incoming events and cleanup queues
+        asyncio.create_task(self._process_incoming_events())
+        asyncio.create_task(self._cleanup_queues())
 
     async def enqueue_sse_event(
         self, event: TopicItem, wallet: str, topic: str
@@ -65,26 +73,43 @@ class SseManager:
             event, wallet, topic, timestamp = await self.incoming_events.get()
 
             # Process the event into the per-wallet queues
-            async with self.locks[wallet][topic]:
+            async with self.cache_locks[wallet][topic]:
                 # Check if queue is full and make room before adding events
                 if self.fifo_cache[wallet][topic].full():
+                    LOGGER.warning(
+                        "SSE Manager: fifo_cache is full for wallet %s and topic %s with max queue length %s",
+                        wallet,
+                        topic,
+                        MAX_QUEUE_SIZE,
+                    )
+
                     await self.fifo_cache[wallet][topic].get()
 
                     # cannot pop from lifo queue; rebuild from fifo queue
                     lifo_queue, fifo_queue = await _copy_queue(
-                        self.fifo_cache[wallet][topic], self.max
+                        self.fifo_cache[wallet][topic]
                     )
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
                 timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
+                LOGGER.debug(
+                    "Putting event on cache for wallet %s, topic %s: %s",
+                    wallet,
+                    topic,
+                    event,
+                )
                 await self.lifo_cache[wallet][topic].put(timestamped_event)
                 await self.fifo_cache[wallet][topic].put(timestamped_event)
 
-    @asynccontextmanager
     async def sse_event_stream(
-        self, wallet: str, topic: str, duration: int = 0
-    ) -> Generator[AsyncGenerator[TopicItem, Any], Any, None]:
+        self,
+        *,
+        wallet: str,
+        topic: str,
+        stop_event: asyncio.Event,
+        duration: int = 0,
+    ) -> EventGeneratorWrapper:
         """
         Create a SSE stream of events for a wallet_id on a specific topic
 
@@ -93,47 +118,138 @@ class SseManager:
             topic: The topic for which to create the event stream.
             duration: Timeout duration in seconds. 0 means no timeout.
         """
-        async with self.locks[wallet][topic]:
-            lifo_queue = self.lifo_cache[wallet][topic]
+        client_queue = asyncio.Queue()
 
-        async def event_generator() -> Generator[TopicItem, Any, None]:
-            start_time = time.time()
-            while True:
+        populate_task = asyncio.create_task(
+            self._populate_client_queue(
+                wallet=wallet,
+                topic=topic,
+                client_queue=client_queue,
+            )
+        )
+
+        async def event_generator() -> AsyncGenerator[TopicItem, Any]:
+            LOGGER.debug("SSE Manager: Starting event_generator")
+            end_time = time.time() + duration if duration > 0 else None
+            remaining_time = None
+            while not stop_event.is_set():
                 try:
-                    timestamp, event = await asyncio.wait_for(
-                        lifo_queue.get(), timeout=1
+                    if end_time:
+                        remaining_time = end_time - time.time()
+                        if remaining_time <= 0:
+                            LOGGER.debug("Event generator timeout: remaining_time < 0")
+                            stop_event.set()
+                            break
+                    event = await asyncio.wait_for(
+                        client_queue.get(), timeout=remaining_time
                     )
-                    if time.time() - timestamp > MAX_EVENT_AGE_SECONDS:
-                        continue
                     yield event
                 except asyncio.TimeoutError:
-                    if duration > 0 and time.time() - start_time > duration:
-                        LOGGER.info("\nSSE Event Stream: closing with timeout error")
-                        break
+                    LOGGER.debug("Event generator timeout: waiting for event on queue")
+                    stop_event.set()
+                except asyncio.CancelledError:
+                    LOGGER.debug("Task cancelled")
+                    stop_event.set()
 
-        try:
-            yield event_generator()
-        finally:
-            async with self.locks[wallet][topic]:
-                # LIFO cache has been consumed; repopulate with events from FIFO cache:
-                lifo_queue, fifo_queue = await _copy_queue(
-                    self.fifo_cache[wallet][topic], self.max
-                )
-                self.fifo_cache[wallet][topic] = fifo_queue
-                self.lifo_cache[wallet][topic] = lifo_queue
+            populate_task.cancel()  # After stop_event is set
+
+        return EventGeneratorWrapper(
+            generator=event_generator(), populate_task=populate_task
+        )
+
+    async def _populate_client_queue(
+        self, *, wallet: str, topic: str, client_queue: asyncio.Queue
+    ):
+        LOGGER.debug(
+            "SSE Manager: start _populate_client_queue for wallet %s and topic %s",
+            wallet,
+            topic,
+        )
+        event_log = []  # to keep track of events already added for this client queue
+
+        while True:
+            queue_is_read = False
+            if topic == WEBHOOK_TOPIC_ALL:
+                for topic_key in self.lifo_cache[wallet].keys():
+                    async with self.cache_locks[wallet][topic_key]:
+                        lifo_queue_for_topic = self.lifo_cache[wallet][topic_key]
+                        try:
+                            while True:
+                                timestamp, event = lifo_queue_for_topic.get_nowait()
+                                if (timestamp, event) not in event_log:
+                                    event_log += ((timestamp, event),)
+                                    queue_is_read = True
+                                    await client_queue.put(event)
+                        except asyncio.QueueEmpty:
+                            # No event on lifo_queue, so we can continue
+                            pass
+
+                        if queue_is_read:
+                            # We've consumed from the lifo_queue, so repopulate it before exiting lock:
+                            lifo_queue, fifo_queue = await _copy_queue(
+                                self.fifo_cache[wallet][topic_key]
+                            )
+                            self.fifo_cache[wallet][topic_key] = fifo_queue
+                            self.lifo_cache[wallet][topic_key] = lifo_queue
+            else:
+                async with self.cache_locks[wallet][topic]:
+                    lifo_queue_for_topic = self.lifo_cache[wallet][topic]
+                    try:
+                        while True:
+                            timestamp, event = lifo_queue_for_topic.get_nowait()
+                            if (timestamp, event) not in event_log:
+                                event_log += ((timestamp, event),)
+                                queue_is_read = True
+                                await client_queue.put(event)
+                    except asyncio.QueueEmpty:
+                        # No event on lifo_queue, so we can continue
+                        pass
+
+                    if queue_is_read:
+                        # We've consumed from the lifo_queue, so repopulate it before exiting lock:
+                        lifo_queue, fifo_queue = await _copy_queue(
+                            self.fifo_cache[wallet][topic]
+                        )
+                        self.fifo_cache[wallet][topic] = fifo_queue
+                        self.lifo_cache[wallet][topic] = lifo_queue
+
+            await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
+
+    async def _cleanup_queues(self):
+        while True:
+            # Wait for a while between cleanup operations
+            await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
+            LOGGER.debug("SSE Manager: Running periodic cleanup task")
+
+            # Iterate over all cache queues
+            for wallet in list(self.lifo_cache.keys()):
+                for topic in list(self.lifo_cache[wallet].keys()):
+                    if datetime.now() - self._cache_last_accessed[wallet][
+                        topic
+                    ] > timedelta(seconds=MAX_EVENT_AGE_SECONDS):
+                        async with self.cache_locks[wallet][topic]:
+                            del self.lifo_cache[wallet][topic]
+                            del self.fifo_cache[wallet][topic]
+                            del self._cache_last_accessed[wallet][topic]
+                        del self.cache_locks[wallet][topic]
 
 
 async def _copy_queue(
-    queue: asyncio.Queue, maxsize: int
+    queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
+    LOGGER.debug("SSE Manager: Repopulating cache")
     lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
-    while not queue.empty():
-        timestamp, item = await queue.get()
-        if (
-            time.time() - timestamp <= MAX_EVENT_AGE_SECONDS
-        ):  # only copy events that are less than a minute old
-            await lifo_queue.put((timestamp, item))
-            await fifo_queue.put((timestamp, item))
+    while True:
+        try:
+            timestamp, item = queue.get_nowait()
+            if (
+                time.time() - timestamp <= MAX_EVENT_AGE_SECONDS
+            ):  # only copy events that are less than a minute old
+                await lifo_queue.put((timestamp, item))
+                await fifo_queue.put((timestamp, item))
+        except asyncio.QueueEmpty:
+            break
+    LOGGER.debug("SSE Manager: Finished repopulating cache")
 
     return lifo_queue, fifo_queue

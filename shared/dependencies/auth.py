@@ -1,10 +1,11 @@
 import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Union
 
 import jwt
 from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller.util.acapy_client_session import AcaPyClientSession
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
@@ -78,7 +79,7 @@ async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
         yield x
 
 
-def agent_role(role: Union["Role", List["Role"]]):
+def agent_role(role: Union[Role, List[Role]]):
     async def run(auth: AcaPyAuth = Depends(acapy_auth)):
         roles = role if isinstance(role, List) else [role]
 
@@ -94,40 +95,43 @@ def agent_role(role: Union["Role", List["Role"]]):
 @asynccontextmanager
 async def get_governance_controller():
     # TODO: would be good to support this natively in AcaPyClient
-    async with AcaPyClient(
-        Role.GOVERNANCE.agent_type.base_url,
-        api_key=Role.GOVERNANCE.agent_type.x_api_key,
-    ) as client:
-        yield client
+    async with AcaPyClientSession(
+        api_key=Role.GOVERNANCE.agent_type.x_api_key
+    ) as session:
+        async with AcaPyClient(
+            Role.GOVERNANCE.agent_type.base_url, client_session=session
+        ) as client:
+            yield client
 
 
 @asynccontextmanager
 async def get_tenant_admin_controller():
     # TODO: would be good to support this natively in AcaPyClient
-    async with AcaPyClient(
-        Role.TENANT_ADMIN.agent_type.base_url,
-        api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
-    ) as client:
-        yield client
+    async with AcaPyClientSession(
+        api_key=Role.TENANT_ADMIN.agent_type.x_api_key
+    ) as session:
+        async with AcaPyClient(
+            Role.TENANT_ADMIN.agent_type.base_url, client_session=session
+        ) as client:
+            yield client
 
 
 @asynccontextmanager
-async def get_tenant_controller(role: "Role", auth_token: str):
-    async with AcaPyClient(
-        role.agent_type.base_url,
-        api_key=role.agent_type.x_api_key,
-        tenant_jwt=auth_token,
-    ) as client:
-        yield client
+async def get_tenant_controller(role: Role, auth_token: str):
+    async with AcaPyClientSession(
+        api_key=role.agent_type.x_api_key, tenant_jwt=auth_token
+    ) as session:
+        async with AcaPyClient(
+            role.agent_type.base_url, client_session=session
+        ) as client:
+            yield client
 
 
 async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     if not auth.token or auth.token == "":
         raise HTTPException(403, "Missing authorization key")
 
-    tenant_jwt: Optional[str] = None
-    x_api_key: Optional[str] = None
-
+    tenant_jwt = None
     # Tenant of multitenant agent
     if auth.role.is_multitenant and not auth.role.is_admin:
         tenant_jwt = auth.token
@@ -135,17 +139,8 @@ async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     else:
         x_api_key = auth.token
 
-    agent = None
-    try:
-        # yield the controller
+    async with AcaPyClientSession(api_key=x_api_key, tenant_jwt=tenant_jwt) as session:
         async with AcaPyClient(
-            base_url=auth.role.agent_type.base_url,
-            api_key=x_api_key,
-            tenant_jwt=tenant_jwt,
+            base_url=auth.role.agent_type.base_url, client_session=session
         ) as agent:
             yield agent
-    except Exception as e:
-        # We can only log this here and not raise an HTTPException as we are past the yield. See here:
-        # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        logger.error("%s", e, exc_info=e)
-        raise e

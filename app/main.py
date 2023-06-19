@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
 from app.event_handling.webhooks import Webhooks
-from app.generic import definitions, messaging, trust_registry, webhooks
+from app.generic import definitions, messaging, sse, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.jsonld import jsonld
@@ -23,7 +23,7 @@ from app.generic.wallet import wallet
 from shared.cloud_api_error import CloudApiException
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
 
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -46,6 +46,7 @@ app.include_router(trust_registry.router)
 app.include_router(verifier.router)
 app.include_router(wallet.router)
 app.include_router(webhooks.router)
+app.include_router(sse.router)
 
 
 @app.on_event("shutdown")
@@ -76,13 +77,13 @@ async def client_response_error_exception_handler(
 
     if isinstance(exception, ClientResponseError):
         return JSONResponse(
-            {"detail": exception.message, **
-                (stacktrace if debug else {})}, exception.status or 500
+            {"detail": exception.message, **(stacktrace if debug else {})},
+            exception.status or 500,
         )
     if isinstance(exception, CloudApiException):
         return JSONResponse(
-            {"detail": exception.detail, **
-                (stacktrace if debug else {})}, exception.status_code
+            {"detail": exception.detail, **(stacktrace if debug else {})},
+            exception.status_code,
         )
     if isinstance(exception, HTTPException):
         return JSONResponse(
@@ -94,6 +95,5 @@ async def client_response_error_exception_handler(
         return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
         return JSONResponse(
-            {"detail": "Internal server error",
-                "exception": str(exception)}, 500
+            {"detail": "Internal server error", "exception": str(exception)}, 500
         )

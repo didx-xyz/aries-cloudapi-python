@@ -172,7 +172,7 @@ class SseManager:
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():
                     async with self.cache_locks[wallet][topic_key]:
-                        lifo_queue = self.lifo_cache[wallet][topic_key]
+                        lifo_queue_for_topic = self.lifo_cache[wallet][topic_key]
                         try:
                             while True:
                                 timestamp, event = lifo_queue.get_nowait()

@@ -153,6 +153,8 @@ class SseManager:
                     LOGGER.debug("Task cancelled")
                     stop_event.set()
 
+            populate_task.cancel()  # After stop_event is set
+
         return EventGeneratorWrapper(
             generator=event_generator(), populate_task=populate_task
         )
@@ -232,17 +234,6 @@ class SseManager:
                             del self.fifo_cache[wallet][topic]
                             del self._cache_last_accessed[wallet][topic]
                         del self.cache_locks[wallet][topic]
-
-    async def cleanup_task(self, wallet: str, topic: str, populate_task: asyncio.Task):
-        LOGGER.debug("SSE Manager: cleanup operation called for a populate_task")
-        populate_task.cancel()
-        async with self.cache_locks[wallet][topic]:
-            # LIFO cache has been consumed; repopulate with events from FIFO cache:
-            lifo_queue, fifo_queue = await _copy_queue(
-                self.fifo_cache[wallet][topic], self.max
-            )
-            self.fifo_cache[wallet][topic] = fifo_queue
-            self.lifo_cache[wallet][topic] = lifo_queue
 
 
 async def _copy_queue(

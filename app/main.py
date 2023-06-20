@@ -38,23 +38,24 @@ app = FastAPI(
     version=PROJECT_VERSION,
 )
 
-app.include_router(connections.router)
-app.include_router(definitions.router)
-app.include_router(issuer.router)
-app.include_router(jsonld.router)
-app.include_router(messaging.router)
-app.include_router(oob.router)
-app.include_router(tenants.router)
-app.include_router(trust_registry.router)
-app.include_router(verifier.router)
-app.include_router(wallet.router)
-app.include_router(webhooks.router)
-app.include_router(sse.router)
 
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await Webhooks.shutdown()
+routes = [
+    connections,
+    definitions,
+    issuer,
+    jsonld,
+    messaging,
+    oob,
+    tenants,
+    trust_registry,
+    verifier,
+    wallet,
+    webhooks,
+    sse,
+    websocket_endpoint,
+]  # List of modules with `router`. Will appear in docs in this order.
+for route in routes:
+    app.include_router(route.router)
 
 
 @app.on_event("startup")

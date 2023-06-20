@@ -22,12 +22,14 @@ from app.generic.verifier import verifier
 from app.generic.wallet import wallet
 from shared.cloud_api_error import CloudApiException
 
+logger = logging.getLogger(__name__)
+
+prod = strtobool(os.environ.get("prod", "True"))
+debug = not prod
+
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
 
-logger = logging.getLogger(__name__)
-prod = strtobool(os.environ.get("prod", "True"))
-debug = not prod
 app = FastAPI(
     debug=debug,
     title=OPENAPI_NAME,

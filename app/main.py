@@ -13,13 +13,14 @@ from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
 from app.event_handling.webhooks import Webhooks
-from app.generic import definitions, messaging, sse, trust_registry, webhooks
+from app.generic import definitions, messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
+from app.generic.webhooks import sse, webhooks, websocket_endpoint
 from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)

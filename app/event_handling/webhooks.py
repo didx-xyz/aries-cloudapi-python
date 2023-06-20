@@ -3,7 +3,6 @@ import json
 import logging
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
-from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_websocket_pubsub import PubSubClient
 
 from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
@@ -20,7 +19,6 @@ class Webhooks:
     _callbacks: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
     _ready = asyncio.Event()
     client: Optional[PubSubClient] = None
-    sse_clients: List[WebSocket] = []
 
     @staticmethod
     async def register_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
@@ -33,13 +31,6 @@ class Webhooks:
         Webhooks._callbacks.append(callback)
 
     @staticmethod
-    async def register_sse_client(websocket: WebSocket):
-        """
-        Register a WebSocket for Server-Sent Events (SSE).
-        """
-        Webhooks.sse_clients.append(websocket)
-
-    @staticmethod
     async def emit(data: Dict[str, Any]):
         """
         Emit a webhook event by calling all registered listener functions with the event data.
@@ -47,10 +38,6 @@ class Webhooks:
         for callback in Webhooks._callbacks:
             await callback(data)
         # todo: surely we don't need to submit data to every single callback
-
-        # Send the event to SSE clients
-        for websocket in Webhooks.sse_clients:
-            await websocket.send_text(json.dumps(data))
 
     @staticmethod
     def unregister_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
@@ -63,17 +50,6 @@ class Webhooks:
             Webhooks._callbacks.remove(callback)
         except ValueError:
             # Listener not in list
-            pass
-
-    @staticmethod
-    async def unregister_sse_client(websocket: WebSocket):
-        """
-        Unregister a WebSocket for Server-Sent Events (SSE).
-        """
-        try:
-            Webhooks.sse_clients.remove(websocket)
-        except ValueError:
-            # WebSocket not in list
             pass
 
     @staticmethod
@@ -123,19 +99,6 @@ class Webhooks:
         """
         # todo: topic isn't used. should only emit to relevant topic/callback pairs
         await Webhooks.emit(json.loads(data))
-
-    @staticmethod
-    async def sse_endpoint(websocket: WebSocket):
-        """
-        Server-Sent Events (SSE) endpoint.
-        """
-        await websocket.accept()
-        await Webhooks.register_sse_client(websocket)
-        try:
-            while True:
-                await websocket.receive_text()
-        except WebSocketDisconnect:
-            await Webhooks.unregister_sse_client(websocket)
 
     @staticmethod
     async def shutdown(timeout: float = 20):

@@ -38,7 +38,6 @@ app = FastAPI(
     version=PROJECT_VERSION,
 )
 
-
 routes = [
     connections,
     definitions,
@@ -61,6 +60,11 @@ for route in routes:
 @app.on_event("startup")
 async def startup_event():
     await Webhooks.start_webhook_client()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await Webhooks.shutdown()
 
 
 # add endpoints

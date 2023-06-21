@@ -22,38 +22,37 @@ class WebsocketConnectionManager:
         self.client: Optional[PubSubClient] = None
         self._ready = asyncio.Event()
 
-    @staticmethod
-    async def register_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
+    async def connect(self, websocket: WebSocket, wallet_id: str):
         """
         Connect a new websocket connection.
         """
-        if not Webhooks.client:
-            await Webhooks.start_webhook_client()
+        await websocket.accept()
+        self.active_connections[wallet_id] = websocket
 
     async def disconnect(self, wallet_id: str):
         """
         Disconnect a websocket connection.
         """
+        websocket = self.active_connections.pop(wallet_id, None)
+        if websocket:
+            await websocket.close()
 
     async def send(self, wallet_id: str, data: str):
         """
         Send a message to a specific websocket connection.
         """
-        for callback in Webhooks._callbacks:
-            await callback(data)
-        # todo: surely we don't need to submit data to every single callback
+        websocket = self.active_connections.get(wallet_id)
+        if websocket:
+            await websocket.send_text(data)
 
     async def subscribe(self, wallet_id: str, topic: str):
         """
         Subscribe a websocket connection to a specific topic.
         """
-        logger.debug("Unregistering a callback")
+        if not self.client:
+            await self.start_pubsub_client()
 
-        try:
-            Webhooks._callbacks.remove(callback)
-        except ValueError:
-            # Listener not in list
-            pass
+        self.client.subscribe(topic)
 
     async def start_pubsub_client(self, timeout: float = 30):
         """
@@ -64,16 +63,16 @@ class WebsocketConnectionManager:
             """
             Ensure the connection is established before proceeding
             """
-            Webhooks.client = PubSubClient(
-                [WEBHOOK_TOPIC_ALL], callback=Webhooks._handle_webhook
+            self.client = PubSubClient(
+                [WEBHOOK_TOPIC_ALL], callback=self._handle_webhook
             )
 
             websocket_url = convert_url_to_websocket(WEBHOOKS_URL)
 
-            Webhooks.client.start_client(websocket_url + "/pubsub")
-            await Webhooks.wait_until_client_ready()
+            self.client.start_client(websocket_url + "/pubsub")
+            await self.client.wait_until_ready()
 
-        if not Webhooks.client:
+        if not self.client:
             try:
                 logger.debug("Starting Webhooks client")
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
@@ -81,26 +80,19 @@ class WebsocketConnectionManager:
                 logger.warning(
                     "Starting Webhooks client has timed out after %ss", timeout
                 )
-                await Webhooks.shutdown()
+                await self.shutdown()
                 raise WebsocketTimeout("Starting Webhooks has timed out") from e
         else:
             logger.debug(
                 "Requested to start Webhook client when it's already started. Ignoring."
             )
 
-    @staticmethod
-    async def wait_until_client_ready():
-        if Webhooks.client:
-            await Webhooks.client.wait_until_ready()
-            Webhooks._ready.set()
-
-    @staticmethod
-    async def _handle_webhook(data: str, topic: str):
+    async def _handle_webhook(self, data: str, topic: str):
         """
         Internal callback function for handling received webhook events.
         """
         # todo: topic isn't used. should only emit to relevant topic/callback pairs
-        await Webhooks.emit(json.loads(data))
+        await self.send(json.loads(data))
 
     async def shutdown(self, timeout: float = 20):
         """
@@ -109,12 +101,12 @@ class WebsocketConnectionManager:
         logger.debug("Shutting down Webhooks client")
 
         async def wait_for_shutdown():
-            if Webhooks.client and await Webhooks._ready.wait():
-                await Webhooks.client.disconnect()
+            if self.client and await self._ready.wait():
+                await self.client.disconnect()
 
-            Webhooks.client = None
-            Webhooks._ready = asyncio.Event()
-            Webhooks._callbacks = []
+            self.client = None
+            self._ready = asyncio.Event()
+            self.active_connections = {}
 
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)

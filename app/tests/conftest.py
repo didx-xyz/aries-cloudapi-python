@@ -5,8 +5,6 @@ import pytest
 from httpx import Response
 from pytest_mock import MockerFixture
 
-from app.event_handling.webhooks import Webhooks
-
 # flake8: noqa
 # pylint: disable=unused-import
 from app.tests.util.ecosystem_connections import (
@@ -73,19 +71,6 @@ def unstub_mockito():
 
     # Teardown phase: After each test, unstub all stubbed methods
     mockito.unstub()
-
-
-@pytest.fixture(autouse=True)
-async def shutdown_webhooks_listener():
-    """
-    Automatically shut down the Webhooks listener after each test.
-    """
-    # Setup phase: No setup needed in this fixture
-
-    yield
-
-    # Teardown phase: After each test, shut down the Webhooks listener
-    await Webhooks.shutdown()
 
 
 @pytest.fixture

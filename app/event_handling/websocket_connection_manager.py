@@ -123,7 +123,7 @@ class WebsocketConnectionManager:
             raise WebsocketTimeout("Webhooks shutdown timed out") from e
 
 
-class WebhooksTimeout(Exception):
+class WebsocketTimeout(Exception):
     """Exception raised when Webhooks functions time out."""
 
 

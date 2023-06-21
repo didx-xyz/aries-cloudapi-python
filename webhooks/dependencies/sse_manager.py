@@ -23,8 +23,9 @@ class SseManager:
     """
 
     def __init__(self):
-        # Concurrency per wallet/topic
-        self.cache_locks = ddict(lambda: ddict(asyncio.Lock))
+        # Define incoming events queue, to decouple the process of receiving events,
+        # from the process of storing them in the per-wallet queues
+        self.incoming_events = asyncio.Queue()
 
         # The following nested defaultdict stores events per wallet_id, per topic
         self.fifo_cache = ddict(
@@ -36,9 +37,8 @@ class SseManager:
         # Last In First Out Queue is to be used for consumption, so that newest events are yielded first
         # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
-        # Define incoming events queue, to decouple the process of receiving events,
-        # from the process of storing them in the per-wallet queues
-        self.incoming_events = asyncio.Queue()
+        # Concurrency per wallet/topic
+        self.cache_locks = ddict(lambda: ddict(asyncio.Lock))
 
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))

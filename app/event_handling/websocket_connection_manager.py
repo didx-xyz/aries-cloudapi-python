@@ -11,7 +11,7 @@ from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
 logger = logging.getLogger(__name__)
 
 
-class WebsocketConnectionManager:
+class WebsocketConnectionManager :
     """
     A class for managing websocket connections, emitting websocket events, and handling the underlying
     WebSocket communication.
@@ -98,7 +98,7 @@ class WebsocketConnectionManager:
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """
-        logger.debug("Shutting down Webhooks client")
+        logger.debug("Shutting down Websocket client")
 
         async def wait_for_shutdown():
             if self.client and await self._ready.wait():

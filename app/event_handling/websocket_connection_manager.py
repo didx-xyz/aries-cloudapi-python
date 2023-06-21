@@ -11,7 +11,7 @@ from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
 logger = logging.getLogger(__name__)
 
 
-class WebsocketConnectionManager :
+class WebsocketConnectionManager:
     """
     A class for managing websocket connections, emitting websocket events, and handling the underlying
     WebSocket communication.

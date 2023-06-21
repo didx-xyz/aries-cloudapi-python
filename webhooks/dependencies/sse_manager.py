@@ -45,7 +45,7 @@ class SseManager:
 
         # Start background tasks to process incoming events and cleanup queues
         asyncio.create_task(self._process_incoming_events())
-        asyncio.create_task(self._cleanup_queues())
+        asyncio.create_task(self._cleanup_cache())
 
     async def enqueue_sse_event(
         self, event: TopicItem, wallet: str, topic: str
@@ -222,7 +222,7 @@ class SseManager:
 
         return event_log
 
-    async def _cleanup_queues(self):
+    async def _cleanup_cache(self):
         while True:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)

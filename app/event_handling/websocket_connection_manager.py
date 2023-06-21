@@ -16,9 +16,10 @@ class Webhooks:
     WebSocket communication.
     """
 
-    _callbacks: List[Callable[[Dict[str, Any]], Awaitable[None]]] = []
-    _ready = asyncio.Event()
-    client: Optional[PubSubClient] = None
+    def __init__(self):
+        self.active_connections: Dict[str, WebSocket] = {}
+        self.client: Optional[PubSubClient] = None
+        self._ready = asyncio.Event()
 
     @staticmethod
     async def register_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):

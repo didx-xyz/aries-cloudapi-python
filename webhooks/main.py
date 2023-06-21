@@ -7,7 +7,7 @@ from webhooks.dependencies import sse_manager
 from webhooks.dependencies.container import get_container
 from webhooks.routers import receive_events, sse, webhooks
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "warning").upper()
 logging.basicConfig(level=LOG_LEVEL)
 LOGGER = logging.getLogger(__name__)
 

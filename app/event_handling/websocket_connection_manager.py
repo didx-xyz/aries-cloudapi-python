@@ -1,8 +1,9 @@
 import asyncio
 import json
 import logging
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from typing import Dict, Optional
 
+from fastapi import WebSocket
 from fastapi_websocket_pubsub import PubSubClient
 
 from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL

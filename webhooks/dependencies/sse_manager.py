@@ -170,14 +170,14 @@ class SseManager:
         while True:
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():
-                    event_log = self._append_to_queue(
+                    event_log = await self._append_to_queue(
                         wallet=wallet,
                         topic=topic_key,
                         client_queue=client_queue,
                         event_log=event_log,
                     )
             else:
-                event_log = self._append_to_queue(
+                event_log = await self._append_to_queue(
                     wallet=wallet,
                     topic=topic,
                     client_queue=client_queue,

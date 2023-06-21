@@ -30,12 +30,12 @@ class WebsocketConnectionManager:
         if not Webhooks.client:
             await Webhooks.start_webhook_client()
 
+    async def disconnect(self, wallet_id: str):
         """
         Disconnect a websocket connection.
         """
 
-    @staticmethod
-    async def emit(data: Dict[str, Any]):
+    async def send(self, wallet_id: str, data: str):
         """
         Send a message to a specific websocket connection.
         """
@@ -43,8 +43,7 @@ class WebsocketConnectionManager:
             await callback(data)
         # todo: surely we don't need to submit data to every single callback
 
-    @staticmethod
-    def unregister_callback(callback: Callable[[Dict[str, Any]], Awaitable[None]]):
+    async def subscribe(self, wallet_id: str, topic: str):
         """
         Subscribe a websocket connection to a specific topic.
         """
@@ -56,8 +55,7 @@ class WebsocketConnectionManager:
             # Listener not in list
             pass
 
-    @staticmethod
-    async def start_webhook_client(timeout: float = 30):
+    async def start_pubsub_client(self, timeout: float = 30):
         """
         Start listening for webhook events on the Webhooks pubsub endpoint with a specified timeout.
         """
@@ -104,8 +102,7 @@ class WebsocketConnectionManager:
         # todo: topic isn't used. should only emit to relevant topic/callback pairs
         await Webhooks.emit(json.loads(data))
 
-    @staticmethod
-    async def shutdown(timeout: float = 20):
+    async def shutdown(self, timeout: float = 20):
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """

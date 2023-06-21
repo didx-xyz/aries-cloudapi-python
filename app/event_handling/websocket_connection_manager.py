@@ -83,7 +83,7 @@ class WebsocketConnectionManager:
                     "Starting Webhooks client has timed out after %ss", timeout
                 )
                 await Webhooks.shutdown()
-                raise WebhooksTimeout("Starting Webhooks has timed out") from e
+                raise WebsocketTimeout("Starting Webhooks has timed out") from e
         else:
             logger.debug(
                 "Requested to start Webhook client when it's already started. Ignoring."
@@ -122,7 +122,7 @@ class WebsocketConnectionManager:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError as e:
             logger.warning("Shutting down Webhooks has timed out after %ss", timeout)
-            raise WebhooksTimeout("Webhooks shutdown timed out") from e
+            raise WebsocketTimeout("Webhooks shutdown timed out") from e
 
 
 class WebhooksTimeout(Exception):

@@ -228,17 +228,35 @@ class SseManager:
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
             LOGGER.debug("SSE Manager: Running periodic cleanup task")
 
-            # Iterate over all cache queues
-            for wallet in list(self.lifo_cache.keys()):
-                for topic in list(self.lifo_cache[wallet].keys()):
-                    if datetime.now() - self._cache_last_accessed[wallet][
-                        topic
-                    ] > timedelta(seconds=MAX_EVENT_AGE_SECONDS):
-                        async with self.cache_locks[wallet][topic]:
-                            del self.lifo_cache[wallet][topic]
-                            del self.fifo_cache[wallet][topic]
-                            del self._cache_last_accessed[wallet][topic]
-                        del self.cache_locks[wallet][topic]
+            try:
+                # Iterate over all cache queues
+                for wallet in list(self.lifo_cache.keys()):
+                    for topic in list(self.lifo_cache[wallet].keys()):
+                        if datetime.now() - self._cache_last_accessed[wallet][
+                            topic
+                        ] > timedelta(seconds=MAX_EVENT_AGE_SECONDS):
+                            async with self.cache_locks[wallet][topic]:
+                                del self.lifo_cache[wallet][topic]
+                                del self._cache_last_accessed[wallet][topic]
+
+                                if topic in self.fifo_cache[wallet]:
+                                    # We are using keys from lifo_cache, so key exists
+                                    # should be checked before trying to access in fifo_cache
+                                    del self.fifo_cache[wallet][topic]
+                                else:
+                                    LOGGER.warning(
+                                        "SSE Manager: Avoided KeyError in `_cleanup_cache`. "
+                                        "fifo_cache keys are not synced with lifo_cache keys, "
+                                        "for wallet %s and topic %s. Maybe caused by client disconnects.",
+                                        wallet,
+                                        topic,
+                                    )
+
+                            del self.cache_locks[wallet][topic]
+            except KeyError as e:
+                LOGGER.warning(
+                    "SSE Manager: Caught KeyError in `_cleanup_cache`. %r", e
+                )
 
 
 async def _copy_queue(

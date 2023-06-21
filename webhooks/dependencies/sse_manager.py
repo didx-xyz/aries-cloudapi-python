@@ -168,52 +168,59 @@ class SseManager:
         event_log = []  # to keep track of events already added for this client queue
 
         while True:
-            queue_is_read = False
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():
-                    async with self.cache_locks[wallet][topic_key]:
-                        lifo_queue_for_topic = self.lifo_cache[wallet][topic_key]
-                        try:
-                            while True:
-                                timestamp, event = lifo_queue_for_topic.get_nowait()
-                                if (timestamp, event) not in event_log:
-                                    event_log += ((timestamp, event),)
-                                    queue_is_read = True
-                                    await client_queue.put(event)
-                        except asyncio.QueueEmpty:
-                            # No event on lifo_queue, so we can continue
-                            pass
-
-                        if queue_is_read:
-                            # We've consumed from the lifo_queue, so repopulate it before exiting lock:
-                            lifo_queue, fifo_queue = await _copy_queue(
-                                self.fifo_cache[wallet][topic_key]
-                            )
-                            self.fifo_cache[wallet][topic_key] = fifo_queue
-                            self.lifo_cache[wallet][topic_key] = lifo_queue
+                    event_log = self._append_to_queue(
+                        wallet=wallet,
+                        topic=topic_key,
+                        client_queue=client_queue,
+                        event_log=event_log,
+                    )
             else:
-                async with self.cache_locks[wallet][topic]:
-                    lifo_queue_for_topic = self.lifo_cache[wallet][topic]
-                    try:
-                        while True:
-                            timestamp, event = lifo_queue_for_topic.get_nowait()
-                            if (timestamp, event) not in event_log:
-                                event_log += ((timestamp, event),)
-                                queue_is_read = True
-                                await client_queue.put(event)
-                    except asyncio.QueueEmpty:
-                        # No event on lifo_queue, so we can continue
-                        pass
+                event_log = self._append_to_queue(
+                    wallet=wallet,
+                    topic=topic,
+                    client_queue=client_queue,
+                    event_log=event_log,
+                )
 
-                    if queue_is_read:
-                        # We've consumed from the lifo_queue, so repopulate it before exiting lock:
-                        lifo_queue, fifo_queue = await _copy_queue(
-                            self.fifo_cache[wallet][topic]
-                        )
-                        self.fifo_cache[wallet][topic] = fifo_queue
-                        self.lifo_cache[wallet][topic] = lifo_queue
-
+            # Sleep for a short duration to allow sufficient release of concurrency locks
             await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
+
+    async def _append_to_queue(
+        self, *, wallet: str, topic: str, client_queue: asyncio.Queue, event_log: list
+    ):
+        queue_is_read = False
+        async with self.cache_locks[wallet][topic]:
+            lifo_queue_for_topic = self.lifo_cache[wallet][topic]
+            try:
+                while True:
+                    timestamp, event = lifo_queue_for_topic.get_nowait()
+                    queue_is_read = True
+                    if (timestamp, event) not in event_log:
+                        self._cache_last_accessed[wallet][topic] = datetime.now()
+                        event_log += ((timestamp, event),)
+                        client_queue.put_nowait(event)
+            except asyncio.QueueEmpty:
+                # No event on lifo_queue, so we can continue
+                pass
+            except asyncio.QueueFull:
+                # Because we are using `put_nowait`. Should not happen as queue has no max size
+                LOGGER.error(
+                    "Client Queue is full for wallet %s on topic %s",
+                    wallet,
+                    topic,
+                )
+
+            if queue_is_read:
+                # We've consumed from the lifo_queue, so repopulate it before exiting lock:
+                lifo_queue, fifo_queue = await _copy_queue(
+                    self.fifo_cache[wallet][topic]
+                )
+                self.fifo_cache[wallet][topic] = fifo_queue
+                self.lifo_cache[wallet][topic] = lifo_queue
+
+        return event_log
 
     async def _cleanup_queues(self):
         while True:

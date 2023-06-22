@@ -44,7 +44,7 @@ class WebsocketManager:
 
         WebsocketManager._client.subscribe(subscribed_topic, callback)
 
-    async def start_pubsub_client(timeout: float = 30):
+    async def start_pubsub_client(timeout: float = 10):
         """
         Start listening for webhook events on the Webhooks pubsub endpoint with a specified timeout.
         """
@@ -75,7 +75,7 @@ class WebsocketManager:
                 "Requested to start Webhook client when it's already started. Ignoring."
             )
 
-    async def shutdown(timeout: float = 20):
+    async def shutdown(timeout: float = 10):
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """

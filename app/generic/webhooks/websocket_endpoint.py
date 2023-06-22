@@ -17,6 +17,9 @@ manager: WebsocketManager = get_manager()
 async def websocket_endpoint(websocket: WebSocket, wallet: str):
     await manager.connect(websocket, wallet)
     try:
+        # Subscribe the WebSocket connection to the wallet / topic
+        await manager.subscribe(websocket, wallet_id, topic)
+
         while True:
             data = await websocket.receive_text()
             # Forward the message to the original server

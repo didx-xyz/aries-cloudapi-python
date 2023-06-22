@@ -19,12 +19,30 @@ class WebsocketManager:
         self.client: Optional[PubSubClient] = None
         self._ready = asyncio.Event()
 
+    async def subscribe(
+        self, websocket: WebSocket, wallet_id: str = "", topic: str = ""
+    ):
         """
         """
 
+        async def callback(data: str, topic: str):
+            """
+            Callback function for handling received webhook events.
+            Note: PubSubClient expects a topic argument in callback
+            """
             await websocket.send_text(data)
 
+        if wallet_id and topic:
+            subscribed_topic = f"{topic}-{wallet_id}"
+        elif wallet_id:
+            subscribed_topic = wallet_id
+        elif topic:
+            subscribed_topic = topic
+        else:
             LOGGER.error("Subscribe requires `topic` or `wallet_id` in request")
+            return
+
+        self.client.subscribe(subscribed_topic, callback)
 
     async def start_pubsub_client(self, timeout: float = 30):
         """

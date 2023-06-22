@@ -4,7 +4,11 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
 from app.event_handling.websocket_manager import WebsocketManager
-from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
+from shared.dependencies.auth import (
+    AcaPyAuthVerified,
+    get_acapy_auth,
+    get_acapy_auth_verified,
+)
 
 LOGGER = logging.getLogger(__name__)
 router = APIRouter()
@@ -13,13 +17,33 @@ router = APIRouter()
 DISCONNECT_CHECK_PERIOD = 0.1
 
 
+async def get_websocket_api_key(websocket: WebSocket) -> str:
+    for header, value in websocket.headers.items():
+        if header.lower() == "x-api-key":
+            return value
+    return ""
+
+
+async def websocket_auth(
+    websocket: WebSocket,
+    api_key: str = Depends(get_websocket_api_key),
+) -> AcaPyAuthVerified:
+    try:
+        auth = get_acapy_auth(api_key)
+        return get_acapy_auth_verified(auth)
+    except:
+        await websocket.accept()
+        await websocket.send_text("Unauthorized")
+        await websocket.close(code=1008)
+
+
 async def handle_websocket(
     websocket: WebSocket,
     wallet_id: str,
     topic: str,
     auth: AcaPyAuthVerified,
 ):
-    if auth.wallet_id not in ("admin", wallet_id):
+    if not auth or auth.wallet_id not in ("admin", wallet_id):
         raise HTTPException(403, "Unauthorized")
 
     try:
@@ -39,7 +63,7 @@ async def handle_websocket(
 async def websocket_endpoint(
     websocket: WebSocket,
     wallet_id: str,
-    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+    auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
     await handle_websocket(websocket, wallet_id, "", auth)
 
@@ -49,7 +73,7 @@ async def websocket_endpoint_topic(
     websocket: WebSocket,
     wallet_id: str,
     topic: str,
-    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+    auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
     await handle_websocket(websocket, wallet_id, topic, auth)
 
@@ -58,6 +82,6 @@ async def websocket_endpoint_topic(
 async def websocket_endpoint_admin(
     websocket: WebSocket,
     topic: str,
-    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+    auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
     await handle_websocket(websocket, "", topic, auth)

@@ -10,7 +10,9 @@ from shared import WEBHOOKS_URL
 logger = logging.getLogger(__name__)
 
 
+class WebsocketManager:
     """
+    A class for managing websocket connections and establishing PubSub callbacks
     """
 
     def __init__(self):
@@ -67,6 +69,7 @@ logger = logging.getLogger(__name__)
 
 
 class WebsocketTimeout(Exception):
+    """Exception raised when Websocket functions time out."""
 
 
 def convert_url_to_websocket(url: str) -> str:

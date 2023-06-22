@@ -23,6 +23,7 @@ class WebsocketManager:
         self, websocket: WebSocket, wallet_id: str = "", topic: str = ""
     ):
         """
+        Subscribe a websocket connection to a specific topic.
         """
         if not self.client:
             await self.start_pubsub_client()

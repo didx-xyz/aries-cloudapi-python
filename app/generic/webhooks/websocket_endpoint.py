@@ -39,7 +39,14 @@ async def handle_websocket(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
     await handle_websocket(websocket, wallet_id, "", auth)
 
+
+@router.websocket("/ws/{wallet_id}/{topic}")
+async def websocket_endpoint_topic(
+    websocket: WebSocket,
+    wallet_id: str,
+    topic: str,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+):
     await handle_websocket(websocket, wallet_id, topic, auth)
 
 

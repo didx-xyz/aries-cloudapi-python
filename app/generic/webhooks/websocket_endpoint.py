@@ -26,4 +26,5 @@ async def websocket_endpoint(websocket: WebSocket, wallet: str):
             await websocket.send_text(f"{wallet}: {data}")
     except WebSocketDisconnect:
         LOGGER.info("WebSocket connection closed")
+    except Exception as e:
         LOGGER.error("Exception caught while handling websocket: %r", e)

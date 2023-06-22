@@ -6,8 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from app.event_handling.websocket_manager import WebsocketManager
 from app.main import get_manager
 from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
+
+LOGGER = logging.getLogger(__name__)
 router = APIRouter()
-manager = WebsocketConnectionManager()
 
 
 @router.websocket("/ws/{wallet}")
@@ -19,4 +20,5 @@ async def websocket_endpoint(websocket: WebSocket, wallet: str):
             # Forward the message to the original server
             await websocket.send_text(f"{wallet}: {data}")
     except WebSocketDisconnect:
-        manager.disconnect(websocket, wallet)
+        LOGGER.info("WebSocket connection closed")
+        LOGGER.error("Exception caught while handling websocket: %r", e)

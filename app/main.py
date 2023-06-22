@@ -59,12 +59,12 @@ for route in routes:
 
 @app.on_event("startup")
 async def startup_event():
-    await WebsocketManager().start_pubsub_client()
+    await WebsocketManager.start_pubsub_client()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await WebsocketManager().shutdown()
+    await WebsocketManager.shutdown()
 
 
 # add endpoints

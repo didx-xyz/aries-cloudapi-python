@@ -49,6 +49,9 @@ class WebsocketManager:
                     "Starting Websocket PubSubClient has timed out after %ss", timeout
                 )
                 await self.shutdown()
+                raise WebsocketTimeout(
+                    "Starting PubSubClient for Websocket Manager has timed out"
+                ) from e
         else:
             logger.debug(
                 "Requested to start Webhook client when it's already started. Ignoring."
@@ -73,6 +76,7 @@ class WebsocketManager:
             LOGGER.warning(
                 "Shutting down Websocket Manager has timed out after %ss", timeout
             )
+            raise WebsocketTimeout("Websocket Manager shutdown timed out") from e
 
 
 class WebsocketTimeout(Exception):

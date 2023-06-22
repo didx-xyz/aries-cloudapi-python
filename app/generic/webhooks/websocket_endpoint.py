@@ -27,10 +27,9 @@ async def handle_websocket(
         # Subscribe the WebSocket connection to the wallet / topic
         await manager.subscribe(websocket, wallet_id, topic)
 
+        # Keep the connection open until the client disconnects
         while True:
-            data = await websocket.receive_text()
-            # Forward the message to the original server
-            await websocket.send_text(f"{wallet}: {data}")
+            await asyncio.sleep(1)
     except WebSocketDisconnect:
         LOGGER.info("WebSocket connection closed")
     except Exception as e:

@@ -7,7 +7,7 @@ from fastapi_websocket_pubsub import PubSubClient
 
 from shared import WEBHOOKS_URL
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class WebsocketManager:
@@ -24,6 +24,7 @@ class WebsocketManager:
 
             await websocket.send_text(data)
 
+            LOGGER.error("Subscribe requires `topic` or `wallet_id` in request")
 
     async def start_pubsub_client(self, timeout: float = 30):
         """
@@ -40,9 +41,11 @@ class WebsocketManager:
 
         if not self.client:
             try:
+                LOGGER.debug("Starting PubSubClient for Websocket Manager")
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
             except asyncio.TimeoutError as e:
-                logger.warning(
+                LOGGER.warning(
+                    "Starting Websocket PubSubClient has timed out after %ss", timeout
                 )
                 await self.shutdown()
         else:
@@ -54,7 +57,7 @@ class WebsocketManager:
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """
-        logger.debug("Shutting down Websocket client")
+        LOGGER.debug("Shutting down Websocket client")
 
         async def wait_for_shutdown():
             if self.client and await self._ready.wait():
@@ -66,6 +69,9 @@ class WebsocketManager:
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError as e:
+            LOGGER.warning(
+                "Shutting down Websocket Manager has timed out after %ss", timeout
+            )
 
 
 class WebsocketTimeout(Exception):

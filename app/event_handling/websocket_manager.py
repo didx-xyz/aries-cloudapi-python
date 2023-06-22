@@ -1,11 +1,11 @@
 import asyncio
-import json
 import logging
+from typing import Optional
 
 from fastapi import WebSocket
 from fastapi_websocket_pubsub import PubSubClient
 
-from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
+from shared import WEBHOOKS_URL
 
 logger = logging.getLogger(__name__)
 

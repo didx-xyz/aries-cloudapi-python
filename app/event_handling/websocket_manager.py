@@ -53,7 +53,7 @@ class WebsocketManager:
                     "Starting PubSubClient for Websocket Manager has timed out"
                 ) from e
         else:
-            logger.debug(
+            LOGGER.debug(
                 "Requested to start Webhook client when it's already started. Ignoring."
             )
 

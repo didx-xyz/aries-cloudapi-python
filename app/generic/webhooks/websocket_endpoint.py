@@ -32,9 +32,10 @@ async def websocket_auth(
         auth = get_acapy_auth(api_key)
         return get_acapy_auth_verified(auth)
     except:
-        await websocket.accept()
+        await websocket.accept()  # Accept to send unauthorized message
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)
+        LOGGER.info("Unauthorized WebSocket connection closed")
 
 
 async def handle_websocket(
@@ -43,8 +44,12 @@ async def handle_websocket(
     topic: str,
     auth: AcaPyAuthVerified,
 ):
+    await websocket.accept()
+
     if not auth or auth.wallet_id not in ("admin", wallet_id):
-        raise HTTPException(403, "Unauthorized")
+        await websocket.send_text("Unauthorized")
+        await websocket.close(code=1008)
+        LOGGER.info("Unauthorized WebSocket connection closed")
 
     try:
         # Subscribe the WebSocket connection to the wallet / topic

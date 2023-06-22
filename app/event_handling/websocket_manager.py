@@ -16,7 +16,6 @@ class WebsocketManager:
     """
 
     _client: Optional[PubSubClient] = None
-    _ready = asyncio.Event()
 
     async def subscribe(websocket: WebSocket, wallet_id: str = "", topic: str = ""):
         """
@@ -57,7 +56,6 @@ class WebsocketManager:
             websocket_url = convert_url_to_websocket(WEBHOOKS_URL)
             WebsocketManager._client.start_client(websocket_url + "/pubsub")
             await WebsocketManager._client.wait_until_ready()
-            WebsocketManager._ready.set()
 
         if not WebsocketManager._client:
             try:
@@ -83,11 +81,10 @@ class WebsocketManager:
         LOGGER.debug("Shutting down Websocket client")
 
         async def wait_for_shutdown():
-            if WebsocketManager._client and await WebsocketManager._ready.wait():
+            if WebsocketManager._client:
                 await WebsocketManager._client.disconnect()
 
             WebsocketManager._client = None
-            WebsocketManager._ready = asyncio.Event()
 
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)

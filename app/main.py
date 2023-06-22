@@ -12,7 +12,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
-from app.event_handling.websocket_connection_manager import WebsocketConnectionManager
+from app.event_handling.websocket_manager import WebsocketManager
 from app.generic import definitions, messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer

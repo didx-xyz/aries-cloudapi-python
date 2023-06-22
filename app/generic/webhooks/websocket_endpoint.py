@@ -1,7 +1,11 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+import asyncio
+import logging
 
-from app.event_handling.websocket_connection_manager import WebsocketConnectionManager
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
+from app.event_handling.websocket_manager import WebsocketManager
+from app.main import get_manager
+from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 router = APIRouter()
 manager = WebsocketConnectionManager()
 

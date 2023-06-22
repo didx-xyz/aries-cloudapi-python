@@ -20,6 +20,9 @@ async def handle_websocket(
     topic: str,
     auth: AcaPyAuthVerified,
 ):
+    if auth.wallet_id not in ("admin", wallet_id):
+        raise HTTPException(403, "Unauthorized")
+
     try:
         # Subscribe the WebSocket connection to the wallet / topic
         await manager.subscribe(websocket, wallet_id, topic)
@@ -33,9 +36,12 @@ async def handle_websocket(
     except Exception as e:
         LOGGER.error("Exception caught while handling websocket: %r", e)
 
+    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
     await handle_websocket(websocket, wallet_id, "", auth)
 
+    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
     await handle_websocket(websocket, wallet_id, topic, auth)
 
 
+    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
     await handle_websocket(websocket, "", topic, auth)

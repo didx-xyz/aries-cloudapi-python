@@ -24,6 +24,8 @@ class WebsocketManager:
     ):
         """
         """
+        if not self.client:
+            await self.start_pubsub_client()
 
         async def callback(data: str, topic: str):
             """

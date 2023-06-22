@@ -56,7 +56,12 @@ routes = [
 for route in routes:
     app.include_router(route.router)
 
-websocket_manager = WebsocketConnectionManager()
+# Singleton pattern
+websocket_manager = WebsocketManager()
+
+
+def get_manager() -> WebsocketManager:
+    return websocket_manager
 
 
 @app.on_event("startup")

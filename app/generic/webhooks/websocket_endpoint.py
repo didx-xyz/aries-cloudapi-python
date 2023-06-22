@@ -10,6 +10,8 @@ from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 LOGGER = logging.getLogger(__name__)
 router = APIRouter()
 
+# Singleton pattern
+manager: WebsocketManager = get_manager()
 
 @router.websocket("/ws/{wallet}")
 async def websocket_endpoint(websocket: WebSocket, wallet: str):

@@ -35,6 +35,7 @@ class WebsocketManager:
             """
             Ensure the connection is established before proceeding
             """
+            self.client = PubSubClient()
             websocket_url = convert_url_to_websocket(WEBHOOKS_URL)
             self.client.start_client(websocket_url + "/pubsub")
             await self.client.wait_until_ready()

@@ -36,7 +36,13 @@ async def handle_websocket(
     except Exception as e:
         LOGGER.error("Exception caught while handling websocket: %r", e)
 
+
+@router.websocket("/ws/{wallet_id}")
+async def websocket_endpoint(
+    websocket: WebSocket,
+    wallet_id: str,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+):
     await handle_websocket(websocket, wallet_id, "", auth)
 
 

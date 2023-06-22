@@ -13,6 +13,8 @@ router = APIRouter()
 # Singleton pattern
 manager: WebsocketManager = get_manager()
 
+DISCONNECT_CHECK_PERIOD = 0.1
+
 
 async def handle_websocket(
     websocket: WebSocket,
@@ -29,7 +31,7 @@ async def handle_websocket(
 
         # Keep the connection open until the client disconnects
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
     except WebSocketDisconnect:
         LOGGER.info("WebSocket connection closed")
     except Exception as e:

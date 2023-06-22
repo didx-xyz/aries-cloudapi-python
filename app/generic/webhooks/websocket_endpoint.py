@@ -4,14 +4,11 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
 from app.event_handling.websocket_manager import WebsocketManager
-from app.main import get_manager
 from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 
 LOGGER = logging.getLogger(__name__)
 router = APIRouter()
 
-# Singleton pattern
-manager: WebsocketManager = get_manager()
 
 DISCONNECT_CHECK_PERIOD = 0.1
 
@@ -27,7 +24,7 @@ async def handle_websocket(
 
     try:
         # Subscribe the WebSocket connection to the wallet / topic
-        await manager.subscribe(websocket, wallet_id, topic)
+        await WebsocketManager.subscribe(websocket, wallet_id, topic)
 
         # Keep the connection open until the client disconnects
         while True:

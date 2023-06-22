@@ -56,22 +56,15 @@ routes = [
 for route in routes:
     app.include_router(route.router)
 
-# Singleton pattern
-websocket_manager = WebsocketManager()
-
-
-def get_manager() -> WebsocketManager:
-    return websocket_manager
-
 
 @app.on_event("startup")
 async def startup_event():
-    await websocket_manager.start_pubsub_client()
+    await WebsocketManager().start_pubsub_client()
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    await websocket_manager.shutdown()
+    await WebsocketManager().shutdown()
 
 
 # add endpoints

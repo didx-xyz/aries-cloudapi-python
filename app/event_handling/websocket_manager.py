@@ -15,18 +15,15 @@ class WebsocketManager:
     A class for managing websocket connections and establishing PubSub callbacks
     """
 
-    def __init__(self):
-        self.client: Optional[PubSubClient] = None
-        self._ready = asyncio.Event()
+    _client: Optional[PubSubClient] = None
+    _ready = asyncio.Event()
 
-    async def subscribe(
-        self, websocket: WebSocket, wallet_id: str = "", topic: str = ""
-    ):
+    async def subscribe(websocket: WebSocket, wallet_id: str = "", topic: str = ""):
         """
         Subscribe a websocket connection to a specific topic.
         """
-        if not self.client:
-            await self.start_pubsub_client()
+        if not WebsocketManager._client:
+            await WebsocketManager.start_pubsub_client()
 
         async def callback(data: str, topic: str):
             """
@@ -45,9 +42,9 @@ class WebsocketManager:
             LOGGER.error("Subscribe requires `topic` or `wallet_id` in request")
             return
 
-        self.client.subscribe(subscribed_topic, callback)
+        WebsocketManager._client.subscribe(subscribed_topic, callback)
 
-    async def start_pubsub_client(self, timeout: float = 30):
+    async def start_pubsub_client(timeout: float = 30):
         """
         Start listening for webhook events on the Webhooks pubsub endpoint with a specified timeout.
         """
@@ -56,12 +53,12 @@ class WebsocketManager:
             """
             Ensure the connection is established before proceeding
             """
-            self.client = PubSubClient()
+            WebsocketManager._client = PubSubClient()
             websocket_url = convert_url_to_websocket(WEBHOOKS_URL)
-            self.client.start_client(websocket_url + "/pubsub")
-            await self.client.wait_until_ready()
+            WebsocketManager._client.start_client(websocket_url + "/pubsub")
+            await WebsocketManager._client.wait_until_ready()
 
-        if not self.client:
+        if not WebsocketManager._client:
             try:
                 LOGGER.debug("Starting PubSubClient for Websocket Manager")
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
@@ -69,7 +66,7 @@ class WebsocketManager:
                 LOGGER.warning(
                     "Starting Websocket PubSubClient has timed out after %ss", timeout
                 )
-                await self.shutdown()
+                await WebsocketManager.shutdown()
                 raise WebsocketTimeout(
                     "Starting PubSubClient for Websocket Manager has timed out"
                 ) from e
@@ -78,18 +75,18 @@ class WebsocketManager:
                 "Requested to start Webhook client when it's already started. Ignoring."
             )
 
-    async def shutdown(self, timeout: float = 20):
+    async def shutdown(timeout: float = 20):
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """
         LOGGER.debug("Shutting down Websocket client")
 
         async def wait_for_shutdown():
-            if self.client and await self._ready.wait():
-                await self.client.disconnect()
+            if WebsocketManager._client and await WebsocketManager._ready.wait():
+                await WebsocketManager._client.disconnect()
 
-            self.client = None
-            self._ready = asyncio.Event()
+            WebsocketManager._client = None
+            WebsocketManager._ready = asyncio.Event()
 
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)

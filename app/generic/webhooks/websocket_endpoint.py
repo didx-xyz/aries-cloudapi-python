@@ -13,9 +13,13 @@ router = APIRouter()
 # Singleton pattern
 manager: WebsocketManager = get_manager()
 
-@router.websocket("/ws/{wallet}")
-async def websocket_endpoint(websocket: WebSocket, wallet: str):
-    await manager.connect(websocket, wallet)
+
+async def handle_websocket(
+    websocket: WebSocket,
+    wallet_id: str,
+    topic: str,
+    auth: AcaPyAuthVerified,
+):
     try:
         # Subscribe the WebSocket connection to the wallet / topic
         await manager.subscribe(websocket, wallet_id, topic)
@@ -28,3 +32,10 @@ async def websocket_endpoint(websocket: WebSocket, wallet: str):
         LOGGER.info("WebSocket connection closed")
     except Exception as e:
         LOGGER.error("Exception caught while handling websocket: %r", e)
+
+    await handle_websocket(websocket, wallet_id, "", auth)
+
+    await handle_websocket(websocket, wallet_id, topic, auth)
+
+
+    await handle_websocket(websocket, "", topic, auth)

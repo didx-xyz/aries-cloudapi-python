@@ -57,6 +57,7 @@ class WebsocketManager:
             websocket_url = convert_url_to_websocket(WEBHOOKS_URL)
             WebsocketManager._client.start_client(websocket_url + "/pubsub")
             await WebsocketManager._client.wait_until_ready()
+            WebsocketManager._ready.set()
 
         if not WebsocketManager._client:
             try:

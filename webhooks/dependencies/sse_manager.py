@@ -11,7 +11,7 @@ from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
 LOGGER = logging.getLogger(__name__)
 
-MAX_EVENT_AGE_SECONDS = 5
+MAX_EVENT_AGE_SECONDS = 30
 MAX_QUEUE_SIZE = 200
 QUEUE_CLEANUP_PERIOD = 60
 CLIENT_QUEUE_POLL_PERIOD = 0.2

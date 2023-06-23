@@ -14,9 +14,9 @@ from aries_cloudcontroller import (
     TxnOrRevRegResult,
 )
 
+from app.dependencies.auth import get_governance_controller
 from app.event_handling.sse_listener import SseListener
 from shared.cloud_api_error import CloudApiException
-from shared.dependencies.auth import get_governance_controller
 
 logger = logging.getLogger(__name__)
 

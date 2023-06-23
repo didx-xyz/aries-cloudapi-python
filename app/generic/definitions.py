@@ -17,6 +17,14 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.dependencies.auth import (
+    AcaPyAuthVerified,
+    acapy_auth_verified,
+    agent_role,
+    agent_selector,
+    get_governance_controller,
+)
+from app.dependencies.role import Role
 from app.event_handling.sse_listener import SseListener
 from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
@@ -25,14 +33,6 @@ from app.facades.revocation_registry import (
 )
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from shared.cloud_api_error import CloudApiException
-from shared.dependencies.auth import (
-    AcaPyAuthVerified,
-    acapy_auth_verified,
-    agent_role,
-    agent_selector,
-    get_governance_controller,
-)
-from shared.dependencies.role import Role
 
 logger = logging.getLogger(__name__)
 

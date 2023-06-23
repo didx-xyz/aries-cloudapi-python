@@ -25,6 +25,7 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
+from app.dependencies.auth import AcaPyAuth, Role, acapy_auth, agent_role
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,
@@ -32,7 +33,6 @@ from app.facades.trust_registry import (
     remove_actor_by_id,
 )
 from shared import CloudApiException
-from shared.dependencies.auth import AcaPyAuth, Role, acapy_auth, agent_role
 
 logger = logging.getLogger(__name__)
 

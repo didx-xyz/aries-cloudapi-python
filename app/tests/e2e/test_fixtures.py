@@ -2,6 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.dependencies.auth import acapy_auth, acapy_auth_verified
 from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import (
     CreateCredentialDefinition,
@@ -16,7 +17,6 @@ from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
 from shared import CredentialExchange, RichAsyncClient
-from shared.dependencies.auth import acapy_auth, acapy_auth_verified
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 

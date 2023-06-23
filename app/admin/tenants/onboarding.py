@@ -10,16 +10,12 @@ from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
+from app.dependencies.auth import Role, get_governance_controller, get_tenant_controller
 from app.event_handling.sse_listener import SseListener
 from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
 from shared import ACAPY_ENDORSER_ALIAS, CloudApiException
-from shared.dependencies.auth import (
-    Role,
-    get_governance_controller,
-    get_tenant_controller,
-)
 
 logger = logging.getLogger(__name__)
 

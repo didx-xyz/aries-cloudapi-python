@@ -4,10 +4,10 @@ from typing import List
 from aries_cloudcontroller import DID, AcaPyClient, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
+from app.dependencies.auth import agent_selector
 from app.facades import acapy_wallet
 from app.generic.wallet.models import SetDidEndpointRequest
 from shared import CloudApiException
-from shared.dependencies.auth import agent_selector
 
 logger = logging.getLogger(__name__)
 

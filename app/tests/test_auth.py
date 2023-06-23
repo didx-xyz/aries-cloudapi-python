@@ -6,15 +6,15 @@ from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends
 from httpx import AsyncClient
 
-from app.main import app
-from shared import CLOUDAPI_URL, GOVERNANCE_ACAPY_API_KEY, TENANT_ACAPY_API_KEY
-from shared.dependencies.auth import (
+from app.dependencies.auth import (
     AcaPyAuth,
     Role,
     admin_agent_selector,
     agent_role,
     agent_selector,
 )
+from app.main import app
+from shared import CLOUDAPI_URL, GOVERNANCE_ACAPY_API_KEY, TENANT_ACAPY_API_KEY
 
 TEST_BEARER_HEADER = "Bearer x"
 TEST_BEARER_HEADER_2 = "Bearer Y"

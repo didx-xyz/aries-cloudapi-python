@@ -5,6 +5,7 @@ from typing import List, Union
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 from fastapi import APIRouter, Depends
 
+from app.dependencies.auth import agent_selector
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
@@ -20,7 +21,6 @@ from app.generic.verifier.verifier_utils import (
 )
 from shared import PresentationExchange, PresentProofProtocolVersion
 from shared.cloud_api_error import CloudApiException
-from shared.dependencies.auth import agent_selector
 
 logger = logging.getLogger(__name__)
 

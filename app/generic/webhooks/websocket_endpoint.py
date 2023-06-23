@@ -31,7 +31,7 @@ async def websocket_auth(
     try:
         auth = get_acapy_auth(api_key)
         return get_acapy_auth_verified(auth)
-    except:
+    except HTTPException:
         await websocket.accept()  # Accept to send unauthorized message
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)

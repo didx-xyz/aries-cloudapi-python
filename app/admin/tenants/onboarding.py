@@ -186,6 +186,7 @@ async def onboard_issuer_no_public_did(
                 use_public_did=True,
             ),
         )
+        logger.debug("Onboarding: Created endorser invitation: %s", invitation)
         return invitation
 
     async def wait_for_connection_completion(invitation):
@@ -219,18 +220,27 @@ async def onboard_issuer_no_public_did(
                 504,
             ) from e
 
+        logger.debug(
+            "Onboarding: Connection complete with endorser_connection: %s, and connection_record: %s",
+            endorser_connection,
+            connection_record,
+        )
+
         return endorser_connection, connection_record
 
     async def set_endorser_roles(endorser_connection, connection_record):
+        logger.debug("Onboarding: Setting endorser roles")
         await endorser_controller.endorse_transaction.set_endorser_role(
             conn_id=endorser_connection["connection_id"],
             transaction_my_job="TRANSACTION_ENDORSER",
         )
+        logger.debug("Onboarding: Successfully set TRANSACTION_ENDORSER")
 
         await issuer_controller.endorse_transaction.set_endorser_role(
             conn_id=connection_record.connection_id,
             transaction_my_job="TRANSACTION_AUTHOR",
         )
+        logger.debug("Onboarding: Successfully set TRANSACTION_AUTHOR")
 
     async def configure_endorsement(connection_record, endorser_did):
         # Make sure endorsement has been configured
@@ -239,6 +249,10 @@ async def onboard_issuer_no_public_did(
         await issuer_controller.endorse_transaction.set_endorser_info(
             conn_id=connection_record.connection_id,
             endorser_did=endorser_did.did,
+        )
+
+        logger.debug(
+            "Onboarding: Successfully set_endorser_info in configure_endorsement"
         )
 
     async def register_issuer_did():

@@ -28,25 +28,31 @@ PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
 debug = not prod
-app = FastAPI(
-    debug=debug,
-    title=OPENAPI_NAME,
-    description="Welcome to the Aries CloudAPI Python project",
-    version=PROJECT_VERSION,
-)
 
-app.include_router(connections.router)
-app.include_router(definitions.router)
-app.include_router(issuer.router)
-app.include_router(jsonld.router)
-app.include_router(messaging.router)
-app.include_router(oob.router)
-app.include_router(tenants.router)
-app.include_router(trust_registry.router)
-app.include_router(verifier.router)
-app.include_router(wallet.router)
-app.include_router(webhooks.router)
-app.include_router(sse.router)
+
+def create_app() -> FastAPI:
+    application = FastAPI(
+        debug=debug,
+        title=OPENAPI_NAME,
+        description="Welcome to the Aries CloudAPI Python project",
+        version=PROJECT_VERSION,
+    )
+
+    application.include_router(connections.router)
+    application.include_router(definitions.router)
+    application.include_router(issuer.router)
+    application.include_router(jsonld.router)
+    application.include_router(messaging.router)
+    application.include_router(oob.router)
+    application.include_router(tenants.router)
+    application.include_router(trust_registry.router)
+    application.include_router(verifier.router)
+    application.include_router(wallet.router)
+    application.include_router(webhooks.router)
+    application.include_router(sse.router)
+
+
+app = create_app()
 
 
 @app.on_event("shutdown")

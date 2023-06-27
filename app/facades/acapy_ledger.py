@@ -11,7 +11,7 @@ from aries_cloudcontroller import (
     TxnOrRegisterLedgerNymResponse,
 )
 
-from shared.cloud_api_error import CloudApiException
+from app.exceptions.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

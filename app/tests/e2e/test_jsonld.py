@@ -2,10 +2,10 @@ import pytest
 from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
 
+from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
-from shared.cloud_api_error import CloudApiException
 from shared.models.topics.base import CredentialExchange
 
 jsonld_credential = {

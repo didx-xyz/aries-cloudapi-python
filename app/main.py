@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
 from app.event_handling.webhooks import Webhooks
+from app.exceptions.cloud_api_error import CloudApiException
 from app.generic import definitions, messaging, sse, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -20,7 +21,6 @@ from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
-from shared.cloud_api_error import CloudApiException
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")

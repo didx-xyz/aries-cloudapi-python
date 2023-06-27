@@ -27,13 +27,13 @@ from app.dependencies.auth import (
     get_governance_controller,
 )
 from app.event_handling.sse_listener import SseListener
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet, trust_registry
 from app.facades.revocation_registry import (
     create_revocation_registry,
     publish_revocation_registry_on_ledger,
 )
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
-from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

@@ -5,6 +5,7 @@ from aries_cloudcontroller import IndyCredPrecis
 from fastapi import APIRouter, Depends
 
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
+from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier_utils import (
     VerifierFacade,
     assert_valid_prover,
@@ -18,7 +19,6 @@ from app.generic.verifier.models import (
     SendProofRequest,
 )
 from shared import PresentationExchange
-from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

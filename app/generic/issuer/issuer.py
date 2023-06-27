@@ -5,6 +5,7 @@ from aiohttp import ClientResponseError
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
@@ -22,7 +23,6 @@ from app.generic.issuer.models import (
     SendCredential,
 )
 from app.util.did import did_from_credential_definition_id
-from shared.cloud_api_error import CloudApiException
 from shared.models.topics.base import CredentialExchange
 
 logger = logging.getLogger(__name__)

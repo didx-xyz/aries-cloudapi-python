@@ -430,7 +430,7 @@ async def create_schema(
         schema_name=schema.name,
         schema_version=schema.version,
     )
-    async with client_from_auth(governance_auth) as aries_controller:
+    async with get_governance_controller() as aries_controller:
         try:
             result = await aries_controller.schema.publish_schema(
                 body=schema_send_request, create_transaction_for_endorser=False

@@ -4,7 +4,7 @@ from mockito import verify, when
 
 import app.generic.verifier.verifier as test_module
 from app.facades.trust_registry import Actor
-from app.generic.verifier import verifier_utils
+from app.generic.verifier.facades import acapy_verifier_utils
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.tests.util.mock import to_async
@@ -59,7 +59,7 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
         to_async(conn_record)
     )
 
-    when(verifier_utils).get_actor(
+    when(acapy_verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
     ).thenReturn(to_async(actor))
 
@@ -91,7 +91,7 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
         to_async(conn_record)
     )
 
-    when(verifier_utils).get_actor(
+    when(acapy_verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
     ).thenReturn(to_async(actor))
 

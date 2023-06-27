@@ -21,7 +21,7 @@ class RichAsyncClient(AsyncClient):
             raise HTTPException(
                 detail=f"{self._name} post to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            ) from e
+            raise HTTPException(status_code=code) from e
         return response
 
     async def get(self, url: str, **kwargs):
@@ -33,7 +33,7 @@ class RichAsyncClient(AsyncClient):
             raise HTTPException(
                 detail=f"{self._name} get to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            ) from e
+            raise HTTPException(status_code=code) from e
         return response
 
     async def delete(self, url: str, **kwargs):
@@ -45,7 +45,7 @@ class RichAsyncClient(AsyncClient):
             raise HTTPException(
                 detail=f"{self._name} delete to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            ) from e
+            raise HTTPException(status_code=code) from e
         return response
 
     async def put(self, url: str, **kwargs):
@@ -57,5 +57,5 @@ class RichAsyncClient(AsyncClient):
             raise HTTPException(
                 detail=f"{self._name} put to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
-            ) from e
+            raise HTTPException(status_code=code) from e
         return response

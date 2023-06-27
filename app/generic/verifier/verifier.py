@@ -120,8 +120,7 @@ async def delete_proof(
     None
     """
     try:
-        prover = __get_verifier_by_version(version_candidate=proof_id)
-        await prover.delete_proof(controller=aries_controller, proof_id=proof_id)
+        prover = get_verifier_by_version(version_candidate=proof_id)
     except Exception as e:
         logger.error(f"Failed to delete proof record: \n{e!r}")
         raise e from e

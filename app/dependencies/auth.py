@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import List, Union
+from typing import Union
 
 import jwt
 from aries_cloudcontroller import AcaPyClient
@@ -84,27 +84,6 @@ def acapy_auth_tenant_admin(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthV
         raise HTTPException(403, "Unauthorized")
 
 
-async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
-    if not auth.role.is_admin:
-        raise HTTPException(403, "Unauthorized")
-
-    async with asynccontextmanager(agent_selector)(auth) as x:
-        yield x
-
-
-def agent_role(role: Union[Role, List[Role]]):
-    async def run(auth: AcaPyAuth = Depends(acapy_auth)):
-        roles = role if isinstance(role, List) else [role]
-
-        if auth.role not in roles:
-            raise HTTPException(403, "Unauthorized")
-
-        async with asynccontextmanager(agent_selector)(auth) as x:
-            yield x
-
-    return run
-
-
 @asynccontextmanager
 async def get_governance_controller():
     # TODO: would be good to support this natively in AcaPyClient
@@ -138,23 +117,6 @@ async def get_tenant_controller(role: Role, auth_token: str):
             role.agent_type.base_url, client_session=session
         ) as client:
             yield client
-
-
-async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
-    if not auth.token or auth.token == "":
-        raise HTTPException(403, "Missing authorization key")
-
-    tenant_jwt = None
-    # Tenant of multitenant agent
-    if auth.role.is_multitenant and not auth.role.is_admin:
-        tenant_jwt = auth.token
-        x_api_key = auth.role.agent_type.x_api_key
-    else:
-        x_api_key = auth.token
-
-    return AcaPyClient(
-        base_url=auth.role.agent_type.base_url, api_key=x_api_key, tenant_jwt=tenant_jwt
-    )
 
 
 def client_from_auth(auth: Union[AcaPyAuth, AcaPyAuthVerified]) -> AcaPyClient:

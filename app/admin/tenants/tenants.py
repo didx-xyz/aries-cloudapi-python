@@ -28,7 +28,7 @@ from app.dependencies.auth import (
     AcaPyAuthVerified,
     Role,
     acapy_auth_tenant_admin,
-    client_from_auth,
+    get_tenant_admin_controller,
 )
 from app.facades.trust_registry import (
     Actor,
@@ -71,7 +71,7 @@ async def create_tenant(
 ) -> Tenant:
     """Create a new tenant."""
 
-    async with client_from_auth(admin_auth) as aries_controller:
+    async with get_tenant_admin_controller() as admin_controller:
         wallet_response = await aries_controller.multitenancy.create_wallet(
             body=CreateWalletRequestWithGroups(
                 image_url=body.image_url,
@@ -119,7 +119,7 @@ async def delete_tenant_by_id(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     """Delete tenant by id."""
-    async with client_from_auth(admin_auth) as aries_controller:
+    async with get_tenant_admin_controller() as admin_controller:
         wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
         # wallet_id is the id of the actor in the trust registry.
@@ -142,7 +142,7 @@ async def get_tenant_auth_token(
     tenant_id: str,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
-    async with client_from_auth(admin_auth) as aries_controller:
+    async with get_tenant_admin_controller() as admin_controller:
         wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
         response = await aries_controller.multitenancy.get_auth_token(
@@ -159,7 +159,7 @@ async def update_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
-    async with client_from_auth(admin_auth) as aries_controller:
+    async with get_tenant_admin_controller() as admin_controller:
         await handle_tenant_update(
             admin_controller=aries_controller, tenant_id=tenant_id, update=body
         )
@@ -181,7 +181,7 @@ async def get_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Get tenant by id."""
-    async with client_from_auth(admin_auth) as aries_controller:
+    async with get_tenant_admin_controller() as admin_controller:
         wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
     return tenant_from_wallet_record(wallet)
@@ -213,7 +213,7 @@ async def get_tenants(
         ) -> WalletListWithGroups:
             """Internal uplink method for get_wallets"""
 
-    async with client_from_auth(admin_auth) as aries_controller:
+    async with get_tenant_admin_controller() as admin_controller:
         aries_controller.multitenancy = MultitenancyApi(
             base_url=aries_controller.base_url, client=aries_controller.client
         )

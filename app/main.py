@@ -31,6 +31,21 @@ debug = not prod
 
 
 def create_app() -> FastAPI:
+    routes = [
+        connections,
+        definitions,
+        issuer,
+        jsonld,
+        messaging,
+        oob,
+        tenants,
+        trust_registry,
+        verifier,
+        wallet,
+        webhooks,
+        sse,
+    ]
+
     application = FastAPI(
         debug=debug,
         title=OPENAPI_NAME,
@@ -38,18 +53,11 @@ def create_app() -> FastAPI:
         version=PROJECT_VERSION,
     )
 
-    application.include_router(connections.router)
-    application.include_router(definitions.router)
-    application.include_router(issuer.router)
-    application.include_router(jsonld.router)
-    application.include_router(messaging.router)
-    application.include_router(oob.router)
-    application.include_router(tenants.router)
-    application.include_router(trust_registry.router)
-    application.include_router(verifier.router)
-    application.include_router(wallet.router)
-    application.include_router(webhooks.router)
-    application.include_router(sse.router)
+    for route in routes:
+        # Routes will appear in the openapi docs with the same order as defined in `routes`
+        application.include_router(route.router)
+
+    return application
 
 
 app = create_app()

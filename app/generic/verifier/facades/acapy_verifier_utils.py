@@ -16,6 +16,11 @@ from shared.cloud_api_error import CloudApiException
 logger = logging.getLogger(__name__)
 
 
+class VerifierFacade(Enum):
+    v1 = VerifierV1
+    v2 = VerifierV2
+
+
 async def assert_valid_prover(
     aries_controller: AcaPyClient, presentation: AcceptProofRequest, prover: Verifier
 ) -> None:

@@ -1,23 +1,23 @@
 import logging
-from enum import Enum
 from typing import List, Union
 
-from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
+from aries_cloudcontroller import IndyCredPrecis
+from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends
 
-from app.dependencies.auth import agent_selector
+from app.dependencies.acapy_client_roles_container import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.generic.verifier.facades.acapy_verifier import Verifier
-from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
-from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
+from app.generic.verifier.facades.acapy_verifier_utils import (
+    VerifierFacade,
+    assert_valid_prover,
+    assert_valid_verifier,
+)
 from app.generic.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
-)
-from app.generic.verifier.verifier_utils import (
-    assert_valid_prover,
-    assert_valid_verifier,
 )
 from shared import PresentationExchange, PresentProofProtocolVersion
 from shared.cloud_api_error import CloudApiException

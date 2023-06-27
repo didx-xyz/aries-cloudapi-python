@@ -46,10 +46,7 @@ async def get_credentials_for_request(
         The list of Indy presentation credentials
     """
     try:
-        prover = __get_verifier_by_version(version_candidate=proof_id)
-        return await prover.get_credentials_for_request(
-            controller=aries_controller, proof_id=proof_id
-        )
+        prover = get_verifier_by_version(version_candidate=proof_id)
     except Exception as e:
         logger.error(f"Failed to get matching credentials: {proof_id} \n{e!r}")
         raise e from e
@@ -99,10 +96,7 @@ async def get_proof_record(
         The of presentation exchange record for the proof ID
     """
     try:
-        prover = __get_verifier_by_version(version_candidate=proof_id)
-        return await prover.get_proof_record(
-            controller=aries_controller, proof_id=proof_id
-        )
+        prover = get_verifier_by_version(version_candidate=proof_id)
     except Exception as e:
         logger.error(f"Failed to get proof records: \n{e!r}")
         raise e from e
@@ -152,7 +146,7 @@ async def send_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_verifier_by_version(proof_request.protocol_version)
+        prover = get_verifier_by_version(proof_request.protocol_version)
 
         if proof_request.connection_id:
             await assert_valid_verifier(
@@ -186,7 +180,7 @@ async def create_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_verifier_by_version(proof_request.protocol_version)
+        prover = get_verifier_by_version(proof_request.protocol_version)
 
         return await prover.create_proof_request(
             controller=aries_controller, proof_request=proof_request
@@ -215,7 +209,7 @@ async def accept_proof_request(
         The presentation exchange record
     """
     try:
-        prover = __get_verifier_by_version(presentation.proof_id)
+        prover = get_verifier_by_version(presentation.proof_id)
 
         proof_record = await prover.get_proof_record(
             controller=aries_controller, proof_id=presentation.proof_id
@@ -255,10 +249,7 @@ async def reject_proof_request(
     None
     """
     try:
-        prover = __get_verifier_by_version(proof_request.proof_id)
-        proof_record = await prover.get_proof_record(
-            controller=aries_controller, proof_id=proof_request.proof_id
-        )
+        prover = get_verifier_by_version(proof_request.proof_id)
 
         if proof_record.state != "request-received":
             raise CloudApiException(

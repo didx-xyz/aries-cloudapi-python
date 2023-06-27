@@ -45,13 +45,14 @@ async def create_invitation(
     if body is None:
         body = CreateInvitation()
 
-    invitation = await aries_controller.connection.create_invitation(
-        alias=body.alias,
-        auto_accept=True,
-        multi_use=body.multi_use,
-        public=body.use_public_did,
-        body=CreateInvitationRequest(),
-    )
+    async with client_from_auth(auth) as aries_controller:
+        invitation = await aries_controller.connection.create_invitation(
+            alias=body.alias,
+            auto_accept=True,
+            multi_use=body.multi_use,
+            public=body.use_public_did,
+            body=CreateInvitationRequest(),
+        )
     return invitation
 
 
@@ -68,12 +69,12 @@ async def accept_invitation(
     invitation: ReceiveInvitationRequest
         the invitation object obtained from create_invitation.
     """
-
-    connection_record = await aries_controller.connection.receive_invitation(
-        body=body.invitation,
-        auto_accept=True,
-        alias=body.alias,
-    )
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await aries_controller.connection.receive_invitation(
+            body=body.invitation,
+            auto_accept=True,
+            alias=body.alias,
+        )
     return conn_record_to_connection(connection_record)
 
 
@@ -88,12 +89,15 @@ async def get_connections(
     ---------
     JSON object with connections (key), a list of connections (ids)
     """
-    connections = await aries_controller.connection.get_connections()
 
-    if connections.results:
-        return [
-            conn_record_to_connection(connection) for connection in connections.results
-        ]
+    async with client_from_auth(auth) as aries_controller:
+        connections = await aries_controller.connection.get_connections()
+
+        if connections.results:
+            return [
+                conn_record_to_connection(connection)
+                for connection in connections.results
+            ]
 
     return []
 
@@ -111,7 +115,10 @@ async def get_connection_by_id(
     connection_id: str
 
     """
-    connection = await aries_controller.connection.get_connection(conn_id=connection_id)
+    async with client_from_auth(auth) as aries_controller:
+        connection = await aries_controller.connection.get_connection(
+            conn_id=connection_id
+        )
     return conn_record_to_connection(connection)
 
 
@@ -131,6 +138,6 @@ async def delete_connection_by_id(
     ------------
     Empty dict: {}
     """
-    await aries_controller.connection.delete_connection(conn_id=connection_id)
-
+    async with client_from_auth(auth) as aries_controller:
+        await aries_controller.connection.delete_connection(conn_id=connection_id)
     return {}

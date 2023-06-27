@@ -76,7 +76,7 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
 
     result = await test_module.send_proof_request(
         proof_request=send_proof_request,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_1
@@ -108,7 +108,7 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
 
     result = await test_module.send_proof_request(
         proof_request=send_proof_request,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_2
@@ -129,7 +129,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
             proof_request=indy_proof_request,
             connection_id="abcde",
         ),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
     assert result is presentation_exchange_record_1
 
@@ -143,7 +143,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
             proof_request=indy_proof_request,
             connection_id="abcde",
         ),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
     assert result is presentation_exchange_record_2
 
@@ -170,7 +170,7 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
 
     result = await test_module.accept_proof_request(
         presentation=presentation,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_1
@@ -199,7 +199,7 @@ async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
 
     result = await test_module.accept_proof_request(
         presentation=presentation,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_2
@@ -220,7 +220,7 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is None
@@ -244,7 +244,7 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is None
@@ -263,9 +263,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller, proof_id="v1-1234"
     ).thenReturn(to_async(None))
 
-    result = await test_module.delete_proof(
-        proof_id="v1-1234", aries_controller=mock_agent_controller
-    )
+    result = await test_module.delete_proof(proof_id="v1-1234", auth=mock_tenant_auth)
 
     assert result is None
     verify(VerifierV1).delete_proof(
@@ -277,9 +275,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller, proof_id="v2-1234"
     ).thenReturn(to_async(None))
 
-    result = await test_module.delete_proof(
-        proof_id="v2-1234", aries_controller=mock_agent_controller
-    )
+    result = await test_module.delete_proof(proof_id="v2-1234", auth=mock_tenant_auth)
 
     assert result is None
     verify(VerifierV2).delete_proof(
@@ -296,7 +292,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_proof_record(
         proof_id="v1-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == presentation_exchange_record_1
@@ -311,7 +307,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_proof_record(
         proof_id="v2-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == presentation_exchange_record_2
@@ -332,9 +328,7 @@ async def test_get_proof_records(mock_agent_controller: AcaPyClient):
     ).thenReturn(
         to_async([presentation_exchange_record_2])
     ):
-        result = await test_module.get_proof_records(
-            aries_controller=mock_agent_controller
-        )
+        result = await test_module.get_proof_records(auth=mock_tenant_auth)
 
         assert result == [
             presentation_exchange_record_1,
@@ -356,7 +350,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_credentials_for_request(
         proof_id="v1-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == [cred_precis]
@@ -371,7 +365,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_credentials_for_request(
         proof_id="v2-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == [cred_precis]

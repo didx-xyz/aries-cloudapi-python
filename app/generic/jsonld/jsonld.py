@@ -57,7 +57,7 @@ class JsonldApi(Consumer):
 @router.post("/sign", response_model=SignResponse)
 async def sign_jsonld(
     body: JsonLdSignRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Sign a JSON-LD structure
@@ -110,7 +110,7 @@ async def sign_jsonld(
 @router.post("/verify", status_code=204)
 async def verify_jsonld(
     body: JsonLdVerifyRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Verify a JSON-LD structure

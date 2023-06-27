@@ -34,7 +34,7 @@ from mockito import mock, when
 from app.facades.trust_registry import Actor
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
-from app.generic.verifier.verifier_utils import (
+from app.generic.verifier.facades.acapy_verifier_utils import (
     are_valid_schemas,
     assert_valid_prover,
     assert_valid_verifier,

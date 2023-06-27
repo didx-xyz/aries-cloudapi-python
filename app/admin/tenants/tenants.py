@@ -28,7 +28,6 @@ from app.dependencies.auth import (
     AcaPyAuthVerified,
     Role,
     acapy_auth_tenant_admin,
-    agent_role,
     client_from_auth,
 )
 from app.facades.trust_registry import (
@@ -42,8 +41,6 @@ from shared import CloudApiException
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
-
-multitenant_admin = agent_role(Role.TENANT_ADMIN)
 
 
 class CreateWalletRequestWithGroups(CreateWalletRequest):

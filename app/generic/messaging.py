@@ -26,7 +26,7 @@ class TrustPingMsg(BaseModel):
 @router.post("/send-message")
 async def send_messages(
     message: Message,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Send basic message.
@@ -48,7 +48,7 @@ async def send_messages(
 @router.post("/trust-ping", response_model=PingRequestResponse)
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Trust ping

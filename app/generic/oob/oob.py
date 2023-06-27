@@ -79,11 +79,12 @@ async def create_oob_invitation(
         use_public_did=body.use_public_did,
     )
 
-    invitation = await aries_controller.out_of_band.create_invitation(
-        multi_use=body.multi_use,
-        body=oob_body,
-        auto_accept=True,
-    )
+    async with client_from_auth(auth) as aries_controller:
+        invitation = await aries_controller.out_of_band.create_invitation(
+            multi_use=body.multi_use,
+            body=oob_body,
+            auto_accept=True,
+        )
     # If the trust registry is not derived but an entity providing this information,
     # we should possibly write the (multi-use) invitation to the registry
     # We could also investigate storing the invitation URL with the OP's DID
@@ -99,12 +100,13 @@ async def accept_oob_invitation(
     Receive out-of-band invitation.
     """
 
-    oob_record = await aries_controller.out_of_band.receive_invitation(
-        auto_accept=True,
-        use_existing_connection=body.use_existing_connection,
-        alias=body.alias,
-        body=body.invitation,
-    )
+    async with client_from_auth(auth) as aries_controller:
+        oob_record = await aries_controller.out_of_band.receive_invitation(
+            auto_accept=True,
+            use_existing_connection=body.use_existing_connection,
+            alias=body.alias,
+            body=body.invitation,
+        )
     return oob_record
 
 
@@ -129,8 +131,9 @@ async def connect_to_public_did(
     ConnRecord
         The connection record
     """
-    conn_record = await aries_controller.did_exchange.create_request(
-        their_public_did=body.public_did
-    )
+    async with client_from_auth(auth) as aries_controller:
+        conn_record = await aries_controller.did_exchange.create_request(
+            their_public_did=body.public_did
+        )
 
     return conn_record_to_connection(conn_record)

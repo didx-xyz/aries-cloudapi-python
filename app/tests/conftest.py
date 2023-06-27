@@ -42,7 +42,6 @@ from shared.util.mock_agent_controller import (
     mock_agent_controller,
     mock_context_managed_controller,
     mock_governance_auth,
-    mock_tenant_admin_auth,
     mock_tenant_auth,
 )
 

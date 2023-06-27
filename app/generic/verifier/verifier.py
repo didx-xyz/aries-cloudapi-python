@@ -28,11 +28,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 
 
-class VerifierFacade(Enum):
-    v1 = VerifierV1
-    v2 = VerifierV2
-
-
 def __get_verifier_by_version(
     version_candidate: Union[str, PresentProofProtocolVersion]
 ) -> Verifier:

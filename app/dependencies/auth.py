@@ -77,6 +77,13 @@ def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)):
         raise HTTPException(403, "Unauthorized")
 
 
+def acapy_auth_tenant_admin(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+    if auth.role == Role.TENANT_ADMIN:
+        return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
+    else:
+        raise HTTPException(403, "Unauthorized")
+
+
 async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     if not auth.role.is_admin:
         raise HTTPException(403, "Unauthorized")

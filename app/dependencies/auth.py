@@ -5,7 +5,6 @@ from typing import Union
 
 import jwt
 from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.util.acapy_client_session import AcaPyClientSession
 from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
@@ -86,26 +85,20 @@ def acapy_auth_tenant_admin(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthV
 
 @asynccontextmanager
 async def get_governance_controller():
-    # TODO: would be good to support this natively in AcaPyClient
-    async with AcaPyClientSession(
-        api_key=Role.GOVERNANCE.agent_type.x_api_key
-    ) as session:
-        async with AcaPyClient(
-            Role.GOVERNANCE.agent_type.base_url, client_session=session
-        ) as client:
-            yield client
+    async with AcaPyClient(
+        base_url=Role.GOVERNANCE.agent_type.base_url,
+        api_key=Role.GOVERNANCE.agent_type.x_api_key,
+    ) as client:
+        yield client
 
 
 @asynccontextmanager
 async def get_tenant_admin_controller():
-    # TODO: would be good to support this natively in AcaPyClient
-    async with AcaPyClientSession(
-        api_key=Role.TENANT_ADMIN.agent_type.x_api_key
-    ) as session:
-        async with AcaPyClient(
-            Role.TENANT_ADMIN.agent_type.base_url, client_session=session
-        ) as client:
-            yield client
+    async with AcaPyClient(
+        base_url=Role.TENANT_ADMIN.agent_type.base_url,
+        api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
+    ) as client:
+        yield client
 
 
 @asynccontextmanager

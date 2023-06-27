@@ -82,7 +82,7 @@ async def onboard_tenant(
     if "issuer" in roles:
         # Get governance and tenant controllers, onboard issuer
         async with get_governance_controller() as governance_controller, get_tenant_controller(
-            Role.TENANT, tenant_auth_token
+            tenant_auth_token
         ) as tenant_controller:
             return await onboard_issuer(
                 name=name,
@@ -92,9 +92,7 @@ async def onboard_tenant(
             )
 
     elif "verifier" in roles:
-        async with get_tenant_controller(
-            Role.TENANT, tenant_auth_token
-        ) as tenant_controller:
+        async with get_tenant_controller(tenant_auth_token) as tenant_controller:
             return await onboard_verifier(
                 name=name, verifier_controller=tenant_controller
             )

@@ -109,14 +109,13 @@ async def get_tenant_admin_controller():
 
 
 @asynccontextmanager
-async def get_tenant_controller(role: Role, auth_token: str):
-    async with AcaPyClientSession(
-        api_key=role.agent_type.x_api_key, tenant_jwt=auth_token
-    ) as session:
-        async with AcaPyClient(
-            role.agent_type.base_url, client_session=session
-        ) as client:
-            yield client
+async def get_tenant_controller(auth_token: str):
+    async with AcaPyClient(
+        base_url=Role.TENANT.agent_type.base_url,
+        api_key=Role.TENANT.agent_type.x_api_key,
+        tenant_jwt=auth_token,
+    ) as client:
+        yield client
 
 
 def client_from_auth(auth: Union[AcaPyAuth, AcaPyAuthVerified]) -> AcaPyClient:

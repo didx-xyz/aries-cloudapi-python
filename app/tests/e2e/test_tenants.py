@@ -6,7 +6,6 @@ from assertpy.assertpy import assert_that
 
 from app.admin.tenants import tenants
 from app.dependencies.auth import get_tenant_controller
-from app.dependencies.role import Role
 from app.facades import acapy_wallet, trust_registry
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
@@ -100,7 +99,7 @@ async def test_create_tenant_issuer(
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
-    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
+    async with get_tenant_controller(acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         connections = await tenant_controller.connection.get_connections()
@@ -172,7 +171,7 @@ async def test_create_tenant_verifier(
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
+    async with get_tenant_controller(acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -225,7 +224,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     acapy_token: str = verifier_tenant["access_token"].split(".", 1)[1]
 
-    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
+    async with get_tenant_controller(acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
             alias=f"Trust Registry {name}"
         )
@@ -277,7 +276,7 @@ async def test_update_tenant_verifier_to_issuer(
         .split(".", 1)[1]
     )
 
-    async with get_tenant_controller(Role.TENANT, acapy_token) as tenant_controller:
+    async with get_tenant_controller(acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
         assert public_did
 

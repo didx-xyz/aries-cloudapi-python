@@ -1,17 +1,16 @@
 import logging
-from typing import List, Union
+from typing import List
 
 from aries_cloudcontroller import IndyCredPrecis
-from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_client_roles_container import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.facades.acapy_verifier_utils import (
     VerifierFacade,
     assert_valid_prover,
     assert_valid_verifier,
+    get_verifier_by_version,
 )
 from app.generic.verifier.models import (
     AcceptProofRequest,
@@ -19,7 +18,7 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
-from shared import PresentationExchange, PresentProofProtocolVersion
+from shared import PresentationExchange
 from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)

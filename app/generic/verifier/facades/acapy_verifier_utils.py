@@ -1,6 +1,6 @@
 import logging
 from enum import Enum
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Union
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
@@ -12,6 +12,7 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
 from app.util.did import ed25519_verkey_to_did_key
 from shared.cloud_api_error import CloudApiException
+from shared.models.protocol import PresentProofProtocolVersion
 
 logger = logging.getLogger(__name__)
 

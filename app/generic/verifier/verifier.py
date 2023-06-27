@@ -28,22 +28,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 
 
-def __get_verifier_by_version(
-    version_candidate: Union[str, PresentProofProtocolVersion]
-) -> Verifier:
-    if version_candidate == PresentProofProtocolVersion.v1 or (
-        isinstance(version_candidate, str) and version_candidate.startswith("v1-")
-    ):
-        return VerifierFacade.v1.value
-    elif (
-        version_candidate == PresentProofProtocolVersion.v2
-        or version_candidate.startswith("v2-")
-    ):
-        return VerifierFacade.v2.value
-    else:
-        raise ValueError(f"Unknown protocol version {version_candidate}")
-
-
 @router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
 async def get_credentials_for_request(
     proof_id: str,

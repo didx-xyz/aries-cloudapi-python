@@ -21,6 +21,22 @@ class VerifierFacade(Enum):
     v2 = VerifierV2
 
 
+def get_verifier_by_version(
+    version_candidate: Union[str, PresentProofProtocolVersion]
+) -> Verifier:
+    if version_candidate == PresentProofProtocolVersion.v1 or (
+        isinstance(version_candidate, str) and version_candidate.startswith("v1-")
+    ):
+        return VerifierFacade.v1.value
+    elif (
+        version_candidate == PresentProofProtocolVersion.v2
+        or version_candidate.startswith("v2-")
+    ):
+        return VerifierFacade.v2.value
+    else:
+        raise ValueError(f"Unknown protocol version {version_candidate}")
+
+
 async def assert_valid_prover(
     aries_controller: AcaPyClient, presentation: AcceptProofRequest, prover: Verifier
 ) -> None:

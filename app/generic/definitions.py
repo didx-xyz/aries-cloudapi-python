@@ -305,17 +305,16 @@ async def create_credential_definition(
                     admin_listener = SseListener(
                         topic="endorsements", wallet_id="admin"
                     )
+                    try:
+                        txn_record = await admin_listener.wait_for_state(
+                            desired_state="request-received"
+                        )
+                    except TimeoutError:
+                        raise CloudApiException(
+                            "Timeout occurred while waiting to retrieve transaction record for endorser",
+                            504,
+                        )
                     async with get_governance_controller() as endorser_controller:
-                        try:
-                            txn_record = await admin_listener.wait_for_state(
-                                desired_state="request-received"
-                            )
-                        except TimeoutError:
-                            raise CloudApiException(
-                                "Timeout occurred while waiting to retrieve transaction record for endorser",
-                                504,
-                            )
-
                         await endorser_controller.endorse_transaction.endorse_transaction(
                             tran_id=txn_record["transaction_id"]
                         )

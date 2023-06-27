@@ -316,15 +316,14 @@ async def revoke_credential(
 
 async def endorser_revoke():
     listener = SseListener(topic="endorsements", wallet_id="admin")
+    try:
+        txn_record = await listener.wait_for_state(desired_state="request-received")
+    except TimeoutError as e:
+        raise CloudApiException(
+            "Timeout occured while waiting to retrieve transaction record for endorser",
+            504,
+        ) from e
     async with get_governance_controller() as endorser_controller:
-        try:
-            txn_record = await listener.wait_for_state(desired_state="request-received")
-        except TimeoutError as e:
-            raise CloudApiException(
-                "Timeout occured while waiting to retrieve transaction record for endorser",
-                504,
-            ) from e
-
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]
         )

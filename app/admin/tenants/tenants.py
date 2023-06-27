@@ -65,11 +65,9 @@ def tenant_api_key(role: Role, tenant_token: str):
 @router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
-    aries_controller: AcaPyClient = Depends(multitenant_admin),
-    auth: AcaPyAuth = Depends(acapy_auth),
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Create a new tenant."""
-    tenant_role = auth.role.agent_type.tenant_role
 
     if not tenant_role:
         raise CloudApiException(
@@ -119,7 +117,8 @@ async def create_tenant(
 
 @router.delete("/{tenant_id}")
 async def delete_tenant_by_id(
-    tenant_id: str, aries_controller: AcaPyClient = Depends(multitenant_admin)
+    tenant_id: str,
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     """Delete tenant by id."""
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
@@ -142,8 +141,7 @@ async def delete_tenant_by_id(
 @router.get("/{tenant_id}/access-token", response_model=TenantAuth)
 async def get_tenant_auth_token(
     tenant_id: str,
-    aries_controller: AcaPyClient = Depends(multitenant_admin),
-    auth: AcaPyAuth = Depends(acapy_auth),
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
 
@@ -158,7 +156,7 @@ async def get_tenant_auth_token(
 async def update_tenant(
     tenant_id: str,
     body: UpdateTenantRequest,
-    aries_controller: AcaPyClient = Depends(multitenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
     await handle_tenant_update(
@@ -178,7 +176,8 @@ async def update_tenant(
 
 @router.get("/{tenant_id}", response_model=Tenant)
 async def get_tenant(
-    tenant_id: str, aries_controller: AcaPyClient = Depends(multitenant_admin)
+    tenant_id: str,
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Get tenant by id."""
     wallet = await aries_controller.multitenancy.get_wallet(wallet_id=tenant_id)
@@ -188,7 +187,8 @@ async def get_tenant(
 
 @router.get("", response_model=List[Tenant])
 async def get_tenants(
-    group_id: str = None, aries_controller: AcaPyClient = Depends(multitenant_admin)
+    group_id: str = None,
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """Get tenants (by group id.)"""
 

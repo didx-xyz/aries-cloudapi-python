@@ -67,7 +67,7 @@ async def get_credential(
             credential identifier
     """
 
-    issuer = __issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_id)
 
     return await issuer.get_record(
         controller=aries_controller, credential_exchange_id=credential_id
@@ -94,7 +94,7 @@ async def send_credential(
         status_code: 200
     """
 
-    issuer = __issuer_from_protocol_version(credential.protocol_version)
+    issuer = issuer_from_protocol_version(credential.protocol_version)
 
     # Assert the agent has a public did
     public_did = await assert_public_did(aries_controller)
@@ -142,7 +142,7 @@ async def create_offer(
         The response object from sending a credential
     """
 
-    issuer = __issuer_from_protocol_version(credential.protocol_version)
+    issuer = issuer_from_protocol_version(credential.protocol_version)
 
     # Assert the agent has a public did
     public_did = await assert_public_did(aries_controller)
@@ -182,7 +182,7 @@ async def remove_credential(
         payload: None
         status_code: 204
     """
-    issuer = __issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_id)
 
     await issuer.delete_credential(
         controller=aries_controller, credential_exchange_id=credential_id
@@ -229,7 +229,7 @@ async def request_credential(
         credential_id: str
             the credential id
     """
-    issuer = __issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_id)
 
     record = await issuer.get_record(aries_controller, credential_id)
 
@@ -264,7 +264,7 @@ async def store_credential(
             credential identifier
 
     """
-    issuer = __issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_id)
 
     return await issuer.store_credential(
         controller=aries_controller, credential_exchange_id=credential_id

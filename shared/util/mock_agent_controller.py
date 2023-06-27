@@ -59,3 +59,28 @@ def mock_agent_controller():
 def mock_context_managed_controller():
     return MockContextManagedController
 
+
+@pytest.fixture
+def mock_governance_auth():
+    auth = mock(AcaPyAuthVerified)
+    auth.role = Role.GOVERNANCE
+    auth.token = GOVERNANCE_AGENT_API_KEY
+    auth.wallet_id = "admin"
+    return auth
+
+
+@pytest.fixture
+def mock_tenant_admin_auth():
+    auth = mock(AcaPyAuthVerified)
+    auth.role = Role.TENANT_ADMIN
+    auth.token = TENANT_AGENT_API_KEY
+    auth.wallet_id = "admin"
+    return auth
+
+
+@pytest.fixture
+def mock_tenant_auth():
+    auth = mock(AcaPyAuth)
+    auth.role = Role.TENANT
+    auth.token = "tenant.test_token"
+    return auth

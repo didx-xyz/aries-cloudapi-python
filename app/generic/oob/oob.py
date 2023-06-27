@@ -1,12 +1,7 @@
 import logging
 from typing import List, Optional
 
-from aries_cloudcontroller import (
-    AcaPyClient,
-    InvitationMessage,
-    InvitationRecord,
-    OobRecord,
-)
+from aries_cloudcontroller import InvitationMessage, InvitationRecord, OobRecord
 from aries_cloudcontroller.model.attachment_def import AttachmentDef
 from aries_cloudcontroller.model.invitation_create_request import (
     InvitationCreateRequest,
@@ -14,7 +9,8 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.dependencies.auth import agent_selector
+from app.dependencies.acapy_client_roles_container import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
 from shared import Connection, conn_record_to_connection
 
 logger = logging.getLogger(__name__)

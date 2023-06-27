@@ -5,7 +5,7 @@ from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
 from pydantic import BaseModel
 
-from shared import CloudApiException
+from app.exceptions.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 

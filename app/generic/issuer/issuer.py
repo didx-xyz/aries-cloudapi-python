@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from aiohttp import ClientResponseError
-from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_client_roles_container import client_from_auth
@@ -33,7 +32,7 @@ router = APIRouter(prefix="/generic/issuer", tags=["issuer"])
 @router.get("/credentials")
 async def get_credentials(
     connection_id: Optional[str] = Query(None),
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Get a list of credential records.
@@ -57,7 +56,7 @@ async def get_credentials(
 @router.get("/credentials/{credential_id}")
 async def get_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Get a credential by credential id.
@@ -78,7 +77,7 @@ async def get_credential(
 @router.post("/credentials", response_model=CredentialExchange)
 async def send_credential(
     credential: SendCredential,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Create and send a credential. Automating the entire flow.
@@ -128,7 +127,7 @@ async def send_credential(
 @router.post("/credentials/create-offer")
 async def create_offer(
     credential: CreateOffer,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Create a credential offer not bound to any connection.
@@ -168,7 +167,7 @@ async def create_offer(
 @router.delete("/credentials/{credential_id}", status_code=204)
 async def remove_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Remove a credential.
@@ -193,7 +192,7 @@ async def remove_credential(
 @router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
     body: RevokeCredential,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Revoke a credential.
@@ -220,7 +219,7 @@ async def revoke_credential(
 @router.post("/credentials/{credential_id}/request")
 async def request_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Send a credential request.
@@ -254,7 +253,7 @@ async def request_credential(
 @router.post("/credentials/{credential_id}/store")
 async def store_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Store a credential.

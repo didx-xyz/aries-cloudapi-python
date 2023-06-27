@@ -3,7 +3,6 @@ from typing import Any, Dict, Optional
 
 from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
-    AcaPyClient,
     Doc,
     SignatureOptions,
     SignRequest,
@@ -14,7 +13,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from uplink import Body, Consumer, json, post, returns
 
-from app.dependencies.auth import agent_selector
+from app.dependencies.acapy_client_roles_container import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
 from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)

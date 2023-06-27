@@ -17,7 +17,7 @@ router = APIRouter(prefix="/wallet/dids", tags=["wallet"])
 
 @router.post("", response_model=DID)
 async def create_did(
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Create Local DID."""
 
@@ -26,7 +26,7 @@ async def create_did(
 
 @router.get("", response_model=List[DID])
 async def list_dids(
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Retrieve list of DIDs.
@@ -42,7 +42,7 @@ async def list_dids(
 
 @router.get("/public", response_model=DID)
 async def get_public_did(
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Fetch the current public DID.
@@ -58,7 +58,7 @@ async def get_public_did(
 @router.put("/public", response_model=DID)
 async def set_public_did(
     did: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Set the current public DID."""
 
@@ -68,7 +68,7 @@ async def set_public_did(
 @router.patch("/{did}/rotate-keypair", status_code=204)
 async def rotate_keypair(
     did: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     await aries_controller.wallet.rotate_keypair(did=did)
 
@@ -76,7 +76,7 @@ async def rotate_keypair(
 @router.get("/{did}/endpoint", response_model=DIDEndpoint)
 async def get_did_endpoint(
     did: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Get DID endpoint."""
     return await aries_controller.wallet.get_did_endpoint(did=did)
@@ -86,7 +86,7 @@ async def get_did_endpoint(
 async def set_did_endpoint(
     did: str,
     body: SetDidEndpointRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Update Endpoint in wallet and on ledger if posted to it."""
 

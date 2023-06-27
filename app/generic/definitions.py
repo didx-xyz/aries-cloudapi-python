@@ -180,7 +180,7 @@ async def get_credential_definition_by_id(
         # ACA-Py returns the schema_id as the seq_no
         schema = await get_schema(
             schema_id=cloudapi_credential_definition.schema_id,
-            aries_controller=aries_controller,
+            auth=auth,
         )
         cloudapi_credential_definition.schema_id = schema.id
 

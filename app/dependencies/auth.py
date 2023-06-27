@@ -70,6 +70,13 @@ def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
     return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id=wallet_id)
 
 
+def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)):
+    if auth.role == Role.GOVERNANCE:
+        return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
+    else:
+        raise HTTPException(403, "Unauthorized")
+
+
 async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     if not auth.role.is_admin:
         raise HTTPException(403, "Unauthorized")

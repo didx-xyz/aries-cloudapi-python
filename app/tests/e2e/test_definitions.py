@@ -18,7 +18,6 @@ from shared import RichAsyncClient
 
 @pytest.mark.anyio
 async def test_create_credential_definition(
-    governance_acapy_client: AcaPyClient,
     governance_client: RichAsyncClient,
 ):
     # given
@@ -26,9 +25,7 @@ async def test_create_credential_definition(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    schema_result = (
-        await definitions.create_schema(schema, governance_acapy_client)
-    ).dict()
+    schema_result = (await definitions.create_schema(schema)).dict()
     schema_id = schema_result["id"]
 
     credential_definition = CreateCredentialDefinition(
@@ -39,9 +36,7 @@ async def test_create_credential_definition(
 
     # when
     result = (
-        await definitions.create_credential_definition(
-            credential_definition, governance_acapy_client, auth
-        )
+        await definitions.create_credential_definition(credential_definition, auth)
     ).dict()
 
     assert_that(result).has_tag(credential_definition.tag)
@@ -50,15 +45,13 @@ async def test_create_credential_definition(
 
 
 @pytest.mark.anyio
-async def test_create_schema(
-    governance_acapy_client: AcaPyClient, governance_public_did: str
-):
+async def test_create_schema(governance_public_did: str):
     # given
     send = CreateSchema(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    result = (await definitions.create_schema(send, governance_acapy_client)).dict()
+    result = (await definitions.create_schema(send)).dict()
 
     # Assert schemas has been registered in the trust registry
     assert await trust_registry.registry_has_schema(result["id"])
@@ -70,18 +63,14 @@ async def test_create_schema(
 
 
 @pytest.mark.anyio
-async def test_get_schema(
-    governance_acapy_client: AcaPyClient, governance_public_did: str
-):
+async def test_get_schema(governance_public_did: str):
     # given
     schema = CreateSchema(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    create_result = (
-        await definitions.create_schema(schema, governance_acapy_client)
-    ).dict()
-    result = await definitions.get_schema(create_result["id"], governance_acapy_client)
+    create_result = (await definitions.create_schema(schema)).dict()
+    result = await definitions.get_schema(create_result["id"])
 
     assert await trust_registry.registry_has_schema(result.id)
     expected_schema = f"{governance_public_did}:2:{schema.name}:{schema.version}"
@@ -92,17 +81,13 @@ async def test_get_schema(
 
 
 @pytest.mark.anyio
-async def test_get_credential_definition(
-    governance_acapy_client: AcaPyClient, governance_client: RichAsyncClient
-):
+async def test_get_credential_definition(governance_client: RichAsyncClient):
     # given
     schema_send = CreateSchema(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    schema_result = (
-        await definitions.create_schema(schema_send, governance_acapy_client)
-    ).dict()
+    schema_result = (await definitions.create_schema(schema_send)).dict()
 
     await register_issuer(governance_client, schema_result["id"])
     credential_definition = CreateCredentialDefinition(
@@ -113,15 +98,11 @@ async def test_get_credential_definition(
 
     # when
     create_result = (
-        await definitions.create_credential_definition(
-            credential_definition, governance_acapy_client, auth
-        )
+        await definitions.create_credential_definition(credential_definition, auth)
     ).dict()
 
     result = (
-        await definitions.get_credential_definition_by_id(
-            create_result["id"], governance_acapy_client
-        )
+        await definitions.get_credential_definition_by_id(create_result["id"])
     ).dict()
 
     assert_that(result).has_tag(credential_definition.tag)
@@ -144,9 +125,7 @@ async def test_create_credential_definition_issuer_tenant(
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
 
     result = (
-        await definitions.create_credential_definition(
-            credential_definition, faber_acapy_client, auth
-        )
+        await definitions.create_credential_definition(credential_definition, auth)
     ).dict()
 
     faber_public_did = await get_public_did(faber_acapy_client)

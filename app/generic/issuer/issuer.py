@@ -1,25 +1,29 @@
 import logging
-from enum import Enum
-from typing import Dict, Optional
+from typing import Optional
 
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import AcaPyClient
+from dependency_injector.wiring import inject
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
-from typing_extensions import TypedDict
 
-from app.dependencies.auth import agent_selector
+from app.dependencies.acapy_client_roles_container import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
 from app.facades.trust_registry import assert_valid_issuer
-from app.generic.issuer.facades.acapy_issuer import Issuer
-from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
-from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
-from app.generic.issuer.models import Credential, CredentialNoConnection
+from app.generic.issuer.models import (
+    CreateOffer,
+    Credential,
+    CredentialNoConnection,
+    IssueCredentialFacades,
+    RevokeCredential,
+    SendCredential,
+    issuer_from_id,
+    issuer_from_protocol_version,
+)
 from app.util.did import did_from_credential_definition_id
-from shared import CredentialExchange, IssueCredentialProtocolVersion
 from shared.cloud_api_error import CloudApiException
+from shared.models.topics.base import CredentialExchange
 
 logger = logging.getLogger(__name__)
 

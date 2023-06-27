@@ -5,7 +5,6 @@ from uuid import uuid4
 
 import base58
 from aries_cloudcontroller import (
-    AcaPyClient,
     CreateWalletRequest,
     CreateWalletTokenRequest,
     RemoveWalletRequest,
@@ -25,7 +24,13 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
-from app.dependencies.auth import AcaPyAuth, Role, acapy_auth, agent_role
+from app.dependencies.acapy_client_roles_container import client_from_auth
+from app.dependencies.auth import (
+    AcaPyAuthVerified,
+    Role,
+    acapy_auth_tenant_admin,
+    agent_role,
+)
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,

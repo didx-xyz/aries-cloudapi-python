@@ -38,7 +38,13 @@ from app.tests.util.member_wallets import (
     bob_tenant,
     faber_issuer,
 )
-from shared.util.mock_agent_controller import mock_agent_controller
+from shared.util.mock_agent_controller import (
+    mock_agent_controller,
+    mock_context_managed_controller,
+    mock_governance_auth,
+    mock_tenant_admin_auth,
+    mock_tenant_auth,
+)
 
 # Unused imports make pytest fixtures visible to tests within this module
 

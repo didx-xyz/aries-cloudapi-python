@@ -52,7 +52,6 @@ async def schema_definition_alt(
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition.id)
 
@@ -63,7 +62,7 @@ async def credential_definition_id(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(definition, faber_acapy_client, auth)
+    result = await create_credential_definition(definition, auth)
 
     return result.id
 
@@ -72,7 +71,6 @@ async def credential_definition_id(
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition_alt.id)
 
@@ -83,7 +81,7 @@ async def credential_definition_id_revocable(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(definition, faber_acapy_client, auth)
+    result = await create_credential_definition(definition, auth)
 
     return result.id
 

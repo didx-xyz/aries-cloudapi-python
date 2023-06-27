@@ -93,7 +93,7 @@ async def get_credential_definitions(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[CredentialDefinition]:
     """
         Get agent-created credential definitions
@@ -148,7 +148,7 @@ async def get_credential_definitions(
 )
 async def get_credential_definition_by_id(
     credential_definition_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> CredentialDefinition:
     """
         Get credential definition by id.
@@ -186,8 +186,7 @@ async def get_credential_definition_by_id(
 @router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
-    aries_controller: AcaPyClient = Depends(agent_selector),
-    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> CredentialDefinition:
     """
         Create a credential definition.
@@ -332,7 +331,7 @@ async def get_schemas(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[CredentialSchema]:
     """
         Retrieve schemas that the current agent created.
@@ -377,7 +376,7 @@ async def get_schemas(
 @router.get("/schemas/{schema_id}", response_model=CredentialSchema)
 async def get_schema(
     schema_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> CredentialSchema:
     """
         Retrieve schema by id.

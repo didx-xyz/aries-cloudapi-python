@@ -1,8 +1,7 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
-from app.dependencies.auth import acapy_auth, acapy_auth_verified
+from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
 from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import (
     CreateCredentialDefinition,
@@ -25,25 +24,25 @@ CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
 
 @pytest.fixture(scope="function")
-async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
+async def schema_definition(mock_governance_auth: AcaPyAuthVerified) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
     )
 
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
+    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
     return schema_definition_result
 
 
 @pytest.fixture(scope="function")
 async def schema_definition_alt(
-    governance_acapy_client: AcaPyClient,
+    mock_governance_auth: AcaPyAuthVerified
 ) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema_alt", version=random_version(), attribute_names=["speed"]
     )
 
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
+    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
     return schema_definition_result
 

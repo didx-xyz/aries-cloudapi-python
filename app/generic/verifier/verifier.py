@@ -30,7 +30,7 @@ router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 @router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
 async def get_credentials_for_request(
     proof_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[IndyCredPrecis]:
     """
     Get matching credentials for presentation exchange
@@ -57,7 +57,7 @@ async def get_credentials_for_request(
 
 @router.get("/proofs", response_model=List[PresentationExchange])
 async def get_proof_records(
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[PresentationExchange]:
     """
     Get all proof records
@@ -83,7 +83,7 @@ async def get_proof_records(
 @router.get("/proofs/{proof_id}", response_model=PresentationExchange)
 async def get_proof_record(
     proof_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
     Get a specific proof record
@@ -111,7 +111,7 @@ async def get_proof_record(
 @router.delete("/proofs/{proof_id}")
 async def delete_proof(
     proof_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> None:
     """
     Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
@@ -136,7 +136,7 @@ async def delete_proof(
 @router.post("/send-request", response_model=PresentationExchange)
 async def send_proof_request(
     proof_request: SendProofRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
     Send proof request.
@@ -170,7 +170,7 @@ async def send_proof_request(
 @router.post("/create-request", response_model=PresentationExchange)
 async def create_proof_request(
     proof_request: CreateProofRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
     Create proof request.
@@ -199,7 +199,7 @@ async def create_proof_request(
 @router.post("/accept-request", response_model=PresentationExchange)
 async def accept_proof_request(
     presentation: AcceptProofRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
     Accept proof request.
@@ -240,7 +240,7 @@ async def accept_proof_request(
 @router.post("/reject-request")
 async def reject_proof_request(
     proof_request: RejectProofRequest,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> None:
     """
     Reject proof request.

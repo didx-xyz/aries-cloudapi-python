@@ -24,12 +24,12 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
-from app.dependencies.acapy_client_roles_container import client_from_auth
 from app.dependencies.auth import (
     AcaPyAuthVerified,
     Role,
     acapy_auth_tenant_admin,
     agent_role,
+    client_from_auth,
 )
 from app.facades.trust_registry import (
     Actor,

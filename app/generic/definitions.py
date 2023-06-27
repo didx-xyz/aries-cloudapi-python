@@ -17,11 +17,11 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.dependencies.acapy_client_roles_container import client_from_auth
 from app.dependencies.auth import (
     AcaPyAuth,
     acapy_auth,
     acapy_auth_governance,
+    client_from_auth,
     get_governance_controller,
 )
 from app.event_handling.sse_listener import SseListener

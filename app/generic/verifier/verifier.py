@@ -4,8 +4,7 @@ from typing import List
 from aries_cloudcontroller import IndyCredPrecis
 from fastapi import APIRouter, Depends
 
-from app.dependencies.acapy_client_roles_container import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from app.generic.verifier.facades.acapy_verifier_utils import (
     VerifierFacade,
     assert_valid_prover,

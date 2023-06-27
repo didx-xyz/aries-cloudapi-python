@@ -4,8 +4,7 @@ from typing import Optional
 from aiohttp import ClientResponseError
 from fastapi import APIRouter, Depends, Query
 
-from app.dependencies.acapy_client_roles_container import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did

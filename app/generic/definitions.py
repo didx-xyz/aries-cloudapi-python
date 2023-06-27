@@ -411,7 +411,7 @@ async def get_schema(
 async def create_schema(
     schema: CreateSchema,
     # Only governance can create schemas
-    aries_controller: AcaPyClient = Depends(agent_role(Role.GOVERNANCE)),
+    governance_auth: AcaPyClient = Depends(acapy_auth_governance),
 ) -> CredentialSchema:
     """
         Create a new schema.

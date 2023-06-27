@@ -37,7 +37,7 @@ class AcceptInvitation(BaseModel):
 @router.post("/create-invitation", response_model=InvitationResult)
 async def create_invitation(
     body: Optional[CreateInvitation] = None,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Create connection invitation.
@@ -58,7 +58,7 @@ async def create_invitation(
 @router.post("/accept-invitation", response_model=Connection)
 async def accept_invitation(
     body: AcceptInvitation,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> Connection:
     """
     Accept connection invitation.
@@ -79,7 +79,7 @@ async def accept_invitation(
 
 @router.get("", response_model=List[Connection])
 async def get_connections(
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[Connection]:
     """
     Retrieve list of connections.
@@ -101,7 +101,7 @@ async def get_connections(
 @router.get("/{connection_id}", response_model=Connection)
 async def get_connection_by_id(
     connection_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Retrieve connection by id.
@@ -118,7 +118,7 @@ async def get_connection_by_id(
 @router.delete("/{connection_id}")
 async def delete_connection_by_id(
     connection_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Delete connection by id.

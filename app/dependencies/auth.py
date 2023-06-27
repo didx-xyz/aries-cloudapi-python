@@ -23,7 +23,6 @@ x_api_key_scheme = APIKeyHeader(name="x-api-key")
 class AcaPyAuth:
     token: str
     role: Role
-    wallet_id: str = None
 
 
 @dataclass

@@ -261,7 +261,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     # V1
     when(VerifierV1).delete_proof(
         controller=mock_agent_controller, proof_id="v1-1234"
-    ).thenReturn(to_async(None))
+    ).thenReturn(to_async())
 
     result = await test_module.delete_proof(proof_id="v1-1234", auth=mock_tenant_auth)
 
@@ -273,7 +273,7 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).delete_proof(
         controller=mock_agent_controller, proof_id="v2-1234"
-    ).thenReturn(to_async(None))
+    ).thenReturn(to_async())
 
     result = await test_module.delete_proof(proof_id="v2-1234", auth=mock_tenant_auth)
 

@@ -30,7 +30,7 @@ class AcaPyAuthVerified(AcaPyAuth):
     wallet_id: str
 
 
-def acapy_auth(auth: str = Depends(x_api_key_scheme)):
+def acapy_auth(auth: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
     if "." not in auth:
         raise HTTPException(401, "Unauthorized")
 
@@ -47,7 +47,7 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)):
     return AcaPyAuth(role=role, token=token)
 
 
-def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
+def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
     if auth.role.is_admin:
         if auth.token != auth.role.agent_type.x_api_key:
             raise HTTPException(403, "Unauthorized")
@@ -70,7 +70,7 @@ def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
     return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id=wallet_id)
 
 
-def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)):
+def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
     if auth.role == Role.GOVERNANCE:
         return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
     else:

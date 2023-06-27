@@ -155,3 +155,23 @@ async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     return AcaPyClient(
         base_url=auth.role.agent_type.base_url, api_key=x_api_key, tenant_jwt=tenant_jwt
     )
+
+
+def client_from_auth(auth: Union[AcaPyAuth, AcaPyAuthVerified]) -> AcaPyClient:
+    if not auth or not auth.token:
+        raise HTTPException(403, "Missing authorization key")
+
+    tenant_jwt = None
+
+    if auth.role.is_multitenant and not auth.role.is_admin:
+        tenant_jwt = auth.token
+        x_api_key = auth.role.agent_type.x_api_key
+    else:
+        x_api_key = auth.token
+
+    client = AcaPyClient(
+        base_url=auth.role.agent_type.base_url,
+        api_key=x_api_key,
+        tenant_jwt=tenant_jwt,
+    )
+    return client

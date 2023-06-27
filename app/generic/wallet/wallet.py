@@ -21,7 +21,8 @@ async def create_did(
 ):
     """Create Local DID."""
 
-    return await acapy_wallet.create_did(aries_controller)
+    async with client_from_auth(auth) as aries_controller:
+        return await acapy_wallet.create_did(aries_controller)
 
 
 @router.get("", response_model=List[DID])
@@ -32,7 +33,8 @@ async def list_dids(
     Retrieve list of DIDs.
     """
 
-    did_result = await aries_controller.wallet.get_dids()
+    async with client_from_auth(auth) as aries_controller:
+        did_result = await aries_controller.wallet.get_dids()
 
     if not did_result.results:
         return []
@@ -47,7 +49,8 @@ async def get_public_did(
     """
     Fetch the current public DID.
     """
-    result = await aries_controller.wallet.get_public_did()
+    async with client_from_auth(auth) as aries_controller:
+        result = await aries_controller.wallet.get_public_did()
 
     if not result.result:
         raise CloudApiException("No public did found", 404)
@@ -62,7 +65,8 @@ async def set_public_did(
 ):
     """Set the current public DID."""
 
-    return await acapy_wallet.set_public_did(aries_controller, did)
+    async with client_from_auth(auth) as aries_controller:
+        return await acapy_wallet.set_public_did(aries_controller, did)
 
 
 @router.patch("/{did}/rotate-keypair", status_code=204)
@@ -70,7 +74,8 @@ async def rotate_keypair(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
-    await aries_controller.wallet.rotate_keypair(did=did)
+    async with client_from_auth(auth) as aries_controller:
+        await aries_controller.wallet.rotate_keypair(did=did)
 
 
 @router.get("/{did}/endpoint", response_model=DIDEndpoint)
@@ -79,7 +84,8 @@ async def get_did_endpoint(
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Get DID endpoint."""
-    return await aries_controller.wallet.get_did_endpoint(did=did)
+    async with client_from_auth(auth) as aries_controller:
+        return await aries_controller.wallet.get_did_endpoint(did=did)
 
 
 @router.post("/{did}/endpoint", status_code=204)
@@ -93,8 +99,9 @@ async def set_did_endpoint(
     # "Endpoint" type is for making connections using public indy DIDs
     endpoint_type = "Endpoint"
 
-    await aries_controller.wallet.set_did_endpoint(
-        body=DIDEndpointWithType(
-            did=did, endpoint=body.endpoint, endpoint_type=endpoint_type
+    async with client_from_auth(auth) as aries_controller:
+        await aries_controller.wallet.set_did_endpoint(
+            body=DIDEndpointWithType(
+                did=did, endpoint=body.endpoint, endpoint_type=endpoint_type
+            )
         )
-    )

@@ -1,8 +1,12 @@
+from unittest.mock import AsyncMock
+
 import pytest
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCredPrecis
 from mockito import verify, when
+from pytest_mock import MockerFixture
 
 import app.generic.verifier.verifier as test_module
+from app.dependencies.auth import AcaPyAuth
 from app.facades.trust_registry import Actor
 from app.generic.verifier.facades import acapy_verifier_utils
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
@@ -10,6 +14,7 @@ from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.tests.util.mock import to_async
 from app.tests.verifier.utils import indy_pres_spec, indy_proof_request
 from shared import PresentationExchange, PresentProofProtocolVersion
+from shared.util.mock_agent_controller import MockContextManagedController
 
 presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",

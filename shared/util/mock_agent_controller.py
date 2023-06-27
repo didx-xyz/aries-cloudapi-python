@@ -39,6 +39,23 @@ def get_mock_agent_controller() -> AcaPyClient:
     return controller
 
 
+class MockContextManagedController:
+    def __init__(self, controller):
+        self.controller = controller
+
+    async def __aenter__(self):
+        return self.controller
+
+    async def __aexit__(self, exc_type, exc, tb):
+        pass
+
+
 @pytest.fixture
 def mock_agent_controller():
     return get_mock_agent_controller()
+
+
+@pytest.fixture
+def mock_context_managed_controller():
+    return MockContextManagedController
+

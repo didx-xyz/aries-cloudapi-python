@@ -190,7 +190,7 @@ async def get_credential_definition_by_id(
 @router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> CredentialDefinition:
     """
         Create a credential definition.

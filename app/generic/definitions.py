@@ -19,8 +19,10 @@ from pydantic import BaseModel, Field
 
 from app.dependencies.auth import (
     AcaPyAuth,
+    AcaPyAuthVerified,
     acapy_auth,
     acapy_auth_governance,
+    acapy_auth_verified,
     client_from_auth,
     get_governance_controller,
 )

@@ -25,8 +25,10 @@ from app.admin.tenants.models import (
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
 from app.dependencies.auth import (
+    AcaPyAuth,
     AcaPyAuthVerified,
     Role,
+    acapy_auth,
     acapy_auth_tenant_admin,
     get_tenant_admin_controller,
 )
@@ -67,7 +69,7 @@ def tenant_api_key(role: Role, tenant_token: str):
 @router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> Tenant:
     """Create a new tenant."""
 
@@ -108,7 +110,7 @@ async def create_tenant(
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
         tenant_name=body.name,
-        access_token=tenant_api_key(admin_auth.role, wallet_response.token),
+        access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )
 
@@ -140,7 +142,7 @@ async def delete_tenant_by_id(
 @router.get("/{tenant_id}/access-token", response_model=TenantAuth)
 async def get_tenant_auth_token(
     tenant_id: str,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     async with get_tenant_admin_controller() as admin_controller:
         wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
@@ -149,7 +151,7 @@ async def get_tenant_auth_token(
             wallet_id=wallet.wallet_id, body=CreateWalletTokenRequest()
         )
 
-        return TenantAuth(access_token=tenant_api_key(admin_auth.role, response.token))
+    return TenantAuth(access_token=tenant_api_key(auth.role, response.token))
 
 
 @router.put("/{tenant_id}", response_model=Tenant)

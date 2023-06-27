@@ -1,8 +1,7 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from httpx import AsyncClient, HTTPStatusError
-
-from shared.cloud_api_error import CloudApiException
 
 
 # Async Client with built in error handling
@@ -19,8 +18,8 @@ class RichAsyncClient(AsyncClient):
             response.raise_for_status()  # Raise exception for 4xx and 5xx status codes
         except HTTPStatusError as e:
             code = e.response.status_code
-            raise CloudApiException(
-                f"{self._name} post to `{url}` failed. Status code: {code}. Response: {e.response.text}",
+            raise HTTPException(
+                detail=f"{self._name} post to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
             ) from e
         return response
@@ -31,8 +30,8 @@ class RichAsyncClient(AsyncClient):
             response.raise_for_status()
         except HTTPStatusError as e:
             code = e.response.status_code
-            raise CloudApiException(
-                f"{self._name} get to `{url}` failed. Status code: {code}. Response: {e.response.text}",
+            raise HTTPException(
+                detail=f"{self._name} get to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
             ) from e
         return response
@@ -43,8 +42,8 @@ class RichAsyncClient(AsyncClient):
             response.raise_for_status()
         except HTTPStatusError as e:
             code = e.response.status_code
-            raise CloudApiException(
-                f"{self._name} delete to `{url}` failed. Status code: {code}. Response: {e.response.text}",
+            raise HTTPException(
+                detail=f"{self._name} delete to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
             ) from e
         return response
@@ -55,8 +54,8 @@ class RichAsyncClient(AsyncClient):
             response.raise_for_status()
         except HTTPStatusError as e:
             code = e.response.status_code
-            raise CloudApiException(
-                f"{self._name} put to `{url}` failed. Status code: {code}. Response: {e.response.text}",
+            raise HTTPException(
+                detail=f"{self._name} put to `{url}` failed. Status code: {code}. Response: {e.response.text}",
                 status_code=code,
             ) from e
         return response

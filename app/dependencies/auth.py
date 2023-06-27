@@ -145,8 +145,6 @@ async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
     else:
         x_api_key = auth.token
 
-    async with AcaPyClientSession(api_key=x_api_key, tenant_jwt=tenant_jwt) as session:
-        async with AcaPyClient(
-            base_url=auth.role.agent_type.base_url, client_session=session
-        ) as agent:
-            yield agent
+    return AcaPyClient(
+        base_url=auth.role.agent_type.base_url, api_key=x_api_key, tenant_jwt=tenant_jwt
+    )

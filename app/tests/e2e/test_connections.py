@@ -1,7 +1,7 @@
 import pytest
 from assertpy import assert_that
+from fastapi import HTTPException
 
-from app.exceptions.cloud_api_error import CloudApiException
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
@@ -99,7 +99,7 @@ async def test_delete_connection(
     response = await bob_member_client.delete(f"/generic/connections/{connection_id}")
     assert_that(response.status_code).is_equal_to(200)
 
-    with pytest.raises(CloudApiException) as exc:
+    with pytest.raises(HTTPException) as exc:
         response = await bob_member_client.get(f"/generic/connections/{connection_id}")
     assert_that(exc.value.status_code).is_equal_to(404)
 

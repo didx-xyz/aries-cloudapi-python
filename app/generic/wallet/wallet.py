@@ -1,10 +1,11 @@
 import logging
 from typing import List
 
-from aries_cloudcontroller import DID, AcaPyClient, DIDEndpoint, DIDEndpointWithType
+from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
-from app.dependencies.auth import agent_selector
+from app.dependencies.acapy_client_roles_container import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.facades import acapy_wallet
 from app.generic.wallet.models import SetDidEndpointRequest
 from shared import CloudApiException

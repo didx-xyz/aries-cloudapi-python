@@ -16,6 +16,10 @@ from aries_cloudcontroller import (
 )
 from mockito import mock
 
+from app.dependencies.auth import AcaPyAuth, AcaPyAuthVerified
+from app.dependencies.role import Role
+from shared.constants import GOVERNANCE_AGENT_API_KEY, TENANT_AGENT_API_KEY
+
 
 async def noop():
     return None

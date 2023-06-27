@@ -47,6 +47,11 @@ async def get_credentials_for_request(
     """
     try:
         prover = get_verifier_by_version(version_candidate=proof_id)
+
+        async with client_from_auth(auth) as aries_controller:
+            return await prover.get_credentials_for_request(
+                controller=aries_controller, proof_id=proof_id
+            )
     except Exception as e:
         logger.error(f"Failed to get matching credentials: {proof_id} \n{e!r}")
         raise e from e
@@ -65,12 +70,13 @@ async def get_proof_records(
         The list of presentation exchange records
     """
     try:
-        v1_records = await VerifierFacade.v1.value.get_proof_records(
-            controller=aries_controller
-        )
-        v2_records = await VerifierFacade.v2.value.get_proof_records(
-            controller=aries_controller
-        )
+        async with client_from_auth(auth) as aries_controller:
+            v1_records = await VerifierFacade.v1.value.get_proof_records(
+                controller=aries_controller
+            )
+            v2_records = await VerifierFacade.v2.value.get_proof_records(
+                controller=aries_controller
+            )
         return v1_records + v2_records
     except Exception as e:
         logger.error(f"Failed to get proof records: \n{e!r}")
@@ -97,6 +103,11 @@ async def get_proof_record(
     """
     try:
         prover = get_verifier_by_version(version_candidate=proof_id)
+
+        async with client_from_auth(auth) as aries_controller:
+            return await prover.get_proof_record(
+                controller=aries_controller, proof_id=proof_id
+            )
     except Exception as e:
         logger.error(f"Failed to get proof records: \n{e!r}")
         raise e from e
@@ -121,6 +132,8 @@ async def delete_proof(
     """
     try:
         prover = get_verifier_by_version(version_candidate=proof_id)
+        async with client_from_auth(auth) as aries_controller:
+            await prover.delete_proof(controller=aries_controller, proof_id=proof_id)
     except Exception as e:
         logger.error(f"Failed to delete proof record: \n{e!r}")
         raise e from e
@@ -147,14 +160,15 @@ async def send_proof_request(
     try:
         prover = get_verifier_by_version(proof_request.protocol_version)
 
-        if proof_request.connection_id:
-            await assert_valid_verifier(
-                aries_controller=aries_controller, proof_request=proof_request
-            )
+        async with client_from_auth(auth) as aries_controller:
+            if proof_request.connection_id:
+                await assert_valid_verifier(
+                    aries_controller=aries_controller, proof_request=proof_request
+                )
 
-        return await prover.send_proof_request(
-            controller=aries_controller, proof_request=proof_request
-        )
+            return await prover.send_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
     except Exception as e:
         logger.error(f"Failed to send proof request: \n{e!r}")
         raise e from e
@@ -181,9 +195,10 @@ async def create_proof_request(
     try:
         prover = get_verifier_by_version(proof_request.protocol_version)
 
-        return await prover.create_proof_request(
-            controller=aries_controller, proof_request=proof_request
-        )
+        async with client_from_auth(auth) as aries_controller:
+            return await prover.create_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
     except Exception as e:
         logger.error(f"Failed to create presentation record: \n{e!r}")
         raise e from e
@@ -210,21 +225,22 @@ async def accept_proof_request(
     try:
         prover = get_verifier_by_version(presentation.proof_id)
 
-        proof_record = await prover.get_proof_record(
-            controller=aries_controller, proof_id=presentation.proof_id
-        )
-
-        # If there is a connection id the proof is not connectionless
-        if proof_record.connection_id:
-            await assert_valid_prover(
-                aries_controller=aries_controller,
-                prover=prover,
-                presentation=presentation,
+        async with client_from_auth(auth) as aries_controller:
+            proof_record = await prover.get_proof_record(
+                controller=aries_controller, proof_id=presentation.proof_id
             )
 
-        return await prover.accept_proof_request(
-            controller=aries_controller, proof_request=presentation
-        )
+            # If there is a connection id the proof is not connectionless
+            if proof_record.connection_id:
+                await assert_valid_prover(
+                    aries_controller=aries_controller,
+                    prover=prover,
+                    presentation=presentation,
+                )
+
+            return await prover.accept_proof_request(
+                controller=aries_controller, proof_request=presentation
+            )
     except Exception as e:
         logger.error(f"Failed to accept proof request: \n{e!r}")
         raise e from e
@@ -250,14 +266,20 @@ async def reject_proof_request(
     try:
         prover = get_verifier_by_version(proof_request.proof_id)
 
-        if proof_record.state != "request-received":
-            raise CloudApiException(
-                "Record must be in state request-received to decline proof request", 400
+        async with client_from_auth(auth) as aries_controller:
+            proof_record = await prover.get_proof_record(
+                controller=aries_controller, proof_id=proof_request.proof_id
             )
 
-        return await prover.reject_proof_request(
-            controller=aries_controller, proof_request=proof_request
-        )
+            if proof_record.state != "request-received":
+                raise CloudApiException(
+                    "Record must be in state request-received to decline proof request",
+                    400,
+                )
+
+            return await prover.reject_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
     except Exception as e:
         logger.error(f"Failed to reject request: \n{e!r}")
         raise e from e

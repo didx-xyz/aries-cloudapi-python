@@ -40,9 +40,10 @@ async def send_messages(
     ---------
     The response object obtained when sending a message.
     """
-    await aries_controller.basicmessage.send_message(
-        conn_id=message.connection_id, body=SendMessage(content=message.content)
-    )
+    async with client_from_auth(auth) as aries_controller:
+        await aries_controller.basicmessage.send_message(
+            conn_id=message.connection_id, body=SendMessage(content=message.content)
+        )
 
 
 @router.post("/trust-ping", response_model=PingRequestResponse)
@@ -62,8 +63,9 @@ async def send_trust_ping(
     --------
     The response object obtained when sending a trust ping.
     """
-    response = await aries_controller.trustping.send_ping(
-        conn_id=trustping_msg.connection_id,
-        body=PingRequest(comment=trustping_msg.comment),
-    )
-    return response
+    async with client_from_auth(auth) as aries_controller:
+        response = await aries_controller.trustping.send_ping(
+            conn_id=trustping_msg.connection_id,
+            body=PingRequest(comment=trustping_msg.comment),
+        )
+        return response

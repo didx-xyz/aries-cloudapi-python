@@ -115,7 +115,7 @@ async def create_tenant(
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
         tenant_name=body.name,
-        access_token=tenant_api_key(auth.role, wallet_response.token),
+        access_token=tenant_api_key(admin_auth.role, wallet_response.token),
         group_id=body.group_id,
     )
 
@@ -154,7 +154,7 @@ async def get_tenant_auth_token(
         wallet_id=wallet.wallet_id, body=CreateWalletTokenRequest()
     )
 
-    return TenantAuth(access_token=tenant_api_key(auth.role, response.token))
+        return TenantAuth(access_token=tenant_api_key(admin_auth.role, response.token))
 
 
 @router.put("/{tenant_id}", response_model=Tenant)

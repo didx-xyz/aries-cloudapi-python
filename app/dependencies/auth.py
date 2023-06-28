@@ -30,6 +30,10 @@ class AcaPyAuthVerified(AcaPyAuth):
 
 
 def acapy_auth(auth: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
+    return get_acapy_auth(auth)
+
+
+def get_acapy_auth(auth: str) -> AcaPyAuth:
     if "." not in auth:
         raise HTTPException(401, "Unauthorized")
 
@@ -47,6 +51,10 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
 
 
 def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+    return get_acapy_auth_verified(auth)
+
+
+def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
     if auth.role.is_admin:
         if auth.token != auth.role.agent_type.x_api_key:
             raise HTTPException(403, "Unauthorized")

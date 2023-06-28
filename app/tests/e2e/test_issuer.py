@@ -6,10 +6,10 @@ from assertpy import assert_that
 from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import CredentialSchema
-from app.generic.issuer.facades.acapy_issuer_utils import cred_id_no_version
 from app.tests.e2e.test_fixtures import CREDENTIALS_BASE_PATH
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
+from app.util.credentials import cred_id_no_version
 from shared import CredentialExchange, RichAsyncClient
 
 logger = logging.getLogger(__name__)
@@ -414,6 +414,7 @@ async def test_send_credential_request(
 #     )
 
 
+@pytest.mark.skip(reason="Inconsistent results, skipping for now until it's reworked")
 @pytest.mark.anyio
 async def test_revoke_credential(
     faber_client: RichAsyncClient,

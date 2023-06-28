@@ -1,11 +1,11 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
+from fastapi import HTTPException
 
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
-from shared.cloud_api_error import CloudApiException
 from shared.models.topics.base import CredentialExchange
 
 jsonld_credential = {
@@ -65,7 +65,7 @@ async def test_sign_jsonld(
     )
 
     # Error
-    with pytest.raises(CloudApiException) as exc:
+    with pytest.raises(HTTPException) as exc:
         await alice_member_client.post("/generic/jsonld/sign", json=json_ld_req.dict())
 
     assert_that(exc.value.detail).contains(
@@ -137,7 +137,7 @@ async def test_verify_jsonld(
         doc=signed_doc["doc"],
     )
     # Error wrong args
-    with pytest.raises(CloudApiException) as exc:
+    with pytest.raises(HTTPException) as exc:
         response = await alice_member_client.post(
             "/generic/jsonld/verify", json=jsonld_verify.dict()
         )
@@ -151,7 +151,7 @@ async def test_verify_jsonld(
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
     jsonld_verify.public_did = faber_pub_did
 
-    with pytest.raises(CloudApiException) as exc:
+    with pytest.raises(HTTPException) as exc:
         await faber_client.post("/generic/jsonld/verify", json=jsonld_verify.dict())
 
     assert_that(exc.value.status_code).is_equal_to(422)

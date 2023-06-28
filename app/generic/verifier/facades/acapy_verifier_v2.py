@@ -10,6 +10,7 @@ from aries_cloudcontroller import (
     V20PresSpecByFormatRequest,
 )
 
+from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (
     AcceptProofRequest,
@@ -19,7 +20,6 @@ from app.generic.verifier.models import (
 )
 from shared import PresentationExchange, pres_id_no_version
 from shared import presentation_record_to_model as record_to_model
-from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +58,7 @@ class VerifierV2(Verifier):
             )
             return record_to_model(presentation_exchange)
         except Exception as e:
-            logger.exception(
-                "An unexpected error occurred while getting record: %r", e
-            )
+            logger.exception("An unexpected error occurred while getting record: %r", e)
             raise CloudApiException("Failed to get proof record.") from e
 
     @classmethod
@@ -94,7 +92,8 @@ class VerifierV2(Verifier):
             return record_to_model(proof_record)
         except Exception as e:
             logger.exception(
-                "An unexpected error occurred while creating presentation request: %r", e
+                "An unexpected error occurred while creating presentation request: %r",
+                e,
             )
             raise CloudApiException("Failed to create presentation request.") from e
 

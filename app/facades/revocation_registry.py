@@ -14,9 +14,9 @@ from aries_cloudcontroller import (
     TxnOrRevRegResult,
 )
 
+from app.dependencies.auth import get_governance_controller
 from app.event_handling.sse_listener import SseListener
-from shared.cloud_api_error import CloudApiException
-from shared.dependencies.auth import get_governance_controller
+from app.exceptions.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
@@ -316,15 +316,14 @@ async def revoke_credential(
 
 async def endorser_revoke():
     listener = SseListener(topic="endorsements", wallet_id="admin")
+    try:
+        txn_record = await listener.wait_for_state(desired_state="request-received")
+    except TimeoutError as e:
+        raise CloudApiException(
+            "Timeout occured while waiting to retrieve transaction record for endorser",
+            504,
+        ) from e
     async with get_governance_controller() as endorser_controller:
-        try:
-            txn_record = await listener.wait_for_state(desired_state="request-received")
-        except TimeoutError as e:
-            raise CloudApiException(
-                "Timeout occured while waiting to retrieve transaction record for endorser",
-                504,
-            ) from e
-
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]
         )

@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
 from app.event_handling.websocket_manager import WebsocketManager
+from app.exceptions.cloud_api_error import CloudApiException
 from app.generic import definitions, messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -21,7 +22,6 @@ from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
 from app.generic.webhooks import sse, webhooks, websocket_endpoint
-from shared.cloud_api_error import CloudApiException
 
 logger = logging.getLogger(__name__)
 
@@ -31,30 +31,39 @@ debug = not prod
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
 
-app = FastAPI(
-    debug=debug,
-    title=OPENAPI_NAME,
-    description="Welcome to the Aries CloudAPI Python project",
-    version=PROJECT_VERSION,
-)
 
-routes = [
-    connections,
-    definitions,
-    issuer,
-    jsonld,
-    messaging,
-    oob,
-    tenants,
-    trust_registry,
-    verifier,
-    wallet,
-    webhooks,
-    sse,
-    websocket_endpoint,
-]  # List of modules with `router`. Will appear in docs in this order.
-for route in routes:
-    app.include_router(route.router)
+def create_app() -> FastAPI:
+    routes = [
+        connections,
+        definitions,
+        issuer,
+        jsonld,
+        messaging,
+        oob,
+        tenants,
+        trust_registry,
+        verifier,
+        wallet,
+        webhooks,
+        sse,
+        websocket_endpoint,
+    ]
+
+    application = FastAPI(
+        debug=debug,
+        title=OPENAPI_NAME,
+        description="Welcome to the Aries CloudAPI Python project",
+        version=PROJECT_VERSION,
+    )
+
+    for route in routes:
+        # Routes will appear in the openapi docs with the same order as defined in `routes`
+        application.include_router(route.router)
+
+    return application
+
+
+app = create_app()
 
 
 @app.on_event("startup")

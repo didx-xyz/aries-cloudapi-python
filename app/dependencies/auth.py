@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Union
 
 import jwt
 from aries_cloudcontroller import AcaPyClient
@@ -9,8 +9,8 @@ from fastapi import HTTPException
 from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
 
+from app.dependencies.role import Role
 from shared import ACAPY_MULTITENANT_JWT_SECRET
-from shared.dependencies.role import Role
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,6 @@ x_api_key_scheme = APIKeyHeader(name="x-api-key")
 class AcaPyAuth:
     token: str
     role: Role
-    wallet_id: str = None
 
 
 @dataclass
@@ -30,7 +29,7 @@ class AcaPyAuthVerified(AcaPyAuth):
     wallet_id: str
 
 
-def acapy_auth(auth: str = Depends(x_api_key_scheme)):
+def acapy_auth(auth: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
     if "." not in auth:
         raise HTTPException(401, "Unauthorized")
 
@@ -47,7 +46,7 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)):
     return AcaPyAuth(role=role, token=token)
 
 
-def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
+def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
     if auth.role.is_admin:
         if auth.token != auth.role.agent_type.x_api_key:
             raise HTTPException(403, "Unauthorized")
@@ -70,32 +69,24 @@ def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)):
     return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id=wallet_id)
 
 
-async def admin_agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
-    if not auth.role.is_admin:
+def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+    if auth.role == Role.GOVERNANCE:
+        return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
+    else:
         raise HTTPException(403, "Unauthorized")
 
-    async with asynccontextmanager(agent_selector)(auth) as x:
-        yield x
 
-
-def agent_role(role: Union["Role", List["Role"]]):
-    async def run(auth: AcaPyAuth = Depends(acapy_auth)):
-        roles = role if isinstance(role, List) else [role]
-
-        if auth.role not in roles:
-            raise HTTPException(403, "Unauthorized")
-
-        async with asynccontextmanager(agent_selector)(auth) as x:
-            yield x
-
-    return run
+def acapy_auth_tenant_admin(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+    if auth.role == Role.TENANT_ADMIN:
+        return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
+    else:
+        raise HTTPException(403, "Unauthorized")
 
 
 @asynccontextmanager
 async def get_governance_controller():
-    # TODO: would be good to support this natively in AcaPyClient
     async with AcaPyClient(
-        Role.GOVERNANCE.agent_type.base_url,
+        base_url=Role.GOVERNANCE.agent_type.base_url,
         api_key=Role.GOVERNANCE.agent_type.x_api_key,
     ) as client:
         yield client
@@ -103,49 +94,38 @@ async def get_governance_controller():
 
 @asynccontextmanager
 async def get_tenant_admin_controller():
-    # TODO: would be good to support this natively in AcaPyClient
     async with AcaPyClient(
-        Role.TENANT_ADMIN.agent_type.base_url,
+        base_url=Role.TENANT_ADMIN.agent_type.base_url,
         api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
     ) as client:
         yield client
 
 
 @asynccontextmanager
-async def get_tenant_controller(role: "Role", auth_token: str):
+async def get_tenant_controller(auth_token: str):
     async with AcaPyClient(
-        role.agent_type.base_url,
-        api_key=role.agent_type.x_api_key,
+        base_url=Role.TENANT.agent_type.base_url,
+        api_key=Role.TENANT.agent_type.x_api_key,
         tenant_jwt=auth_token,
     ) as client:
         yield client
 
 
-async def agent_selector(auth: AcaPyAuth = Depends(acapy_auth)):
-    if not auth.token or auth.token == "":
+def client_from_auth(auth: Union[AcaPyAuth, AcaPyAuthVerified]) -> AcaPyClient:
+    if not auth or not auth.token:
         raise HTTPException(403, "Missing authorization key")
 
-    tenant_jwt: Optional[str] = None
-    x_api_key: Optional[str] = None
+    tenant_jwt = None
 
-    # Tenant of multitenant agent
     if auth.role.is_multitenant and not auth.role.is_admin:
         tenant_jwt = auth.token
         x_api_key = auth.role.agent_type.x_api_key
     else:
         x_api_key = auth.token
 
-    agent = None
-    try:
-        # yield the controller
-        async with AcaPyClient(
-            base_url=auth.role.agent_type.base_url,
-            api_key=x_api_key,
-            tenant_jwt=tenant_jwt,
-        ) as agent:
-            yield agent
-    except Exception as e:
-        # We can only log this here and not raise an HTTPException as we are past the yield. See here:
-        # https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-with-yield/#dependencies-with-yield-and-httpexception
-        logger.error("%s", e, exc_info=e)
-        raise e
+    client = AcaPyClient(
+        base_url=auth.role.agent_type.base_url,
+        api_key=x_api_key,
+        tenant_jwt=tenant_jwt,
+    )
+    return client

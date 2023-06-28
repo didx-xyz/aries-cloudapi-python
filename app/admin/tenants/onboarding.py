@@ -10,16 +10,13 @@ from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
+from app.dependencies.auth import get_governance_controller, get_tenant_controller
 from app.event_handling.sse_listener import SseListener
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
-from shared import ACAPY_ENDORSER_ALIAS, CloudApiException
-from shared.dependencies.auth import (
-    Role,
-    get_governance_controller,
-    get_tenant_controller,
-)
+from shared import ACAPY_ENDORSER_ALIAS
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +83,7 @@ async def onboard_tenant(
     if "issuer" in roles:
         # Get governance and tenant controllers, onboard issuer
         async with get_governance_controller() as governance_controller, get_tenant_controller(
-            Role.TENANT, tenant_auth_token
+            tenant_auth_token
         ) as tenant_controller:
             return await onboard_issuer(
                 name=name,
@@ -96,9 +93,7 @@ async def onboard_tenant(
             )
 
     elif "verifier" in roles:
-        async with get_tenant_controller(
-            Role.TENANT, tenant_auth_token
-        ) as tenant_controller:
+        async with get_tenant_controller(tenant_auth_token) as tenant_controller:
             return await onboard_verifier(
                 name=name, verifier_controller=tenant_controller
             )

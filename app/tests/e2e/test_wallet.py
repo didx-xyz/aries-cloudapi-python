@@ -3,6 +3,7 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 import app.facades.acapy_wallet as wallet_facade
+from app.dependencies.auth import AcaPyAuthVerified
 from app.generic.wallet.models import SetDidEndpointRequest
 from app.generic.wallet.wallet import (
     get_did_endpoint,
@@ -26,14 +27,14 @@ async def create_did_mock(governance_client: RichAsyncClient):
 
 @pytest.mark.anyio
 async def test_list_dids(
-    governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
+    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
 ):
     response = await governance_client.get(WALLET_BASE_PATH)
 
     assert response.status_code == 200
     response = response.json()
 
-    res_method = await list_dids(aries_controller=governance_acapy_client)
+    res_method = await list_dids(auth=mock_governance_auth)
     assert res_method == response
 
 
@@ -49,7 +50,7 @@ async def test_create_local_did(governance_client: RichAsyncClient):
 
 @pytest.mark.anyio
 async def test_get_public_did(
-    governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
+    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
 ):
     response = await governance_client.get(f"{WALLET_BASE_PATH}/public")
 
@@ -58,7 +59,7 @@ async def test_get_public_did(
 
     assert_that(response).contains("did", "verkey")
 
-    res_method = await get_public_did(aries_controller=governance_acapy_client)
+    res_method = await get_public_did(auth=mock_governance_auth)
     assert res_method == response
 
 
@@ -95,7 +96,9 @@ async def test_set_public_did(
 
 
 @pytest.mark.anyio
-async def test_set_did_endpoint(governance_acapy_client: AcaPyClient):
+async def test_set_did_endpoint(
+    governance_acapy_client: AcaPyClient, mock_governance_auth: AcaPyAuthVerified
+):
     # Don't want us overwriting the real endpoint, so not setting as public did
     did = await create_public_did(governance_acapy_client, set_public=False)
     endpoint = "https://ssi.com"
@@ -103,11 +106,9 @@ async def test_set_did_endpoint(governance_acapy_client: AcaPyClient):
     await set_did_endpoint(
         did.did,
         SetDidEndpointRequest(endpoint=endpoint),
-        aries_controller=governance_acapy_client,
+        auth=mock_governance_auth,
     )
 
-    retrieved_endpoint = await get_did_endpoint(
-        did.did, aries_controller=governance_acapy_client
-    )
+    retrieved_endpoint = await get_did_endpoint(did.did, auth=mock_governance_auth)
 
     assert_that(endpoint).is_equal_to(retrieved_endpoint.endpoint)

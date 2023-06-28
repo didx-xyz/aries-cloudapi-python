@@ -32,7 +32,6 @@ def create_app() -> FastAPI:
         version=PROJECT_VERSION,
     )
 
-    application.container = container
     application.include_router(receive_events.router)
     application.include_router(webhooks.router)
     application.include_router(sse.router)

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
+from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 from app.facades.sse import (
     sse_subscribe_event_with_field_and_state,
     sse_subscribe_event_with_state,
@@ -8,7 +9,6 @@ from app.facades.sse import (
     sse_subscribe_wallet,
     sse_subscribe_wallet_topic,
 )
-from shared.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 
 router = APIRouter(prefix="/sse", tags=["sse"])
 

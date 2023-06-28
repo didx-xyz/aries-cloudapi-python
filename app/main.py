@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
 from app.event_handling.webhooks import Webhooks
+from app.exceptions.cloud_api_error import CloudApiException
 from app.generic import definitions, messaging, sse, trust_registry, webhooks
 from app.generic.connections import connections
 from app.generic.issuer import issuer
@@ -20,7 +21,6 @@ from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
-from shared.cloud_api_error import CloudApiException
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
@@ -28,25 +28,39 @@ PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
 logger = logging.getLogger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
 debug = not prod
-app = FastAPI(
-    debug=debug,
-    title=OPENAPI_NAME,
-    description="Welcome to the Aries CloudAPI Python project",
-    version=PROJECT_VERSION,
-)
 
-app.include_router(connections.router)
-app.include_router(definitions.router)
-app.include_router(issuer.router)
-app.include_router(jsonld.router)
-app.include_router(messaging.router)
-app.include_router(oob.router)
-app.include_router(tenants.router)
-app.include_router(trust_registry.router)
-app.include_router(verifier.router)
-app.include_router(wallet.router)
-app.include_router(webhooks.router)
-app.include_router(sse.router)
+
+def create_app() -> FastAPI:
+    routes = [
+        connections,
+        definitions,
+        issuer,
+        jsonld,
+        messaging,
+        oob,
+        tenants,
+        trust_registry,
+        verifier,
+        wallet,
+        webhooks,
+        sse,
+    ]
+
+    application = FastAPI(
+        debug=debug,
+        title=OPENAPI_NAME,
+        description="Welcome to the Aries CloudAPI Python project",
+        version=PROJECT_VERSION,
+    )
+
+    for route in routes:
+        # Routes will appear in the openapi docs with the same order as defined in `routes`
+        application.include_router(route.router)
+
+    return application
+
+
+app = create_app()
 
 
 @app.on_event("shutdown")

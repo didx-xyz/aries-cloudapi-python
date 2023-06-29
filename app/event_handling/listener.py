@@ -1,11 +1,11 @@
 import asyncio
-import logging
 from typing import Any, Dict, Optional
 
+from app.config.log_config import get_logger
 from app.event_handling.webhooks import Webhooks
 from shared import CloudApiTopics
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Listener:

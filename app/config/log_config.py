@@ -8,6 +8,7 @@ formatter = (
     "<level>{level: <8}</level> | "
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "{extra[wallet_id]:Wallet ID: {}} - "
+    "{extra[body]:Body: {}} - "
     "<level>{message}</level>"
 )
 

@@ -10,7 +10,7 @@ from aries_cloudcontroller import (
     UpdateWalletRequest,
     WalletRecord,
 )
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from uplink import Consumer, Query, get, returns
 
@@ -134,7 +134,9 @@ async def delete_tenant_by_id(
     async with get_tenant_admin_controller() as admin_controller:
         bound_logger.debug("Retrieving the wallet")
         wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+        if not wallet:
             bound_logger.error(f"Bad request: Wallet not found.")
+            raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
         # wallet_id is the id of the actor in the trust registry.
         # This makes it a lot easier to link a tenant to an actor
@@ -166,7 +168,9 @@ async def get_tenant_auth_token(
     async with get_tenant_admin_controller() as admin_controller:
         bound_logger.debug("Retrieving the wallet")
         wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+        if not wallet:
             bound_logger.error(f"Bad request: Wallet not found.")
+            raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
         bound_logger.debug("Getting auth token for wallet")
         response = await admin_controller.multitenancy.get_auth_token(
@@ -219,7 +223,9 @@ async def get_tenant(
     async with get_tenant_admin_controller() as admin_controller:
         bound_logger.debug("Retrieving the wallet")
         wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+        if not wallet:
             bound_logger.error(f"Bad request: Wallet not found.")
+            raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
     response = tenant_from_wallet_record(wallet)
     bound_logger.info("Successfully fetched tenant from wallet record.")

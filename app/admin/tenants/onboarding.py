@@ -319,9 +319,6 @@ async def onboard_issuer_no_public_did(
         )
         await set_endorser_roles(endorser_connection, connection_record)
         await configure_endorsement(connection_record, endorser_did)
-        issuer_did = await register_issuer_did()
-
-        return issuer_did
 
     try:
         logger.debug("Getting public DID for endorser.")
@@ -331,6 +328,8 @@ async def onboard_issuer_no_public_did(
 
     try:
         bound_logger.info("Creating connection with endorser.")
+        await create_connection_with_endorser(endorser_did)
+        issuer_did = await register_issuer_did()
     except Exception as e:
         bound_logger.exception("Could not create connection with endorser.")
 

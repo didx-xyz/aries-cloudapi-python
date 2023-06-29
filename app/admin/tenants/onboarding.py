@@ -42,7 +42,7 @@ async def handle_tenant_update(
     bound_logger.debug("Retrieving the wallet")
     wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
     if not wallet:
-        bound_logger.error(f"Bad request: Wallet not found.")
+        bound_logger.error("Bad request: Wallet not found.")
         raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
     bound_logger.debug("Retrieving tenant from trust registry")

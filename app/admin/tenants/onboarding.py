@@ -270,7 +270,6 @@ async def onboard_issuer_no_public_did(
         bound_logger.info("Creating DID for issuer")
         issuer_did = await acapy_wallet.create_did(issuer_controller)
 
-        bound_logger.debug("Registering DID on ledger")
         await acapy_ledger.register_nym_on_ledger(
             endorser_controller,
             did=issuer_did.did,

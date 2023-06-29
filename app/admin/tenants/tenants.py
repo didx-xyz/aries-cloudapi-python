@@ -109,7 +109,7 @@ async def create_tenant(
             )
         )
 
-    return CreateTenantResponse(
+    response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,
         created_at=wallet_response.created_at,
         image_url=body.image_url,
@@ -119,6 +119,7 @@ async def create_tenant(
         group_id=body.group_id,
     )
     bound_logger.debug("Create tenant complete with response body: {}.", response)
+    return response
 
 
 @router.delete("/{tenant_id}")
@@ -172,7 +173,9 @@ async def get_tenant_auth_token(
             wallet_id=wallet.wallet_id, body=CreateWalletTokenRequest()
         )
 
+    response = TenantAuth(access_token=tenant_api_key(auth.role, response.token))
     bound_logger.info("Successfully retreived access token.")
+    return response
 
 
 @router.put("/{tenant_id}", response_model=Tenant)
@@ -199,7 +202,9 @@ async def update_tenant(
             ),
         )
 
+    response = tenant_from_wallet_record(wallet)
     bound_logger.info("Successfully updated tenant.")
+    return response
 
 
 @router.get("/{tenant_id}", response_model=Tenant)
@@ -216,7 +221,9 @@ async def get_tenant(
         wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
             bound_logger.error(f"Bad request: Wallet not found.")
 
+    response = tenant_from_wallet_record(wallet)
     bound_logger.info("Successfully fetched tenant from wallet record.")
+    return response
 
 
 @router.get("", response_model=List[Tenant])
@@ -260,11 +267,12 @@ async def get_tenants(
                 return []
 
             # Only return wallet with current authentication role.
-            return [
+            response = [
                 tenant_from_wallet_record(wallet_record)
                 for wallet_record in wallets.results
             ]
             bound_logger.info("Successfully fetched wallets.")
+            return response
 
         bound_logger.info("Fetching wallets by group id")
         wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
@@ -273,7 +281,8 @@ async def get_tenants(
         bound_logger.info("No wallets found for requested group id")
         return []
 
-    return [
+    response = [
         tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
     ]
     bound_logger.info("Successfully fetched wallets by group id.")
+    return response

@@ -1,4 +1,3 @@
-import logging
 from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
@@ -10,6 +9,7 @@ from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
+from app.config.log_config import get_logger
 from app.dependencies.auth import get_governance_controller, get_tenant_controller
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
@@ -18,7 +18,7 @@ from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_ac
 from app.util.did import qualified_did_sov
 from shared import ACAPY_ENDORSER_ALIAS
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class OnboardResult(BaseModel):
@@ -36,22 +36,30 @@ async def handle_tenant_update(
     tenant_id: str,
     update: UpdateTenantRequest,
 ):
-    # We retrieve the wallet to verify what has changed
+    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger.bind(body=update).info("Handling tenant update.")
+
+    bound_logger.debug("Retrieving the wallet.")
     wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
     if not wallet:
+        bound_logger.error(f"Bad request: Wallet not found.")
         raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
-    # Get tenant from trust registry
+    bound_logger.debug("Retrieving tenant from trust registry.")
     actor = await actor_by_id(wallet.wallet_id)
     if not actor:
+        bound_logger.error(
+            "Tenant not found in trust registry. "
+            "Holder tenants cannot be updated with new roles."
+        )
         raise HTTPException(409, "Holder tenants cannot be updated with new roles.")
 
     updated_actor = actor.copy()
-
     if update.name:
         updated_actor["name"] = update.name
 
     if update.roles:
+        bound_logger.info("Updating tenant roles.")
         # We only care about the added roles, as that's what needs the setup.
         # Teardown is not required at the moment, besides from removing it from
         # the trust registry
@@ -75,12 +83,17 @@ async def handle_tenant_update(
         updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
 
     await update_actor(updated_actor)
+    bound_logger.info("Tenant update handled successfully.")
 
 
 async def onboard_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
+    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger.bind(body=roles).info("Start onboarding tenant.")
+
     if "issuer" in roles:
+        bound_logger.debug("Tenant has 'issuer' role, onboarding as issuer.")
         # Get governance and tenant controllers, onboard issuer
         async with get_governance_controller() as governance_controller, get_tenant_controller(
             tenant_auth_token
@@ -91,13 +104,17 @@ async def onboard_tenant(
                 issuer_controller=tenant_controller,
                 issuer_wallet_id=tenant_id,
             )
+            bound_logger.info("Onboarding as issuer completed successfully.")
 
     elif "verifier" in roles:
+        bound_logger.debug("Tenant has 'verifier' role, onboarding as verifier.")
         async with get_tenant_controller(tenant_auth_token) as tenant_controller:
             return await onboard_verifier(
                 name=name, verifier_controller=tenant_controller
             )
+            bound_logger.info("Onboarding as verifier completed successfully.")
 
+    bound_logger.error("Tenant request does not have valid role(s) for onboarding.")
     raise CloudApiException("Unable to onboard tenant without role(s).")
 
 
@@ -120,15 +137,19 @@ async def onboard_issuer(
         issuer_controller (AcaPyClient): authenticated ACA-Py client for issuer
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
     """
+    bound_logger = logger.bind(wallet_id=issuer_wallet_id)
+    bound_logger.info("Onboarding issuer.")
 
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
+        bound_logger.debug("Obtained public DID for the to-be issuer.")
     except CloudApiException:
+        bound_logger.debug("No public DID for the to-be issuer.")
         issuer_did = await onboard_issuer_no_public_did(
             name, endorser_controller, issuer_controller, issuer_wallet_id
         )
 
-    # Create an invitation as well
+    bound_logger.debug("Creating OOB invitation on behalf of issuer.")
     invitation = await issuer_controller.out_of_band.create_invitation(
         auto_accept=True,
         multi_use=True,
@@ -170,9 +191,12 @@ async def onboard_issuer_no_public_did(
     Returns:
         issuer_did (DID): The issuer's DID after completing the onboarding process
     """
+    bound_logger = logger.bind(wallet_id=issuer_wallet_id)
+    bound_logger.info("Onboarding issuer that has no public DID.")
 
     async def create_endorser_invitation():
         # Make sure the issuer has a connection with the endorser
+        bound_logger.debug("Create OOB invitation on behalf of endorser.")
         invitation = await endorser_controller.out_of_band.create_invitation(
             auto_accept=True,
             body=InvitationCreateRequest(
@@ -181,20 +205,17 @@ async def onboard_issuer_no_public_did(
                 use_public_did=True,
             ),
         )
+        bound_logger.debug("Created OOB invitation.")
         return invitation
 
     async def wait_for_connection_completion(invitation):
-        logger.debug(
-            "Starting webhook listener for connections with wallet id %s",
-            issuer_wallet_id,
-        )
-
         connections_listener = create_sse_listener(
             topic="connections", wallet_id="admin"
         )
 
         # FIXME: make sure the connection with this alias doesn't exist yet
         # Or does use_existing_connection take care of this?
+        bound_logger.debug("Receive invitation from endorser on behalf of issuer.")
         connection_record = await issuer_controller.out_of_band.receive_invitation(
             auto_accept=True,
             use_existing_connection=True,
@@ -203,20 +224,24 @@ async def onboard_issuer_no_public_did(
         )
 
         try:
+            bound_logger.debug("Waiting for event signalling invitation complete.")
             endorser_connection = await connections_listener.wait_for_event(
                 field="invitation_msg_id",
                 field_id=invitation.invi_msg_id,
                 desired_state="completed",
             )
         except TimeoutError as e:
+            bound_logger.error("Waiting for invitation complete event has timed out.")
             raise CloudApiException(
                 "Timeout occurred while waiting for connection with endorser to complete",
                 504,
             ) from e
 
+        bound_logger.info("Connection complete between issuer and endorser.")
         return endorser_connection, connection_record
 
     async def set_endorser_roles(endorser_connection, connection_record):
+        bound_logger.debug("Setting roles for endorser.")
         await endorser_controller.endorse_transaction.set_endorser_role(
             conn_id=endorser_connection["connection_id"],
             transaction_my_job="TRANSACTION_ENDORSER",
@@ -226,19 +251,24 @@ async def onboard_issuer_no_public_did(
             conn_id=connection_record.connection_id,
             transaction_my_job="TRANSACTION_AUTHOR",
         )
+        bound_logger.debug("Successfully set roles for endorser.")
 
     async def configure_endorsement(connection_record, endorser_did):
         # Make sure endorsement has been configured
         # There is currently no way to retrieve endorser info. We'll just set it
         # to make sure the endorser info is set.
+        bound_logger.debug("Setting endorser info.")
         await issuer_controller.endorse_transaction.set_endorser_info(
             conn_id=connection_record.connection_id,
             endorser_did=endorser_did.did,
         )
+        bound_logger.debug("Successfully set endorser info.")
 
     async def register_issuer_did():
+        bound_logger.info("Creating DID for issuer.")
         issuer_did = await acapy_wallet.create_did(issuer_controller)
 
+        bound_logger.debug("Registering DID on ledger.")
         await acapy_ledger.register_nym_on_ledger(
             endorser_controller,
             did=issuer_did.did,
@@ -246,9 +276,11 @@ async def onboard_issuer_no_public_did(
             alias=name,
         )
 
+        bound_logger.debug("Accepting TAA on behalf of issuer.")
         await acapy_ledger.accept_taa_if_required(issuer_controller)
         # NOTE: Still needs endorsement in 0.7.5 release
         # Otherwise did has no associated services.
+        bound_logger.debug("Setting public DID for issuer.")
         await acapy_wallet.set_public_did(
             issuer_controller,
             did=issuer_did.did,
@@ -260,18 +292,24 @@ async def onboard_issuer_no_public_did(
         )
 
         try:
+            bound_logger.debug("Waiting for endorsement request received.")
             txn_record = await endorsements_listener.wait_for_state(
                 desired_state="request-received"
             )
         except TimeoutError as e:
+            bound_logger.error("Waiting for endorsement request has timed out.")
             raise CloudApiException(
                 "Timeout occured while waiting to create connection with endorser", 504
             ) from e
 
+        bound_logger.bind(body=txn_record["transaction_id"]).debug(
+            "Endorsing transaction"
+        )
         await endorser_controller.endorse_transaction.endorse_transaction(
             tran_id=txn_record["transaction_id"]
         )
 
+        bound_logger.debug("Issuer DID registered and endorsed successfully.")
         return issuer_did
 
     async def create_connection_with_endorser(endorser_did):
@@ -286,15 +324,17 @@ async def onboard_issuer_no_public_did(
         return issuer_did
 
     try:
+        logger.debug("Getting public DID for endorser.")
         endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
     except Exception as e:
-        raise CloudApiException("Unable to get endorser public DID") from e
+        logger.critical("Endorser has no public DID.")
 
     try:
-        issuer_did = await create_connection_with_endorser(endorser_did)
+        bound_logger.info("Creating connection with endorser.")
     except Exception as e:
-        raise CloudApiException("Error creating connection with endorser") from e
+        bound_logger.exception("Could not create connection with endorser.")
 
+    bound_logger.info("Successfully registered DID for issuer.")
     return issuer_did
 
 
@@ -307,16 +347,22 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
     Args:
         verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
     """
+    logger.info("Onboarding verifier.")
 
     onboarding_result = {}
 
     # If the verifier already has a public did it doesn't need an invitation. The invitation
     # is just to bypass having to pay for a public did for every verifier
     try:
+        logger.debug("Getting public DID for to-be verifier.")
         public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
 
         onboarding_result["did"] = qualified_did_sov(public_did.did)
     except CloudApiException:
+        logger.debug(
+            "No public DID found for to-be verifier. "
+            "Creating OOB invitation on their behalf."
+        )
         # create a multi_use invitation from the did
         invitation = await verifier_controller.out_of_band.create_invitation(
             auto_accept=True,
@@ -331,13 +377,15 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         try:
             # Because we're not creating an invitation with a public did the invitation will always
             # contain a did:key as the first recipientKey in the first service
+            logger.debug("Getting DID from verifier's invitation.")
             onboarding_result["did"] = invitation.invitation.services[0][
                 "recipientKeys"
             ][0]
             onboarding_result["didcomm_invitation"] = invitation.invitation_url
         except (KeyError, IndexError) as e:
             # FIXME: more verbose error
-            logger.warning("Error creating invitation:\n%s", str(e))
+            logger.exception("Error creating invitation to onboard verifier.")
             raise CloudApiException("Error creating invitation.") from e
 
+    logger.info("Returning verifier onboard result.")
     return OnboardResult(**onboarding_result)

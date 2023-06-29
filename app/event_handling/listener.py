@@ -8,6 +8,7 @@ from shared import CloudApiTopics
 logger = get_logger(__name__)
 
 
+# NB: Class no longer used
 class Listener:
     """
     A class for listening to webhook events filtered by topic and wallet_id. Events that match the

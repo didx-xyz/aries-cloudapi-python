@@ -37,15 +37,15 @@ async def handle_tenant_update(
     update: UpdateTenantRequest,
 ):
     bound_logger = logger.bind(wallet_id=tenant_id)
-    bound_logger.bind(body=update).info("Handling tenant update.")
+    bound_logger.bind(body=update).info("Handling tenant update")
 
-    bound_logger.debug("Retrieving the wallet.")
+    bound_logger.debug("Retrieving the wallet")
     wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
     if not wallet:
         bound_logger.error(f"Bad request: Wallet not found.")
         raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
 
-    bound_logger.debug("Retrieving tenant from trust registry.")
+    bound_logger.debug("Retrieving tenant from trust registry")
     actor = await actor_by_id(wallet.wallet_id)
     if not actor:
         bound_logger.error(
@@ -59,7 +59,7 @@ async def handle_tenant_update(
         updated_actor["name"] = update.name
 
     if update.roles:
-        bound_logger.info("Updating tenant roles.")
+        bound_logger.info("Updating tenant roles")
         # We only care about the added roles, as that's what needs the setup.
         # Teardown is not required at the moment, besides from removing it from
         # the trust registry
@@ -90,10 +90,10 @@ async def onboard_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
     bound_logger = logger.bind(wallet_id=tenant_id)
-    bound_logger.bind(body=roles).info("Start onboarding tenant.")
+    bound_logger.bind(body=roles).info("Start onboarding tenant")
 
     if "issuer" in roles:
-        bound_logger.debug("Tenant has 'issuer' role, onboarding as issuer.")
+        bound_logger.debug("Tenant has 'issuer' role, onboarding as issuer")
         # Get governance and tenant controllers, onboard issuer
         async with get_governance_controller() as governance_controller, get_tenant_controller(
             tenant_auth_token
@@ -108,7 +108,7 @@ async def onboard_tenant(
             return onboard_result
 
     elif "verifier" in roles:
-        bound_logger.debug("Tenant has 'verifier' role, onboarding as verifier.")
+        bound_logger.debug("Tenant has 'verifier' role, onboarding as verifier")
         async with get_tenant_controller(tenant_auth_token) as tenant_controller:
             onboard_result = await onboard_verifier(
                 name=name, verifier_controller=tenant_controller
@@ -140,18 +140,18 @@ async def onboard_issuer(
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
     """
     bound_logger = logger.bind(wallet_id=issuer_wallet_id)
-    bound_logger.info("Onboarding issuer.")
+    bound_logger.info("Onboarding issuer")
 
     try:
         issuer_did = await acapy_wallet.get_public_did(controller=issuer_controller)
-        bound_logger.debug("Obtained public DID for the to-be issuer.")
+        bound_logger.debug("Obtained public DID for the to-be issuer")
     except CloudApiException:
-        bound_logger.debug("No public DID for the to-be issuer.")
+        bound_logger.debug("No public DID for the to-be issuer")
         issuer_did = await onboard_issuer_no_public_did(
             name, endorser_controller, issuer_controller, issuer_wallet_id
         )
 
-    bound_logger.debug("Creating OOB invitation on behalf of issuer.")
+    bound_logger.debug("Creating OOB invitation on behalf of issuer")
     invitation = await issuer_controller.out_of_band.create_invitation(
         auto_accept=True,
         multi_use=True,
@@ -194,11 +194,11 @@ async def onboard_issuer_no_public_did(
         issuer_did (DID): The issuer's DID after completing the onboarding process
     """
     bound_logger = logger.bind(wallet_id=issuer_wallet_id)
-    bound_logger.info("Onboarding issuer that has no public DID.")
+    bound_logger.info("Onboarding issuer that has no public DID")
 
     async def create_endorser_invitation():
         # Make sure the issuer has a connection with the endorser
-        bound_logger.debug("Create OOB invitation on behalf of endorser.")
+        bound_logger.debug("Create OOB invitation on behalf of endorser")
         invitation = await endorser_controller.out_of_band.create_invitation(
             auto_accept=True,
             body=InvitationCreateRequest(
@@ -207,7 +207,7 @@ async def onboard_issuer_no_public_did(
                 use_public_did=True,
             ),
         )
-        bound_logger.debug("Created OOB invitation.")
+        bound_logger.debug("Created OOB invitation")
         return invitation
 
     async def wait_for_connection_completion(invitation):
@@ -217,7 +217,7 @@ async def onboard_issuer_no_public_did(
 
         # FIXME: make sure the connection with this alias doesn't exist yet
         # Or does use_existing_connection take care of this?
-        bound_logger.debug("Receive invitation from endorser on behalf of issuer.")
+        bound_logger.debug("Receive invitation from endorser on behalf of issuer")
         connection_record = await issuer_controller.out_of_band.receive_invitation(
             auto_accept=True,
             use_existing_connection=True,
@@ -226,7 +226,7 @@ async def onboard_issuer_no_public_did(
         )
 
         try:
-            bound_logger.debug("Waiting for event signalling invitation complete.")
+            bound_logger.debug("Waiting for event signalling invitation complete")
             endorser_connection = await connections_listener.wait_for_event(
                 field="invitation_msg_id",
                 field_id=invitation.invi_msg_id,
@@ -243,7 +243,7 @@ async def onboard_issuer_no_public_did(
         return endorser_connection, connection_record
 
     async def set_endorser_roles(endorser_connection, connection_record):
-        bound_logger.debug("Setting roles for endorser.")
+        bound_logger.debug("Setting roles for endorser")
         await endorser_controller.endorse_transaction.set_endorser_role(
             conn_id=endorser_connection["connection_id"],
             transaction_my_job="TRANSACTION_ENDORSER",
@@ -259,7 +259,7 @@ async def onboard_issuer_no_public_did(
         # Make sure endorsement has been configured
         # There is currently no way to retrieve endorser info. We'll just set it
         # to make sure the endorser info is set.
-        bound_logger.debug("Setting endorser info.")
+        bound_logger.debug("Setting endorser info")
         await issuer_controller.endorse_transaction.set_endorser_info(
             conn_id=connection_record.connection_id,
             endorser_did=endorser_did.did,
@@ -267,10 +267,10 @@ async def onboard_issuer_no_public_did(
         bound_logger.debug("Successfully set endorser info.")
 
     async def register_issuer_did():
-        bound_logger.info("Creating DID for issuer.")
+        bound_logger.info("Creating DID for issuer")
         issuer_did = await acapy_wallet.create_did(issuer_controller)
 
-        bound_logger.debug("Registering DID on ledger.")
+        bound_logger.debug("Registering DID on ledger")
         await acapy_ledger.register_nym_on_ledger(
             endorser_controller,
             did=issuer_did.did,
@@ -278,11 +278,11 @@ async def onboard_issuer_no_public_did(
             alias=name,
         )
 
-        bound_logger.debug("Accepting TAA on behalf of issuer.")
+        bound_logger.debug("Accepting TAA on behalf of issuer")
         await acapy_ledger.accept_taa_if_required(issuer_controller)
         # NOTE: Still needs endorsement in 0.7.5 release
         # Otherwise did has no associated services.
-        bound_logger.debug("Setting public DID for issuer.")
+        bound_logger.debug("Setting public DID for issuer")
         await acapy_wallet.set_public_did(
             issuer_controller,
             did=issuer_did.did,
@@ -294,14 +294,14 @@ async def onboard_issuer_no_public_did(
         )
 
         try:
-            bound_logger.debug("Waiting for endorsement request received.")
+            bound_logger.debug("Waiting for endorsement request received")
             txn_record = await endorsements_listener.wait_for_state(
                 desired_state="request-received"
             )
         except TimeoutError as e:
             bound_logger.error("Waiting for endorsement request has timed out.")
             raise CloudApiException(
-                "Timeout occured while waiting for endorsement request", 504
+                "Timeout occured while waiting for endorsement request.", 504
             ) from e
 
         bound_logger.bind(body=txn_record["transaction_id"]).debug(
@@ -323,14 +323,14 @@ async def onboard_issuer_no_public_did(
         await configure_endorsement(connection_record, endorser_did)
 
     try:
-        logger.debug("Getting public DID for endorser.")
+        logger.debug("Getting public DID for endorser")
         endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
     except Exception as e:
         logger.critical("Endorser has no public DID.")
         raise CloudApiException("Unable to get endorser public DID.") from e
 
     try:
-        bound_logger.info("Creating connection with endorser.")
+        bound_logger.info("Creating connection with endorser")
         await create_connection_with_endorser(endorser_did)
         issuer_did = await register_issuer_did()
     except Exception as e:
@@ -350,14 +350,14 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
     Args:
         verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
     """
-    logger.info("Onboarding verifier.")
+    logger.info("Onboarding verifier")
 
     onboarding_result = {}
 
     # If the verifier already has a public did it doesn't need an invitation. The invitation
     # is just to bypass having to pay for a public did for every verifier
     try:
-        logger.debug("Getting public DID for to-be verifier.")
+        logger.debug("Getting public DID for to-be verifier")
         public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
 
         onboarding_result["did"] = qualified_did_sov(public_did.did)
@@ -380,7 +380,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         try:
             # Because we're not creating an invitation with a public did the invitation will always
             # contain a did:key as the first recipientKey in the first service
-            logger.debug("Getting DID from verifier's invitation.")
+            logger.debug("Getting DID from verifier's invitation")
             onboarding_result["did"] = invitation.invitation.services[0][
                 "recipientKeys"
             ][0]

@@ -1,13 +1,12 @@
-import logging
-
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
 from pydantic import BaseModel
 
+from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Did(BaseModel):
@@ -25,11 +24,13 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
         str: the public did formatted as fully qualified did
     """
     # Assert the agent has a public did
+    logger.info("Fetching public DID")
     public_did = await aries_controller.wallet.get_public_did()
 
     if not public_did.result or not public_did.result.did:
-        raise CloudApiException("Agent has no public did", 403)
+        raise CloudApiException("Agent has no public did.", 403)
 
+    logger.info("Successfully fetched public DID.")
     return f"did:sov:{public_did.result.did}"
 
 
@@ -45,6 +46,7 @@ async def create_did(controller: AcaPyClient) -> Did:
     Returns:
         Did: The created did
     """
+    logger.info("Creating local DID")
     did_result = await controller.wallet.create_did(body=DIDCreate())
 
     if (
@@ -52,9 +54,10 @@ async def create_did(controller: AcaPyClient) -> Did:
         or not did_result.result.did
         or not did_result.result.verkey
     ):
-        logger.error("Failed to create DID:\n %s", did_result)
+        logger.error("Failed to create DID: {}.", did_result)
         raise CloudApiException("Error creating did.")
 
+    logger.info("Successfully created local DID")
     return Did(did=did_result.result.did, verkey=did_result.result.verkey)
 
 
@@ -76,6 +79,7 @@ async def set_public_did(
     Returns:
         DID: the did
     """
+    logger.info("Setting public DID")
     result = await controller.wallet.set_public_did(
         did=did,
         conn_id=connection_id,
@@ -85,6 +89,7 @@ async def set_public_did(
     if not result.result and not create_transaction_for_endorser:
         raise CloudApiException(f"Error setting public did to {did}", 400)
 
+    logger.info("Successfully set public DID")
     return result.dict()
 
 
@@ -100,9 +105,11 @@ async def get_public_did(controller: AcaPyClient) -> Did:
     Returns:
         Did: the public did
     """
+    logger.info("Fetching public DID")
     result = await controller.wallet.get_public_did()
 
     if not result.result:
         raise CloudApiException("No public did found", 404)
 
+    logger.info("Successfully fetched public DID.")
     return Did(did=result.result.did, verkey=result.result.verkey)

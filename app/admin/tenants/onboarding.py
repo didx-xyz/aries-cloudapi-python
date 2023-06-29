@@ -98,21 +98,23 @@ async def onboard_tenant(
         async with get_governance_controller() as governance_controller, get_tenant_controller(
             tenant_auth_token
         ) as tenant_controller:
-            return await onboard_issuer(
+            onboard_result = await onboard_issuer(
                 name=name,
                 endorser_controller=governance_controller,
                 issuer_controller=tenant_controller,
                 issuer_wallet_id=tenant_id,
             )
             bound_logger.info("Onboarding as issuer completed successfully.")
+            return onboard_result
 
     elif "verifier" in roles:
         bound_logger.debug("Tenant has 'verifier' role, onboarding as verifier.")
         async with get_tenant_controller(tenant_auth_token) as tenant_controller:
-            return await onboard_verifier(
+            onboard_result = await onboard_verifier(
                 name=name, verifier_controller=tenant_controller
             )
             bound_logger.info("Onboarding as verifier completed successfully.")
+            return onboard_result
 
     bound_logger.error("Tenant request does not have valid role(s) for onboarding.")
     raise CloudApiException("Unable to onboard tenant without role(s).")
@@ -299,7 +301,7 @@ async def onboard_issuer_no_public_did(
         except TimeoutError as e:
             bound_logger.error("Waiting for endorsement request has timed out.")
             raise CloudApiException(
-                "Timeout occured while waiting to create connection with endorser", 504
+                "Timeout occured while waiting for endorsement request", 504
             ) from e
 
         bound_logger.bind(body=txn_record["transaction_id"]).debug(
@@ -325,6 +327,7 @@ async def onboard_issuer_no_public_did(
         endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
     except Exception as e:
         logger.critical("Endorser has no public DID.")
+        raise CloudApiException("Unable to get endorser public DID.") from e
 
     try:
         bound_logger.info("Creating connection with endorser.")
@@ -332,6 +335,7 @@ async def onboard_issuer_no_public_did(
         issuer_did = await register_issuer_did()
     except Exception as e:
         bound_logger.exception("Could not create connection with endorser.")
+        raise CloudApiException("Error creating connection with endorser.") from e
 
     bound_logger.info("Successfully registered DID for issuer.")
     return issuer_did

@@ -1,4 +1,3 @@
-import logging
 from secrets import token_urlsafe
 from typing import List, Optional
 from uuid import uuid4
@@ -24,6 +23,7 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
+from app.config.log_config import get_logger
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
@@ -40,7 +40,7 @@ from app.facades.trust_registry import (
     remove_actor_by_id,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 
@@ -72,6 +72,8 @@ async def create_tenant(
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> Tenant:
     """Create a new tenant."""
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Starting tenant creation")
 
     async with get_tenant_admin_controller() as admin_controller:
         wallet_response = await admin_controller.multitenancy.create_wallet(
@@ -85,8 +87,10 @@ async def create_tenant(
                 group_id=body.group_id,
             )
         )
+    bound_logger.debug("Wallet creation successful")
 
     if body.roles and len(body.roles) > 0:
+        bound_logger.info("Onboarding with requsted roles: {roles}", roles=body.roles)
         onboard_result = await onboard_tenant(
             name=body.name,
             roles=body.roles,
@@ -94,6 +98,7 @@ async def create_tenant(
             tenant_id=wallet_response.wallet_id,
         )
 
+        bound_logger.debug("Registering actor in the trust registry")
         await register_actor(
             actor=Actor(
                 id=wallet_response.wallet_id,
@@ -113,6 +118,7 @@ async def create_tenant(
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )
+    bound_logger.debug("Create tenant complete with response body: {}.", response)
 
 
 @router.delete("/{tenant_id}")
@@ -121,22 +127,31 @@ async def delete_tenant_by_id(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     """Delete tenant by id."""
+    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger.info("DELETE request received: Deleting tenant by id")
+
     async with get_tenant_admin_controller() as admin_controller:
+        bound_logger.debug("Retrieving the wallet")
         wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+            bound_logger.error(f"Bad request: Wallet not found.")
 
         # wallet_id is the id of the actor in the trust registry.
         # This makes it a lot easier to link a tenant to an actor
         # in the trust registry, especially if the tenant does not have
         # a public did.
+        bound_logger.debug("Retrieving tenant from trust registry")
         actor = await actor_by_id(wallet.wallet_id)
 
         # Remove actor if found
         if actor:
+            bound_logger.debug("Actor found, removing from trust registry")
             await remove_actor_by_id(wallet.wallet_id)
 
+        bound_logger.debug("Deleting wallet")
         await admin_controller.multitenancy.delete_wallet(
             wallet_id=tenant_id, body=RemoveWalletRequest()
         )
+        bound_logger.info("Successfully deleted tenant.")
 
 
 @router.get("/{tenant_id}/access-token", response_model=TenantAuth)
@@ -144,14 +159,20 @@ async def get_tenant_auth_token(
     tenant_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
-    async with get_tenant_admin_controller() as admin_controller:
-        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger.info("GET request received: Access token for tenant")
 
+    async with get_tenant_admin_controller() as admin_controller:
+        bound_logger.debug("Retrieving the wallet")
+        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+            bound_logger.error(f"Bad request: Wallet not found.")
+
+        bound_logger.debug("Getting auth token for wallet")
         response = await admin_controller.multitenancy.get_auth_token(
             wallet_id=wallet.wallet_id, body=CreateWalletTokenRequest()
         )
 
-    return TenantAuth(access_token=tenant_api_key(auth.role, response.token))
+    bound_logger.info("Successfully retreived access token.")
 
 
 @router.put("/{tenant_id}", response_model=Tenant)
@@ -161,11 +182,15 @@ async def update_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
+    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger.bind(body=body).info("PUT request received: Update tenant")
+
     async with get_tenant_admin_controller() as admin_controller:
         await handle_tenant_update(
             admin_controller=admin_controller, tenant_id=tenant_id, update=body
         )
 
+        bound_logger.debug("Updating wallet")
         wallet = await admin_controller.multitenancy.update_wallet(
             wallet_id=tenant_id,
             body=UpdateWalletRequest(
@@ -174,7 +199,7 @@ async def update_tenant(
             ),
         )
 
-    return tenant_from_wallet_record(wallet)
+    bound_logger.info("Successfully updated tenant.")
 
 
 @router.get("/{tenant_id}", response_model=Tenant)
@@ -183,10 +208,15 @@ async def get_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Get tenant by id."""
-    async with get_tenant_admin_controller() as admin_controller:
-        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger.info("GET request received: Fetch tenant by id")
 
-    return tenant_from_wallet_record(wallet)
+    async with get_tenant_admin_controller() as admin_controller:
+        bound_logger.debug("Retrieving the wallet")
+        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
+            bound_logger.error(f"Bad request: Wallet not found.")
+
+    bound_logger.info("Successfully fetched tenant from wallet record.")
 
 
 @router.get("", response_model=List[Tenant])
@@ -195,6 +225,8 @@ async def get_tenants(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """Get tenants (by group id.)"""
+    bound_logger = logger.bind(body={"group_id": group_id})
+    bound_logger.info("GET request received: Fetch tenants by group id")
 
     # NOTE: Since this is using the groups plugin we need to override the
     # controller to be aware of this
@@ -220,9 +252,11 @@ async def get_tenants(
             base_url=admin_controller.base_url, client=admin_controller.client
         )
         if not group_id:
+            bound_logger.info("No group id specified; fetching all wallets")
             wallets = await admin_controller.multitenancy.get_wallets()
 
             if not wallets.results:
+                bound_logger.info("No wallets found")
                 return []
 
             # Only return wallet with current authentication role.
@@ -230,12 +264,16 @@ async def get_tenants(
                 tenant_from_wallet_record(wallet_record)
                 for wallet_record in wallets.results
             ]
+            bound_logger.info("Successfully fetched wallets.")
 
+        bound_logger.info("Fetching wallets by group id")
         wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
 
     if not wallets.results or len(wallets.results) == 0:
+        bound_logger.info("No wallets found for requested group id")
         return []
 
     return [
         tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
     ]
+    bound_logger.info("Successfully fetched wallets by group id.")

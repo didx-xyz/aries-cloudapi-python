@@ -314,7 +314,7 @@ async def revoke_credential(
                 revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
                 create_transaction_for_endorser=True,
             )
-        except Exception as e:
+        except Exception:
             bound_logger.exception("Exception caught when revoking credential.")
             # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py
             # This is unexpected and throws and error in the controller validating the pydantic model.

@@ -135,4 +135,5 @@ async def connect_to_public_did(
             their_public_did=body.public_did
         )
 
-    return conn_record_to_connection(conn_record)
+    result = conn_record_to_connection(conn_record)
+    return result

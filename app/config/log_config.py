@@ -17,7 +17,7 @@ formatter = (
     "{extra[body]}"
 )
 logger.configure(
-    extra={"wallet_id": None, "topic": None, "body": None}
+    extra={"wallet_id": "", "topic": "", "body": ""}
 )  # Default values for extra args
 
 # Log to stderr

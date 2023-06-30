@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from aiohttp import ClientResponseError
 from fastapi import APIRouter, Depends, Query
@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/generic/issuer", tags=["issuer"])
 
 
-@router.get("/credentials")
+@router.get("/credentials", response_model=List[CredentialExchange])
 async def get_credentials(
     connection_id: Optional[str] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -55,7 +55,7 @@ async def get_credentials(
     return v1_records + v2_records
 
 
-@router.get("/credentials/{credential_id}")
+@router.get("/credentials/{credential_id}", response_model=CredentialExchange)
 async def get_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -128,7 +128,7 @@ async def send_credential(
             raise CloudApiException("Failed to create and send credential.", 500) from e
 
 
-@router.post("/credentials/create-offer")
+@router.post("/credentials/create-offer", response_model=CredentialExchange)
 async def create_offer(
     credential: CreateOffer,
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -223,7 +223,7 @@ async def revoke_credential(
         )
 
 
-@router.post("/credentials/{credential_id}/request")
+@router.post("/credentials/{credential_id}/request", response_model=CredentialExchange)
 async def request_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -258,7 +258,7 @@ async def request_credential(
         )
 
 
-@router.post("/credentials/{credential_id}/store")
+@router.post("/credentials/{credential_id}/store", response_model=CredentialExchange)
 async def store_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),

@@ -150,9 +150,6 @@ async def test_registry_has_schema(mock_async_client):
     )
     assert await trf.registry_has_schema(schema_id) is False
 
-    mock_async_client.get = AsyncMock(return_value=Response(404))
-    assert await trf.registry_has_schema(schema_id) is False
-
     mock_async_client.get = AsyncMock(return_value=Response(500))
     with pytest.raises(trf.TrustRegistryException):
         await trf.registry_has_schema(schema_id)

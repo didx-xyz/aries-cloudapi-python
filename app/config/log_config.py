@@ -10,10 +10,11 @@ formatter = (
     "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
     "<level>{level: <8}</level> | "
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
-    "<level>{message}</level>"
-    "Wallet ID: {extra[wallet_id]} - "
-    "Topic: {extra[topic]} - "
-    "Body: {extra[body]} - "
+    "<level>{message}</level> - "
+    "Context: "
+    "{extra[wallet_id]} "
+    "{extra[topic]} "
+    "{extra[body]}"
 )
 logger.configure(
     extra={"wallet_id": None, "topic": None, "body": None}

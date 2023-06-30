@@ -188,7 +188,7 @@ class VerifierV1(Verifier):
                     ),
                 )
             except Exception as e:
-                logger.exception(
+                bound_logger.exception(
                     "An unexpected error occurred while reporting problem."
                 )
                 raise CloudApiException("Failed to report problem.") from e
@@ -197,7 +197,7 @@ class VerifierV1(Verifier):
             bound_logger.debug("Deleting v1 presentation exchange record")
             await controller.present_proof_v1_0.delete_record(pres_ex_id=proof_id)
         except Exception as e:
-            logger.exception("An unexpected error occurred while deleting record.")
+            bound_logger.exception("An unexpected error occurred while deleting record.")
             raise CloudApiException("Failed to delete record.") from e
 
         bound_logger.info("Successfully rejected v1 presentation exchange record.")

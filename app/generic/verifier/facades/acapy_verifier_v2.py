@@ -201,7 +201,7 @@ class VerifierV2(Verifier):
                     ),
                 )
             except Exception as e:
-                logger.exception(
+                bound_logger.exception(
                     "An unexpected error occurred while reporting problem."
                 )
                 raise CloudApiException("Failed to report problem.") from e

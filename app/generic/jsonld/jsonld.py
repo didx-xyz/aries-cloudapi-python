@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, Optional
 
 from aiohttp import ClientResponseError
@@ -13,10 +12,11 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from uplink import Body, Consumer, json, post, returns
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from app.exceptions.cloud_api_error import CloudApiException
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/jsonld", tags=["jsonld"])
 

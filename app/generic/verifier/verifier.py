@@ -1,9 +1,9 @@
-import logging
 from typing import List
 
 from aries_cloudcontroller import IndyCredPrecis
 from fastapi import APIRouter, Depends
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier_utils import (
@@ -20,8 +20,7 @@ from app.generic.verifier.models import (
 )
 from shared import PresentationExchange
 
-logger = logging.getLogger(__name__)
-
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 

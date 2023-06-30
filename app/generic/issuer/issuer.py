@@ -1,9 +1,9 @@
-import logging
 from typing import Optional
 
 from aiohttp import ClientResponseError
 from fastapi import APIRouter, Depends, Query
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import revocation_registry
@@ -25,7 +25,7 @@ from app.generic.issuer.models import (
 from app.util.did import did_from_credential_definition_id
 from shared.models.topics.base import CredentialExchange
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/issuer", tags=["issuer"])
 

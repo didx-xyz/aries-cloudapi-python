@@ -1,6 +1,5 @@
 import asyncio
 import json
-import logging
 from typing import List, Optional
 
 from aiohttp import ClientResponseError
@@ -17,6 +16,7 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
@@ -35,7 +35,7 @@ from app.facades.revocation_registry import (
 )
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(
     prefix="/generic/definitions",

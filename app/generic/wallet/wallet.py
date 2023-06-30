@@ -1,15 +1,15 @@
-import logging
 from typing import List
 
 from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet
 from app.generic.wallet.models import SetDidEndpointRequest
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/wallet/dids", tags=["wallet"])
 

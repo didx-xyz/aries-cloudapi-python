@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 
 from aries_cloudcontroller import (
@@ -21,7 +20,9 @@ from app.generic.verifier.models import (
 from shared import PresentationExchange, pres_id_no_version
 from shared import presentation_record_to_model as record_to_model
 
-logger = logging.getLogger(__name__)
+from app.config.log_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class VerifierV2(Verifier):

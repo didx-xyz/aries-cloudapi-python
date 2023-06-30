@@ -1,5 +1,3 @@
-import logging
-
 from aries_cloudcontroller import (
     AcaPyClient,
     V10PresentationCreateRequestRequest,
@@ -7,6 +5,7 @@ from aries_cloudcontroller import (
     V10PresentationSendRequestRequest,
 )
 
+from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (
@@ -18,7 +17,7 @@ from app.generic.verifier.models import (
 from shared import PresentationExchange, pres_id_no_version
 from shared import presentation_record_to_model as record_to_model
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VerifierV1(Verifier):

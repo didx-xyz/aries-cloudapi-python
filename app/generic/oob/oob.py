@@ -1,4 +1,3 @@
-import logging
 from typing import List, Optional
 
 from aries_cloudcontroller import InvitationMessage, InvitationRecord, OobRecord
@@ -9,10 +8,11 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
 from shared import Connection, conn_record_to_connection
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/oob", tags=["out-of-band"])
 

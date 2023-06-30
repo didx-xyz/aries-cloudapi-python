@@ -1,10 +1,9 @@
-import logging
-
 from fastapi import APIRouter
 
 import app.facades.trust_registry as trust_registry_facade
+from app.config.log_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/trust-registry", tags=["trust-registry"])
 

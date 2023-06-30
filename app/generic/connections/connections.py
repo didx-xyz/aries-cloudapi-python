@@ -41,6 +41,8 @@ async def create_invitation(
     """
     Create connection invitation.
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Create invitation")
     if body is None:
         body = CreateInvitation()
 
@@ -52,6 +54,7 @@ async def create_invitation(
             public=body.use_public_did,
             body=CreateInvitationRequest(),
         )
+    bound_logger.info("Successfully created invitation.")
     return invitation
 
 
@@ -68,6 +71,8 @@ async def accept_invitation(
     invitation: ReceiveInvitationRequest
         the invitation object obtained from create_invitation.
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Accept invitation")
     async with client_from_auth(auth) as aries_controller:
         connection_record = await aries_controller.connection.receive_invitation(
             body=body.invitation,
@@ -75,6 +80,7 @@ async def accept_invitation(
             alias=body.alias,
         )
     result = conn_record_to_connection(connection_record)
+    bound_logger.info("Successfully accepted invitation.")
     return result
 
 
@@ -89,6 +95,7 @@ async def get_connections(
     ---------
     JSON object with connections (key), a list of connections (ids)
     """
+    logger.info("GET request received: Get connections")
 
     async with client_from_auth(auth) as aries_controller:
         connections = await aries_controller.connection.get_connections()
@@ -98,8 +105,10 @@ async def get_connections(
                 conn_record_to_connection(connection)
                 for connection in connections.results
             ]
+            logger.info("Successfully returned connections.")
             return result
 
+    logger.info("No connections returned.")
     return []
 
 
@@ -116,11 +125,17 @@ async def get_connection_by_id(
     connection_id: str
 
     """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.info("GET request received: Get connection by ID")
     async with client_from_auth(auth) as aries_controller:
         connection = await aries_controller.connection.get_connection(
             conn_id=connection_id
         )
     result = conn_record_to_connection(connection)
+    if result.connection_id:
+        bound_logger.info("Successfully got connection by ID.")
+    else:
+        bound_logger.info("Could not get connection by ID.")
     return result
 
 
@@ -140,7 +155,11 @@ async def delete_connection_by_id(
     ------------
     Empty dict: {}
     """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.info("DELETE request received: Delete connection by ID")
+
     async with client_from_auth(auth) as aries_controller:
         await aries_controller.connection.delete_connection(conn_id=connection_id)
     # TODO what if id not found?
+    bound_logger.info("Successfully deleted connection by ID.")
     return {}

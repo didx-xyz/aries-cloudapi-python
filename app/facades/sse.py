@@ -32,6 +32,7 @@ async def sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
     """
+    bound_logger = LOGGER.bind(wallet_id=wallet_id)
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             async with client.stream(
@@ -40,7 +41,7 @@ async def sse_subscribe_wallet(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
-        LOGGER.bind(wallet_id=wallet_id).exception(
+        bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe by wallet."
         )
         raise e from e
@@ -56,6 +57,7 @@ async def sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
+    bound_logger = LOGGER.bind(wallet_id=wallet_id, topic=topic)
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             async with client.stream(
@@ -64,7 +66,7 @@ async def sse_subscribe_wallet_topic(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
-        LOGGER.bind(wallet_id=wallet_id, topic=topic).exception(
+        bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe by wallet and topic."
         )
         raise e from e
@@ -83,6 +85,9 @@ async def sse_subscribe_event_with_state(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
+    bound_logger = LOGGER.bind(
+        wallet_id=wallet_id, topic=topic, body={"state": desired_state}
+    )
     try:
         async with AsyncClient(timeout=event_timeout) as client:
             async with client.stream(
@@ -91,9 +96,7 @@ async def sse_subscribe_event_with_state(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
-        LOGGER.bind(
-            wallet_id=wallet_id, topic=topic, body={"state": desired_state}
-        ).exception(
+        bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe event by wallet, topic and state."
         )
         raise e from e
@@ -113,6 +116,7 @@ async def sse_subscribe_stream_with_fields(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
+    bound_logger = LOGGER.bind(wallet_id=wallet_id, topic=topic, body={field: field_id})
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             async with client.stream(
@@ -121,7 +125,7 @@ async def sse_subscribe_stream_with_fields(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
-        LOGGER.bind(wallet_id=wallet_id, topic=topic, body={field: field_id}).exception(
+        bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe stream by wallet, topic, and fields."
         )
         raise e from e
@@ -142,6 +146,11 @@ async def sse_subscribe_event_with_field_and_state(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
+    bound_logger = LOGGER.bind(
+        wallet_id=wallet_id,
+        topic=topic,
+        body={field: field_id, "state": desired_state},
+    )
     try:
         async with AsyncClient(timeout=event_timeout) as client:
             async with client.stream(
@@ -151,11 +160,7 @@ async def sse_subscribe_event_with_field_and_state(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
-        LOGGER.bind(
-            wallet_id=wallet_id,
-            topic=topic,
-            body={field: field_id, "state": desired_state},
-        ).exception(
+        bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe event by wallet, topic, fields, and state."
         )
         raise e from e

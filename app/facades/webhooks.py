@@ -2,7 +2,10 @@ from typing import List
 
 from httpx import HTTPError, get
 
+from app.config.log_config import get_logger
 from shared import WEBHOOKS_URL, CloudApiTopics
+
+logger = get_logger(__name__)
 
 
 def get_hooks_for_wallet_by_topic(wallet_id: str, topic: CloudApiTopics) -> List:

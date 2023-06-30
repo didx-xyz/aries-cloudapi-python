@@ -1,13 +1,13 @@
-import logging
 from typing import List, Literal, Optional
 
 import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
+from app.config.log_config import get_logger
 from shared.constants import TRUST_REGISTRY_URL
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 TrustRegistryRole = Literal["issuer", "verifier"]
 

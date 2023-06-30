@@ -98,7 +98,7 @@ async def get_credential_revocation_status(
     controller: AcaPyClient, credential_exchange_id: str
 ) -> IssuerCredRevRecord:
     """
-        Get the active revocation registry for a credential
+        Get the revocation status for a credential
 
     Args:
         controller (AcaPyClient): aca-py client
@@ -108,7 +108,7 @@ async def get_credential_revocation_status(
         Exception: When the active revocation registry cannot be retrieved.
 
     Returns:
-        IssuerRevRegRecord: The revocation registry record.
+        IssuerCredRevRecord: The revocation registry record.
     """
     result = await controller.revocation.get_revocation_status(
         cred_ex_id=credential_exchange_id
@@ -292,7 +292,6 @@ async def revoke_credential(
         )
 
         try:
-            # Publish the revocation to ledger
             await publish_revocation_entry_to_ledger(
                 controller=controller,
                 revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
@@ -320,7 +319,7 @@ async def endorser_revoke():
         txn_record = await listener.wait_for_state(desired_state="request-received")
     except TimeoutError as e:
         raise CloudApiException(
-            "Timeout occured while waiting to retrieve transaction record for endorser",
+            "Timeout occured while waiting to retrieve transaction record for endorser.",
             504,
         ) from e
     async with get_governance_controller() as endorser_controller:
@@ -369,11 +368,7 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
-        except Exception as exc:
-            logger.exception(
-                "Exception caught when getting v2 record with cred_ex_id %s. Exception:\n%r",
-                credential_exchange_id,
-                exc,
+        except Exception:
             )
-            credential_definition_id = None
+            return
     return credential_definition_id

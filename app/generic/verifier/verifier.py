@@ -117,7 +117,7 @@ async def get_proof_record(
     return result
 
 
-@router.delete("/proofs/{proof_id}")
+@router.delete("/proofs/{proof_id}", status_code=204)
 async def delete_proof(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -256,7 +256,7 @@ async def accept_proof_request(
     return result
 
 
-@router.post("/reject-request")
+@router.post("/reject-request", status_code=204)
 async def reject_proof_request(
     proof_request: RejectProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth),

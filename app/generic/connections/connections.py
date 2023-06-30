@@ -74,7 +74,8 @@ async def accept_invitation(
             auto_accept=True,
             alias=body.alias,
         )
-    return conn_record_to_connection(connection_record)
+    result = conn_record_to_connection(connection_record)
+    return result
 
 
 @router.get("", response_model=List[Connection])
@@ -93,10 +94,11 @@ async def get_connections(
         connections = await aries_controller.connection.get_connections()
 
         if connections.results:
-            return [
+            result = [
                 conn_record_to_connection(connection)
                 for connection in connections.results
             ]
+            return result
 
     return []
 
@@ -118,7 +120,8 @@ async def get_connection_by_id(
         connection = await aries_controller.connection.get_connection(
             conn_id=connection_id
         )
-    return conn_record_to_connection(connection)
+    result = conn_record_to_connection(connection)
+    return result
 
 
 @router.delete("/{connection_id}")
@@ -139,4 +142,5 @@ async def delete_connection_by_id(
     """
     async with client_from_auth(auth) as aries_controller:
         await aries_controller.connection.delete_connection(conn_id=connection_id)
+    # TODO what if id not found?
     return {}

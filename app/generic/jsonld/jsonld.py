@@ -97,7 +97,7 @@ async def sign_jsonld(
             else:
                 credential = body.credential
 
-            return await aries_controller.jsonld.sign(
+            result = await aries_controller.jsonld.sign(
                 body=SignRequest(
                     doc=Doc(credential=credential, options=body.signature_options),
                     verkey=verkey,
@@ -105,10 +105,12 @@ async def sign_jsonld(
             )
     except ClientResponseError as e:
         logger.warning(
-            "A ClientResponseError was caught while signing jsonld. The error message is: '%s'",
+            "A ClientResponseError was caught while signing jsonld. The error message is: '{}'.",
             e.message,
         )
         raise CloudApiException("Failed to sign payload.") from e
+
+    return result
 
 
 @router.post("/verify", status_code=204)
@@ -147,7 +149,8 @@ async def verify_jsonld(
                 )
     except ClientResponseError as e:
         logger.warning(
-            "A ClientResponseError was caught while verifying jsonld. The error message is: '%s'",
+            "A ClientResponseError was caught while verifying jsonld. The error message is: '{}'.",
             e.message,
         )
         raise CloudApiException("Failed to verify payload.") from e
+

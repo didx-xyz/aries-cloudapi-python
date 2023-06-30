@@ -21,7 +21,7 @@ logger.configure(
 )  # Default values for extra args
 
 # Log to stderr
-logger.add(sys.stderr, level="DEBUG", format=formatter)
+logger.add(sys.stderr, level="DEBUG", format=formatter, colorize=True)
 
 # Log to a file
 logger.add(

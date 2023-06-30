@@ -1,12 +1,12 @@
-import logging
 from typing import AsyncGenerator
 
 from fastapi import Request
 from httpx import AsyncClient, HTTPError, Response, Timeout
 
+from app.config.log_config import get_logger
 from shared import WEBHOOKS_URL
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
 SSE_PING_PERIOD = 15
 # SSE sends a ping every 15 seconds, so user will get at least one message within this timeout
 default_timeout = Timeout(SSE_PING_PERIOD, read=3600.0)  # 1 hour read timeout

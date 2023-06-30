@@ -12,6 +12,9 @@ formatter = (
     "Topic: {extra[topic]} - "
     "Body: {extra[body]} - "
 )
+logger.configure(
+    extra={"wallet_id": None, "topic": None, "body": None}
+)  # Default values for extra args
 
 # Log to stderr
 logger.add(sys.stderr, level="DEBUG", format=formatter)

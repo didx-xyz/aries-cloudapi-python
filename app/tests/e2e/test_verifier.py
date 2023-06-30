@@ -625,7 +625,7 @@ async def test_delete_proof(
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() is None
+    assert response.status_code == 204
 
     # V2
     proof_req_res = await acme_client.post(
@@ -642,7 +642,7 @@ async def test_delete_proof(
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() is None
+    assert response.status_code == 204
 
 
 @pytest.mark.anyio

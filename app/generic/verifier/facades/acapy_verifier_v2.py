@@ -26,6 +26,33 @@ logger = get_logger(__name__)
 
 class VerifierV2(Verifier):
     @classmethod
+    async def create_proof_request(
+        cls,
+        controller: AcaPyClient,
+        proof_request: CreateProofRequest,
+        comment: Optional[str] = None,
+    ) -> PresentationExchange:
+        bound_logger = logger.bind(body=proof_request)
+        bound_logger.debug("Creating v2 proof request")
+        try:
+            proof_record = await controller.present_proof_v2_0.create_proof_request(
+                body=V20PresCreateRequestRequest(
+                    presentation_request=V20PresRequestByFormat(
+                        indy=proof_request.proof_request
+                    ),
+                    comment=comment,
+                    trace=False,
+                )
+            )
+            bound_logger.debug("Returning v2 PresentationExchange.")
+            return record_to_model(proof_record)
+        except Exception as e:
+            bound_logger.exception(
+                "An unexpected error occurred while creating presentation request."
+            )
+            raise CloudApiException("Failed to create presentation request.") from e
+
+    @classmethod
     async def get_credentials_for_request(cls, controller: AcaPyClient, proof_id: str):
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
@@ -98,33 +125,6 @@ class VerifierV2(Verifier):
             raise CloudApiException("Failed to delete record.") from e
 
         bound_logger.debug("Successfully deleted v2 present-proof record.")
-
-    @classmethod
-    async def create_proof_request(
-        cls,
-        controller: AcaPyClient,
-        proof_request: CreateProofRequest,
-        comment: Optional[str] = None,
-    ) -> PresentationExchange:
-        bound_logger = logger.bind(body=proof_request)
-        bound_logger.debug("Creating v2 proof request")
-        try:
-            proof_record = await controller.present_proof_v2_0.create_proof_request(
-                body=V20PresCreateRequestRequest(
-                    presentation_request=V20PresRequestByFormat(
-                        indy=proof_request.proof_request
-                    ),
-                    comment=comment,
-                    trace=False,
-                )
-            )
-            bound_logger.debug("Returning v2 PresentationExchange.")
-            return record_to_model(proof_record)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while creating presentation request."
-            )
-            raise CloudApiException("Failed to create presentation request.") from e
 
     @classmethod
     async def send_proof_request(

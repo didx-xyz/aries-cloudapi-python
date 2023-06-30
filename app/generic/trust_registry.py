@@ -17,6 +17,8 @@ async def get_trust_registry():
     ---------
     The trust registry with actors and schemas
     """
+    logger.info("GET request received: Get the complete trust registry")
     trust_registry = await trust_registry_facade.get_trust_registry()
 
+    logger.info("Successfully retreived trust registry.")
     return trust_registry

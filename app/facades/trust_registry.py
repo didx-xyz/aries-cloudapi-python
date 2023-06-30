@@ -58,12 +58,11 @@ async def assert_valid_issuer(did: str, schema_id: str):
     actor = await actor_by_did(did)
 
     if not actor:
-        raise TrustRegistryException(f"Did {did} not registered in the trust registry")
+        raise TrustRegistryException(f"DID {did} not registered in the trust registry.")
 
-    actor_id = actor["id"]
     if "issuer" not in actor["roles"]:
         raise TrustRegistryException(
-            f"Actor {actor_id} does not have required role 'issuer'"
+            f"Actor {actor['id']} does not have required role 'issuer'"
         )
 
     has_schema = await registry_has_schema(schema_id)
@@ -88,7 +87,8 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
     if not actor:
         raise TrustRegistryException(f"Actor with id {actor_id} not found", 404)
 
-    return bool(role in actor["roles"])
+    result = bool(role in actor["roles"])
+    return result
 
 
 async def actor_by_did(did: str) -> Optional[Actor]:
@@ -105,7 +105,9 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     """
     try:
         async with httpx.AsyncClient() as client:
-            actor_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+            actor_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
+            )
     except httpx.HTTPError as e:
         raise e from e
 
@@ -113,7 +115,7 @@ async def actor_by_did(did: str) -> Optional[Actor]:
         return None
     elif actor_res.is_error:
         raise TrustRegistryException(
-            f"Error fetching actor by did: {actor_res.text}", actor_res.status_code
+            f"Error fetching actor by DID: {actor_res.text}", actor_res.status_code
         )
 
     return actor_res.json()
@@ -133,7 +135,9 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
     """
     try:
         async with httpx.AsyncClient() as client:
-            actor_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
+            actor_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
+            )
     except httpx.HTTPError as e:
         raise e from e
 
@@ -168,6 +172,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     if actors_res.is_error:
         raise TrustRegistryException(
             f"Unable to retrieve actors from registry: {actors_res.text}",
+            actors_res.status_code,
         )
 
     actors = actors_res.json()
@@ -192,20 +197,20 @@ async def registry_has_schema(schema_id: str) -> bool:
     """
     try:
         async with httpx.AsyncClient() as client:
-            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+            # TODO: should be able to fetch specific schema_id from registry
+            schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
         raise e from e
 
-    if schema_res.status_code == 404:
-        return False
-    elif schema_res.is_error:
+    if schemas_res.is_error:
         raise TrustRegistryException(
-            f"Unable to retrieve schema {schema_id} from registry: {schema_res.text}",
-            schema_res.status_code,
+            f"Unable to retrieve schema {schema_id} from registry: {schemas_res.text}",
+            schemas_res.status_code,
         )
 
-    schema = schema_res.json()
-    return bool(schema_id in schema["schemas"])
+    schemas = schemas_res.json()
+    result = bool(schema_id in schemas["schemas"])
+    return result
 
 
 async def get_trust_registry_schemas() -> List[str]:
@@ -219,18 +224,16 @@ async def get_trust_registry_schemas() -> List[str]:
     """
     try:
         async with httpx.AsyncClient() as client:
-            trust_registry_schemas_res = await client.get(
-                f"{TRUST_REGISTRY_URL}/registry/schemas"
-            )
+            schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
         raise e from e
 
-    if trust_registry_schemas_res.is_error:
-        raise TrustRegistryException(
-            trust_registry_schemas_res.text, trust_registry_schemas_res.status_code
+    if schemas_res.is_error:
         )
+        raise TrustRegistryException(schemas_res.text, schemas_res.status_code)
 
-    return trust_registry_schemas_res.json()["schemas"]
+    result = schemas_res.json()["schemas"]
+    return result
 
 
 async def get_trust_registry() -> TrustRegistry:
@@ -253,7 +256,8 @@ async def get_trust_registry() -> TrustRegistry:
             trust_registry_res.text, trust_registry_res.status_code
         )
 
-    return trust_registry_res.json()
+    result = trust_registry_res.json()
+    return result
 
 
 async def register_schema(schema_id: str) -> None:
@@ -291,7 +295,9 @@ async def register_actor(actor: Actor) -> None:
     """
     try:
         async with httpx.AsyncClient() as client:
-            actor_res = await client.post(f"{TRUST_REGISTRY_URL}/registry/actors", json=actor)
+            actor_res = await client.post(
+                f"{TRUST_REGISTRY_URL}/registry/actors", json=actor
+            )
     except httpx.HTTPError as e:
         raise e from e
 
@@ -362,7 +368,7 @@ async def update_actor(actor: Actor) -> None:
     try:
         async with httpx.AsyncClient() as client:
             update_response = await client.post(
-                f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}", json=actor
+                f"{TRUST_REGISTRY_URL}/registry/actors/{actor['id']}", json=actor
             )
     except httpx.HTTPError as e:
         raise e from e
@@ -371,5 +377,6 @@ async def update_actor(actor: Actor) -> None:
         raise TrustRegistryException(update_response.json(), 422)
     elif update_response.is_error:
         raise TrustRegistryException(
-            f"Error updating actor in trust registry: {update_response.text}"
+            f"Error updating actor in trust registry: {update_response.text}",
+            update_response.status_code,
         )

@@ -2,6 +2,9 @@ import sys
 
 from loguru import logger
 
+# Remove default handler
+logger.remove()
+
 # Define custom formatter
 formatter = (
     "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "

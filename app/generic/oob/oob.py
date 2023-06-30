@@ -51,6 +51,8 @@ async def create_oob_invitation(
     """
     Create connection invitation out-of-band.
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Create OOB invitation")
     if body is None:
         body = CreateOobInvitation()
 
@@ -79,6 +81,7 @@ async def create_oob_invitation(
     )
 
     async with client_from_auth(auth) as aries_controller:
+        logger.bind(body=oob_body).debug("Creating invitation")
         invitation = await aries_controller.out_of_band.create_invitation(
             multi_use=body.multi_use,
             body=oob_body,
@@ -87,6 +90,7 @@ async def create_oob_invitation(
     # If the trust registry is not derived but an entity providing this information,
     # we should possibly write the (multi-use) invitation to the registry
     # We could also investigate storing the invitation URL with the OP's DID
+    bound_logger.info("Successfully created invitation.")
     return invitation
 
 
@@ -98,14 +102,18 @@ async def accept_oob_invitation(
     """
     Receive out-of-band invitation.
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Accept OOB invitation")
 
     async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Accepting invitation")
         oob_record = await aries_controller.out_of_band.receive_invitation(
             auto_accept=True,
             use_existing_connection=body.use_existing_connection,
             alias=body.alias,
             body=body.invitation,
         )
+    bound_logger.info("Successfully accepted invitation.")
     return oob_record
 
 
@@ -130,10 +138,14 @@ async def connect_to_public_did(
     ConnRecord
         The connection record
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Connect to public DID")
     async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Creating DID exchange request")
         conn_record = await aries_controller.did_exchange.create_request(
             their_public_did=body.public_did
         )
 
     result = conn_record_to_connection(conn_record)
+    bound_logger.info("Successfully created DID exchange request.")
     return result

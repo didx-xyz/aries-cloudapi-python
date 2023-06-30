@@ -55,21 +55,27 @@ async def assert_valid_issuer(did: str, schema_id: str):
         Exception: When the did is not registered, the actor doesn't have the issuer role
             or the schema is not registered in the registry.
     """
+    bound_logger = logger.bind(body={"did": did, "schema_id": schema_id})
+    bound_logger.info("Asserting issuer DID and schema_id is registered")
     actor = await actor_by_did(did)
 
     if not actor:
+        bound_logger.info("DID not registered in the trust registry.")
         raise TrustRegistryException(f"DID {did} not registered in the trust registry.")
 
     if "issuer" not in actor["roles"]:
+        bound_logger.info("Actor associated with DID does not have `issuer` role.")
         raise TrustRegistryException(
             f"Actor {actor['id']} does not have required role 'issuer'"
         )
 
     has_schema = await registry_has_schema(schema_id)
     if not has_schema:
+        bound_logger.info("Schema is not registered in the trust registry.")
         raise TrustRegistryException(
             f"Schema with id {schema_id} is not registered in trust registry"
         )
+    bound_logger.info("Issuer DID and schema ID is valid.")
 
 
 async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
@@ -82,12 +88,19 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
     Returns:
         bool: Whether the actor with specified id has specified role
     """
+    bound_logger = logger.bind(body={"actor_id": actor_id, "role": role})
+    bound_logger.info("Asserting actor has role")
     actor = await actor_by_id(actor_id)
 
     if not actor:
+        bound_logger.info("Actor not registered in trust registry.")
         raise TrustRegistryException(f"Actor with id {actor_id} not found", 404)
 
     result = bool(role in actor["roles"])
+    if result:
+        bound_logger.info("Actor has requested role.")
+    else:
+        bound_logger.info("Actor does not have requested role.")
     return result
 
 
@@ -103,21 +116,31 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     Returns:
         Actor: The actor with specified did.
     """
+    bound_logger = logger.bind(body={"did": did})
+    bound_logger.info("Fetching actor by DID from trust registry")
     try:
         async with httpx.AsyncClient() as client:
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e from e
 
     if actor_res.status_code == 404:
+        bound_logger.info("Bad request: actor not found.")
         return None
     elif actor_res.is_error:
+        bound_logger.error(
+            "Error fetching actor by DID. Got status code {} with message `{}`.",
+            actor_res.status_code,
+            actor_res.text,
+        )
         raise TrustRegistryException(
             f"Error fetching actor by DID: {actor_res.text}", actor_res.status_code
         )
 
+    bound_logger.info("Successfully fetched actor from trust registry.")
     return actor_res.json()
 
 
@@ -133,21 +156,31 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
     Returns:
         Actor: The actor with specified id.
     """
+    bound_logger = logger.bind(body={"actor_id": actor_id})
+    bound_logger.info("Fetching actor by ID from trust registry")
     try:
         async with httpx.AsyncClient() as client:
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e from e
 
     if actor_res.status_code == 404:
+        bound_logger.info("Bad request: actor not found.")
         return None
     elif actor_res.is_error:
+        bound_logger.error(
+            "Error fetching actor by id. Got status code {} with message `{}`.",
+            actor_res.status_code,
+            actor_res.text,
+        )
         raise TrustRegistryException(
             f"Error fetching actor by id: {actor_res.text}", actor_res.status_code
         )
 
+    bound_logger.info("Successfully fetched actor from trust registry.")
     return actor_res.json()
 
 
@@ -163,13 +196,21 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     Returns:
         List[Actor]: List of actors with specified role
     """
+    bound_logger = logger.bind(body={"role": role})
+    bound_logger.info("Fetching all actors with requested role from trust registry")
     try:
         async with httpx.AsyncClient() as client:
             actors_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e from e
 
     if actors_res.is_error:
+        bound_logger.error(
+            "Error fetching actors by role. Got status code {} with message `{}`.",
+            actors_res.status_code,
+            actors_res.text,
+        )
         raise TrustRegistryException(
             f"Unable to retrieve actors from registry: {actors_res.text}",
             actors_res.status_code,
@@ -179,6 +220,11 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     actors_with_role_list = [
         actor for actor in actors["actors"] if role in actor["roles"]
     ]
+
+    if actors_with_role_list:
+        bound_logger.info("Successfully got actors with requested role.")
+    else:
+        bound_logger.info("No actors found with requested role.")
 
     return actors_with_role_list
 
@@ -195,14 +241,24 @@ async def registry_has_schema(schema_id: str) -> bool:
     Returns:
         bool: whether the schema exists in the trust registry
     """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info(
+        "Asserting if schema is registered. Fetching all schemas from trust registry"
+    )
     try:
         async with httpx.AsyncClient() as client:
             # TODO: should be able to fetch specific schema_id from registry
             schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e from e
 
     if schemas_res.is_error:
+        bound_logger.error(
+            "Error fetching schemas. Got status code {} with message `{}`.",
+            schemas_res.status_code,
+            schemas_res.text,
+        )
         raise TrustRegistryException(
             f"Unable to retrieve schema {schema_id} from registry: {schemas_res.text}",
             schemas_res.status_code,
@@ -210,6 +266,10 @@ async def registry_has_schema(schema_id: str) -> bool:
 
     schemas = schemas_res.json()
     result = bool(schema_id in schemas["schemas"])
+    if result:
+        bound_logger.info("Schema exists in registry.")
+    else:
+        bound_logger.info("Schema does not exist in registry.")
     return result
 
 
@@ -222,17 +282,24 @@ async def get_trust_registry_schemas() -> List[str]:
     Returns:
         A list of schemas
     """
+    logger.info("Fetching all schemas from trust registry")
     try:
         async with httpx.AsyncClient() as client:
             schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
+        logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e from e
 
     if schemas_res.is_error:
+        logger.error(
+            "Error fetching schemas. Got status code {} with message `{}`.",
+            schemas_res.status_code,
+            schemas_res.text,
         )
         raise TrustRegistryException(schemas_res.text, schemas_res.status_code)
 
     result = schemas_res.json()["schemas"]
+    logger.info("Successfully fetched schemas from trust registry.")
     return result
 
 
@@ -245,18 +312,26 @@ async def get_trust_registry() -> TrustRegistry:
     Returns:
         TrustRegistry: the trust registries
     """
+    logger.info("Fetching complete trust registry")
     try:
         async with httpx.AsyncClient() as client:
             trust_registry_res = await client.get(f"{TRUST_REGISTRY_URL}/registry")
     except httpx.HTTPError as e:
+        logger.exception("HTTP Error caught when fetching trust registry.")
         raise e from e
 
     if trust_registry_res.is_error:
+        logger.error(
+            "Error fetching trust registry. Got status code {} with message `{}`.",
+            trust_registry_res.status_code,
+            trust_registry_res.text,
+        )
         raise TrustRegistryException(
             trust_registry_res.text, trust_registry_res.status_code
         )
 
     result = trust_registry_res.json()
+    logger.info("Successfully fetched complete trust registry.")
     return result
 
 
@@ -269,19 +344,29 @@ async def register_schema(schema_id: str) -> None:
     Raises:
         TrustRegistryException: If an error ocurred while registering the schema
     """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("Registering schema on trust registry")
     try:
         async with httpx.AsyncClient() as client:
             schema_res = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/schemas", json={"schema_id": schema_id}
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when registering schema.")
         raise e from e
 
     if schema_res.is_error:
+        bound_logger.error(
+            "Error registering schema. Got status code {} with message `{}`.",
+            schema_res.status_code,
+            schema_res.text,
+        )
         raise TrustRegistryException(
             f"Error registering schema {schema_id}: {schema_res.text}",
             schema_res.status_code,
         )
+
+    bound_logger.info("Successfully registered schema on trust registry.")
 
 
 async def register_actor(actor: Actor) -> None:
@@ -293,20 +378,33 @@ async def register_actor(actor: Actor) -> None:
     Raises:
         TrustRegistryException: If an error ocurred while registering the schema
     """
+    bound_logger = logger.bind(body={"actor": actor})
+    bound_logger.info("Registering actor on trust registry")
     try:
         async with httpx.AsyncClient() as client:
             actor_res = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/actors", json=actor
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when registering actor.")
         raise e from e
 
     if actor_res.status_code == 422:
+        bound_logger.error(
+            "Unprocessable entity response when registering actor: {}", actor_res.json()
+        )
         raise TrustRegistryException(actor_res.json(), 422)
     if actor_res.is_error:
+        bound_logger.error(
+            "Error registering actor. Got status code {} with message `{}`.",
+            actor_res.status_code,
+            actor_res.text,
+        )
         raise TrustRegistryException(
             f"Error registering actor: {actor_res.text}", actor_res.status_code
         )
+
+    bound_logger.info("Successfully registered actor on trust registry.")
 
 
 async def remove_actor_by_id(actor_id: str) -> None:
@@ -318,24 +416,34 @@ async def remove_actor_by_id(actor_id: str) -> None:
     Raises:
         TrustRegistryException: If an error occurred while removing the actor
     """
+    bound_logger = logger.bind(body={"actor_id": actor_id})
+    bound_logger.info("Removing actor from trust registry")
     try:
         async with httpx.AsyncClient() as client:
             remove_response = await client.delete(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when removing actor.")
         raise e from e
 
     if remove_response.status_code == 404:
-        logger.warning(
-            "Tried to remove actor with id `%s`, but not found in registry.", actor_id
+        bound_logger.info(
+            "Bad request: Tried to remove actor by id, but not found in registry."
         )
         return None
     if remove_response.is_error:
+        bound_logger.error(
+            "Error removing actor. Got status code {} with message `{}`.",
+            remove_response.status_code,
+            remove_response.text,
+        )
         raise TrustRegistryException(
             f"Error removing actor from trust registry: {remove_response.text}",
             remove_response.status_code,
         )
+
+    bound_logger.info("Successfully removed actor from trust registry.")
 
 
 async def remove_schema_by_id(schema_id: str) -> None:
@@ -347,35 +455,55 @@ async def remove_schema_by_id(schema_id: str) -> None:
     Raises:
         TrustRegistryException: If an error occurred while removing the schema
     """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("Removing schema from trust registry")
     try:
         async with httpx.AsyncClient() as client:
             remove_response = await client.delete(
                 f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when removing schema.")
         raise e from e
 
     if remove_response.is_error:
+        bound_logger.error(
+            "Error removing schema. Got status code {} with message `{}`.",
+            remove_response.status_code,
+            remove_response.text,
+        )
         raise TrustRegistryException(
             f"Error removing schema from trust registry: {remove_response.text}",
             remove_response.status_code,
         )
 
+    bound_logger.info("Successfully removed schema from trust registry.")
+
 
 async def update_actor(actor: Actor) -> None:
-    actor_id = actor["id"]
-
+    bound_logger = logger.bind(body={"actor": actor})
+    bound_logger.info("Updating actor on trust registry")
     try:
         async with httpx.AsyncClient() as client:
             update_response = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor['id']}", json=actor
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when updating actor.")
         raise e from e
 
     if update_response.status_code == 422:
+        bound_logger.error(
+            "Unprocessable entity response when updating actor: {}",
+            update_response.json(),
+        )
         raise TrustRegistryException(update_response.json(), 422)
     elif update_response.is_error:
+        bound_logger.error(
+            "Error removing actor. Got status code {} with message `{}`.",
+            update_response.status_code,
+            update_response.text,
+        )
         raise TrustRegistryException(
             f"Error updating actor in trust registry: {update_response.text}",
             update_response.status_code,

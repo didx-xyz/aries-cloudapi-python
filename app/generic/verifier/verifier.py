@@ -47,12 +47,13 @@ async def get_credentials_for_request(
         prover = get_verifier_by_version(version_candidate=proof_id)
 
         async with client_from_auth(auth) as aries_controller:
-            return await prover.get_credentials_for_request(
+            result = await prover.get_credentials_for_request(
                 controller=aries_controller, proof_id=proof_id
             )
     except Exception as e:
         logger.error(f"Failed to get matching credentials: {proof_id} \n{e!r}")
         raise e from e
+    return result
 
 
 @router.get("/proofs", response_model=List[PresentationExchange])
@@ -80,6 +81,9 @@ async def get_proof_records(
         logger.error(f"Failed to get proof records: \n{e!r}")
         raise e from e
 
+    result = v1_records + v2_records
+    return result
+
 
 @router.get("/proofs/{proof_id}", response_model=PresentationExchange)
 async def get_proof_record(
@@ -103,12 +107,14 @@ async def get_proof_record(
         prover = get_verifier_by_version(version_candidate=proof_id)
 
         async with client_from_auth(auth) as aries_controller:
-            return await prover.get_proof_record(
+            result = await prover.get_proof_record(
                 controller=aries_controller, proof_id=proof_id
             )
     except Exception as e:
         logger.error(f"Failed to get proof records: \n{e!r}")
         raise e from e
+
+    return result
 
 
 @router.delete("/proofs/{proof_id}")
@@ -164,12 +170,14 @@ async def send_proof_request(
                     aries_controller=aries_controller, proof_request=proof_request
                 )
 
-            return await prover.send_proof_request(
+            result = await prover.send_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
     except Exception as e:
         logger.error(f"Failed to send proof request: \n{e!r}")
         raise e from e
+
+    return result
 
 
 @router.post("/create-request", response_model=PresentationExchange)
@@ -194,12 +202,14 @@ async def create_proof_request(
         prover = get_verifier_by_version(proof_request.protocol_version)
 
         async with client_from_auth(auth) as aries_controller:
-            return await prover.create_proof_request(
+            result = await prover.create_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
     except Exception as e:
         logger.error(f"Failed to create presentation record: \n{e!r}")
         raise e from e
+
+    return result
 
 
 @router.post("/accept-request", response_model=PresentationExchange)
@@ -236,12 +246,14 @@ async def accept_proof_request(
                     presentation=presentation,
                 )
 
-            return await prover.accept_proof_request(
+            result = await prover.accept_proof_request(
                 controller=aries_controller, proof_request=presentation
             )
     except Exception as e:
         logger.error(f"Failed to accept proof request: \n{e!r}")
         raise e from e
+
+    return result
 
 
 @router.post("/reject-request")
@@ -275,7 +287,7 @@ async def reject_proof_request(
                     400,
                 )
 
-            return await prover.reject_proof_request(
+            await prover.reject_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
     except Exception as e:

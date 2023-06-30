@@ -18,7 +18,7 @@ async def yield_lines_with_disconnect_check(
 ) -> AsyncGenerator[str, None]:
     async for line in response.aiter_lines():
         if await request.is_disconnected():
-            LOGGER.debug("\n\nSSE Client disconnected")
+            LOGGER.bind(body=request).debug("SSE Client disconnected.")
             break  # Client has disconnected, stop sending events
         yield line + "\n"
 

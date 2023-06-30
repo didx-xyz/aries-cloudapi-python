@@ -42,7 +42,7 @@ class VerifierV1(Verifier):
     async def get_credentials_for_request(cls, controller: AcaPyClient, proof_id: str):
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
         try:
-            return await controller.present_proof_v1_0.get_matching_credentials(
+            result = await controller.present_proof_v1_0.get_matching_credentials(
                 pres_ex_id=pres_ex_id
             )
         except Exception as e:
@@ -51,14 +51,20 @@ class VerifierV1(Verifier):
             )
             raise CloudApiException("Failed to get credentials for request.") from e
 
+        return result
+
     @classmethod
     async def get_proof_records(cls, controller: AcaPyClient):
         try:
             presentation_exchange = await controller.present_proof_v1_0.get_records()
-            return [record_to_model(rec) for rec in presentation_exchange.results or []]
+            result = [
+                record_to_model(rec) for rec in presentation_exchange.results or []
+            ]
         except Exception as e:
             logger.exception("An unexpected error occurred while getting records.")
             raise CloudApiException("Failed to get proof records.") from e
+
+        return result
 
     @classmethod
     async def get_proof_record(cls, controller: AcaPyClient, proof_id: str):
@@ -67,10 +73,12 @@ class VerifierV1(Verifier):
             presentation_exchange = await controller.present_proof_v1_0.get_record(
                 pres_ex_id=pres_ex_id
             )
-            return record_to_model(presentation_exchange)
+            result = record_to_model(presentation_exchange)
         except Exception as e:
             logger.exception("An unexpected error occurred while getting record.")
             raise CloudApiException("Failed to get proof record.") from e
+
+        return result
 
     @classmethod
     async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
@@ -96,12 +104,14 @@ class VerifierV1(Verifier):
                     )
                 )
             )
-            return record_to_model(presentation_exchange)
+            result = record_to_model(presentation_exchange)
         except Exception as e:
             logger.exception(
                 "An unexpected error occurred while sending presentation request."
             )
             raise CloudApiException("Failed to send presentation request.") from e
+
+        return result
 
     @classmethod
     async def accept_proof_request(
@@ -112,12 +122,14 @@ class VerifierV1(Verifier):
             presentation_record = await controller.present_proof_v1_0.send_presentation(
                 pres_ex_id=proof_id, body=proof_request.presentation_spec
             )
-            return record_to_model(presentation_record)
+            result = record_to_model(presentation_record)
         except Exception as e:
             logger.exception(
                 "An unexpected error occurred while sending a proof presentation."
             )
             raise CloudApiException("Failed to send proof presentation.") from e
+
+        return result
 
     @classmethod
     async def reject_proof_request(

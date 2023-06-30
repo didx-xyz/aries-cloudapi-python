@@ -52,7 +52,8 @@ async def get_credentials(
             controller=aries_controller, connection_id=connection_id
         )
 
-    return v1_records + v2_records
+    result = v1_records + v2_records
+    return result
 
 
 @router.get("/credentials/{credential_id}", response_model=CredentialExchange)
@@ -72,10 +73,11 @@ async def get_credential(
     issuer = issuer_from_id(credential_id)
 
     async with client_from_auth(auth) as aries_controller:
-        return await issuer.get_record(
+        result = await issuer.get_record(
             controller=aries_controller, credential_exchange_id=credential_id
         )
 
+    return result
 
 @router.post("/credentials", response_model=CredentialExchange)
 async def send_credential(
@@ -112,7 +114,7 @@ async def send_credential(
         await assert_valid_issuer(public_did, schema_id)
 
         try:
-            return await issuer.send_credential(
+            result = await issuer.send_credential(
                 controller=aries_controller,
                 credential=Credential(
                     attributes=credential.attributes,
@@ -126,6 +128,8 @@ async def send_credential(
                 e.message,
             )
             raise CloudApiException("Failed to create and send credential.", 500) from e
+
+    return result
 
 
 @router.post("/credentials/create-offer", response_model=CredentialExchange)
@@ -160,13 +164,15 @@ async def create_offer(
         # Make sure we are allowed to issue according to trust registry rules
         await assert_valid_issuer(public_did, schema_id)
 
-        return await issuer.create_offer(
+        result = await issuer.create_offer(
             controller=aries_controller,
             credential=CredentialNoConnection(
                 attributes=credential.attributes,
                 cred_def_id=credential.credential_definition_id,
             ),
         )
+
+    return result
 
 
 @router.delete("/credentials/{credential_id}", status_code=204)
@@ -195,6 +201,7 @@ async def remove_credential(
         )
 
 
+
 @router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
     body: RevokeCredential,
@@ -221,6 +228,7 @@ async def revoke_credential(
             auto_publish_to_ledger=body.auto_publish_on_ledger,
             credential_definition_id=body.credential_definition_id,
         )
+
 
 
 @router.post("/credentials/{credential_id}/request", response_model=CredentialExchange)
@@ -253,9 +261,11 @@ async def request_credential(
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
         await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
 
-        return await issuer.request_credential(
+        result = await issuer.request_credential(
             controller=aries_controller, credential_exchange_id=credential_id
         )
+
+    return result
 
 
 @router.post("/credentials/{credential_id}/store", response_model=CredentialExchange)
@@ -275,6 +285,8 @@ async def store_credential(
     issuer = issuer_from_id(credential_id)
 
     async with client_from_auth(auth) as aries_controller:
-        return await issuer.store_credential(
+        result = await issuer.store_credential(
             controller=aries_controller, credential_exchange_id=credential_id
         )
+
+    return result

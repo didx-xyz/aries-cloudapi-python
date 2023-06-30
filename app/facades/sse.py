@@ -35,6 +35,7 @@ async def sse_subscribe_wallet(
     bound_logger = LOGGER.bind(wallet_id=wallet_id)
     try:
         async with AsyncClient(timeout=default_timeout) as client:
+            bound_logger.debug("Connecting stream to /sse/wallet_id")
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}"
             ) as response:
@@ -60,6 +61,7 @@ async def sse_subscribe_wallet_topic(
     bound_logger = LOGGER.bind(wallet_id=wallet_id, topic=topic)
     try:
         async with AsyncClient(timeout=default_timeout) as client:
+            bound_logger.debug("Connecting stream to /sse/wallet_id/topic")
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
             ) as response:
@@ -90,6 +92,9 @@ async def sse_subscribe_event_with_state(
     )
     try:
         async with AsyncClient(timeout=event_timeout) as client:
+            bound_logger.debug(
+                "Connecting stream to /sse/wallet_id/topic/desired_state"
+            )
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{desired_state}"
             ) as response:
@@ -119,6 +124,9 @@ async def sse_subscribe_stream_with_fields(
     bound_logger = LOGGER.bind(wallet_id=wallet_id, topic=topic, body={field: field_id})
     try:
         async with AsyncClient(timeout=default_timeout) as client:
+            bound_logger.debug(
+                "Connecting stream to /sse/wallet_id/topic/field/field_id"
+            )
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}"
             ) as response:
@@ -153,6 +161,9 @@ async def sse_subscribe_event_with_field_and_state(
     )
     try:
         async with AsyncClient(timeout=event_timeout) as client:
+            bound_logger.debug(
+                "Connecting stream to /sse/wallet_id/topic/field/field_id/desired_state"
+            )
             async with client.stream(
                 "GET",
                 f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}",

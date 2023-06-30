@@ -504,8 +504,7 @@ async def test_reject_proof_request(
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
     )
-    result = response.json()
-    assert result is None
+    assert response.status_code == 204
 
 
 @pytest.mark.anyio

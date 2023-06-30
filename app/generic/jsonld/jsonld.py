@@ -61,8 +61,11 @@ async def sign_jsonld(
     """
     Sign a JSON-LD structure
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Sign JsonLD")
 
     if body.pub_did and body.verkey:
+        bound_logger.info("Bad request: both public did and verkey provided.")
         raise CloudApiException(
             "Please provide either or neither, but not both, public did of the verkey or the verkey for the document.",
             400,
@@ -75,9 +78,11 @@ async def sign_jsonld(
                 if body.pub_did:
                     pub_did = body.pub_did
                 else:
+                    bound_logger.debug("Fetching public DID")
                     pub_did = (
                         await aries_controller.wallet.get_public_did()
                     ).result.did
+                bound_logger.debug("Fetching verkey for DID")
                 verkey = (
                     await aries_controller.ledger.get_did_verkey(did=pub_did)
                 ).verkey
@@ -85,6 +90,7 @@ async def sign_jsonld(
             if not body.credential:
                 if body.credential_id:
                     # Can this ever be correct as in are there jsonLD credential potentially being returned?
+                    bound_logger.debug("Fetching credential from wallet")
                     credential = (
                         await aries_controller.credentials.get_record(
                             credential_id=body.credential_id
@@ -97,6 +103,7 @@ async def sign_jsonld(
             else:
                 credential = body.credential
 
+            bound_logger.debug("Signing JsonLD")
             result = await aries_controller.jsonld.sign(
                 body=SignRequest(
                     doc=Doc(credential=credential, options=body.signature_options),
@@ -110,6 +117,10 @@ async def sign_jsonld(
         )
         raise CloudApiException("Failed to sign payload.") from e
 
+    if result:
+        bound_logger.info("Successfully signed JsonLD.")
+    else:
+        bound_logger.warning("No result from signing JsonLD.")
     return result
 
 
@@ -121,8 +132,11 @@ async def verify_jsonld(
     """
     Verify a JSON-LD structure
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Verify JsonLD")
 
     if not bool(body.public_did) != bool(body.verkey):
+        bound_logger.info("Bad request: both public did and verkey provided.")
         raise CloudApiException(
             "Please provide either, but not both, public did of the verkey or the verkey for the document.",
             400,
@@ -130,6 +144,7 @@ async def verify_jsonld(
     try:
         async with client_from_auth(auth) as aries_controller:
             if not body.verkey:
+                bound_logger.debug("Fetching verkey for DID")
                 verkey = (
                     await aries_controller.ledger.get_did_verkey(did=body.public_did)
                 ).verkey
@@ -139,6 +154,7 @@ async def verify_jsonld(
             aries_controller.jsonld = JsonldApi(
                 base_url=aries_controller.base_url, client=aries_controller.client
             )
+            bound_logger.debug("Verifying JsonLD")
             jsonld_verify_response = await aries_controller.jsonld.verify(
                 body=JsonLdVerifyRequest(doc=body.doc, verkey=verkey)
             )
@@ -154,3 +170,4 @@ async def verify_jsonld(
         )
         raise CloudApiException("Failed to verify payload.") from e
 
+    bound_logger.info("Successfully verified JsonLD.")

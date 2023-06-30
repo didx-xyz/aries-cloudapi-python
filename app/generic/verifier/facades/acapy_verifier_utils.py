@@ -1,9 +1,9 @@
-import logging
 from enum import Enum
 from typing import List, Optional, Set, Union
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
+from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import assert_public_did
 from app.facades.trust_registry import Actor, actor_by_did, get_trust_registry_schemas
@@ -14,7 +14,7 @@ from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
 from app.util.did import ed25519_verkey_to_did_key
 from shared.models.protocol import PresentProofProtocolVersion
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VerifierFacade(Enum):
@@ -43,8 +43,12 @@ async def assert_valid_prover(
 ) -> None:
     """Check transaction requirements against trust registry for prover"""
     # get connection record
+    bound_logger = logger.bind(body=presentation)
+    bound_logger.debug("Asserting valid prover")
+
     proof_id = presentation.proof_id
 
+    bound_logger.debug("Getting connection from proof")
     connection_id = await get_connection_from_proof(
         aries_controller=aries_controller, proof_id=proof_id, prover=prover
     )
@@ -57,6 +61,7 @@ async def assert_valid_prover(
             400,
         )
 
+    bound_logger.debug("Getting connection record")
     connection_record = await get_connection_record(
         aries_controller=aries_controller,
         connection_id=connection_id,
@@ -77,6 +82,7 @@ async def assert_valid_prover(
         raise CloudApiException("Could not determine did of the verifier", 400)
 
     # Try get actor from TR
+    bound_logger.debug("Getting actor by DID")
     actor = await get_actor(did=public_did)
 
     # 2. Check actor has role verifier
@@ -84,6 +90,7 @@ async def assert_valid_prover(
         raise CloudApiException("Actor is missing required role 'verifier'", 403)
 
     # Get schema ids
+    bound_logger.debug("Getting schema ids from presentation")
     schema_ids = await get_schema_ids(
         aries_controller=aries_controller, presentation=presentation.presentation_spec
     )
@@ -93,6 +100,7 @@ async def assert_valid_prover(
         raise CloudApiException(
             "Presentation is using schemas not registered in trust registry", 403
         )
+    bound_logger.debug("Prover is valid.")
 
 
 async def assert_valid_verifier(
@@ -103,11 +111,18 @@ async def assert_valid_verifier(
 
     # 1. Check agent has public did
     # CASE: Agent has public DID
+    bound_logger = logger.bind(body=proof_request)
+    bound_logger.debug("Asserting valid verifier")
+
     try:
+        bound_logger.debug("Asserting public did")
         public_did = await assert_public_did(aries_controller=aries_controller)
     except Exception:
         # CASE: Agent has NO public DID
         # check via connection -> invitation key
+        bound_logger.debug(
+            "Agent has no public DID. Getting connection record from proof request"
+        )
         connection_record = await get_connection_record(
             aries_controller=aries_controller,
             connection_id=proof_request.connection_id,
@@ -120,6 +135,7 @@ async def assert_valid_verifier(
         public_did = ed25519_verkey_to_did_key(invitation_key)
 
     # Try get actor from TR
+    bound_logger.debug("Getting actor by DID")
     actor = await get_actor(did=public_did)
 
     # 2. Check actor has role verifier, raise exception otherwise
@@ -127,6 +143,7 @@ async def assert_valid_verifier(
         raise CloudApiException(
             f"{actor['name']} is not a valid verifier in the trust registry.", 403
         )
+    bound_logger.debug("Verifier is valid.")
 
 
 async def are_valid_schemas(schema_ids: List[str]) -> bool:
@@ -153,6 +170,8 @@ async def get_schema_ids(
     aries_controller: AcaPyClient, presentation: IndyPresSpec
 ) -> List[str]:
     """Get schema ids from credentials that will be revealed in the presentation"""
+    bound_logger = logger.bind(body=presentation)
+    bound_logger.debug("Get schema ids from presentation")
     revealed_schema_ids: Set[str] = set()
 
     revealed_attr_cred_ids = [
@@ -166,6 +185,9 @@ async def get_schema_ids(
 
     revealed_cred_ids = set([*revealed_attr_cred_ids, *revealed_pred_cred_ids])
 
+    logger.bind(body=revealed_cred_ids).debug(
+        "Getting records from each of the revealed credential ids"
+    )
     for revealed_cred_id in revealed_cred_ids:
         credential = await aries_controller.credentials.get_record(
             credential_id=revealed_cred_id
@@ -173,7 +195,12 @@ async def get_schema_ids(
         if credential.schema_id:
             revealed_schema_ids.add(credential.schema_id)
 
-    return list(revealed_schema_ids)
+    result = list(revealed_schema_ids)
+    if result:
+        bound_logger.debug("Successfully got schema ids from presentation.")
+    else:
+        bound_logger.debug("No schema ids obtained from presentation.")
+    return result
 
 
 async def get_connection_from_proof(

@@ -6,7 +6,7 @@ from httpx import AsyncClient, HTTPError, Response, Timeout
 from app.config.log_config import get_logger
 from shared import WEBHOOKS_URL
 
-LOGGER = get_logger(__name__)
+logger = get_logger(__name__)
 SSE_PING_PERIOD = 15
 # SSE sends a ping every 15 seconds, so user will get at least one message within this timeout
 default_timeout = Timeout(SSE_PING_PERIOD, read=3600.0)  # 1 hour read timeout
@@ -18,7 +18,7 @@ async def yield_lines_with_disconnect_check(
 ) -> AsyncGenerator[str, None]:
     async for line in response.aiter_lines():
         if await request.is_disconnected():
-            LOGGER.bind(body=request).debug("SSE Client disconnected.")
+            logger.bind(body=request).debug("SSE Client disconnected.")
             break  # Client has disconnected, stop sending events
         yield line + "\n"
 
@@ -32,7 +32,7 @@ async def sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
     """
-    bound_logger = LOGGER.bind(wallet_id=wallet_id)
+    bound_logger = logger.bind(wallet_id=wallet_id)
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id")
@@ -58,7 +58,7 @@ async def sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    bound_logger = LOGGER.bind(wallet_id=wallet_id, topic=topic)
+    bound_logger = logger.bind(wallet_id=wallet_id, topic=topic)
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id/topic")
@@ -87,7 +87,7 @@ async def sse_subscribe_event_with_state(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    bound_logger = LOGGER.bind(
+    bound_logger = logger.bind(
         wallet_id=wallet_id, topic=topic, body={"state": desired_state}
     )
     try:
@@ -121,7 +121,7 @@ async def sse_subscribe_stream_with_fields(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    bound_logger = LOGGER.bind(wallet_id=wallet_id, topic=topic, body={field: field_id})
+    bound_logger = logger.bind(wallet_id=wallet_id, topic=topic, body={field: field_id})
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             bound_logger.debug(
@@ -154,7 +154,7 @@ async def sse_subscribe_event_with_field_and_state(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    bound_logger = LOGGER.bind(
+    bound_logger = logger.bind(
         wallet_id=wallet_id,
         topic=topic,
         body={field: field_id, "state": desired_state},

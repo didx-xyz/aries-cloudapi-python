@@ -40,6 +40,9 @@ async def sse_subscribe_wallet(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
+        LOGGER.bind(wallet_id=wallet_id).exception(
+            "Caught HTTPError while handling SSE subscribe by wallet."
+        )
         raise e from e
 
 
@@ -61,6 +64,9 @@ async def sse_subscribe_wallet_topic(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
+        LOGGER.bind(wallet_id=wallet_id, topic=topic).exception(
+            "Caught HTTPError while handling SSE subscribe by wallet and topic."
+        )
         raise e from e
 
 
@@ -85,6 +91,11 @@ async def sse_subscribe_event_with_state(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
+        LOGGER.bind(
+            wallet_id=wallet_id, topic=topic, body={"state": desired_state}
+        ).exception(
+            "Caught HTTPError while handling SSE subscribe event by wallet, topic and state."
+        )
         raise e from e
 
 
@@ -110,6 +121,9 @@ async def sse_subscribe_stream_with_fields(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
+        LOGGER.bind(wallet_id=wallet_id, topic=topic, body={field: field_id}).exception(
+            "Caught HTTPError while handling SSE subscribe stream by wallet, topic, and fields."
+        )
         raise e from e
 
 
@@ -137,4 +151,11 @@ async def sse_subscribe_event_with_field_and_state(
                 async for line in yield_lines_with_disconnect_check(request, response):
                     yield line
     except HTTPError as e:
+        LOGGER.bind(
+            wallet_id=wallet_id,
+            topic=topic,
+            body={field: field_id, "state": desired_state},
+        ).exception(
+            "Caught HTTPError while handling SSE subscribe event by wallet, topic, fields, and state."
+        )
         raise e from e

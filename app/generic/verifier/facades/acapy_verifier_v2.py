@@ -35,7 +35,7 @@ class VerifierV2(Verifier):
             )
         except Exception as e:
             logger.exception(
-                "An unexpected error occurred while getting matching credentials: %r", e
+                "An unexpected error occurred while getting matching credentials."
             )
             raise CloudApiException("Failed to get credentials for request.") from e
 
@@ -45,9 +45,7 @@ class VerifierV2(Verifier):
             presentation_exchange = await controller.present_proof_v2_0.get_records()
             return [record_to_model(rec) for rec in presentation_exchange.results or []]
         except Exception as e:
-            logger.exception(
-                "An unexpected error occurred while getting records: %r", e
-            )
+            logger.exception("An unexpected error occurred while getting records.")
             raise CloudApiException("Failed to get proof records.") from e
 
     @classmethod
@@ -59,7 +57,7 @@ class VerifierV2(Verifier):
             )
             return record_to_model(presentation_exchange)
         except Exception as e:
-            logger.exception("An unexpected error occurred while getting record: %r", e)
+            logger.exception("An unexpected error occurred while getting record.")
             raise CloudApiException("Failed to get proof record.") from e
 
     @classmethod
@@ -68,9 +66,7 @@ class VerifierV2(Verifier):
         try:
             await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
         except Exception as e:
-            logger.exception(
-                "An unexpected error occurred while deleting record: %r", e
-            )
+            logger.exception("An unexpected error occurred while deleting record.")
             raise CloudApiException("Failed to delete record.") from e
 
     @classmethod
@@ -118,7 +114,7 @@ class VerifierV2(Verifier):
             return record_to_model(presentation_exchange)
         except Exception as e:
             logger.exception(
-                "An unexpected error occurred while sending presentation request: %r", e
+                "An unexpected error occurred while sending presentation request."
             )
             raise CloudApiException("Failed to send presentation request.") from e
 
@@ -135,7 +131,7 @@ class VerifierV2(Verifier):
             return record_to_model(presentation_record)
         except Exception as e:
             logger.exception(
-                "An unexpected error occurred while sending a proof presentation: %r", e
+                "An unexpected error occurred while sending a proof presentation."
             )
             raise CloudApiException("Failed to send proof presentation.") from e
 
@@ -156,7 +152,7 @@ class VerifierV2(Verifier):
                 )
             except Exception as e:
                 logger.exception(
-                    "An unexpected error occurred while reporting problem: %r", e
+                    "An unexpected error occurred while reporting problem."
                 )
                 raise CloudApiException("Failed to report problem.") from e
 
@@ -164,7 +160,5 @@ class VerifierV2(Verifier):
             # delete exchange record
             await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
         except Exception as e:
-            logger.exception(
-                "An unexpected error occurred while deleting record: %r", e
-            )
+            logger.exception("An unexpected error occurred while deleting record.")
             raise CloudApiException("Failed to delete record.") from e

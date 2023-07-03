@@ -374,8 +374,9 @@ async def get_schemas(
             for schema_id in schema_ids
         ]
 
-    # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
-    schema_results = await asyncio.gather(*get_schema_futures)
+        # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
+        schema_results = await asyncio.gather(*get_schema_futures)
+
     schemas = [
         _credential_schema_from_acapy(schema.schema_)
         for schema in schema_results

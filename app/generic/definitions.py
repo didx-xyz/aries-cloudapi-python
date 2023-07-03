@@ -131,11 +131,11 @@ async def get_credential_definitions(
             for credential_definition_id in credential_definition_ids
         ]
 
-    # Wait for completion of retrieval and transform all credential definitions
-    # into response model (if a credential definition was returned)
-    credential_definition_results = await asyncio.gather(
-        *get_credential_definition_futures
-    )
+        # Wait for completion of retrieval and transform all credential definitions
+        # into response model (if a credential definition was returned)
+        credential_definition_results = await asyncio.gather(
+            *get_credential_definition_futures
+        )
     credential_definitions = [
         _credential_definition_from_acapy(credential_definition.credential_definition)
         for credential_definition in credential_definition_results

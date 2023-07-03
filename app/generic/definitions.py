@@ -333,7 +333,8 @@ async def create_credential_definition(
     # ACA-Py only returns the id after creating a credential definition
     # We want consistent return types across all endpoints, so retrieving the credential
     # definition here.
-    return await get_credential_definition_by_id(credential_definition_id, auth)
+    result = await get_credential_definition_by_id(credential_definition_id, auth)
+    return result
 
 
 @router.get("/schemas", response_model=List[CredentialSchema])
@@ -405,7 +406,8 @@ async def get_schema(
     if not schema.schema_:
         raise HTTPException(404, f"Schema with id {schema_id} not found")
 
-    return _credential_schema_from_acapy(schema.schema_)
+    result = _credential_schema_from_acapy(schema.schema_)
+    return result
 
 
 @router.post("/schemas", response_model=CredentialSchema)
@@ -439,9 +441,9 @@ async def create_schema(
         except ClientResponseError as e:
             if e.status == 400 and "already exist" in e.message:
                 pub_did = await aries_controller.wallet.get_public_did()
-                _schema = await aries_controller.schema.get_schema(
-                    schema_id=f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
-                )
+
+                _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
+                _schema = await aries_controller.schema.get_schema(schema_id=_schema_id)
                 # Edge case where the governance agent has changed its public did
                 # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
                 # will not be correct due to different public did.
@@ -470,7 +472,9 @@ async def create_schema(
                         + f"Given: {str(set(_schema.schema_.attr_names))}. Found: {str(set(schema.attribute_names))}",
                         409,
                     )
-                return _credential_schema_from_acapy(_schema.schema_)
+
+                result = _credential_schema_from_acapy(_schema.schema_)
+                return result
             else:
                 logger.warning(
                     "An unhandled ClientResponseError was caught while publishing schema. The error message is: '%s'",
@@ -483,12 +487,16 @@ async def create_schema(
         if result.sent and result.sent.schema_id:
             await trust_registry.register_schema(schema_id=result.sent.schema_id)
         else:
-            raise CloudApiException("No SchemaSendResult in publish_schema response")
+            raise CloudApiException(
+                "An unexpected error occurred: could not publish schema"
+            )
     except trust_registry.TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
         #   make sure the schema is registered in the trust registry
-        if error.status_code != 400:
+        if error.status_code == 405:
+        else:
             raise error
 
-    return _credential_schema_from_acapy(result.sent.schema_)
+    result = _credential_schema_from_acapy(result.sent.schema_)
+    return result

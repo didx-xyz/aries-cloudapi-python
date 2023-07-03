@@ -35,6 +35,10 @@ async def get_sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
     """
+    logger.bind(body={"wallet_id": wallet_id}).info(
+        "GET request received: Subscribe to wallet events"
+    )
+
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
@@ -60,6 +64,10 @@ async def get_sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
+    logger.bind(body={"wallet_id": wallet_id, "topic": topic}).info(
+        "GET request received: Subscribe to wallet events by topic"
+    )
+
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
@@ -89,6 +97,12 @@ async def get_sse_subscribe_event_with_state(
         topic: The topic to which the wallet is subscribing.
         desired_state: The desired state to be reached.
     """
+    logger.bind(
+        body={"wallet_id": wallet_id, "topic": topic, "desired_state": desired_state}
+    ).info(
+        "GET request received: Subscribe to wallet events by topic and desired state"
+    )
+
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
@@ -120,6 +134,10 @@ async def get_sse_subscribe_stream_with_fields(
         field: The field to which the wallet is subscribing.
         field_id: The ID of the field subscribing to the events.
     """
+    logger.bind(body={"wallet_id": wallet_id, "topic": topic, field: field_id}).info(
+        "GET request received: Subscribe to wallet events by topic and select field"
+    )
+
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
@@ -153,6 +171,15 @@ async def get_sse_subscribe_event_with_field_and_state(
         field_id: The ID of the field subscribing to the events.
         desired_state: The desired state to be reached.
     """
+    logger.bind(
+        body={
+            "wallet_id": wallet_id,
+            "topic": topic,
+            field: field_id,
+            "desired_state": desired_state,
+        }
+    ).info("GET request received: Subscribe to wallet events by topic, field and state")
+
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(

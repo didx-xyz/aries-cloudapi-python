@@ -1,13 +1,13 @@
-import logging
 from typing import Any, List
 
 from fastapi import APIRouter, Depends
 
+from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 from app.facades.webhooks import get_hooks_for_wallet, get_hooks_for_wallet_by_topic
 from shared import CloudApiTopics, TopicItem
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 

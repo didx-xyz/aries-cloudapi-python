@@ -27,6 +27,9 @@ async def get_webhooks_for_wallet(
     ---------
     List of webhooks belonging to the wallet
     """
+    logger.bind(body={"wallet_id": auth.wallet_id}).info(
+        "GET request received: Get webhooks for wallet"
+    )
 
     return get_hooks_for_wallet(wallet_id=auth.wallet_id)
 
@@ -47,4 +50,8 @@ async def get_webhooks_for_wallet_by_topic(
     ---------
     List of webhooks belonging to the wallet
     """
+    logger.bind(body={"wallet_id": auth.wallet_id, "topic": topic}).info(
+        "GET request received: Get webhooks for wallet by topic"
+    )
+
     return get_hooks_for_wallet_by_topic(wallet_id=auth.wallet_id, topic=topic)

@@ -11,13 +11,10 @@ formatter = (
     "<level>{level: <8}</level> | "
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level> - "
-    "(context: "
-    "{extra[wallet_id]} "
-    "{extra[topic]} "
-    "{extra[body]})"
+    "{extra[body]}"
 )
 logger.configure(
-    extra={"wallet_id": "", "topic": "", "body": ""}
+    extra={"body": ""}
 )  # Default values for extra args
 
 # Log to stderr

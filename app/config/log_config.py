@@ -11,10 +11,10 @@ formatter = (
     "<level>{level: <8}</level> | "
     "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
     "<level>{message}</level> - "
-    "Context: "
+    "(context: "
     "{extra[wallet_id]} "
     "{extra[topic]} "
-    "{extra[body]}"
+    "{extra[body]})"
 )
 logger.configure(
     extra={"wallet_id": "", "topic": "", "body": ""}

@@ -12,9 +12,6 @@ from fastapi.security import APIKeyHeader
 from app.dependencies.role import Role
 from shared import ACAPY_MULTITENANT_JWT_SECRET
 
-logger = logging.getLogger(__name__)
-
-
 x_api_key_scheme = APIKeyHeader(name="x-api-key")
 
 

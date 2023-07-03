@@ -23,9 +23,8 @@ from app.dependencies.auth import (
     acapy_auth,
     acapy_auth_governance,
     acapy_auth_verified,
-    client_from_auth,
-    get_governance_controller,
 )
+from app.dependencies.role import client_from_auth, get_governance_controller
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet, trust_registry

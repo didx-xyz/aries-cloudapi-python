@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.config.log_config import get_logger
-from app.dependencies.auth import AcaPyAuth, acapy_auth, client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.role import client_from_auth
 from shared import Connection, conn_record_to_connection
 
 logger = get_logger(__name__)

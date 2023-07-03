@@ -30,8 +30,8 @@ from app.dependencies.auth import (
     Role,
     acapy_auth,
     acapy_auth_tenant_admin,
-    get_tenant_admin_controller,
 )
+from app.dependencies.role import get_tenant_admin_controller
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import (
     Actor,

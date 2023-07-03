@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.config.log_config import get_logger
+from app.dependencies.acapy_clients import client_from_auth, get_governance_controller
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
@@ -24,7 +25,6 @@ from app.dependencies.auth import (
     acapy_auth_governance,
     acapy_auth_verified,
 )
-from app.dependencies.role import client_from_auth, get_governance_controller
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet, trust_registry

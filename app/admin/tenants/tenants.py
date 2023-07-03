@@ -24,6 +24,7 @@ from app.admin.tenants.models import (
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
 from app.config.log_config import get_logger
+from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
@@ -31,7 +32,6 @@ from app.dependencies.auth import (
     acapy_auth,
     acapy_auth_tenant_admin,
 )
-from app.dependencies.role import get_tenant_admin_controller
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import (
     Actor,

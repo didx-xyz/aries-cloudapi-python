@@ -10,7 +10,10 @@ from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
 from app.config.log_config import get_logger
-from app.dependencies.role import get_governance_controller, get_tenant_controller
+from app.dependencies.acapy_clients import (
+    get_governance_controller,
+    get_tenant_controller,
+)
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_ledger, acapy_wallet

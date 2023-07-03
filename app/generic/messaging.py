@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.config.log_config import get_logger
+from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.dependencies.role import client_from_auth
 
 logger = get_logger(__name__)
 

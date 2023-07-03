@@ -5,7 +5,7 @@ from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 
 from app.admin.tenants import tenants
-from app.dependencies.role import get_tenant_controller
+from app.dependencies.acapy_clients import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state

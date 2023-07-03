@@ -4,8 +4,8 @@ from aiohttp import ClientResponseError
 from fastapi import APIRouter, Depends, Query
 
 from app.config.log_config import get_logger
+from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.dependencies.role import client_from_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id

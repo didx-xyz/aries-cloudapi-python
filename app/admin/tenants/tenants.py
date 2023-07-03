@@ -128,7 +128,7 @@ async def delete_tenant_by_id(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     """Delete tenant by id."""
-    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger = logger.bind(body={"tenant_id": tenant_id})
     bound_logger.info("DELETE request received: Deleting tenant by id")
 
     async with get_tenant_admin_controller() as admin_controller:
@@ -162,7 +162,7 @@ async def get_tenant_auth_token(
     tenant_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
-    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger = logger.bind(body={"tenant_id": tenant_id})
     bound_logger.info("GET request received: Access token for tenant")
 
     async with get_tenant_admin_controller() as admin_controller:
@@ -189,8 +189,8 @@ async def update_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
-    bound_logger = logger.bind(wallet_id=tenant_id)
-    bound_logger.bind(body=body).info("PUT request received: Update tenant")
+    bound_logger = logger.bind(body={"tenant_id": tenant_id, "body": body})
+    bound_logger.info("PUT request received: Update tenant")
 
     async with get_tenant_admin_controller() as admin_controller:
         await handle_tenant_update(
@@ -217,7 +217,7 @@ async def get_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Get tenant by id."""
-    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger = logger.bind(body={"wallet_id": tenant_id})
     bound_logger.info("GET request received: Fetch tenant by id")
 
     async with get_tenant_admin_controller() as admin_controller:

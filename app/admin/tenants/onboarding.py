@@ -36,7 +36,7 @@ async def handle_tenant_update(
     tenant_id: str,
     update: UpdateTenantRequest,
 ):
-    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger = logger.bind(body={"tenant_id": tenant_id})
     bound_logger.bind(body=update).info("Handling tenant update")
 
     bound_logger.debug("Retrieving the wallet")
@@ -89,7 +89,7 @@ async def handle_tenant_update(
 async def onboard_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
-    bound_logger = logger.bind(wallet_id=tenant_id)
+    bound_logger = logger.bind(body={"tenant_id": tenant_id})
     bound_logger.bind(body=roles).info("Start onboarding tenant")
 
     if "issuer" in roles:
@@ -139,7 +139,7 @@ async def onboard_issuer(
         issuer_controller (AcaPyClient): authenticated ACA-Py client for issuer
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
     """
-    bound_logger = logger.bind(wallet_id=issuer_wallet_id)
+    bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
     bound_logger.info("Onboarding issuer")
 
     try:
@@ -193,7 +193,7 @@ async def onboard_issuer_no_public_did(
     Returns:
         issuer_did (DID): The issuer's DID after completing the onboarding process
     """
-    bound_logger = logger.bind(wallet_id=issuer_wallet_id)
+    bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
     bound_logger.info("Onboarding issuer that has no public DID")
 
     async def create_endorser_invitation():

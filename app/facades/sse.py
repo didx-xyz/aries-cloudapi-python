@@ -32,7 +32,7 @@ async def sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
     """
-    bound_logger = logger.bind(wallet_id=wallet_id)
+    bound_logger = logger.bind(body={"wallet_id": wallet_id})
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id")
@@ -58,7 +58,7 @@ async def sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    bound_logger = logger.bind(wallet_id=wallet_id, topic=topic)
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id/topic")
@@ -88,7 +88,7 @@ async def sse_subscribe_event_with_state(
         topic: The topic to which the wallet is subscribing.
     """
     bound_logger = logger.bind(
-        wallet_id=wallet_id, topic=topic, body={"state": desired_state}
+        body={"wallet_id": wallet_id, "topic": topic, "state": desired_state}
     )
     try:
         async with AsyncClient(timeout=event_timeout) as client:
@@ -121,7 +121,9 @@ async def sse_subscribe_stream_with_fields(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    bound_logger = logger.bind(wallet_id=wallet_id, topic=topic, body={field: field_id})
+    bound_logger = logger.bind(
+        body={"wallet_id": wallet_id, "topic": topic, field: field_id}
+    )
     try:
         async with AsyncClient(timeout=default_timeout) as client:
             bound_logger.debug(
@@ -155,9 +157,12 @@ async def sse_subscribe_event_with_field_and_state(
         topic: The topic to which the wallet is subscribing.
     """
     bound_logger = logger.bind(
-        wallet_id=wallet_id,
-        topic=topic,
-        body={field: field_id, "state": desired_state},
+        body={
+            "wallet_id": wallet_id,
+            "topic": topic,
+            field: field_id,
+            "state": desired_state,
+        }
     )
     try:
         async with AsyncClient(timeout=event_timeout) as client:

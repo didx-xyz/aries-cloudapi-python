@@ -21,7 +21,9 @@ async def create_did(
     """Create Local DID."""
 
     async with client_from_auth(auth) as aries_controller:
-        return await acapy_wallet.create_did(aries_controller)
+        result = await acapy_wallet.create_did(aries_controller)
+
+    return result
 
 
 @router.get("", response_model=List[DID])
@@ -65,7 +67,9 @@ async def set_public_did(
     """Set the current public DID."""
 
     async with client_from_auth(auth) as aries_controller:
-        return await acapy_wallet.set_public_did(aries_controller, did)
+        result = await acapy_wallet.set_public_did(aries_controller, did)
+
+    return result
 
 
 @router.patch("/{did}/rotate-keypair", status_code=204)
@@ -84,7 +88,9 @@ async def get_did_endpoint(
 ):
     """Get DID endpoint."""
     async with client_from_auth(auth) as aries_controller:
-        return await aries_controller.wallet.get_did_endpoint(did=did)
+        result = await aries_controller.wallet.get_did_endpoint(did=did)
+
+    return result
 
 
 @router.post("/{did}/endpoint", status_code=204)

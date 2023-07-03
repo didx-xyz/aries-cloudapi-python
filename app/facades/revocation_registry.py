@@ -41,7 +41,9 @@ async def create_revocation_registry(
     Returns:
         result (IssuerRevRegRecord): The revocation registry record.
     """
-    bound_logger = logger.bind(body={"cred_def_id": credential_definition_id})
+    bound_logger = logger.bind(
+        body={"cred_def_id": credential_definition_id, "max_cred_num": max_cred_num}
+    )
     bound_logger.info("Creating a new revocation registry for a credential definition")
     result = await controller.revocation.create_registry(
         body=RevRegCreateRequest(
@@ -157,7 +159,13 @@ async def publish_revocation_registry_on_ledger(
     Returns:
         result TxnOrRevRegResult: The transaction record or the Revocation Register Result.
     """
-    bound_logger = logger.bind(body={"revocation_registry_id": revocation_registry_id})
+    bound_logger = logger.bind(
+        body={
+            "revocation_registry_id": revocation_registry_id,
+            "connection_id": connection_id,
+            "create_transaction_for_endorser": create_transaction_for_endorser,
+        }
+    )
     bound_logger.info("Publishing revocation registry to the ledger")
 
     txn_or_rev_reg_result = await controller.revocation.publish_rev_reg_def(
@@ -216,6 +224,8 @@ async def publish_revocation_entry_to_ledger(
         body={
             "revocation_registry_id": revocation_registry_id,
             "cred_def_id": credential_definition_id,
+            "connection_id": connection_id,
+            "create_transaction_for_endorser": create_transaction_for_endorser,
         }
     )
     bound_logger.info("Publishing revocation entry to the ledger")
@@ -358,7 +368,7 @@ async def get_credential_definition_id_from_exchange_id(
     Returns:
         credential_definition_id (Union[str,None]): The credential definition ID or None.
     """
-    bound_logger = logger.bind(body={"cred_ex_id": credential_exchange_id})
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("Fetching credential definition id from exchange id")
 
     try:

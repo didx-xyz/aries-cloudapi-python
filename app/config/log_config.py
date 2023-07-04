@@ -24,7 +24,7 @@ logger.add(sys.stdout, level=STDOUT_LOG_LEVEL, format=formatter, colorize=True)
 
 # Log to a file
 logger.add(
-    "./logs/app_{time}.log",
+    "./logs/app/{time}.log",
     rotation="00:00",  # new file is created at midnight
     retention="7 days",  # keep logs for up to 7 days
     enqueue=True,  # asynchronous

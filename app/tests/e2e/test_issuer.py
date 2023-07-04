@@ -474,7 +474,7 @@ async def test_revoke_credential(
     else:
         raise Exception(
             "No records matched state: `credential-issued` or `done` with role: `issuer`."
-            + f"Looking for connection_id = {faber_connection_id}. List of records retreived: {records}.\n"
+            + f"Looking for connection_id = {faber_connection_id}. List of records retrieved: {records}.\n"
         )
 
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])

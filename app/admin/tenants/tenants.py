@@ -178,7 +178,7 @@ async def get_tenant_auth_token(
         )
 
     response = TenantAuth(access_token=tenant_api_key(auth.role, response.token))
-    bound_logger.info("Successfully retreived access token.")
+    bound_logger.info("Successfully retrieved access token.")
     return response
 
 

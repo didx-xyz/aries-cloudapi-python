@@ -13,9 +13,9 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
     result = db.query(models.Actor).offset(skip).limit(limit).all()
 
     if result:
-        logger.info("Successfully retreived {} actors from database.", len(result))
+        logger.info("Successfully retrieved {} actors from database.", len(result))
     else:
-        logger.warning("No actors retreived from database.")
+        logger.warning("No actors retrieved from database.")
 
     return result
 
@@ -26,7 +26,7 @@ def get_actor_by_did(db: Session, actor_did: str) -> models.Actor:
     result = db.query(models.Actor).filter(models.Actor.did == actor_did).first()
 
     if result:
-        bound_logger.info("Successfully retreived actor from database.")
+        bound_logger.info("Successfully retrieved actor from database.")
     else:
         bound_logger.info("Actor DID not found.")
         raise ActorDoesNotExistException
@@ -40,7 +40,7 @@ def get_actor_by_id(db: Session, actor_id: str) -> models.Actor:
     result = db.query(models.Actor).filter(models.Actor.id == actor_id).first()
 
     if result:
-        bound_logger.info("Successfully retreived actor from database.")
+        bound_logger.info("Successfully retrieved actor from database.")
     else:
         bound_logger.info("Actor ID not found.")
         raise ActorDoesNotExistException
@@ -114,9 +114,9 @@ def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Sc
     result = db.query(models.Schema).offset(skip).limit(limit).all()
 
     if result:
-        logger.info("Successfully retreived {} schemas from database.", len(result))
+        logger.info("Successfully retrieved {} schemas from database.", len(result))
     else:
-        logger.warning("No schemas retreived from database.")
+        logger.warning("No schemas retrieved from database.")
 
     return result
 

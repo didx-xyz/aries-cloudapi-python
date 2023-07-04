@@ -37,7 +37,7 @@ async def list_dids(
     """
     Retrieve list of DIDs.
     """
-    logger.info("GET request received: Retreive list of DIDs")
+    logger.info("GET request received: Retrieve list of DIDs")
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching DIDs")

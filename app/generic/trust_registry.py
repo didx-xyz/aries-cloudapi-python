@@ -20,5 +20,5 @@ async def get_trust_registry():
     logger.info("GET request received: Get the complete trust registry")
     trust_registry = await trust_registry_facade.get_trust_registry()
 
-    logger.info("Successfully retreived trust registry.")
+    logger.info("Successfully retrieved trust registry.")
     return trust_registry

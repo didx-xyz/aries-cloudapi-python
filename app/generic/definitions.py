@@ -162,7 +162,7 @@ async def get_credential_definitions(
     ]
 
     if credential_definitions:
-        bound_logger.info("Sucessfully fetched credential definitions.")
+        bound_logger.info("Successfully fetched credential definitions.")
     else:
         bound_logger.info("No credential definitions matching request.")
 
@@ -219,7 +219,7 @@ async def get_credential_definition_by_id(
         )
         cloudapi_credential_definition.schema_id = schema.id
 
-    bound_logger.info("Sucessfully fetched credential definition.")
+    bound_logger.info("Successfully fetched credential definition.")
     return cloudapi_credential_definition
 
 
@@ -463,7 +463,7 @@ async def get_schemas(
     ]
 
     if schemas:
-        bound_logger.info("Sucessfully fetched schemas.")
+        bound_logger.info("Successfully fetched schemas.")
     else:
         bound_logger.info("No schemas matching request.")
 

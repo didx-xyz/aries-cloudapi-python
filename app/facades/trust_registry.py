@@ -485,7 +485,7 @@ async def update_actor(actor: Actor) -> None:
     bound_logger.info("Updating actor on trust registry")
     try:
         async with httpx.AsyncClient() as client:
-            update_response = await client.post(
+            update_response = await client.put(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor['id']}", json=actor
             )
     except httpx.HTTPError as e:

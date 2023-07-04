@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Any, Dict, Optional, TypedDict
 
 import httpx
@@ -7,6 +6,7 @@ from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from aries_cloudcontroller.util.acapy_client_session import AcaPyClientSession
 from fastapi_websocket_pubsub import PubSubClient
 
+from endorser.config.log_config import get_logger
 from shared import (
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
@@ -15,7 +15,7 @@ from shared import (
     Endorsement,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Event(TypedDict):

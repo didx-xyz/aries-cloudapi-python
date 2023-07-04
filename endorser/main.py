@@ -1,12 +1,9 @@
-import logging
-import os
-
 import asyncio
 
+from endorser.config.log_config import get_logger
 from endorser.endorser_processor import listen_endorsement_events
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-logging.basicConfig(level=LOG_LEVEL)
+logger = get_logger(__name__)
 
 # Set logger
 logger = logging.getLogger(__name__)

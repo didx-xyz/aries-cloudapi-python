@@ -34,7 +34,7 @@ async def startup_event():
     models.Base.metadata.create_all(bind=engine)
     engine.dispose()
 
-    # Validate tables are created
+    logger.debug("TrustRegistry startup: Validate tables are created")
     with engine.connect() as connection:
         result = connection.execute(
             "SELECT name FROM sqlite_master WHERE type='table';"
@@ -44,9 +44,11 @@ async def startup_event():
 
 @app.get("/")
 async def root(db: Session = Depends(get_db)):
+    logger.info("GET request received: Fetch actors and schemas from registry")
     db_schemas = crud.get_schemas(db)
     db_actors = crud.get_actors(db)
     schemas_repr = [schema.id for schema in db_schemas]
+    logger.info("Successfully fetched actors and schemas from registry")
     return {"actors": db_actors, "schemas": schemas_repr}
 
 

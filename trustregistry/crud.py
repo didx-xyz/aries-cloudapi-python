@@ -37,9 +37,8 @@ def delete_actor(db: Session, actor_id: str) -> models.Actor:
     return db_actor
 
 
-def update_actor(db: Session, actor: schemas.Actor, actor_id: str) -> models.Actor:
-    db_actor = db.query(models.Actor).filter(models.Actor.id == actor_id).one_or_none()
-    if db_actor is None:
+def update_actor(db: Session, actor: schemas.Actor) -> models.Actor:
+    db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
         return None
 
     for var, value in vars(actor).items():

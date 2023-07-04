@@ -25,7 +25,7 @@ async def register_actor(actor: Actor, db: Session = Depends(get_db)):
 
 @router.post("/{actor_id}")
 async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)):
-    update_actor_result = crud.update_actor(db, actor=actor, actor_id=actor_id)
+    update_actor_result = crud.update_actor(db, actor=actor)
     if update_actor_result is None:
         raise HTTPException(status_code=404, detail="Actor not found.")
     return update_actor_result

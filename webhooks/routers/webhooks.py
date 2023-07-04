@@ -1,14 +1,14 @@
-import logging
 from typing import Any, List
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
 
 from shared import APIRouter, TopicItem
+from webhooks.config.log_config import get_logger
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
 
 router = APIRouter(prefix="/webhooks")
 

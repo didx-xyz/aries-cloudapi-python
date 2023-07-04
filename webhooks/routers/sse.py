@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from typing import Any, Generator
 
 from dependency_injector.wiring import Provide, inject
@@ -7,11 +6,12 @@ from fastapi import BackgroundTasks, Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
 from shared import WEBHOOK_TOPIC_ALL, APIRouter
+from webhooks.config.log_config import get_logger
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.sse_manager import SseManager
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
 
 router = APIRouter(
     prefix="/sse",

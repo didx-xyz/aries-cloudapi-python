@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import time
 from collections import defaultdict as ddict
 from datetime import datetime, timedelta
@@ -7,9 +6,10 @@ from typing import Any, AsyncGenerator, Tuple
 
 from shared import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL
+from webhooks.config.log_config import get_logger
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
 
 MAX_EVENT_AGE_SECONDS = 5
 MAX_QUEUE_SIZE = 200

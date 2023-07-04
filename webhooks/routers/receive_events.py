@@ -1,5 +1,4 @@
 import json
-import logging
 from pprint import pformat
 from typing import Any, Dict
 
@@ -8,11 +7,12 @@ from fastapi import Depends, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, TopicItem, topic_mapping
+from webhooks.config.log_config import get_logger
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SseManager
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = get_logger(__name__)
 
 router = APIRouter()
 

@@ -1,7 +1,6 @@
 """Services module."""
 
 import json
-import logging
 from typing import Any, List
 
 from aioredis import Redis
@@ -17,6 +16,7 @@ from shared import (
     RedisItem,
     TopicItem,
 )
+from webhooks.config.log_config import get_logger
 from webhooks.models import (
     to_connections_model,
     to_credential_hook_model,
@@ -24,7 +24,7 @@ from webhooks.models import (
     to_proof_hook_model,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Service:

@@ -6,21 +6,25 @@ from trustregistry import models, schemas
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Actor]:
-    return db.query(models.Actor).offset(skip).limit(limit).all()
+    result = db.query(models.Actor).offset(skip).limit(limit).all()
+
+    return result
 
 
-def get_actor_by_did(db: Session, actor_did: str):
-    return db.query(models.Actor).filter(models.Actor.did == actor_did).first()
+    result = db.query(models.Actor).filter(models.Actor.did == actor_did).first()
+
+    return result
 
 
-def get_actor_by_id(db: Session, actor_id: str):
-    return db.query(models.Actor).filter(models.Actor.id == actor_id).first()
+    result = db.query(models.Actor).filter(models.Actor.id == actor_id).first()
+
+    return result
 
 
 def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
-    if db_actor is not None:
-        return None
+
+    if db_actor:
     db_actor = models.Actor(**actor.dict())
     db.add(db_actor)
     db.commit()
@@ -30,8 +34,8 @@ def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
 
 def delete_actor(db: Session, actor_id: str) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor_id).one_or_none()
-    if db_actor is None:
-        return None
+
+    if not db_actor:
     db.delete(db_actor)
     db.commit()
     return db_actor
@@ -39,7 +43,8 @@ def delete_actor(db: Session, actor_id: str) -> models.Actor:
 
 def update_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
-        return None
+
+    if not db_actor:
 
     for var, value in vars(actor).items():
         setattr(db_actor, var, value)
@@ -51,15 +56,17 @@ def update_actor(db: Session, actor: schemas.Actor) -> models.Actor:
 
 
 def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Schema]:
-    return db.query(models.Schema).offset(skip).limit(limit).all()
+    result = db.query(models.Schema).offset(skip).limit(limit).all()
+
+    return result
 
 
 def create_schema(db: Session, schema: schemas.Schema) -> models.Schema:
     db_schema = (
         db.query(models.Schema).filter(models.Schema.id == schema.id).one_or_none()
     )
-    if db_schema is not None:
-        return 1
+
+    if db_schema:
     db_schema = models.Schema(**schema.dict())
     db.add(db_schema)
     db.commit()
@@ -71,8 +78,8 @@ def update_schema(db: Session, schema: schemas.Schema, schema_id: str) -> models
     db_schema = (
         db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
     )
-    if db_schema is None:
-        return None
+
+    if not db_schema:
 
     for var, value in vars(schema).items():
         setattr(db_schema, var, value) if value else None
@@ -87,8 +94,8 @@ def delete_schema(db: Session, schema_id: str) -> models.Schema:
     db_schema = (
         db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
     )
-    if db_schema is None:
-        return None
+
+    if not db_schema:
     db.delete(db_schema)
     db.commit()
     return db_schema

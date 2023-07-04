@@ -177,3 +177,19 @@ def delete_schema(db: Session, schema_id: str) -> models.Schema:
 
     bound_logger.info("Successfully deleted schema from database.")
     return db_schema
+
+
+class ActorAlreadyExistsException(Exception):
+    """Raised when attempting to create an actor that already exists in the database."""
+
+
+class ActorDoesNotExistException(Exception):
+    """Raised when attempting to delete or update an actor that does not exist in the database."""
+
+
+class SchemaAlreadyExistsException(Exception):
+    """Raised when attempting to create a schema that already exists in the database."""
+
+
+class SchemaDoesNotExistException(Exception):
+    """Raised when attempting to delete or update a schema that does not exist in the database."""

@@ -156,6 +156,7 @@ async def get_did_and_schema_id_from_cred_def_attachment(
     did = "did:sov:" + attachment["identifier"]
     schema_seq_id = attachment["operation"]["ref"]
 
+    logger.debug("Fetching schema with seq id: {}", schema_seq_id)
     schema = await client.schema.get_schema(schema_id=schema_seq_id)
 
     if not schema.schema_ or not schema.schema_.id:
@@ -198,6 +199,7 @@ def get_endorsement_request_attachment(
         # Both dict and str encoding have ocurred for the attachment data
         # Parse to dict if payload is of type str
         if isinstance(json_payload, str):
+            logger.debug("Obtained string from `.data.json`; cast to json payload")
             json_payload = json.loads(json_payload)
 
         return json_payload
@@ -304,6 +306,7 @@ async def is_valid_issuer(did: str, schema_id: str):
 
 
 async def accept_endorsement(client: AcaPyClient, endorsement: Endorsement):
+    logger.debug("Endorsing transaction with id: {}", endorsement.transaction_id)
     await client.endorse_transaction.endorse_transaction(
         tran_id=endorsement.transaction_id
     )

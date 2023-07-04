@@ -13,9 +13,7 @@ formatter = (
     "<level>{message}</level> - "
     "{extra[body]}"
 )
-logger.configure(
-    extra={"body": ""}
-)  # Default values for extra args
+logger.configure(extra={"body": ""})  # Default values for extra args
 
 # Log to stdout
 logger.add(sys.stdout, level=LOG_LEVEL, format=formatter, colorize=True)

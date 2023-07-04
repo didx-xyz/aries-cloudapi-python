@@ -92,14 +92,17 @@ async def should_accept_endorsement(
     Returns:
         bool: Whether the endorsement request should be accepted
     """
+    bound_logger = logger.bind(body=endorsement)
+    bound_logger.debug("Validating if endorsement transaction should be endorsed")
 
     transaction_id = endorsement.transaction_id
+    bound_logger.debug("Fetching transaction with id: {}", transaction_id)
     transaction = await client.endorse_transaction.get_transaction(
         tran_id=transaction_id
     )
 
     if transaction.state != "request_received":
-        logger.debug(
+        bound_logger.debug(
             "Endorsement event for transaction with id '{}' "
             "not in state 'request_received' (is '{}').",
             transaction_id,
@@ -110,13 +113,13 @@ async def should_accept_endorsement(
     attachment = get_endorsement_request_attachment(transaction)
 
     if not attachment:
-        logger.debug("Could not extract attachment from transaction.")
+        bound_logger.debug("Could not extract attachment from transaction.")
         return False
 
     if not is_credential_definition_transaction(attachment):
-        logger.debug(
-            "Endorsement request with transaction id {} is not for credential definition.",
-            endorsement.transaction_id,
+        bound_logger.debug("Endorsement request is not for credential definition.")
+        return False
+
         )
         return False
 
@@ -125,7 +128,7 @@ async def should_accept_endorsement(
     )
 
     if not await is_valid_issuer(did, schema_id):
-        logger.debug(
+        bound_logger.debug(
             "Endorsement request with transaction id {} is not for did "
             "and schema registered in the trust registry.",
             transaction_id,
@@ -211,16 +214,22 @@ async def is_valid_issuer(did: str, schema_id: str):
         Exception: When the did is not registered, the actor doesn't have the issuer role
             or the schema is not registered in the registry.
     """
+    bound_logger = logger.bind(body={"did": did, "schema_id": schema_id})
+    bound_logger.debug("Assert that did is registered as issuer")
     try:
         async with httpx.AsyncClient() as client:
+            bound_logger.debug("Fetch actor with did {} from trust registry", did)
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
     except httpx.HTTPError as e:
+        bound_logger.exception(
+            "Caught HTTP error when reading actor from trust registry."
+        )
         raise e from e
 
     if actor_res.is_error:
-        logger.error(
+        bound_logger.error(
             "Error retrieving actor for did {} from trust registry. {}",
             did,
             actor_res.text,
@@ -229,13 +238,12 @@ async def is_valid_issuer(did: str, schema_id: str):
     actor = actor_res.json()
 
     # We need role issuer
-    if "issuer" not in actor["roles"]:
-        actor_id = actor["id"]
-        logger.error("Actor {} does not have required role 'issuer'", actor_id)
+        bound_logger.error("Actor {} does not have required role 'issuer'", actor)
         return False
 
     try:
         async with httpx.AsyncClient() as client:
+            bound_logger.debug("Fetch schemas from trust registry")
             schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
         raise e from e
@@ -251,6 +259,7 @@ async def is_valid_issuer(did: str, schema_id: str):
         logger.error("schema {} not in the trust registry.", schema_id)
         return False
 
+    bound_logger.debug("Validated that DID and schema are on trust registry")
     return True
 
 

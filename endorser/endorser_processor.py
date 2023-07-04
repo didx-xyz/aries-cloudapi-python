@@ -223,11 +223,12 @@ def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:
             return False
 
         logger.debug(
-            "Endorsement request operation type: %s. Need 102", operation.get("type")
+            "Endorsement request operation type: {}. Must be 102 for credential definition",
+            operation.get("type"),
         )
-
         # credential definition type is 102
         # see https://github.com/hyperledger/indy-node/blob/master/docs/source/requests.md#common-request-structure
+
         return operation.get("type") == "102"
     except Exception:
         logger.exception(

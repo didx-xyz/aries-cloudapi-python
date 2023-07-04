@@ -93,15 +93,16 @@ async def should_accept_endorsement(
         bool: Whether the endorsement request should be accepted
     """
 
+    transaction_id = endorsement.transaction_id
     transaction = await client.endorse_transaction.get_transaction(
-        tran_id=endorsement.transaction_id
+        tran_id=transaction_id
     )
 
     if transaction.state != "request_received":
         logger.debug(
             "Endorsement event for transaction with id '{}' "
             "not in state 'request_received' (is '{}').",
-            transaction.transaction_id,
+            transaction_id,
             transaction.state,
         )
         return False
@@ -127,7 +128,7 @@ async def should_accept_endorsement(
         logger.debug(
             "Endorsement request with transaction id {} is not for did "
             "and schema registered in the trust registry.",
-            endorsement.transaction_id,
+            transaction_id,
         )
         return False
 

@@ -24,7 +24,7 @@ from webhooks.models import (
     to_proof_hook_model,
 )
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Service:
@@ -112,10 +112,10 @@ class Service:
             # Log the data failing to create webhook, skip appending
             # anything to the list, and continue to next item in entries
             except (ValidationError, json.JSONDecodeError) as e:
-                log.error("Error creating formatted webhook for\n%s\n%r", data, e)
+                logger.error("Error creating formatted webhook for\n%s\n%r", data, e)
             # Catch the general case if sth else/unknown occurs:
             except Exception as e:
-                log.error("Unknown exception occurred:\n%r", e)
+                logger.error("Unknown exception occurred:\n%r", e)
 
         return data_list
 
@@ -139,10 +139,10 @@ class Service:
             # Log the data failing to create webhook, skip appending
             # anything to the list, and continue to next item in entries
             except (ValidationError, json.JSONDecodeError) as e:
-                log.error("Error creating formatted webhook for\n%s\n%r", data, e)
+                logger.error("Error creating formatted webhook for\n%s\n%r", data, e)
             # Catch the general case if sth else/unknown occurs:
             except Exception as e:
-                log.error("Unknown exception occurred:\n%r", e)
+                logger.error("Unknown exception occurred:\n%r", e)
 
         return data_list
 

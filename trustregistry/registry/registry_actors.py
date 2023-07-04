@@ -12,6 +12,7 @@ router = APIRouter(prefix="/registry/actors", tags=["actor"])
 @router.get("")
 async def get_actors(db: Session = Depends(get_db)):
     db_actors = crud.get_actors(db)
+
     return {"actors": db_actors}
 
 
@@ -21,6 +22,7 @@ async def register_actor(actor: Actor, db: Session = Depends(get_db)):
         created_actor = crud.create_actor(db, actor=actor)
     except crud.ActorAlreadyExistsException:
         raise HTTPException(status_code=405, detail="Actor already exists.")
+
     return created_actor
 
 
@@ -39,6 +41,7 @@ async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db
         update_actor_result = crud.update_actor(db, actor=actor)
     except crud.ActorDoesNotExistException:
         raise HTTPException(status_code=404, detail="Actor not found.")
+
     return update_actor_result
 
 
@@ -48,6 +51,7 @@ async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
         actor = crud.get_actor_by_did(db, actor_did=actor_did)
     except crud.ActorDoesNotExistException:
         raise HTTPException(status_code=404, detail="Actor not found.")
+
     return actor
 
 
@@ -57,6 +61,7 @@ async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)):
         actor = crud.get_actor_by_id(db, actor_id=actor_id)
     except crud.ActorDoesNotExistException:
         raise HTTPException(status_code=404, detail="Actor not found.")
+
     return actor
 
 

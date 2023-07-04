@@ -63,7 +63,7 @@ async def test_update_actor():
         new_actors_list = new_actors_resp.json()
         assert new_actor in new_actors_list["actors"]
 
-        response = await client.post(
+        response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/idonotexist",
             json=new_actor,
         )

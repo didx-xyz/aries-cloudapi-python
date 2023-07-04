@@ -1,8 +1,9 @@
 from typing import List
+
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
-from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
 from trustregistry import crud
 from trustregistry.db import get_db

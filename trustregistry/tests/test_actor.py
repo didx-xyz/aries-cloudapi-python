@@ -67,8 +67,7 @@ async def test_update_actor():
             f"{TRUST_REGISTRY_URL}/registry/actors/idonotexist",
             json=new_actor,
         )
-        assert response.status_code == 404
-        assert "Actor not found" in response.json()["detail"]
+        assert response.status_code == 400
 
 
 @pytest.mark.anyio

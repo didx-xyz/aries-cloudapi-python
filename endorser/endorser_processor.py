@@ -120,6 +120,18 @@ async def should_accept_endorsement(
         bound_logger.debug("Endorsement request is not for credential definition.")
         return False
 
+    if "identifier" not in attachment:
+        bound_logger.debug(
+            "Expected key `identifier` does not exist in extracted attachment. Got attachment: {}.",
+            attachment,
+        )
+        return False
+
+    # `operation` key is asserted to exist in `is_credential_definition_transaction`
+    if "ref" not in attachment["operation"].keys():
+        bound_logger.debug(
+            "Expected key `ref` does not exist in attachment `operation`. Got operation: {}",
+            attachment["operation"],
         )
         return False
 
@@ -159,9 +171,28 @@ def get_endorsement_request_attachment(
 ) -> Optional[Dict[str, Any]]:
     try:
         if not transaction.messages_attach:
+            logger.debug("No message attachments in transaction")
             return None
 
-        attachment = transaction.messages_attach[0]
+        attachment: Dict = transaction.messages_attach[0]
+
+        if "data" not in attachment:
+            logger.debug(
+                "Attachment does not contain expected key `data`. Got attachment: {}",
+                attachment,
+            )
+            return None
+
+        if (
+            not isinstance(attachment["data"], Dict)
+            or "json" not in attachment["data"].keys()
+        ):
+            logger.debug(
+                "Attachment data does not contain expected keys `json`. Got attachment data: {}",
+                attachment["data"],
+            )
+            return None
+
         json_payload = attachment["data"]["json"]
 
         # Both dict and str encoding have ocurred for the attachment data
@@ -179,7 +210,15 @@ def get_endorsement_request_attachment(
 
 def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:
     try:
+        if "operation" not in attachment:
+            logger.debug("Key `operation` not in attachment: {}.", attachment)
+            return False
+
         operation = attachment["operation"]
+
+        if "type" not in operation:
+            logger.debug("Key `type` not in operation attachment.")
+            return False
 
         logger.debug(
             "Endorsement request operation type: %s. Need 102", operation.get("type")
@@ -238,6 +277,7 @@ async def is_valid_issuer(did: str, schema_id: str):
     actor = actor_res.json()
 
     # We need role issuer
+    if "roles" not in actor or "issuer" not in actor["roles"]:
         bound_logger.error("Actor {} does not have required role 'issuer'", actor)
         return False
 

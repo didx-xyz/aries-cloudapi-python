@@ -1,14 +1,14 @@
 import asyncio
 import json
-import logging
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_websocket_pubsub import PubSubClient
 
+from app.config.log_config import get_logger
 from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Webhooks:

@@ -90,7 +90,7 @@ async def create_tenant(
     bound_logger.debug("Wallet creation successful")
 
     if body.roles and len(body.roles) > 0:
-        bound_logger.info("Onboarding with requsted roles: {roles}", roles=body.roles)
+        bound_logger.info("Onboarding with requested roles: {roles}", roles=body.roles)
         onboard_result = await onboard_tenant(
             name=body.name,
             roles=body.roles,

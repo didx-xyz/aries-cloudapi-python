@@ -303,7 +303,7 @@ async def onboard_issuer_no_public_did(
         except TimeoutError as e:
             bound_logger.error("Waiting for endorsement request has timed out.")
             raise CloudApiException(
-                "Timeout occured while waiting for endorsement request.", 504
+                "Timeout occurred while waiting for endorsement request.", 504
             ) from e
 
         bound_logger.bind(body=txn_record["transaction_id"]).debug(

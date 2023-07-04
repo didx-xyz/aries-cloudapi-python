@@ -3,7 +3,7 @@ import sys
 
 from loguru import logger
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 FILE_LOG_LEVEL = "DEBUG"
 
 # Remove default handler
@@ -19,8 +19,8 @@ formatter = (
 )
 logger.configure(extra={"body": ""})  # Default values for extra args
 
-# Log to stderr
-logger.add(sys.stderr, level=LOG_LEVEL, format=formatter, colorize=True)
+# Log to stdout
+logger.add(sys.stdout, level=STDOUT_LOG_LEVEL, format=formatter, colorize=True)
 
 # Log to a file
 logger.add(

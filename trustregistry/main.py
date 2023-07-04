@@ -39,7 +39,7 @@ async def startup_event():
         result = connection.execute(
             "SELECT name FROM sqlite_master WHERE type='table';"
         )
-        logger.debug("TrustRegistry tables created: %s", [row[0] for row in result])
+        logger.debug("TrustRegistry tables created: {}", [row[0] for row in result])
 
 
 @app.get("/")

@@ -51,7 +51,7 @@ async def test_register_actor():
 @pytest.mark.anyio
 async def test_update_actor():
     async with AsyncClient() as client:
-        response = await client.post(
+        response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}",
             json=new_actor,
         )
@@ -77,7 +77,7 @@ async def test_update_actor_x():
     updated_actor["did"] = None
 
     async with AsyncClient() as client:
-        response = await client.post(
+        response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}",
             json=updated_actor,
         )

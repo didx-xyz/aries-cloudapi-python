@@ -26,6 +26,15 @@ async def register_actor(actor: Actor, db: Session = Depends(get_db)):
 
 @router.post("/{actor_id}")
 async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)):
+    if actor.id and actor.id != actor_id:
+        raise HTTPException(
+            status_code=400,
+            detail=f"The provided actor ID '{actor.id}' in the request body "
+            f"does not match the actor ID '{actor_id}' in the URL.",
+        )
+    if not actor.id:
+        actor.id = actor_id
+
     try:
         update_actor_result = crud.update_actor(db, actor=actor)
     except crud.ActorDoesNotExistException:

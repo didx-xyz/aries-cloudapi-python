@@ -49,6 +49,13 @@ async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) ->
 async def update_schema(
     schema_id: str, new_schema_id: SchemaID, db: Session = Depends(get_db)
 ) -> Schema:
+    if schema_id == new_schema_id.schema_id:
+        raise HTTPException(
+            status_code=400,
+            detail="New schema ID is identical to the existing one. "
+            "Update operation expects a different schema ID.",
+        )
+
     schema_attrs_list = _get_schema_attrs(new_schema_id)
 
     try:

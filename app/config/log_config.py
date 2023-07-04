@@ -17,8 +17,8 @@ logger.configure(
     extra={"body": ""}
 )  # Default values for extra args
 
-# Log to stderr
-logger.add(sys.stderr, level="DEBUG", format=formatter, colorize=True)
+# Log to stdout
+logger.add(sys.stdout, level=LOG_LEVEL, format=formatter, colorize=True)
 
 # Log to a file
 logger.add(

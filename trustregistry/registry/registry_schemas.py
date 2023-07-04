@@ -6,8 +6,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from trustregistry import crud
+from trustregistry.config.log_config import get_logger
 from trustregistry.db import get_db
 from trustregistry.schemas import Schema
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
@@ -22,6 +25,7 @@ class SchemaID(BaseModel):
 
 @router.get("", response_model=GetSchemasResponse)
 async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
+    logger.info("GET request received: Fetch all schemas")
     db_schemas = crud.get_schemas(db)
     schemas_repr = [schema.id for schema in db_schemas]
 
@@ -30,6 +34,7 @@ async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
 
 @router.post("")
 async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) -> Schema:
+    logger.info("POST request received: Register schema")
     schema_attrs_list = _get_schema_attrs(schema_id)
     try:
         create_schema_res = crud.create_schema(
@@ -51,6 +56,7 @@ async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) ->
 async def update_schema(
     schema_id: str, new_schema_id: SchemaID, db: Session = Depends(get_db)
 ) -> Schema:
+    logger.info("PUT request received: Update schema")
     if schema_id == new_schema_id.schema_id:
         raise HTTPException(
             status_code=400,
@@ -84,6 +90,7 @@ async def update_schema(
 
 @router.delete("/{schema_id}", status_code=204)
 async def remove_schema(schema_id: str, db: Session = Depends(get_db)) -> None:
+    logger.info("DELETE request received: Delete schema")
     try:
         crud.delete_schema(db, schema_id=schema_id)
     except crud.SchemaDoesNotExistException:

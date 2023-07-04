@@ -31,9 +31,9 @@ async def register_actor(actor: Actor, db: Session = Depends(get_db)):
     return created_actor
 
 
-@router.post("/{actor_id}")
+@router.put("/{actor_id}")
 async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)):
-    logger.info("POST request received: Update actor")
+    logger.info("PUT request received: Update actor")
     if actor.id and actor.id != actor_id:
         raise HTTPException(
             status_code=400,

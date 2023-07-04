@@ -95,7 +95,7 @@ async def test_update_actor_x():
 
 
 @pytest.mark.anyio
-async def test_remove_schema():
+async def test_remove_actors():
     async with AsyncClient() as client:
         response = await client.delete(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"

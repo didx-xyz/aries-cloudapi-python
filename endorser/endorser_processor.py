@@ -34,7 +34,7 @@ async def listen_endorsement_events():
     await client.wait_until_done()
     logger.debug("Connection to webhook server ready")
     logger.info(
-        "Listening for 'endorsements' events from webhook server at %s",
+        "Listening for 'endorsements' events from webhook server at {}",
         WEBHOOKS_PUBSUB_URL,
     )
 
@@ -43,7 +43,7 @@ async def listen_endorsement_events():
 async def process_endorsement_event(data: str, topic: str):
     event: Event = json.loads(data)
     logger.debug(
-        "Processing endorsement event for agent %s (%s)",
+        "Processing endorsement event for agent {}, wallet: {}",
         event["origin"],
         event["wallet_id"],
     )
@@ -61,13 +61,13 @@ async def process_endorsement_event(data: str, topic: str):
             # Not interested in this endorsement request
             if not await should_accept_endorsement(client, endorsement):
                 logger.debug(
-                    "Endorsement request with transaction id %s is not applicable for endorsement.",
+                    "Endorsement request with transaction id {} is not applicable for endorsement.",
                     endorsement.transaction_id,
                 )
                 return
 
             logger.debug(
-                "Endorsement request with transaction id %s is applicable for endorsement, accepting request.",
+                "Endorsement request with transaction id {} is applicable for endorsement, accepting request.",
                 endorsement.transaction_id,
             )
             await accept_endorsement(client, endorsement)
@@ -100,7 +100,8 @@ async def should_accept_endorsement(
 
     if transaction.state != "request_received":
         logger.debug(
-            "Endorsement event for transaction with id '%s' not in state 'request_received' (is '%s').",
+            "Endorsement event for transaction with id '{}' "
+            "not in state 'request_received' (is '{}').",
             transaction.transaction_id,
             transaction.state,
         )
@@ -114,7 +115,7 @@ async def should_accept_endorsement(
 
     if not is_credential_definition_transaction(attachment):
         logger.debug(
-            "Endorsement request with transaction id %s is not for credential definition.",
+            "Endorsement request with transaction id {} is not for credential definition.",
             endorsement.transaction_id,
         )
         return False
@@ -125,7 +126,8 @@ async def should_accept_endorsement(
 
     if not await is_valid_issuer(did, schema_id):
         logger.debug(
-            "Endorsement request with transaction id %s is not for did and schema registered in the trust registry.",
+            "Endorsement request with transaction id {} is not for did "
+            "and schema registered in the trust registry.",
             endorsement.transaction_id,
         )
         return False
@@ -220,7 +222,7 @@ async def is_valid_issuer(did: str, schema_id: str):
 
     if actor_res.is_error:
         logger.error(
-            "Error retrieving actor for did %s from trust registry. %s",
+            "Error retrieving actor for did {} from trust registry. {}",
             did,
             actor_res.text,
         )
@@ -230,7 +232,7 @@ async def is_valid_issuer(did: str, schema_id: str):
     # We need role issuer
     if "issuer" not in actor["roles"]:
         actor_id = actor["id"]
-        logger.error("Actor %s does not have required role 'issuer'", actor_id)
+        logger.error("Actor {} does not have required role 'issuer'", actor_id)
         return False
 
     try:
@@ -241,13 +243,13 @@ async def is_valid_issuer(did: str, schema_id: str):
 
     if schema_res.is_error:
         logger.error(
-            "Error retrieving schemas from trust registry. %s", schema_res.text
+            "Error retrieving schemas from trust registry. {}", schema_res.text
         )
         return False
 
     schemas = schema_res.json()["schemas"]
     if schema_id not in schemas:
-        logger.error("schema %s not in the trust registry.", schema_id)
+        logger.error("schema {} not in the trust registry.", schema_id)
         return False
 
     return True

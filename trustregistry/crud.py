@@ -29,6 +29,7 @@ def get_actor_by_did(db: Session, actor_did: str) -> models.Actor:
         bound_logger.info("Successfully retreived actor from database.")
     else:
         bound_logger.info("Actor DID not found.")
+        raise ActorDoesNotExistException
 
     return result
 
@@ -42,6 +43,7 @@ def get_actor_by_id(db: Session, actor_id: str) -> models.Actor:
         bound_logger.info("Successfully retreived actor from database.")
     else:
         bound_logger.info("Actor ID not found.")
+        raise ActorDoesNotExistException
 
     return result
 
@@ -57,6 +59,7 @@ def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
         bound_logger.info(
             "Cannot create actor, as actor ID {} already exists in database.", actor.id
         )
+        raise ActorAlreadyExistsException
 
     bound_logger.debug("Adding actor to database")
     db_actor = models.Actor(**actor.dict())
@@ -75,6 +78,7 @@ def delete_actor(db: Session, actor_id: str) -> models.Actor:
 
     if not db_actor:
         bound_logger.info("Requested actor ID to delete does not exist in database.")
+        raise ActorDoesNotExistException
 
     bound_logger.debug("Deleting actor")
     db.delete(db_actor)
@@ -91,6 +95,7 @@ def update_actor(db: Session, actor: schemas.Actor) -> models.Actor:
 
     if not db_actor:
         bound_logger.info("Requested actor ID to update does not exist in database.")
+        raise ActorDoesNotExistException
 
     bound_logger.debug("Updating actor")
     for var, value in vars(actor).items():
@@ -127,6 +132,7 @@ def create_schema(db: Session, schema: schemas.Schema) -> models.Schema:
 
     if db_schema:
         bound_logger.info("The requested schema ID already exists in database.")
+        raise SchemaAlreadyExistsException
 
     bound_logger.debug("Adding schema to database")
     db_schema = models.Schema(**schema.dict())
@@ -149,6 +155,7 @@ def update_schema(db: Session, schema: schemas.Schema, schema_id: str) -> models
         bound_logger.debug(
             "Requested to update a schema that does not exist in database."
         )
+        raise SchemaDoesNotExistException
 
     bound_logger.debug("Updating schema on database")
     for var, value in vars(schema).items():
@@ -170,6 +177,7 @@ def delete_schema(db: Session, schema_id: str) -> models.Schema:
     )
 
     if not db_schema:
+        raise SchemaDoesNotExistException
 
     bound_logger.debug("Deleting schema from database")
     db.delete(db_schema)

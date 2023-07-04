@@ -30,16 +30,17 @@ async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
 @router.post("")
 async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) -> Schema:
     schema_attrs_list = _get_schema_attrs(schema_id)
-    create_schema_res = crud.create_schema(
-        db,
-        schema=Schema(
-            did=schema_attrs_list[0],
-            name=schema_attrs_list[2],
-            version=schema_attrs_list[3],
-            id=schema_id.schema_id,
-        ),
-    )
-    if create_schema_res == 1:
+    try:
+        create_schema_res = crud.create_schema(
+            db,
+            schema=Schema(
+                did=schema_attrs_list[0],
+                name=schema_attrs_list[2],
+                version=schema_attrs_list[3],
+                id=schema_id.schema_id,
+            ),
+        )
+    except crud.SchemaAlreadyExistsException:
         raise HTTPException(status_code=405, detail="Schema already exists")
     return create_schema_res
 
@@ -49,17 +50,14 @@ async def update_schema(
     schema_id: str, new_schema_id: SchemaID, db: Session = Depends(get_db)
 ) -> Schema:
     schema_attrs_list = _get_schema_attrs(new_schema_id)
-    update_schema_res = crud.update_schema(
-        db,
-        schema=Schema(
-            did=schema_attrs_list[0],
-            name=schema_attrs_list[2],
-            version=schema_attrs_list[3],
-            id=new_schema_id.schema_id,
-        ),
-        schema_id=schema_id,
-    )
-    if update_schema_res is None:
+
+    try:
+        update_schema_res = crud.update_schema(
+            db,
+            schema=new_schema,
+            schema_id=schema_id,
+        )
+    except crud.SchemaDoesNotExistException:
         raise HTTPException(
             status_code=405,
             detail="Schema not found",
@@ -69,8 +67,9 @@ async def update_schema(
 
 @router.delete("/{schema_id}", status_code=204)
 async def remove_schema(schema_id: str, db: Session = Depends(get_db)) -> None:
-    delete_scheme_res = crud.delete_schema(db, schema_id=schema_id)
-    if delete_scheme_res is None:
+    try:
+        crud.delete_schema(db, schema_id=schema_id)
+    except crud.SchemaDoesNotExistException:
         raise HTTPException(
             status_code=404,
             detail="Schema not found.",

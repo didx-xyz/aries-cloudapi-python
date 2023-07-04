@@ -1,5 +1,3 @@
-import logging
-
 import pytest
 from assertpy import assert_that
 
@@ -11,8 +9,6 @@ from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.credentials import cred_id_no_version
 from shared import CredentialExchange, RichAsyncClient
-
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.anyio
@@ -476,11 +472,10 @@ async def test_revoke_credential(
     if record_as_issuer_for_alice:
         record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
     else:
-        logger.warning(
+        raise Exception(
             "No records matched state: `credential-issued` or `done` with role: `issuer`."
             + f"Looking for connection_id = {faber_connection_id}. List of records retreived: {records}.\n"
         )
-        raise Exception("No issued credential retreived.")
 
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 

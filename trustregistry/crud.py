@@ -20,6 +20,7 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
     return result
 
 
+def get_actor_by_did(db: Session, actor_did: str) -> models.Actor:
     bound_logger = logger.bind(body={"actor_did": actor_did})
     bound_logger.info("Querying actor by DID")
     result = db.query(models.Actor).filter(models.Actor.did == actor_did).first()
@@ -32,6 +33,7 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
     return result
 
 
+def get_actor_by_id(db: Session, actor_id: str) -> models.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Querying actor by ID")
     result = db.query(models.Actor).filter(models.Actor.id == actor_id).first()

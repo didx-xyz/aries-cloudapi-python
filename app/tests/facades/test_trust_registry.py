@@ -260,17 +260,17 @@ async def test_update_actor(mock_async_client):
         didcomm_invitation="actor-didcomm-invitation",
     )
 
-    mock_async_client.post = AsyncMock(return_value=Response(200, json=actor))
+    mock_async_client.put = AsyncMock(return_value=Response(200, json=actor))
     await trf.update_actor(actor=actor)
-    mock_async_client.post.assert_called_once_with(
+    mock_async_client.put.assert_called_once_with(
         trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}", json=actor
     )
 
-    mock_async_client.post = AsyncMock(return_value=Response(500))
+    mock_async_client.put = AsyncMock(return_value=Response(500))
     with pytest.raises(trf.TrustRegistryException):
         await trf.update_actor(actor=actor)
 
-    mock_async_client.post = AsyncMock(
+    mock_async_client.put = AsyncMock(
         return_value=Response(422, json={"error": "some error"})
     )
     with pytest.raises(trf.TrustRegistryException):

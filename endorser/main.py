@@ -5,10 +5,8 @@ from endorser.endorser_processor import listen_endorsement_events
 
 logger = get_logger(__name__)
 
-# Set logger
-logger = logging.getLogger(__name__)
+if __name__ == "__main__":
+    logger.info("Starting endorser service")
 
-logger.info("Starting endorser service")
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(listen_endorsement_events())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(listen_endorsement_events())

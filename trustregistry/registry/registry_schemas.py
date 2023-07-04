@@ -24,6 +24,7 @@ class SchemaID(BaseModel):
 async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
     db_schemas = crud.get_schemas(db)
     schemas_repr = [schema.id for schema in db_schemas]
+
     return GetSchemasResponse(schemas=schemas_repr)
 
 
@@ -42,6 +43,7 @@ async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) ->
         )
     except crud.SchemaAlreadyExistsException:
         raise HTTPException(status_code=405, detail="Schema already exists")
+
     return create_schema_res
 
 
@@ -58,6 +60,13 @@ async def update_schema(
 
     schema_attrs_list = _get_schema_attrs(new_schema_id)
 
+    new_schema = Schema(
+        did=schema_attrs_list[0],
+        name=schema_attrs_list[2],
+        version=schema_attrs_list[3],
+        id=new_schema_id.schema_id,
+    )
+
     try:
         update_schema_res = crud.update_schema(
             db,
@@ -69,6 +78,7 @@ async def update_schema(
             status_code=405,
             detail="Schema not found",
         )
+
     return update_schema_res
 
 

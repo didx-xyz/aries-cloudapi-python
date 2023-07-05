@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from aioredis import Redis
 from aries_cloudcontroller.model import OobRecord
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from shared import (
     BasicMessage,
@@ -32,6 +32,16 @@ class Service:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
+        # Define a mapping from topics to their transformer functions
+        self._topic_to_transformer = {
+            "proofs": self._proof_hook_versioned,
+            "credentials": self._credential_hook_versioned,
+            "connections": self._version_connections,
+            "basic-messages": self._basic_messages,
+            "endorsements": self._endorsements,
+            "oob": self._oob,
+        }
+
     def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:
         return to_proof_hook_model(item=item)
 
@@ -50,26 +60,14 @@ class Service:
     def _oob(self, item: RedisItem) -> OobRecord:
         return OobRecord(**item.payload)
 
-    def _to_item(self, data: RedisItem):
-        item = None
-        topic = data.topic
-        # Transform the data to the appropriate model
-        if topic == "proofs":
-            item = self._proof_hook_versioned(data)
-        elif topic == "credentials":
-            item = self._credential_hook_versioned(data)
-        elif topic == "connections":
-            item = self._version_connections(data)
-        elif topic == "basic-messages":
-            item = self._basic_messages(data)
-        elif topic == "endorsements":
-            item = self._endorsements(data)
-        elif topic == "oob":
-            item = self._oob(data)
+    def _to_item(self, data: RedisItem) -> Optional[BaseModel]:
+        transformer = self._topic_to_transformer.get(data.topic)
 
-        if not item:
-            logger.warning("No transformer for topic: {}", topic)
-        return item
+        if transformer:
+            return transformer(data)
+
+        logger.warning("No transformer for topic: {}", data.topic)
+        return None
 
     def _to_topic_item(self, data: RedisItem, payload: PayloadType) -> TopicItem:
         return TopicItem(

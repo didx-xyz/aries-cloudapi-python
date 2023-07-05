@@ -48,7 +48,7 @@ async def topic_root(
     topic = topic_mapping.get(acapy_topic)
     if not topic:
         LOGGER.warning(
-            "Not publishing webhook event for acapy_topic %s as it doesn't exist in the topic_mapping",
+            "Not publishing webhook event for acapy_topic {} as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
         return
@@ -65,7 +65,7 @@ async def topic_root(
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
         LOGGER.warning(
-            "Not publishing webhook event for topic %s as no transformer exists for the topic",
+            "Not publishing webhook event for topic {} as no transformer exists for the topic",
             topic,
         )
         return
@@ -92,4 +92,4 @@ async def topic_root(
     # Add data to redis
     await service.add_wallet_entry(wallet_id, redis_item.json())
 
-    LOGGER.debug("Finished processing received webhook:\n%s", pformat(webhook_event))
+    LOGGER.debug("Finished processing received webhook: {}", pformat(webhook_event))

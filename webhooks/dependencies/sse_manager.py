@@ -59,7 +59,7 @@ class SseManager:
             topic: The topic to which to enqueue the event.
         """
         LOGGER.debug(
-            "Enqueueing event for wallet '%s': %s",
+            "Enqueueing event for wallet '{}': {}",
             wallet,
             event,
         )
@@ -77,7 +77,7 @@ class SseManager:
                 # Check if queue is full and make room before adding events
                 if self.fifo_cache[wallet][topic].full():
                     LOGGER.warning(
-                        "SSE Manager: fifo_cache is full for wallet %s and topic %s with max queue length %s",
+                        "SSE Manager: fifo_cache is full for wallet {} and topic {} with max queue length {}",
                         wallet,
                         topic,
                         MAX_QUEUE_SIZE,
@@ -94,7 +94,7 @@ class SseManager:
 
                 timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
                 LOGGER.debug(
-                    "Putting event on cache for wallet %s, topic %s: %s",
+                    "Putting event on cache for wallet {}, topic {}: {}",
                     wallet,
                     topic,
                     event,
@@ -161,7 +161,7 @@ class SseManager:
         self, *, wallet: str, topic: str, client_queue: asyncio.Queue
     ):
         LOGGER.debug(
-            "SSE Manager: start _populate_client_queue for wallet %s and topic %s",
+            "SSE Manager: start _populate_client_queue for wallet {} and topic {}",
             wallet,
             topic,
         )

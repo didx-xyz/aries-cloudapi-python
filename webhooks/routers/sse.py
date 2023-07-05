@@ -50,7 +50,7 @@ async def sse_subscribe_wallet(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    LOGGER.debug("SSE Request: subscribe to wallet `%s` on all topics", wallet_id)
+    LOGGER.debug("SSE Request: subscribe to wallet `{}` on all topics", wallet_id)
 
     async def event_stream() -> Generator[str, Any, None]:
         stop_event = asyncio.Event()
@@ -73,7 +73,7 @@ async def sse_subscribe_wallet(
                     break
                 try:
                     LOGGER.debug(
-                        "SSE event for wallet `%s`. Yielding: %s",
+                        "SSE event for wallet `{}`. Yielding: {}",
                         wallet_id,
                         event.json(),
                     )
@@ -111,7 +111,7 @@ async def sse_subscribe_wallet_topic(
         sse_manager: The SSEManager instance managing the server-sent events.
     """
     LOGGER.debug(
-        "SSE Request: subscribe to wallet `%s` and topic `%s`", wallet_id, topic
+        "SSE Request: subscribe to wallet `{}` and topic `{}`", wallet_id, topic
     )
 
     async def event_stream() -> Generator[str, Any, None]:
@@ -135,7 +135,7 @@ async def sse_subscribe_wallet_topic(
                     break
                 try:
                     LOGGER.debug(
-                        "Yielding SSE event for wallet `%s` on topic `%s`. Event: %s",
+                        "Yielding SSE event for wallet `{}` on topic `{}`. Event: {}",
                         wallet_id,
                         topic,
                         event.json(),
@@ -170,7 +170,7 @@ async def sse_subscribe_event_with_state(
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     LOGGER.debug(
-        "SSE Request: subscribe to wallet `%s` and topic `%s`, only events in state `%s`",
+        "SSE Request: subscribe to wallet `{}` and topic `{}`, only events in state `{}`",
         wallet_id,
         topic,
         desired_state,
@@ -222,7 +222,7 @@ async def sse_subscribe_event_with_state(
 
                     if "state" in payload and payload["state"] == desired_state:
                         LOGGER.debug(
-                            "Yielding SSE event for wallet `%s` on topic `%s` with state `%s`. Event: %s",
+                            "Yielding SSE event for wallet `{}` on topic `{}` with state `{}`. Event: {}",
                             wallet_id,
                             topic,
                             desired_state,
@@ -263,7 +263,7 @@ async def sse_subscribe_stream_with_fields(
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     LOGGER.debug(
-        "SSE Request: subscribe to wallet `%s` and topic `%s`, stream events with `%s`:`%s`",
+        "SSE Request: subscribe to wallet `{}` and topic `{}`, stream events with `{}`:`{}`",
         wallet_id,
         topic,
         field,
@@ -294,7 +294,7 @@ async def sse_subscribe_stream_with_fields(
                     payload = dict(event.payload)  # to check if keys exist in payload
                     if field in payload and payload[field] == field_id:
                         LOGGER.debug(
-                            "Yielding SSE event for wallet `%s` on topic `%s` with `%s`:`%s`. Event: %s",
+                            "Yielding SSE event for wallet `{}` on topic `{}` with `{}`:`{}`. Event: {}",
                             wallet_id,
                             topic,
                             field,
@@ -335,7 +335,7 @@ async def sse_subscribe_event_with_field_and_state(
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     LOGGER.debug(
-        "SSE Request: subscribe to wallet `%s` and topic `%s`, only events in state `%s` with `%s`:`%s`",
+        "SSE Request: subscribe to wallet `{}` and topic `{}`, only events in state `{}` with `{}`:`{}`",
         wallet_id,
         topic,
         desired_state,
@@ -371,7 +371,7 @@ async def sse_subscribe_event_with_field_and_state(
                         and payload["state"] == desired_state
                     ):
                         LOGGER.debug(
-                            "Yielding SSE event for wallet `%s` on topic `%s` with state `%s` and `%s`:`%s`. Event: %s",
+                            "Yielding SSE event for wallet `{}` on topic `{}` with state `{}` and `{}`:`{}`. Event: {}",
                             wallet_id,
                             topic,
                             desired_state,

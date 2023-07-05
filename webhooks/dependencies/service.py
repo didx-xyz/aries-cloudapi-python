@@ -86,9 +86,6 @@ class Service:
             payload=payload,
         )
 
-    async def add_wallet_entry(self, wallet_id: str, hook: str):
-        await self._redis.sadd(wallet_id, hook)
-
     async def transform_topic_entry(self, data: RedisItem):
         """Transforms an entry from the redis cache into model."""
         payload = self._to_item(data=data)
@@ -145,6 +142,9 @@ class Service:
                 logger.error("Unknown exception occurred:\n%r", e)
 
         return data_list
+
+    async def add_wallet_entry(self, wallet_id: str, hook: str):
+        await self._redis.sadd(wallet_id, hook)
 
     async def store_undelivered_message(self, topic: str, event: str) -> None:
         await self._redis.rpush(f"undelivered:{topic}", event)

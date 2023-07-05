@@ -12,7 +12,7 @@ def schema_id_gen(context):
     return f"{did}:2:{name}:{version}"
 
 
-class Actor(Base):
+class DB_Actor(Base):
     __tablename__ = "actors"
 
     id = Column(String, primary_key=True, index=True, unique=True)
@@ -22,7 +22,7 @@ class Actor(Base):
     did = Column(String, unique=True, index=True)
 
 
-class Schema(Base):
+class DB_Schema(Base):
     __tablename__ = "schemas"
 
     id = Column(

@@ -2,15 +2,16 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from trustregistry import models, schemas
+from trustregistry.models import DB_Actor, DB_Schema
+from trustregistry.schemas import Actor, Schema
 from trustregistry.config.log_config import get_logger
 
 logger = get_logger(__name__)
 
 
-def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Actor]:
+def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[DB_Actor]:
     logger.info("Querying all actors from database")
-    result = db.query(models.Actor).offset(skip).limit(limit).all()
+    result = db.query(DB_Actor).offset(skip).limit(limit).all()
 
     if result:
         logger.info("Successfully retrieved {} actors from database.", len(result))
@@ -20,10 +21,10 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
     return result
 
 
-def get_actor_by_did(db: Session, actor_did: str) -> models.Actor:
+def get_actor_by_did(db: Session, actor_did: str) -> DB_Actor:
     bound_logger = logger.bind(body={"actor_did": actor_did})
     bound_logger.info("Querying actor by DID")
-    result = db.query(models.Actor).filter(models.Actor.did == actor_did).first()
+    result = db.query(DB_Actor).filter(DB_Actor.did == actor_did).first()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database.")
@@ -34,10 +35,10 @@ def get_actor_by_did(db: Session, actor_did: str) -> models.Actor:
     return result
 
 
-def get_actor_by_id(db: Session, actor_id: str) -> models.Actor:
+def get_actor_by_id(db: Session, actor_id: str) -> DB_Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Querying actor by ID")
-    result = db.query(models.Actor).filter(models.Actor.id == actor_id).first()
+    result = db.query(DB_Actor).filter(DB_Actor.id == actor_id).first()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database.")
@@ -48,12 +49,12 @@ def get_actor_by_id(db: Session, actor_id: str) -> models.Actor:
     return result
 
 
-def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
+def create_actor(db: Session, actor: Actor) -> DB_Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info(
         "Create actor in database. First assert actor ID does not already exist"
     )
-    db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
+    db_actor = db.query(DB_Actor).filter(DB_Actor.id == actor.id).one_or_none()
 
     if db_actor:
         bound_logger.info(
@@ -62,7 +63,7 @@ def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
         raise ActorAlreadyExistsException
 
     bound_logger.debug("Adding actor to database")
-    db_actor = models.Actor(**actor.dict())
+    db_actor = DB_Actor(**actor.dict())
     db.add(db_actor)
     db.commit()
     db.refresh(db_actor)
@@ -71,10 +72,10 @@ def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     return db_actor
 
 
-def delete_actor(db: Session, actor_id: str) -> models.Actor:
+def delete_actor(db: Session, actor_id: str) -> DB_Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Delete actor from database. First assert actor ID exists")
-    db_actor = db.query(models.Actor).filter(models.Actor.id == actor_id).one_or_none()
+    db_actor = db.query(DB_Actor).filter(DB_Actor.id == actor_id).one_or_none()
 
     if not db_actor:
         bound_logger.info("Requested actor ID to delete does not exist in database.")
@@ -88,10 +89,10 @@ def delete_actor(db: Session, actor_id: str) -> models.Actor:
     return db_actor
 
 
-def update_actor(db: Session, actor: schemas.Actor) -> models.Actor:
+def update_actor(db: Session, actor: Actor) -> DB_Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Update actor in database. First assert actor ID exists")
-    db_actor = db.query(models.Actor).filter(models.Actor.id == actor.id).one_or_none()
+    db_actor = db.query(DB_Actor).filter(DB_Actor.id == actor.id).one_or_none()
 
     if not db_actor:
         bound_logger.info("Requested actor ID to update does not exist in database.")
@@ -109,9 +110,9 @@ def update_actor(db: Session, actor: schemas.Actor) -> models.Actor:
     return db_actor
 
 
-def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Schema]:
+def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[DB_Schema]:
     logger.debug("Query all schemas from database")
-    result = db.query(models.Schema).offset(skip).limit(limit).all()
+    result = db.query(DB_Schema).offset(skip).limit(limit).all()
 
     if result:
         logger.info("Successfully retrieved {} schemas from database.", len(result))
@@ -120,10 +121,10 @@ def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Sc
 
     return result
 
-def get_schema_by_id(db: Session, schema_id: str) -> models.Schema:
+def get_schema_by_id(db: Session, schema_id: str) -> DB_Schema:
     bound_logger = logger.bind(body={"schemaID": schema_id})
     bound_logger.info("Querying for schema by ID")
-    result = db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
+    result = db.query(DB_Schema).filter(DB_Schema.id == schema_id).one_or_none()
 
     if result:
         bound_logger.info("Successfully retrieved schema from database.")
@@ -133,13 +134,13 @@ def get_schema_by_id(db: Session, schema_id: str) -> models.Schema:
 
     return result    
 
-def create_schema(db: Session, schema: schemas.Schema) -> models.Schema:
+def create_schema(db: Session, schema: Schema) -> DB_Schema:
     bound_logger = logger.bind(body={"schema": schema})
     bound_logger.info(
         "Create schema in database. First assert schema ID does not already exist"
     )
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.id == schema.id).one_or_none()
+        db.query(DB_Schema).filter(DB_Schema.id == schema.id).one_or_none()
     )
 
     if db_schema:
@@ -147,7 +148,7 @@ def create_schema(db: Session, schema: schemas.Schema) -> models.Schema:
         raise SchemaAlreadyExistsException
 
     bound_logger.debug("Adding schema to database")
-    db_schema = models.Schema(**schema.dict())
+    db_schema = DB_Schema(**schema.dict())
     db.add(db_schema)
     db.commit()
     db.refresh(db_schema)
@@ -156,11 +157,11 @@ def create_schema(db: Session, schema: schemas.Schema) -> models.Schema:
     return db_schema
 
 
-def update_schema(db: Session, schema: schemas.Schema, schema_id: str) -> models.Schema:
+def update_schema(db: Session, schema: Schema, schema_id: str) -> DB_Schema:
     bound_logger = logger.bind(body={"schema": schema, "schema_id": schema_id})
     bound_logger.info("Update schema in database. First assert schema ID exists")
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
+        db.query(DB_Schema).filter(DB_Schema.id == schema_id).one_or_none()
     )
 
     if not db_schema:
@@ -181,11 +182,11 @@ def update_schema(db: Session, schema: schemas.Schema, schema_id: str) -> models
     return db_schema
 
 
-def delete_schema(db: Session, schema_id: str) -> models.Schema:
+def delete_schema(db: Session, schema_id: str) -> DB_Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Delete schema from database. First assert schema ID exists")
     db_schema = (
-        db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
+        db.query(DB_Schema).filter(DB_Schema.id == schema_id).one_or_none()
     )
 
     if not db_schema:

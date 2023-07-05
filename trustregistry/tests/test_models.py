@@ -1,8 +1,8 @@
-from trustregistry import models
+from trustregistry.models import DB_Actor, DB_Schema
 
 
 def test_actor():
-    actor = models.Actor(
+    actor = DB_Actor(
         id="mickey-mouse",
         name="Mickey Mouse",
         roles="verifier, issuer",
@@ -18,7 +18,7 @@ def test_actor():
 
 
 def test_schema():
-    schema = models.Schema(did="abc", name="doubleaceschema", version="0.4.20")
+    schema = DB_Schema(did="abc", name="doubleaceschema", version="0.4.20")
 
     assert schema.did == "abc"
     assert schema.name == "doubleaceschema"

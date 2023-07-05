@@ -101,11 +101,13 @@ class Service:
                     data_list.append(webhook)
             # Log the data failing to create webhook, skip appending
             # anything to the list, and continue to next item in entries
-            except (ValidationError, json.JSONDecodeError) as e:
-                logger.error("Error creating formatted webhook for\n%s\n%r", data, e)
+            except ValidationError:
+                logger.exception(
+                    "Error creating formatted webhook for data entry: {}.", entry
+                )
             # Catch the general case if sth else/unknown occurs:
-            except Exception as e:
-                logger.error("Unknown exception occurred:\n%r", e)
+            except Exception:
+                logger.exception("Unknown exception occurred.")
 
         return data_list
 

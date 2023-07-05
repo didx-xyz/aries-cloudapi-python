@@ -121,13 +121,14 @@ def get_schemas(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Sc
     return result
 
 def get_schema_by_id(db: Session, schema_id: str) -> models.Schema:
-    logger.debug("Querying for schemaID:{}".format(schema_id))
+    bound_logger = logger.bind(body={"schemaID": schema_id})
+    bound_logger.info("Querying for schema by ID")
     result = db.query(models.Schema).filter(models.Schema.id == schema_id).one_or_none()
 
     if result:
-        logger.info("Successfully retrieved schema: {} from database.".format(schema_id))
+        bound_logger.info("Successfully retrieved schema from database.")
     else:
-        logger.warning("Schema with ID: {} not found.".format(schema_id))
+        bound_logger.info("Schema does not exist in database.")
         raise SchemaDoesNotExistException
 
     return result    

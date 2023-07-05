@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 
 
 class Service:
-    def __init__(self, redis: Redis):
+    def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
     def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:

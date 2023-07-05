@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, TypedDict
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
+from pydantic import BaseModel
 
 from endorser.config.log_config import get_logger
 from shared import (
@@ -17,7 +18,7 @@ from shared import (
 logger = get_logger(__name__)
 
 
-class Event(TypedDict):
+class Event(BaseModel):
     payload: Dict[str, Any]
     origin: str
     wallet_id: str

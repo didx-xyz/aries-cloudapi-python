@@ -125,10 +125,4 @@ class Service:
     async def add_wallet_entry(self, wallet_id: str, event: str) -> None:
         await self._redis.sadd(wallet_id, event)
 
-    async def store_undelivered_message(self, topic: str, event: str) -> None:
-        await self._redis.rpush(f"undelivered:{topic}", event)
 
-    async def get_undelivered_messages(self, topic: str) -> List[str]:
-        messages = await self._redis.lrange(f"undelivered:{topic}", 0, -1)
-        await self._redis.delete(f"undelivered:{topic}")
-        return [message.decode("utf-8") for message in messages]

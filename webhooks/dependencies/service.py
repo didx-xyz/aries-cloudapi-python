@@ -67,6 +67,8 @@ class Service:
         elif topic == "oob":
             item = self._oob(data)
 
+        if not item:
+            logger.warning("No transformer for topic: {}", topic)
         return item
 
     def _to_topic_item(self, data: RedisItem, payload: PayloadType) -> TopicItem:
@@ -88,6 +90,7 @@ class Service:
     def _transform_redis_entries(
         self, entries: List[str], topic: Optional[str] = None
     ) -> List[TopicItem]:
+        logger.debug("Transform redis entries to model types")
         data_list: List[TopicItem] = []
         for entry in entries:
             try:
@@ -110,19 +113,24 @@ class Service:
             except Exception:
                 logger.exception("Unknown exception occurred.")
 
+        logger.debug("Returning transformed redis entries")
         return data_list
 
     async def get_all_by_wallet(self, wallet_id: str) -> List[TopicItem]:
+        logger.debug("Fetching entries from redis for wallet id: {}", wallet_id)
         entries = await self._redis.smembers(wallet_id)
+        logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries)
 
     async def get_all_for_topic_by_wallet_id(
         self, topic: str, wallet_id: str
     ) -> List[TopicItem]:
+        logger.debug("Fetching entries from redis for wallet id: {}", wallet_id)
         entries = await self._redis.smembers(wallet_id)
+        logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries, topic)
 
     async def add_wallet_entry(self, wallet_id: str, event: str) -> None:
+        logger.debug("Write entry to redis")
         await self._redis.sadd(wallet_id, event)
-
-
+        logger.debug("Successfully wrote entry to redis")

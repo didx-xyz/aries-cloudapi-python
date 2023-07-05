@@ -62,7 +62,7 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    webhook_event: TopicItem = await service.transform_topic_entry(redis_item)
+    webhook_event: TopicItem = service.transform_topic_entry(redis_item)
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
         LOGGER.warning(

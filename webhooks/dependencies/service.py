@@ -84,15 +84,18 @@ class Service:
         if payload:
             return self._to_topic_item(data=data, payload=payload)
 
-    async def get_all_by_wallet(self, wallet_id: str):
-        # Get the data from redis queue
-        data_list: List[TopicItem[Any]] = []
-        entries = await self._redis.smembers(wallet_id)
-
+    def _transform_redis_entries(
+        self, entries: List[str], topic: Optional[str] = None
+    ) -> List[TopicItem]:
+        data_list: List[TopicItem] = []
         for entry in entries:
             try:
-                data: RedisItem = json.loads(entry)
-                webhook = await self.transform_topic_entry(data)
+                data: RedisItem = parse_with_error_handling(RedisItem, entry)
+                # Only take current topic
+                if topic and data.topic != topic:
+                    continue
+
+                webhook = self.transform_topic_entry(data)
 
                 if webhook:
                     data_list.append(webhook)

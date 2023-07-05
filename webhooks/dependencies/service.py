@@ -16,6 +16,7 @@ from shared import (
     RedisItem,
     TopicItem,
 )
+from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.config.log_config import get_logger
 from webhooks.models import (
     to_connections_model,

@@ -1,4 +1,3 @@
-import json
 from pprint import pformat
 from typing import Any, Dict
 
@@ -91,6 +90,6 @@ async def topic_root(
     )
 
     # Add data to redis
-    await service.add_wallet_entry(wallet_id, json.dumps(redis_item))
+    await service.add_wallet_entry(wallet_id, redis_item.json())
 
     LOGGER.debug("Finished processing received webhook:\n%s", pformat(webhook_event))

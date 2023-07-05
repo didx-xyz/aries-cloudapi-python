@@ -20,7 +20,7 @@ from shared import (
 
 
 def to_endorsement_model(item: RedisItem) -> Endorsement:
-    if item["payload"]["state"]:
+    if item.payload.get("state"):
         item.payload["state"] = item.payload["state"].replace("_", "-")
     return Endorsement(**item.payload)
 

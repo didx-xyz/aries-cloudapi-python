@@ -27,9 +27,9 @@ class SchemaID(BaseModel):
 async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
     logger.info("GET request received: Fetch all schemas")
     db_schemas = crud.get_schemas(db)
-    schemas_repr = [schema.id for schema in db_schemas]
+    schemas_ids = [schema.id for schema in db_schemas]
 
-    return GetSchemasResponse(schemas=schemas_repr)
+    return GetSchemasResponse(schemas=schemas_ids)
 
 
 @router.post("")
@@ -87,6 +87,18 @@ async def update_schema(
 
     return update_schema_res
 
+@router.get("/{schema_id}", response_model=Schema)
+async def get_schema(schema_id: str, db: Session = Depends(get_db)) -> Schema:
+    logger.info("GET request received: Fetch schema")
+    try:
+        schema = crud.get_schema_by_id(db, schema_id=schema_id)
+    except crud.SchemaDoesNotExistException:
+        raise HTTPException(
+            status_code=404,
+            detail="Schema not found.",
+        )
+    
+    return schema
 
 @router.delete("/{schema_id}", status_code=204)
 async def remove_schema(schema_id: str, db: Session = Depends(get_db)) -> None:

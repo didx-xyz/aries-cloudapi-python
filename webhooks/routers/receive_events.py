@@ -11,7 +11,7 @@ from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SseManager
 
-LOGGER = get_logger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -35,6 +35,10 @@ async def topic_root(
     service: Service = Depends(Provide[Container.service]),
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
+    bound_logger = logger.bind(
+        body={"acapy_topic": acapy_topic, "origin": origin, "body": body}
+    )
+    bound_logger.debug("Handling received event")
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
@@ -47,7 +51,7 @@ async def topic_root(
     # webhook events as needed, without needing to break any models
     topic = topic_mapping.get(acapy_topic)
     if not topic:
-        LOGGER.warning(
+        bound_logger.warning(
             "Not publishing webhook event for acapy_topic {} as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
@@ -64,7 +68,7 @@ async def topic_root(
     webhook_event: TopicItem = service.transform_topic_entry(redis_item)
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
-        LOGGER.warning(
+        bound_logger.warning(
             "Not publishing webhook event for topic {} as no transformer exists for the topic",
             topic,
         )
@@ -92,4 +96,4 @@ async def topic_root(
     # Add data to redis
     await service.add_wallet_entry(wallet_id, redis_item.json())
 
-    LOGGER.debug("Finished processing received webhook: {}", pformat(webhook_event))
+    logger.debug("Successfully processed received webhook.")

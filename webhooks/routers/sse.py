@@ -50,7 +50,10 @@ async def sse_subscribe_wallet(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    LOGGER.debug("SSE Request: subscribe to wallet `{}` on all topics", wallet_id)
+    bound_logger = logger.bind(body={"wallet_id": wallet_id})
+    bound_logger.info(
+        "SSE: GET request received: Subscribe to wallet events on all topics"
+    )
 
     async def event_stream() -> Generator[str, Any, None]:
         stop_event = asyncio.Event()
@@ -66,23 +69,17 @@ async def sse_subscribe_wallet(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_wallet`"
-                    )
+                    bound_logger.debug("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
-                    LOGGER.debug(
-                        "SSE event for wallet `{}`. Yielding: {}",
-                        wallet_id,
-                        event.json(),
-                    )
+                    bound_logger.debug("Yielding SSE event: {}", event.json())
                     yield event.json()
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    LOGGER.debug("SSE event_stream cancelled in `sse_subscribe_wallet`")
+                    bound_logger.debug("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -110,9 +107,8 @@ async def sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    LOGGER.debug(
-        "SSE Request: subscribe to wallet `{}` and topic `{}`", wallet_id, topic
-    )
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+    bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
 
     async def event_stream() -> Generator[str, Any, None]:
         stop_event = asyncio.Event()
@@ -128,26 +124,17 @@ async def sse_subscribe_wallet_topic(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_wallet_topic`"
-                    )
+                    bound_logger.debug("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
-                    LOGGER.debug(
-                        "Yielding SSE event for wallet `{}` on topic `{}`. Event: {}",
-                        wallet_id,
-                        topic,
-                        event.json(),
-                    )
+                    bound_logger.debug("Yielding SSE event: {}", event.json())
                     yield event.json()
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_wallet_topic`"
-                    )
+                    bound_logger.debug("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -169,11 +156,12 @@ async def sse_subscribe_event_with_state(
     background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
-    LOGGER.debug(
-        "SSE Request: subscribe to wallet `{}` and topic `{}`, only events in state `{}`",
-        wallet_id,
-        topic,
-        desired_state,
+    bound_logger = logger.bind(
+        body={"wallet_id": wallet_id, "topic": topic, "desired_state": desired_state}
+    )
+    bound_logger.info(
+        "SSE: GET request received: Subscribe to wallet event by topic, "
+        "waiting for specific state"
     )
 
     # Special case: Endorsements only contain two fields: `state` and `transaction_id`.
@@ -201,9 +189,7 @@ async def sse_subscribe_event_with_state(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_event_with_state`"
-                    )
+                    bound_logger.debug("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
@@ -221,13 +207,7 @@ async def sse_subscribe_event_with_state(
                             continue
 
                     if "state" in payload and payload["state"] == desired_state:
-                        LOGGER.debug(
-                            "Yielding SSE event for wallet `{}` on topic `{}` with state `{}`. Event: {}",
-                            wallet_id,
-                            topic,
-                            desired_state,
-                            event.json(),
-                        )
+                        bound_logger.debug("Yielding SSE event: {}", event.json())
                         yield event.json()  # Send the event
                         stop_event.set()
                         break  # End the generator
@@ -235,9 +215,7 @@ async def sse_subscribe_event_with_state(
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_event_with_state`"
-                    )
+                    bound_logger.debug("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -262,12 +240,12 @@ async def sse_subscribe_stream_with_fields(
     background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
-    LOGGER.debug(
-        "SSE Request: subscribe to wallet `{}` and topic `{}`, stream events with `{}`:`{}`",
-        wallet_id,
-        topic,
-        field,
-        field_id,
+    bound_logger = logger.bind(
+        body={"wallet_id": wallet_id, "topic": topic, field: field_id}
+    )
+    bound_logger.info(
+        "SSE: GET request received: Subscribe to wallet events by topic, "
+        "only events with specific field-id pairs"
     )
 
     async def event_stream():
@@ -285,30 +263,19 @@ async def sse_subscribe_stream_with_fields(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_stream_with_fields`"
-                    )
+                    bound_logger.debug("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
                     payload = dict(event.payload)  # to check if keys exist in payload
                     if field in payload and payload[field] == field_id:
-                        LOGGER.debug(
-                            "Yielding SSE event for wallet `{}` on topic `{}` with `{}`:`{}`. Event: {}",
-                            wallet_id,
-                            topic,
-                            field,
-                            field_id,
-                            event.json(),
-                        )
+                        bound_logger.debug("Yielding SSE event: {}", event.json())
                         yield event.json()  # Send the event
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_stream_with_fields`"
-                    )
+                    bound_logger.debug("SSE event_stream cancelled.")
                     stop_event.set()
                     break
 
@@ -334,13 +301,17 @@ async def sse_subscribe_event_with_field_and_state(
     background_tasks: BackgroundTasks,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
-    LOGGER.debug(
-        "SSE Request: subscribe to wallet `{}` and topic `{}`, only events in state `{}` with `{}`:`{}`",
-        wallet_id,
-        topic,
-        desired_state,
-        field,
-        field_id,
+    bound_logger = logger.bind(
+        body={
+            "wallet_id": wallet_id,
+            "topic": topic,
+            field: field_id,
+            "desired_state": desired_state,
+        }
+    )
+    bound_logger.info(
+        "SSE: GET request received: Subscribe to wallet event by topic, "
+        "waiting for payload with field-id pair and specific state"
     )
 
     async def event_stream():
@@ -358,9 +329,7 @@ async def sse_subscribe_event_with_field_and_state(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    LOGGER.debug(
-                        "SSE event_stream: client disconnected from `sse_subscribe_event_with_field_and_state`"
-                    )
+                    bound_logger.debug("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
@@ -370,15 +339,7 @@ async def sse_subscribe_event_with_field_and_state(
                         and payload[field] == field_id
                         and payload["state"] == desired_state
                     ):
-                        LOGGER.debug(
-                            "Yielding SSE event for wallet `{}` on topic `{}` with state `{}` and `{}`:`{}`. Event: {}",
-                            wallet_id,
-                            topic,
-                            desired_state,
-                            field,
-                            field_id,
-                            event.json(),
-                        )
+                        bound_logger.debug("Yielding SSE event: {}", event.json())
                         yield event.json()  # Send the event
                         stop_event.set()
                         break  # End the generator
@@ -386,9 +347,7 @@ async def sse_subscribe_event_with_field_and_state(
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    LOGGER.debug(
-                        "SSE event_stream cancelled in `sse_subscribe_event_with_field_and_state`"
-                    )
+                    bound_logger.debug("SSE event_stream cancelled.")
                     stop_event.set()
                     break
 

@@ -21,7 +21,7 @@ async def get_actors(db: Session = Depends(get_db)):
 
 
 @router.post("")
-async def register_actor(actor: Actor, db: Session = Depends(get_db)):
+async def register_actor(actor: Actor, db: Session = Depends(get_db)) -> Actor:
     logger.info("POST request received: Register actor")
     try:
         created_actor = crud.create_actor(db, actor=actor)
@@ -32,7 +32,7 @@ async def register_actor(actor: Actor, db: Session = Depends(get_db)):
 
 
 @router.put("/{actor_id}")
-async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)):
+async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)) -> Actor:
     logger.info("PUT request received: Update actor")
     if actor.id and actor.id != actor_id:
         raise HTTPException(
@@ -52,7 +52,7 @@ async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db
 
 
 @router.get("/did/{actor_did}")
-async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
+async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)) -> Actor:
     logger.info("GET request received: Get actor by DID")
     try:
         actor = crud.get_actor_by_did(db, actor_did=actor_did)
@@ -63,7 +63,7 @@ async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{actor_id}")
-async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)):
+async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)) -> Actor:
     logger.info("GET request received: Get actor by ID")
     try:
         actor = crud.get_actor_by_id(db, actor_id=actor_id)
@@ -74,7 +74,7 @@ async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/{actor_id}", status_code=204)
-async def remove_actor(actor_id: str, db: Session = Depends(get_db)):
+async def remove_actor(actor_id: str, db: Session = Depends(get_db)) -> None:
     logger.info("DELETE request received: Delete actor by ID")
     try:
         crud.delete_actor(db, actor_id=actor_id)

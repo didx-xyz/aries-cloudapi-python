@@ -300,7 +300,10 @@ async def is_valid_issuer(did: str, schema_id: str):
 
     schemas = schema_res.json()["schemas"]
     if schema_id not in schemas:
-        logger.info("Schema {} not in the trust registry.", schema_id)
+        logger.info(
+            "Schema {} associated with endorsement request is not in the trust registry.",
+            schema_id,
+        )
         return False
 
     bound_logger.debug("Validated that DID and schema are on trust registry")

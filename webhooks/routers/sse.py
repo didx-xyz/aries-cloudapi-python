@@ -11,7 +11,7 @@ from webhooks.dependencies.container import Container
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.sse_manager import SseManager
 
-LOGGER = get_logger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(
     prefix="/sse",
@@ -26,7 +26,7 @@ CHECK_DISCONN_PERIOD = 0.2  # period in seconds to check for disconnection
 async def check_disconnection(request: Request, stop_event: asyncio.Event):
     while not stop_event.is_set():
         if await request.is_disconnected():
-            LOGGER.debug("SSE check_disconnection: request has disconnected.")
+            logger.debug("SSE check_disconnection: request has disconnected.")
             stop_event.set()
         await asyncio.sleep(CHECK_DISCONN_PERIOD)
 

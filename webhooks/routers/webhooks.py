@@ -22,7 +22,15 @@ router = APIRouter(prefix="/webhooks")
 async def wallet_root(
     wallet_id: str, service: Service = Depends(Provide[Container.service])
 ):
+    bound_logger = logger.bind(body={"wallet_id": wallet_id})
+    bound_logger.info("GET request received: Fetch all webhook events for wallet")
+
     data = await service.get_all_by_wallet(wallet_id)
+
+    if data:
+        bound_logger.info("Successfully fetched webhooks events for wallet.")
+    else:
+        bound_logger.info("No webhooks events returned for wallet.")
     return data
 
 
@@ -36,7 +44,17 @@ async def wallet_hooks(
     wallet_id: str,
     service: Service = Depends(Provide[Container.service]),
 ) -> List[TopicItem[Any]]:
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+    bound_logger.info(
+        "GET request received: Fetch all webhook events for wallet and topic"
+    )
+
     data = await service.get_all_for_topic_by_wallet_id(
         topic=topic, wallet_id=wallet_id
     )
+
+    if data:
+        bound_logger.info("Successfully fetched webhooks events for wallet and topic.")
+    else:
+        bound_logger.info("No webhooks events returned for wallet and topic pair.")
     return data

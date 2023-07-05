@@ -8,7 +8,7 @@ from webhooks.config.log_config import get_logger
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 
-LOGGER = get_logger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/webhooks")
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/webhooks")
 # Routes are duplicated with trailing slash to avoid unnecessary redirects
 @router.get(
     "/{wallet_id}",
-    summary="Subscribe or get all webhook events for a wallet ID",
+    summary="Get all webhook events for a wallet ID",
 )
 @inject
 async def wallet_root(
@@ -28,7 +28,7 @@ async def wallet_root(
 
 @router.get(
     "/{wallet_id}/{topic}",
-    summary="Subscribe or get all webhook events for a topic and wallet ID",
+    summary="Get all webhook events for a wallet ID and topic pair",
 )
 @inject
 async def wallet_hooks(

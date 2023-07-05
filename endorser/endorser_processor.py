@@ -66,7 +66,7 @@ async def process_endorsement_event(data: str, topic: str):
             )
             return
 
-        logger.debug(
+        logger.info(
             "Endorsement request with transaction id {} is applicable for endorsement, accepting request.",
             endorsement.transaction_id,
         )

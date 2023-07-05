@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Optional, TypedDict
+from typing import Any, Dict, Optional
 
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
@@ -14,6 +14,7 @@ from shared import (
     WEBHOOKS_PUBSUB_URL,
     Endorsement,
 )
+from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
 
@@ -41,7 +42,7 @@ async def listen_endorsement_events():
 
 # topic is unused, but passed by the fastapi library.
 async def process_endorsement_event(data: str, topic: str):
-    event: Event = json.loads(data)
+    event: Event = parse_with_error_handling(Event, data)
     logger.debug(
         "Processing endorsement event for agent {}, wallet: {}",
         event["origin"],

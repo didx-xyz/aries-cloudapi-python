@@ -45,15 +45,15 @@ async def process_endorsement_event(data: str, topic: str):
     event: Event = parse_with_error_handling(Event, data)
     logger.debug(
         "Processing endorsement event for agent {}, wallet: {}",
-        event["origin"],
-        event["wallet_id"],
+        event.origin,
+        event.wallet_id,
     )
     # We're only interested in events from the governance agent
     if not is_governance_agent(event):
         logger.debug("Endorsement request is not for governance agent.")
         return
 
-    endorsement = Endorsement(**event["payload"])
+    endorsement = Endorsement(**event.payload)
 
     async with AcaPyClient(
         base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
@@ -74,7 +74,7 @@ async def process_endorsement_event(data: str, topic: str):
 
 
 def is_governance_agent(event: Event):
-    return event["origin"] == "governance"
+    return event.origin == "governance"
 
 
 async def should_accept_endorsement(

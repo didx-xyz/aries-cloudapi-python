@@ -13,7 +13,7 @@ logger.remove()
 formatter = (
     "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
     "<level>{level: <8}</level> | "
-    "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+    "<green>{name}</green>:<green>{function}</green>:<green>{line}</green> | "
     "<level>{message}</level> - "
     "{extra[body]}"
 )

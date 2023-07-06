@@ -285,21 +285,20 @@ async def is_valid_issuer(did: str, schema_id: str):
 
     try:
         async with httpx.AsyncClient() as client:
-            bound_logger.debug("Fetch schemas from trust registry")
-            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+            bound_logger.debug("Fetch schema from trust registry")
+            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
     except httpx.HTTPError as e:
         raise e from e
 
     if schema_res.is_error:
         logger.error(
-            "Error retrieving schemas from trust registry. {}", schema_res.text
+            "Error retrieving schema from trust registry. {}", schema_res.text
         )
         return False
 
-    schemas = schema_res.json()["schemas"]
-    if schema_id not in schemas:
-        logger.info("Schema {} not in the trust registry.", schema_id)
-        return False
+    schema = schema_res.json()
+    if not schema:
+        bound_logger.error("Schema {} not found in trust registry", schema_id)
 
     bound_logger.debug("Validated that DID and schema are on trust registry")
     return True

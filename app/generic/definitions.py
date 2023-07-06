@@ -583,7 +583,8 @@ async def create_schema(
                 if set(_schema.schema_.attr_names) != set(schema.attribute_names):
                     raise CloudApiException(
                         "Error creating schema: Schema already exists with different attribute names."
-                        + f"Given: `{str(set(_schema.schema_.attr_names))}`. Found: `{str(set(schema.attribute_names))}`.",
+                        + f"Given: `{str(set(_schema.schema_.attr_names))}`. "
+                        f"Found: `{str(set(schema.attribute_names))}`.",
                         409,
                     )
 

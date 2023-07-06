@@ -84,7 +84,6 @@ def get_logger(name: str):
             name,
             main_module_name,
         )
-        pass
 
     # Configure email notifications
     # logger_.add(

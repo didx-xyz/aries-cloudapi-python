@@ -38,7 +38,7 @@ class Listener:
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
         logger.debug(
-            "Listener is starting to wait for a filtered event with timeout %ss",
+            "Listener is starting to wait for a filtered event with timeout {}s",
             timeout,
         )
 
@@ -90,12 +90,12 @@ class Listener:
                 if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
                     logger.warning(
-                        "Waiting for a filtered event has timed out (%ss), with filter_map: %s",
+                        "Waiting for a filtered event has timed out ({}s), with filter_map: {}",
                         timeout,
                         filter_map,
                     )
                     logger.debug(
-                        "Events already processed that weren't matched to filters: %s",
+                        "Events already processed that weren't matched to filters: {}",
                         self._processed_events,
                     )
                     raise ListenerTimeout(

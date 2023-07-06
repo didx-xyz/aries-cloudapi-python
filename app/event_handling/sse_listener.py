@@ -42,7 +42,7 @@ class SseListener:
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
-                        logger.warning("Unexpected SSE line: %s", line)
+                        logger.warning("Unexpected SSE line: {}", line)
 
         raise SseListenerTimeout("Event with request state was not returned by server.")
 
@@ -62,7 +62,7 @@ class SseListener:
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
-                        logger.warning("Unexpected SSE line: %s", line)
+                        logger.warning("Unexpected SSE line: {}", line)
 
         raise SseListenerTimeout("Requested filtered event was not returned by server.")
 

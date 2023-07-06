@@ -285,7 +285,7 @@ async def get_tenants(
         bound_logger.info("Fetching wallets by group id")
         wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
 
-    if not wallets.results or len(wallets.results) == 0:
+    if not wallets.results:
         bound_logger.info("No wallets found for requested group id.")
         return []
 

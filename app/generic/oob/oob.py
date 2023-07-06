@@ -62,9 +62,7 @@ async def create_oob_invitation(
         "https://didcomm.org/connections/1.0",
     ]
 
-    if not body.create_connection and (
-        not body.attachments or len(body.attachments) == 0
-    ):
+    if not body.create_connection and not body.attachments:
         raise HTTPException(
             400,
             "One or both of 'create_connection' and 'attachments' must be included.",

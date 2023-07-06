@@ -40,7 +40,6 @@ def get_log_file_path(main_module_name) -> str:
 
     # Define the logging dir with
     LOG_DIR = os.path.join(BASE_DIR, f"logs/{main_module_name}")
-    os.makedirs(LOG_DIR, exist_ok=True)
     return os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log")
 
 

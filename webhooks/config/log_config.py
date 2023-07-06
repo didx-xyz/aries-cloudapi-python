@@ -18,6 +18,10 @@ formatter = (
     "{extra[body]}"
 )
 
+# This will hold our logger instances
+loggers = {}
+
+
 def get_log_file_path() -> str:
     # The absolute path of this file's directory
     CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))

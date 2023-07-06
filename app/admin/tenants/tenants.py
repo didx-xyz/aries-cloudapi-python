@@ -120,7 +120,7 @@ async def create_tenant(
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )
-    bound_logger.debug("Create tenant complete with response body: `{}`.", response)
+    bound_logger.debug("Successfully created tenant.")
     return response
 
 

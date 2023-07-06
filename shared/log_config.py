@@ -87,7 +87,13 @@ def get_logger(name: str):
         pass
 
     # Configure email notifications
-    # logger_.add("smtp+ssl://username:password@host:port", level="CRITICAL")
+    # logger_.add(
+    #     "smtp+ssl://abc:password@smtp.gmail.com:465",
+    #     level="CRITICAL",
+    #     subject="Critical error encountered in your application",
+    #     fromaddr="abc@def.com",
+    #     to=["abc@def.com"],
+    # )
 
     # Store the logger in the dictionary
     loggers[main_module_name] = logger_

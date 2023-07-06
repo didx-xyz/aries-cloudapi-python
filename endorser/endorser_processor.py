@@ -200,8 +200,13 @@ def get_endorsement_request_attachment(
         # Both dict and str encoding have ocurred for the attachment data
         # Parse to dict if payload is of type str
         if isinstance(json_payload, str):
-            logger.debug("Obtained string from `.data.json`; cast to json payload")
-            json_payload = json.loads(json_payload)
+            logger.debug("Try cast attachment payload to json")
+            try:
+                json_payload = json.loads(json_payload)
+                logger.debug("Payload is valid JSON.")
+            except json.JSONDecodeError:
+                logger.warning("Failed to decode attachment payload. Invalid JSON.")
+                json_payload = None
 
         return json_payload
     except Exception:

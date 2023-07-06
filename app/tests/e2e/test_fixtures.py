@@ -20,7 +20,7 @@ from shared.models import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
-# TODO: Move all methods here to member_personans as this is specific for the bob-alice interaction
+# TODO: Move all methods here to member_personas as this is specific for the bob-alice interaction
 # OR abstract the persona specific parts out of it
 
 

@@ -21,7 +21,7 @@ from app.tests.util.ledger import create_public_did
 from app.tests.util.string import random_string
 
 
-# Governace should be provisioned with public did and registered for all e2e tests
+# Governance should be provisioned with public did and registered for all e2e tests
 @pytest.fixture(autouse=True, scope="session")
 async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
     try:

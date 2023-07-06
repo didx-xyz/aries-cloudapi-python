@@ -71,7 +71,7 @@ async def assert_valid_prover(
         raise CloudApiException("Cannot proceed. No connection id.", 404)
 
     invitation_key = connection_record.invitation_key
-    # Case 1: connection made with publid DID
+    # Case 1: connection made with public DID
     if connection_record.their_public_did:
         public_did = f"did:sov:{connection_record.their_public_did}"
     # Case 2: connection made with public DID

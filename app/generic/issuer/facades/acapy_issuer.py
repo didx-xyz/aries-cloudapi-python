@@ -44,7 +44,7 @@ class Issuer(ABC):
         controller: AcaPyClient
             The aries_cloudcontroller object
         credential: CredentialNoConnection
-            Credential ffer to create
+            Credential offer to create
 
         Returns:
         --------

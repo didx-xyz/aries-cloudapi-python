@@ -38,10 +38,17 @@ jobs:
         run: |
           set -x
           docker-compose version
+
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
           chmod 777 ./data -R
+
+          rm -rf ./logs
+          mkdir ./logs
+          sudo chown -R $(id -u):$(id -g) ./logs
+          chmod 777 ./logs -R
+
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup

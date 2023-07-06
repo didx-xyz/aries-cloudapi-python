@@ -4,8 +4,8 @@ import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
-from app.config.log_config import get_logger
 from shared.constants import TRUST_REGISTRY_URL
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

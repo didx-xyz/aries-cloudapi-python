@@ -12,10 +12,10 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from uplink import Body, Consumer, json, post, returns
 
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

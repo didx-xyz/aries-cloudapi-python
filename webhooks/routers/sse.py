@@ -5,8 +5,9 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import BackgroundTasks, Depends, Request
 from sse_starlette.sse import EventSourceResponse
 
-from shared import WEBHOOK_TOPIC_ALL, APIRouter
-from webhooks.config.log_config import get_logger
+from shared import APIRouter
+from shared.log_config import get_logger
+from shared.models.topics import WEBHOOK_TOPIC_ALL
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.sse_manager import SseManager

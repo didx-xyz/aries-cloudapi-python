@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
-from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 from app.facades.sse import (
     sse_subscribe_event_with_field_and_state,
@@ -10,6 +9,7 @@ from app.facades.sse import (
     sse_subscribe_wallet,
     sse_subscribe_wallet_topic,
 )
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

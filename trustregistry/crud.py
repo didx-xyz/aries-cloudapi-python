@@ -2,8 +2,8 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from shared.log_config import get_logger
 from trustregistry import models, schemas
-from trustregistry.config.log_config import get_logger
 
 logger = get_logger(__name__)
 

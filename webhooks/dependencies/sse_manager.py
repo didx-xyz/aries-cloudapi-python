@@ -4,9 +4,9 @@ from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Tuple
 
-from shared import TopicItem
+from shared.log_config import get_logger
+from shared.models import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL
-from webhooks.config.log_config import get_logger
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
 logger = get_logger(__name__)

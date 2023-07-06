@@ -2,8 +2,9 @@ from typing import List
 
 from httpx import HTTPError, get
 
-from app.config.log_config import get_logger
-from shared import WEBHOOKS_URL, CloudApiTopics
+from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
+from shared.models.topics import CloudApiTopics
 
 logger = get_logger(__name__)
 

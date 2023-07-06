@@ -5,8 +5,9 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_websocket_pubsub import PubSubClient
 
-from app.config.log_config import get_logger
-from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
+from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
+from shared.models.topics import WEBHOOK_TOPIC_ALL
 
 logger = get_logger(__name__)
 

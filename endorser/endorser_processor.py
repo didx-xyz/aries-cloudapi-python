@@ -6,14 +6,14 @@ from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
 from pydantic import BaseModel
 
-from endorser.config.log_config import get_logger
 from shared import (
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_AGENT_URL,
     TRUST_REGISTRY_URL,
     WEBHOOKS_PUBSUB_URL,
-    Endorsement,
 )
+from shared.log_config import get_logger
+from shared.models import Endorsement
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)

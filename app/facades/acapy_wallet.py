@@ -3,8 +3,8 @@ from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
 from pydantic import BaseModel
 
-from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

@@ -6,7 +6,8 @@ import httpx
 from pydantic import BaseModel
 
 from app.event_handling.sse_listener import SseListener
-from shared import WEBHOOKS_URL, CloudApiTopics, RichAsyncClient
+from shared import WEBHOOKS_URL, RichAsyncClient
+from shared.models.topics import CloudApiTopics
 
 
 class FilterMap(BaseModel):

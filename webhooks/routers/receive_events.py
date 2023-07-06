@@ -4,8 +4,10 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, TopicItem, topic_mapping
-from webhooks.config.log_config import get_logger
+from shared import APIRouter
+from shared.log_config import get_logger
+from shared.models import RedisItem, TopicItem, topic_mapping
+from shared.models.topics import WEBHOOK_TOPIC_ALL
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SseManager

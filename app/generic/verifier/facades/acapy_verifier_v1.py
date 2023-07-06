@@ -5,7 +5,6 @@ from aries_cloudcontroller import (
     V10PresentationSendRequestRequest,
 )
 
-from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (
@@ -14,8 +13,9 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
-from shared import PresentationExchange, pres_id_no_version
-from shared import presentation_record_to_model as record_to_model
+from shared.log_config import get_logger
+from shared.models import PresentationExchange, pres_id_no_version
+from shared.models import presentation_record_to_model as record_to_model
 
 logger = get_logger(__name__)
 

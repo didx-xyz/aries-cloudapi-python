@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import (
     get_governance_controller,
     get_tenant_controller,
@@ -20,6 +19,7 @@ from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
 from shared import ACAPY_ENDORSER_ALIAS
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

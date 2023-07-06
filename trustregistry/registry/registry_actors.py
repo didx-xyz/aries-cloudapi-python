@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
+from shared.log_config import get_logger
 from trustregistry import crud
-from trustregistry.config.log_config import get_logger
 from trustregistry.db import get_db
 from trustregistry.schemas import Actor
 

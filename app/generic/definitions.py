@@ -16,7 +16,6 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import client_from_auth, get_governance_controller
 from app.dependencies.auth import (
     AcaPyAuth,
@@ -33,6 +32,7 @@ from app.facades.revocation_registry import (
     publish_revocation_registry_on_ledger,
 )
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

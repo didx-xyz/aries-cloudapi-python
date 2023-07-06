@@ -6,7 +6,8 @@ from aioredis import Redis
 from aries_cloudcontroller.model import OobRecord
 from pydantic import BaseModel, ValidationError
 
-from shared import (
+from shared.log_config import get_logger
+from shared.models import (
     BasicMessage,
     Connection,
     CredentialExchange,
@@ -17,7 +18,6 @@ from shared import (
     TopicItem,
 )
 from shared.util.rich_parsing import parse_with_error_handling
-from webhooks.config.log_config import get_logger
 from webhooks.models import (
     to_connections_model,
     to_credential_hook_model,

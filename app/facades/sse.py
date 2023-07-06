@@ -3,8 +3,8 @@ from typing import AsyncGenerator
 from fastapi import Request
 from httpx import AsyncClient, HTTPError, Response, Timeout
 
-from app.config.log_config import get_logger
 from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 SSE_PING_PERIOD = 15

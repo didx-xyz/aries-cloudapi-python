@@ -8,10 +8,10 @@ from aries_cloudcontroller.model.invitation_create_request import (
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from shared import Connection, conn_record_to_connection
+from shared.log_config import get_logger
+from shared.models import Connection, conn_record_to_connection
 
 logger = get_logger(__name__)
 

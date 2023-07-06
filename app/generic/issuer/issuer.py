@@ -3,7 +3,6 @@ from typing import List, Optional
 from aiohttp import ClientResponseError
 from fastapi import APIRouter, Depends, Query
 
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
@@ -24,6 +23,7 @@ from app.generic.issuer.models import (
     SendCredential,
 )
 from app.util.did import did_from_credential_definition_id
+from shared.log_config import get_logger
 from shared.models.topics.base import CredentialExchange
 
 logger = get_logger(__name__)

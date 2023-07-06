@@ -23,7 +23,6 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
     AcaPyAuth,
@@ -39,6 +38,7 @@ from app.facades.trust_registry import (
     register_actor,
     remove_actor_by_id,
 )
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 

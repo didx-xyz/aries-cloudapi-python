@@ -3,7 +3,6 @@ from typing import List
 from aries_cloudcontroller import IndyCredPrecis
 from fastapi import APIRouter, Depends
 
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
@@ -19,7 +18,8 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
-from shared import PresentationExchange
+from shared.log_config import get_logger
+from shared.models import PresentationExchange
 
 logger = get_logger(__name__)
 

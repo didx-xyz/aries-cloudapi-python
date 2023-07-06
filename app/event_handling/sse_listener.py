@@ -2,8 +2,8 @@ import json
 
 import httpx
 
-from app.config.log_config import get_logger
 from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 base_url = f"{WEBHOOKS_URL}/sse"

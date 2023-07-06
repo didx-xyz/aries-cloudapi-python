@@ -6,7 +6,7 @@ from aries_cloudcontroller import (
     V20PresExRecord,
 )
 
-from shared import (
+from shared.models import (
     Connection,
     CredentialExchange,
     Endorsement,

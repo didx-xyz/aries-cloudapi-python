@@ -50,6 +50,8 @@ jobs:
           mkdir ./logs/endorser
           mkdir ./logs/trustregistry
           mkdir ./logs/webhooks
+          mkdir ./logs/governance
+          mkdir ./logs/multitenant
           mkdir ./logs/governance/app
           mkdir ./logs/multitenant/app
           sudo chown -R $(id -u):$(id -g) ./logs

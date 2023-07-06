@@ -12,6 +12,7 @@ services:
     volumes:
       - ./app:/app
       - ./environments/governance-ga/fastapi.default.env:/app/.env
+      - ./logs/governance:/logs
     depends_on:
       governance-ga-wallets-db:
         condition: service_started
@@ -92,6 +93,7 @@ services:
       - 0.0.0.0:8001:8001
     volumes:
       - ./trustregistry:/trustregistry
+      - ./logs:/logs
     networks:
       - governance-ga
       - governance-multitenant
@@ -107,6 +109,7 @@ services:
     volumes:
       - ./app:/app
       - ./environments/governance-multitenant/fastapi.default.env:/app/.env
+      - ./logs/multitenant:/logs
     depends_on:
       governance-multitenant-wallets-db:
         condition: service_started
@@ -133,6 +136,7 @@ services:
       - 0.0.0.0:3010:3010
     volumes:
       - ./webhooks:/webhooks
+      - ./logs:/logs
     networks:
       - governance-multitenant
       - governance-ga
@@ -149,6 +153,7 @@ services:
       dockerfile: ./dockerfiles/endorser/Dockerfile
     volumes:
       - ./endorser:/endorser
+      - ./logs:/logs
     networks:
       - governance-multitenant
       - governance-ga

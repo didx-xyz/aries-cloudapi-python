@@ -113,24 +113,27 @@ class Service:
             except Exception:
                 logger.exception("Unknown exception occurred.")
 
-        logger.debug("Returning transformed redis entries")
+        logger.debug("Returning transformed redis entries.")
         return data_list
 
     async def get_all_by_wallet(self, wallet_id: str) -> List[TopicItem]:
-        logger.debug("Fetching entries from redis for wallet id: {}", wallet_id)
+        bound_logger = logger.bind(body={"wallet_id": wallet_id})
+        bound_logger.debug("Fetching entries from redis by wallet id")
         entries = await self._redis.smembers(wallet_id)
-        logger.debug("Successfully fetched redis entries.")
+        bound_logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries)
 
     async def get_all_for_topic_by_wallet_id(
         self, topic: str, wallet_id: str
     ) -> List[TopicItem]:
-        logger.debug("Fetching entries from redis for wallet id: {}", wallet_id)
+        bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+        bound_logger.debug("Fetching entries from redis by wallet id")
         entries = await self._redis.smembers(wallet_id)
-        logger.debug("Successfully fetched redis entries.")
+        bound_logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries, topic)
 
     async def add_wallet_entry(self, wallet_id: str, event: str) -> None:
-        logger.debug("Write entry to redis")
+        bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event})
+        bound_logger.debug("Write entry to redis")
         await self._redis.sadd(wallet_id, event)
-        logger.debug("Successfully wrote entry to redis")
+        bound_logger.debug("Successfully wrote entry to redis.")

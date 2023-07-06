@@ -137,7 +137,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
     mocked_async_client.get.assert_any_call(
         f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
     )
-    mocked_async_client.get.assert_any_call(f"{TRUST_REGISTRY_URL}/registry/schemas{schema_id}")
+    mocked_async_client.get.assert_any_call(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
 
 
 @pytest.mark.anyio

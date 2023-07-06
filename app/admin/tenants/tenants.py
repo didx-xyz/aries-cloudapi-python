@@ -89,11 +89,13 @@ async def create_tenant(
         )
     bound_logger.debug("Wallet creation successful")
 
-    if body.roles and len(body.roles) > 0:
-        bound_logger.info("Onboarding with requested roles: {roles}", roles=body.roles)
+    name = body.name
+    roles = body.roles
+    if roles:
+        bound_logger.info("Onboarding `{}` with requested roles: `{}`", name, roles)
         onboard_result = await onboard_tenant(
-            name=body.name,
-            roles=body.roles,
+            name=name,
+            roles=roles,
             tenant_auth_token=wallet_response.token,
             tenant_id=wallet_response.wallet_id,
         )
@@ -102,8 +104,8 @@ async def create_tenant(
         await register_actor(
             actor=Actor(
                 id=wallet_response.wallet_id,
-                name=body.name,
-                roles=list(body.roles),
+                name=name,
+                roles=roles,
                 did=onboard_result.did,
                 didcomm_invitation=onboard_result.didcomm_invitation,
             )
@@ -114,7 +116,7 @@ async def create_tenant(
         created_at=wallet_response.created_at,
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
-        tenant_name=body.name,
+        tenant_name=name,
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )

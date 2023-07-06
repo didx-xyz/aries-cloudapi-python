@@ -5,7 +5,7 @@ import sys
 from loguru import logger
 
 STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
-FILE_LOG_LEVEL = "DEBUG"
+FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
 
 # Create a mapping of module name to color
 color_map = {

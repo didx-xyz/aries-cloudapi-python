@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 
@@ -6,10 +7,7 @@ from loguru import logger
 STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 FILE_LOG_LEVEL = "DEBUG"
 
-# Remove default handler
-logger.remove()
-
-# Define custom formatter
+# Define custom formatter for this module
 formatter = (
     "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
     "<level>{level: <8}</level> | "

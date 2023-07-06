@@ -25,7 +25,9 @@ CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
 
 @pytest.fixture(scope="function")
-async def schema_definition(mock_governance_auth: AcaPyAuthVerified) -> CredentialSchema:
+async def schema_definition(
+    mock_governance_auth: AcaPyAuthVerified,
+) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
     )
@@ -37,7 +39,7 @@ async def schema_definition(mock_governance_auth: AcaPyAuthVerified) -> Credenti
 
 @pytest.fixture(scope="function")
 async def schema_definition_alt(
-    mock_governance_auth: AcaPyAuthVerified
+    mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema_alt", version=random_version(), attribute_names=["speed"]

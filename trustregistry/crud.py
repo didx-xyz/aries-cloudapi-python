@@ -34,8 +34,8 @@ def get_actor_by_did(db: Session, actor_did: str) -> DB_Actor:
 
     return result
 
-def get_actor_by_name(db: Session, actor_name: str):
-    return db.query(models.Actor).filter(models.Actor.name == actor_name).first()
+def get_actor_by_name(db: Session, actor_name: str) -> DB_Actor:
+    return db.query(DB_Actor).filter(DB_Actor.name == actor_name).first()
 
 
 def get_actor_by_id(db: Session, actor_id: str) -> DB_Actor:

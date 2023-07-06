@@ -62,7 +62,7 @@ async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)) -> Act
     return actor
 
 @router.get("/{actor_name}")
-async def get_actor_by_name(actor_name: str, db: Session = Depends(get_db)):
+async def get_actor_by_name(actor_name: str, db: Session = Depends(get_db)) -> Actor:
     actor = crud.get_actor_by_name(db, actor_name=actor_name)
     if actor is None:
         raise HTTPException(status_code=404, detail="Actor not found.")

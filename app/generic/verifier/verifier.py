@@ -205,7 +205,7 @@ async def send_proof_request(
     if result:
         bound_logger.info("Successfully sent proof request.")
     else:
-        bound_logger.warning("No result obtained from senting proof request.")
+        bound_logger.warning("No result obtained from sending proof request.")
     return result
 
 
@@ -242,9 +242,9 @@ async def create_proof_request(
         raise e from e
 
     if result:
-        bound_logger.info("Successfully sent proof request.")
+        bound_logger.info("Successfully created proof request.")
     else:
-        bound_logger.warning("No result obtained from senting proof request.")
+        bound_logger.warning("No result obtained from creating proof request.")
     return result
 
 
@@ -334,7 +334,7 @@ async def reject_proof_request(
                     proof_record.state,
                 )
                 raise CloudApiException(
-                    "Record must be in state request-received to decline proof request",
+                    "Record must be in state request-received to decline proof request.",
                     400,
                 )
 

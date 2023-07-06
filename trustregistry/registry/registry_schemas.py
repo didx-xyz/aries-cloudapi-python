@@ -49,7 +49,7 @@ async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) ->
         )
     except crud.SchemaAlreadyExistsException:
         bound_logger.info("Bad request: Schema already exists.")
-        raise HTTPException(status_code=405, detail="Schema already exists")
+        raise HTTPException(status_code=405, detail="Schema already exists.")
 
     return create_schema_res
 
@@ -89,7 +89,7 @@ async def update_schema(
         bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=405,
-            detail="Schema not found",
+            detail="Schema not found.",
         )
 
     return update_schema_res

@@ -238,7 +238,7 @@ async def onboard_issuer_no_public_did(
         except TimeoutError as e:
             bound_logger.error("Waiting for invitation complete event has timed out.")
             raise CloudApiException(
-                "Timeout occurred while waiting for connection with endorser to complete",
+                "Timeout occurred while waiting for connection with endorser to complete.",
                 504,
             ) from e
 

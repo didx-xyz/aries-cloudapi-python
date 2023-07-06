@@ -66,7 +66,7 @@ class Service:
         if transformer:
             return transformer(data)
 
-        logger.warning("No transformer for topic: {}", data.topic)
+        logger.warning("No transformer for topic: `{}`", data.topic)
         return None
 
     def _to_topic_item(self, data: RedisItem, payload: PayloadType) -> TopicItem:
@@ -107,7 +107,7 @@ class Service:
             # anything to the list, and continue to next item in entries
             except ValidationError:
                 logger.exception(
-                    "Error creating formatted webhook for data entry: {}.", entry
+                    "Error creating formatted webhook for data entry: `{}`.", entry
                 )
             # Catch the general case if sth else/unknown occurs:
             except Exception:

@@ -83,7 +83,7 @@ def read_openapi_yaml() -> Response:
     openapi_json = app.openapi()
     yaml_s = io.StringIO()
     yaml.dump(openapi_json, yaml_s, allow_unicode=True, sort_keys=False)
-    logger.info("Returning OpenAPI yaml text")
+    logger.info("Returning OpenAPI yaml text.")
     return Response(content=yaml_s.getvalue(), media_type="text/yaml")
 
 

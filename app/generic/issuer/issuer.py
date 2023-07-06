@@ -144,7 +144,7 @@ async def send_credential(
             )
         except ClientResponseError as e:
             logger.warning(
-                "ClientResponseError was caught while sending credentials, with message {}.",
+                "ClientResponseError was caught while sending credentials, with message `{}`.",
                 e.message,
             )
             raise CloudApiException("Failed to create and send credential.", 500) from e

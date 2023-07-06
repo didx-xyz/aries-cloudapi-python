@@ -161,7 +161,7 @@ async def verify_jsonld(
             )
             if not jsonld_verify_response.valid:
                 raise CloudApiException(
-                    f"Failed to verify payload with error message: {jsonld_verify_response.error}",
+                    f"Failed to verify payload with error message: `{jsonld_verify_response.error}`.",
                     422,
                 )
     except ClientResponseError as e:

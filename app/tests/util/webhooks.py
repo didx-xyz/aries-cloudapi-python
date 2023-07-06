@@ -74,7 +74,7 @@ async def check_webhook_state(
     if event:
         return True
     else:
-        raise Exception(f"Could not satisfy webhook filter: {filter_map}.")
+        raise Exception(f"Could not satisfy webhook filter: `{filter_map}`.")
 
 
 async def get_hooks_per_topic_per_wallet(

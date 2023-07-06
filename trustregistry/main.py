@@ -39,7 +39,7 @@ async def startup_event():
         result = connection.execute(
             "SELECT name FROM sqlite_master WHERE type='table';"
         )
-        logger.debug("TrustRegistry tables created: {}", [row[0] for row in result])
+        logger.debug("TrustRegistry tables created: `{}`", [row[0] for row in result])
 
 
 @app.get("/")
@@ -48,7 +48,7 @@ async def root(db: Session = Depends(get_db)):
     db_schemas = crud.get_schemas(db)
     db_actors = crud.get_actors(db)
     schemas_repr = [schema.id for schema in db_schemas]
-    logger.info("Successfully fetched actors and schemas from registry")
+    logger.info("Successfully fetched actors and schemas from registry.")
     return {"actors": db_actors, "schemas": schemas_repr}
 
 

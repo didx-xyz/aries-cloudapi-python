@@ -80,7 +80,7 @@ def get_logger(name: str):
     except PermissionError:
         logger_.warning(
             "Permission error caught when trying to create log file. "
-            "Continuing without file logging for `{}` in {}",
+            "Continuing without file logging for `{}` in `{}`",
             name,
             main_module_name,
         )

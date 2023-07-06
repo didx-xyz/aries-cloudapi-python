@@ -118,7 +118,7 @@ async def create_tenant(
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )
-    bound_logger.debug("Create tenant complete with response body: {}.", response)
+    bound_logger.debug("Create tenant complete with response body: `{}`.", response)
     return response
 
 
@@ -269,7 +269,7 @@ async def get_tenants(
             wallets = await admin_controller.multitenancy.get_wallets()
 
             if not wallets.results:
-                bound_logger.info("No wallets found")
+                bound_logger.info("No wallets found.")
                 return []
 
             # Only return wallet with current authentication role.
@@ -284,7 +284,7 @@ async def get_tenants(
         wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
 
     if not wallets.results or len(wallets.results) == 0:
-        bound_logger.info("No wallets found for requested group id")
+        bound_logger.info("No wallets found for requested group id.")
         return []
 
     response = [

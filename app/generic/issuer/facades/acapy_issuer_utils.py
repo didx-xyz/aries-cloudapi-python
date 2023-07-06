@@ -20,7 +20,7 @@ def issuer_from_id(id: str) -> Issuer:
         return IssueCredentialFacades.v2.value
 
     raise CloudApiException(
-        "Unknown version. ID is expected to contain protocol version", 400
+        "Unknown version. ID is expected to contain protocol version.", 400
     )
 
 

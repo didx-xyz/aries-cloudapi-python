@@ -13,7 +13,7 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[models.Act
     result = db.query(models.Actor).offset(skip).limit(limit).all()
 
     if result:
-        logger.info("Successfully retrieved {} actors from database.", len(result))
+        logger.info("Successfully retrieved `{}` actors from database.", len(result))
     else:
         logger.warning("No actors retrieved from database.")
 
@@ -57,7 +57,8 @@ def create_actor(db: Session, actor: schemas.Actor) -> models.Actor:
 
     if db_actor:
         bound_logger.info(
-            "Cannot create actor, as actor ID {} already exists in database.", actor.id
+            "Cannot create actor, as actor ID `{}` already exists in database.",
+            actor.id,
         )
         raise ActorAlreadyExistsException
 

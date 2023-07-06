@@ -15,7 +15,7 @@ class Actor(BaseModel):
     @classmethod
     def did_validator(cls, did: str):
         if not did.startswith("did:"):
-            raise ValueError("Only fully qualified DIDs allowed")
+            raise ValueError("Only fully qualified DIDs allowed.")
 
         return did
 
@@ -57,7 +57,7 @@ class Schema(BaseModel):
                 expected_id = calc_schema_id(did, name, version)
                 if id != expected_id:
                     raise ValueError(
-                        f"Schema's `id` field does not match expected format: {expected_id}"
+                        f"Schema's `id` field does not match expected format: `{expected_id}`."
                     )
             else:
                 # Extract did, name, and version from id if not specified

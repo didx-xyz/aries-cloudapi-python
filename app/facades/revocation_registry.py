@@ -54,7 +54,7 @@ async def create_revocation_registry(
     if not result:
         bound_logger.error("Error creating revocation registry.")
         raise CloudApiException(
-            f"Error creating revocation registry for credential with ID {credential_definition_id}"
+            f"Error creating revocation registry for credential with ID `{credential_definition_id}`."
         )
 
     bound_logger.info("Successfully created revocation registry.")
@@ -87,11 +87,11 @@ async def get_active_revocation_registry_for_credential(
 
     if not isinstance(result, RevRegResult):
         bound_logger.error(
-            "Unexpected type returned from get_active_registry_for_cred_def: {}.",
+            "Unexpected type returned from get_active_registry_for_cred_def: `{}`.",
             result,
         )
         raise CloudApiException(
-            f"Error retrieving revocation registry for credential with ID {credential_definition_id}"
+            f"Error retrieving revocation registry for credential with ID `{credential_definition_id}`."
         )
 
     bound_logger.info(
@@ -125,10 +125,10 @@ async def get_credential_revocation_status(
 
     if not isinstance(result, CredRevRecordResult):
         bound_logger.error(
-            "Unexpected type returned from get_revocation_status: {}.", result
+            "Unexpected type returned from get_revocation_status: `{}`.", result
         )
         raise CloudApiException(
-            f"Error retrieving revocation status for credential exchange ID {credential_exchange_id}"
+            f"Error retrieving revocation status for credential exchange ID `{credential_exchange_id}`."
         )
     else:
         result = result.result
@@ -183,7 +183,7 @@ async def publish_revocation_registry_on_ledger(
         result = txn_or_rev_reg_result.txn
     else:
         bound_logger.error(
-            "Unexpected type returned from publish_rev_reg_def: {}.",
+            "Unexpected type returned from publish_rev_reg_def: `{}`.",
             txn_or_rev_reg_result,
         )
         raise CloudApiException("Failed to publish revocation registry to ledger.")
@@ -256,7 +256,7 @@ async def publish_revocation_entry_to_ledger(
 
     if not isinstance(result, RevRegResult):
         bound_logger.error(
-            "Unexpected type returned from publish_rev_reg_entry: {}.", result
+            "Unexpected type returned from publish_rev_reg_entry: `{}`.", result
         )
         raise CloudApiException("Failed to publish revocation entry to ledger.")
 
@@ -344,7 +344,7 @@ async def endorser_revoke():
     except TimeoutError as e:
         logger.error("Waiting for an endorsement event has timed out.")
         raise CloudApiException(
-            "Timeout occured while waiting to retrieve transaction record for endorser.",
+            "Timeout occurred while waiting to retrieve transaction record for endorser.",
             504,
         ) from e
     async with get_governance_controller() as endorser_controller:

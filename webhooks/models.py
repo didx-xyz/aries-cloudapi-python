@@ -43,7 +43,7 @@ def to_proof_hook_model(item: RedisItem) -> PresentationExchange:
         presentation_exchange = presentation_record_to_model(presentation_exchange)
     else:
         topic = item.acapy_topic
-        raise Exception(f"Unsupported proof acapy topic: {topic}")
+        raise Exception(f"Unsupported proof acapy topic: `{topic}`.")
 
     return presentation_exchange
 
@@ -59,6 +59,6 @@ def to_credential_hook_model(item: RedisItem) -> CredentialExchange:
         cred_model = credential_record_to_model_v2(cred_exchange)
     else:
         topic = item.acapy_topic
-        raise Exception(f"Unsupported issue credential acapy topic: {topic}")
+        raise Exception(f"Unsupported issue credential acapy topic: `{topic}`.")
 
     return cred_model

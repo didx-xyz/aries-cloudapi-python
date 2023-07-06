@@ -66,7 +66,7 @@ async def get_public_did(
 
     if not result.result:
         logger.info("Bad request: no public DID found.")
-        raise CloudApiException("No public did found", 404)
+        raise CloudApiException("No public did found.", 404)
 
     logger.info("Successfully fetched public DID.")
     return result.result

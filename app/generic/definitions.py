@@ -202,7 +202,7 @@ async def get_credential_definition_by_id(
             bound_logger.info("Bad request: credential definition id not found.")
             raise HTTPException(
                 404,
-                f"Credential Definition with id {credential_definition_id} not found",
+                f"Credential Definition with id {credential_definition_id} not found.",
             )
 
         bound_logger.debug("Cast credential definition response to model")
@@ -279,7 +279,7 @@ async def create_credential_definition(
                 )
             except asyncio.TimeoutError:
                 raise CloudApiException(
-                    "Timeout waiting for endorser to accept the endorsement request",
+                    "Timeout waiting for endorser to accept the endorsement request.",
                     504,
                 )
             bound_logger.debug(
@@ -309,7 +309,7 @@ async def create_credential_definition(
                 )
             except Exception as e:
                 raise CloudApiException(
-                    "Unable to construct credential definition id from signature response"
+                    "Unable to construct credential definition id from signature response."
                 ) from e
         elif result.sent and result.sent.credential_definition_id:
             bound_logger.debug(
@@ -319,7 +319,7 @@ async def create_credential_definition(
             credential_definition_id = result.sent.credential_definition_id
         else:
             raise CloudApiException(
-                "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def"
+                "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def."
             )
 
         if credential_definition.support_revocation:
@@ -370,7 +370,7 @@ async def create_credential_definition(
                         )
                     except TimeoutError:
                         raise CloudApiException(
-                            "Timeout occurred while waiting to retrieve transaction record for endorser",
+                            "Timeout occurred while waiting to retrieve transaction record for endorser.",
                             504,
                         )
                     async with get_governance_controller() as endorser_controller:
@@ -492,7 +492,7 @@ async def get_schema(
 
     if not schema.schema_:
         bound_logger.info("Bad request: schema id not found.")
-        raise HTTPException(404, f"Schema with id {schema_id} not found")
+        raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
     result = _credential_schema_from_acapy(schema.schema_)
     bound_logger.info("Successfully fetched schema by id.")
@@ -533,7 +533,7 @@ async def create_schema(
             )
         except ClientResponseError as e:
             bound_logger.info(
-                "ClientResponseError caught while trying to publish schema: {}",
+                "ClientResponseError caught while trying to publish schema: `{}`",
                 e.message,
             )
             if e.status == 400 and "already exist" in e.message:
@@ -543,7 +543,8 @@ async def create_schema(
 
                 _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
                 bound_logger.debug(
-                    "Fetching schema associated with request: {}", _schema_id
+                    "Fetching schema id `{}` which is associated with request",
+                    _schema_id,
                 )
                 _schema = await aries_controller.schema.get_schema(schema_id=_schema_id)
                 # Edge case where the governance agent has changed its public did
@@ -569,7 +570,7 @@ async def create_schema(
                         if len(schemas) > 1:
                             raise CloudApiException(
                                 f"Multiple schemas with name {schema.name} and version {schema.version} exist."
-                                + f"These are: {str(schemas_created_ids.schema_ids)}",
+                                + f"These are: `{str(schemas_created_ids.schema_ids)}`.",
                                 409,
                             )
 
@@ -582,13 +583,14 @@ async def create_schema(
                 if set(_schema.schema_.attr_names) != set(schema.attribute_names):
                     raise CloudApiException(
                         "Error creating schema: Schema already exists with different attribute names."
-                        + f"Given: {str(set(_schema.schema_.attr_names))}. Found: {str(set(schema.attribute_names))}",
+                        + f"Given: `{str(set(_schema.schema_.attr_names))}`. Found: `{str(set(schema.attribute_names))}`.",
                         409,
                     )
 
                 result = _credential_schema_from_acapy(_schema.schema_)
                 bound_logger.info(
-                    "Schema already exists on ledger. Returning schema definition"
+                    "Schema already exists on ledger. Returning schema definition: `{}`.",
+                    result,
                 )
                 return result
             else:
@@ -604,9 +606,9 @@ async def create_schema(
             bound_logger.debug("Registering schema after successful publish to ledger")
             await trust_registry.register_schema(schema_id=result.sent.schema_id)
         else:
-            bound_logger.error("No SchemaSendResult in `publish_schema` response")
+            bound_logger.error("No SchemaSendResult in `publish_schema` response.")
             raise CloudApiException(
-                "An unexpected error occurred: could not publish schema"
+                "An unexpected error occurred: could not publish schema."
             )
     except trust_registry.TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry

@@ -53,7 +53,7 @@ async def topic_root(
     topic = topic_mapping.get(acapy_topic)
     if not topic:
         bound_logger.warning(
-            "Not publishing webhook event for acapy_topic {} as it doesn't exist in the topic_mapping",
+            "Not publishing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
         return
@@ -70,7 +70,7 @@ async def topic_root(
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
         bound_logger.warning(
-            "Not publishing webhook event for topic {} as no transformer exists for the topic",
+            "Not publishing webhook event for topic `{}` as no transformer exists for the topic",
             topic,
         )
         return

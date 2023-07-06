@@ -67,7 +67,7 @@ async def create_oob_invitation(
     ):
         raise HTTPException(
             400,
-            "One or both of 'create_connection' and 'attachments' must be included",
+            "One or both of 'create_connection' and 'attachments' must be included.",
         )
 
     if body.attachments:

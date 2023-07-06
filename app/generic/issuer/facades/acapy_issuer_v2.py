@@ -109,7 +109,7 @@ class IssuerV2(Issuer):
         )
 
         if not record.cred_ex_record:
-            raise CloudApiException("Stored record has no credential exchange record")
+            raise CloudApiException("Stored record has no credential exchange record.")
 
         bound_logger.debug(
             "Returning v2 store credential result as CredentialExchange."
@@ -179,7 +179,7 @@ class IssuerV2(Issuer):
         )
 
         if not record.cred_ex_record:
-            raise CloudApiException("Record has no credential exchange record")
+            raise CloudApiException("Record has no credential exchange record.")
 
         bound_logger.debug("Returning v2 credential record as CredentialExchange.")
         return cls.__record_to_model(record.cred_ex_record)

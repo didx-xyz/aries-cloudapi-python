@@ -32,7 +32,7 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
     """
     logger.info("Fetching TAA")
     taa_response = await controller.ledger.fetch_taa()
-    logger.debug("TTA Response: {}", taa_response)
+    logger.debug("TTA Response: `{}`", taa_response)
     if isinstance(taa_response, TAAInfo) or isinstance(taa_response.result, TAAInfo):
         if taa_response.result:
             taa_response = taa_response.result
@@ -42,11 +42,11 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
             else "service_agreement"
         )
         if not taa_response.taa_record and taa_response.taa_required:
-            logger.error("Failed to get TAA. Received response: {}", taa_response)
+            logger.error("Failed to get TAA. Received response: `{}`.", taa_response)
             raise CloudApiException("Something went wrong. Could not get TAA.")
         return taa_response, mechanism
 
-    logger.info("Successfully fetched TAA")
+    logger.info("Successfully fetched TAA.")
     return taa_response, "service_agreement"
 
 
@@ -81,7 +81,7 @@ async def accept_taa(
 
     if isinstance(accept_taa_response, ClientResponseError):
         logger.warning(
-            "Failed to accept TAA with ClientResponseError. Response: {}",
+            "Failed to accept TAA with ClientResponseError. Response: `{}`.",
             accept_taa_response,
         )
         raise CloudApiException("Something went wrong. Could not accept TAA.", 400)
@@ -143,7 +143,7 @@ async def register_nym_on_ledger(
         return response
     except ClientResponseError as e:
         bound_logger.warning(
-            "A ClientResponseError was caught while registering NYM. The error message is: '%s'",
+            "A ClientResponseError was caught while registering NYM. The error message is: '{}'.",
             e.message,
         )
         # if not nym_response.success:
@@ -190,10 +190,10 @@ async def write_credential_def(
     )
     if not write_cred_response.credential_definition_id:
         bound_logger.warning(
-            "Response from `publish_cred_def` did not contain 'credential_definition_id'"
+            "Response from `publish_cred_def` did not contain 'credential_definition_id'."
         )
         raise CloudApiException(
-            "Something went wrong. Could not write credential definition to the ledger"
+            "Something went wrong. Could not write credential definition to the ledger."
         )
     bound_logger.info("Successfully published credential definition.")
     return write_cred_response.credential_definition_id
@@ -229,12 +229,12 @@ async def schema_id_from_credential_definition_id(
     # get txn by sequence number, retrieve schema identifier components
     seq_no = tokens[3]
 
-    bound_logger.debug("Fetching schema using sequence number: {}", seq_no)
+    bound_logger.debug("Fetching schema using sequence number: `{}`", seq_no)
     schema = await controller.schema.get_schema(schema_id=seq_no)
 
     if not schema.schema_ or not schema.schema_.id:
-        bound_logger.warning("No schema found with sequence number: {}", seq_no)
-        raise CloudApiException(f"Schema with id {seq_no} not found", 404)
+        bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)
+        raise CloudApiException(f"Schema with id {seq_no} not found.", 404)
 
     bound_logger.info("Successfully obtained schema id from credential definition.")
     return schema.schema_.id

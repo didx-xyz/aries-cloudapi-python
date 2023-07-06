@@ -19,8 +19,8 @@ color_map = {
 # Define custom formatter for this module
 def formatter_builder(color: str):
     return (
-        "<green>{{time:YYYY-MM-DD HH:mm:ss.SSS}}</green> | "
-        "<level>{{level: <8}}</level> | "
+        "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+        "<level>{level: <8}</level> | "
         f"<{color}>{{name}}</{color}>:<{color}>{{function}}</{color}>:<{color}>{{line}}</{color}> | "
         "<level>{message}</level> | "
         "{extra[body]}"

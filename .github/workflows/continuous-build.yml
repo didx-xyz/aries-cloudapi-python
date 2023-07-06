@@ -46,6 +46,12 @@ jobs:
 
           rm -rf ./logs
           mkdir ./logs
+          mkdir ./logs/app
+          mkdir ./logs/endorser
+          mkdir ./logs/trustregistry
+          mkdir ./logs/webhooks
+          mkdir ./logs/governance/app
+          mkdir ./logs/multitenant/app
           sudo chown -R $(id -u):$(id -g) ./logs
           chmod 777 ./logs -R
 

@@ -3,8 +3,9 @@ from typing import Any, List
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
 
-from shared import APIRouter, TopicItem
+from shared import APIRouter
 from shared.log_config import get_logger
+from shared.models import TopicItem
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 

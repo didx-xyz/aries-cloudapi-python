@@ -68,14 +68,23 @@ def get_logger(name: str):
     logger_.add(sys.stdout, level=STDOUT_LOG_LEVEL, format=formatter, colorize=True)
 
     # Log to a file
-    logger_.add(
-        get_log_file_path(main_module_name),
-        rotation="00:00",  # new file is created at midnight
-        retention="7 days",  # keep logs for up to 7 days
-        enqueue=True,  # asynchronous
-        level=FILE_LOG_LEVEL,
-        format=formatter,
-    )
+    try:
+        logger_.add(
+            get_log_file_path(main_module_name),
+            rotation="00:00",  # new file is created at midnight
+            retention="7 days",  # keep logs for up to 7 days
+            enqueue=True,  # asynchronous
+            level=FILE_LOG_LEVEL,
+            format=formatter,
+        )
+    except PermissionError:
+        logger_.warning(
+            "Permission error caught when trying to create log file. "
+            "Continuing without file logging for `{}` in {}",
+            name,
+            main_module_name,
+        )
+        pass
 
     # Configure email notifications
     # logger_.add("smtp+ssl://username:password@host:port", level="CRITICAL")

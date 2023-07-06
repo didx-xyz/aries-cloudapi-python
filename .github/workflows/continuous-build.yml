@@ -43,20 +43,6 @@ jobs:
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data
           chmod 777 ./data -R
-
-          rm -rf ./logs
-          mkdir ./logs
-          mkdir ./logs/app
-          mkdir ./logs/endorser
-          mkdir ./logs/trustregistry
-          mkdir ./logs/webhooks
-          mkdir ./logs/governance
-          mkdir ./logs/multitenant
-          mkdir ./logs/governance/app
-          mkdir ./logs/multitenant/app
-          sudo chown -R $(id -u):$(id -g) ./logs
-          chmod 777 ./logs -R
-
           chmod u+x manage
           i=0
           echo waiting for aca-py container to startup

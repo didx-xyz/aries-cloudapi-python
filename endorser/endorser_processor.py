@@ -104,8 +104,8 @@ async def should_accept_endorsement(
 
     if transaction.state != "request_received":
         bound_logger.debug(
-            "Endorsement event for transaction with id '{}' "
-            "not in state 'request_received' (is '{}').",
+            "Endorsement event for transaction with id `{}` "
+            "not in state 'request_received' (is `{}`).",
             transaction_id,
             transaction.state,
         )

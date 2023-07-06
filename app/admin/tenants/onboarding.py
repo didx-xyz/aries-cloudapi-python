@@ -92,7 +92,9 @@ async def handle_tenant_update(
 async def onboard_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
-    bound_logger = logger.bind(body={"tenant_id": tenant_id})
+    bound_logger = logger.bind(
+        body={"name": name, "roles": roles, "tenant_id": tenant_id}
+    )
     bound_logger.bind(body=roles).info("Start onboarding tenant")
 
     if "issuer" in roles:
@@ -352,19 +354,20 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
     Args:
         verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
     """
-    logger.info("Onboarding verifier")
+    bound_logger = logger.bind(body={"name": name})
+    bound_logger.info("Onboarding verifier")
 
     onboarding_result = {}
 
     # If the verifier already has a public did it doesn't need an invitation. The invitation
     # is just to bypass having to pay for a public did for every verifier
     try:
-        logger.debug("Getting public DID for to-be verifier")
+        bound_logger.debug("Getting public DID for to-be verifier")
         public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
 
         onboarding_result["did"] = qualified_did_sov(public_did.did)
     except CloudApiException:
-        logger.debug(
+        bound_logger.debug(
             "No public DID found for to-be verifier. "
             "Creating OOB invitation on their behalf."
         )
@@ -382,15 +385,15 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
         try:
             # Because we're not creating an invitation with a public did the invitation will always
             # contain a did:key as the first recipientKey in the first service
-            logger.debug("Getting DID from verifier's invitation")
+            bound_logger.debug("Getting DID from verifier's invitation")
             onboarding_result["did"] = invitation.invitation.services[0][
                 "recipientKeys"
             ][0]
             onboarding_result["didcomm_invitation"] = invitation.invitation_url
         except (KeyError, IndexError) as e:
             # FIXME: more verbose error
-            logger.exception("Error creating invitation to onboard verifier.")
+            bound_logger.exception("Error creating invitation to onboard verifier.")
             raise CloudApiException("Error creating invitation.") from e
 
-    logger.info("Returning verifier onboard result.")
+    bound_logger.info("Returning verifier onboard result.")
     return OnboardResult(**onboarding_result)

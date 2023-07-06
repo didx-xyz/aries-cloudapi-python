@@ -209,7 +209,7 @@ def get_endorsement_request_attachment(
                 json_payload = None
 
         return json_payload
-    except TypeError:
+    except (TypeError, KeyError):
         logger.warning(f"Could not read attachment from transaction: `{transaction}`.")
     except Exception:
         logger.exception(

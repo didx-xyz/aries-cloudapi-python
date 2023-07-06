@@ -209,11 +209,13 @@ def get_endorsement_request_attachment(
                 json_payload = None
 
         return json_payload
+    except TypeError:
+        logger.warning(f"Could not read attachment from transaction: `{transaction}`.")
     except Exception:
         logger.exception(
             "Exception caught while running `get_endorsement_request_attachment`."
         )
-        return None
+    return None
 
 
 def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:

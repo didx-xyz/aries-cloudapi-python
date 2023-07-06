@@ -85,6 +85,8 @@ class Service:
         if payload:
             return self._to_topic_item(data=data, payload=payload)
 
+        return None  # If transformer doesn't exist, warning already logged
+
     def _transform_redis_entries(
         self, entries: List[str], topic: Optional[str] = None
     ) -> List[TopicItem]:

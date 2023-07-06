@@ -23,7 +23,7 @@ async def get_actors(db: Session = Depends(get_db)):
 @router.post("")
 async def register_actor(actor: Actor, db: Session = Depends(get_db)):
     bound_logger = logger.bind(body={"actor": actor})
-    bound_logger.info("POST request received: Register actor: `{}`", actor)
+    bound_logger.info("POST request received: Register actor")
     try:
         created_actor = crud.create_actor(db, actor=actor)
     except crud.ActorAlreadyExistsException:

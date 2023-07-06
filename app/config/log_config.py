@@ -17,7 +17,22 @@ formatter = (
     "<level>{message}</level> - "
     "{extra[body]}"
 )
-logger.configure(extra={"body": ""})  # Default values for extra args
+
+def get_log_file_path() -> str:
+    # The absolute path of this file's directory
+    CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # Get parent directory of 'config', which is the module name (app, endorser, etc)
+    module_name = os.path.basename(os.path.dirname(CONFIG_DIR))
+
+    # Move up two levels to get to the project root directory
+    BASE_DIR = os.path.dirname(os.path.dirname(CONFIG_DIR))
+
+    # Define the logging dir with
+    LOG_DIR = os.path.join(BASE_DIR, f"logs/{module_name}")
+    return os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log")
+
+
 
 # Log to stdout
 logger.add(sys.stdout, level=STDOUT_LOG_LEVEL, format=formatter, colorize=True)

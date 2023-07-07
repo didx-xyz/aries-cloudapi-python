@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
 from trustregistry.models import DB_Actor, DB_Schema
-from trustregistry.schemas import Actor, Schema
+from shared.models.trustregistry import Actor, Schema
 
 logger = get_logger(__name__)
 

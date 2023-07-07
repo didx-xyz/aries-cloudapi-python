@@ -6,7 +6,8 @@ import httpx
 from pydantic import BaseModel
 
 from app.event_handling.sse_listener import SseListener
-from shared import WEBHOOKS_URL, CloudApiTopics, RichAsyncClient
+from shared import WEBHOOKS_URL, RichAsyncClient
+from shared.models.topics import CloudApiTopics
 
 
 class FilterMap(BaseModel):
@@ -73,7 +74,7 @@ async def check_webhook_state(
     if event:
         return True
     else:
-        raise Exception(f"Could not satisfy webhook filter: {filter_map}.")
+        raise Exception(f"Could not satisfy webhook filter: `{filter_map}`.")
 
 
 async def get_hooks_per_topic_per_wallet(

@@ -1,18 +1,18 @@
-import json
-import logging
-from pprint import pformat
 from typing import Any, Dict
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request, status
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from shared import WEBHOOK_TOPIC_ALL, APIRouter, RedisItem, TopicItem, topic_mapping
+from shared import APIRouter
+from shared.log_config import get_logger
+from shared.models import RedisItem, TopicItem, topic_mapping
+from shared.models.topics import WEBHOOK_TOPIC_ALL
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.service import Service
 from webhooks.dependencies.sse_manager import SseManager
 
-LOGGER = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -36,6 +36,10 @@ async def topic_root(
     service: Service = Depends(Provide[Container.service]),
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
+    bound_logger = logger.bind(
+        body={"acapy_topic": acapy_topic, "origin": origin, "body": body}
+    )
+    bound_logger.debug("Handling received event")
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
@@ -48,8 +52,8 @@ async def topic_root(
     # webhook events as needed, without needing to break any models
     topic = topic_mapping.get(acapy_topic)
     if not topic:
-        LOGGER.warning(
-            "Not publishing webhook event for acapy_topic %s as it doesn't exist in the topic_mapping",
+        bound_logger.warning(
+            "Not publishing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
         return
@@ -62,11 +66,11 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    webhook_event: TopicItem = await service.transform_topic_entry(redis_item)
+    webhook_event: TopicItem = service.transform_topic_entry(redis_item)
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
-        LOGGER.warning(
-            "Not publishing webhook event for topic %s as no transformer exists for the topic",
+        bound_logger.warning(
+            "Not publishing webhook event for topic `{}` as no transformer exists for the topic",
             topic,
         )
         return
@@ -91,6 +95,6 @@ async def topic_root(
     )
 
     # Add data to redis
-    await service.add_wallet_entry(wallet_id, json.dumps(redis_item))
+    await service.add_wallet_entry(wallet_id, redis_item.json())
 
-    LOGGER.debug("Finished processing received webhook:\n%s", pformat(webhook_event))
+    logger.debug("Successfully processed received webhook.")

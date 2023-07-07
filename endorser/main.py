@@ -1,17 +1,12 @@
-import logging
-import os
-
 import asyncio
 
 from endorser.endorser_processor import listen_endorsement_events
+from shared.log_config import get_logger
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-logging.basicConfig(level=LOG_LEVEL)
+logger = get_logger("endorser.main")  # override as __name__ gets passed as __main__
 
-# Set logger
-logger = logging.getLogger(__name__)
+if __name__ == "__main__":
+    logger.info("Starting endorser service")
 
-logger.info("Starting endorser service")
-
-loop = asyncio.get_event_loop()
-loop.run_until_complete(listen_endorsement_events())
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(listen_endorsement_events())

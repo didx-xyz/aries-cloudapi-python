@@ -1,4 +1,3 @@
-import logging
 import os
 
 from fastapi import FastAPI
@@ -6,10 +5,6 @@ from fastapi import FastAPI
 from webhooks.dependencies import sse_manager
 from webhooks.dependencies.container import get_container
 from webhooks.routers import receive_events, sse, webhooks
-
-LOG_LEVEL = os.getenv("LOG_LEVEL", "warning").upper()
-logging.basicConfig(level=LOG_LEVEL)
-LOGGER = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:

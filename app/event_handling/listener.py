@@ -1,13 +1,14 @@
 import asyncio
-import logging
 from typing import Any, Dict, Optional
 
 from app.event_handling.webhooks import Webhooks
-from shared import CloudApiTopics
+from shared.log_config import get_logger
+from shared.models import CloudApiTopics
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
+# NB: Class no longer used
 class Listener:
     """
     A class for listening to webhook events filtered by topic and wallet_id. Events that match the
@@ -37,7 +38,7 @@ class Listener:
         Wait for an event that matches the specified filter_map within the given timeout period.
         """
         logger.debug(
-            "Listener is starting to wait for a filtered event with timeout %ss",
+            "Listener is starting to wait for a filtered event with timeout {}s",
             timeout,
         )
 
@@ -89,12 +90,12 @@ class Listener:
                 if loop.is_running and loop.time() - start_time >= timeout:
                     self.stop()
                     logger.warning(
-                        "Waiting for a filtered event has timed out (%ss), with filter_map: %s",
+                        "Waiting for a filtered event has timed out ({}s), with filter_map: {}",
                         timeout,
                         filter_map,
                     )
                     logger.debug(
-                        "Events already processed that weren't matched to filters: %s",
+                        "Events already processed that weren't matched to filters: {}",
                         self._processed_events,
                     )
                     raise ListenerTimeout(

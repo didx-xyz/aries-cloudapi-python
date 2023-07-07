@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String
 
-from trustregistry.list_type import StringList
 from trustregistry.database import Base
+from trustregistry.list_type import StringList
 
 
 def schema_id_gen(context):

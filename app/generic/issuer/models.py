@@ -3,7 +3,7 @@ from typing import Dict, Optional
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
-from shared import IssueCredentialProtocolVersion
+from shared.models.protocol import IssueCredentialProtocolVersion
 
 
 class Credential(BaseModel):

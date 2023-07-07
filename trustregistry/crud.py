@@ -2,9 +2,9 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from shared.log_config import get_logger
 from trustregistry.models import DB_Actor, DB_Schema
 from trustregistry.schemas import Actor, Schema
-from trustregistry.config.log_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -14,7 +14,7 @@ def get_actors(db: Session, skip: int = 0, limit: int = 1000) -> List[DB_Actor]:
     result = db.query(DB_Actor).offset(skip).limit(limit).all()
 
     if result:
-        logger.info("Successfully retrieved {} actors from database.", len(result))
+        logger.info("Successfully retrieved `{}` actors from database.", len(result))
     else:
         logger.warning("No actors retrieved from database.")
 
@@ -57,7 +57,8 @@ def create_actor(db: Session, actor: Actor) -> DB_Actor:
 
     if db_actor:
         bound_logger.info(
-            "Cannot create actor, as actor ID {} already exists in database.", actor.id
+            "Cannot create actor, as actor ID `{}` already exists in database.",
+            actor.id,
         )
         raise ActorAlreadyExistsException
 

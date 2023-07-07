@@ -5,7 +5,6 @@ from aries_cloudcontroller import (
     V10PresentationSendRequestRequest,
 )
 
-from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
 from app.generic.verifier.facades.acapy_verifier import Verifier
 from app.generic.verifier.models import (
@@ -14,8 +13,9 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
-from shared import PresentationExchange, pres_id_no_version
-from shared import presentation_record_to_model as record_to_model
+from shared.log_config import get_logger
+from shared.models import PresentationExchange, pres_id_no_version
+from shared.models import presentation_record_to_model as record_to_model
 
 logger = get_logger(__name__)
 
@@ -197,7 +197,9 @@ class VerifierV1(Verifier):
             bound_logger.debug("Deleting v1 presentation exchange record")
             await controller.present_proof_v1_0.delete_record(pres_ex_id=proof_id)
         except Exception as e:
-            bound_logger.exception("An unexpected error occurred while deleting record.")
+            bound_logger.exception(
+                "An unexpected error occurred while deleting record."
+            )
             raise CloudApiException("Failed to delete record.") from e
 
         bound_logger.info("Successfully rejected v1 presentation exchange record.")

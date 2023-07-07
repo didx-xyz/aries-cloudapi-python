@@ -15,16 +15,19 @@ from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
-from shared import CredentialExchange, RichAsyncClient
+from shared import RichAsyncClient
+from shared.models import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
-# TODO: Move all methods here to member_personans as this is specific for the bob-alice interaction
+# TODO: Move all methods here to member_personas as this is specific for the bob-alice interaction
 # OR abstract the persona specific parts out of it
 
 
 @pytest.fixture(scope="function")
-async def schema_definition(mock_governance_auth: AcaPyAuthVerified) -> CredentialSchema:
+async def schema_definition(
+    mock_governance_auth: AcaPyAuthVerified,
+) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
     )
@@ -36,7 +39,7 @@ async def schema_definition(mock_governance_auth: AcaPyAuthVerified) -> Credenti
 
 @pytest.fixture(scope="function")
 async def schema_definition_alt(
-    mock_governance_auth: AcaPyAuthVerified
+    mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema_alt", version=random_version(), attribute_names=["speed"]

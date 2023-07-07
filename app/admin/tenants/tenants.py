@@ -23,7 +23,6 @@ from app.admin.tenants.models import (
     tenant_from_wallet_record,
 )
 from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
     AcaPyAuth,
@@ -39,6 +38,7 @@ from app.facades.trust_registry import (
     register_actor,
     remove_actor_by_id,
 )
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -89,11 +89,13 @@ async def create_tenant(
         )
     bound_logger.debug("Wallet creation successful")
 
-    if body.roles and len(body.roles) > 0:
-        bound_logger.info("Onboarding with requested roles: {roles}", roles=body.roles)
+    name = body.name
+    roles = body.roles
+    if roles:
+        bound_logger.info("Onboarding `{}` with requested roles: `{}`", name, roles)
         onboard_result = await onboard_tenant(
-            name=body.name,
-            roles=body.roles,
+            name=name,
+            roles=roles,
             tenant_auth_token=wallet_response.token,
             tenant_id=wallet_response.wallet_id,
         )
@@ -102,8 +104,8 @@ async def create_tenant(
         await register_actor(
             actor=Actor(
                 id=wallet_response.wallet_id,
-                name=body.name,
-                roles=list(body.roles),
+                name=name,
+                roles=roles,
                 did=onboard_result.did,
                 didcomm_invitation=onboard_result.didcomm_invitation,
             )
@@ -114,11 +116,11 @@ async def create_tenant(
         created_at=wallet_response.created_at,
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
-        tenant_name=body.name,
+        tenant_name=name,
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )
-    bound_logger.debug("Create tenant complete with response body: {}.", response)
+    bound_logger.debug("Successfully created tenant.")
     return response
 
 
@@ -269,7 +271,7 @@ async def get_tenants(
             wallets = await admin_controller.multitenancy.get_wallets()
 
             if not wallets.results:
-                bound_logger.info("No wallets found")
+                bound_logger.info("No wallets found.")
                 return []
 
             # Only return wallet with current authentication role.
@@ -283,8 +285,8 @@ async def get_tenants(
         bound_logger.info("Fetching wallets by group id")
         wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
 
-    if not wallets.results or len(wallets.results) == 0:
-        bound_logger.info("No wallets found for requested group id")
+    if not wallets.results:
+        bound_logger.info("No wallets found for requested group id.")
         return []
 
     response = [

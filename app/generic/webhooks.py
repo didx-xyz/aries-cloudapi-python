@@ -2,10 +2,10 @@ from typing import Any, List
 
 from fastapi import APIRouter, Depends
 
-from app.config.log_config import get_logger
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 from app.facades.webhooks import get_hooks_for_wallet, get_hooks_for_wallet_by_topic
-from shared import CloudApiTopics, TopicItem
+from shared.log_config import get_logger
+from shared.models import CloudApiTopics, TopicItem
 
 logger = get_logger(__name__)
 

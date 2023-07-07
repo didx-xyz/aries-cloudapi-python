@@ -31,7 +31,7 @@ def get_tenant_controller(auth_token: str) -> AcaPyClient:
 
 def client_from_auth(auth: Union[AcaPyAuth, AcaPyAuthVerified]) -> AcaPyClient:
     if not auth or not auth.token:
-        raise HTTPException(403, "Missing authorization key")
+        raise HTTPException(403, "Missing authorization key.")
 
     tenant_jwt = None
 

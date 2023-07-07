@@ -3,8 +3,8 @@ from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
 from pydantic import BaseModel
 
-from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -54,10 +54,10 @@ async def create_did(controller: AcaPyClient) -> Did:
         or not did_result.result.did
         or not did_result.result.verkey
     ):
-        logger.error("Failed to create DID: {}.", did_result)
+        logger.error("Failed to create DID: `{}`.", did_result)
         raise CloudApiException("Error creating did.")
 
-    logger.info("Successfully created local DID")
+    logger.info("Successfully created local DID.")
     return Did(did=did_result.result.did, verkey=did_result.result.verkey)
 
 
@@ -87,9 +87,9 @@ async def set_public_did(
     )
 
     if not result.result and not create_transaction_for_endorser:
-        raise CloudApiException(f"Error setting public did to {did}", 400)
+        raise CloudApiException(f"Error setting public did to `{did}`.", 400)
 
-    logger.info("Successfully set public DID")
+    logger.info("Successfully set public DID.")
     return result.dict()
 
 

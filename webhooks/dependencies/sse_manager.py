@@ -4,12 +4,12 @@ from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Tuple
 
-from shared import TopicItem
+from shared.log_config import get_logger
+from shared.models import TopicItem
 from shared.models.topics import WEBHOOK_TOPIC_ALL
-from webhooks.config.log_config import get_logger
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
-LOGGER = get_logger(__name__)
+logger = get_logger(__name__)
 
 MAX_EVENT_AGE_SECONDS = 5
 MAX_QUEUE_SIZE = 200
@@ -58,8 +58,8 @@ class SseManager:
             wallet: The ID of the wallet to which to enqueue the event.
             topic: The topic to which to enqueue the event.
         """
-        LOGGER.debug(
-            "Enqueueing event for wallet '%s': %s",
+        logger.debug(
+            "Enqueueing event for wallet `{}`: {}",
             wallet,
             event,
         )
@@ -76,8 +76,8 @@ class SseManager:
             async with self.cache_locks[wallet][topic]:
                 # Check if queue is full and make room before adding events
                 if self.fifo_cache[wallet][topic].full():
-                    LOGGER.warning(
-                        "SSE Manager: fifo_cache is full for wallet %s and topic %s with max queue length %s",
+                    logger.warning(
+                        "SSE Manager: fifo_cache is full for wallet `{}` and topic `{}` with max queue length `{}`",
                         wallet,
                         topic,
                         MAX_QUEUE_SIZE,
@@ -93,8 +93,8 @@ class SseManager:
                     self.lifo_cache[wallet][topic] = lifo_queue
 
                 timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
-                LOGGER.debug(
-                    "Putting event on cache for wallet %s, topic %s: %s",
+                logger.debug(
+                    "Putting event on cache for wallet `{}`, topic `{}`: {}",
                     wallet,
                     topic,
                     event,
@@ -129,7 +129,8 @@ class SseManager:
         )
 
         async def event_generator() -> AsyncGenerator[TopicItem, Any]:
-            LOGGER.debug("SSE Manager: Starting event_generator")
+            bound_logger = logger.bind(body={"wallet": wallet, "topic": topic})
+            bound_logger.debug("SSE Manager: Starting event_generator")
             end_time = time.time() + duration if duration > 0 else None
             remaining_time = None
             while not stop_event.is_set():
@@ -137,7 +138,9 @@ class SseManager:
                     if end_time:
                         remaining_time = end_time - time.time()
                         if remaining_time <= 0:
-                            LOGGER.debug("Event generator timeout: remaining_time < 0")
+                            bound_logger.debug(
+                                "Event generator timeout: remaining_time < 0"
+                            )
                             stop_event.set()
                             break
                     event = await asyncio.wait_for(
@@ -145,10 +148,12 @@ class SseManager:
                     )
                     yield event
                 except asyncio.TimeoutError:
-                    LOGGER.debug("Event generator timeout: waiting for event on queue")
+                    bound_logger.debug(
+                        "Event generator timeout: waiting for event on queue"
+                    )
                     stop_event.set()
                 except asyncio.CancelledError:
-                    LOGGER.debug("Task cancelled")
+                    bound_logger.debug("Task cancelled")
                     stop_event.set()
 
             populate_task.cancel()  # After stop_event is set
@@ -160,8 +165,8 @@ class SseManager:
     async def _populate_client_queue(
         self, *, wallet: str, topic: str, client_queue: asyncio.Queue
     ):
-        LOGGER.debug(
-            "SSE Manager: start _populate_client_queue for wallet %s and topic %s",
+        logger.debug(
+            "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",
             wallet,
             topic,
         )
@@ -219,7 +224,7 @@ class SseManager:
         while True:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
-            LOGGER.debug("SSE Manager: Running periodic cleanup task")
+            logger.debug("SSE Manager: Running periodic cleanup task")
 
             # Iterate over all cache queues
             for wallet in list(self.lifo_cache.keys()):
@@ -233,12 +238,14 @@ class SseManager:
                             del self._cache_last_accessed[wallet][topic]
                         del self.cache_locks[wallet][topic]
 
+            logger.debug("SSE Manager: Finished cleanup task")
+
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
-    LOGGER.debug("SSE Manager: Repopulating cache")
+    logger.debug("SSE Manager: Repopulating cache")
     lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while True:
         try:
@@ -250,6 +257,6 @@ async def _copy_queue(
                 await fifo_queue.put((timestamp, item))
         except asyncio.QueueEmpty:
             break
-    LOGGER.debug("SSE Manager: Finished repopulating cache")
+    logger.debug("SSE Manager: Finished repopulating cache")
 
     return lifo_queue, fifo_queue

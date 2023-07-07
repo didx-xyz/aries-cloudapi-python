@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
+from shared.log_config import get_logger
 from trustregistry import crud
-from trustregistry.config.log_config import get_logger
 from trustregistry.db import get_db
 from trustregistry.schemas import Actor
 
@@ -21,20 +21,24 @@ async def get_actors(db: Session = Depends(get_db)):
 
 
 @router.post("")
-async def register_actor(actor: Actor, db: Session = Depends(get_db)) -> Actor:
-    logger.info("POST request received: Register actor")
+async def register_actor(actor: Actor, db: Session = Depends(get_db)):
+    bound_logger = logger.bind(body={"actor": actor})
+    bound_logger.info("POST request received: Register actor")
     try:
         created_actor = crud.create_actor(db, actor=actor)
     except crud.ActorAlreadyExistsException:
+        bound_logger.info("Bad request: Actor already exists.")
         raise HTTPException(status_code=405, detail="Actor already exists.")
 
     return created_actor
 
 
 @router.put("/{actor_id}")
-async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)) -> Actor:
-    logger.info("PUT request received: Update actor")
+async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db)):
+    bound_logger = logger.bind(body={"actor_id": actor_id, "actor": actor})
+    bound_logger.info("PUT request received: Update actor")
     if actor.id and actor.id != actor_id:
+        bound_logger.info("Bad request: Actor ID in request doesn't match ID in URL.")
         raise HTTPException(
             status_code=400,
             detail=f"The provided actor ID '{actor.id}' in the request body "
@@ -46,36 +50,43 @@ async def update_actor(actor_id: str, actor: Actor, db: Session = Depends(get_db
     try:
         update_actor_result = crud.update_actor(db, actor=actor)
     except crud.ActorDoesNotExistException:
+        bound_logger.info("Bad request: Actor not found.")
         raise HTTPException(status_code=404, detail="Actor not found.")
 
     return update_actor_result
 
 
 @router.get("/did/{actor_did}")
-async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)) -> Actor:
-    logger.info("GET request received: Get actor by DID")
+async def get_actor_by_did(actor_did: str, db: Session = Depends(get_db)):
+    bound_logger = logger.bind(body={"actor_did": actor_did})
+    bound_logger.info("GET request received: Get actor by DID")
     try:
         actor = crud.get_actor_by_did(db, actor_did=actor_did)
     except crud.ActorDoesNotExistException:
+        bound_logger.info("Bad request: Actor not found.")
         raise HTTPException(status_code=404, detail="Actor not found.")
 
     return actor
 
 @router.get("/{actor_id}")
-async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)) -> Actor:
-    logger.info("GET request received: Get actor by ID")
+async def get_actor_by_id(actor_id: str, db: Session = Depends(get_db)):
+    bound_logger = logger.bind(body={"actor_id": actor_id})
+    bound_logger.info("GET request received: Get actor by ID")
     try:
         actor = crud.get_actor_by_id(db, actor_id=actor_id)
     except crud.ActorDoesNotExistException:
+        bound_logger.info("Bad request: Actor not found.")
         raise HTTPException(status_code=404, detail="Actor not found.")
 
     return actor
 
 
 @router.delete("/{actor_id}", status_code=204)
-async def remove_actor(actor_id: str, db: Session = Depends(get_db)) -> None:
-    logger.info("DELETE request received: Delete actor by ID")
+async def remove_actor(actor_id: str, db: Session = Depends(get_db)):
+    bound_logger = logger.bind(body={"actor_id": actor_id})
+    bound_logger.info("DELETE request received: Delete actor by ID")
     try:
         crud.delete_actor(db, actor_id=actor_id)
     except crud.ActorDoesNotExistException:
+        bound_logger.info("Bad request: Actor not found.")
         raise HTTPException(status_code=404, detail="Actor not found.")

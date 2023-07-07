@@ -4,8 +4,8 @@ import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
-from app.config.log_config import get_logger
 from shared.constants import TRUST_REGISTRY_URL
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -66,14 +66,14 @@ async def assert_valid_issuer(did: str, schema_id: str):
     if "issuer" not in actor["roles"]:
         bound_logger.info("Actor associated with DID does not have `issuer` role.")
         raise TrustRegistryException(
-            f"Actor {actor['id']} does not have required role 'issuer'"
+            f"Actor {actor['id']} does not have required role 'issuer'."
         )
 
     has_schema = await registry_has_schema(schema_id)
     if not has_schema:
         bound_logger.info("Schema is not registered in the trust registry.")
         raise TrustRegistryException(
-            f"Schema with id {schema_id} is not registered in trust registry"
+            f"Schema with id {schema_id} is not registered in trust registry."
         )
     bound_logger.info("Issuer DID and schema ID is valid.")
 
@@ -94,7 +94,7 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
 
     if not actor:
         bound_logger.info("Actor not registered in trust registry.")
-        raise TrustRegistryException(f"Actor with id {actor_id} not found", 404)
+        raise TrustRegistryException(f"Actor with id {actor_id} not found.", 404)
 
     result = bool(role in actor["roles"])
     if result:
@@ -137,7 +137,7 @@ async def actor_by_did(did: str) -> Optional[Actor]:
             actor_res.text,
         )
         raise TrustRegistryException(
-            f"Error fetching actor by DID: {actor_res.text}", actor_res.status_code
+            f"Error fetching actor by DID: `{actor_res.text}`.", actor_res.status_code
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
@@ -177,7 +177,7 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
             actor_res.text,
         )
         raise TrustRegistryException(
-            f"Error fetching actor by id: {actor_res.text}", actor_res.status_code
+            f"Error fetching actor by id: `{actor_res.text}`.", actor_res.status_code
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
@@ -212,7 +212,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
             actors_res.text,
         )
         raise TrustRegistryException(
-            f"Unable to retrieve actors from registry: {actors_res.text}",
+            f"Unable to retrieve actors from registry: `{actors_res.text}`.",
             actors_res.status_code,
         )
 
@@ -260,7 +260,7 @@ async def registry_has_schema(schema_id: str) -> bool:
             schemas_res.text,
         )
         raise TrustRegistryException(
-            f"Unable to retrieve schema {schema_id} from registry: {schemas_res.text}",
+            f"Unable to retrieve schema `{schema_id}` from registry: `{schemas_res.text}`.",
             schemas_res.status_code,
         )
 
@@ -297,7 +297,9 @@ async def get_trust_registry_schemas() -> List[str]:
             schemas_res.status_code,
             schemas_res.text,
         )
-        raise TrustRegistryException(schemas_res.text, schemas_res.status_code)
+        raise TrustRegistryException(
+            f"Unable to fetch schemas: `{schemas_res.text}`.", schemas_res.status_code
+        )
 
     result = schemas_res.json()["schemas"]
     logger.info("Successfully fetched schemas from trust registry.")
@@ -328,7 +330,8 @@ async def get_trust_registry() -> TrustRegistry:
             trust_registry_res.text,
         )
         raise TrustRegistryException(
-            trust_registry_res.text, trust_registry_res.status_code
+            f"Error fetching registry: `{trust_registry_res.text}`.",
+            trust_registry_res.status_code,
         )
 
     result = trust_registry_res.json()
@@ -363,7 +366,7 @@ async def register_schema(schema_id: str) -> None:
             schema_res.text,
         )
         raise TrustRegistryException(
-            f"Error registering schema {schema_id}: {schema_res.text}",
+            f"Error registering schema `{schema_id}`. Error: `{schema_res.text}`.",
             schema_res.status_code,
         )
 
@@ -392,9 +395,12 @@ async def register_actor(actor: Actor) -> None:
 
     if actor_res.status_code == 422:
         bound_logger.error(
-            "Unprocessable entity response when registering actor: {}", actor_res.json()
+            "Unprocessable entity response when registering actor: `{}`.",
+            actor_res.json(),
         )
-        raise TrustRegistryException(actor_res.json(), 422)
+        raise TrustRegistryException(
+            f"Unprocessable response when registering actor: `{actor_res.json()}`.", 422
+        )
     if actor_res.is_error:
         bound_logger.error(
             "Error registering actor. Got status code {} with message `{}`.",
@@ -402,7 +408,7 @@ async def register_actor(actor: Actor) -> None:
             actor_res.text,
         )
         raise TrustRegistryException(
-            f"Error registering actor: {actor_res.text}", actor_res.status_code
+            f"Error registering actor: `{actor_res.text}`.", actor_res.status_code
         )
 
     bound_logger.info("Successfully registered actor on trust registry.")
@@ -440,7 +446,7 @@ async def remove_actor_by_id(actor_id: str) -> None:
             remove_response.text,
         )
         raise TrustRegistryException(
-            f"Error removing actor from trust registry: {remove_response.text}",
+            f"Error removing actor from trust registry: `{remove_response.text}`.",
             remove_response.status_code,
         )
 
@@ -474,7 +480,7 @@ async def remove_schema_by_id(schema_id: str) -> None:
             remove_response.text,
         )
         raise TrustRegistryException(
-            f"Error removing schema from trust registry: {remove_response.text}",
+            f"Error removing schema from trust registry: `{remove_response.text}`.",
             remove_response.status_code,
         )
 
@@ -495,17 +501,20 @@ async def update_actor(actor: Actor) -> None:
 
     if update_response.status_code == 422:
         bound_logger.error(
-            "Unprocessable entity response when updating actor: {}",
+            "Unprocessable entity response when updating actor: `{}`.",
             update_response.json(),
         )
-        raise TrustRegistryException(update_response.json(), 422)
+        raise TrustRegistryException(
+            f"Unprocessable response when updating actor: `{update_response.json()}`.",
+            422,
+        )
     elif update_response.is_error:
         bound_logger.error(
-            "Error removing actor. Got status code {} with message `{}`.",
+            "Error removing actor. Got status code `{}` with message `{}`.",
             update_response.status_code,
             update_response.text,
         )
         raise TrustRegistryException(
-            f"Error updating actor in trust registry: {update_response.text}",
+            f"Error updating actor in trust registry: `{update_response.text}`.",
             update_response.status_code,
         )

@@ -12,11 +12,11 @@ from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
 
-from app.config.log_config import get_logger
 from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.credentials import cred_id_no_version
-from shared import CredentialExchange, credential_record_to_model_v1
+from shared.log_config import get_logger
+from shared.models import CredentialExchange, credential_record_to_model_v1
 
 logger = get_logger(__name__)
 

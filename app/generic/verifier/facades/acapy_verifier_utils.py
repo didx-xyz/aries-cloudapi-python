@@ -3,7 +3,6 @@ from typing import List, Optional, Set, Union
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
-from app.config.log_config import get_logger
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import assert_public_did
 from app.facades.trust_registry import Actor, actor_by_did, get_trust_registry_schemas
@@ -12,6 +11,7 @@ from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
 from app.util.did import ed25519_verkey_to_did_key
+from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion
 
 logger = get_logger(__name__)
@@ -35,7 +35,7 @@ def get_verifier_by_version(
     ):
         return VerifierFacade.v2.value
     else:
-        raise ValueError(f"Unknown protocol version {version_candidate}")
+        raise ValueError(f"Unknown protocol version: `{version_candidate}`.")
 
 
 async def assert_valid_prover(
@@ -57,7 +57,7 @@ async def assert_valid_prover(
     # instead of simply rejecting the request
     if not connection_id:
         raise CloudApiException(
-            "No connection id associated with proof request. Can not verify proof request",
+            "No connection id associated with proof request. Can not verify proof request.",
             400,
         )
 
@@ -68,10 +68,10 @@ async def assert_valid_prover(
     )
 
     if not connection_record.connection_id:
-        raise CloudApiException("Cannot proceed. No connection id", 404)
+        raise CloudApiException("Cannot proceed. No connection id.", 404)
 
     invitation_key = connection_record.invitation_key
-    # Case 1: connection made with publid DID
+    # Case 1: connection made with public DID
     if connection_record.their_public_did:
         public_did = f"did:sov:{connection_record.their_public_did}"
     # Case 2: connection made with public DID
@@ -79,7 +79,7 @@ async def assert_valid_prover(
         invitation_key = connection_record.invitation_key
         public_did = ed25519_verkey_to_did_key(key=invitation_key)
     else:
-        raise CloudApiException("Could not determine did of the verifier", 400)
+        raise CloudApiException("Could not determine did of the verifier.", 400)
 
     # Try get actor from TR
     bound_logger.debug("Getting actor by DID")
@@ -87,7 +87,7 @@ async def assert_valid_prover(
 
     # 2. Check actor has role verifier
     if not is_verifier(actor=actor):
-        raise CloudApiException("Actor is missing required role 'verifier'", 403)
+        raise CloudApiException("Actor is missing required role 'verifier'.", 403)
 
     # Get schema ids
     bound_logger.debug("Getting schema ids from presentation")
@@ -98,7 +98,7 @@ async def assert_valid_prover(
     # Verify the schemas are actually in the list from TR
     if not await are_valid_schemas(schema_ids=schema_ids):
         raise CloudApiException(
-            "Presentation is using schemas not registered in trust registry", 403
+            "Presentation is using schemas not registered in trust registry.", 403
         )
     bound_logger.debug("Prover is valid.")
 
@@ -131,7 +131,7 @@ async def assert_valid_verifier(
         invitation_key = connection_record.invitation_key
 
         if not invitation_key:
-            raise CloudApiException("Connection has no invitation key", 400)
+            raise CloudApiException("Connection has no invitation key.", 400)
         public_did = ed25519_verkey_to_did_key(invitation_key)
 
     # Try get actor from TR
@@ -162,7 +162,7 @@ async def get_actor(did: str) -> Actor:
     actor = await actor_by_did(did)
     # Verify actor was in TR
     if not actor:
-        raise CloudApiException(f"No actor with DID {did}.", 404)
+        raise CloudApiException(f"No actor with DID `{did}`.", 404)
     return actor
 
 

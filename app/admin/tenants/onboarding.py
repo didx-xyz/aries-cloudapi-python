@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
+from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 from aries_cloudcontroller.model.create_wallet_token_request import (
     CreateWalletTokenRequest,
 )
@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
 from app.admin.tenants.models import UpdateTenantRequest
-from app.config.log_config import get_logger
 from app.dependencies.acapy_clients import (
     get_governance_controller,
     get_tenant_controller,
@@ -20,6 +19,7 @@ from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
 from shared import ACAPY_ENDORSER_ALIAS
+from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -92,7 +92,9 @@ async def handle_tenant_update(
 async def onboard_tenant(
     *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
 ) -> OnboardResult:
-    bound_logger = logger.bind(body={"tenant_id": tenant_id})
+    bound_logger = logger.bind(
+        body={"name": name, "roles": roles, "tenant_id": tenant_id}
+    )
     bound_logger.bind(body=roles).info("Start onboarding tenant")
 
     if "issuer" in roles:
@@ -238,7 +240,7 @@ async def onboard_issuer_no_public_did(
         except TimeoutError as e:
             bound_logger.error("Waiting for invitation complete event has timed out.")
             raise CloudApiException(
-                "Timeout occurred while waiting for connection with endorser to complete",
+                "Timeout occurred while waiting for connection with endorser to complete.",
                 504,
             ) from e
 
@@ -352,45 +354,71 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
     Args:
         verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
     """
-    logger.info("Onboarding verifier")
+    bound_logger = logger.bind(body={"name": name})
+    bound_logger.info("Onboarding verifier")
 
     onboarding_result = {}
 
     # If the verifier already has a public did it doesn't need an invitation. The invitation
     # is just to bypass having to pay for a public did for every verifier
     try:
-        logger.debug("Getting public DID for to-be verifier")
+        bound_logger.debug("Getting public DID for to-be verifier")
         public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
 
         onboarding_result["did"] = qualified_did_sov(public_did.did)
     except CloudApiException:
-        logger.debug(
+        bound_logger.info(
             "No public DID found for to-be verifier. "
             "Creating OOB invitation on their behalf."
         )
         # create a multi_use invitation from the did
-        invitation = await verifier_controller.out_of_band.create_invitation(
-            auto_accept=True,
-            multi_use=True,
-            body=InvitationCreateRequest(
-                use_public_did=False,
-                alias=f"Trust Registry {name}",
-                handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-            ),
+        invitation: InvitationRecord = (
+            await verifier_controller.out_of_band.create_invitation(
+                auto_accept=True,
+                multi_use=True,
+                body=InvitationCreateRequest(
+                    use_public_did=False,
+                    alias=f"Trust Registry {name}",
+                    handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+                ),
+            )
         )
 
-        try:
-            # Because we're not creating an invitation with a public did the invitation will always
-            # contain a did:key as the first recipientKey in the first service
-            logger.debug("Getting DID from verifier's invitation")
-            onboarding_result["did"] = invitation.invitation.services[0][
-                "recipientKeys"
-            ][0]
-            onboarding_result["didcomm_invitation"] = invitation.invitation_url
-        except (KeyError, IndexError) as e:
-            # FIXME: more verbose error
-            logger.exception("Error creating invitation to onboard verifier.")
-            raise CloudApiException("Error creating invitation.") from e
+        # check if invitation and necessary attributes exist
+        if invitation and invitation.invitation and invitation.invitation.services:
+            try:
+                # Because we're not creating an invitation with a public did the invitation will always
+                # contain a did:key as the first recipientKey in the first service
+                bound_logger.debug("Getting DID from verifier's invitation")
+                service = invitation.invitation.services[0]
+                if (
+                    service
+                    and "recipientKeys" in service
+                    and len(service["recipientKeys"]) > 0
+                ):
+                    onboarding_result["did"] = service["recipientKeys"][0]
+                else:
+                    raise KeyError(
+                        f"RecipientKeys not present in the invitation service: `{service}`."
+                    )
+                onboarding_result["didcomm_invitation"] = invitation.invitation_url
+            except (KeyError, IndexError) as e:
+                bound_logger.error(
+                    "Created invitation does not contain expected keys: {}", e
+                )
+                raise CloudApiException(
+                    "Error onboarding verifier: No public DID found. "
+                    "Tried to create invitation, but found no service/recipientKeys."
+                ) from e
+        else:
+            bound_logger.error(
+                "Created invitation does not have necessary attributes. Got: `{}`.",
+                invitation,
+            )
+            raise CloudApiException(
+                "Error onboarding verifier: No public DID found. "
+                "Tried and failed to create invitation on their behalf."
+            )
 
-    logger.info("Returning verifier onboard result.")
+    bound_logger.info("Returning verifier onboard result.")
     return OnboardResult(**onboarding_result)

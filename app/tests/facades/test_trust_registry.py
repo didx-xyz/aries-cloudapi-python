@@ -221,8 +221,7 @@ async def test_remove_schema_by_id(mock_async_client):
 
     mock_async_client.delete = AsyncMock(return_value=Response(500, text="The error"))
     with pytest.raises(
-        trf.TrustRegistryException,
-        match="Error removing schema from trust registry: The error",
+        trf.TrustRegistryException, match="Error removing schema from trust registry"
     ):
         await trf.remove_schema_by_id(schema_id="schema_id")
 

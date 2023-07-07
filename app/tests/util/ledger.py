@@ -1,4 +1,3 @@
-import logging
 from typing import Literal, Optional
 
 import httpx
@@ -9,8 +8,6 @@ from pydantic import BaseModel, Field
 from app.facades import acapy_wallet
 from app.facades.acapy_ledger import accept_taa_if_required
 from shared import LEDGER_REGISTRATION_URL, LEDGER_TYPE
-
-logger = logging.getLogger(__name__)
 
 
 class LedgerRequestSovrin(BaseModel):
@@ -53,7 +50,6 @@ async def post_to_ledger(
         raise e from e
 
     if response.is_error:
-        logger.error("Failed to write to ledger:\n %s", response.text)
         raise HTTPException(
             status_code=response.status_code,
             detail=f"Something went wrong.\nCould not write to Ledger.\n{response.text}",

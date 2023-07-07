@@ -1,14 +1,15 @@
 import asyncio
 import json
-import logging
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 from fastapi import WebSocket, WebSocketDisconnect
 from fastapi_websocket_pubsub import PubSubClient
 
-from shared import WEBHOOK_TOPIC_ALL, WEBHOOKS_URL
+from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
+from shared.models.topics import WEBHOOK_TOPIC_ALL
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class Webhooks:
@@ -101,10 +102,10 @@ class Webhooks:
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
             except asyncio.TimeoutError as e:
                 logger.warning(
-                    "Starting Webhooks client has timed out after %ss", timeout
+                    "Starting Webhooks client has timed out after {}s", timeout
                 )
                 await Webhooks.shutdown()
-                raise WebhooksTimeout("Starting Webhooks has timed out") from e
+                raise WebhooksTimeout("Starting Webhooks has timed out.") from e
         else:
             logger.debug(
                 "Requested to start Webhook client when it's already started. Ignoring."
@@ -155,8 +156,8 @@ class Webhooks:
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError as e:
-            logger.warning("Shutting down Webhooks has timed out after %ss", timeout)
-            raise WebhooksTimeout("Webhooks shutdown timed out") from e
+            logger.warning("Shutting down Webhooks has timed out after {}s", timeout)
+            raise WebhooksTimeout("Webhooks shutdown timed out.") from e
 
 
 class WebhooksTimeout(Exception):

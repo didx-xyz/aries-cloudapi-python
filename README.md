@@ -13,7 +13,7 @@ This project essentially comprises a [FastAPI](https://fastapi.tiangolo.com/) ap
 
 ## How to Run It
 
-Running the project is straightforward — it's all containerized. Simply execute `./manage up` or `make start` from the project root. This command will spin up and provision everything you need. You can then visit [localhost:8000/api/doc](http://localhost:8000/api/doc) to access the Swagger documentation and begin experimenting.
+Running the project is straightforward — it's all containerized. Simply execute `./manage up` from the project root. This command will spin up and provision everything you need. You can then visit [localhost:8000/api/doc](http://localhost:8000/api/doc) to access the Swagger documentation and begin experimenting.
 
 If you're familiar with Make, feel free to check the Makefile for some handy project-running methods.
 

@@ -3,7 +3,7 @@ from typing import Optional
 from aries_cloudcontroller import IndyPresSpec, IndyProofRequest
 from pydantic import BaseModel
 
-from shared import PresentProofProtocolVersion
+from shared.models.protocol import PresentProofProtocolVersion
 
 
 class SendProofRequest(BaseModel):

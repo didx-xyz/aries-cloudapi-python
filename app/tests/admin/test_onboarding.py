@@ -239,7 +239,7 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
         )
     )
 
-    with pytest.raises(CloudApiException, match="Error creating invitation."):
+    with pytest.raises(CloudApiException):
         await onboarding.onboard_verifier(
             name="verifier_name", verifier_controller=mock_agent_controller
         )

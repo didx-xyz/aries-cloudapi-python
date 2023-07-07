@@ -211,8 +211,8 @@ class SseManager:
                 pass
             except asyncio.QueueFull:
                 # Because we are using `put_nowait`. Should not happen as queue has no max size
-                LOGGER.error(
-                    "Client Queue is full for wallet %s on topic %s",
+                logger.error(
+                    "Client Queue is full for wallet {} on topic {}",
                     wallet,
                     topic,
                 )
@@ -249,21 +249,21 @@ class SseManager:
                                     # should be checked before trying to access in fifo_cache
                                     del self.fifo_cache[wallet][topic]
                                 else:
-                                    LOGGER.warning(
+                                    logger.warning(
                                         "SSE Manager: Avoided KeyError in `_cleanup_cache`. "
                                         "fifo_cache keys are not synced with lifo_cache keys, "
-                                        "for wallet %s and topic %s. Maybe caused by client disconnects.",
+                                        "for wallet `{}` and topic `{}`. Maybe caused by client disconnects.",
                                         wallet,
                                         topic,
                                     )
 
                             del self.cache_locks[wallet][topic]
             except KeyError as e:
-                LOGGER.warning(
-                    "SSE Manager: Caught KeyError in `_cleanup_cache`. %r", e
+                logger.warning(
+                    "SSE Manager: Caught KeyError in `_cleanup_cache`: {}.", e
                 )
 
-            logger.debug("SSE Manager: Finished cleanup task")
+            logger.debug("SSE Manager: Finished cleanup task.")
 
 
 async def _copy_queue(
@@ -282,6 +282,6 @@ async def _copy_queue(
                 await fifo_queue.put((timestamp, item))
         except asyncio.QueueEmpty:
             break
-    logger.debug("SSE Manager: Finished repopulating cache")
+    logger.debug("SSE Manager: Finished repopulating cache.")
 
     return lifo_queue, fifo_queue

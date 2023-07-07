@@ -1,7 +1,7 @@
 import pytest
 
 from shared.models.trustregistry import Actor, Schema
-from trustregistry.models import DB_Actor, DB_Schema
+import trustregistry.db as db
 
 def test_actor():
     actor = Actor(
@@ -37,7 +37,7 @@ def test_schema():
         Schema(did="abc", name="doubleaceschema", version="0:4:20")
 
 def test_db_actor():
-    actor = DB_Actor(
+    actor = db.Actor(
         id="mickey-mouse",
         name="Mickey Mouse",
         roles="verifier, issuer",
@@ -53,7 +53,7 @@ def test_db_actor():
 
 
 def test_db_schema():
-    schema = DB_Schema(did="abc", name="doubleaceschema", version="0.4.20")
+    schema = db.Schema(did="abc", name="doubleaceschema", version="0.4.20")
 
     assert schema.did == "abc"
     assert schema.name == "doubleaceschema"

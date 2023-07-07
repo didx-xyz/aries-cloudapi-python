@@ -306,7 +306,7 @@ async def is_valid_issuer(did: str, schema_id: str):
         return False
 
     schema = schema_res.json()
-    if not schema:
+    if schema["id"] != schema_id:
         bound_logger.error("Schema {} not found in trust registry", schema_id)
 
     bound_logger.debug("Validated that DID and schema are on trust registry.")

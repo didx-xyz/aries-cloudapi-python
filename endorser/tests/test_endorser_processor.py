@@ -126,7 +126,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
 
     # Mock responses
     actor_res = Response(200, json={"roles": ["issuer"]})
-    schema_res = Response(200, json={"schema": schema_id})
+    schema_res = Response(200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"})
 
     mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
     # Mock the `async with httpx.AsyncClient` to return mocked_async_client
@@ -150,7 +150,7 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     schema_id = "the-schema-id"
 
     actor_res = Response(200, json={"roles": ["issuer"]})
-    schema_res = Response(200, json={"schemas": [schema_id]})
+    schema_res = Response(200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"})
     # Error actor res
     mocked_async_client.get = AsyncMock(
         side_effect=[
@@ -182,7 +182,7 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     mocked_async_client.get = AsyncMock(
         side_effect=[
             actor_res,
-            Response(200, json={"schemas": ["another-schema-id"]}),
+            Response(200, json={"id": "another-schema-id", "did": did, "version": "1.0", "name": "name"}),
         ]
     )
     assert not await is_valid_issuer(did, schema_id)

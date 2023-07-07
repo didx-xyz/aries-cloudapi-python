@@ -16,7 +16,7 @@ async def test_assert_valid_issuer(mock_async_client):
     mock_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json=actor),
-            Response(200, json={"schemas": [schema_id]}),
+            Response(200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}),
         ]
     )
 

@@ -265,8 +265,8 @@ async def registry_has_schema(schema_id: str) -> bool:
         )
 
     schema = schemas_res.json()
-    bound_logger.info("=====> {}", schema)
-    result = bool(schema == schema_id)
+    bound_logger.info(schema.get("id"))
+    result = bool(schema["id"] == schema_id)
     if result:
         bound_logger.info("Schema exists in registry.")
     else:

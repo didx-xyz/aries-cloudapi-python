@@ -45,7 +45,7 @@ def create_app() -> FastAPI:
         wallet,
         webhooks,
         sse,
-        websocket_endpoint,
+        websocket_endpoint,  # no docs generated for websocket endpoints
     ]
 
     application = FastAPI(

@@ -10,7 +10,7 @@ from app.dependencies.auth import (
 )
 from app.event_handling.websocket_manager import WebsocketManager
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -35,7 +35,7 @@ async def websocket_auth(
         await websocket.accept()  # Accept to send unauthorized message
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)
-        LOGGER.info("Unauthorized WebSocket connection closed")
+        logger.info("Unauthorized WebSocket connection closed.")
 
 
 async def handle_websocket(
@@ -49,7 +49,7 @@ async def handle_websocket(
     if not auth or auth.wallet_id not in ("admin", wallet_id):
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)
-        LOGGER.info("Unauthorized WebSocket connection closed")
+        logger.info("Unauthorized WebSocket connection closed")
 
     try:
         # Subscribe the WebSocket connection to the wallet / topic
@@ -59,9 +59,9 @@ async def handle_websocket(
         while True:
             await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
     except WebSocketDisconnect:
-        LOGGER.info("WebSocket connection closed")
-    except Exception as e:
-        LOGGER.error("Exception caught while handling websocket: %r", e)
+        logger.info("WebSocket connection closed.")
+    except Exception:
+        logger.exception("Exception caught while handling websocket.")
 
 
 @router.websocket("/ws/{wallet_id}")

@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 from shared import (
     GOVERNANCE_AGENT_API_KEY,

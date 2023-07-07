@@ -96,10 +96,12 @@ async def update_schema(
 
 @router.get("/{schema_id}", response_model=Schema)
 async def get_schema(schema_id: str, db: Session = Depends(get_db)) -> Schema:
-    logger.info("GET request received: Fetch schema")
+    bound_logger = logger.bind(body={"schema_id":schema_id})
+    bound_logger.info("GET request received: Fetch schema")
     try:
         schema = crud.get_schema_by_id(db, schema_id=schema_id)
     except crud.SchemaDoesNotExistException:
+        bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=404,
             detail="Schema not found.",

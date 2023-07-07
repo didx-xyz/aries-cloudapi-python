@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from shared import (
     GOVERNANCE_AGENT_API_KEY,
@@ -14,6 +14,7 @@ from shared import (
 )
 from shared.log_config import get_logger
 from shared.models import Endorsement
+from shared.models.trustregistry import Schema
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
@@ -296,19 +297,15 @@ async def is_valid_issuer(did: str, schema_id: str):
         async with httpx.AsyncClient() as client:
             bound_logger.debug("Fetch schema from trust registry")
             schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
-    except httpx.HTTPError as e:
-        raise e from e
-
-    if schema_res.is_error:
-        logger.error(
-            "Error retrieving schemas from trust registry: `{}`.", schema_res.text
-        )
-        return False
-
-    schema = schema_res.json()
-    if schema["id"] != schema_id:
-        bound_logger.error("Schema {} not found in trust registry", schema_id)
-
+            schema_res.raise_for_status()
+    except httpx.HTTPError as http_err:
+        if http_err.status_code == 404:
+            bound_logger.info("Schema id not registered in trust registry.")
+            return False
+        else:
+            bound_logger.exception("Something went wrong when fetching schema from trust registry.")
+            raise http_err
+    
     bound_logger.debug("Validated that DID and schema are on trust registry.")
     return True
 

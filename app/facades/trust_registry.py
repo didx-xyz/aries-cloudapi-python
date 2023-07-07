@@ -266,16 +266,12 @@ async def registry_has_schema(schema_id: str) -> bool:
             f"Unable to retrieve schema `{schema_id}` from registry: `{schemas_res.text}`.",
             schemas_res.status_code,
         )
-    try:
-        schema_res = parse_with_error_handling(Schema, schemas_res.json)
-    except ValidationError as e:
-        logger.error("Parsing schema response failed: {}", e)
     
-    if schema_res.status_code == 200:
+    if schemas_res.status_code == 200:
         bound_logger.info("Schema exists in registry.")
         return True
     else:
-        bound_logger.info("Schema does not exist in registry.")
+        bound_logger.error("Schema does not exist in registry.")
         return False
 
 

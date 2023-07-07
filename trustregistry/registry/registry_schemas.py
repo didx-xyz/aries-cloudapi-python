@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from shared.log_config import get_logger
 from trustregistry import crud
 from trustregistry.db import get_db
-from trustregistry.schemas import Schema
+from shared.models.trustregistry import Schema
 
 logger = get_logger(__name__)
 

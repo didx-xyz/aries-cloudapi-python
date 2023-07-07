@@ -1,6 +1,6 @@
 import pytest
 
-from trustregistry.schemas import Actor, Schema
+from shared.models.trustregistry import Actor, Schema
 from trustregistry.models import DB_Actor, DB_Schema
 
 def test_actor():

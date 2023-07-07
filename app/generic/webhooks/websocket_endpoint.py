@@ -3,12 +3,12 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 
-from app.event_handling.websocket_manager import WebsocketManager
-from shared.dependencies.auth import (
+from app.dependencies.auth import (
     AcaPyAuthVerified,
     get_acapy_auth,
     get_acapy_auth_verified,
 )
+from app.event_handling.websocket_manager import WebsocketManager
 
 LOGGER = logging.getLogger(__name__)
 router = APIRouter()

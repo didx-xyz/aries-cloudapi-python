@@ -1,4 +1,4 @@
-fastapi~=0.98.0
+fastapi~=0.99.1
 pydantic~=1.10.8
 loguru~=0.7.0
 sqlalchemy~=1.4.48

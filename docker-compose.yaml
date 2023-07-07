@@ -12,6 +12,7 @@ services:
     volumes:
       - ./app:/app
       - ./environments/governance-ga/fastapi.default.env:/app/.env
+      - ./logs/governance:/logs
     depends_on:
       governance-ga-wallets-db:
         condition: service_started
@@ -92,6 +93,7 @@ services:
       - 0.0.0.0:8001:8001
     volumes:
       - ./trustregistry:/trustregistry
+      - ./logs:/logs
     networks:
       - governance-ga
       - governance-multitenant
@@ -107,6 +109,7 @@ services:
     volumes:
       - ./app:/app
       - ./environments/governance-multitenant/fastapi.default.env:/app/.env
+      - ./logs/multitenant:/logs
     depends_on:
       governance-multitenant-wallets-db:
         condition: service_started
@@ -133,6 +136,7 @@ services:
       - 0.0.0.0:3010:3010
     volumes:
       - ./webhooks:/webhooks
+      - ./logs:/logs
     networks:
       - governance-multitenant
       - governance-ga
@@ -149,6 +153,7 @@ services:
       dockerfile: ./dockerfiles/endorser/Dockerfile
     volumes:
       - ./endorser:/endorser
+      - ./logs:/logs
     networks:
       - governance-multitenant
       - governance-ga
@@ -225,8 +230,7 @@ services:
     image: ${REGISTRY:-local}/ledger-browser
     container_name: ledger-browser
     build:
-      # context: https://github.com/didx-xyz/von-network.git#531007d7755668088b321e57a42fe4ea2d999b26
-      context: https://github.com/didx-xyz/von-network.git
+      context: https://github.com/bcgov/von-network.git#main
       dockerfile: Dockerfile
     command: "bash -c './scripts/start_webserver.sh'"
     environment:
@@ -235,7 +239,7 @@ services:
       - RESYNC_TIME=120
       - REGISTER_NEW_DIDS=True
       - LEDGER_INSTANCE_NAME=localhost
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=WARNING
       # - POOL_CONNECTION_ATTEMPTS=${POOL_CONNECTION_ATTEMPTS:-5}
       # - POOL_CONNECTION_DELAY=${POOL_CONNECTION_DELAY:-10}
       - LEDGER_SEED=${LEDGER_SEED:-000000000000000000000000Trustee1}
@@ -261,8 +265,7 @@ services:
     image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-nodes
     build:
-      # context: https://github.com/didx-xyz/von-network.git#531007d7755668088b321e57a42fe4ea2d999b26
-      context: https://github.com/didx-xyz/von-network.git
+      context: https://github.com/bcgov/von-network.git#main
       dockerfile: Dockerfile
     command: "bash -c './scripts/start_nodes.sh'"
     ports:
@@ -276,7 +279,7 @@ services:
       - 0.0.0.0:9708:9708
     environment:
       - DOCKERHOST=${DOCKERHOST}
-      - LOG_LEVEL=INFO
+      - LOG_LEVEL=WARNING
     volumes:
       - nodes-data:/home/indy/ledger
       - ./scripts/indy_healthcheck.sh:/home/indy/indy_healthcheck.sh

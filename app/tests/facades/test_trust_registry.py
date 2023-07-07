@@ -150,9 +150,6 @@ async def test_registry_has_schema(mock_async_client):
     )
     assert await trf.registry_has_schema(schema_id) is False
 
-    mock_async_client.get = AsyncMock(return_value=Response(404))
-    assert await trf.registry_has_schema(schema_id) is False
-
     mock_async_client.get = AsyncMock(return_value=Response(500))
     with pytest.raises(trf.TrustRegistryException):
         await trf.registry_has_schema(schema_id)
@@ -224,8 +221,7 @@ async def test_remove_schema_by_id(mock_async_client):
 
     mock_async_client.delete = AsyncMock(return_value=Response(500, text="The error"))
     with pytest.raises(
-        trf.TrustRegistryException,
-        match="Error removing schema from trust registry: The error",
+        trf.TrustRegistryException, match="Error removing schema from trust registry"
     ):
         await trf.remove_schema_by_id(schema_id="schema_id")
 
@@ -263,17 +259,17 @@ async def test_update_actor(mock_async_client):
         didcomm_invitation="actor-didcomm-invitation",
     )
 
-    mock_async_client.post = AsyncMock(return_value=Response(200, json=actor))
+    mock_async_client.put = AsyncMock(return_value=Response(200, json=actor))
     await trf.update_actor(actor=actor)
-    mock_async_client.post.assert_called_once_with(
+    mock_async_client.put.assert_called_once_with(
         trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}", json=actor
     )
 
-    mock_async_client.post = AsyncMock(return_value=Response(500))
+    mock_async_client.put = AsyncMock(return_value=Response(500))
     with pytest.raises(trf.TrustRegistryException):
         await trf.update_actor(actor=actor)
 
-    mock_async_client.post = AsyncMock(
+    mock_async_client.put = AsyncMock(
         return_value=Response(422, json={"error": "some error"})
     )
     with pytest.raises(trf.TrustRegistryException):

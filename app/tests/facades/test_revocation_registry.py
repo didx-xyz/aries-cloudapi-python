@@ -104,8 +104,7 @@ async def test_get_active_revocation_registry_for_credential(
 
     # Fail
     with pytest.raises(
-        CloudApiException,
-        match=f"Error retrieving revocation registry for credential with ID {cred_def_id}",
+        CloudApiException, match="Error retrieving revocation registry"
     ) as exc:
         when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
             cred_def_id=cred_def_id
@@ -140,8 +139,7 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
 
     # Fail
     with pytest.raises(
-        CloudApiException,
-        match=f"Error retrieving revocation status for credential exchange ID {cred_ex_id}",
+        CloudApiException, match="Error retrieving revocation status"
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
             cred_ex_id=cred_ex_id

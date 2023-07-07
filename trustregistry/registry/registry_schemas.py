@@ -1,12 +1,16 @@
 from typing import List
+
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
-from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
 
+from shared.log_config import get_logger
 from trustregistry import crud
 from trustregistry.db import get_db
 from trustregistry.schemas import Schema
+
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
@@ -21,25 +25,32 @@ class SchemaID(BaseModel):
 
 @router.get("", response_model=GetSchemasResponse)
 async def get_schemas(db: Session = Depends(get_db)) -> GetSchemasResponse:
+    logger.info("GET request received: Fetch all schemas")
     db_schemas = crud.get_schemas(db)
     schemas_repr = [schema.id for schema in db_schemas]
+
     return GetSchemasResponse(schemas=schemas_repr)
 
 
 @router.post("")
 async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) -> Schema:
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("POST request received: Register schema")
     schema_attrs_list = _get_schema_attrs(schema_id)
-    create_schema_res = crud.create_schema(
-        db,
-        schema=Schema(
-            did=schema_attrs_list[0],
-            name=schema_attrs_list[2],
-            version=schema_attrs_list[3],
-            id=schema_id.schema_id,
-        ),
-    )
-    if create_schema_res == 1:
-        raise HTTPException(status_code=405, detail="Schema already exists")
+    try:
+        create_schema_res = crud.create_schema(
+            db,
+            schema=Schema(
+                did=schema_attrs_list[0],
+                name=schema_attrs_list[2],
+                version=schema_attrs_list[3],
+                id=schema_id.schema_id,
+            ),
+        )
+    except crud.SchemaAlreadyExistsException:
+        bound_logger.info("Bad request: Schema already exists.")
+        raise HTTPException(status_code=405, detail="Schema already exists.")
+
     return create_schema_res
 
 
@@ -47,29 +58,51 @@ async def register_schema(schema_id: SchemaID, db: Session = Depends(get_db)) ->
 async def update_schema(
     schema_id: str, new_schema_id: SchemaID, db: Session = Depends(get_db)
 ) -> Schema:
-    schema_attrs_list = _get_schema_attrs(new_schema_id)
-    update_schema_res = crud.update_schema(
-        db,
-        schema=Schema(
-            did=schema_attrs_list[0],
-            name=schema_attrs_list[2],
-            version=schema_attrs_list[3],
-            id=new_schema_id.schema_id,
-        ),
-        schema_id=schema_id,
+    bound_logger = logger.bind(
+        body={"schema_id": schema_id, "new_schema_id": new_schema_id}
     )
-    if update_schema_res is None:
+    bound_logger.info("PUT request received: Update schema")
+    if schema_id == new_schema_id.schema_id:
+        bound_logger.info("Bad request: New schema ID is identical to existing one.")
+        raise HTTPException(
+            status_code=400,
+            detail="New schema ID is identical to the existing one. "
+            "Update operation expects a different schema ID.",
+        )
+
+    schema_attrs_list = _get_schema_attrs(new_schema_id)
+
+    new_schema = Schema(
+        did=schema_attrs_list[0],
+        name=schema_attrs_list[2],
+        version=schema_attrs_list[3],
+        id=new_schema_id.schema_id,
+    )
+
+    try:
+        update_schema_res = crud.update_schema(
+            db,
+            schema=new_schema,
+            schema_id=schema_id,
+        )
+    except crud.SchemaDoesNotExistException:
+        bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=405,
-            detail="Schema not found",
+            detail="Schema not found.",
         )
+
     return update_schema_res
 
 
 @router.delete("/{schema_id}", status_code=204)
 async def remove_schema(schema_id: str, db: Session = Depends(get_db)) -> None:
-    delete_scheme_res = crud.delete_schema(db, schema_id=schema_id)
-    if delete_scheme_res is None:
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("DELETE request received: Delete schema")
+    try:
+        crud.delete_schema(db, schema_id=schema_id)
+    except crud.SchemaDoesNotExistException:
+        bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=404,
             detail="Schema not found.",

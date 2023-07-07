@@ -18,11 +18,11 @@ from app.generic.verifier.models import (
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
-from shared import (
+from shared import RichAsyncClient
+from shared.models import (
     CredentialExchange,
     PresentationExchange,
     PresentProofProtocolVersion,
-    RichAsyncClient,
 )
 
 VERIFIER_BASE_PATH = "/generic/verifier"
@@ -504,8 +504,7 @@ async def test_reject_proof_request(
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/reject-request", json=reject_proof_request_v1.dict()
     )
-    result = response.json()
-    assert result is None
+    assert response.status_code == 204
 
 
 @pytest.mark.anyio
@@ -626,7 +625,7 @@ async def test_delete_proof(
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() is None
+    assert response.status_code == 204
 
     # V2
     proof_req_res = await acme_client.post(
@@ -643,7 +642,7 @@ async def test_delete_proof(
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
     )
-    assert response.json() is None
+    assert response.status_code == 204
 
 
 @pytest.mark.anyio

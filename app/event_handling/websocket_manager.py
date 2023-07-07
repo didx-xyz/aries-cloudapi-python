@@ -1,13 +1,13 @@
 import asyncio
-import logging
 from typing import Optional
 
 from fastapi import WebSocket
 from fastapi_websocket_pubsub import PubSubClient
 
 from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
 
-LOGGER = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class WebsocketManager:
@@ -39,7 +39,7 @@ class WebsocketManager:
         elif topic:
             subscribed_topic = topic
         else:
-            LOGGER.error("Subscribe requires `topic` or `wallet_id` in request")
+            logger.error("Subscribe requires `topic` or `wallet_id` in request.")
             return
 
         WebsocketManager._client.subscribe(subscribed_topic, callback)
@@ -61,18 +61,18 @@ class WebsocketManager:
 
         if not WebsocketManager._client:
             try:
-                LOGGER.debug("Starting PubSubClient for Websocket Manager")
+                logger.debug("Starting PubSubClient for Websocket Manager")
                 await asyncio.wait_for(ensure_connection_ready(), timeout=timeout)
             except asyncio.TimeoutError as e:
-                LOGGER.warning(
-                    "Starting Websocket PubSubClient has timed out after %ss", timeout
+                logger.warning(
+                    "Starting Websocket PubSubClient has timed out after {}s.", timeout
                 )
                 await WebsocketManager.shutdown()
                 raise WebsocketTimeout(
-                    "Starting PubSubClient for Websocket Manager has timed out"
+                    "Starting PubSubClient for Websocket Manager has timed out."
                 ) from e
         else:
-            LOGGER.debug(
+            logger.debug(
                 "Requested to start Webhook client when it's already started. Ignoring."
             )
 
@@ -81,7 +81,7 @@ class WebsocketManager:
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """
-        LOGGER.debug("Shutting down Websocket client")
+        logger.debug("Shutting down Websocket client")
 
         async def wait_for_shutdown():
             if WebsocketManager._client:
@@ -92,10 +92,10 @@ class WebsocketManager:
         try:
             await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
         except asyncio.TimeoutError as e:
-            LOGGER.warning(
-                "Shutting down Websocket Manager has timed out after %ss", timeout
+            logger.warning(
+                "Shutting down Websocket Manager has timed out after {}s.", timeout
             )
-            raise WebsocketTimeout("Websocket Manager shutdown timed out") from e
+            raise WebsocketTimeout("Websocket Manager shutdown timed out.") from e
 
 
 class WebsocketTimeout(Exception):

@@ -35,7 +35,9 @@ async def test_register_schema():
         assert response.json() == schema_dict
         assert response.status_code == 200
 
-        new_schemas_resp = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+        new_schemas_resp = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+        )
         assert new_schemas_resp.status_code == 200
         new_schema = new_schemas_resp.json()
         assert schema_id == new_schema["id"]
@@ -46,6 +48,7 @@ async def test_register_schema():
         )
         assert response.status_code == 405
         assert "Schema already exists" in response.json()["detail"]
+
 
 @pytest.mark.anyio
 async def test_get_schema_by_id():
@@ -69,7 +72,7 @@ async def test_get_schema_by_id():
         assert response.status_code == 404
         assert "Schema not found" in response.json()["detail"]
 
-        
+
 @pytest.mark.anyio
 async def test_update_schema():
     schema_dict = {

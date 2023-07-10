@@ -250,24 +250,26 @@ async def registry_has_schema(schema_id: str) -> bool:
     )
     try:
         async with httpx.AsyncClient() as client:
-            # TODO: should be able to fetch specific schema_id from registry
-            schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
-    except httpx.HTTPError as e:
-        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
-        raise e from e
+            bound_logger.debug("Fetch schema from trust registry")
+            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+            schema_res.raise_for_status()
+    except httpx.HTTPError as http_err:
+        if http_err.status_code == 404:
+            bound_logger.info("Schema id not registered in trust registry.")
+            return False
+        else:
+            bound_logger.exception("Something went wrong when fetching schema from trust registry.")
+            raise http_err
 
-    if schemas_res.is_error:
-        bound_logger.error(
-            "Error fetching schema. Got status code {} with message `{}`.",
-            schemas_res.status_code,
-            schemas_res.text,
-        )
-        raise TrustRegistryException(
-            f"Unable to retrieve schema `{schema_id}` from registry: `{schemas_res.text}`.",
-            schemas_res.status_code,
-        )
+    # if schema_res.is_error:
+    #     bound_logger.error(
+    #         "Error fetching schema. Got status code {} with message `{}`.",
+    #         schema_res.status_code,
+    #         schema_res.text,
+    #     )
+         
     
-    if schemas_res.status_code == 200:
+    if schema_res.status_code == 200:
         bound_logger.info("Schema exists in registry.")
         return True
     else:

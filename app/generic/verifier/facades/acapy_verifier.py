@@ -9,7 +9,7 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
-from shared.models import PresentationExchange
+from shared.models.topics import PresentationExchange
 
 
 class Verifier(ABC):

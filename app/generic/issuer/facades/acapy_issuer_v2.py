@@ -18,7 +18,8 @@ from app.generic.issuer.facades.acapy_issuer import Issuer
 from app.generic.issuer.models import Credential, CredentialNoConnection
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
-from shared.models import CredentialExchange, credential_record_to_model_v2
+from shared.models.conversion import credential_record_to_model_v2
+from shared.models.topics import CredentialExchange
 
 logger = get_logger(__name__)
 

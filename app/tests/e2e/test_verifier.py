@@ -19,11 +19,8 @@ from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
-from shared.models import (
-    CredentialExchange,
-    PresentationExchange,
-    PresentProofProtocolVersion,
-)
+from shared.models.protocol import PresentProofProtocolVersion
+from shared.models.topics import CredentialExchange, PresentationExchange
 
 VERIFIER_BASE_PATH = "/generic/verifier"
 

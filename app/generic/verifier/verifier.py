@@ -19,7 +19,7 @@ from app.generic.verifier.models import (
     SendProofRequest,
 )
 from shared.log_config import get_logger
-from shared.models import PresentationExchange
+from shared.models.topics import PresentationExchange
 
 logger = get_logger(__name__)
 

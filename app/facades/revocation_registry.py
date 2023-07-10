@@ -311,7 +311,7 @@ async def revoke_credential(
         raise CloudApiException("Failed to revoke credential.", 400) from e
 
     if not auto_publish_to_ledger:
-        active_revocation_registry_id = (
+        try:
             rev_reg_record = await get_active_revocation_registry_for_credential(
                 controller=controller,
                 credential_definition_id=credential_definition_id,

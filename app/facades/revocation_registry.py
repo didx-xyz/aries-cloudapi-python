@@ -312,16 +312,14 @@ async def revoke_credential(
 
     if not auto_publish_to_ledger:
         active_revocation_registry_id = (
-            await get_active_revocation_registry_for_credential(
+            rev_reg_record = await get_active_revocation_registry_for_credential(
                 controller=controller,
                 credential_definition_id=credential_definition_id,
             )
-        )
 
-        try:
             await publish_revocation_entry_to_ledger(
                 controller=controller,
-                revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
+                revocation_registry_id=rev_reg_record.revoc_reg_id,
                 create_transaction_for_endorser=True,
             )
         except CloudApiException as e:

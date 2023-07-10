@@ -324,6 +324,15 @@ async def revoke_credential(
                 revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
                 create_transaction_for_endorser=True,
             )
+        except CloudApiException as e:
+            if e.status_code == 400:
+                bound_logger.info(
+                    "Bad request: Cannot publish revocation entry to ledger: {}",
+                    e.detail,
+                )
+            else:
+                bound_logger.error(e.detail)
+            raise e
         except Exception:
             bound_logger.exception("Exception caught when revoking credential.")
             # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py

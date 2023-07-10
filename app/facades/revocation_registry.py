@@ -384,10 +384,10 @@ async def get_credential_definition_id_from_exchange_id(
                 cred_ex_id=credential_exchange_id
             )
         ).credential_definition_id
-    except ClientResponseError as e:
+    except ClientResponseError as err1:
         bound_logger.info(
             "A ClientResponseError was caught while getting v1 record. The error message is: '{}'",
-            e.message,
+            err1.message,
         )
         try:
             bound_logger.info("Trying to get v2 records")
@@ -405,10 +405,10 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
-        except ClientResponseError as e:
+        except ClientResponseError as err2:
             bound_logger.info(
                 "A ClientResponseError was caught while getting v2 record. The error message is: '{}'",
-                e.message,
+                err2.message,
             )
             return
         except Exception:

@@ -176,7 +176,7 @@ async def test_registry_has_schema(mock_async_client):
                                     )
     
     mock_async_client.get = AsyncMock(return_value = err_response)
-    with pytest.raises(HTTPError):
+    with pytest.raises(HTTPStatusError):
         await trf.registry_has_schema(schema_id)
 
 

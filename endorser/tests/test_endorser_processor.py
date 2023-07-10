@@ -171,7 +171,8 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
             error_response
         ]
     )
-    assert not await is_valid_issuer(did, not_schema_id)
+    with pytest.raises(HTTPStatusError):
+        await is_valid_issuer(did,not_schema_id)
 
     # Invalid role
     mocked_async_client.get = AsyncMock(

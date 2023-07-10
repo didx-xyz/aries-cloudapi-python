@@ -299,7 +299,7 @@ async def is_valid_issuer(did: str, schema_id: str):
             schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
             schema_res.raise_for_status()
     except httpx.HTTPStatusError as http_err:
-        if http_err.status_code == 404:
+        if http_err.response.status_code == 404:
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:

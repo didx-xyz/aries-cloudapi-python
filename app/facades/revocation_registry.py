@@ -398,6 +398,12 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
+        except ClientResponseError as e:
+            bound_logger.info(
+                "A ClientResponseError was caught while getting v2 record. The error message is: '{}'",
+                e.message,
+            )
+            return
         except Exception:
             bound_logger.exception(
                 "Exception caught when getting v2 records for cred ex id."

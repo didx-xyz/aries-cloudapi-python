@@ -4,7 +4,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
-from trustregistry import crud, models
+from trustregistry import crud, db
 from trustregistry.database import engine
 from trustregistry.db import get_db
 from trustregistry.registry import registry_actors, registry_schemas
@@ -31,7 +31,7 @@ app = create_app()
 
 @app.on_event("startup")
 async def startup_event():
-    models.Base.metadata.create_all(bind=engine)
+    db.Base.metadata.create_all(bind=engine)
     engine.dispose()
 
     logger.debug("TrustRegistry startup: Validate tables are created")

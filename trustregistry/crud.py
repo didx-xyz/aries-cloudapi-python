@@ -64,6 +64,34 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
         bound_logger.info("Successfully added actor to database.")
         return db_actor
 
+    except IntegrityError as e:
+        db_session.rollback()
+        constraint_violation = str(e.orig).lower()
+
+        if f".{actor.id}" in constraint_violation:
+            bound_logger.info(
+                "The requested actor ID: {} already exists in database.", actor.id
+            )
+            raise ActorAlreadyExistsException
+
+        elif f"{actor.name}" in constraint_violation:
+            bound_logger.info(
+                "The requested actor name: {} already exists in database.", actor.name
+            )
+            raise ActorAlreadyExistsException
+
+        elif f"{actor.did}" in constraint_violation:
+            bound_logger.info(
+                "The requested actor DID: {} already exists in database.", actor.did
+            )
+            raise ActorAlreadyExistsException
+
+        elif f"{actor.didcomm_invitation}" in constraint_violation:
+            bound_logger.info(
+                "The requested actor DIDComm invitation: {} already exists in database.",
+                actor.didcomm_invitation,
+            )
+            raise ActorAlreadyExistsException
 
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})

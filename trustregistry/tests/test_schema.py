@@ -88,10 +88,12 @@ async def test_update_schema():
         assert response.json() == schema_dict
         assert response.status_code == 200
 
-        new_schemas_resp = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+        new_schemas_resp = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/schemas/{updated_schema_id}"
+        )
         assert new_schemas_resp.status_code == 200
         new_schema = new_schemas_resp.json()
-        assert schema_id == new_schema["id"]
+        assert updated_schema_id == new_schema["id"]
 
         response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/schemas/i:donot:exist",

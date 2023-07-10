@@ -52,10 +52,7 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
 
 def create_actor(db_session: Session, actor: Actor) -> db.Actor:
     bound_logger = logger.bind(body={"actor": actor})
-    bound_logger.info(
-        "Create actor in database. First assert actor ID does not already exist"
-    )
-    db_actor = db_session.query(db.Actor).filter(db.Actor.id == actor.id).one_or_none()
+    bound_logger.info("Try to create actor in database")
 
     if db_actor:
         bound_logger.info(

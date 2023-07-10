@@ -54,21 +54,15 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Try to create actor in database")
 
-    if db_actor:
-        bound_logger.info(
-            "Cannot create actor, as actor ID `{}` already exists in database.",
-            actor.id,
-        )
-        raise ActorAlreadyExistsException
+    try:
+        bound_logger.debug("Adding actor to database")
+        db_actor = db.Actor(**actor.dict())
+        db_session.add(db_actor)
+        db_session.commit()
+        db_session.refresh(db_actor)
 
-    bound_logger.debug("Adding actor to database")
-    db_actor = db.Actor(**actor.dict())
-    db_session.add(db_actor)
-    db_session.commit()
-    db_session.refresh(db_actor)
-
-    bound_logger.info("Successfully added actor to database.")
-    return db_actor
+        bound_logger.info("Successfully added actor to database.")
+        return db_actor
 
 
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:

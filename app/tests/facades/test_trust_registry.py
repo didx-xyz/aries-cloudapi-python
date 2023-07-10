@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from httpx import Response, HTTPStatusError, HTTPError
+from httpx import Response, HTTPStatusError
 
 import app.facades.trust_registry as trf
 

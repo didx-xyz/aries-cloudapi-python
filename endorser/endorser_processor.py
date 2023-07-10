@@ -306,9 +306,12 @@ async def is_valid_issuer(did: str, schema_id: str):
             bound_logger.exception("Something went wrong when fetching schema from trust registry.")
             raise http_err
     
-    bound_logger.debug("Validated that DID and schema are on trust registry.")
-    return True
-
+    if schema_res.status_code == 200:
+        bound_logger.info("Validated that DID and schema are on trust registry.")
+        return True
+    else:
+        bound_logger.error("Schema does not exist in registry.")
+        return False
 
 async def accept_endorsement(client: AcaPyClient, endorsement: Endorsement):
     logger.debug("Endorsing transaction with id: `{}`", endorsement.transaction_id)

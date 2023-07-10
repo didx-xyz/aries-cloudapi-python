@@ -259,15 +259,7 @@ async def registry_has_schema(schema_id: str) -> bool:
             return False
         else:
             bound_logger.exception("Something went wrong when fetching schema from trust registry.")
-            raise http_err
-
-    # if schema_res.is_error:
-    #     bound_logger.error(
-    #         "Error fetching schema. Got status code {} with message `{}`.",
-    #         schema_res.status_code,
-    #         schema_res.text,
-    #     )
-         
+            raise http_err 
     
     if schema_res.status_code == 200:
         bound_logger.info("Schema exists in registry.")

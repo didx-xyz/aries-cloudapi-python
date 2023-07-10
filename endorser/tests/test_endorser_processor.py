@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from httpx import Response
+from httpx import Response, HTTPStatusError
 from mockito import verify, when
 from pytest_mock import MockerFixture
 
@@ -127,7 +127,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
     # Mock responses
     actor_res = Response(200, json={"roles": ["issuer"]})
     schema_res = Response(200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"})
-
+    schema_res.raise_for_status = AsyncMock()
     mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
     # Mock the `async with httpx.AsyncClient` to return mocked_async_client
 
@@ -151,6 +151,7 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
 
     actor_res = Response(200, json={"roles": ["issuer"]})
     schema_res = Response(200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"})
+    schema_res.raise_for_status = AsyncMock()
     # Error actor res
     mocked_async_client.get = AsyncMock(
         side_effect=[
@@ -161,13 +162,16 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     assert not await is_valid_issuer(did, schema_id)
 
     # Error schema res
+    not_schema_id = "not-the-schema-id"
+    error_response = Response(status_code=400)
+    error_response.raise_for_status = AsyncMock(side_effect=HTTPStatusError(response=error_response,message="Something went wrong",request=not_schema_id))
     mocked_async_client.get = AsyncMock(
         side_effect=[
             actor_res,
-            Response(400, json={}),
+            error_response
         ]
     )
-    assert not await is_valid_issuer(did, schema_id)
+    assert not await is_valid_issuer(did, not_schema_id)
 
     # Invalid role
     mocked_async_client.get = AsyncMock(
@@ -179,10 +183,13 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     assert not await is_valid_issuer(did, schema_id)
 
     # schema not registered
+    not_schema_id = "not-the-schema-id"
+    error_response = Response(status_code=404)
+    error_response.raise_for_status = AsyncMock(side_effect=HTTPStatusError(response=error_response,message="Schema does not exist in registry.",request=not_schema_id))
     mocked_async_client.get = AsyncMock(
         side_effect=[
             actor_res,
-            Response(200, json={"id": "another-schema-id", "did": did, "version": "1.0", "name": "name"}),
+            error_response
         ]
     )
     assert not await is_valid_issuer(did, schema_id)

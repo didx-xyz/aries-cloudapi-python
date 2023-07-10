@@ -162,7 +162,7 @@ async def test_registry_has_schema(mock_async_client):
 
     #mock 500
     error_response = Response(500)
-   # response.raise_for_status = AsyncMock(side_effect=HTTPError( message="Something went wrong"))
+    #response.raise_for_status = AsyncMock(side_effect=HTTPError( message="Something went wrong"))
     mocked_response=AsyncMock()
     mocked_response.raise_for_status=AsyncMock(side_effect=HTTPError( message="Something went wrong"))
     mock_async_client.get = AsyncMock(side_effect = HTTPError(response=response))

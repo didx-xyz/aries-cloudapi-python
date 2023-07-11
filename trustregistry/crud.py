@@ -70,34 +70,34 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
 
         if f"actors.id" in constraint_violation:
             bound_logger.info(
-                "Bad request: The requested actor ID already exists in database."
+                "Bad request: An actor with ID already exists in database."
             )
             raise ActorAlreadyExistsException(
-                f"Bad request: The requested actor ID: `{actor.id}` already exists in database."
+                f"Bad request: An actor with ID: `{actor.id}` already exists in database."
             )
 
         elif f"actors.name" in constraint_violation:
             bound_logger.info(
-                "Bad request: The requested actor name already exists in database."
+                "Bad request: An actor with name already exists in database."
             )
             raise ActorAlreadyExistsException(
-                f"Bad request: The requested actor name: `{actor.name}` already exists in database."
+                f"Bad request: An actor with name: `{actor.name}` already exists in database."
             )
 
         elif f"actors.did" in constraint_violation:
             if f"actors.didcomm_invitation" in constraint_violation:
                 bound_logger.info(
-                    "Bad request: The requested actor DIDComm invitation already exists in database."
+                    "Bad request: An actor with DIDComm invitation already exists in database."
                 )
                 raise ActorAlreadyExistsException(
-                    f"Bad request: The requested actor DIDComm: `{actor.didcomm_invitation}` invitation already exists in database."
+                    f"Bad request: An actor with DIDComm invitation already exists in database."
                 )
             else:
                 bound_logger.info(
-                    "Bad request: The requested actor DID already exists in database."
+                    "Bad request: An actor with DID already exists in database."
                 )
                 raise ActorAlreadyExistsException(
-                    f"Bad request: The requested actor DID: `{actor.did}` already exists in database."
+                    f"Bad request: An actor with DID: `{actor.did}` already exists in database."
                 )
 
 

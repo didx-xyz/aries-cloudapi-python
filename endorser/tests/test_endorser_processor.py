@@ -129,7 +129,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
     schema_res = Response(
         200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
     )
-    schema_res.raise_for_status = AsyncMock()
+    schema_res.raise_for_status = Mock()
     mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
     # Mock the `async with httpx.AsyncClient` to return mocked_async_client
 

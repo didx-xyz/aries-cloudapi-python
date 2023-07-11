@@ -13,7 +13,10 @@ async def test_assert_valid_issuer(mock_async_client):
     schema_id = "a_schema_id"
 
     # Mock the actor_by_did and registry_has_schema calls
-    response = Response(status_code=200,json={"id": schema_id, "did": did, "version": "1.0", "name": "name"})
+    response = Response(
+        status_code=200,
+        json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
+    )
     response.raise_for_status = AsyncMock()
     mock_async_client.get = AsyncMock(
         side_effect=[
@@ -40,7 +43,11 @@ async def test_assert_valid_issuer(mock_async_client):
 
     # Schema is not registered in registry
     response = Response(status_code=404)
-    response.raise_for_status = AsyncMock(side_effect=HTTPStatusError(response=response, message="Schema not found in registry",request=schema_id))
+    response.raise_for_status = AsyncMock(
+        side_effect=HTTPStatusError(
+            response=response, message="Schema not found in registry", request=schema_id
+        )
+    )
     mock_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json=actor),
@@ -143,39 +150,40 @@ async def test_actor_with_role(mock_async_client):
 async def test_registry_has_schema(mock_async_client):
     schema_id = "did:name:version"
     did = "did:sov:xxxx"
-    #mock has schema
-    response = Response(status_code=200,json={"id": schema_id, "did": did, "version": "1.0", "name": "name"})
-    response.raise_for_status = Mock()
-    mock_async_client.get = AsyncMock(
-        return_value=response
+    # mock has schema
+    response = Response(
+        status_code=200,
+        json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
     )
+    response.raise_for_status = Mock()
+    mock_async_client.get = AsyncMock(return_value=response)
     assert await trf.registry_has_schema(schema_id) is True
 
     schema_id = "did_3:name:version"
-    #mock does not have schema
+    # mock does not have schema
     response = Response(status_code=404)
-    response.raise_for_status = Mock(side_effect=HTTPStatusError(
-                                    response=response,
-                                    message="Something went wrong when fetching schema from trust registry.",
-                                    request=schema_id
-                                    )
-                                )
-    
-    mock_async_client.get = AsyncMock(
-        return_value=response
+    response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=response,
+            message="Something went wrong when fetching schema from trust registry.",
+            request=schema_id,
+        )
     )
+
+    mock_async_client.get = AsyncMock(return_value=response)
     assert await trf.registry_has_schema(schema_id) is False
 
-    #mock 500
+    # mock 500
     err_response = Response(status_code=500)
-    err_response.raise_for_status = Mock(side_effect=HTTPStatusError(
-                                        response=err_response,
-                                        message="Something went wrong when fetching schema from trust registry.",
-                                        request=schema_id
-                                        )
-                                    )
-    
-    mock_async_client.get = AsyncMock(return_value = err_response)
+    err_response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=err_response,
+            message="Something went wrong when fetching schema from trust registry.",
+            request=schema_id,
+        )
+    )
+
+    mock_async_client.get = AsyncMock(return_value=err_response)
     with pytest.raises(HTTPStatusError):
         await trf.registry_has_schema(schema_id)
 

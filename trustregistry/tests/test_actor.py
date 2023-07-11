@@ -72,28 +72,28 @@ async def test_register_actor():
             content=name_payload,
         )
         assert response.status_code == 409
-        assert "Bad request: The requested actor name:" in response.json()["detail"]
+        assert "Bad request: An actor with name:" in response.json()["detail"]
 
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
             content=did_payload,
         )
         assert response.status_code == 409
-        assert "Bad request: The requested actor DID:" in response.json()["detail"]
+        assert "Bad request: An actor with DID:" in response.json()["detail"]
 
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
             content=didcomm_payload,
         )
         assert response.status_code == 409
-        assert "Bad request: The requested actor DIDComm:" in response.json()["detail"]
+        assert "Bad request: An actor with DIDComm" in response.json()["detail"]
 
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
             content=id_payload,
         )
         assert response.status_code == 409
-        assert "Bad request: The requested actor ID:" in response.json()["detail"]
+        assert "Bad request: An actor with ID:" in response.json()["detail"]
 
 
 @pytest.mark.anyio
@@ -154,4 +154,4 @@ async def test_remove_actors():
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
         )
         assert response.status_code == 404
-        assert "Actor not found" in response.json()["detail"]
+        assert "Actor with id" in response.json()["detail"]

@@ -12,6 +12,34 @@ new_actor = {
     "didcomm_invitation": "string",
     "did": "did:key:string",
 }
+dup_name_actor = {
+    "id": "darth-vader2",
+    "name": "Darth Vader",
+    "roles": ["issuer", "verifier"],
+    "didcomm_invitation": "string2",
+    "did": "did:key:string2",
+}
+dup_did_actor = {
+    "id": "darth-vader3",
+    "name": "Darth Vader3",
+    "roles": ["issuer", "verifier"],
+    "didcomm_invitation": "string3",
+    "did": "did:key:string",
+}
+dup_didcomm_actor = {
+    "id": "darth-vader4",
+    "name": "Darth Vader4",
+    "roles": ["issuer", "verifier"],
+    "didcomm_invitation": "string",
+    "did": "did:key:string4",
+}
+dup_id_actor = {
+    "id": "darth-vader",
+    "name": "Darth Vader5",
+    "roles": ["issuer", "verifier"],
+    "didcomm_invitation": "string5",
+    "did": "did:key:string5",
+}
 actor_id = new_actor["id"]
 
 

@@ -2,6 +2,7 @@ import json
 
 import pytest
 from httpx import AsyncClient
+from app.tests.util.string import random_string
 
 from shared import TRUST_REGISTRY_URL
 
@@ -12,35 +13,17 @@ new_actor = {
     "didcomm_invitation": "string",
     "did": "did:key:string",
 }
-dup_name_actor = {
-    "id": "darth-vader2",
-    "name": "Darth Vader",
-    "roles": ["issuer", "verifier"],
-    "didcomm_invitation": "string2",
-    "did": "did:key:string2",
-}
-dup_did_actor = {
-    "id": "darth-vader3",
-    "name": "Darth Vader3",
-    "roles": ["issuer", "verifier"],
-    "didcomm_invitation": "string3",
-    "did": "did:key:string",
-}
-dup_didcomm_actor = {
-    "id": "darth-vader4",
-    "name": "Darth Vader4",
-    "roles": ["issuer", "verifier"],
-    "didcomm_invitation": "string",
-    "did": "did:key:string4",
-}
-dup_id_actor = {
-    "id": "darth-vader",
-    "name": "Darth Vader5",
-    "roles": ["issuer", "verifier"],
-    "didcomm_invitation": "string5",
-    "did": "did:key:string5",
-}
 actor_id = new_actor["id"]
+
+
+def generate_actor():
+    return {
+        "id": random_string(8),
+        "name": random_string(8),
+        "roles": ["issuer", "verifier"],
+        "didcomm_invitation": random_string(8),
+        "did": f"did:key:{random_string(5)}",
+    }
 
 
 @pytest.mark.anyio

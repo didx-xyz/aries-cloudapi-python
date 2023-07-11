@@ -4,6 +4,13 @@ from trustregistry.database import SessionLocal, Base
 from trustregistry.list_type import StringList
 
 
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 def schema_id_gen(context):
     parameters = context.get_current_parameters()
@@ -37,10 +44,3 @@ class Schema(Base):
     did = Column(String, index=True)
     name = Column(String, index=True)
     version = Column(String, index=True)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()

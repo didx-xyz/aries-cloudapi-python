@@ -239,6 +239,9 @@ class ActorAlreadyExistsException(Exception):
     def __init__(self, message):
         self.message = message
 
+    def __str__(self):
+        return self.message
+
 
 class ActorDoesNotExistException(Exception):
     """Raised when attempting to delete or update an actor that does not exist in the database."""

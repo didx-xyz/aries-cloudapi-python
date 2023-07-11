@@ -53,7 +53,9 @@ async def update_actor(
         update_actor_result = crud.update_actor(db_session, actor=actor)
     except crud.ActorDoesNotExistException:
         bound_logger.info("Bad request: Actor not found.")
-        raise HTTPException(status_code=404, detail="Actor not found.")
+        raise HTTPException(
+            status_code=404, detail=f"Actor with id {actor_id} not found."
+        )
 
     return update_actor_result
 

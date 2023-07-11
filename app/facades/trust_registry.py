@@ -3,12 +3,9 @@ from typing import List, Literal, Optional
 import httpx
 from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
-from pydantic import ValidationError
 
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
-from shared.util.rich_parsing import parse_with_error_handling
-from shared.models.trustregistry import Schema
 
 logger = get_logger(__name__)
 
@@ -251,16 +248,20 @@ async def registry_has_schema(schema_id: str) -> bool:
     try:
         async with httpx.AsyncClient() as client:
             bound_logger.debug("Fetch schema from trust registry")
-            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+            schema_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+            )
             schema_res.raise_for_status()
     except httpx.HTTPStatusError as http_err:
         if http_err.response.status_code == 404:
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:
-            bound_logger.exception("Something went wrong when fetching schema from trust registry.")
-            raise http_err 
-    
+            bound_logger.exception(
+                "Something went wrong when fetching schema from trust registry."
+            )
+            raise http_err
+
     if schema_res.status_code == 200:
         bound_logger.info("Schema exists in registry.")
         return True

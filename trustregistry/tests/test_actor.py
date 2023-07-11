@@ -38,10 +38,22 @@ async def test_get_actors():
 @pytest.mark.anyio
 async def test_register_actor():
     payload = json.dumps(new_actor)
-    name_payload = json.dumps(dup_name_actor)
-    did_payload = json.dumps(dup_did_actor)
-    didcomm_payload = json.dumps(dup_didcomm_actor)
-    id_payload = json.dumps(dup_id_actor)
+    name_payload = generate_actor()
+    name_payload["name"] = new_actor["name"]
+    name_payload = json.dumps(name_payload)
+
+    did_payload = generate_actor()
+    did_payload["did"] = new_actor["did"]
+    did_payload = json.dumps(did_payload)
+
+    didcomm_payload = generate_actor()
+    didcomm_payload["didcomm_invitation"] = new_actor["didcomm_invitation"]
+    didcomm_payload = json.dumps(didcomm_payload)
+
+    id_payload = generate_actor()
+    id_payload["id"] = new_actor["id"]
+    id_payload = json.dumps(id_payload)
+
     async with AsyncClient() as client:
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",

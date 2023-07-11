@@ -107,7 +107,7 @@ async def get_schema(schema_id: str, db_session: Session = Depends(get_db)) -> S
         bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=404,
-            detail="Schema not found.",
+            detail=f"Schema with id {schema_id} not found.",
         )
 
     return schema

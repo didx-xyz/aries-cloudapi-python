@@ -1,7 +1,8 @@
 import pytest
 
 from shared.models.trustregistry import Actor, Schema
-import trustregistry.db as db
+from trustregistry import db
+
 
 def test_actor():
     actor = Actor(
@@ -35,6 +36,7 @@ def test_schema():
 
     with pytest.raises(ValueError):
         Schema(did="abc", name="doubleaceschema", version="0:4:20")
+
 
 def test_db_actor():
     actor = db.Actor(

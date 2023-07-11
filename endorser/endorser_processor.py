@@ -309,12 +309,8 @@ async def is_valid_issuer(did: str, schema_id: str):
             )
             raise http_err
 
-    if schema_res.status_code == 200:
-        bound_logger.info("Validated that DID and schema are on trust registry.")
-        return True
-    else:
-        bound_logger.error("Schema does not exist in registry.")
-        return False
+    bound_logger.info("Validated that DID and schema are on trust registry.")
+    return True
 
 
 async def accept_endorsement(client: AcaPyClient, endorsement: Endorsement):

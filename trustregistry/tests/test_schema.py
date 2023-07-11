@@ -70,7 +70,7 @@ async def test_get_schema_by_id():
             f"{TRUST_REGISTRY_URL}/registry/schemas/i:donot:exist"
         )
         assert response.status_code == 404
-        assert "Schema not found" in response.json()["detail"]
+        assert "Schema with id " in response.json()["detail"]
 
 
 @pytest.mark.anyio

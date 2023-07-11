@@ -42,16 +42,18 @@ async def test_assert_valid_issuer(mock_async_client):
         await trf.assert_valid_issuer(did=did, schema_id=schema_id)
 
     # Schema is not registered in registry
-    response = Response(status_code=404)
-    response.raise_for_status = Mock(
+    not_found_response = Response(status_code=404)
+    not_found_response.raise_for_status = Mock(
         side_effect=HTTPStatusError(
-            response=response, message="Schema not found in registry", request=schema_id
+            response=not_found_response,
+            message="Schema not found in registry",
+            request=schema_id,
         )
     )
     mock_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json=actor),
-            response,
+            not_found_response,
         ]
     )
     with pytest.raises(trf.TrustRegistryException):

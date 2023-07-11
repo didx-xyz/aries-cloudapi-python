@@ -262,12 +262,8 @@ async def registry_has_schema(schema_id: str) -> bool:
             )
             raise http_err
 
-    if schema_res.status_code == 200:
-        bound_logger.info("Schema exists in registry.")
-        return True
-    else:
-        bound_logger.error("Schema does not exist in registry.")
-        return False
+    bound_logger.info("Schema exists in registry.")
+    return True
 
 
 async def get_trust_registry_schemas() -> List[str]:

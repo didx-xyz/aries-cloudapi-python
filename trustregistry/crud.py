@@ -92,6 +92,14 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
                 raise ActorAlreadyExistsException(
                     f"Bad request: The requested actor DIDComm: `{actor.didcomm_invitation}` invitation already exists in database."
                 )
+            else:
+                bound_logger.info(
+                    "Bad request: The requested actor DID already exists in database."
+                )
+                raise ActorAlreadyExistsException(
+                    f"Bad request: The requested actor DID: `{actor.did}` already exists in database."
+                )
+
 
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})

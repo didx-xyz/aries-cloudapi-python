@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
-import trustregistry.db as db
+from trustregistry import db
 from shared.models.trustregistry import Actor, Schema
 
 logger = get_logger(__name__)
@@ -33,6 +33,7 @@ def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
         raise ActorDoesNotExistException
 
     return result
+
 
 def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
@@ -110,7 +111,9 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
     return db_actor
 
 
-def get_schemas(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db.Schema]:
+def get_schemas(
+    db_session: Session, skip: int = 0, limit: int = 1000
+) -> List[db.Schema]:
     logger.debug("Query all schemas from database")
     result = db_session.query(db.Schema).offset(skip).limit(limit).all()
 
@@ -120,6 +123,7 @@ def get_schemas(db_session: Session, skip: int = 0, limit: int = 1000) -> List[d
         logger.warning("No schemas retrieved from database.")
 
     return result
+
 
 def get_schema_by_id(db_session: Session, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
@@ -132,7 +136,8 @@ def get_schema_by_id(db_session: Session, schema_id: str) -> db.Schema:
         bound_logger.info("Schema does not exist in database.")
         raise SchemaDoesNotExistException
 
-    return result    
+    return result
+
 
 def create_schema(db_session: Session, schema: Schema) -> db.Schema:
     bound_logger = logger.bind(body={"schema": schema})

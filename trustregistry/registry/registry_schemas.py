@@ -94,9 +94,10 @@ async def update_schema(
 
     return update_schema_res
 
+
 @router.get("/{schema_id}", response_model=Schema)
 async def get_schema(schema_id: str, db: Session = Depends(get_db)) -> Schema:
-    bound_logger = logger.bind(body={"schema_id":schema_id})
+    bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("GET request received: Fetch schema")
     try:
         schema = crud.get_schema_by_id(db, schema_id=schema_id)
@@ -106,8 +107,9 @@ async def get_schema(schema_id: str, db: Session = Depends(get_db)) -> Schema:
             status_code=404,
             detail="Schema not found.",
         )
-    
+
     return schema
+
 
 @router.delete("/{schema_id}", status_code=204)
 async def remove_schema(schema_id: str, db: Session = Depends(get_db)) -> None:

@@ -76,16 +76,12 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
                 f"Bad request: The requested actor ID: `{actor.id}` already exists in database."
             )
 
-        elif f"{actor.did}" in constraint_violation:
+        elif f"actors.name" in constraint_violation:
             bound_logger.info(
-                "The requested actor DID: {} already exists in database.", actor.did
+                "Bad request: The requested actor name already exists in database."
             )
-            raise ActorAlreadyExistsException
-
-        elif f"{actor.didcomm_invitation}" in constraint_violation:
-            bound_logger.info(
-                "The requested actor DIDComm invitation: {} already exists in database.",
-                actor.didcomm_invitation,
+            raise ActorAlreadyExistsException(
+                f"Bad request: The requested actor name: `{actor.name}` already exists in database."
             )
             raise ActorAlreadyExistsException
 

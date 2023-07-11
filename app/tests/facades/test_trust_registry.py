@@ -17,7 +17,7 @@ async def test_assert_valid_issuer(mock_async_client):
         status_code=200,
         json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
     )
-    response.raise_for_status = AsyncMock()
+    response.raise_for_status = Mock()
     mock_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json=actor),
@@ -43,7 +43,7 @@ async def test_assert_valid_issuer(mock_async_client):
 
     # Schema is not registered in registry
     response = Response(status_code=404)
-    response.raise_for_status = AsyncMock(
+    response.raise_for_status = Mock(
         side_effect=HTTPStatusError(
             response=response, message="Schema not found in registry", request=schema_id
         )

@@ -79,6 +79,13 @@ async def test_register_actor():
         assert response.status_code == 409
         assert "Bad request: The requested actor name:" in response.json()["detail"]
 
+        response = await client.post(
+            f"{TRUST_REGISTRY_URL}/registry/actors",
+            content=did_payload,
+        )
+        assert response.status_code == 409
+        assert "Bad request: The requested actor DID:" in response.json()["detail"]
+
         )
         assert response.status_code == 405
         assert "Actor already exists" in response.json()["detail"]

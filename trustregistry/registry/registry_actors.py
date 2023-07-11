@@ -98,4 +98,6 @@ async def remove_actor(actor_id: str, db_session: Session = Depends(get_db)):
         crud.delete_actor(db_session, actor_id=actor_id)
     except crud.ActorDoesNotExistException:
         bound_logger.info("Bad request: Actor not found.")
-        raise HTTPException(status_code=404, detail="Actor not found.")
+        raise HTTPException(
+            status_code=404, detail=f"Actor with id {actor_id} not found."
+        )

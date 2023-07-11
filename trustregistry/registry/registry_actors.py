@@ -68,7 +68,9 @@ async def get_actor_by_did(actor_did: str, db_session: Session = Depends(get_db)
         actor = crud.get_actor_by_did(db_session, actor_did=actor_did)
     except crud.ActorDoesNotExistException:
         bound_logger.info("Bad request: Actor not found.")
-        raise HTTPException(status_code=404, detail="Actor not found.")
+        raise HTTPException(
+            status_code=404, detail=f"Actor with did {actor_did} not found."
+        )
 
     return actor
 

@@ -155,16 +155,22 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
     Returns:
         Actor: The actor with specified name.
     """
-    actor_res = httpx.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_name}")
+    bound_logger = logger.bind(body={"actor_name": actor_name})
+    bound_logger.info("Fetching actor by name from trust registry")
 
-    if actor_res.status_code == 404:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
+        bound_logger.info("Bad request: actor not found")
         return None
-    elif actor_res.is_error:
+        bound_logger.error(
+            "Error fetching actor by id. Got status code {} with message `{}`.",
+            actor_response.status_code,
+            actor_response.text,
+        )
         raise TrustRegistryException(
             f"Error fetching actor by name: {actor_res.text}", actor_res.status_code
         )
 
-    return actor_res.json()
+    bound_logger.info("Successfully fetched actor from trust registry.")
 
 
 async def actor_by_id(actor_id: str) -> Optional[Actor]:

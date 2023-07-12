@@ -123,6 +123,13 @@ async def create_tenant(
                         didcomm_invitation=onboard_result.didcomm_invitation,
                     )
                 )
+        except httpx.HTTPStatusError as httpError:
+            # bound_logger.info("delete wallet: create actor failed")
+            # async with get_tenant_admin_controller() as admin_controller:
+            #     await admin_controller.multitenancy.delete_wallet(
+            #         wallet_response.wallet_id
+            #     )
+            raise httpError
 
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,

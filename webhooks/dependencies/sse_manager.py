@@ -64,8 +64,8 @@ class SseManager:
             event,
         )
 
-        # Add the event to the incoming events queue
-        await self.incoming_events.put((event, wallet, topic))
+        # Add the event to the incoming events queue, with timestamp
+        await self.incoming_events.put((event, wallet, topic, time.time()))
 
     async def _process_incoming_events(self):
         while True:

@@ -172,7 +172,6 @@ deleteVolumes() {
   rm -Rf ../client/tob-web/.cache
 }
 
-
 getSeedJson() {
   _seed=${1}
   if [ -z "${_seed}" ]; then
@@ -186,8 +185,6 @@ getSeedJson() {
 generateSeeds() {
   echo ${INDY_WALLET_SEED}
 }
-
-
 
 toLower() {
   echo $(echo ${@} | tr '[:upper:]' '[:lower:]')
@@ -221,30 +218,29 @@ start | up)
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
   docker --log-level ERROR \
-  compose up \
-  --build --remove-orphans \
-  -d ${_startupParams}
+    compose up \
+    --build --remove-orphans \
+    -d ${_startupParams}
   docker --log-level ERROR \
-  compose logs \
-  -f
+    compose logs \
+    -f
   ;;
- up-as-daemon)
+up-as-daemon)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
   docker --log-level ERROR \
-  compose up \
-  --build --remove-orphans --force-recreate\
-  -d ${_startupParams}
+    compose up \
+    --build --remove-orphans --force-recreate -d ${_startupParams}
   ;;
 up-daemon-usecache)
   echoYellow "Starting up... This can take a couple of minutes."
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
   docker --log-level ERROR \
-  compose up \
-  --build \
-  -d ${_startupParams}
+    compose up \
+    --build \
+    -d ${_startupParams}
   ;;
 restart)
   _startupParams=$(getStartupParams $@)
@@ -263,8 +259,8 @@ stop)
 rm | down)
   configureEnvironment
   docker --log-level ERROR \
-  compose down \
-  -v
+    compose down \
+    -v
   usage
   ;;
 esac

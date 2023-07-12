@@ -131,6 +131,9 @@ async def create_tenant(
             #     )
             raise httpError
 
+        except Exception as e:
+            raise e
+
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,
         created_at=wallet_response.created_at,

@@ -50,6 +50,22 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
     return result
 
 
+def get_actor_by_name(db_session: Session, actor_name: str) -> db.Actor:
+    bound_logger = logger.bind(body={"actor_name": actor_name})
+    bound_logger.info("Query actor by name")
+    result = (
+        db_session.query(db.Actor).filter(db.Actor.name == actor_name).one_or_none()
+    )
+
+    if result:
+        bound_logger.info("Successfully retrieved actor from database")
+    else:
+        bound_logger.info("Actor name not found")
+        raise ActorDoesNotExistException
+
+    return result
+
+
 def create_actor(db_session: Session, actor: Actor) -> db.Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Try to create actor in database")

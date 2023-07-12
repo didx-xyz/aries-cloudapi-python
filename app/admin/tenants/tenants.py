@@ -36,6 +36,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,
+    actor_by_name,
     register_actor,
     remove_actor_by_id,
 )
@@ -76,19 +77,13 @@ async def create_tenant(
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
 
-    async with get_tenant_admin_controller() as admin_controller:
-        wallet_response = await admin_controller.multitenancy.create_wallet(
-            body=CreateWalletRequestWithGroups(
-                image_url=body.image_url,
-                key_management_mode="managed",
-                label=body.name,
-                wallet_key=base58.b58encode(token_urlsafe(48)),
-                wallet_name=uuid4().hex,
-                wallet_type="askar",
-                group_id=body.group_id,
-            )
+    actor_exists = await actor_by_name(body.name)
+
+    if actor_exists:
+        bound_logger.info("Actor exists can't create wallet")
+        raise HTTPException(
+            409, f"Can't create Tenant. Actor with name: {name} already exists."
         )
-    bound_logger.debug("Wallet creation successful")
 
     name = body.name
     roles = body.roles

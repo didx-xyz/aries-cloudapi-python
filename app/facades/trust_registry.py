@@ -143,6 +143,7 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     bound_logger.info("Successfully fetched actor from trust registry.")
     return actor_res.json()
 
+
 async def actor_by_name(actor_name: str) -> Optional[Actor]:
     """Retrieve actor by name from trust registry
 

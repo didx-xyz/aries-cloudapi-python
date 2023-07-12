@@ -13,7 +13,7 @@ from shared import (
     WEBHOOKS_PUBSUB_URL,
 )
 from shared.log_config import get_logger
-from shared.models import Endorsement
+from shared.models.topics import Endorsement
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
@@ -294,26 +294,22 @@ async def is_valid_issuer(did: str, schema_id: str):
 
     try:
         async with httpx.AsyncClient() as client:
-            bound_logger.debug("Fetch schemas from trust registry")
-            schema_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
-    except httpx.HTTPError as e:
-        raise e from e
+            bound_logger.debug("Fetch schema from trust registry")
+            schema_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+            )
+            schema_res.raise_for_status()
+    except httpx.HTTPStatusError as http_err:
+        if http_err.response.status_code == 404:
+            bound_logger.info("Schema id not registered in trust registry.")
+            return False
+        else:
+            bound_logger.exception(
+                "Something went wrong when fetching schema from trust registry."
+            )
+            raise http_err
 
-    if schema_res.is_error:
-        logger.error(
-            "Error retrieving schemas from trust registry: `{}`.", schema_res.text
-        )
-        return False
-
-    schemas = schema_res.json()["schemas"]
-    if schema_id not in schemas:
-        logger.info(
-            "Schema `{}` associated with endorsement request is not in the trust registry.",
-            schema_id,
-        )
-        return False
-
-    bound_logger.debug("Validated that DID and schema are on trust registry.")
+    bound_logger.info("Validated that DID and schema are on trust registry.")
     return True
 
 

@@ -24,7 +24,7 @@ from app.generic.issuer.models import (
 )
 from app.util.did import did_from_credential_definition_id
 from shared.log_config import get_logger
-from shared.models.topics.base import CredentialExchange
+from shared.models.topics import CredentialExchange
 
 logger = get_logger(__name__)
 

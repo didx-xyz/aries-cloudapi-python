@@ -6,16 +6,18 @@ from aries_cloudcontroller import (
     V20PresExRecord,
 )
 
-from shared.models import (
+from shared.models.conversion import (
+    conn_record_to_connection,
+    credential_record_to_model_v1,
+    credential_record_to_model_v2,
+    presentation_record_to_model,
+)
+from shared.models.topics import (
     Connection,
     CredentialExchange,
     Endorsement,
     PresentationExchange,
     RedisItem,
-    conn_record_to_connection,
-    credential_record_to_model_v1,
-    credential_record_to_model_v2,
-    presentation_record_to_model,
 )
 
 

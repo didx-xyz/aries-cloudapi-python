@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from app.generic.webhooks import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
-from shared.models import Connection
+from shared.models.topics import Connection
 
 WALLET_BASE_PATH = router.prefix
 

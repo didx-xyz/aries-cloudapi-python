@@ -77,6 +77,9 @@ async def create_tenant(
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
 
+    name = body.name
+    roles = body.roles
+
     actor_exists = await actor_by_name(body.name)
 
     if actor_exists:

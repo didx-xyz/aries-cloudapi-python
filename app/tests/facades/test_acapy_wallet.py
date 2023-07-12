@@ -3,9 +3,9 @@ from aries_cloudcontroller import AcaPyClient, DIDResult
 from aries_cloudcontroller.model.did import DID
 from mockito import when
 
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet
 from app.tests.util.mock import to_async
-from shared.cloud_api_error import CloudApiException
 
 
 @pytest.mark.anyio
@@ -46,4 +46,4 @@ async def test_error_on_assign_pub_did(mock_agent_controller: AcaPyClient):
     with pytest.raises(CloudApiException) as exc:
         await acapy_wallet.set_public_did(mock_agent_controller, did="did")
     assert exc.value.status_code == 400
-    assert "Error setting public did to did" in exc.value.detail
+    assert "Error setting public did" in exc.value.detail

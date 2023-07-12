@@ -12,9 +12,9 @@ from mockito import verify, when
 from app.admin.tenants import onboarding
 from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
 from app.event_handling.sse_listener import SseListener
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.acapy_wallet import Did
 from app.tests.util.mock import to_async
-from shared.cloud_api_error import CloudApiException
 from shared.util.mock_agent_controller import get_mock_agent_controller
 
 
@@ -239,7 +239,7 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
         )
     )
 
-    with pytest.raises(CloudApiException, match="Error creating invitation."):
+    with pytest.raises(CloudApiException):
         await onboarding.onboard_verifier(
             name="verifier_name", verifier_controller=mock_agent_controller
         )

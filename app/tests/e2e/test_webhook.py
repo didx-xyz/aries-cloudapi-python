@@ -1,9 +1,10 @@
 import pytest
+from fastapi import HTTPException
 
 from app.generic.webhooks import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
-from shared import Connection, RichAsyncClient
-from shared.cloud_api_error import CloudApiException
+from shared import RichAsyncClient
+from shared.models import Connection
 
 WALLET_BASE_PATH = router.prefix
 
@@ -43,7 +44,7 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
 ):
     alice_member_client.headers.pop("x-api-key")
 
-    with pytest.raises(CloudApiException) as exc:
+    with pytest.raises(HTTPException) as exc:
         await alice_member_client.get(WALLET_BASE_PATH + "/connections")
 
     assert exc.value.status_code == 403
@@ -56,7 +57,7 @@ async def test_get_webhooks_for_wallet_by_topic_admin_error(
 ):
     governance_client.headers.pop("x-api-key")
 
-    with pytest.raises(CloudApiException) as exc:
+    with pytest.raises(HTTPException) as exc:
         await governance_client.get(WALLET_BASE_PATH + "/connections")
 
     assert exc.value.status_code == 403

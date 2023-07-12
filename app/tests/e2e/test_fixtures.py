@@ -1,7 +1,7 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
 from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import (
     CreateCredentialDefinition,
@@ -15,35 +15,37 @@ from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
-from shared import CredentialExchange, RichAsyncClient
-from shared.dependencies.auth import acapy_auth, acapy_auth_verified
+from shared import RichAsyncClient
+from shared.models import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
-# TODO: Move all methods here to member_personans as this is specific for the bob-alice interaction
+# TODO: Move all methods here to member_personas as this is specific for the bob-alice interaction
 # OR abstract the persona specific parts out of it
 
 
 @pytest.fixture(scope="function")
-async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
+async def schema_definition(
+    mock_governance_auth: AcaPyAuthVerified,
+) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
     )
 
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
+    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
     return schema_definition_result
 
 
 @pytest.fixture(scope="function")
 async def schema_definition_alt(
-    governance_acapy_client: AcaPyClient,
+    mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema_alt", version=random_version(), attribute_names=["speed"]
     )
 
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
+    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
     return schema_definition_result
 
@@ -52,7 +54,6 @@ async def schema_definition_alt(
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition.id)
 
@@ -63,7 +64,7 @@ async def credential_definition_id(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(definition, faber_acapy_client, auth)
+    result = await create_credential_definition(definition, auth)
 
     return result.id
 
@@ -72,7 +73,6 @@ async def credential_definition_id(
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition_alt.id)
 
@@ -83,7 +83,7 @@ async def credential_definition_id_revocable(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(definition, faber_acapy_client, auth)
+    result = await create_credential_definition(definition, auth)
 
     return result.id
 

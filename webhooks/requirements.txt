@@ -1,8 +1,9 @@
 aioredis~=2.0.1
-aries-cloudcontroller==0.8.1b0
+aries-cloudcontroller==0.8.1b8
 dependency-injector~=4.41.0
-fastapi~=0.95.2
+fastapi~=0.98.0
 fastapi_websocket_pubsub~=0.3.3
+loguru~=0.7.0
 sse-starlette~=1.6.1
 starlette>=0.27.0
 typing-extensions~=4.6.3

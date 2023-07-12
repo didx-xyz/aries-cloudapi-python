@@ -1,4 +1,3 @@
-import logging
 import os
 
 from fastapi import FastAPI
@@ -6,9 +5,6 @@ from fastapi import FastAPI
 from webhooks.dependencies import sse_manager
 from webhooks.dependencies.container import get_container
 from webhooks.routers import receive_events, sse, webhooks
-
-LOG_LEVEL = os.getenv("LOG_LEVEL", "warning")
-LOGGER = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -31,7 +27,6 @@ def create_app() -> FastAPI:
         version=PROJECT_VERSION,
     )
 
-    application.container = container
     application.include_router(receive_events.router)
     application.include_router(webhooks.router)
     application.include_router(sse.router)

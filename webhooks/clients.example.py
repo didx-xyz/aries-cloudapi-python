@@ -1,5 +1,5 @@
 """
-Eaxample ws client connecting to all topics for acapy
+Example ws client connecting to all topics for acapy
 """
 from fastapi_websocket_pubsub import PubSubClient
 import asyncio

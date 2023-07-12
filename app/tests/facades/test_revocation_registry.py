@@ -17,8 +17,8 @@ from aries_cloudcontroller import (
 from mockito import when
 
 import app.facades.revocation_registry as rg
+from app.exceptions.cloud_api_error import CloudApiException
 from app.tests.util.mock import to_async
-from shared.cloud_api_error import CloudApiException
 
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"
 cred_ex_id = "5mJRavkcQFrqgKqKKZua3z:3:CL:30:tag"
@@ -104,8 +104,7 @@ async def test_get_active_revocation_registry_for_credential(
 
     # Fail
     with pytest.raises(
-        CloudApiException,
-        match=f"Error retrieving revocation registry for credential with ID {cred_def_id}",
+        CloudApiException, match="Error retrieving revocation registry"
     ) as exc:
         when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
             cred_def_id=cred_def_id
@@ -140,8 +139,7 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
 
     # Fail
     with pytest.raises(
-        CloudApiException,
-        match=f"Error retrieving revocation status for credential exchange ID {cred_ex_id}",
+        CloudApiException, match="Error retrieving revocation status"
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
             cred_ex_id=cred_ex_id

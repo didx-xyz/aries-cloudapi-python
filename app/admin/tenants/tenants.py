@@ -103,27 +103,26 @@ async def create_tenant(
                 )
             bound_logger.debug("Wallet creation successful")
 
-    name = body.name
-    roles = body.roles
-    if roles:
-        bound_logger.info("Onboarding `{}` with requested roles: `{}`", name, roles)
-        onboard_result = await onboard_tenant(
-            name=name,
-            roles=roles,
-            tenant_auth_token=wallet_response.token,
-            tenant_id=wallet_response.wallet_id,
-        )
-
-        bound_logger.debug("Registering actor in the trust registry")
-        await register_actor(
-            actor=Actor(
-                id=wallet_response.wallet_id,
-                name=name,
-                roles=roles,
-                did=onboard_result.did,
-                didcomm_invitation=onboard_result.didcomm_invitation,
-            )
-        )
+            if roles:
+                bound_logger.info(
+                    "Onboarding `{}` with requested roles: `{}`", name, roles
+                )
+                onboard_result = await onboard_tenant(
+                    name=name,
+                    roles=roles,
+                    tenant_auth_token=wallet_response.token,
+                    tenant_id=wallet_response.wallet_id,
+                )
+                bound_logger.debug("Registering actor in the trust registry")
+                await register_actor(
+                    actor=Actor(
+                        id=wallet_response.wallet_id,
+                        name=name,
+                        roles=roles,
+                        did=onboard_result.did,
+                        didcomm_invitation=onboard_result.didcomm_invitation,
+                    )
+                )
 
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,

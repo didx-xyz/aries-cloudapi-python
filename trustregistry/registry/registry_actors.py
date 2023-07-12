@@ -90,6 +90,19 @@ async def get_actor_by_id(actor_id: str, db_session: Session = Depends(get_db)):
     return actor
 
 
+@router.get("/{actor_name}")
+async def get_actor_by_name(actor_name: str, db: Session = Depends(get_db)):
+    bound_logger = logger.bind(body={"actor_name": actor_name})
+    bound_logger.info("Get request received: Get actor by name")
+    try:
+        actor = crud.get_actor_by_name(db, actor_name=actor_name)
+    except crud.ActorDoesNotExistException:
+        bound_logger.info("Bad request: Actor with name {} not found", actor_name)
+        raise HTTPException(status_code=404, detail="Actor not found.")
+
+    return actor
+
+
 @router.delete("/{actor_id}", status_code=204)
 async def remove_actor(actor_id: str, db_session: Session = Depends(get_db)):
     bound_logger = logger.bind(body={"actor_id": actor_id})

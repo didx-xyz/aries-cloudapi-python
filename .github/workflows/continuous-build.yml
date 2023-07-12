@@ -37,7 +37,7 @@ jobs:
       - name: Start Test Harness
         run: |
           set -x
-          docker-compose version
+          docker compose version
           rm -rf ./data
           mkdir ./data
           sudo chown -R $(id -u):$(id -g) ./data

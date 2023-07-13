@@ -148,7 +148,7 @@ async def issue_credential_to_alice(
 
     # create and send credential offer- issuer
     await faber_client.post(
-        "/generic/issuer/credentials",
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
 
@@ -162,7 +162,7 @@ async def issue_credential_to_alice(
 
     # send credential request - holder
     response = await alice_member_client.post(
-        f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
     await listener.wait_for_event(

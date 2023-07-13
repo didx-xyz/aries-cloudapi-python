@@ -17,6 +17,7 @@ from app.generic.verifier.models import (
     RejectProofRequest,
     SendProofRequest,
 )
+from app.generic.verifier.verifier import router
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
@@ -24,7 +25,7 @@ from shared import RichAsyncClient
 from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.topics import CredentialExchange, PresentationExchange
 
-VERIFIER_BASE_PATH = "/generic/verifier"
+VERIFIER_BASE_PATH = router.prefix
 
 
 def create_send_request(

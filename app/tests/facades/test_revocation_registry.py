@@ -306,7 +306,9 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
-                    cred_def_id=cred_def_id, max_cred_num=max_cred_num
+                    cred_def_id=cred_def_id,
+                    revoc_reg_id=revocation_registry_id,
+                    max_cred_num=max_cred_num,
                 )
             )
         )

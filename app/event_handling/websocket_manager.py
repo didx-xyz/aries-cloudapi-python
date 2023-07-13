@@ -78,22 +78,22 @@ class WebsocketManager:
             raise WebsocketTimeout("Starting PubSubClient has timed out.") from e
 
     @staticmethod
-    async def shutdown(client: PubSubClient, timeout: float = 3):
+    async def disconnect(client: PubSubClient, timeout: float = 3):
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """
-        logger.debug("Shutting down Websocket client")
+        logger.debug("Disconnecting Websocket client")
 
-        async def wait_for_shutdown():
+        async def wait_for_disconnect():
             await client.disconnect()
 
         try:
-            await asyncio.wait_for(wait_for_shutdown(), timeout=timeout)
+            await asyncio.wait_for(wait_for_disconnect(), timeout=timeout)
         except asyncio.TimeoutError as e:
             logger.warning(
-                "Shutting down a PubSubClient has timed out after {}s.", timeout
+                "Disconnecting a PubSubClient has timed out after {}s.", timeout
             )
-            raise WebsocketTimeout("PubSubClient shutdown has timed out.") from e
+            raise WebsocketTimeout("PubSubClient disconnect has timed out.") from e
 
     @staticmethod
     async def disconnect_all():

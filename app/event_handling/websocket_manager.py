@@ -94,14 +94,15 @@ class WebsocketManager:
         """
         Shutdown all Websocket clients and clear the connections.
         """
-        logger.debug("Shutting down all Websocket clients")
-        for client in WebsocketManager._clients.values():
-            try:
-                await WebsocketManager.shutdown(client)
-            except WebsocketTimeout:
-                continue
+        if WebsocketManager._clients:
+            logger.debug("Shutting down all Websocket clients")
+            for client in WebsocketManager._clients.values():
+                try:
+                    await WebsocketManager.shutdown(client)
+                except WebsocketTimeout:
+                    continue
 
-        WebsocketManager._clients.clear()
+            WebsocketManager._clients.clear()
 
 
 class WebsocketTimeout(Exception):

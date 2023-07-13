@@ -26,15 +26,6 @@ class WebsocketManager:
         Subscribe a websocket connection to a specific topic.
         Returns a string representing a unique ID for this client
         """
-        if not WebsocketManager._client:
-            await WebsocketManager.start_pubsub_client()
-
-        async def callback(data: str, topic: str):
-            """
-            Callback function for handling received webhook events.
-            Note: PubSubClient expects a topic argument in callback
-            """
-            await websocket.send_text(data)
 
         if wallet_id and topic:
             subscribed_topic = f"{topic}-{wallet_id}"
@@ -45,6 +36,13 @@ class WebsocketManager:
         else:
             logger.error("Subscribe requires `topic` or `wallet_id` in request.")
             return
+
+        async def callback(data: str, topic: str):
+            """
+            Callback function for handling received webhook events.
+            Note: PubSubClient expects a topic argument in callback
+            """
+            await websocket.send_text(data)
 
         client = PubSubClient()
         client.subscribe(subscribed_topic, callback)

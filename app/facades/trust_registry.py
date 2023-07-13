@@ -180,8 +180,8 @@ async def assert_actor_name(actor_name: str) -> bool:
             actor_response.status_code,
         )
 
-    bound_logger.info("Successfully fetched actor from trust registry.")
-    return actor_response.json()
+    bound_logger.info("Asserted actor name is in trust registry.")
+    return True
 
 
 async def actor_by_id(actor_id: str) -> Optional[Actor]:

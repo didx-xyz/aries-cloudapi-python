@@ -144,8 +144,8 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     return actor_res.json()
 
 
-async def actor_by_name(actor_name: str) -> Optional[Actor]:
-    """Retrieve actor by name from trust registry
+async def assert_actor_name(actor_name: str) -> bool:
+    """Assert if actor name exists in trust registry
 
     Args:
         actor_name (str): name of the actor to retrieve
@@ -154,7 +154,7 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
         TrustRegistryException: If an error occurred while retrieving the actor.
 
     Returns:
-        Actor: The actor with specified name.
+        Bool: if actor exists
     """
     bound_logger = logger.bind(body={"actor_name": actor_name})
     bound_logger.info("Fetching actor by name from trust registry")

@@ -51,9 +51,10 @@ async def handle_websocket(
         await websocket.close(code=1008)
         logger.info("Unauthorized WebSocket connection closed")
 
+    uuid = None
     try:
         # Subscribe the WebSocket connection to the wallet / topic
-        await WebsocketManager.subscribe(websocket, wallet_id, topic)
+        uuid = await WebsocketManager.subscribe(websocket, wallet_id, topic)
 
         # Keep the connection open until the client disconnects
         while True:

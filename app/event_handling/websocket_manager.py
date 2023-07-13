@@ -19,9 +19,12 @@ class WebsocketManager:
     _clients: Dict[str, PubSubClient] = {}
 
     @staticmethod
-    async def subscribe(websocket: WebSocket, wallet_id: str = "", topic: str = ""):
+    async def subscribe(
+        websocket: WebSocket, wallet_id: str = "", topic: str = ""
+    ) -> str:
         """
         Subscribe a websocket connection to a specific topic.
+        Returns a string representing a unique ID for this client
         """
         if not WebsocketManager._client:
             await WebsocketManager.start_pubsub_client()

@@ -36,7 +36,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
     actor_by_id,
-    actor_by_name,
+    assert_actor_name,
     register_actor,
     remove_actor_by_id,
 )
@@ -80,7 +80,7 @@ async def create_tenant(
     name = body.name
     roles = body.roles
 
-    actor_exists = await actor_by_name(body.name)
+    actor_exists = await assert_actor_name(body.name)
     bound_logger.info("actor_exists=======>{}", actor_exists)
     if actor_exists:
         bound_logger.info("Actor exists can't create wallet")

@@ -96,7 +96,10 @@ class WebsocketManager:
         """
         logger.debug("Shutting down all Websocket clients")
         for client in WebsocketManager._clients.values():
-            await WebsocketManager.shutdown(client, timeout)
+            try:
+                await WebsocketManager.shutdown(client)
+            except WebsocketTimeout:
+                continue
 
         WebsocketManager._clients.clear()
 

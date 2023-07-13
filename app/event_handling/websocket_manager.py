@@ -72,7 +72,7 @@ class WebsocketManager:
             raise WebsocketTimeout("Starting PubSubClient has timed out.") from e
 
     @staticmethod
-    async def shutdown(client: PubSubClient, timeout: float = 10):
+    async def shutdown(client: PubSubClient, timeout: float = 3):
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """

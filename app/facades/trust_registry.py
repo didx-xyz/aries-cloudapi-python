@@ -173,7 +173,7 @@ async def assert_actor_name(actor_name: str) -> bool:
         return False
     elif actor_response.is_error:
         bound_logger.error(
-            "Error fetching actor by id. Got status code {} with message `{}`.",
+            "Error fetching actor by name. Got status code {} with message `{}`.",
             actor_response.status_code,
             actor_response.text,
         )

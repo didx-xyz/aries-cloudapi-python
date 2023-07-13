@@ -95,7 +95,9 @@ class WebsocketManager:
         Shutdown all Websocket clients and clear the connections.
         """
         if WebsocketManager._clients:
-            logger.debug("Shutting down all Websocket clients")
+            logger.debug(
+                "Shutting down {} Websocket clients", len(WebsocketManager._clients)
+            )
             for client in WebsocketManager._clients.values():
                 try:
                     await WebsocketManager.shutdown(client)

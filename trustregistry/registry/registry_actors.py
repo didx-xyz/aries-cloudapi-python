@@ -28,7 +28,7 @@ async def register_actor(actor: Actor, db_session: Session = Depends(get_db)):
         created_actor = crud.create_actor(db_session, actor=actor)
     except crud.ActorAlreadyExistsException:
         bound_logger.info("Bad request: Actor already exists.")
-        raise HTTPException(status_code=409, detail=str(e))
+        raise HTTPException(status_code=409, detail=str(e)) from e
 
     return created_actor
 
@@ -51,11 +51,11 @@ async def update_actor(
 
     try:
         update_actor_result = crud.update_actor(db_session, actor=actor)
-    except crud.ActorDoesNotExistException:
+    except crud.ActorDoesNotExistException as e:
         bound_logger.info("Bad request: Actor not found.")
         raise HTTPException(
             status_code=404, detail=f"Actor with id {actor_id} not found."
-        )
+        ) from e
 
     return update_actor_result
 

@@ -26,7 +26,7 @@ async def register_actor(actor: Actor, db_session: Session = Depends(get_db)):
     bound_logger.info("POST request received: Register actor")
     try:
         created_actor = crud.create_actor(db_session, actor=actor)
-    except crud.ActorAlreadyExistsException:
+    except crud.ActorAlreadyExistsException as e:
         bound_logger.info("Bad request: Actor already exists.")
         raise HTTPException(status_code=409, detail=str(e)) from e
 

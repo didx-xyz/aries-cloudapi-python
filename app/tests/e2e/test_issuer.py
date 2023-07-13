@@ -349,7 +349,7 @@ async def test_revoke_credential(
 
     # create and send credential offer- issuer
     await faber_client.post(
-        "/generic/issuer/credentials",
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
 
@@ -363,7 +363,7 @@ async def test_revoke_credential(
 
     # send credential request - holder
     response = await alice_member_client.post(
-        f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
     await alice_credentials_listener.wait_for_event(
@@ -373,7 +373,7 @@ async def test_revoke_credential(
     )
 
     # Retrieve an issued credential
-    records = (await faber_client.get("/generic/issuer/credentials")).json()
+    records = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
     record_as_issuer_for_alice = [
         rec
         for rec in records
@@ -395,7 +395,7 @@ async def test_revoke_credential(
     cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
 
     response = await faber_client.post(
-        "/generic/issuer/credentials/revoke",
+        f"{CREDENTIALS_BASE_PATH}/revoke",
         json={
             "credential_definition_id": credential_definition_id_revocable,
             "credential_exchange_id": cred_id,

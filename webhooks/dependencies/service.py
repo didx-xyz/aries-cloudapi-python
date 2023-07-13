@@ -7,7 +7,7 @@ from aries_cloudcontroller.model import OobRecord
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger
-from shared.models import (
+from shared.models.topics import (
     BasicMessage,
     Connection,
     CredentialExchange,

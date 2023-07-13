@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
-from shared.models.topics.base import CredentialExchange
+from shared.models.topics import CredentialExchange
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",

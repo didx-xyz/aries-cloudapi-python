@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 from app.event_handling.webhooks import Webhooks
 from shared.log_config import get_logger
-from shared.models import CloudApiTopics
+from shared.models.topics import CloudApiTopics
 
 logger = get_logger(__name__)
 

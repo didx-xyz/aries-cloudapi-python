@@ -4,7 +4,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
-from trustregistry import crud, models
+from trustregistry import crud, db
 from trustregistry.database import engine
 from trustregistry.db import get_db
 from trustregistry.registry import registry_actors, registry_schemas
@@ -31,7 +31,7 @@ app = create_app()
 
 @app.on_event("startup")
 async def startup_event():
-    models.Base.metadata.create_all(bind=engine)
+    db.Base.metadata.create_all(bind=engine)
     engine.dispose()
 
     logger.debug("TrustRegistry startup: Validate tables are created")
@@ -43,15 +43,15 @@ async def startup_event():
 
 
 @app.get("/")
-async def root(db: Session = Depends(get_db)):
+async def root(db_session: Session = Depends(get_db)):
     logger.info("GET request received: Fetch actors and schemas from registry")
-    db_schemas = crud.get_schemas(db)
-    db_actors = crud.get_actors(db)
+    db_schemas = crud.get_schemas(db_session)
+    db_actors = crud.get_actors(db_session)
     schemas_repr = [schema.id for schema in db_schemas]
     logger.info("Successfully fetched actors and schemas from registry.")
     return {"actors": db_actors, "schemas": schemas_repr}
 
 
 @app.get("/registry")
-async def registry(db: Session = Depends(get_db)):
-    return await root(db)
+async def registry(db_session: Session = Depends(get_db)):
+    return await root(db_session)

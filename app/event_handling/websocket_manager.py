@@ -60,7 +60,7 @@ class WebsocketManager:
         WebsocketManager._clients.pop(uuid)
 
     @staticmethod
-    async def start_pubsub_client(client: PubSubClient, timeout: float = 10):
+    async def start_pubsub_client(client: PubSubClient, timeout: float = 5):
         """
         Start listening for webhook events on the Webhooks pubsub endpoint with a specified timeout.
         """

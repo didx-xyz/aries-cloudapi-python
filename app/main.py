@@ -65,12 +65,6 @@ def create_app() -> FastAPI:
 app = create_app()
 
 
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Calling WebsocketManager startup")
-    await WebsocketManager.start_pubsub_client()
-
-
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Calling WebsocketManager shutdown")

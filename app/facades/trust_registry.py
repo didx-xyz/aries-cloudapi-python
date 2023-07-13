@@ -243,34 +243,27 @@ async def registry_has_schema(schema_id: str) -> bool:
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info(
-        "Asserting if schema is registered. Fetching all schemas from trust registry"
+        "Asserting if schema is registered. Fetching schema by ID from trust registry"
     )
     try:
         async with httpx.AsyncClient() as client:
-            # TODO: should be able to fetch specific schema_id from registry
-            schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
-    except httpx.HTTPError as e:
-        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
-        raise e from e
+            bound_logger.debug("Fetch schema from trust registry")
+            schema_res = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+            )
+            schema_res.raise_for_status()
+    except httpx.HTTPStatusError as http_err:
+        if http_err.response.status_code == 404:
+            bound_logger.info("Schema id not registered in trust registry.")
+            return False
+        else:
+            bound_logger.exception(
+                "Something went wrong when fetching schema from trust registry."
+            )
+            raise http_err
 
-    if schemas_res.is_error:
-        bound_logger.error(
-            "Error fetching schemas. Got status code {} with message `{}`.",
-            schemas_res.status_code,
-            schemas_res.text,
-        )
-        raise TrustRegistryException(
-            f"Unable to retrieve schema `{schema_id}` from registry: `{schemas_res.text}`.",
-            schemas_res.status_code,
-        )
-
-    schemas = schemas_res.json()
-    result = bool(schema_id in schemas["schemas"])
-    if result:
-        bound_logger.info("Schema exists in registry.")
-    else:
-        bound_logger.info("Schema does not exist in registry.")
-    return result
+    bound_logger.info("Schema exists in registry.")
+    return True
 
 
 async def get_trust_registry_schemas() -> List[str]:

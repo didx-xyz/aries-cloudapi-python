@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, AsyncGenerator
 
-from shared.models import TopicItem
+from shared.models.topics import TopicItem
 
 
 class EventGeneratorWrapper:

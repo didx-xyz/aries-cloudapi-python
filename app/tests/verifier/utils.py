@@ -46,7 +46,8 @@ from app.generic.verifier.facades.acapy_verifier_utils import (
 )
 from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
 from app.tests.util.mock import to_async
-from shared.models import PresentationExchange, PresentProofProtocolVersion
+from shared.models.protocol import PresentProofProtocolVersion
+from shared.models.topics import PresentationExchange
 
 sample_actor = Actor(
     id="abcde",

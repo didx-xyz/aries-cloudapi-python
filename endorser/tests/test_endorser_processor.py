@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from httpx import Response
+from httpx import Response, HTTPStatusError
 from mockito import verify, when
 from pytest_mock import MockerFixture
 
@@ -125,10 +125,12 @@ async def test_is_valid_issuer(mocker: MockerFixture):
     schema_id = "the-schema-id"
 
     # Mock responses
-    actor_res = Response(200, json={"roles": ["issuer"]})
-    schema_res = Response(200, json={"schemas": [schema_id]})
-
-    mocked_async_client.get = AsyncMock(side_effect=[actor_res, schema_res])
+    actor_response = Response(200, json={"roles": ["issuer"]})
+    schema_response = Response(
+        200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
+    )
+    schema_response.raise_for_status = Mock()
+    mocked_async_client.get = AsyncMock(side_effect=[actor_response, schema_response])
     # Mock the `async with httpx.AsyncClient` to return mocked_async_client
 
     assert await is_valid_issuer(did, schema_id)
@@ -137,7 +139,9 @@ async def test_is_valid_issuer(mocker: MockerFixture):
     mocked_async_client.get.assert_any_call(
         f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
     )
-    mocked_async_client.get.assert_any_call(f"{TRUST_REGISTRY_URL}/registry/schemas")
+    mocked_async_client.get.assert_any_call(
+        f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+    )
 
 
 @pytest.mark.anyio
@@ -149,49 +153,61 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     did = "did:sov:123"
     schema_id = "the-schema-id"
 
-    actor_res = Response(200, json={"roles": ["issuer"]})
-    schema_res = Response(200, json={"schemas": [schema_id]})
+    actor_response = Response(200, json={"roles": ["issuer"]})
+    schema_response = Response(
+        200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
+    )
+    schema_response.raise_for_status = Mock()
     # Error actor res
     mocked_async_client.get = AsyncMock(
         side_effect=[
             Response(400, json={}),
-            schema_res,
+            schema_response,
         ]
     )
     assert not await is_valid_issuer(did, schema_id)
 
     # Error schema res
-    mocked_async_client.get = AsyncMock(
-        side_effect=[
-            actor_res,
-            Response(400, json={}),
-        ]
+    not_schema_id = "not-the-schema-id"
+    error_response = Response(status_code=400)
+    error_response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=error_response,
+            message="Something went wrong",
+            request=not_schema_id,
+        )
     )
-    assert not await is_valid_issuer(did, schema_id)
+    mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
+    with pytest.raises(HTTPStatusError):
+        await is_valid_issuer(did, not_schema_id)
 
     # Invalid role
     mocked_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json={"roles": ["verifier"], "id": "the-actor-id"}),
-            schema_res,
+            schema_response,
         ]
     )
     assert not await is_valid_issuer(did, schema_id)
 
     # schema not registered
-    mocked_async_client.get = AsyncMock(
-        side_effect=[
-            actor_res,
-            Response(200, json={"schemas": ["another-schema-id"]}),
-        ]
+    not_schema_id = "not-the-schema-id"
+    error_response = Response(status_code=404)
+    error_response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=error_response,
+            message="Schema does not exist in registry.",
+            request=not_schema_id,
+        )
     )
+    mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
     assert not await is_valid_issuer(did, schema_id)
 
     # Back to valid again
     mocked_async_client.get = AsyncMock(
         side_effect=[
-            actor_res,
-            schema_res,
+            actor_response,
+            schema_response,
         ]
     )
     assert await is_valid_issuer(did, schema_id)

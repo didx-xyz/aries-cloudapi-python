@@ -11,7 +11,8 @@ from pydantic import BaseModel
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from shared.log_config import get_logger
-from shared.models import Connection, conn_record_to_connection
+from shared.models.conversion import conn_record_to_connection
+from shared.models.topics import Connection
 
 logger = get_logger(__name__)
 

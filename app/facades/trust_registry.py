@@ -162,7 +162,7 @@ async def assert_actor_name(actor_name: str) -> bool:
     try:
         async with httpx.AsyncClient() as client:
             actor_response = await client.get(
-                f"{TRUST_REGISTRY_URL}/registry/actors/{actor_name}"
+                f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
             )
     except HTTPException as e:
         bound_logger.exception("HTTP Error caught when fetching from trust registry.")

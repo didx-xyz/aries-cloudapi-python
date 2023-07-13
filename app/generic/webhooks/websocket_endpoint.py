@@ -63,6 +63,9 @@ async def handle_websocket(
         logger.info("WebSocket connection closed.")
     except Exception:
         logger.exception("Exception caught while handling websocket.")
+    else:
+        if uuid:
+            await WebsocketManager.unsubscribe(uuid)
 
 
 @router.websocket("/ws/{wallet_id}")

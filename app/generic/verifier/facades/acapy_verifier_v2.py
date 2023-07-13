@@ -18,8 +18,9 @@ from app.generic.verifier.models import (
     SendProofRequest,
 )
 from shared.log_config import get_logger
-from shared.models import PresentationExchange, pres_id_no_version
-from shared.models import presentation_record_to_model as record_to_model
+from shared.models.conversion import presentation_record_to_model as record_to_model
+from shared.models.protocol import pres_id_no_version
+from shared.models.topics import PresentationExchange
 
 logger = get_logger(__name__)
 

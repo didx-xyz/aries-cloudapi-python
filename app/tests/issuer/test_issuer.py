@@ -8,7 +8,7 @@ from app.dependencies.auth import AcaPyAuth
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
-from shared.models import CredentialExchange, IssueCredentialProtocolVersion
+from shared.models.topics import CredentialExchange, IssueCredentialProtocolVersion
 from shared.util.mock_agent_controller import MockContextManagedController
 
 

@@ -16,7 +16,7 @@ from app.tests.verifier.utils import (
     indy_proof_request,
     v20_presentation_exchange_records,
 )
-from shared.models import PresentationExchange
+from shared.models.topics import PresentationExchange
 
 
 @pytest.mark.anyio

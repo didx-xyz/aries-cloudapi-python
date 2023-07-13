@@ -14,7 +14,7 @@ from shared.models.protocol import (
     IssueCredentialProtocolVersion,
     PresentProofProtocolVersion,
 )
-from shared.models.topics.base import (
+from shared.models.topics import (
     Connection,
     CredentialExchange,
     PresentationExchange,

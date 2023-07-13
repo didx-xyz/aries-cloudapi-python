@@ -23,7 +23,7 @@ from app.generic.verifier import verifier
 from app.generic.wallet import wallet
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.1-beta1")
 
 logger = get_logger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))

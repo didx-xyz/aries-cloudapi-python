@@ -1,4 +1,5 @@
 from uuid import uuid4
+from fastapi import HTTPException
 
 import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient

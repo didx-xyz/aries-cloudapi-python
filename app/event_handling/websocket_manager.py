@@ -50,7 +50,10 @@ class WebsocketManager:
         client.subscribe(subscribed_topic, callback)
         await WebsocketManager.start_pubsub_client(client)
 
-        WebsocketManager._clients[uuid4().hex] = client
+        uuid = uuid4().hex
+        WebsocketManager._clients[uuid] = client
+
+        return uuid
 
     @staticmethod
     async def start_pubsub_client(client: PubSubClient, timeout: float = 10):

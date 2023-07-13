@@ -170,9 +170,7 @@ async def assert_actor_name(actor_name: str) -> bool:
         raise e from e
 
     if actor_response.status_code == 404:
-        bound_logger.info("Bad request: actor not found")
-        raise HTTPException(status_code=404, detail="Actor not found.")
-
+        return False
     elif actor_response.is_error:
         bound_logger.error(
             "Error fetching actor by id. Got status code {} with message `{}`.",

@@ -267,8 +267,8 @@ async def publish_revocation_entry_to_ledger(
 async def revoke_credential(
     controller: AcaPyClient,
     credential_exchange_id: str,
-    auto_publish_to_ledger: bool = False,
     credential_definition_id: str = None,
+    auto_publish_to_ledger: bool = False,
 ) -> None:
     """
         Revoke an issued credential

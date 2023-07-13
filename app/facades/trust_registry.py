@@ -164,13 +164,14 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
             actor_response = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_name}"
             )
-    except httpx.HTTPError as e:
+    except HTTPException as e:
         bound_logger.exception("HTTP Error caught when fetching from trust registry.")
+        bound_logger.info("======>{}", e)
         raise e from e
 
     if actor_response.status_code == 404:
         bound_logger.info("Bad request: actor not found")
-        return None
+        raise HTTPException(status_code=404, detail="Actor not found.")
     elif actor_response.is_error:
         bound_logger.error(
             "Error fetching actor by id. Got status code {} with message `{}`.",

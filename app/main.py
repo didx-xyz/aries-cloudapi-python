@@ -68,7 +68,7 @@ app = create_app()
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Calling WebsocketManager shutdown")
-    await WebsocketManager.shutdown_all()()
+    await WebsocketManager.shutdown_all()
 
 
 # add endpoints

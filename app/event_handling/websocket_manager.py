@@ -90,9 +90,9 @@ class WebsocketManager:
             raise WebsocketTimeout("PubSubClient shutdown has timed out.") from e
 
     @staticmethod
-    async def shutdown_all(timeout: float = 10):
+    async def shutdown_all():
         """
-        Shutdown all Websocket clients and clear the connections with a specified timeout.
+        Shutdown all Websocket clients and clear the connections.
         """
         logger.debug("Shutting down all Websocket clients")
         for client in WebsocketManager._clients.values():

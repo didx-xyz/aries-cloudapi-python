@@ -142,8 +142,8 @@ async def test_create_tenant_issuer(
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
-    with pytest.raises(HTTPException):
-        duplicate_response = await tenant_admin_client.post(
+    with pytest.raises(HTTPException) as http_error:
+        await tenant_admin_client.post(
             BASE_PATH,
             json={
                 "image_url": "https://image.ca",
@@ -153,11 +153,8 @@ async def test_create_tenant_issuer(
             },
         )
 
-        assert duplicate_response.status_code == 409
-        assert (
-            "Can't create Tenant. Actor with name:"
-            in duplicate_response.json()["details"]
-        )
+        assert http_error.status_code == 409
+        assert "Can't create Tenant. Actor with name:" in http_error.json()["details"]
 
 
 @pytest.mark.anyio

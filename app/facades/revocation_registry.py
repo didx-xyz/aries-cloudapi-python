@@ -42,7 +42,10 @@ async def create_revocation_registry(
         result (IssuerRevRegRecord): The revocation registry record.
     """
     bound_logger = logger.bind(
-        body={"cred_def_id": credential_definition_id, "max_cred_num": max_cred_num}
+        body={
+            "credential_definition_id": credential_definition_id,
+            "max_cred_num": max_cred_num,
+        }
     )
     bound_logger.info("Creating a new revocation registry for a credential definition")
     result = await controller.revocation.create_registry(
@@ -78,7 +81,9 @@ async def get_active_revocation_registry_for_credential(
     Returns:
         result (IssuerRevRegRecord): The revocation registry record.
     """
-    bound_logger = logger.bind(body={"cred_def_id": credential_definition_id})
+    bound_logger = logger.bind(
+        body={"credential_definition_id": credential_definition_id}
+    )
     bound_logger.info("Fetching activate revocation registry for a credential")
 
     result = await controller.revocation.get_active_registry_for_cred_def(
@@ -116,7 +121,7 @@ async def get_credential_revocation_status(
     Returns:
         IssuerCredRevRecord: The revocation registry record.
     """
-    bound_logger = logger.bind(body={"cred_ex_id": credential_exchange_id})
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("Fetching the revocation status for a credential exchange")
 
     result = await controller.revocation.get_revocation_status(
@@ -223,7 +228,7 @@ async def publish_revocation_entry_to_ledger(
     bound_logger = logger.bind(
         body={
             "revocation_registry_id": revocation_registry_id,
-            "cred_def_id": credential_definition_id,
+            "credential_definition_id": credential_definition_id,
             "connection_id": connection_id,
             "create_transaction_for_endorser": create_transaction_for_endorser,
         }
@@ -289,8 +294,8 @@ async def revoke_credential(
     """
     bound_logger = logger.bind(
         body={
-            "cred_ex_id": credential_exchange_id,
-            "cred_def_id": credential_definition_id,
+            "credential_exchange_id": credential_exchange_id,
+            "credential_definition_id": credential_definition_id,
             "auto_publish_to_ledger": auto_publish_to_ledger,
         }
     )

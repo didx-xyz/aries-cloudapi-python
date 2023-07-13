@@ -123,7 +123,7 @@ async def create_tenant(
                         didcomm_invitation=onboard_result.didcomm_invitation,
                     )
                 )
-        except httpx.HTTPStatusError as httpError:
+        except HTTPException as httpError:
             if wallet_response:
                 bound_logger.info("delete wallet")
                 await admin_controller.multitenancy.delete_wallet(

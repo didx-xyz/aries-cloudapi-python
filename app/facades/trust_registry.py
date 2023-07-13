@@ -172,6 +172,7 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
     if actor_response.status_code == 404:
         bound_logger.info("Bad request: actor not found")
         raise HTTPException(status_code=404, detail="Actor not found.")
+
     elif actor_response.is_error:
         bound_logger.error(
             "Error fetching actor by id. Got status code {} with message `{}`.",

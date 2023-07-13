@@ -81,7 +81,7 @@ async def create_tenant(
     roles = body.roles
 
     actor_exists = await actor_by_name(body.name)
-
+    bound_logger.info("actor_exists=======>{}", actor_exists)
     if actor_exists:
         bound_logger.info("Actor exists can't create wallet")
         raise HTTPException(

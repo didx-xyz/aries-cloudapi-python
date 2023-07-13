@@ -90,7 +90,7 @@ async def get_actor_by_id(actor_id: str, db_session: Session = Depends(get_db)):
     return actor
 
 
-@router.get("/{actor_name}")
+@router.get("/name/{actor_name}")
 async def get_actor_by_name(actor_name: str, db: Session = Depends(get_db)):
     bound_logger = logger.bind(body={"actor_name": actor_name})
     bound_logger.info("Get request received: Get actor by name")

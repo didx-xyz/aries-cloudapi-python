@@ -44,12 +44,16 @@ async def handle_websocket(
     topic: str,
     auth: AcaPyAuthVerified,
 ):
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+    bound_logger.debug("Accepting websocket")
     await websocket.accept()
+    bound_logger.debug("Accepted websocket")
 
     if not auth or auth.wallet_id not in ("admin", wallet_id):
+        bound_logger.debug("Notifying user is unauthorized")
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)
-        logger.info("Unauthorized WebSocket connection closed")
+        bound_logger.info("Unauthorized WebSocket connection closed")
 
     uuid = None
     try:
@@ -60,9 +64,9 @@ async def handle_websocket(
         while True:
             await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
     except WebSocketDisconnect:
-        logger.info("WebSocket connection closed.")
+        bound_logger.info("WebSocket connection closed.")
     except Exception:
-        logger.exception("Exception caught while handling websocket.")
+        bound_logger.exception("Exception caught while handling websocket.")
     else:
         if uuid:
             await WebsocketManager.unsubscribe(uuid)

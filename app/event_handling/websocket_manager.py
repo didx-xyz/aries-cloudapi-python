@@ -45,11 +45,16 @@ class WebsocketManager:
             await websocket.send_text(data)
 
         client = PubSubClient()
+        logger.debug("Subscribing PubSubClient to {}", subscribed_topic)
+
         client.subscribe(subscribed_topic, callback)
         await WebsocketManager.start_pubsub_client(client)
 
         uuid = uuid4().hex
         WebsocketManager._clients[uuid] = client
+        logger.debug(
+            "Successfully started PubSubClient, listening to {}", subscribed_topic
+        )
 
         return uuid
 

@@ -165,6 +165,7 @@ async def assert_actor_name(actor_name: str) -> bool:
                 f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
             )
     except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e from e
 
     if actor_response.status_code == 404:

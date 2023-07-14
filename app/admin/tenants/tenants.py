@@ -130,7 +130,7 @@ async def create_tenant(
                 await admin_controller.multitenancy.delete_wallet(
                     wallet_response.wallet_id
                 )
-            raise httpError
+            raise httpError from httpError
 
         except Exception as e:
             bound_logger.info("Something went wrong")
@@ -139,7 +139,7 @@ async def create_tenant(
                 await admin_controller.multitenancy.delete_wallet(
                     wallet_response.wallet_id
                 )
-            raise e
+            raise e from e
 
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,

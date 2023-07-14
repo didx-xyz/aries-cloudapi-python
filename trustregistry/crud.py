@@ -100,6 +100,8 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
                 f"Bad request: An actor with DID: `{actor.did}` already exists in database."
             )
 
+        else:
+            bound_logger.info("Bad request: {}", constraint_violation)
 
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})

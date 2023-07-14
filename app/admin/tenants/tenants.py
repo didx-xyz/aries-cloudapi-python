@@ -124,6 +124,7 @@ async def create_tenant(
                     )
                 )
         except HTTPException as httpError:
+            bound_logger.info("HTTP exception: {}", httpError.detail)
             if wallet_response:
                 bound_logger.info("delete wallet")
                 await admin_controller.multitenancy.delete_wallet(
@@ -132,6 +133,7 @@ async def create_tenant(
             raise httpError
 
         except Exception as e:
+            bound_logger.info("Something went wrong")
             if wallet_response:
                 bound_logger.info("delete wallet")
                 await admin_controller.multitenancy.delete_wallet(

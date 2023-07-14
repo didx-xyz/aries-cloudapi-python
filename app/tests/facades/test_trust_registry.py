@@ -333,3 +333,8 @@ async def test_assert_actor_name(mock_async_client):
     mock_async_client.get = AsyncMock(return_value=Response(status_code=404))
 
     assert await trf.assert_actor_name(not_actor) == False
+
+    # test exception (500)
+    mock_async_client.get = AsyncMock(return_value=Response(500))
+    with pytest.raises(trf.TrustRegistryException):
+        await trf.assert_actor_name(name)

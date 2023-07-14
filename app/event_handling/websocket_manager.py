@@ -53,6 +53,7 @@ class WebsocketManager:
 
         return uuid
 
+    @staticmethod
     async def unsubscribe(uuid: str) -> None:
         logger.info("Unsubscribing a client")
         client = WebsocketManager._clients[uuid]

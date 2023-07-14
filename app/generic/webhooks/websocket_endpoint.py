@@ -72,6 +72,16 @@ async def handle_websocket(
             await WebsocketManager.unsubscribe(uuid)
 
 
+@router.websocket("/ws/topic/{topic}")
+async def websocket_endpoint_topic(
+    websocket: WebSocket,
+    topic: str,
+    auth: AcaPyAuthVerified = Depends(websocket_auth),
+):
+    logger.info("Received websocket request on topic `{}`", topic)
+    await handle_websocket(websocket, wallet_id="", topic=topic, auth=auth)
+
+
 @router.websocket("/ws/{wallet_id}")
 async def websocket_endpoint_wallet(
     websocket: WebSocket,
@@ -93,13 +103,3 @@ async def websocket_endpoint_wallet_topic(
         "Received websocket request on wallet id `{}` and topic `{}`", wallet_id, topic
     )
     await handle_websocket(websocket, wallet_id=wallet_id, topic=topic, auth=auth)
-
-
-@router.websocket("/ws/topic/{topic}")
-async def websocket_endpoint_topic(
-    websocket: WebSocket,
-    topic: str,
-    auth: AcaPyAuthVerified = Depends(websocket_auth),
-):
-    logger.info("Received websocket request on topic `{}`", topic)
-    await handle_websocket(websocket, wallet_id="", topic=topic, auth=auth)

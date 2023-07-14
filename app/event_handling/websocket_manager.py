@@ -37,7 +37,7 @@ class WebsocketManager:
             logger.error("Subscribe requires `topic` or `wallet_id` in request.")
             return
 
-        async def callback(data: str, topic: str):
+        async def callback(data: str, topic: str) -> None:
             """
             Callback function for handling received webhook events.
             Note: PubSubClient expects a topic argument in callback
@@ -67,7 +67,7 @@ class WebsocketManager:
         logger.info("Successfully unsubscribed client")
 
     @staticmethod
-    async def start_pubsub_client(client: PubSubClient, timeout: float = 5):
+    async def start_pubsub_client(client: PubSubClient, timeout: float = 5) -> None:
         """
         Start listening for webhook events on the Webhooks pubsub endpoint with a specified timeout.
         """
@@ -89,7 +89,7 @@ class WebsocketManager:
             raise WebsocketTimeout("Starting PubSubClient has timed out.") from e
 
     @staticmethod
-    async def disconnect(client: PubSubClient, timeout: float = 3):
+    async def disconnect(client: PubSubClient, timeout: float = 3) -> None:
         """
         Shutdown the Websocket client and clear the connections with a specified timeout.
         """
@@ -107,7 +107,7 @@ class WebsocketManager:
             raise WebsocketTimeout("PubSubClient disconnect has timed out.") from e
 
     @staticmethod
-    async def disconnect_all():
+    async def disconnect_all() -> None:
         """
         Disconnect all Websocket clients and clear the connections.
         """

@@ -1,6 +1,7 @@
 from typing import List
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from shared.log_config import get_logger
 from trustregistry import db
@@ -51,26 +52,60 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
 
 def create_actor(db_session: Session, actor: Actor) -> db.Actor:
     bound_logger = logger.bind(body={"actor": actor})
-    bound_logger.info(
-        "Create actor in database. First assert actor ID does not already exist"
-    )
-    db_actor = db_session.query(db.Actor).filter(db.Actor.id == actor.id).one_or_none()
+    bound_logger.info("Try to create actor in database")
 
-    if db_actor:
-        bound_logger.info(
-            "Cannot create actor, as actor ID `{}` already exists in database.",
-            actor.id,
-        )
-        raise ActorAlreadyExistsException
+    try:
+        bound_logger.debug("Adding actor to database")
+        db_actor = db.Actor(**actor.dict())
+        db_session.add(db_actor)
+        db_session.commit()
+        db_session.refresh(db_actor)
 
-    bound_logger.debug("Adding actor to database")
-    db_actor = db.Actor(**actor.dict())
-    db_session.add(db_actor)
-    db_session.commit()
-    db_session.refresh(db_actor)
+        bound_logger.info("Successfully added actor to database.")
+        return db_actor
 
-    bound_logger.info("Successfully added actor to database.")
-    return db_actor
+    except IntegrityError as e:
+        db_session.rollback()
+        constraint_violation = str(e.orig).lower()
+
+        if "actors.id" in constraint_violation:
+            bound_logger.info(
+                "Bad request: An actor with ID already exists in database."
+            )
+            raise ActorAlreadyExistsException(
+                f"Bad request: An actor with ID: `{actor.id}` already exists in database."
+            )
+
+        elif "actors.name" in constraint_violation:
+            bound_logger.info(
+                "Bad request: An actor with name already exists in database."
+            )
+            raise ActorAlreadyExistsException(
+                f"Bad request: An actor with name: `{actor.name}` already exists in database."
+            )
+
+        elif "actors.didcomm_invitation" in constraint_violation:
+            bound_logger.info(
+                "Bad request: An actor with DIDComm invitation already exists in database."
+            )
+            raise ActorAlreadyExistsException(
+                "Bad request: An actor with DIDComm invitation already exists in database."
+            )
+
+        elif "actors.did" in constraint_violation:
+            bound_logger.info(
+                "Bad request: An actor with DID already exists in database."
+            )
+            raise ActorAlreadyExistsException(
+                f"Bad request: An actor with DID: `{actor.did}` already exists in database."
+            )
+
+        else:
+            bound_logger.info("Bad request: {}", constraint_violation)
+
+    except Exception as e:
+        bound_logger.info("Something went wrong during actor creation")
+        raise e from e
 
 
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
@@ -207,6 +242,12 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
 
 class ActorAlreadyExistsException(Exception):
     """Raised when attempting to create an actor that already exists in the database."""
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class ActorDoesNotExistException(Exception):

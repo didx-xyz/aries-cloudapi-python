@@ -313,3 +313,17 @@ async def test_update_actor(mock_async_client):
 
 @pytest.mark.anyio
 async def test_assert_actor_name(mock_async_client):
+    # test actor exists
+    name = "Numuhukumakiaki'aialunamor"
+    actor = trf.Actor(
+        id="some_id",
+        name=name,
+        roles=["issuer", "verifier"],
+        did="actor-did",
+        didcomm_invitation="actor-didcomm-invitation",
+    )
+    mock_async_client.get = AsyncMock(
+        return_value=Response(status_code=200, json=actor)
+    )
+
+    assert await trf.assert_actor_name(name) == True

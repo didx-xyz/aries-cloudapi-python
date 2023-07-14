@@ -309,3 +309,7 @@ async def test_update_actor(mock_async_client):
     )
     with pytest.raises(trf.TrustRegistryException):
         await trf.update_actor(actor=actor)
+
+
+@pytest.mark.anyio
+async def test_assert_actor_name(mock_async_client):

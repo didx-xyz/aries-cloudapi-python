@@ -59,6 +59,7 @@ class WebsocketManager:
         client = WebsocketManager._clients[uuid]
         await WebsocketManager.disconnect(client)
         WebsocketManager._clients.pop(uuid)
+        logger.info("Successfully unsubscribed client")
 
     @staticmethod
     async def start_pubsub_client(client: PubSubClient, timeout: float = 5):

@@ -327,3 +327,9 @@ async def test_assert_actor_name(mock_async_client):
     )
 
     assert await trf.assert_actor_name(name) == True
+
+    # test actor does not exists
+    not_actor = "Oduim"
+    mock_async_client.get = AsyncMock(return_value=Response(status_code=404))
+
+    assert await trf.assert_actor_name(not_actor) == False

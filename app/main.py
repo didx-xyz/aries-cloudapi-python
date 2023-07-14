@@ -51,7 +51,25 @@ def create_app() -> FastAPI:
     application = FastAPI(
         debug=debug,
         title=OPENAPI_NAME,
-        description="Welcome to the Aries CloudAPI Python project",
+        description="""
+Welcome to the Aries CloudAPI Python project.
+
+In addition to the traditional HTTP-based endpoints described below, we offer WebSocket endpoints for real-time interface with webhook events. 
+
+WebSocket endpoints are authenticated, meaning that only users with valid authentication tokens can establish a WebSocket connection, and can only subscribe to their own wallet's events. Admin users are able to subscribe by topic, or to any wallet.
+
+Our WebSocket endpoints are as follows:
+
+1. `/ws/topic/{topic}`: (Admin only) Receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`, `revocations`)
+
+2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events for a specific wallet ID.
+
+3. `/ws/{wallet_id}/{topic}`: As previous, but allows subscription to a specific topic.
+
+For authentication, WebSocket headers should contain `x-api-key`: `<your key>`.
+
+Please refer to our API documentation for further details of our authentication mechanism, and the available topics.
+        """,
         version=PROJECT_VERSION,
     )
 

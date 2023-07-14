@@ -72,7 +72,7 @@ class WebsocketManager:
         Start listening for webhook events on the Webhooks pubsub endpoint with a specified timeout.
         """
 
-        async def ensure_connection_ready():
+        async def ensure_connection_ready() -> None:
             """
             Ensure the connection is established before proceeding
             """
@@ -95,7 +95,7 @@ class WebsocketManager:
         """
         logger.debug("Disconnecting Websocket client")
 
-        async def wait_for_disconnect():
+        async def wait_for_disconnect() -> None:
             await client.disconnect()
 
         try:

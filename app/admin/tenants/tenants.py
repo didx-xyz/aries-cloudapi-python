@@ -1,7 +1,6 @@
 from secrets import token_urlsafe
 from typing import List, Optional
 from uuid import uuid4
-import httpx
 
 import base58
 from aries_cloudcontroller import (

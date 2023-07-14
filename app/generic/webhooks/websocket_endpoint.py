@@ -49,7 +49,15 @@ async def handle_websocket(
     await websocket.accept()
     bound_logger.debug("Accepted websocket")
 
-    if not auth or auth.wallet_id not in ("admin", wallet_id):
+    if (
+        not auth
+        or (
+            wallet_id and auth.wallet_id not in ("admin", wallet_id)
+        )  # tenants can subscribe to their own wallets; admin can subscribe to any wallet
+        or (
+            not wallet_id and auth.wallet_id != "admin"
+        )  # only admin can subscribe to topic (wallet_id == "")
+    ):
         bound_logger.debug("Notifying user is unauthorized")
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)

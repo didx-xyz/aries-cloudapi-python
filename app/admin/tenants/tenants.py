@@ -122,14 +122,14 @@ async def create_tenant(
                         didcomm_invitation=onboard_result.didcomm_invitation,
                     )
                 )
-        except HTTPException as httpError:
-            bound_logger.info("HTTP exception: {}", httpError.detail)
+        except HTTPException as http_error:
+            bound_logger.info("HTTP exception: {}", http_error.detail)
             if wallet_response:
                 bound_logger.info("delete wallet")
                 await admin_controller.multitenancy.delete_wallet(
                     wallet_response.wallet_id
                 )
-            raise httpError from httpError
+            raise http_error from http_error
 
         except Exception as e:
             bound_logger.info("Something went wrong")

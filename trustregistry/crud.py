@@ -103,6 +103,11 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
         else:
             bound_logger.info("Bad request: {}", constraint_violation)
 
+    except Exception as e:
+        bound_logger.info("Something went wrong during actor creation")
+        raise e from e
+
+
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Delete actor from database. First assert actor ID exists")

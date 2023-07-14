@@ -54,22 +54,22 @@ def create_app() -> FastAPI:
         description="""
 Welcome to the Aries CloudAPI Python project.
 
-In addition to the traditional HTTP-based endpoints described below, we offer WebSocket endpoints for real-time interface with webhook events. 
+In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events. 
 
-WebSocket endpoints are authenticated, meaning that only users with valid authentication tokens can establish a WebSocket connection, and can only subscribe to their own wallet's events. Admin users are able to subscribe by topic, or to any wallet.
+WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the ability to subscribe by topic, or to any wallet.
 
 Our WebSocket endpoints are as follows:
 
-1. `/ws/topic/{topic}`: (Admin only) Receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`, `revocations`)
+1. `/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
 
-2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events for a specific wallet ID.
+2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
 
-3. `/ws/{wallet_id}/{topic}`: As previous, but allows subscription to a specific topic.
+3. `/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
 
-For authentication, WebSocket headers should contain `x-api-key`: `<your key>`.
+For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
 
-Please refer to our API documentation for further details of our authentication mechanism, and the available topics.
-        """,
+Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
+""",
         version=PROJECT_VERSION,
     )
 

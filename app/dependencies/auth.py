@@ -22,12 +22,16 @@ class AcaPyAuthVerified(AcaPyAuth):
     wallet_id: str
 
 
-def acapy_auth(auth: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
-    if "." not in auth:
+def acapy_auth(api_key: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
+    return get_acapy_auth(api_key)
+
+
+def get_acapy_auth(api_key: str) -> AcaPyAuth:
+    if "." not in api_key:
         raise HTTPException(401, "Unauthorized")
 
     try:
-        [role_str, token] = auth.split(".", maxsplit=1)
+        [role_str, token] = api_key.split(".", maxsplit=1)
 
         role = Role.from_str(role_str)
     except Exception:
@@ -40,6 +44,10 @@ def acapy_auth(auth: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
 
 
 def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+    return get_acapy_auth_verified(auth)
+
+
+def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
     if auth.role.is_admin:
         if auth.token != auth.role.agent_type.x_api_key:
             raise HTTPException(403, "Unauthorized")

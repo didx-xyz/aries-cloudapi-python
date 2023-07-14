@@ -69,7 +69,7 @@ async def handle_websocket(
 
 
 @router.websocket("/ws/{wallet_id}")
-async def websocket_endpoint(
+async def websocket_endpoint_wallet(
     websocket: WebSocket,
     wallet_id: str,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
@@ -78,7 +78,7 @@ async def websocket_endpoint(
 
 
 @router.websocket("/ws/{wallet_id}/{topic}")
-async def websocket_endpoint_topic(
+async def websocket_endpoint_wallet_topic(
     websocket: WebSocket,
     wallet_id: str,
     topic: str,
@@ -88,7 +88,7 @@ async def websocket_endpoint_topic(
 
 
 @router.websocket("/ws/topic/{topic}")
-async def websocket_endpoint_admin(
+async def websocket_endpoint_topic(
     websocket: WebSocket,
     topic: str,
     auth: AcaPyAuthVerified = Depends(websocket_auth),

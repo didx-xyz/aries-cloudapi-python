@@ -4,7 +4,7 @@ import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 
-from app.admin.tenants import tenants
+from app.admin.tenants.tenants import router
 from app.dependencies.acapy_clients import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.tests.util.client import get_tenant_client
@@ -12,7 +12,7 @@ from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
 
-BASE_PATH = tenants.router.prefix
+BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio

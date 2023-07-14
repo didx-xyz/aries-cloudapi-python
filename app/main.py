@@ -11,16 +11,17 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
 from app.admin.tenants import tenants
-from shared.log_config import get_logger
-from app.event_handling.webhooks import Webhooks
+from app.event_handling.websocket_manager import WebsocketManager
 from app.exceptions.cloud_api_error import CloudApiException
-from app.generic import definitions, messaging, sse, trust_registry, webhooks
+from app.generic import definitions, messaging, trust_registry
 from app.generic.connections import connections
 from app.generic.issuer import issuer
 from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
+from app.generic.webhooks import sse, webhooks, websocket_endpoint
+from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.1-beta1")
@@ -44,12 +45,31 @@ def create_app() -> FastAPI:
         wallet,
         webhooks,
         sse,
+        websocket_endpoint,  # no docs generated for websocket endpoints
     ]
 
     application = FastAPI(
         debug=debug,
         title=OPENAPI_NAME,
-        description="Welcome to the Aries CloudAPI Python project",
+        description="""
+Welcome to the Aries CloudAPI Python project.
+
+In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events. 
+
+WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the ability to subscribe by topic, or to any wallet.
+
+Our WebSocket endpoints are as follows:
+
+1. `/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
+
+2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
+
+3. `/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
+
+For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
+
+Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
+""",
         version=PROJECT_VERSION,
     )
 
@@ -63,16 +83,10 @@ def create_app() -> FastAPI:
 app = create_app()
 
 
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Calling Webhooks startup")
-    await Webhooks.start_webhook_client()
-
-
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("Calling Webhooks shutdown")
-    await Webhooks.shutdown()
+    logger.info("Calling WebsocketManager shutdown")
+    await WebsocketManager.disconnect_all()
 
 
 # add endpoints

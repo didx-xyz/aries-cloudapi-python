@@ -1,5 +1,7 @@
+import asyncio
 from typing import List, Optional
 
+from aiohttp.web import HTTPForbidden
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 from aries_cloudcontroller.model.create_wallet_token_request import (
     CreateWalletTokenRequest,
@@ -271,6 +273,24 @@ async def onboard_issuer_no_public_did(
         )
         bound_logger.debug("Successfully set endorser info.")
 
+    async def configure_endorsement_with_retry(connection_record, endorser_did):
+        max_attempts = 3
+        retry_delay = 1.0  # delay in seconds
+
+        for attempt in range(max_attempts):
+            try:
+                await configure_endorsement(connection_record, endorser_did)
+                break
+            except HTTPForbidden as e:
+                if attempt + 1 == max_attempts:
+                    bound_logger.error("Maximum number of retries exceeded. Failing.")
+                    raise e  # Re-raise the exception if max attempts exceeded
+
+                bound_logger.warning(
+                    f"Failed to set roles (attempt {attempt + 1}). Retrying in {retry_delay} seconds..."
+                )
+                await asyncio.sleep(retry_delay)
+
     async def register_issuer_did():
         bound_logger.info("Creating DID for issuer")
         issuer_did = await acapy_wallet.create_did(issuer_controller)
@@ -324,7 +344,7 @@ async def onboard_issuer_no_public_did(
             invitation
         )
         await set_endorser_roles(endorser_connection, connection_record)
-        await configure_endorsement(connection_record, endorser_did)
+        await configure_endorsement_with_retry(connection_record, endorser_did)
 
     try:
         logger.debug("Getting public DID for endorser")

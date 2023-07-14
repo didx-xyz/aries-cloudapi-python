@@ -74,6 +74,7 @@ async def websocket_endpoint_wallet(
     wallet_id: str,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
+    logger.info("Received websocket request on wallet id `{}`", wallet_id)
     await handle_websocket(websocket, wallet_id=wallet_id, topic="", auth=auth)
 
 
@@ -84,6 +85,9 @@ async def websocket_endpoint_wallet_topic(
     topic: str,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
+    logger.info(
+        "Received websocket request on wallet id `{}` and topic `{}`", wallet_id, topic
+    )
     await handle_websocket(websocket, wallet_id=wallet_id, topic=topic, auth=auth)
 
 
@@ -93,4 +97,5 @@ async def websocket_endpoint_topic(
     topic: str,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
+    logger.info("Received websocket request on topic `{}`", topic)
     await handle_websocket(websocket, wallet_id="", topic=topic, auth=auth)

@@ -1,6 +1,6 @@
 fastapi~=0.100.0
 pydantic~=1.10.8
 loguru~=0.7.0
-sqlalchemy~=1.4.48
+sqlalchemy~=1.4.49
 starlette>=0.27.0
 uvicorn[standard]~=0.22.0

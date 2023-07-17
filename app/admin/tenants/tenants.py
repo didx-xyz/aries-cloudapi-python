@@ -95,6 +95,8 @@ async def create_tenant(
 
     bound_logger.info("Actor name is unique, creating wallet")
     wallet_response = None
+    async with get_tenant_admin_controller() as admin_controller:
+        try:
             wallet_response = await admin_controller.multitenancy.create_wallet(
                 body=CreateWalletRequestWithGroups(
                     image_url=body.image_url,
@@ -108,37 +110,23 @@ async def create_tenant(
             )
         bound_logger.debug("Wallet creation successful")
 
-        if roles:
-            bound_logger.info("Onboarding `{}` with requested roles: `{}`", name, roles)
-            onboard_result = await onboard_tenant(
-                name=name,
-                roles=roles,
-                tenant_auth_token=wallet_response.token,
-                tenant_id=wallet_response.wallet_id,
-            )
-            bound_logger.debug("Registering actor in the trust registry")
-            await register_actor(
-                actor=Actor(
-                    id=wallet_response.wallet_id,
-                    name=name,
-                    roles=roles,
-                    did=onboard_result.did,
-                    didcomm_invitation=onboard_result.didcomm_invitation,
+        except HTTPException as http_error:
+            if wallet_response:
+                bound_logger.info(
                 )
-            )
-    except HTTPException as http_error:
-        bound_logger.info("HTTP exception: {}", http_error.detail)
-        if wallet_response:
-            bound_logger.info("Could not register actor: deleting wallet")
-            await admin_controller.multitenancy.delete_wallet(wallet_response.wallet_id)
-        raise http_error
+                await admin_controller.multitenancy.delete_wallet(
+                    wallet_response.wallet_id
+                )
+            raise
 
-    except Exception as e:
-        bound_logger.exception("An unhandled exception occurred")
-        if wallet_response:
-            bound_logger.info("Could not register actor: deleting wallet")
-            await admin_controller.multitenancy.delete_wallet(wallet_response.wallet_id)
-        raise
+        except Exception:
+            bound_logger.exception("An unhandled exception occurred")
+            if wallet_response:
+                bound_logger.info(
+                await admin_controller.multitenancy.delete_wallet(
+                    wallet_response.wallet_id
+                )
+            raise
 
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,

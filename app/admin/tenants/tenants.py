@@ -34,6 +34,7 @@ from app.dependencies.auth import (
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
+    TrustRegistryException,
     actor_by_id,
     assert_actor_name,
     register_actor,

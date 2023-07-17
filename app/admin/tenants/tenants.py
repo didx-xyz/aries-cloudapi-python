@@ -95,31 +95,44 @@ async def create_tenant(
     try:
         async with get_tenant_admin_controller() as admin_controller:
             bound_logger.info("Actor name is unique, creating wallet")
+            wallet_response = None
+            wallet_response = await admin_controller.multitenancy.create_wallet(
+                body=CreateWalletRequestWithGroups(
+                    image_url=body.image_url,
+                    key_management_mode="managed",
+                    label=body.name,
+                    wallet_key=base58.b58encode(token_urlsafe(48)),
+                    wallet_name=uuid4().hex,
+                    wallet_type="askar",
+                    group_id=body.group_id,
                 )
-                onboard_result = await onboard_tenant(
+            )
+        bound_logger.debug("Wallet creation successful")
+
+        if roles:
+            bound_logger.info("Onboarding `{}` with requested roles: `{}`", name, roles)
+            onboard_result = await onboard_tenant(
+                name=name,
+                roles=roles,
+                tenant_auth_token=wallet_response.token,
+                tenant_id=wallet_response.wallet_id,
+            )
+            bound_logger.debug("Registering actor in the trust registry")
+            await register_actor(
+                actor=Actor(
+                    id=wallet_response.wallet_id,
                     name=name,
                     roles=roles,
-                    tenant_auth_token=wallet_response.token,
-                    tenant_id=wallet_response.wallet_id,
+                    did=onboard_result.did,
+                    didcomm_invitation=onboard_result.didcomm_invitation,
                 )
-                bound_logger.debug("Registering actor in the trust registry")
-                await register_actor(
-                    actor=Actor(
-                        id=wallet_response.wallet_id,
-                        name=name,
-                        roles=roles,
-                        did=onboard_result.did,
-                        didcomm_invitation=onboard_result.didcomm_invitation,
-                    )
-                )
-        except HTTPException as http_error:
-            bound_logger.info("HTTP exception: {}", http_error.detail)
-            if wallet_response:
-                bound_logger.info("delete wallet")
-                await admin_controller.multitenancy.delete_wallet(
-                    wallet_response.wallet_id
-                )
-            raise http_error from http_error
+            )
+    except HTTPException as http_error:
+        bound_logger.info("HTTP exception: {}", http_error.detail)
+        if wallet_response:
+            bound_logger.info("delete wallet")
+            await admin_controller.multitenancy.delete_wallet(wallet_response.wallet_id)
+        raise http_error
 
         except Exception as e:
             bound_logger.info("Something went wrong")

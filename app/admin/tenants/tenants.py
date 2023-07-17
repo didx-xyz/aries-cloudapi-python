@@ -92,6 +92,9 @@ async def create_tenant(
         raise HTTPException(
             409, f"Can't create Tenant. Actor with name `{name}` already exists."
         )
+
+    bound_logger.info("Actor name is unique, creating wallet")
+    wallet_response = None
             wallet_response = await admin_controller.multitenancy.create_wallet(
                 body=CreateWalletRequestWithGroups(
                     image_url=body.image_url,

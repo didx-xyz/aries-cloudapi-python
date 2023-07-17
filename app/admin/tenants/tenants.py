@@ -94,6 +94,7 @@ async def create_tenant(
 
     try:
         async with get_tenant_admin_controller() as admin_controller:
+            bound_logger.info("Actor name is unique, creating wallet")
                 )
                 onboard_result = await onboard_tenant(
                     name=name,

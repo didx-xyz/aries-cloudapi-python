@@ -130,7 +130,7 @@ async def create_tenant(
     except HTTPException as http_error:
         bound_logger.info("HTTP exception: {}", http_error.detail)
         if wallet_response:
-            bound_logger.info("delete wallet")
+            bound_logger.info("Could not register actor: deleting wallet")
             await admin_controller.multitenancy.delete_wallet(wallet_response.wallet_id)
         raise http_error
 

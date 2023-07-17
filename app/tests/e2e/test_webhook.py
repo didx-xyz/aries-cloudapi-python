@@ -1,12 +1,12 @@
 import pytest
 from fastapi import HTTPException
 
-from app.generic.webhooks import router
+from app.generic.webhooks import webhooks
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
-from shared.models import Connection
+from shared.models.topics import Connection
 
-WALLET_BASE_PATH = router.prefix
+BASE_PATH = webhooks.router.prefix
 
 
 @pytest.mark.anyio
@@ -14,7 +14,7 @@ async def test_get_webhooks_for_wallet_by_topic(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
-    result = (await alice_member_client.get(WALLET_BASE_PATH + "/connections")).json()
+    result = (await alice_member_client.get(BASE_PATH + "/connections")).json()
 
     assert len(result) >= 1
     assert isinstance(result, list)
@@ -28,7 +28,7 @@ async def test_get_webhooks_for_wallet(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
-    result = (await alice_member_client.get(WALLET_BASE_PATH)).json()
+    result = (await alice_member_client.get(BASE_PATH)).json()
 
     assert len(result) >= 1
     assert isinstance(result, list)
@@ -45,7 +45,7 @@ async def test_get_webhooks_for_wallet_by_topic_tenant_error(
     alice_member_client.headers.pop("x-api-key")
 
     with pytest.raises(HTTPException) as exc:
-        await alice_member_client.get(WALLET_BASE_PATH + "/connections")
+        await alice_member_client.get(BASE_PATH + "/connections")
 
     assert exc.value.status_code == 403
     assert "Not authenticated" in exc.value.detail
@@ -58,7 +58,7 @@ async def test_get_webhooks_for_wallet_by_topic_admin_error(
     governance_client.headers.pop("x-api-key")
 
     with pytest.raises(HTTPException) as exc:
-        await governance_client.get(WALLET_BASE_PATH + "/connections")
+        await governance_client.get(BASE_PATH + "/connections")
 
     assert exc.value.status_code == 403
     assert "Not authenticated" in exc.value.detail

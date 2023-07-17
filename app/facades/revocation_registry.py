@@ -42,7 +42,10 @@ async def create_revocation_registry(
         result (IssuerRevRegRecord): The revocation registry record.
     """
     bound_logger = logger.bind(
-        body={"cred_def_id": credential_definition_id, "max_cred_num": max_cred_num}
+        body={
+            "credential_definition_id": credential_definition_id,
+            "max_cred_num": max_cred_num,
+        }
     )
     bound_logger.info("Creating a new revocation registry for a credential definition")
     result = await controller.revocation.create_registry(
@@ -78,7 +81,9 @@ async def get_active_revocation_registry_for_credential(
     Returns:
         result (IssuerRevRegRecord): The revocation registry record.
     """
-    bound_logger = logger.bind(body={"cred_def_id": credential_definition_id})
+    bound_logger = logger.bind(
+        body={"credential_definition_id": credential_definition_id}
+    )
     bound_logger.info("Fetching activate revocation registry for a credential")
 
     result = await controller.revocation.get_active_registry_for_cred_def(
@@ -116,7 +121,7 @@ async def get_credential_revocation_status(
     Returns:
         IssuerCredRevRecord: The revocation registry record.
     """
-    bound_logger = logger.bind(body={"cred_ex_id": credential_exchange_id})
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("Fetching the revocation status for a credential exchange")
 
     result = await controller.revocation.get_revocation_status(
@@ -223,7 +228,7 @@ async def publish_revocation_entry_to_ledger(
     bound_logger = logger.bind(
         body={
             "revocation_registry_id": revocation_registry_id,
-            "cred_def_id": credential_definition_id,
+            "credential_definition_id": credential_definition_id,
             "connection_id": connection_id,
             "create_transaction_for_endorser": create_transaction_for_endorser,
         }
@@ -267,8 +272,8 @@ async def publish_revocation_entry_to_ledger(
 async def revoke_credential(
     controller: AcaPyClient,
     credential_exchange_id: str,
-    auto_publish_to_ledger: bool = False,
     credential_definition_id: str = None,
+    auto_publish_to_ledger: bool = False,
 ) -> None:
     """
         Revoke an issued credential
@@ -289,8 +294,8 @@ async def revoke_credential(
     """
     bound_logger = logger.bind(
         body={
-            "cred_ex_id": credential_exchange_id,
-            "cred_def_id": credential_definition_id,
+            "credential_exchange_id": credential_exchange_id,
+            "credential_definition_id": credential_definition_id,
             "auto_publish_to_ledger": auto_publish_to_ledger,
         }
     )
@@ -311,27 +316,34 @@ async def revoke_credential(
         raise CloudApiException("Failed to revoke credential.", 400) from e
 
     if not auto_publish_to_ledger:
-        active_revocation_registry_id = (
-            await get_active_revocation_registry_for_credential(
+        try:
+            rev_reg_record = await get_active_revocation_registry_for_credential(
                 controller=controller,
                 credential_definition_id=credential_definition_id,
             )
-        )
 
-        try:
             await publish_revocation_entry_to_ledger(
                 controller=controller,
-                revocation_registry_id=active_revocation_registry_id.revoc_reg_id,
+                revocation_registry_id=rev_reg_record.revoc_reg_id,
                 create_transaction_for_endorser=True,
             )
-        except Exception:
+        except CloudApiException as e:
+            if e.status_code == 400:
+                bound_logger.info(
+                    "Bad request: Cannot publish revocation entry to ledger: {}",
+                    e.detail,
+                )
+            else:
+                bound_logger.error(e.detail)
+            raise e
+        except Exception as e:
             bound_logger.exception("Exception caught when revoking credential.")
-            # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py
-            # This is unexpected and throws and error in the controller validating the pydantic model.
-            # It still creates the transaction record though that can be endorsed below.
-        finally:
-            # NB: Adding finally clause, as it seems this must be called no matter what:
-            await endorser_revoke()
+            raise e
+
+        # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py
+        # This is unexpected and throws and error in the controller validating the pydantic model.
+        # It still creates the transaction record though that can be endorsed below.
+        await endorser_revoke()
 
     bound_logger.info("Successfully revoked credential.")
 
@@ -377,10 +389,10 @@ async def get_credential_definition_id_from_exchange_id(
                 cred_ex_id=credential_exchange_id
             )
         ).credential_definition_id
-    except ClientResponseError as e:
+    except ClientResponseError as err1:
         bound_logger.info(
             "A ClientResponseError was caught while getting v1 record. The error message is: '{}'",
-            e.message,
+            err1.message,
         )
         try:
             bound_logger.info("Trying to get v2 records")
@@ -398,6 +410,12 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
+        except ClientResponseError as err2:
+            bound_logger.info(
+                "A ClientResponseError was caught while getting v2 record. The error message is: '{}'",
+                err2.message,
+            )
+            return
         except Exception:
             bound_logger.exception(
                 "Exception caught when getting v2 records for cred ex id."

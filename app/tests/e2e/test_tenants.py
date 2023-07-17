@@ -1,10 +1,11 @@
 from uuid import uuid4
+from fastapi import HTTPException
 
 import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 
-from app.admin.tenants import tenants
+from app.admin.tenants.tenants import router
 from app.dependencies.acapy_clients import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.tests.util.client import get_tenant_client
@@ -12,7 +13,7 @@ from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
 
-BASE_PATH = tenants.router.prefix
+BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
@@ -140,6 +141,20 @@ async def test_create_tenant_issuer(
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
+
+    with pytest.raises(HTTPException) as http_error:
+        await tenant_admin_client.post(
+            BASE_PATH,
+            json={
+                "image_url": "https://image.ca",
+                "name": name,
+                "roles": ["issuer"],
+                "group_id": group_id,
+            },
+        )
+
+        assert http_error.status_code == 409
+        assert "Can't create Tenant. Actor with name:" in http_error.json()["details"]
 
 
 @pytest.mark.anyio

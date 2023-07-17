@@ -1,7 +1,7 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
-from httpx import Response
+from httpx import HTTPStatusError, Response
 
 import app.facades.trust_registry as trf
 
@@ -13,10 +13,15 @@ async def test_assert_valid_issuer(mock_async_client):
     schema_id = "a_schema_id"
 
     # Mock the actor_by_did and registry_has_schema calls
+    response = Response(
+        status_code=200,
+        json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
+    )
+    response.raise_for_status = Mock()
     mock_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json=actor),
-            Response(200, json={"schemas": [schema_id]}),
+            response,
         ]
     )
 
@@ -37,10 +42,18 @@ async def test_assert_valid_issuer(mock_async_client):
         await trf.assert_valid_issuer(did=did, schema_id=schema_id)
 
     # Schema is not registered in registry
+    not_found_response = Response(status_code=404)
+    not_found_response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=not_found_response,
+            message="Schema not found in registry",
+            request=schema_id,
+        )
+    )
     mock_async_client.get = AsyncMock(
         side_effect=[
             Response(200, json=actor),
-            Response(404),
+            not_found_response,
         ]
     )
     with pytest.raises(trf.TrustRegistryException):
@@ -137,21 +150,43 @@ async def test_actor_with_role(mock_async_client):
 
 @pytest.mark.anyio
 async def test_registry_has_schema(mock_async_client):
-    schemas = ["did:name:version", "did_2:name_2:version_2"]
     schema_id = "did:name:version"
-    mock_async_client.get = AsyncMock(
-        return_value=Response(200, json={"schemas": schemas})
+    did = "did:sov:xxxx"
+    # mock has schema
+    response = Response(
+        status_code=200,
+        json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
     )
+    response.raise_for_status = Mock()
+    mock_async_client.get = AsyncMock(return_value=response)
     assert await trf.registry_has_schema(schema_id) is True
 
     schema_id = "did_3:name:version"
-    mock_async_client.get = AsyncMock(
-        return_value=Response(200, json={"schemas": schemas})
+    # mock does not have schema
+    not_found_response = Response(status_code=404)
+    not_found_response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=not_found_response,
+            message="Something went wrong when fetching schema from trust registry.",
+            request=schema_id,
+        )
     )
+
+    mock_async_client.get = AsyncMock(return_value=not_found_response)
     assert await trf.registry_has_schema(schema_id) is False
 
-    mock_async_client.get = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
+    # mock 500
+    error_response = Response(status_code=500)
+    error_response.raise_for_status = Mock(
+        side_effect=HTTPStatusError(
+            response=error_response,
+            message="Something went wrong when fetching schema from trust registry.",
+            request=schema_id,
+        )
+    )
+
+    mock_async_client.get = AsyncMock(return_value=error_response)
+    with pytest.raises(HTTPStatusError):
         await trf.registry_has_schema(schema_id)
 
 
@@ -274,3 +309,31 @@ async def test_update_actor(mock_async_client):
     )
     with pytest.raises(trf.TrustRegistryException):
         await trf.update_actor(actor=actor)
+
+
+@pytest.mark.anyio
+async def test_assert_actor_name(mock_async_client):
+    # test actor exists
+    name = "Numuhukumakiaki'aialunamor"
+    actor = trf.Actor(
+        id="some_id",
+        name=name,
+        roles=["issuer", "verifier"],
+        did="actor-did",
+        didcomm_invitation="actor-didcomm-invitation",
+    )
+    mock_async_client.get = AsyncMock(
+        return_value=Response(status_code=200, json=actor)
+    )
+
+    assert await trf.assert_actor_name(name) is True
+
+    # test actor does not exists
+    mock_async_client.get = AsyncMock(return_value=Response(status_code=404))
+
+    assert await trf.assert_actor_name("not_an_actor") is False
+
+    # test exception (500)
+    mock_async_client.get = AsyncMock(return_value=Response(500))
+    with pytest.raises(trf.TrustRegistryException):
+        await trf.assert_actor_name(name)

@@ -66,7 +66,7 @@ async def test_create_revocation_registry(mock_agent_controller: AcaPyClient):
         await rg.create_revocation_registry(
             mock_agent_controller, credential_definition_id=cred_def_id
         )
-    assert exc.value.status_code == 500
+        assert exc.value.status_code == 500
 
 
 @pytest.mark.anyio
@@ -112,7 +112,7 @@ async def test_get_active_revocation_registry_for_credential(
         await rg.get_active_revocation_registry_for_credential(
             mock_agent_controller, credential_definition_id=cred_def_id
         )
-    assert exc.value.status_code == 500
+        assert exc.value.status_code == 500
 
 
 @pytest.mark.anyio
@@ -147,7 +147,7 @@ async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClie
         await rg.get_credential_revocation_status(
             controller=mock_agent_controller, credential_exchange_id=cred_ex_id
         )
-    assert exc.value.status_code == 500
+        assert exc.value.status_code == 500
 
 
 @pytest.mark.anyio
@@ -227,7 +227,7 @@ async def test_publish_revocation_registry_on_ledger(
                 create_transaction_for_endorser=False,
             )
         )
-    assert exc.value.status_code == 500
+        assert exc.value.status_code == 500
 
 
 @pytest.mark.anyio
@@ -271,7 +271,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
             connection_id=conn_id,
             create_transaction_for_endorser=False,
         )
-    assert exc.value.status_code == 400
+        assert exc.value.status_code == 400
 
     # Error no result
     with pytest.raises(
@@ -290,7 +290,7 @@ async def test_publish_revocation_entry_to_ledger(mock_agent_controller: AcaPyCl
             revocation_registry_id=revocation_registry_id,
             create_transaction_for_endorser=False,
         )
-    assert exc.value.status_code == 500
+        assert exc.value.status_code == 500
 
 
 @pytest.mark.anyio
@@ -306,7 +306,9 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         to_async(
             RevRegResult(
                 result=IssuerRevRegRecord(
-                    cred_def_id=cred_def_id, max_cred_num=max_cred_num
+                    cred_def_id=cred_def_id,
+                    revoc_reg_id=revocation_registry_id,
+                    max_cred_num=max_cred_num,
                 )
             )
         )

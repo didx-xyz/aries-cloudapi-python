@@ -120,6 +120,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             bound_logger.error(
                 "Unexpected constraint violation: {}", constraint_violation
             )
+            raise ActorAlreadyExistsException(
                 f"Bad request: Unique constraint violated - {constraint_violation}"
             )
 

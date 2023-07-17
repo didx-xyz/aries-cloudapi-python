@@ -134,14 +134,12 @@ async def create_tenant(
             await admin_controller.multitenancy.delete_wallet(wallet_response.wallet_id)
         raise http_error
 
-        except Exception as e:
-            bound_logger.info("Something went wrong")
-            if wallet_response:
-                bound_logger.info("delete wallet")
-                await admin_controller.multitenancy.delete_wallet(
-                    wallet_response.wallet_id
-                )
-            raise e from e
+    except Exception as e:
+        bound_logger.exception("An unhandled exception occurred")
+        if wallet_response:
+            bound_logger.info("Could not register actor: deleting wallet")
+            await admin_controller.multitenancy.delete_wallet(wallet_response.wallet_id)
+        raise
 
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,

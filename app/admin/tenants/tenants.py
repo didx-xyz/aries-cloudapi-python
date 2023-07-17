@@ -34,7 +34,9 @@ from app.dependencies.auth import (
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import (
     Actor,
+    TrustRegistryException,
     actor_by_id,
+    assert_actor_name,
     register_actor,
     remove_actor_by_id,
 )
@@ -75,41 +77,81 @@ async def create_tenant(
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
 
-    async with get_tenant_admin_controller() as admin_controller:
-        wallet_response = await admin_controller.multitenancy.create_wallet(
-            body=CreateWalletRequestWithGroups(
-                image_url=body.image_url,
-                key_management_mode="managed",
-                label=body.name,
-                wallet_key=base58.b58encode(token_urlsafe(48)),
-                wallet_name=uuid4().hex,
-                wallet_type="askar",
-                group_id=body.group_id,
-            )
-        )
-    bound_logger.debug("Wallet creation successful")
-
     name = body.name
     roles = body.roles
-    if roles:
-        bound_logger.info("Onboarding `{}` with requested roles: `{}`", name, roles)
-        onboard_result = await onboard_tenant(
-            name=name,
-            roles=roles,
-            tenant_auth_token=wallet_response.token,
-            tenant_id=wallet_response.wallet_id,
+
+    try:
+        actor_name_exists = await assert_actor_name(body.name)
+    except TrustRegistryException:
+        raise CloudApiException(
+            "An error occurred when trying to register actor. Please try again"
         )
 
-        bound_logger.debug("Registering actor in the trust registry")
-        await register_actor(
-            actor=Actor(
-                id=wallet_response.wallet_id,
-                name=name,
-                roles=roles,
-                did=onboard_result.did,
-                didcomm_invitation=onboard_result.didcomm_invitation,
-            )
+    if actor_name_exists:
+        bound_logger.info("Actor exists can't create wallet")
+        raise HTTPException(
+            409, f"Can't create Tenant. Actor with name `{name}` already exists."
         )
+
+    bound_logger.info("Actor name is unique, creating wallet")
+    wallet_response = None
+    async with get_tenant_admin_controller() as admin_controller:
+        try:
+            wallet_response = await admin_controller.multitenancy.create_wallet(
+                body=CreateWalletRequestWithGroups(
+                    image_url=body.image_url,
+                    key_management_mode="managed",
+                    label=body.name,
+                    wallet_key=base58.b58encode(token_urlsafe(48)),
+                    wallet_name=uuid4().hex,
+                    wallet_type="askar",
+                    group_id=body.group_id,
+                )
+            )
+            bound_logger.debug("Wallet creation successful")
+
+            if roles:
+                bound_logger.info(
+                    "Onboarding `{}` with requested roles: `{}`", name, roles
+                )
+                onboard_result = await onboard_tenant(
+                    name=name,
+                    roles=roles,
+                    tenant_auth_token=wallet_response.token,
+                    tenant_id=wallet_response.wallet_id,
+                )
+                bound_logger.debug("Registering actor in the trust registry")
+                await register_actor(
+                    actor=Actor(
+                        id=wallet_response.wallet_id,
+                        name=name,
+                        roles=roles,
+                        did=onboard_result.did,
+                        didcomm_invitation=onboard_result.didcomm_invitation,
+                    )
+                )
+        except HTTPException as http_error:
+            bound_logger.error("Could not register actor: {}", http_error.detail)
+            if wallet_response:
+                bound_logger.info(
+                    "Stray wallet was created for unregistered actor; deleting wallet"
+                )
+                await admin_controller.multitenancy.delete_wallet(
+                    wallet_response.wallet_id
+                )
+                bound_logger.info("Wallet deleted.")
+            raise
+        except Exception:
+            bound_logger.exception("An unhandled exception occurred")
+            if wallet_response:
+                bound_logger.info(
+                    "Could not register actor, but wallet was created; deleting wallet"
+                )
+                await admin_controller.multitenancy.delete_wallet(
+                    wallet_response.wallet_id
+                )
+                bound_logger.info("Wallet deleted.")
+            raise
 
     response = CreateTenantResponse(
         tenant_id=wallet_response.wallet_id,

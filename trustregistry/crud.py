@@ -117,7 +117,10 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
 
         else:
-            bound_logger.info("Bad request: {}", constraint_violation)
+            bound_logger.error("Bad request: {}", constraint_violation)
+            raise Exception(
+                f"Bad request: Unique constraint violated - {constraint_violation}"
+            )
 
     except Exception as e:
         bound_logger.info("Something went wrong during actor creation")

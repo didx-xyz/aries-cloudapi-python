@@ -80,12 +80,17 @@ async def create_tenant(
     name = body.name
     roles = body.roles
 
+    try:
         actor_name_exists = await assert_actor_name(body.name)
         if actor_name_exists:
             bound_logger.info("Actor exists can't create wallet")
             raise HTTPException(
                 409, f"Can't create Tenant. Actor with name: {name} already exists."
             )
+    except TrustRegistryException:
+        raise CloudApiException(
+            "An error occurred when trying to register actor. Please try again"
+        )
 
             if roles:
                 bound_logger.info(

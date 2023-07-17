@@ -92,9 +92,8 @@ async def create_tenant(
             "An error occurred when trying to register actor. Please try again"
         )
 
-            if roles:
-                bound_logger.info(
-                    "Onboarding `{}` with requested roles: `{}`", name, roles
+    try:
+        async with get_tenant_admin_controller() as admin_controller:
                 )
                 onboard_result = await onboard_tenant(
                     name=name,

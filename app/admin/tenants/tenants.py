@@ -108,8 +108,28 @@ async def create_tenant(
                     group_id=body.group_id,
                 )
             )
-        bound_logger.debug("Wallet creation successful")
+            bound_logger.debug("Wallet creation successful")
 
+            if roles:
+                bound_logger.info(
+                    "Onboarding `{}` with requested roles: `{}`", name, roles
+                )
+                onboard_result = await onboard_tenant(
+                    name=name,
+                    roles=roles,
+                    tenant_auth_token=wallet_response.token,
+                    tenant_id=wallet_response.wallet_id,
+                )
+                bound_logger.debug("Registering actor in the trust registry")
+                await register_actor(
+                    actor=Actor(
+                        id=wallet_response.wallet_id,
+                        name=name,
+                        roles=roles,
+                        did=onboard_result.did,
+                        didcomm_invitation=onboard_result.didcomm_invitation,
+                    )
+                )
         except HTTPException as http_error:
             bound_logger.error("Could not register actor: {}", http_error.detail)
             if wallet_response:
@@ -121,7 +141,6 @@ async def create_tenant(
                 )
                 bound_logger.info("Wallet deleted.")
             raise
-
         except Exception:
             bound_logger.exception("An unhandled exception occurred")
             if wallet_response:

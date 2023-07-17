@@ -1,11 +1,11 @@
 from typing import List
 
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
-from trustregistry import db
 from shared.models.trustregistry import Actor, Schema
+from trustregistry import db
 
 logger = get_logger(__name__)
 
@@ -45,6 +45,22 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
         bound_logger.info("Successfully retrieved actor from database.")
     else:
         bound_logger.info("Actor ID not found.")
+        raise ActorDoesNotExistException
+
+    return result
+
+
+def get_actor_by_name(db_session: Session, actor_name: str) -> db.Actor:
+    bound_logger = logger.bind(body={"actor_name": actor_name})
+    bound_logger.info("Query actor by name")
+    result = (
+        db_session.query(db.Actor).filter(db.Actor.name == actor_name).one_or_none()
+    )
+
+    if result:
+        bound_logger.info("Successfully retrieved actor from database")
+    else:
+        bound_logger.info("Actor name not found")
         raise ActorDoesNotExistException
 
     return result
@@ -101,7 +117,12 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
 
         else:
-            bound_logger.info("Bad request: {}", constraint_violation)
+            bound_logger.error(
+                "Unexpected constraint violation: {}", constraint_violation
+            )
+            raise ActorAlreadyExistsException(
+                f"Bad request: Unique constraint violated - {constraint_violation}"
+            )
 
     except Exception as e:
         bound_logger.info("Something went wrong during actor creation")

@@ -144,6 +144,47 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     return actor_res.json()
 
 
+async def assert_actor_name(actor_name: str) -> bool:
+    """Assert if actor name exists in trust registry
+
+    Args:
+        actor_name (str): name of the actor to retrieve
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actor.
+
+    Returns:
+        Bool: if actor exists
+    """
+    bound_logger = logger.bind(body={"actor_name": actor_name})
+    bound_logger.info("Fetching actor by name from trust registry")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            actor_response = await client.get(
+                f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
+            )
+    except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
+        raise e from e
+
+    if actor_response.status_code == 404:
+        return False
+    elif actor_response.is_error:
+        bound_logger.error(
+            "Error fetching actor by name. Got status code {} with message `{}`.",
+            actor_response.status_code,
+            actor_response.text,
+        )
+        raise TrustRegistryException(
+            f"Error fetching actor by name: `{actor_response.text}`",
+            actor_response.status_code,
+        )
+
+    bound_logger.info("Asserted actor name is in trust registry.")
+    return True
+
+
 async def actor_by_id(actor_id: str) -> Optional[Actor]:
     """Retrieve actor by id from trust registry
 

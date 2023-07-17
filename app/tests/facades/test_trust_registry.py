@@ -309,3 +309,31 @@ async def test_update_actor(mock_async_client):
     )
     with pytest.raises(trf.TrustRegistryException):
         await trf.update_actor(actor=actor)
+
+
+@pytest.mark.anyio
+async def test_assert_actor_name(mock_async_client):
+    # test actor exists
+    name = "Numuhukumakiaki'aialunamor"
+    actor = trf.Actor(
+        id="some_id",
+        name=name,
+        roles=["issuer", "verifier"],
+        did="actor-did",
+        didcomm_invitation="actor-didcomm-invitation",
+    )
+    mock_async_client.get = AsyncMock(
+        return_value=Response(status_code=200, json=actor)
+    )
+
+    assert await trf.assert_actor_name(name) is True
+
+    # test actor does not exists
+    mock_async_client.get = AsyncMock(return_value=Response(status_code=404))
+
+    assert await trf.assert_actor_name("not_an_actor") is False
+
+    # test exception (500)
+    mock_async_client.get = AsyncMock(return_value=Response(500))
+    with pytest.raises(trf.TrustRegistryException):
+        await trf.assert_actor_name(name)

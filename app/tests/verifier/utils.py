@@ -31,10 +31,10 @@ from assertpy import assert_that
 from httpx import Response
 from mockito import mock, when
 
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.trust_registry import Actor
 from app.generic.verifier.facades.acapy_verifier import Verifier
-from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
-from app.generic.verifier.verifier_utils import (
+from app.generic.verifier.facades.acapy_verifier_utils import (
     are_valid_schemas,
     assert_valid_prover,
     assert_valid_verifier,
@@ -44,9 +44,10 @@ from app.generic.verifier.verifier_utils import (
     get_schema_ids,
     is_verifier,
 )
+from app.generic.verifier.models import AcceptProofRequest, SendProofRequest
 from app.tests.util.mock import to_async
-from shared import PresentationExchange, PresentProofProtocolVersion
-from shared.cloud_api_error import CloudApiException
+from shared.models.protocol import PresentProofProtocolVersion
+from shared.models.topics import PresentationExchange
 
 sample_actor = Actor(
     id="abcde",

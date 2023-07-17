@@ -1,13 +1,13 @@
-import logging
-
-from aries_cloudcontroller import AcaPyClient, PingRequest, SendMessage
+from aries_cloudcontroller import PingRequest, SendMessage
 from aries_cloudcontroller.model.ping_request_response import PingRequestResponse
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from shared.dependencies.auth import agent_selector
+from app.dependencies.acapy_clients import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
+from shared.log_config import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/messaging", tags=["messaging"])
 
@@ -25,7 +25,7 @@ class TrustPingMsg(BaseModel):
 @router.post("/send-message")
 async def send_messages(
     message: Message,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Send basic message.
@@ -39,15 +39,18 @@ async def send_messages(
     ---------
     The response object obtained when sending a message.
     """
-    await aries_controller.basicmessage.send_message(
-        conn_id=message.connection_id, body=SendMessage(content=message.content)
-    )
+    logger.info("POST request received: Send message")
+    async with client_from_auth(auth) as aries_controller:
+        await aries_controller.basicmessage.send_message(
+            conn_id=message.connection_id, body=SendMessage(content=message.content)
+        )
+    logger.info("Successfully sent message.")
 
 
 @router.post("/trust-ping", response_model=PingRequestResponse)
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Trust ping
@@ -61,8 +64,11 @@ async def send_trust_ping(
     --------
     The response object obtained when sending a trust ping.
     """
-    response = await aries_controller.trustping.send_ping(
-        conn_id=trustping_msg.connection_id,
-        body=PingRequest(comment=trustping_msg.comment),
-    )
+    logger.info("POST request received: Send trust ping")
+    async with client_from_auth(auth) as aries_controller:
+        response = await aries_controller.trustping.send_ping(
+            conn_id=trustping_msg.connection_id,
+            body=PingRequest(comment=trustping_msg.comment),
+        )
+    logger.info("Successfully sent trust ping.")
     return response

@@ -1,6 +1,7 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
 COPY trustregistry /trustregistry
+COPY shared /shared
 
 WORKDIR /trustregistry
 

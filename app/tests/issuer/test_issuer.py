@@ -1,19 +1,33 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
+from pytest_mock import MockerFixture
 
 import app.generic.issuer.issuer as test_module
+from app.dependencies.auth import AcaPyAuth
 from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
 from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
-from shared import CredentialExchange, IssueCredentialProtocolVersion
+from shared.models.topics import CredentialExchange, IssueCredentialProtocolVersion
+from shared.util.mock_agent_controller import MockContextManagedController
 
 
 @pytest.mark.anyio
-async def test_send_credential(mock_agent_controller: AcaPyClient):
+async def test_send_credential(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
     did = "did:sov:WgWxqztrNooG92RXvxSTWv"
     cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
     cred_ex = mock(CredentialExchange)
+
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
 
     when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     when(test_module).schema_id_from_credential_definition_id(
@@ -29,7 +43,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
         attributes={"name": "John", "age": "23"},
     )
 
-    result = await test_module.send_credential(credential, mock_agent_controller)
+    result = await test_module.send_credential(credential, mock_tenant_auth)
 
     assert result is cred_ex
     verify(IssuerV1).send_credential(...)
@@ -41,7 +55,18 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_credentials(mock_agent_controller: AcaPyClient):
+async def test_get_credentials(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     v1_records_no_conn_id = [mock(CredentialExchange), mock(CredentialExchange)]
     v2_records_no_conn_id = [mock(CredentialExchange), mock(CredentialExchange)]
 
@@ -51,7 +76,7 @@ async def test_get_credentials(mock_agent_controller: AcaPyClient):
     with when(IssuerV1).get_records(...).thenReturn(
         to_async(v1_records_no_conn_id)
     ), when(IssuerV2).get_records(...).thenReturn(to_async(v2_records_no_conn_id)):
-        result = await test_module.get_credentials(None, mock_agent_controller)
+        result = await test_module.get_credentials(None, mock_tenant_auth)
 
         assert result == v1_records_no_conn_id + v2_records_no_conn_id
 
@@ -65,7 +90,7 @@ async def test_get_credentials(mock_agent_controller: AcaPyClient):
     with when(IssuerV1).get_records(...).thenReturn(to_async(v1_records)), when(
         IssuerV2
     ).get_records(...).thenReturn(to_async(v2_records)):
-        result = await test_module.get_credentials("conn_id", mock_agent_controller)
+        result = await test_module.get_credentials("conn_id", mock_tenant_auth)
 
         assert result == v1_records + v2_records
         verify(IssuerV1).get_records(
@@ -77,14 +102,23 @@ async def test_get_credentials(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_credential(mock_agent_controller: AcaPyClient):
+async def test_get_credential(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
     with when(IssuerV1).get_record(...).thenReturn(to_async(v1_record)):
-        result = await test_module.get_credential(
-            "v1-credential_id", mock_agent_controller
-        )
+        result = await test_module.get_credential("v1-credential_id", mock_tenant_auth)
 
         assert result is v1_record
 
@@ -93,9 +127,7 @@ async def test_get_credential(mock_agent_controller: AcaPyClient):
         )
 
     with when(IssuerV2).get_record(...).thenReturn(to_async(v2_record)):
-        result = await test_module.get_credential(
-            "v2-credential_id", mock_agent_controller
-        )
+        result = await test_module.get_credential("v2-credential_id", mock_tenant_auth)
 
         assert result is v2_record
         verify(IssuerV2).get_record(
@@ -104,18 +136,29 @@ async def test_get_credential(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_remove_credential(mock_agent_controller: AcaPyClient):
+async def test_remove_credential(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
     with when(IssuerV1).delete_credential(...).thenReturn(to_async(v1_record)):
-        await test_module.remove_credential("v1-credential_id", mock_agent_controller)
+        await test_module.remove_credential("v1-credential_id", mock_tenant_auth)
 
         verify(IssuerV1).delete_credential(
             controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
         )
     with when(IssuerV2).delete_credential(...).thenReturn(to_async(v2_record)):
-        await test_module.remove_credential("v2-credential_id", mock_agent_controller)
+        await test_module.remove_credential("v2-credential_id", mock_tenant_auth)
 
         verify(IssuerV2).delete_credential(
             controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
@@ -125,7 +168,16 @@ async def test_remove_credential(mock_agent_controller: AcaPyClient):
 @pytest.mark.anyio
 async def test_request_credential(
     mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
 ):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
@@ -142,7 +194,7 @@ async def test_request_credential(
     ).thenReturn(
         to_async(v1_record)
     ):
-        await test_module.request_credential("v1-credential_id", mock_agent_controller)
+        await test_module.request_credential("v1-credential_id", mock_tenant_auth)
 
         verify(IssuerV1).request_credential(
             controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
@@ -160,7 +212,7 @@ async def test_request_credential(
     ).thenReturn(
         to_async(True)
     ):
-        await test_module.request_credential("v2-credential_id", mock_agent_controller)
+        await test_module.request_credential("v2-credential_id", mock_tenant_auth)
 
         verify(IssuerV2).request_credential(
             controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
@@ -173,6 +225,7 @@ async def test_request_credential(
 @pytest.mark.anyio
 async def test_request_credential_x_no_schema_cred_def(
     mock_agent_controller: AcaPyClient,
+    mock_tenant_auth: AcaPyAuth,
 ):
     v1_record = mock(CredentialExchange)
 
@@ -182,7 +235,7 @@ async def test_request_credential_x_no_schema_cred_def(
     with when(IssuerV1).get_record(...).thenReturn(to_async(v1_record)), pytest.raises(
         Exception, match="Record has no credential definition or schema associated."
     ):
-        await test_module.request_credential("v1-credential_id", mock_agent_controller)
+        await test_module.request_credential("v1-credential_id", mock_tenant_auth)
 
         verify(IssuerV1, times=0).request_credential(
             controller=mock_agent_controller, credential_exchange_id="credential_id"
@@ -193,15 +246,26 @@ async def test_request_credential_x_no_schema_cred_def(
 
 
 @pytest.mark.anyio
-async def test_store_credential(mock_agent_controller: AcaPyClient):
+async def test_store_credential(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
     when(IssuerV1).store_credential(...).thenReturn(to_async(v1_record))
     when(IssuerV2).store_credential(...).thenReturn(to_async(v2_record))
 
-    await test_module.store_credential("v1-credential_id1", mock_agent_controller)
-    await test_module.store_credential("v2-credential_id2", mock_agent_controller)
+    await test_module.store_credential("v1-credential_id1", mock_tenant_auth)
+    await test_module.store_credential("v2-credential_id2", mock_tenant_auth)
 
     verify(IssuerV1).store_credential(
         controller=mock_agent_controller, credential_exchange_id="v1-credential_id1"

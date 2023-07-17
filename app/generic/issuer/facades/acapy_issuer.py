@@ -4,7 +4,7 @@ from typing import List, Optional
 from aries_cloudcontroller import AcaPyClient
 
 from app.generic.issuer.models import Credential, CredentialNoConnection
-from shared import CredentialExchange
+from shared.models.topics import CredentialExchange
 
 
 class Issuer(ABC):
@@ -44,7 +44,7 @@ class Issuer(ABC):
         controller: AcaPyClient
             The aries_cloudcontroller object
         credential: CredentialNoConnection
-            Credential ffer to create
+            Credential offer to create
 
         Returns:
         --------

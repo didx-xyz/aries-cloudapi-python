@@ -1,15 +1,21 @@
+from unittest.mock import AsyncMock
+
 import pytest
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCredPrecis
 from mockito import verify, when
+from pytest_mock import MockerFixture
 
 import app.generic.verifier.verifier as test_module
+from app.dependencies.auth import AcaPyAuth
 from app.facades.trust_registry import Actor
-from app.generic.verifier import verifier_utils
+from app.generic.verifier.facades import acapy_verifier_utils
 from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
 from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
 from app.tests.util.mock import to_async
 from app.tests.verifier.utils import indy_pres_spec, indy_proof_request
-from shared import PresentationExchange, PresentProofProtocolVersion
+from shared.models.protocol import PresentProofProtocolVersion
+from shared.models.topics import PresentationExchange
+from shared.util.mock_agent_controller import MockContextManagedController
 
 presentation_exchange_record_1 = PresentationExchange(
     connection_id="abcde",
@@ -49,7 +55,12 @@ conn_record = ConnRecord(
 
 
 @pytest.mark.anyio
-async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
+async def test_send_proof_request_v1(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
     # V1
     when(VerifierV1).send_proof_request(...).thenReturn(
         to_async(presentation_exchange_record_1)
@@ -59,7 +70,7 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
         to_async(conn_record)
     )
 
-    when(verifier_utils).get_actor(
+    when(acapy_verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
     ).thenReturn(to_async(actor))
 
@@ -69,9 +80,15 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
         protocol_version="v1",
     )
 
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     result = await test_module.send_proof_request(
         proof_request=send_proof_request,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_1
@@ -81,7 +98,12 @@ async def test_send_proof_request_v1(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
+async def test_send_proof_request_v2(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
     # V2
     when(VerifierV2).send_proof_request(...).thenReturn(
         to_async(presentation_exchange_record_2)
@@ -91,7 +113,7 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
         to_async(conn_record)
     )
 
-    when(verifier_utils).get_actor(
+    when(acapy_verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
     ).thenReturn(to_async(actor))
 
@@ -101,9 +123,15 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
         protocol_version="v2",
     )
 
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     result = await test_module.send_proof_request(
         proof_request=send_proof_request,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_2
@@ -113,7 +141,7 @@ async def test_send_proof_request_v2(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_create_proof_request(mock_agent_controller: AcaPyClient):
+async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
     #  V1
     when(VerifierV1).create_proof_request(...).thenReturn(
         to_async(presentation_exchange_record_1)
@@ -124,7 +152,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
             proof_request=indy_proof_request,
             connection_id="abcde",
         ),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
     assert result is presentation_exchange_record_1
 
@@ -138,13 +166,18 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
             proof_request=indy_proof_request,
             connection_id="abcde",
         ),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
     assert result is presentation_exchange_record_2
 
 
 @pytest.mark.anyio
-async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
+async def test_accept_proof_request_v1(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
     # V1
     when(VerifierV1).accept_proof_request(...).thenReturn(
         to_async(presentation_exchange_record_1)
@@ -157,15 +190,19 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
         proof_id="v1-1234", presentation_spec=indy_pres_spec
     )
 
-    when(test_module).assert_valid_prover(
-        aries_controller=mock_agent_controller,
-        prover=VerifierV1,
-        presentation=presentation,
-    ).thenReturn(to_async())
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
+    mocker.patch.object(
+        test_module, "assert_valid_prover", new_callable=AsyncMock, return_value=None
+    )
 
     result = await test_module.accept_proof_request(
         presentation=presentation,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_1
@@ -173,7 +210,12 @@ async def test_accept_proof_request_v1(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
+async def test_accept_proof_request_v2(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
     # V2
     when(VerifierV2).accept_proof_request(...).thenReturn(
         to_async(presentation_exchange_record_2)
@@ -186,15 +228,19 @@ async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
         proof_id="v2-1234", presentation_spec=indy_pres_spec
     )
 
-    when(test_module).assert_valid_prover(
-        aries_controller=mock_agent_controller,
-        prover=VerifierV2,
-        presentation=presentation,
-    ).thenReturn(to_async())
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
+    mocker.patch.object(
+        test_module, "assert_valid_prover", new_callable=AsyncMock, return_value=None
+    )
 
     result = await test_module.accept_proof_request(
         presentation=presentation,
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_2
@@ -202,9 +248,21 @@ async def test_accept_proof_request_v2(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
+async def test_reject_proof_request(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
     proof_request_v1 = test_module.RejectProofRequest(proof_id="v1-1234")
     # V1
+
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     when(VerifierV1).reject_proof_request(
         controller=mock_agent_controller, proof_request=proof_request_v1
     ).thenReturn(to_async(None))
@@ -215,7 +273,7 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is None
@@ -239,7 +297,7 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.reject_proof_request(
         proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result is None
@@ -252,15 +310,24 @@ async def test_reject_proof_request(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_delete_proof(mock_agent_controller: AcaPyClient):
+async def test_delete_proof(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     # V1
     when(VerifierV1).delete_proof(
         controller=mock_agent_controller, proof_id="v1-1234"
-    ).thenReturn(to_async(None))
+    ).thenReturn(to_async())
 
-    result = await test_module.delete_proof(
-        proof_id="v1-1234", aries_controller=mock_agent_controller
-    )
+    result = await test_module.delete_proof(proof_id="v1-1234", auth=mock_tenant_auth)
 
     assert result is None
     verify(VerifierV1).delete_proof(
@@ -270,11 +337,9 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
     # V2
     when(VerifierV2).delete_proof(
         controller=mock_agent_controller, proof_id="v2-1234"
-    ).thenReturn(to_async(None))
+    ).thenReturn(to_async())
 
-    result = await test_module.delete_proof(
-        proof_id="v2-1234", aries_controller=mock_agent_controller
-    )
+    result = await test_module.delete_proof(proof_id="v2-1234", auth=mock_tenant_auth)
 
     assert result is None
     verify(VerifierV2).delete_proof(
@@ -283,7 +348,18 @@ async def test_delete_proof(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_proof_record(mock_agent_controller: AcaPyClient):
+async def test_get_proof_record(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
     # V1
     when(VerifierV1).get_proof_record(
         controller=mock_agent_controller, proof_id="v1-abcd"
@@ -291,7 +367,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_proof_record(
         proof_id="v1-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == presentation_exchange_record_1
@@ -306,7 +382,7 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_proof_record(
         proof_id="v2-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == presentation_exchange_record_2
@@ -316,7 +392,17 @@ async def test_get_proof_record(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_proof_records(mock_agent_controller: AcaPyClient):
+async def test_get_proof_records(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
     # V1 and V2
     with when(VerifierV1).get_proof_records(
         controller=mock_agent_controller
@@ -327,9 +413,7 @@ async def test_get_proof_records(mock_agent_controller: AcaPyClient):
     ).thenReturn(
         to_async([presentation_exchange_record_2])
     ):
-        result = await test_module.get_proof_records(
-            aries_controller=mock_agent_controller
-        )
+        result = await test_module.get_proof_records(auth=mock_tenant_auth)
 
         assert result == [
             presentation_exchange_record_1,
@@ -340,7 +424,17 @@ async def test_get_proof_records(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
+async def test_get_credentials_for_request(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
     cred_precis = IndyCredPrecis(
         cred_info=IndyCredInfo(cred_def_id="WgWxqztrNooG92RXvxSTWv:3:CL:20:tag")
     )
@@ -351,7 +445,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_credentials_for_request(
         proof_id="v1-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == [cred_precis]
@@ -366,7 +460,7 @@ async def test_get_credentials_for_request(mock_agent_controller: AcaPyClient):
 
     result = await test_module.get_credentials_for_request(
         proof_id="v2-abcd",
-        aries_controller=mock_agent_controller,
+        auth=mock_tenant_auth,
     )
 
     assert result == [cred_precis]

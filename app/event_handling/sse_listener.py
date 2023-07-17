@@ -1,11 +1,11 @@
 import json
-import logging
 
 import httpx
 
 from shared import WEBHOOKS_URL
+from shared.log_config import get_logger
 
-LOGGER = logging.getLogger(__name__)
+logger = get_logger(__name__)
 base_url = f"{WEBHOOKS_URL}/sse"
 
 
@@ -20,6 +20,9 @@ class SseListener:
         wallet_id: str,
         topic: str,
     ):
+        logger.debug(
+            "Starting SseListener for wallet id `{}` and topic `{}`", wallet_id, topic
+        )
         self.wallet_id = wallet_id
         self.topic = topic
 
@@ -39,9 +42,9 @@ class SseListener:
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
-                        LOGGER.warning("Unexpected SSE line: %s", line)
+                        logger.warning("Unexpected SSE line: {}", line)
 
-        raise SseListenerTimeout("Event with request state was not returned by server")
+        raise SseListenerTimeout("Event with request state was not returned by server.")
 
     async def wait_for_event(self, field, field_id, desired_state, timeout: int = 120):
         """
@@ -59,9 +62,9 @@ class SseListener:
                     elif line == "" or line.startswith(": ping"):
                         pass  # ignore newlines and pings
                     else:
-                        LOGGER.warning("Unexpected SSE line: %s", line)
+                        logger.warning("Unexpected SSE line: {}", line)
 
-        raise SseListenerTimeout("Requested filtered event was not returned by server")
+        raise SseListenerTimeout("Requested filtered event was not returned by server.")
 
 
 class SseListenerTimeout(Exception):

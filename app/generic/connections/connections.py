@@ -1,8 +1,6 @@
-import logging
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    AcaPyClient,
     CreateInvitationRequest,
     InvitationResult,
     ReceiveInvitationRequest,
@@ -10,10 +8,13 @@ from aries_cloudcontroller import (
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from shared import Connection, conn_record_to_connection
-from shared.dependencies.auth import agent_selector
+from app.dependencies.acapy_clients import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
+from shared.log_config import get_logger
+from shared.models.conversion import conn_record_to_connection
+from shared.models.topics import Connection
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 
@@ -37,28 +38,32 @@ class AcceptInvitation(BaseModel):
 @router.post("/create-invitation", response_model=InvitationResult)
 async def create_invitation(
     body: Optional[CreateInvitation] = None,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Create connection invitation.
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Create invitation")
     if body is None:
         body = CreateInvitation()
 
-    invitation = await aries_controller.connection.create_invitation(
-        alias=body.alias,
-        auto_accept=True,
-        multi_use=body.multi_use,
-        public=body.use_public_did,
-        body=CreateInvitationRequest(),
-    )
+    async with client_from_auth(auth) as aries_controller:
+        invitation = await aries_controller.connection.create_invitation(
+            alias=body.alias,
+            auto_accept=True,
+            multi_use=body.multi_use,
+            public=body.use_public_did,
+            body=CreateInvitationRequest(),
+        )
+    bound_logger.info("Successfully created invitation.")
     return invitation
 
 
 @router.post("/accept-invitation", response_model=Connection)
 async def accept_invitation(
     body: AcceptInvitation,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> Connection:
     """
     Accept connection invitation.
@@ -68,18 +73,22 @@ async def accept_invitation(
     invitation: ReceiveInvitationRequest
         the invitation object obtained from create_invitation.
     """
-
-    connection_record = await aries_controller.connection.receive_invitation(
-        body=body.invitation,
-        auto_accept=True,
-        alias=body.alias,
-    )
-    return conn_record_to_connection(connection_record)
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Accept invitation")
+    async with client_from_auth(auth) as aries_controller:
+        connection_record = await aries_controller.connection.receive_invitation(
+            body=body.invitation,
+            auto_accept=True,
+            alias=body.alias,
+        )
+    result = conn_record_to_connection(connection_record)
+    bound_logger.info("Successfully accepted invitation.")
+    return result
 
 
 @router.get("", response_model=List[Connection])
 async def get_connections(
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[Connection]:
     """
     Retrieve list of connections.
@@ -88,20 +97,27 @@ async def get_connections(
     ---------
     JSON object with connections (key), a list of connections (ids)
     """
-    connections = await aries_controller.connection.get_connections()
+    logger.info("GET request received: Get connections")
 
-    if connections.results:
-        return [
-            conn_record_to_connection(connection) for connection in connections.results
-        ]
+    async with client_from_auth(auth) as aries_controller:
+        connections = await aries_controller.connection.get_connections()
 
+        if connections.results:
+            result = [
+                conn_record_to_connection(connection)
+                for connection in connections.results
+            ]
+            logger.info("Successfully returned connections.")
+            return result
+
+    logger.info("No connections returned.")
     return []
 
 
 @router.get("/{connection_id}", response_model=Connection)
 async def get_connection_by_id(
     connection_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Retrieve connection by id.
@@ -111,14 +127,24 @@ async def get_connection_by_id(
     connection_id: str
 
     """
-    connection = await aries_controller.connection.get_connection(conn_id=connection_id)
-    return conn_record_to_connection(connection)
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.info("GET request received: Get connection by ID")
+    async with client_from_auth(auth) as aries_controller:
+        connection = await aries_controller.connection.get_connection(
+            conn_id=connection_id
+        )
+    result = conn_record_to_connection(connection)
+    if result.connection_id:
+        bound_logger.info("Successfully got connection by ID.")
+    else:
+        bound_logger.info("Could not get connection by ID.")
+    return result
 
 
 @router.delete("/{connection_id}")
 async def delete_connection_by_id(
     connection_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
     Delete connection by id.
@@ -131,6 +157,11 @@ async def delete_connection_by_id(
     ------------
     Empty dict: {}
     """
-    await aries_controller.connection.delete_connection(conn_id=connection_id)
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.info("DELETE request received: Delete connection by ID")
 
+    async with client_from_auth(auth) as aries_controller:
+        await aries_controller.connection.delete_connection(conn_id=connection_id)
+    # TODO what if id not found?
+    bound_logger.info("Successfully deleted connection by ID.")
     return {}

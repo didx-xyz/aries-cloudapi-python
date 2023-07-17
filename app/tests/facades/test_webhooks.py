@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 import app.facades.webhooks as whf
-from shared import Connection
+from shared.models.topics import Connection
 
 conn_record = Connection(
     accept="auto",

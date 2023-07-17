@@ -14,7 +14,8 @@ from app.tests.verifier.utils import (
     indy_proof_request,
     v10_presentation_exchange_records,
 )
-from shared import PresentationExchange, PresentProofProtocolVersion
+from shared.models.protocol import PresentProofProtocolVersion
+from shared.models.topics import PresentationExchange
 
 
 @pytest.mark.anyio

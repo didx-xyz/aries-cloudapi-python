@@ -1,7 +1,7 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient
 
 from app.admin.tenants.models import CreateTenantResponse
+from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
 from app.event_handling.sse_listener import SseListener
 from app.generic.definitions import (
     CreateCredentialDefinition,
@@ -15,35 +15,34 @@ from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
-from shared import CredentialExchange, RichAsyncClient
-from shared.dependencies.auth import acapy_auth, acapy_auth_verified
+from shared import RichAsyncClient
+from shared.models.topics import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
-# TODO: Move all methods here to member_personans as this is specific for the bob-alice interaction
-# OR abstract the persona specific parts out of it
-
 
 @pytest.fixture(scope="function")
-async def schema_definition(governance_acapy_client: AcaPyClient) -> CredentialSchema:
+async def schema_definition(
+    mock_governance_auth: AcaPyAuthVerified,
+) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema", version=random_version(), attribute_names=["speed"]
     )
 
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
+    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
     return schema_definition_result
 
 
 @pytest.fixture(scope="function")
 async def schema_definition_alt(
-    governance_acapy_client: AcaPyClient,
+    mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
     definition = CreateSchema(
         name="test_schema_alt", version=random_version(), attribute_names=["speed"]
     )
 
-    schema_definition_result = await create_schema(definition, governance_acapy_client)
+    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
     return schema_definition_result
 
@@ -52,7 +51,6 @@ async def schema_definition_alt(
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition.id)
 
@@ -63,7 +61,7 @@ async def credential_definition_id(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(definition, faber_acapy_client, auth)
+    result = await create_credential_definition(definition, auth)
 
     return result.id
 
@@ -72,7 +70,6 @@ async def credential_definition_id(
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition_alt.id)
 
@@ -83,7 +80,7 @@ async def credential_definition_id_revocable(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(definition, faber_acapy_client, auth)
+    result = await create_credential_definition(definition, auth)
 
     return result.id
 
@@ -148,7 +145,7 @@ async def issue_credential_to_alice(
 
     # create and send credential offer- issuer
     await faber_client.post(
-        "/generic/issuer/credentials",
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
 
@@ -162,13 +159,11 @@ async def issue_credential_to_alice(
 
     # send credential request - holder
     response = await alice_member_client.post(
-        f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
     await listener.wait_for_event(
         field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
-
-    # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
 
     return response.json()

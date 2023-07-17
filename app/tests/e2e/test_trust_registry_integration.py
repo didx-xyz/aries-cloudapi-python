@@ -1,33 +1,24 @@
 import pytest
 
+from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
 from app.facades.trust_registry import actor_by_id
-from app.tests.util.client import get_tenant_admin_client, get_tenant_client
+from app.tests.util.client import get_tenant_client
 from app.tests.util.string import base64_to_json, random_string
-from app.tests.util.tenants import (
-    create_issuer_tenant,
-    create_tenant,
-    create_verifier_tenant,
-    delete_tenant,
-)
 from shared import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: RichAsyncClient,
+    acme_verifier: CreateTenantResponse,
+    faber_issuer: CreateTenantResponse,
+    alice_tenant: CreateTenantResponse,
 ):
-    tenant_admin = get_tenant_admin_client()
-
-    # Create tenants
-    verifier_tenant = await create_verifier_tenant(tenant_admin, "acme")
-    issuer_tenant = await create_issuer_tenant(tenant_admin, "this-is-it")
-    holder_tenant = await create_tenant(tenant_admin, "alice")
-
     # Get clients
-    verifier_client = get_tenant_client(token=verifier_tenant.access_token)
-    issuer_client = get_tenant_client(token=issuer_tenant.access_token)
-    holder_client = get_tenant_client(token=holder_tenant.access_token)
+    verifier_client = get_tenant_client(token=acme_verifier.access_token)
+    issuer_client = get_tenant_client(token=faber_issuer.access_token)
+    holder_client = get_tenant_client(token=alice_tenant.access_token)
 
     # Create connection between issuer and holder
     invitation = (
@@ -35,7 +26,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     ).json()
 
     issuer_tenant_listener = SseListener(
-        topic="connections", wallet_id=issuer_tenant.tenant_id
+        topic="connections", wallet_id=faber_issuer.tenant_id
     )
 
     invitation_response = (
@@ -56,13 +47,13 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
-    verifier_actor = await actor_by_id(verifier_tenant.tenant_id)
+    verifier_actor = await actor_by_id(acme_verifier.tenant_id)
 
     assert verifier_actor
 
     verifier_tenant_listener = SseListener(
         topic="connections",
-        wallet_id=verifier_tenant.tenant_id,
+        wallet_id=acme_verifier.tenant_id,
     )
 
     assert verifier_actor["didcomm_invitation"]
@@ -113,7 +104,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Issue credential from issuer to holder
     holder_tenant_listener = SseListener(
-        topic="credentials", wallet_id=holder_tenant.tenant_id
+        topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
     issuer_credential_exchange = (
@@ -138,7 +129,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_credential_exchange_id = payload["credential_id"]
 
     issuer_tenant_cred_listener = SseListener(
-        topic="credentials", wallet_id=issuer_tenant.tenant_id
+        topic="credentials", wallet_id=faber_issuer.tenant_id
     )
 
     response = await holder_client.post(
@@ -155,7 +146,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     # Present proof from holder to verifier
 
     holder_tenant_proofs_listener = SseListener(
-        topic="proofs", wallet_id=holder_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.tenant_id
     )
 
     response = await verifier_client.post(
@@ -204,7 +195,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     cred_id = available_credentials[0]["cred_info"]["referent"]
 
     verifier_tenant_proofs_listener = SseListener(
-        topic="proofs", wallet_id=verifier_tenant.tenant_id
+        topic="proofs", wallet_id=acme_verifier.tenant_id
     )
 
     response = await holder_client.post(
@@ -230,8 +221,3 @@ async def test_accept_proof_request_verifier_no_public_did(
         desired_state="done",
     )
     assert event["verified"]
-
-    # Delete all tenants
-    await delete_tenant(tenant_admin, issuer_tenant.tenant_id)
-    await delete_tenant(tenant_admin, verifier_tenant.tenant_id)
-    await delete_tenant(tenant_admin, holder_tenant.tenant_id)

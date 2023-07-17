@@ -1,82 +1,40 @@
-import logging
-from enum import Enum
-from typing import Dict, Optional
+from typing import List, Optional
 
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import AcaPyClient
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
-from typing_extensions import TypedDict
 
+from app.dependencies.acapy_clients import client_from_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
 from app.facades.trust_registry import assert_valid_issuer
-from app.generic.issuer.facades.acapy_issuer import Issuer
-from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
-from app.generic.issuer.facades.acapy_issuer_v2 import IssuerV2
-from app.generic.issuer.models import Credential, CredentialNoConnection
+from app.generic.issuer.facades.acapy_issuer_utils import (
+    IssueCredentialFacades,
+    issuer_from_id,
+    issuer_from_protocol_version,
+)
+from app.generic.issuer.models import (
+    CreateOffer,
+    Credential,
+    CredentialNoConnection,
+    RevokeCredential,
+    SendCredential,
+)
 from app.util.did import did_from_credential_definition_id
-from shared import CredentialExchange, IssueCredentialProtocolVersion
-from shared.cloud_api_error import CloudApiException
-from shared.dependencies.auth import agent_selector
+from shared.log_config import get_logger
+from shared.models.topics import CredentialExchange
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/issuer", tags=["issuer"])
 
 
-class IssueCredentialFacades(Enum):
-    v1 = IssuerV1
-    v2 = IssuerV2
-
-
-class ProblemReportExplanation(TypedDict):
-    description: str
-
-
-class CredentialBase(BaseModel):
-    protocol_version: IssueCredentialProtocolVersion
-    credential_definition_id: str
-    attributes: Dict[str, str]
-
-
-class RevokeCredential(BaseModel):
-    credential_definition_id: str = ""
-    auto_publish_on_ledger: Optional[bool] = False
-    credential_exchange_id: str = ""
-
-
-class SendCredential(CredentialBase):
-    connection_id: str
-
-
-class CreateOffer(CredentialBase):
-    pass
-
-
-def __issuer_from_id(id: str) -> Issuer:
-    if id.startswith("v1-"):
-        return IssueCredentialFacades.v1.value
-
-    elif id.startswith("v2-"):
-        return IssueCredentialFacades.v2.value
-
-    raise CloudApiException(
-        "Unknown version. ID is expected to contain protocol version", 400
-    )
-
-
-def __issuer_from_protocol_version(version: IssueCredentialProtocolVersion) -> Issuer:
-    facade = IssueCredentialFacades[version.name]
-
-    return facade.value
-
-
-@router.get("/credentials")
+@router.get("/credentials", response_model=List[CredentialExchange])
 async def get_credentials(
     connection_id: Optional[str] = Query(None),
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Get a list of credential records.
@@ -85,22 +43,32 @@ async def get_credentials(
     ------------
         connection_id: str (Optional)
     """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.info("GET request received: Get credentials")
 
-    v1_records = await IssueCredentialFacades.v1.value.get_records(
-        controller=aries_controller, connection_id=connection_id
-    )
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Fetching v1 records")
+        v1_records = await IssueCredentialFacades.v1.value.get_records(
+            controller=aries_controller, connection_id=connection_id
+        )
 
-    v2_records = await IssueCredentialFacades.v2.value.get_records(
-        controller=aries_controller, connection_id=connection_id
-    )
+        bound_logger.debug("Fetching v2 records")
+        v2_records = await IssueCredentialFacades.v2.value.get_records(
+            controller=aries_controller, connection_id=connection_id
+        )
 
-    return v1_records + v2_records
+    result = v1_records + v2_records
+    if result:
+        bound_logger.info("Successfully fetched v1 and v2 records.")
+    else:
+        bound_logger.info("No v1 or v2 records returned.")
+    return result
 
 
-@router.get("/credentials/{credential_id}")
+@router.get("/credentials/{credential_id}", response_model=CredentialExchange)
 async def get_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Get a credential by credential id.
@@ -110,18 +78,28 @@ async def get_credential(
         credential_id: str
             credential identifier
     """
+    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger.info("GET request received: Get credentials by credential id")
 
-    issuer = __issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_id)
 
-    return await issuer.get_record(
-        controller=aries_controller, credential_exchange_id=credential_id
-    )
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Getting credential record")
+        result = await issuer.get_record(
+            controller=aries_controller, credential_exchange_id=credential_id
+        )
+
+    if result:
+        bound_logger.info("Successfully fetched credential.")
+    else:
+        bound_logger.info("No credential returned.")
+    return result
 
 
 @router.post("/credentials", response_model=CredentialExchange)
 async def send_credential(
     credential: SendCredential,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Create and send a credential. Automating the entire flow.
@@ -137,41 +115,51 @@ async def send_credential(
             The response object from sending a credential
         status_code: 200
     """
+    bound_logger = logger.bind(body=credential)
+    bound_logger.info("POST request received: Send credential")
 
-    issuer = __issuer_from_protocol_version(credential.protocol_version)
+    issuer = issuer_from_protocol_version(credential.protocol_version)
 
-    # Assert the agent has a public did
-    public_did = await assert_public_did(aries_controller)
+    async with client_from_auth(auth) as aries_controller:
+        # Assert the agent has a public did
+        public_did = await assert_public_did(aries_controller)
 
-    # Retrieve the schema_id based on the credential definition id
-    schema_id = await schema_id_from_credential_definition_id(
-        aries_controller, credential.credential_definition_id
-    )
-
-    # Make sure we are allowed to issue according to trust registry rules
-    await assert_valid_issuer(public_did, schema_id)
-
-    try:
-        return await issuer.send_credential(
-            controller=aries_controller,
-            credential=Credential(
-                attributes=credential.attributes,
-                cred_def_id=credential.credential_definition_id,
-                connection_id=credential.connection_id,
-            ),
+        # Retrieve the schema_id based on the credential definition id
+        schema_id = await schema_id_from_credential_definition_id(
+            aries_controller, credential.credential_definition_id
         )
-    except ClientResponseError as e:
-        logger.debug(
-            "A ClientResponseError was caught while sending credentials. The error message is: '%s'",
-            e.message,
-        )
-        raise CloudApiException("Failed to create and send credential.", 500) from e
+
+        # Make sure we are allowed to issue according to trust registry rules
+        await assert_valid_issuer(public_did, schema_id)
+
+        try:
+            bound_logger.debug("Sending credential")
+            result = await issuer.send_credential(
+                controller=aries_controller,
+                credential=Credential(
+                    attributes=credential.attributes,
+                    cred_def_id=credential.credential_definition_id,
+                    connection_id=credential.connection_id,
+                ),
+            )
+        except ClientResponseError as e:
+            logger.warning(
+                "ClientResponseError was caught while sending credentials, with message `{}`.",
+                e.message,
+            )
+            raise CloudApiException("Failed to create and send credential.", 500) from e
+
+    if result:
+        bound_logger.info("Successfully sent credential.")
+    else:
+        bound_logger.warning("No result from sending credential.")
+    return result
 
 
-@router.post("/credentials/create-offer")
+@router.post("/credentials/create-offer", response_model=CredentialExchange)
 async def create_offer(
     credential: CreateOffer,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Create a credential offer not bound to any connection.
@@ -185,33 +173,43 @@ async def create_offer(
     --------
         The response object from sending a credential
     """
+    bound_logger = logger.bind(body=credential)
+    bound_logger.info("POST request received: Create credential offer")
 
-    issuer = __issuer_from_protocol_version(credential.protocol_version)
+    issuer = issuer_from_protocol_version(credential.protocol_version)
 
-    # Assert the agent has a public did
-    public_did = await assert_public_did(aries_controller)
+    async with client_from_auth(auth) as aries_controller:
+        # Assert the agent has a public did
+        public_did = await assert_public_did(aries_controller)
 
-    # Retrieve the schema_id based on the credential definition id
-    schema_id = await schema_id_from_credential_definition_id(
-        aries_controller, credential.credential_definition_id
-    )
+        # Retrieve the schema_id based on the credential definition id
+        schema_id = await schema_id_from_credential_definition_id(
+            aries_controller, credential.credential_definition_id
+        )
 
-    # Make sure we are allowed to issue according to trust registry rules
-    await assert_valid_issuer(public_did, schema_id)
+        # Make sure we are allowed to issue according to trust registry rules
+        await assert_valid_issuer(public_did, schema_id)
 
-    return await issuer.create_offer(
-        controller=aries_controller,
-        credential=CredentialNoConnection(
-            attributes=credential.attributes,
-            cred_def_id=credential.credential_definition_id,
-        ),
-    )
+        bound_logger.debug("Creating offer")
+        result = await issuer.create_offer(
+            controller=aries_controller,
+            credential=CredentialNoConnection(
+                attributes=credential.attributes,
+                cred_def_id=credential.credential_definition_id,
+            ),
+        )
+
+    if result:
+        bound_logger.info("Successfully created credential offer.")
+    else:
+        bound_logger.warning("No result from creating credential offer.")
+    return result
 
 
 @router.delete("/credentials/{credential_id}", status_code=204)
 async def remove_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Remove a credential.
@@ -226,17 +224,24 @@ async def remove_credential(
         payload: None
         status_code: 204
     """
-    issuer = __issuer_from_id(credential_id)
+    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger.info("DELETE request received: Remove credential by id")
 
-    await issuer.delete_credential(
-        controller=aries_controller, credential_exchange_id=credential_id
-    )
+    issuer = issuer_from_id(credential_id)
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Deleting credential")
+        await issuer.delete_credential(
+            controller=aries_controller, credential_exchange_id=credential_id
+        )
+
+    bound_logger.info("Successfully deleted credential by id.")
 
 
 @router.post("/credentials/revoke", status_code=204)
 async def revoke_credential(
     body: RevokeCredential,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Revoke a credential.
@@ -251,19 +256,25 @@ async def revoke_credential(
         payload: None
         status_code: 204
     """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Revoke credential")
 
-    await revocation_registry.revoke_credential(
-        controller=aries_controller,
-        credential_exchange_id=body.credential_exchange_id,
-        auto_publish_to_ledger=body.auto_publish_on_ledger,
-        credential_definition_id=body.credential_definition_id,
-    )
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Revoking credential")
+        await revocation_registry.revoke_credential(
+            controller=aries_controller,
+            credential_exchange_id=body.credential_exchange_id,
+            auto_publish_to_ledger=body.auto_publish_on_ledger,
+            credential_definition_id=body.credential_definition_id,
+        )
+
+    bound_logger.info("Successfully revoked credential.")
 
 
-@router.post("/credentials/{credential_id}/request")
+@router.post("/credentials/{credential_id}/request", response_model=CredentialExchange)
 async def request_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Send a credential request.
@@ -273,31 +284,43 @@ async def request_credential(
         credential_id: str
             the credential id
     """
-    issuer = __issuer_from_id(credential_id)
+    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger.info("POST request received: Send credential request")
 
-    record = await issuer.get_record(aries_controller, credential_id)
+    issuer = issuer_from_id(credential_id)
 
-    if not record.credential_definition_id or not record.schema_id:
-        raise CloudApiException(
-            "Record has no credential definition or schema associated. "
-            "This probably means you haven't received an offer yet.",
-            412,
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Fetching records")
+        record = await issuer.get_record(aries_controller, credential_id)
+
+        if not record.credential_definition_id or not record.schema_id:
+            raise CloudApiException(
+                "Record has no credential definition or schema associated. "
+                "This probably means you haven't received an offer yet.",
+                412,
+            )
+
+        did = did_from_credential_definition_id(record.credential_definition_id)
+
+        # Make sure the issuer is allowed to issue this credential according to trust registry rules
+        await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
+
+        bound_logger.debug("Requesting credential")
+        result = await issuer.request_credential(
+            controller=aries_controller, credential_exchange_id=credential_id
         )
 
-    did = did_from_credential_definition_id(record.credential_definition_id)
-
-    # Make sure the issuer is allowed to issue this credential according to trust registry rules
-    await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
-
-    return await issuer.request_credential(
-        controller=aries_controller, credential_exchange_id=credential_id
-    )
+    if result:
+        bound_logger.info("Successfully sent credential request.")
+    else:
+        bound_logger.warning("No result from sending credential request.")
+    return result
 
 
-@router.post("/credentials/{credential_id}/store")
+@router.post("/credentials/{credential_id}/store", response_model=CredentialExchange)
 async def store_credential(
     credential_id: str,
-    aries_controller: AcaPyClient = Depends(agent_selector),
+    auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
         Store a credential.
@@ -308,8 +331,19 @@ async def store_credential(
             credential identifier
 
     """
-    issuer = __issuer_from_id(credential_id)
+    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger.info("POST request received: Store credential")
 
-    return await issuer.store_credential(
-        controller=aries_controller, credential_exchange_id=credential_id
-    )
+    issuer = issuer_from_id(credential_id)
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Storing credential")
+        result = await issuer.store_credential(
+            controller=aries_controller, credential_exchange_id=credential_id
+        )
+
+    if result:
+        bound_logger.info("Successfully stored credential.")
+    else:
+        bound_logger.warning("No result from storing credential.")
+    return result

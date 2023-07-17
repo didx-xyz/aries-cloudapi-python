@@ -129,7 +129,7 @@ class TopicItem(GenericModel, Generic[PayloadType]):
     payload: PayloadType
 
 
-class RedisItem(TypedDict):
+class RedisItem(BaseModel):
     acapy_topic: str
     topic: str
     wallet_id: str

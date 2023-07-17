@@ -5,8 +5,6 @@ import pytest
 from httpx import Response
 from pytest_mock import MockerFixture
 
-from app.event_handling.webhooks import Webhooks
-
 # flake8: noqa
 # pylint: disable=unused-import
 from app.tests.util.ecosystem_connections import (
@@ -38,7 +36,13 @@ from app.tests.util.member_wallets import (
     bob_tenant,
     faber_issuer,
 )
-from shared.util.mock_agent_controller import mock_agent_controller
+from shared.util.mock_agent_controller import (
+    mock_admin_auth,
+    mock_agent_controller,
+    mock_context_managed_controller,
+    mock_governance_auth,
+    mock_tenant_auth,
+)
 
 # Unused imports make pytest fixtures visible to tests within this module
 
@@ -73,19 +77,6 @@ def unstub_mockito():
 
     # Teardown phase: After each test, unstub all stubbed methods
     mockito.unstub()
-
-
-@pytest.fixture(autouse=True)
-async def shutdown_webhooks_listener():
-    """
-    Automatically shut down the Webhooks listener after each test.
-    """
-    # Setup phase: No setup needed in this fixture
-
-    yield
-
-    # Teardown phase: After each test, shut down the Webhooks listener
-    await Webhooks.shutdown()
 
 
 @pytest.fixture

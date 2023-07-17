@@ -13,6 +13,7 @@ from assertpy import assert_that
 from fastapi import HTTPException
 from mockito import mock, verify, when
 
+from app.exceptions.cloud_api_error import CloudApiException
 from app.facades.acapy_ledger import (
     accept_taa,
     get_did_endpoint,
@@ -20,7 +21,6 @@ from app.facades.acapy_ledger import (
     schema_id_from_credential_definition_id,
 )
 from app.tests.util.mock import to_async
-from shared.cloud_api_error import CloudApiException
 
 
 @pytest.mark.anyio

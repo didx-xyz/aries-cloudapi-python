@@ -104,6 +104,19 @@ services:
       - governance-ga
       - governance-multitenant
       - host
+  trustregistry-db:
+    image: postgres:15
+    container_name: trustregistry-db
+    command: postgres -c listen_addresses='*'
+    environment:
+      - POSTGRES_DB=trustregistry
+      - POSTGRES_USER=trustregistry
+      - POSTGRES_PASSWORD=trustregistry
+    networks:
+      - governance-ga
+      - governance-multitenant
+      - host
+    tty: true
   governance-multitenant-web:
     image: ${REGISTRY:-local}/governance-multitenant-web:${IMAGE_TAG:-latest}
     container_name: governance-multitenant-web

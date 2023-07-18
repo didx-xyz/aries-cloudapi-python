@@ -104,6 +104,9 @@ services:
       - governance-ga
       - governance-multitenant
       - host
+    depends_on:
+      trustregistry-db:
+        condition: service_started
   trustregistry-db:
     image: postgres:15
     container_name: trustregistry-db

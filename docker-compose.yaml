@@ -30,7 +30,7 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
-    image: postgres:11
+    image: postgres:15
     container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
@@ -173,7 +173,7 @@ services:
     env_file:
       - environments/webhooks/redis.env
   governance-multitenant-wallets-db:
-    image: postgres:11
+    image: postgres:15
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:

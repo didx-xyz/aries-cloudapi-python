@@ -2,6 +2,7 @@ import json
 
 import pytest
 from httpx import AsyncClient
+from app.tests.util.string import random_string
 
 from shared import TRUST_REGISTRY_URL
 
@@ -13,6 +14,16 @@ new_actor = {
     "did": "did:key:string",
 }
 actor_id = new_actor["id"]
+
+
+def generate_actor():
+    return {
+        "id": random_string(8),
+        "name": random_string(8),
+        "roles": ["issuer", "verifier"],
+        "didcomm_invitation": random_string(8),
+        "did": f"did:key:{random_string(5)}",
+    }
 
 
 @pytest.mark.anyio
@@ -27,6 +38,22 @@ async def test_get_actors():
 @pytest.mark.anyio
 async def test_register_actor():
     payload = json.dumps(new_actor)
+    name_payload = generate_actor()
+    name_payload["name"] = new_actor["name"]
+    name_payload = json.dumps(name_payload)
+
+    did_payload = generate_actor()
+    did_payload["did"] = new_actor["did"]
+    did_payload = json.dumps(did_payload)
+
+    didcomm_payload = generate_actor()
+    didcomm_payload["didcomm_invitation"] = new_actor["didcomm_invitation"]
+    didcomm_payload = json.dumps(didcomm_payload)
+
+    id_payload = generate_actor()
+    id_payload["id"] = new_actor["id"]
+    id_payload = json.dumps(id_payload)
+
     async with AsyncClient() as client:
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
@@ -42,10 +69,31 @@ async def test_register_actor():
 
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
-            content=payload,
+            content=name_payload,
         )
-        assert response.status_code == 405
-        assert "Actor already exists" in response.json()["detail"]
+        assert response.status_code == 409
+        assert "Bad request: An actor with name:" in response.json()["detail"]
+
+        response = await client.post(
+            f"{TRUST_REGISTRY_URL}/registry/actors",
+            content=did_payload,
+        )
+        assert response.status_code == 409
+        assert "Bad request: An actor with DID:" in response.json()["detail"]
+
+        response = await client.post(
+            f"{TRUST_REGISTRY_URL}/registry/actors",
+            content=didcomm_payload,
+        )
+        assert response.status_code == 409
+        assert "Bad request: An actor with DIDComm" in response.json()["detail"]
+
+        response = await client.post(
+            f"{TRUST_REGISTRY_URL}/registry/actors",
+            content=id_payload,
+        )
+        assert response.status_code == 409
+        assert "Bad request: An actor with ID:" in response.json()["detail"]
 
 
 @pytest.mark.anyio
@@ -106,4 +154,4 @@ async def test_remove_actors():
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
         )
         assert response.status_code == 404
-        assert "Actor not found" in response.json()["detail"]
+        assert "Actor with id" in response.json()["detail"]

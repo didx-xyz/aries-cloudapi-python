@@ -37,10 +37,9 @@ async def startup_event():
 
     logger.debug("TrustRegistry startup: Validate tables are created")
     with engine.connect() as connection:
-        result = connection.execute(
-            "SELECT name FROM sqlite_master WHERE type='table';"
-        )
-        logger.debug("TrustRegistry tables created: `{}`", [row[0] for row in result])
+        inspector = inspect(connection)
+        table_names = inspector.get_table_names()
+        logger.debug("TrustRegistry tables created: `{}`", table_names)
 
 
 @app.get("/")

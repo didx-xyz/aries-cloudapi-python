@@ -121,6 +121,7 @@ async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
+    acme_and_alice_connection: AcmeAliceConnect,
 ):
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
@@ -214,6 +215,7 @@ async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
+    acme_and_alice_connection: AcmeAliceConnect,
 ):
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)

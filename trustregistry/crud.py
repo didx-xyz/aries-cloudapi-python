@@ -84,7 +84,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
         db_session.rollback()
         constraint_violation = str(e.orig).lower()
 
-        if "actors.id" in constraint_violation:
+        if "actors_pkey" in constraint_violation:
             bound_logger.info(
                 "Bad request: An actor with ID already exists in database."
             )
@@ -92,7 +92,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
                 f"Bad request: An actor with ID: `{actor.id}` already exists in database."
             )
 
-        elif "actors.name" in constraint_violation:
+        elif "ix_actors_name" in constraint_violation:
             bound_logger.info(
                 "Bad request: An actor with name already exists in database."
             )
@@ -100,7 +100,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
                 f"Bad request: An actor with name: `{actor.name}` already exists in database."
             )
 
-        elif "actors.didcomm_invitation" in constraint_violation:
+        elif "ix_actors_didcomm_invitation" in constraint_violation:
             bound_logger.info(
                 "Bad request: An actor with DIDComm invitation already exists in database."
             )
@@ -108,7 +108,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
                 "Bad request: An actor with DIDComm invitation already exists in database."
             )
 
-        elif "actors.did" in constraint_violation:
+        elif "ix_actors_did" in constraint_violation:
             bound_logger.info(
                 "Bad request: An actor with DID already exists in database."
             )

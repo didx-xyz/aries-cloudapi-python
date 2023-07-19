@@ -30,7 +30,7 @@ services:
     env_file:
       - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
-    image: postgres:11
+    image: postgres:15
     container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
@@ -76,7 +76,13 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3021/status/ready"
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -98,6 +104,22 @@ services:
       - governance-ga
       - governance-multitenant
       - host
+    depends_on:
+      trustregistry-db:
+        condition: service_started
+  trustregistry-db:
+    image: postgres:15
+    container_name: trustregistry-db
+    command: postgres -c listen_addresses='*'
+    environment:
+      - POSTGRES_DB=trustregistry
+      - POSTGRES_USER=trustregistry
+      - POSTGRES_PASSWORD=trustregistry
+    networks:
+      - governance-ga
+      - governance-multitenant
+      - host
+    tty: true
   governance-multitenant-web:
     image: ${REGISTRY:-local}/governance-multitenant-web:${IMAGE_TAG:-latest}
     container_name: governance-multitenant-web
@@ -173,7 +195,7 @@ services:
     env_file:
       - environments/webhooks/redis.env
   governance-multitenant-wallets-db:
-    image: postgres:11
+    image: postgres:15
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
@@ -221,7 +243,13 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3021/status/ready"
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -253,7 +281,7 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://ledger-browser:8000"]
+      test: [ "CMD", "curl", "-f", "http://ledger-browser:8000" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -288,7 +316,7 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: ["CMD-SHELL", "/home/indy/indy_healthcheck.sh"]
+      test: [ "CMD-SHELL", "/home/indy/indy_healthcheck.sh" ]
       interval: 60s
       timeout: 5s
       retries: 10
@@ -319,6 +347,7 @@ volumes:
   webserver-ledger:
   nodes-data:
   data:
+
 
 networks:
   governance-multitenant:

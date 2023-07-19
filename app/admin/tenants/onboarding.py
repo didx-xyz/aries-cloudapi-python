@@ -359,7 +359,9 @@ async def onboard_issuer_no_public_did(
         issuer_did = await register_issuer_did()
     except Exception as e:
         bound_logger.exception("Could not create connection with endorser.")
-        raise CloudApiException("Error creating connection with endorser.") from e
+        raise CloudApiException(
+            "Error creating connection with endorser: {}.", str(e)
+        ) from e
 
     bound_logger.info("Successfully registered DID for issuer.")
     return issuer_did

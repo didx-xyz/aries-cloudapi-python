@@ -20,11 +20,11 @@ from app.generic.jsonld import jsonld
 from app.generic.oob import oob
 from app.generic.verifier import verifier
 from app.generic.wallet import wallet
-from app.generic.webhooks import sse, webhooks, websocket_endpoint
+from app.generic.webhooks import sse, webhooks
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.0-beta1")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.1-beta1")
 
 logger = get_logger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -45,7 +45,6 @@ def create_app() -> FastAPI:
         wallet,
         webhooks,
         sse,
-        websocket_endpoint,  # no docs generated for websocket endpoints
     ]
 
     application = FastAPI(

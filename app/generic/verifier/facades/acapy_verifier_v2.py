@@ -31,7 +31,6 @@ class VerifierV2(Verifier):
         cls,
         controller: AcaPyClient,
         proof_request: CreateProofRequest,
-        comment: Optional[str] = None,
     ) -> PresentationExchange:
         bound_logger = logger.bind(body=proof_request)
         bound_logger.debug("Creating v2 proof request")
@@ -41,8 +40,9 @@ class VerifierV2(Verifier):
                     presentation_request=V20PresRequestByFormat(
                         indy=proof_request.proof_request
                     ),
-                    comment=comment,
-                    trace=False,
+                    auto_verify=proof_request.auto_verify,
+                    comment=proof_request.comment,
+                    trace=proof_request.trace,
                 )
             )
             bound_logger.debug("Returning v2 PresentationExchange.")
@@ -143,6 +143,9 @@ class VerifierV2(Verifier):
                         presentation_request=V20PresRequestByFormat(
                             dif=None, indy=proof_request.proof_request
                         ),
+                        auto_verify=proof_request.auto_verify,
+                        comment=proof_request.comment,
+                        trace=proof_request.trace,
                     )
                 )
             )

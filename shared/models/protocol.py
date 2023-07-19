@@ -1,12 +1,12 @@
 from enum import Enum
 
 
-class PresentProofProtocolVersion(Enum):
+class PresentProofProtocolVersion(str, Enum):
     v1: str = "v1"
     v2: str = "v2"
 
 
-class IssueCredentialProtocolVersion(Enum):
+class IssueCredentialProtocolVersion(str, Enum):
     v1: str = "v1"
     v2: str = "v2"
 

@@ -2,7 +2,7 @@ import time
 
 import pytest
 from aries_cloudcontroller import (
-    AcaPyClient,
+    AttachmentDef,
     IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
 )
@@ -10,11 +10,14 @@ from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
+from app.generic.oob.oob import AcceptOobInvitation, CreateOobInvitation
 from app.generic.verifier.models import (
     AcceptProofRequest,
+    CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
 )
+from app.generic.verifier.verifier import router
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
@@ -22,7 +25,7 @@ from shared import RichAsyncClient
 from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.topics import CredentialExchange, PresentationExchange
 
-VERIFIER_BASE_PATH = "/generic/verifier"
+VERIFIER_BASE_PATH = router.prefix
 
 
 def create_send_request(
@@ -118,9 +121,6 @@ async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
-    acme_client: RichAsyncClient,
-    alice_acapy_client: AcaPyClient,
-    acme_and_alice_connection: AcmeAliceConnect,
 ):
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
@@ -129,42 +129,35 @@ async def test_accept_proof_request_oob_v1(
     bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_tenant_id)
 
     # Create the proof request against aca-py
-    response = await bob_member_client.post(
-        VERIFIER_BASE_PATH + "/create-request",
-        json={
-            "comment": "some comment",
-            "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
-        },
+    create_proof_request = CreateProofRequest(
+        proof_request=indy_proof_request,
+        auto_verify=True,
+        comment="some comment",
+        protocol_version=PresentProofProtocolVersion.v1.value,
     )
 
-    bob_exchange = response.json()
-
+    create_proof_response = await bob_member_client.post(
+        VERIFIER_BASE_PATH + "/create-request", json=create_proof_request.dict()
+    )
+    bob_exchange = create_proof_response.json()
     thread_id = bob_exchange["thread_id"]
 
-    bob_exchange["proof_id"] = bob_exchange["proof_id"]
-
-    invitation_response = await bob_member_client.post(
-        "/generic/oob/create-invitation",
-        json={
-            "create_connection": False,
-            "use_public_did": False,
-            "attachments": [
-                {
-                    "id": bob_exchange["proof_id"],
-                    "type": "present-proof",
-                    "auto_verify": True,
-                }
-            ],
-        },
+    create_oob_invitation_request = CreateOobInvitation(
+        create_connection=False,
+        use_public_did=False,
+        attachments=[AttachmentDef(id=bob_exchange["proof_id"], type="present-proof")],
     )
 
-    assert_that(invitation_response.status_code).is_equal_to(200)
+    invitation_response = await bob_member_client.post(
+        "/generic/oob/create-invitation", json=create_oob_invitation_request.dict()
+    )
+    assert invitation_response.status_code == 200
     invitation = (invitation_response.json())["invitation"]
 
+    accept_oob_invitation_request = AcceptOobInvitation(invitation=invitation)
     await alice_member_client.post(
         "/generic/oob/accept-invitation",
-        json={"invitation": invitation},
+        json=accept_oob_invitation_request.dict(by_alias=True),
     )
 
     alice_request_received = await alice_proofs_listener.wait_for_event(
@@ -195,10 +188,11 @@ async def test_accept_proof_request_oob_v1(
         ),
     )
 
-    response = await alice_member_client.post(
+    accept_response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.dict(),
     )
+    assert accept_response.status_code == 200
 
     alice_presentation_sent = await alice_proofs_listener.wait_for_event(
         field="proof_id",
@@ -220,9 +214,6 @@ async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
-    acme_client: RichAsyncClient,
-    alice_acapy_client: AcaPyClient,
-    acme_and_alice_connection: AcmeAliceConnect,
 ):
     alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
     bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
@@ -396,7 +387,6 @@ async def test_accept_proof_request_v2(
 @pytest.mark.anyio
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
-    alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
 ):

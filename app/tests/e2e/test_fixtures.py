@@ -20,9 +20,6 @@ from shared.models.topics import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
 
-# TODO: Move all methods here to member_personas as this is specific for the bob-alice interaction
-# OR abstract the persona specific parts out of it
-
 
 @pytest.fixture(scope="function")
 async def schema_definition(
@@ -148,7 +145,7 @@ async def issue_credential_to_alice(
 
     # create and send credential offer- issuer
     await faber_client.post(
-        "/generic/issuer/credentials",
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
 
@@ -162,13 +159,11 @@ async def issue_credential_to_alice(
 
     # send credential request - holder
     response = await alice_member_client.post(
-        f"/generic/issuer/credentials/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
     await listener.wait_for_event(
         field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
-
-    # await alice_member_client.post(f"/generic/issuer/credentials/{alice_credential_id}/store", json={})
 
     return response.json()

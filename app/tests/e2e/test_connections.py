@@ -2,16 +2,19 @@ import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
 
+from app.generic.connections.connections import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
+
+BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
 async def test_create_invitation(
     bob_member_client: RichAsyncClient,
 ):
-    response = await bob_member_client.post("/generic/connections/create-invitation")
+    response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = response.json()
 
     assert_that(invitation["connection_id"]).is_not_empty()
@@ -26,13 +29,11 @@ async def test_accept_invitation(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
 ):
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation"
-    )
+    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = invitation_response.json()
 
     accept_response = await alice_member_client.post(
-        "/generic/connections/accept-invitation",
+        f"{BASE_PATH}/accept-invitation",
         json={"invitation": invitation["invitation"]},
     )
     connection_record = accept_response.json()
@@ -58,8 +59,8 @@ async def test_get_connections(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,
 ):
-    alice_connections = (await alice_member_client.get("/generic/connections")).json()
-    bob_connections = (await bob_member_client.get("/generic/connections")).json()
+    alice_connections = (await alice_member_client.get(f"{BASE_PATH}")).json()
+    bob_connections = (await bob_member_client.get(f"{BASE_PATH}")).json()
 
     assert_that(len(alice_connections)).is_greater_than_or_equal_to(1)
     assert_that(len(bob_connections)).is_greater_than_or_equal_to(1)
@@ -69,15 +70,11 @@ async def test_get_connections(
 async def test_get_connection_by_id(
     bob_member_client: RichAsyncClient,
 ):
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation"
-    )
+    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = invitation_response.json()
     connection_id = invitation["connection_id"]
 
-    connection_response = await bob_member_client.get(
-        f"/generic/connections/{connection_id}"
-    )
+    connection_response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
     connection_record = connection_response.json()
 
     assert_that(connection_response.status_code).is_equal_to(200)
@@ -90,17 +87,15 @@ async def test_get_connection_by_id(
 async def test_delete_connection(
     bob_member_client: RichAsyncClient,
 ):
-    invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation"
-    )
+    invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = invitation_response.json()
     connection_id = invitation["connection_id"]
 
-    response = await bob_member_client.delete(f"/generic/connections/{connection_id}")
+    response = await bob_member_client.delete(f"{BASE_PATH}/{connection_id}")
     assert_that(response.status_code).is_equal_to(200)
 
     with pytest.raises(HTTPException) as exc:
-        response = await bob_member_client.get(f"/generic/connections/{connection_id}")
+        response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
     assert_that(exc.value.status_code).is_equal_to(404)
 
 
@@ -110,12 +105,12 @@ async def test_bob_and_alice_connect(
     alice_member_client: RichAsyncClient,
 ):
     invitation_response = await bob_member_client.post(
-        "/generic/connections/create-invitation",
+        f"{BASE_PATH}/create-invitation",
     )
     invitation = invitation_response.json()
 
     accept_response = await alice_member_client.post(
-        "/generic/connections/accept-invitation",
+        f"{BASE_PATH}/accept-invitation",
         json={"invitation": invitation["invitation"]},
     )
     connection_record = accept_response.json()
@@ -133,10 +128,10 @@ async def test_bob_and_alice_connect(
     bob_connection_id = invitation["connection_id"]
 
     bob_connection = (
-        await bob_member_client.get(f"/generic/connections/{bob_connection_id}")
+        await bob_member_client.get(f"{BASE_PATH}/{bob_connection_id}")
     ).json()
     alice_connection = (
-        await alice_member_client.get(f"/generic/connections/{alice_connection_id}")
+        await alice_member_client.get(f"{BASE_PATH}/{alice_connection_id}")
     ).json()
 
     assert "completed" in alice_connection["state"]

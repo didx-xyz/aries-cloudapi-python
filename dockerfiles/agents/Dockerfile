@@ -1,4 +1,4 @@
-FROM aries-cloudagent:py36-1.16-1_0.8.0
+FROM bcgovimages/aries-cloudagent:py36-1.16-1_0.8.0
 
 RUN pip3 install -U pip==21.3.1
 # Install our 0.8.0 hotfix

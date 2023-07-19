@@ -49,7 +49,7 @@ def strip_protocol_prefix(id: str):
 async def create_oob_invitation(
     body: Optional[CreateOobInvitation] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> InvitationRecord:
     """
     Create connection invitation out-of-band.
     """
@@ -71,7 +71,8 @@ async def create_oob_invitation(
 
     if body.attachments:
         for item in body.attachments:
-            item.id = strip_protocol_prefix(item.id)
+            if item.id:  # Optional field
+                item.id = strip_protocol_prefix(item.id)
 
     oob_body = InvitationCreateRequest(
         alias=body.alias,
@@ -98,7 +99,7 @@ async def create_oob_invitation(
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> OobRecord:
     """
     Receive out-of-band invitation.
     """
@@ -121,7 +122,7 @@ async def accept_oob_invitation(
 async def connect_to_public_did(
     body: ConnectToPublicDid,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> Connection:
     """
     Connect using public DID as implicit invitation.
 

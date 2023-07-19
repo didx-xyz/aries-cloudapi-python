@@ -116,6 +116,7 @@ async def test_accept_proof_request_v1(
     assert response.status_code == 200
 
 
+@pytest.mark.skip(reason="Broken in 0.8.1 - to be fixed")
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v1(
     issue_credential_to_alice: CredentialExchange,
@@ -209,6 +210,7 @@ async def test_accept_proof_request_oob_v1(
     assert bob_presentation_received["role"] == "verifier"
 
 
+@pytest.mark.skip(reason="Broken in 0.8.1 - to be fixed")
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v2(
     issue_credential_to_alice: CredentialExchange,

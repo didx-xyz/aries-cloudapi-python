@@ -1,8 +1,8 @@
 import os
 
 from fastapi import Depends, FastAPI
-from sqlalchemy.orm import Session
 from sqlalchemy import inspect
+from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
 from trustregistry import crud, db

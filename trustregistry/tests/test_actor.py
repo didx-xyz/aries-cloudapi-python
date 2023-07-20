@@ -128,6 +128,21 @@ async def test_get_actor():
         )
 
         assert not_actor_response.status_code == 404
+
+        #test by name
+        response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
+        )
+
+        assert response.status_code == 200
+        assert response.json() == new_actor
+
+        not_actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/not_a_actor"
+        )
+
+        assert not_actor_response.status_code == 404
+
 @pytest.mark.anyio
 async def test_update_actor():
     async with AsyncClient() as client:

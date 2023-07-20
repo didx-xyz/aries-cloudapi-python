@@ -14,6 +14,8 @@ new_actor = {
     "did": "did:key:string",
 }
 actor_id = new_actor["id"]
+actor_did = new_actor["did"]
+actor_name = new_actor["name"]
 
 
 def generate_actor():

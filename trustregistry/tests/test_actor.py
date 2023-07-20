@@ -115,7 +115,7 @@ async def test_get_actor():
 
         assert not_actor_response.status_code == 404
 
-        #test by did 
+        #test by did
         response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/did/{actor_did}"
         )

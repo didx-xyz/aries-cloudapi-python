@@ -14,6 +14,8 @@ new_actor = {
     "did": "did:key:string",
 }
 actor_id = new_actor["id"]
+actor_did = new_actor["did"]
+actor_name = new_actor["name"]
 
 
 def generate_actor():
@@ -95,6 +97,51 @@ async def test_register_actor():
         assert response.status_code == 409
         assert "Bad request: An actor with ID:" in response.json()["detail"]
 
+
+@pytest.mark.anyio
+async def test_get_actor():
+    async with AsyncClient() as client:
+        #test by id
+        response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
+        )
+
+        assert response.status_code == 200
+        assert response.json() == new_actor
+
+        not_actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/not_a_actor"
+        )
+
+        assert not_actor_response.status_code == 404
+
+        #test by did
+        response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/did/{actor_did}"
+        )
+
+        assert response.status_code == 200
+        assert response.json() == new_actor
+
+        not_actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/did/not_a_actor"
+        )
+
+        assert not_actor_response.status_code == 404
+
+        #test by name
+        response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
+        )
+
+        assert response.status_code == 200
+        assert response.json() == new_actor
+
+        not_actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/name/not_a_actor"
+        )
+
+        assert not_actor_response.status_code == 404
 
 @pytest.mark.anyio
 async def test_update_actor():

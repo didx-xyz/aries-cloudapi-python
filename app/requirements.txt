@@ -1,4 +1,4 @@
-aiohttp~=3.8.4
+aiohttp~=3.8.5
 aries-cloudcontroller==0.8.1
 base58~=2.1.1
 fastapi~=0.100.0

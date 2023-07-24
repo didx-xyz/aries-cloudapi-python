@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,7 +28,7 @@ class Actor(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, unique=True)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     roles: Mapped[str] = mapped_column(StringList, index=True)
-    didcomm_invitation: Mapped[str] = mapped_column(String, unique=True, index=True)
+    didcomm_invitation: Mapped[Optional[str]] = mapped_column(String, unique=True, index=True)
     did: Mapped[str] = mapped_column(String, unique=True, index=True)
 
 

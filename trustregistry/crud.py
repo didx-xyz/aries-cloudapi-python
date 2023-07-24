@@ -288,7 +288,7 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
         raise SchemaDoesNotExistException
     query_delete = delete(db.Schema).where(db.Schema.id == schema_id)
     bound_logger.debug("Deleting schema from database")
-    db_session.delete(db_schema)
+    db_session.execute(query_delete)
     db_session.commit()
 
     bound_logger.info("Successfully deleted schema from database.")

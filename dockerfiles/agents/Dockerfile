@@ -1,4 +1,4 @@
-FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-indy-1.16.0-0.8.1
+FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-indy-1.16.0-0.8.2
 
 RUN pip3 install -U pip==21.3.1
 # Install our 0.8.1 hotfix

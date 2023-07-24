@@ -139,7 +139,9 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Delete actor from database. First assert actor ID exists")
-    db_actor = db_session.query(db.Actor).filter(db.Actor.id == actor_id).one_or_none()
+
+    query = select(db.Actor).where(db.Actor.id == actor_id)
+    db_actor = db_session.scalars(query).one_or_none()
 
     if not db_actor:
         bound_logger.info("Requested actor ID to delete does not exist in database.")
@@ -156,7 +158,9 @@ def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
 def update_actor(db_session: Session, actor: Actor) -> db.Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Update actor in database. First assert actor ID exists")
-    db_actor = db_session.query(db.Actor).filter(db.Actor.id == actor.id).one_or_none()
+
+    query = select(db.Actor).where(db.Actor.id == actor.id)
+    db_actor = db_session.scalars(query).one_or_none()
 
     if not db_actor:
         bound_logger.info("Requested actor ID to update does not exist in database.")

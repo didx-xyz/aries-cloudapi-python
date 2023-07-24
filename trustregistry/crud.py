@@ -178,8 +178,9 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
             .returning(db.Actor)
     result = db_session.scalars(update_query)
     db_session.commit()
-    db_session.refresh(db_actor)
-
+    db_actor: db.Actor 
+    for row in result:
+        db_actor = row
     bound_logger.info("Successfully updated actor.")
     return db_actor
 

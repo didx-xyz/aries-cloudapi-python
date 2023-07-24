@@ -168,10 +168,14 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
         raise ActorDoesNotExistException
 
     bound_logger.debug("Updating actor")
-    for var, value in vars(actor).items():
-        setattr(db_actor, var, value)
-
-    db_session.add(db_actor)
+    update_query = update(db.Actor)\
+        .where(db.Actor.id == actor.id)\
+            .values(
+                    name = actor.name,
+                    roles = actor.roles,
+                    didcomm_invitation = actor.didcomm_invitation,
+                    did = actor.did)\
+            .returning(db.Actor)
     db_session.commit()
     db_session.refresh(db_actor)
 

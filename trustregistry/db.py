@@ -31,7 +31,6 @@ class Actor(Base):
     didcomm_invitation: Mapped[Optional[str]] = mapped_column(String, unique=True, index=True)
     did: Mapped[str] = mapped_column(String, unique=True, index=True)
 
-
 class Schema(Base):
     __tablename__ = "schemas"
 

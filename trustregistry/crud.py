@@ -13,7 +13,9 @@ logger = get_logger(__name__)
 
 def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db.Actor]:
     logger.info("Querying all actors from database")
-    result = db_session.query(db.Actor).offset(skip).limit(limit).all()
+
+    query = select(db.Actor).offset(skip).limit(limit)
+    result = db_session.scalars(query).all()
 
     if result:
         logger.info("Successfully retrieved `{}` actors from database.", len(result))
@@ -26,7 +28,9 @@ def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db
 def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_did": actor_did})
     bound_logger.info("Querying actor by DID")
-    result = db_session.query(db.Actor).filter(db.Actor.did == actor_did).first()
+
+    query = select(db.Actor).where(db.Actor.did == actor_did)
+    result = db_session.scalars(query).first()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database.")
@@ -40,7 +44,9 @@ def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
 def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Querying actor by ID")
-    result = db_session.query(db.Actor).filter(db.Actor.id == actor_id).first()
+
+    query = select(db.Actor).where(db.Actor.id == actor_id)
+    result = db_session.scalars(query).first()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database.")
@@ -54,10 +60,10 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
 def get_actor_by_name(db_session: Session, actor_name: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_name": actor_name})
     bound_logger.info("Query actor by name")
-    result = (
-        db_session.query(db.Actor).filter(db.Actor.name == actor_name).one_or_none()
-    )
 
+    query = select(db.Actor).where(db.Actor.name == actor_name)
+    result = db_session.scalars(query).one_or_none()
+    
     if result:
         bound_logger.info("Successfully retrieved actor from database")
     else:

@@ -166,7 +166,7 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
     if not db_actor:
         bound_logger.info("Requested actor ID to update does not exist in database.")
         raise ActorDoesNotExistException
-
+    
     bound_logger.debug("Updating actor")
     update_query = update(db.Actor)\
         .where(db.Actor.id == actor.id)\
@@ -176,11 +176,14 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
                     didcomm_invitation = actor.didcomm_invitation,
                     did = actor.did)\
             .returning(db.Actor)
+    
     result = db_session.scalars(update_query)
     db_session.commit()
+
     db_actor: db.Actor 
     for row in result:
         db_actor = row
+        
     bound_logger.info("Successfully updated actor.")
     return db_actor
 

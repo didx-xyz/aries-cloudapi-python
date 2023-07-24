@@ -210,7 +210,7 @@ def get_schema_by_id(db_session: Session, schema_id: str) -> db.Schema:
     query = select(db.Schema).where(db.Schema.id == schema_id)
     result = db_session.scalars(query).first()
         bound_logger.info("Successfully retrieved schema from database.")
-    else:
+    if not result:
         bound_logger.info("Schema does not exist in database.")
         raise SchemaDoesNotExistException
 

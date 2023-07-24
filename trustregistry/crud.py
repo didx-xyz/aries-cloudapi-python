@@ -63,7 +63,7 @@ def get_actor_by_name(db_session: Session, actor_name: str) -> db.Actor:
 
     query = select(db.Actor).where(db.Actor.name == actor_name)
     result = db_session.scalars(query).one_or_none()
-    
+
     if result:
         bound_logger.info("Successfully retrieved actor from database")
     else:
@@ -166,24 +166,27 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
     if not db_actor:
         bound_logger.info("Requested actor ID to update does not exist in database.")
         raise ActorDoesNotExistException
-    
+
     bound_logger.debug("Updating actor")
-    update_query = update(db.Actor)\
-        .where(db.Actor.id == actor.id)\
-            .values(
-                    name = actor.name,
-                    roles = actor.roles,
-                    didcomm_invitation = actor.didcomm_invitation,
-                    did = actor.did)\
-            .returning(db.Actor)
-    
+    update_query = (
+        update(db.Actor)
+        .where(db.Actor.id == actor.id)
+        .values(
+            name=actor.name,
+            roles=actor.roles,
+            didcomm_invitation=actor.didcomm_invitation,
+            did=actor.did,
+        )
+        .returning(db.Actor)
+    )
+
     result = db_session.scalars(update_query)
     db_session.commit()
 
-    db_actor: db.Actor 
+    db_actor: db.Actor
     for row in result:
         db_actor = row
-        
+
     bound_logger.info("Successfully updated actor.")
     return db_actor
 
@@ -209,11 +212,11 @@ def get_schema_by_id(db_session: Session, schema_id: str) -> db.Schema:
 
     query = select(db.Schema).where(db.Schema.id == schema_id)
     result = db_session.scalars(query).first()
-    
+
     if not result:
         bound_logger.info("Schema does not exist in database.")
         raise SchemaDoesNotExistException
-    
+
     return result
 
 
@@ -225,7 +228,6 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
 
     query = select(db.Schema).where(db.Schema.id == schema.id)
     db_schema = db_session.scalars(query).one_or_none()
-    
 
     if db_schema:
         bound_logger.info("The requested schema ID already exists in database.")
@@ -248,7 +250,7 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
 
     query = select(db.Schema).where(db.Schema.id == schema_id)
     db_schema = db_session.scalars(query).one_or_none()
-    
+
     if not db_schema:
         bound_logger.debug(
             "Requested to update a schema that does not exist in database."
@@ -257,19 +259,17 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
 
     bound_logger.debug("Updating schema on database")
 
-    update_query = update(db.Schema)\
-        .where(db.Schema.id == schema_id)\
-            .values(
-                    id = schema.id,
-                    name = schema.name,
-                    version = schema.version,
-                    did = schema.did)\
-            .returning(db.Schema)
-    
+    update_query = (
+        update(db.Schema)
+        .where(db.Schema.id == schema_id)
+        .values(id=schema.id, name=schema.name, version=schema.version, did=schema.did)
+        .returning(db.Schema)
+    )
+
     result = db_session.scalars(update_query)
     db_session.commit()
 
-    db_schema: db.Schema 
+    db_schema: db.Schema
     for row in result:
         db_schema = row
 
@@ -286,7 +286,7 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
 
     if not db_schema:
         raise SchemaDoesNotExistException
-    
+
     query_delete = delete(db.Schema).where(db.Schema.id == schema_id)
     bound_logger.debug("Deleting schema from database")
     db_session.execute(query_delete)

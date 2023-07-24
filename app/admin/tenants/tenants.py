@@ -137,7 +137,7 @@ async def create_tenant(
                     "Stray wallet was created for unregistered actor; deleting wallet"
                 )
                 await admin_controller.multitenancy.delete_wallet(
-                    wallet_response.wallet_id
+                    wallet_id=wallet_response.wallet_id
                 )
                 bound_logger.info("Wallet deleted.")
             raise
@@ -148,7 +148,7 @@ async def create_tenant(
                     "Could not register actor, but wallet was created; deleting wallet"
                 )
                 await admin_controller.multitenancy.delete_wallet(
-                    wallet_response.wallet_id
+                    wallet_id=wallet_response.wallet_id
                 )
                 bound_logger.info("Wallet deleted.")
             raise
@@ -195,9 +195,7 @@ async def delete_tenant_by_id(
             await remove_actor_by_id(wallet.wallet_id)
 
         bound_logger.debug("Deleting wallet")
-        await admin_controller.multitenancy.delete_wallet(
-            wallet_id=tenant_id, body=RemoveWalletRequest()
-        )
+        await admin_controller.multitenancy.delete_wallet(wallet_id=tenant_id)
         bound_logger.info("Successfully deleted tenant.")
 
 

@@ -246,8 +246,8 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
     bound_logger = logger.bind(body={"schema": schema, "schema_id": schema_id})
     bound_logger.info("Update schema in database. First assert schema ID exists")
     db_schema = (
-        db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
-    )
+    query = select(db.Schema).where(db.Schema.id == schema_id)
+    db_schema = db_session.scalars(query).one_or_none()
 
     if not db_schema:
         bound_logger.debug(

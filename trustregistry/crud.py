@@ -281,8 +281,8 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Delete schema from database. First assert schema ID exists")
 
-        db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
-    )
+    query_does_exists = select(db.Schema).where(db.Schema.id == schema_id)
+    db_schema = db_session.scalars(query_does_exists).one_or_none()
 
     if not db_schema:
         raise SchemaDoesNotExistException

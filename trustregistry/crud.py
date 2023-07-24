@@ -264,6 +264,7 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
                     version = schema.version,
                     did = schema.did)\
             .returning(db.Schema)
+    result = db_session.scalars(update_query)
     db_session.commit()
     db_session.refresh(db_schema)
 

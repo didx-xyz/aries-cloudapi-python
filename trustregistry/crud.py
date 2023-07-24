@@ -222,9 +222,8 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
     bound_logger.info(
         "Create schema in database. First assert schema ID does not already exist"
     )
-    db_schema = (
-        db_session.query(db.Schema).filter(db.Schema.id == schema.id).one_or_none()
-    )
+    query = select(db.Schema).where(db.Schema.id == schema.id)
+    db_schema = db_session.scalars(query).one_or_none()
 
     if db_schema:
         bound_logger.info("The requested schema ID already exists in database.")

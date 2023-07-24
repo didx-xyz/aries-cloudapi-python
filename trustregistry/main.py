@@ -13,7 +13,7 @@ from trustregistry.registry import registry_actors, registry_schemas
 logger = get_logger(__name__)
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.0.1BETA")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.2")
 
 
 def create_app():

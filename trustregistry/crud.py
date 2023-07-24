@@ -245,10 +245,10 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
 def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema": schema, "schema_id": schema_id})
     bound_logger.info("Update schema in database. First assert schema ID exists")
-    db_schema = (
+
     query = select(db.Schema).where(db.Schema.id == schema_id)
     db_schema = db_session.scalars(query).one_or_none()
-
+    
     if not db_schema:
         bound_logger.debug(
             "Requested to update a schema that does not exist in database."
@@ -256,6 +256,7 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
         raise SchemaDoesNotExistException
 
     bound_logger.debug("Updating schema on database")
+
     update_query = update(db.Schema)\
         .where(db.Schema.id == schema_id)\
             .values(
@@ -264,8 +265,10 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
                     version = schema.version,
                     did = schema.did)\
             .returning(db.Schema)
+    
     result = db_session.scalars(update_query)
     db_session.commit()
+
     db_schema: db.Schema 
     for row in result:
         db_schema = row
@@ -277,7 +280,7 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
 def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Delete schema from database. First assert schema ID exists")
-    db_schema = (
+
         db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
     )
 

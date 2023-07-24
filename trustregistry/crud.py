@@ -148,7 +148,8 @@ def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
         raise ActorDoesNotExistException
 
     bound_logger.debug("Deleting actor")
-    db_session.delete(db_actor)
+    query_delete = delete(db.Actor).where(db.Actor.id == actor_id)
+    db_session.execute(query_delete)
     db_session.commit()
 
     bound_logger.info("Successfully deleted actor ID.")

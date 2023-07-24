@@ -206,14 +206,14 @@ def get_schemas(
 def get_schema_by_id(db_session: Session, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Querying for schema by ID")
-    result = db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
+
     query = select(db.Schema).where(db.Schema.id == schema_id)
     result = db_session.scalars(query).first()
-        bound_logger.info("Successfully retrieved schema from database.")
+    
     if not result:
         bound_logger.info("Schema does not exist in database.")
         raise SchemaDoesNotExistException
-
+    
     return result
 
 
@@ -222,14 +222,17 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
     bound_logger.info(
         "Create schema in database. First assert schema ID does not already exist"
     )
+
     query = select(db.Schema).where(db.Schema.id == schema.id)
     db_schema = db_session.scalars(query).one_or_none()
+    
 
     if db_schema:
         bound_logger.info("The requested schema ID already exists in database.")
         raise SchemaAlreadyExistsException
 
     bound_logger.debug("Adding schema to database")
+
     db_schema = db.Schema(**schema.dict())
     db_session.add(db_schema)
     db_session.commit()

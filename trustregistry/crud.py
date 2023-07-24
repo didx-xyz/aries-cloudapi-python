@@ -176,6 +176,7 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
                     didcomm_invitation = actor.didcomm_invitation,
                     did = actor.did)\
             .returning(db.Actor)
+    result = db_session.scalars(update_query)
     db_session.commit()
     db_session.refresh(db_actor)
 

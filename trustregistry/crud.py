@@ -192,7 +192,8 @@ def get_schemas(
     db_session: Session, skip: int = 0, limit: int = 1000
 ) -> List[db.Schema]:
     logger.debug("Query all schemas from database")
-    result = db_session.query(db.Schema).offset(skip).limit(limit).all()
+    query = select(db.Schema).offset(skip).limit(limit)
+    result = db_session.scalars(query).all()
 
     if result:
         logger.info("Successfully retrieved {} schemas from database.", len(result))

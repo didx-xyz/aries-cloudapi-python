@@ -54,7 +54,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
-DEFAULT_CONTAINERS="governance-trust-registry governance-multitenant-wallets-db governance-multitenant-agent tails-server ledger-nodes ledger-browser
+DEFAULT_CONTAINERS="governance-trust-registry trustregistry-db governance-multitenant-wallets-db governance-multitenant-agent tails-server ledger-nodes ledger-browser
                     governance-ga-wallets-db governance-ga-agent governance-multitenant-web governance-ga-web wh-redis governance-webhooks-web governance-endorser"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:

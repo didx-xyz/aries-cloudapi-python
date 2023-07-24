@@ -256,10 +256,14 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
         raise SchemaDoesNotExistException
 
     bound_logger.debug("Updating schema on database")
-    for var, value in vars(schema).items():
-        setattr(db_schema, var, value) if value else None
-
-    db_session.add(db_schema)
+    update_query = update(db.Schema)\
+        .where(db.Schema.id == schema_id)\
+            .values(
+                    id = schema.id,
+                    name = schema.name,
+                    version = schema.version,
+                    did = schema.did)\
+            .returning(db.Schema)
     db_session.commit()
     db_session.refresh(db_schema)
 

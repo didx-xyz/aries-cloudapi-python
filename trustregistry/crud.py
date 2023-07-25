@@ -38,7 +38,7 @@ def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
         bound_logger.info("Actor DID not found.")
         raise ActorDoesNotExistException
 
-    return result    
+    return result
 
 
 def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:

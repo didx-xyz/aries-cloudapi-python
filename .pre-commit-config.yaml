@@ -3,16 +3,19 @@ repos:
     rev: 23.7.0
     hooks:
     -   id: black
+        stages: [push]
         language_version: python3.9
 
 -   repo: https://github.com/asottile/blacken-docs
     rev: 1.15.0
     hooks:
     -   id: blacken-docs
+        stages: [push]
         additional_dependencies: [black==22.12.0]
 
 -   repo: https://github.com/PyCQA/isort
     rev: 5.12.0
     hooks:
       - id: isort
+        stages: [push]
         args: ["--profile", "black"]

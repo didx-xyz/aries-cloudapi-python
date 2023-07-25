@@ -1,8 +1,9 @@
 from typing import Optional
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from trustregistry.database import SessionLocal, Base
+from trustregistry.database import Base, SessionLocal
 from trustregistry.list_type import StringList
 
 
@@ -28,8 +29,11 @@ class Actor(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, index=True, unique=True)
     name: Mapped[str] = mapped_column(String, unique=True, index=True)
     roles: Mapped[str] = mapped_column(StringList, index=True)
-    didcomm_invitation: Mapped[Optional[str]] = mapped_column(String, unique=True, index=True)
+    didcomm_invitation: Mapped[Optional[str]] = mapped_column(
+        String, unique=True, index=True
+    )
     did: Mapped[str] = mapped_column(String, unique=True, index=True)
+
 
 class Schema(Base):
     __tablename__ = "schemas"

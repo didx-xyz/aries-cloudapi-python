@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, delete, update
 
 from shared.log_config import get_logger
+from trustregistry import db
 from shared.models.trustregistry import Actor, Schema
 from trustregistry import db
 

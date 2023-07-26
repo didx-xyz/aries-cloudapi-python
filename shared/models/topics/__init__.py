@@ -30,6 +30,7 @@ CloudApiTopics = Literal[
     "endorsements",
     "oob",
     "revocation",
+    "issuer_cred_rev"
 ]
 
 topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {

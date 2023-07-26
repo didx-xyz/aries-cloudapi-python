@@ -1,7 +1,6 @@
 import asyncio
+from logging import Logger
 from typing import Awaitable
-
-from loguru import Logger
 
 
 async def coroutine_with_retry(

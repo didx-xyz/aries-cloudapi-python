@@ -5,7 +5,7 @@ from loguru import Logger
 
 
 async def coroutine_with_retry(
-    coroutine: Awaitable, logger: Logger, max_attempts=5, retry_delay=0.5
+    coroutine: Awaitable, logger: Logger, max_attempts=5, retry_delay=1
 ):
     for attempt in range(max_attempts):
         try:

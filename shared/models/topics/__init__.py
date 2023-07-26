@@ -40,6 +40,7 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
     "revocation_registry": "revocation",
+    "issuer_cred_rev": "issuer_cred_rev",
     "out_of_band": "oob",
     "present_proof": "proofs",
     "present_proof_v2_0": "proofs",

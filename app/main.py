@@ -24,7 +24,7 @@ from app.generic.webhooks import sse, webhooks
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.2")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.9.0")
 
 logger = get_logger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))

@@ -325,10 +325,10 @@ async def onboard_issuer_no_public_did(
             invitation
         )
         await coroutine_with_retry(
-            set_endorser_roles(endorser_connection, connection_record), bound_logger
+            set_endorser_roles, (endorser_connection, connection_record), bound_logger
         )
         await coroutine_with_retry(
-            configure_endorsement(connection_record, endorser_did), bound_logger
+            configure_endorsement, (connection_record, endorser_did), bound_logger
         )
 
     try:

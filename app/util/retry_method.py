@@ -1,14 +1,14 @@
 import asyncio
 from logging import Logger
-from typing import Awaitable
+from typing import Callable, Tuple
 
 
 async def coroutine_with_retry(
-    coroutine: Awaitable, logger: Logger, max_attempts=5, retry_delay=1
+    coroutine_func: Callable, args: Tuple, logger: Logger, max_attempts=5, retry_delay=1
 ):
     for attempt in range(max_attempts):
         try:
-            await coroutine
+            await coroutine_func(*args)
             break
         except Exception as e:
             if attempt + 1 == max_attempts:

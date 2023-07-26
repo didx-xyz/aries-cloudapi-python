@@ -40,6 +40,7 @@ class Service:
             "basic-messages": self._basic_messages,
             "endorsements": self._endorsements,
             "oob": self._oob,
+            "revocation": self._revocation,
         }
 
     def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:
@@ -59,7 +60,9 @@ class Service:
 
     def _oob(self, item: RedisItem) -> OobRecord:
         return OobRecord(**item.payload)
-
+    
+    def _revocation(self, item: RedisItem) -> IssuerRevRegRecord:
+        return IssuerRevRegRecord(**item.payload)
     def _to_item(self, data: RedisItem) -> Optional[BaseModel]:
         transformer = self._topic_to_transformer.get(data.topic)
 

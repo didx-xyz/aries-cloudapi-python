@@ -61,10 +61,10 @@ class Service:
 
     def _oob(self, item: RedisItem) -> OobRecord:
         return OobRecord(**item.payload)
-    
+
     def _revocation(self, item: RedisItem) -> IssuerRevRegRecord:
         return IssuerRevRegRecord(**item.payload)
-    
+
     def _issuer_cred_rev(self,item: RedisItem) -> IssuerCredRevRecord:
         return IssuerCredRevRecord(**item.payload)
 

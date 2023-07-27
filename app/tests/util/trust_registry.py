@@ -1,7 +1,12 @@
 from random import random
 
-from app.facades.trust_registry import (Actor, actor_by_did, register_actor,
-                                        register_schema, registry_has_schema)
+from app.facades.trust_registry import (
+    Actor,
+    actor_by_did,
+    register_actor,
+    register_schema,
+    registry_has_schema,
+)
 from shared import RichAsyncClient
 
 

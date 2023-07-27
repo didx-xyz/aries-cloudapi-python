@@ -1,6 +1,9 @@
-from sqlalchemy import Column, String
+from typing import Optional
 
-from trustregistry.database import SessionLocal, Base
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from trustregistry.database import Base, SessionLocal
 from trustregistry.list_type import StringList
 
 
@@ -23,17 +26,19 @@ def schema_id_gen(context):
 class Actor(Base):
     __tablename__ = "actors"
 
-    id = Column(String, primary_key=True, index=True, unique=True)
-    name = Column(String, unique=True, index=True)
-    roles = Column(StringList, index=True)
-    didcomm_invitation = Column(String, unique=True, index=True)
-    did = Column(String, unique=True, index=True)
+    id: Mapped[str] = mapped_column(String, primary_key=True, index=True, unique=True)
+    name: Mapped[str] = mapped_column(String, unique=True, index=True)
+    roles: Mapped[str] = mapped_column(StringList, index=True)
+    didcomm_invitation: Mapped[Optional[str]] = mapped_column(
+        String, unique=True, index=True
+    )
+    did: Mapped[str] = mapped_column(String, unique=True, index=True)
 
 
 class Schema(Base):
     __tablename__ = "schemas"
 
-    id = Column(
+    id: Mapped[str] = mapped_column(
         String,
         primary_key=True,
         index=True,
@@ -41,6 +46,6 @@ class Schema(Base):
         default=schema_id_gen,
         onupdate=schema_id_gen,
     )
-    did = Column(String, index=True)
-    name = Column(String, index=True)
-    version = Column(String, index=True)
+    did: Mapped[str] = mapped_column(String, index=True)
+    name: Mapped[str] = mapped_column(String, index=True)
+    version: Mapped[str] = mapped_column(String, index=True)

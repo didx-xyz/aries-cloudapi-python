@@ -1,5 +1,6 @@
 from typing import List
 
+from sqlalchemy import ScalarResult, delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -11,11 +12,18 @@ logger = get_logger(__name__)
 
 
 def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db.Actor]:
-    logger.info("Querying all actors from database")
-    result = db_session.query(db.Actor).offset(skip).limit(limit).all()
+    logger.info("Querying all actors from database (limit = {})", limit)
+
+    query = select(db.Actor).offset(skip).limit(limit)
+    result = db_session.scalars(query).all()
 
     if result:
-        logger.info("Successfully retrieved `{}` actors from database.", len(result))
+        num_rows = len(result)
+        logger.info("Successfully retrieved `{}` actors from database.", num_rows)
+        if num_rows == limit:
+            logger.warning(
+                "The number of actors returned is equal to limit used in the query."
+            )
     else:
         logger.warning("No actors retrieved from database.")
 
@@ -25,7 +33,9 @@ def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db
 def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_did": actor_did})
     bound_logger.info("Querying actor by DID")
-    result = db_session.query(db.Actor).filter(db.Actor.did == actor_did).first()
+
+    query = select(db.Actor).where(db.Actor.did == actor_did)
+    result = db_session.scalars(query).first()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database.")
@@ -39,7 +49,9 @@ def get_actor_by_did(db_session: Session, actor_did: str) -> db.Actor:
 def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Querying actor by ID")
-    result = db_session.query(db.Actor).filter(db.Actor.id == actor_id).first()
+
+    query = select(db.Actor).where(db.Actor.id == actor_id)
+    result = db_session.scalars(query).first()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database.")
@@ -53,9 +65,9 @@ def get_actor_by_id(db_session: Session, actor_id: str) -> db.Actor:
 def get_actor_by_name(db_session: Session, actor_name: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_name": actor_name})
     bound_logger.info("Query actor by name")
-    result = (
-        db_session.query(db.Actor).filter(db.Actor.name == actor_name).one_or_none()
-    )
+
+    query = select(db.Actor).where(db.Actor.name == actor_name)
+    result = db_session.scalars(query).one_or_none()
 
     if result:
         bound_logger.info("Successfully retrieved actor from database")
@@ -125,21 +137,24 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
 
     except Exception as e:
-        bound_logger.info("Something went wrong during actor creation")
+        bound_logger.exception("Something went wrong during actor creation.")
         raise e from e
 
 
 def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Delete actor from database. First assert actor ID exists")
-    db_actor = db_session.query(db.Actor).filter(db.Actor.id == actor_id).one_or_none()
+
+    query = select(db.Actor).where(db.Actor.id == actor_id)
+    db_actor = db_session.scalars(query).one_or_none()
 
     if not db_actor:
         bound_logger.info("Requested actor ID to delete does not exist in database.")
         raise ActorDoesNotExistException
 
     bound_logger.debug("Deleting actor")
-    db_session.delete(db_actor)
+    query_delete = delete(db.Actor).where(db.Actor.id == actor_id)
+    db_session.execute(query_delete)
     db_session.commit()
 
     bound_logger.info("Successfully deleted actor ID.")
@@ -149,32 +164,50 @@ def delete_actor(db_session: Session, actor_id: str) -> db.Actor:
 def update_actor(db_session: Session, actor: Actor) -> db.Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Update actor in database. First assert actor ID exists")
-    db_actor = db_session.query(db.Actor).filter(db.Actor.id == actor.id).one_or_none()
+
+    query = select(db.Actor).where(db.Actor.id == actor.id)
+    db_actor = db_session.scalars(query).one_or_none()
 
     if not db_actor:
         bound_logger.info("Requested actor ID to update does not exist in database.")
         raise ActorDoesNotExistException
 
     bound_logger.debug("Updating actor")
-    for var, value in vars(actor).items():
-        setattr(db_actor, var, value)
+    update_query = (
+        update(db.Actor)
+        .where(db.Actor.id == actor.id)
+        .values(
+            name=actor.name,
+            roles=actor.roles,
+            didcomm_invitation=actor.didcomm_invitation,
+            did=actor.did,
+        )
+        .returning(db.Actor)
+    )
 
-    db_session.add(db_actor)
+    result: ScalarResult[db.Actor] = db_session.scalars(update_query)
     db_session.commit()
-    db_session.refresh(db_actor)
+
+    updated_actor = result.first()
 
     bound_logger.info("Successfully updated actor.")
-    return db_actor
+    return updated_actor
 
 
 def get_schemas(
     db_session: Session, skip: int = 0, limit: int = 1000
 ) -> List[db.Schema]:
-    logger.debug("Query all schemas from database")
-    result = db_session.query(db.Schema).offset(skip).limit(limit).all()
+    logger.debug("Query all schemas from database (limit = {})", limit)
+    query = select(db.Schema).offset(skip).limit(limit)
+    result = db_session.scalars(query).all()
 
     if result:
-        logger.info("Successfully retrieved {} schemas from database.", len(result))
+        num_rows = len(result)
+        logger.info("Successfully retrieved {} schemas from database.", num_rows)
+        if num_rows == limit:
+            logger.warning(
+                "The number of schemas returned is equal to limit used in the query."
+            )
     else:
         logger.warning("No schemas retrieved from database.")
 
@@ -184,11 +217,11 @@ def get_schemas(
 def get_schema_by_id(db_session: Session, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Querying for schema by ID")
-    result = db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
 
-    if result:
-        bound_logger.info("Successfully retrieved schema from database.")
-    else:
+    query = select(db.Schema).where(db.Schema.id == schema_id)
+    result = db_session.scalars(query).first()
+
+    if not result:
         bound_logger.info("Schema does not exist in database.")
         raise SchemaDoesNotExistException
 
@@ -200,15 +233,16 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
     bound_logger.info(
         "Create schema in database. First assert schema ID does not already exist"
     )
-    db_schema = (
-        db_session.query(db.Schema).filter(db.Schema.id == schema.id).one_or_none()
-    )
+
+    query = select(db.Schema).where(db.Schema.id == schema.id)
+    db_schema = db_session.scalars(query).one_or_none()
 
     if db_schema:
         bound_logger.info("The requested schema ID already exists in database.")
         raise SchemaAlreadyExistsException
 
     bound_logger.debug("Adding schema to database")
+
     db_schema = db.Schema(**schema.dict())
     db_session.add(db_schema)
     db_session.commit()
@@ -221,9 +255,9 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
 def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema": schema, "schema_id": schema_id})
     bound_logger.info("Update schema in database. First assert schema ID exists")
-    db_schema = (
-        db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
-    )
+
+    query = select(db.Schema).where(db.Schema.id == schema_id)
+    db_schema = db_session.scalars(query).one_or_none()
 
     if not db_schema:
         bound_logger.debug(
@@ -232,29 +266,36 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
         raise SchemaDoesNotExistException
 
     bound_logger.debug("Updating schema on database")
-    for var, value in vars(schema).items():
-        setattr(db_schema, var, value) if value else None
 
-    db_session.add(db_schema)
+    update_query = (
+        update(db.Schema)
+        .where(db.Schema.id == schema_id)
+        .values(id=schema.id, name=schema.name, version=schema.version, did=schema.did)
+        .returning(db.Schema)
+    )
+
+    result: ScalarResult[db.Schema] = db_session.scalars(update_query)
     db_session.commit()
-    db_session.refresh(db_schema)
+
+    updated_schema = result.first()
 
     bound_logger.info("Successfully updated schema on database.")
-    return db_schema
+    return updated_schema
 
 
 def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Delete schema from database. First assert schema ID exists")
-    db_schema = (
-        db_session.query(db.Schema).filter(db.Schema.id == schema_id).one_or_none()
-    )
+
+    query_does_exists = select(db.Schema).where(db.Schema.id == schema_id)
+    db_schema = db_session.scalars(query_does_exists).one_or_none()
 
     if not db_schema:
         raise SchemaDoesNotExistException
 
+    query_delete = delete(db.Schema).where(db.Schema.id == schema_id)
     bound_logger.debug("Deleting schema from database")
-    db_session.delete(db_schema)
+    db_session.execute(query_delete)
     db_session.commit()
 
     bound_logger.info("Successfully deleted schema from database.")
@@ -263,12 +304,6 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
 
 class ActorAlreadyExistsException(Exception):
     """Raised when attempting to create an actor that already exists in the database."""
-
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
 
 
 class ActorDoesNotExistException(Exception):

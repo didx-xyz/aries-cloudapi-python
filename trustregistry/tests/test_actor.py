@@ -1,10 +1,11 @@
 import json
 
 import pytest
-from httpx import AsyncClient
+
 from app.tests.util.string import random_string
 
 from shared import TRUST_REGISTRY_URL
+from httpx import AsyncClient
 
 new_actor = {
     "id": "darth-vader",
@@ -112,7 +113,7 @@ async def test_get_actor():
         not_actor_response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/not_a_actor"
         )
-
+            
         assert not_actor_response.status_code == 404
 
         #test by did

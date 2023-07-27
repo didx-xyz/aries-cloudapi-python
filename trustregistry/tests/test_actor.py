@@ -1,12 +1,10 @@
-
 import json
+
 import pytest
-
-from shared import TRUST_REGISTRY_URL
-from app.tests.util.string import random_string
-
-
 from httpx import AsyncClient
+
+from app.tests.util.string import random_string
+from shared import TRUST_REGISTRY_URL
 
 new_actor = {
     "id": "darth-vader",
@@ -103,10 +101,8 @@ async def test_register_actor():
 @pytest.mark.anyio
 async def test_get_actor():
     async with AsyncClient() as client:
-        #test by id
-        response = await client.get(
-            f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
-        )
+        # test by id
+        response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
 
         assert response.status_code == 200
         assert response.json() == new_actor
@@ -114,10 +110,10 @@ async def test_get_actor():
         not_actor_response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/not_a_actor"
         )
-            
+
         assert not_actor_response.status_code == 404
 
-        #test by did
+        # test by did
         response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/did/{actor_did}"
         )
@@ -131,7 +127,7 @@ async def test_get_actor():
 
         assert not_actor_response.status_code == 404
 
-        #test by name
+        # test by name
         response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
         )
@@ -144,6 +140,7 @@ async def test_get_actor():
         )
 
         assert not_actor_response.status_code == 404
+
 
 @pytest.mark.anyio
 async def test_update_actor():

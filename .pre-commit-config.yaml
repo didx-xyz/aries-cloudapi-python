@@ -12,6 +12,8 @@ repos:
           - id: blacken-docs
             stages: [push]
             additional_dependencies: [black==23.7.0]
+            language_version: python3.9
+            files: '\.(rst|md|markdown|py|tex)$'
 
     - repo: https://github.com/PyCQA/isort
       rev: 5.12.0

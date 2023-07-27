@@ -1,8 +1,9 @@
 from typing import Optional
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from trustregistry.database import SessionLocal, Base
+from trustregistry.database import Base, SessionLocal
 from trustregistry.list_type import StringList
 
 

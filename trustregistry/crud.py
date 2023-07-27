@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import ScalarResult, delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -185,15 +185,13 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
         .returning(db.Actor)
     )
 
-    result = db_session.scalars(update_query)
+    result: ScalarResult[db.Actor] = db_session.scalars(update_query)
     db_session.commit()
 
-    db_actor: db.Actor
-    for row in result:
-        db_actor = row
+    updated_actor = result.first()
 
     bound_logger.info("Successfully updated actor.")
-    return db_actor
+    return updated_actor
 
 
 def get_schemas(

@@ -3,9 +3,9 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
+from shared.models.trustregistry import Actor
 from trustregistry import crud
 from trustregistry.db import get_db
-from shared.models.trustregistry import Actor
 
 logger = get_logger(__name__)
 

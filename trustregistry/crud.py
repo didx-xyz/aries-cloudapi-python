@@ -304,12 +304,6 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
 class ActorAlreadyExistsException(Exception):
     """Raised when attempting to create an actor that already exists in the database."""
 
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
-
 
 class ActorDoesNotExistException(Exception):
     """Raised when attempting to delete or update an actor that does not exist in the database."""

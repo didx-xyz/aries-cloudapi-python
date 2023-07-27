@@ -1,10 +1,16 @@
 import pytest
-from aries_cloudcontroller import (AcaPyClient, V10CredentialStoreRequest,
-                                   V20CredAttrSpec, V20CredExRecord,
-                                   V20CredExRecordByFormat,
-                                   V20CredExRecordDetail, V20CredExRecordIndy,
-                                   V20CredExRecordListResult, V20CredPreview,
-                                   V20CredRequestRequest)
+from aries_cloudcontroller import (
+    AcaPyClient,
+    V10CredentialStoreRequest,
+    V20CredAttrSpec,
+    V20CredExRecord,
+    V20CredExRecordByFormat,
+    V20CredExRecordDetail,
+    V20CredExRecordIndy,
+    V20CredExRecordListResult,
+    V20CredPreview,
+    V20CredRequestRequest,
+)
 from assertpy import assert_that
 from mockito import when
 

@@ -1,9 +1,13 @@
 import pytest
-from aries_cloudcontroller import (AcaPyClient, CredAttrSpec,
-                                   CredentialPreview, CredentialProposal,
-                                   V10CredentialExchange,
-                                   V10CredentialExchangeListResult,
-                                   V10CredentialStoreRequest)
+from aries_cloudcontroller import (
+    AcaPyClient,
+    CredAttrSpec,
+    CredentialPreview,
+    CredentialProposal,
+    V10CredentialExchange,
+    V10CredentialExchangeListResult,
+    V10CredentialStoreRequest,
+)
 from assertpy import assert_that
 from mockito import when
 
@@ -49,7 +53,9 @@ v1_credential_exchange_records = [
 @pytest.mark.anyio
 async def test_get_records(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.issue_credential_v1_0).get_records(...).thenReturn(
-        to_async(V10CredentialExchangeListResult(results=v1_credential_exchange_records))
+        to_async(
+            V10CredentialExchangeListResult(results=v1_credential_exchange_records)
+        )
     )
 
     records = await IssuerV1.get_records(mock_agent_controller)

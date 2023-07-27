@@ -137,7 +137,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
 
     except Exception as e:
-        bound_logger.error("Something went wrong during actor creation")
+        bound_logger.exception("Something went wrong during actor creation.")
         raise e from e
 
 

@@ -5,6 +5,7 @@ import pytest
 from app.tests.util.string import random_string
 
 from shared import TRUST_REGISTRY_URL
+
 from httpx import AsyncClient
 
 new_actor = {

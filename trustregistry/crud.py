@@ -199,12 +199,17 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
 def get_schemas(
     db_session: Session, skip: int = 0, limit: int = 1000
 ) -> List[db.Schema]:
-    logger.debug("Query all schemas from database")
+    logger.debug("Query all schemas from database (limit = {})", limit)
     query = select(db.Schema).offset(skip).limit(limit)
     result = db_session.scalars(query).all()
 
     if result:
-        logger.info("Successfully retrieved {} schemas from database.", len(result))
+        num_rows = len(result)
+        logger.info("Successfully retrieved {} schemas from database.", num_rows)
+        if num_rows == limit:
+            logger.warning(
+                "The number of schemas returned is equal to limit used in the query."
+            )
     else:
         logger.warning("No schemas retrieved from database.")
 

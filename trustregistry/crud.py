@@ -12,13 +12,18 @@ logger = get_logger(__name__)
 
 
 def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db.Actor]:
-    logger.info("Querying all actors from database")
+    logger.info("Querying all actors from database (limit = {})", limit)
 
     query = select(db.Actor).offset(skip).limit(limit)
     result = db_session.scalars(query).all()
 
     if result:
-        logger.info("Successfully retrieved `{}` actors from database.", len(result))
+        num_rows = len(result)
+        logger.info("Successfully retrieved `{}` actors from database.", num_rows)
+        if num_rows == limit:
+            logger.warning(
+                "The number of actors returned is equal to limit used in the query."
+            )
     else:
         logger.warning("No actors retrieved from database.")
 

@@ -274,15 +274,13 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
         .returning(db.Schema)
     )
 
-    result = db_session.scalars(update_query)
+    result: ScalarResult[db.Schema] = db_session.scalars(update_query)
     db_session.commit()
 
-    db_schema: db.Schema
-    for row in result:
-        db_schema = row
+    updated_schema = result.first()
 
     bound_logger.info("Successfully updated schema on database.")
-    return db_schema
+    return updated_schema
 
 
 def delete_schema(db_session: Session, schema_id: str) -> db.Schema:

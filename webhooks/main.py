@@ -14,7 +14,7 @@ def create_app() -> FastAPI:
     OPENAPI_NAME = os.getenv(
         "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"
     )
-    PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.8.2")
+    PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.9.0")
 
     application = FastAPI(
         title=OPENAPI_NAME,

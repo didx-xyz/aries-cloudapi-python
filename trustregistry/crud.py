@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import ScalarResult, delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -12,13 +12,18 @@ logger = get_logger(__name__)
 
 
 def get_actors(db_session: Session, skip: int = 0, limit: int = 1000) -> List[db.Actor]:
-    logger.info("Querying all actors from database")
+    logger.info("Querying all actors from database (limit = {})", limit)
 
     query = select(db.Actor).offset(skip).limit(limit)
     result = db_session.scalars(query).all()
 
     if result:
-        logger.info("Successfully retrieved `{}` actors from database.", len(result))
+        num_rows = len(result)
+        logger.info("Successfully retrieved `{}` actors from database.", num_rows)
+        if num_rows == limit:
+            logger.warning(
+                "The number of actors returned is equal to limit used in the query."
+            )
     else:
         logger.warning("No actors retrieved from database.")
 
@@ -132,7 +137,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
 
     except Exception as e:
-        bound_logger.info("Something went wrong during actor creation")
+        bound_logger.exception("Something went wrong during actor creation.")
         raise e from e
 
 
@@ -180,26 +185,29 @@ def update_actor(db_session: Session, actor: Actor) -> db.Actor:
         .returning(db.Actor)
     )
 
-    result = db_session.scalars(update_query)
+    result: ScalarResult[db.Actor] = db_session.scalars(update_query)
     db_session.commit()
 
-    db_actor: db.Actor
-    for row in result:
-        db_actor = row
+    updated_actor = result.first()
 
     bound_logger.info("Successfully updated actor.")
-    return db_actor
+    return updated_actor
 
 
 def get_schemas(
     db_session: Session, skip: int = 0, limit: int = 1000
 ) -> List[db.Schema]:
-    logger.debug("Query all schemas from database")
+    logger.debug("Query all schemas from database (limit = {})", limit)
     query = select(db.Schema).offset(skip).limit(limit)
     result = db_session.scalars(query).all()
 
     if result:
-        logger.info("Successfully retrieved {} schemas from database.", len(result))
+        num_rows = len(result)
+        logger.info("Successfully retrieved {} schemas from database.", num_rows)
+        if num_rows == limit:
+            logger.warning(
+                "The number of schemas returned is equal to limit used in the query."
+            )
     else:
         logger.warning("No schemas retrieved from database.")
 
@@ -266,15 +274,13 @@ def update_schema(db_session: Session, schema: Schema, schema_id: str) -> db.Sch
         .returning(db.Schema)
     )
 
-    result = db_session.scalars(update_query)
+    result: ScalarResult[db.Schema] = db_session.scalars(update_query)
     db_session.commit()
 
-    db_schema: db.Schema
-    for row in result:
-        db_schema = row
+    updated_schema = result.first()
 
     bound_logger.info("Successfully updated schema on database.")
-    return db_schema
+    return updated_schema
 
 
 def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
@@ -298,12 +304,6 @@ def delete_schema(db_session: Session, schema_id: str) -> db.Schema:
 
 class ActorAlreadyExistsException(Exception):
     """Raised when attempting to create an actor that already exists in the database."""
-
-    def __init__(self, message):
-        self.message = message
-
-    def __str__(self):
-        return self.message
 
 
 class ActorDoesNotExistException(Exception):

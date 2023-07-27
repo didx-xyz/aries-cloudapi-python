@@ -3,9 +3,9 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 
 from shared.log_config import get_logger
+from shared.models.trustregistry import Actor
 from trustregistry import crud
 from trustregistry.db import get_db
-from shared.models.trustregistry import Actor
 
 logger = get_logger(__name__)
 
@@ -29,6 +29,9 @@ async def register_actor(actor: Actor, db_session: Session = Depends(get_db)):
     except crud.ActorAlreadyExistsException as e:
         bound_logger.info("Bad request: Actor already exists.")
         raise HTTPException(status_code=409, detail=str(e)) from e
+    except Exception as e:
+        bound_logger.error("Something went wrong during actor creation.")
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
     return created_actor
 

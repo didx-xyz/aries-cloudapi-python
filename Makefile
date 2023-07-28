@@ -26,8 +26,8 @@ restart:
 
 .PHONY: unit-tests
 unit-tests:
-	pytest --cov=app --ignore=app/tests/e2e
+	pytest app --ignore=app/tests/e2e
 
 .PHONY: tests
 tests:
-	pytest --cov=app/ --cov=trustregistry trustregistry app
+	pytest .

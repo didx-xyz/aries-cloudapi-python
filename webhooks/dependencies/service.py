@@ -3,7 +3,11 @@
 from typing import List, Optional
 
 from aioredis import Redis
-from aries_cloudcontroller.model import OobRecord
+from aries_cloudcontroller.model import (
+    IssuerCredRevRecord,
+    IssuerRevRegRecord,
+    OobRecord,
+)
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger
@@ -40,6 +44,8 @@ class Service:
             "basic-messages": self._basic_messages,
             "endorsements": self._endorsements,
             "oob": self._oob,
+            "revocation": self._revocation,
+            "issuer_cred_rev": self._issuer_cred_rev,
         }
 
     def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:
@@ -59,6 +65,12 @@ class Service:
 
     def _oob(self, item: RedisItem) -> OobRecord:
         return OobRecord(**item.payload)
+
+    def _revocation(self, item: RedisItem) -> IssuerRevRegRecord:
+        return IssuerRevRegRecord(**item.payload)
+
+    def _issuer_cred_rev(self, item: RedisItem) -> IssuerCredRevRecord:
+        return IssuerCredRevRecord(**item.payload)
 
     def _to_item(self, data: RedisItem) -> Optional[BaseModel]:
         transformer = self._topic_to_transformer.get(data.topic)

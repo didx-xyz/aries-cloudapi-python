@@ -1,5 +1,14 @@
-.PHONY: all
-all: test tests
+.PHONY: help
+help:
+	@echo "Available targets:"
+	@echo "  stop_n_clean  : Stop and remove all Docker containers"
+	@echo "  clean         : Remove all Docker containers"
+	@echo "  start_usecache: Start the application using cache"
+	@echo "  start         : Start the application"
+	@echo "  stop          : Stop the application"
+	@echo "  restart       : Restart the application"
+	@echo "  unit-tests    : Run unit tests"
+	@echo "  tests         : Run all tests"
 
 .PHONY: stop_n_clean
 stop_n_clean:

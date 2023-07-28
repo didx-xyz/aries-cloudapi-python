@@ -1,6 +1,6 @@
 anyio~=3.7.0
 assertpy==1.1
-black~=23.3.0
+black~=23.7.0
 httpx~=0.24.1
 isort~=5.1.0
 mockito~=1.4.0

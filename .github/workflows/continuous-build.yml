@@ -56,19 +56,6 @@ jobs:
           echo done
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      # - name: Retry tests
-      #   if: steps.test.outcome=='failure' # check the step outcome, retry 1st time
-      #   run: |
-      #     sudo chown -R $(id -u):$(id -g) ./data
-      #     sudo chmod 777 ./data -R
-      #     docker-compose up --build -d governance-ga-agent
-      #     docker-compose up --build -d governance-multitenant-agent
-      #     sleep 120
-      #     pytest trustregistry app --cov=trustregistry --cov=app --ignore=webhooks --log-cli-level=1
-      #     bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
-      #     echo done
-      #   env:
-      #     CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
       - name: Tear down test harness
         run: |
           ./manage down || true

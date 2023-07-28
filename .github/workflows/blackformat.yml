@@ -4,6 +4,7 @@ name: Black Code Formatter Check
   pull_request:
     branches:
       - main
+      - development
 
 jobs:
   lint:

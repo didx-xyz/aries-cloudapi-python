@@ -1,10 +1,11 @@
 """
 Example ws client connecting to all topics for acapy
 """
-from fastapi_websocket_pubsub import PubSubClient
 import asyncio
 import os
 import sys
+
+from fastapi_websocket_pubsub import PubSubClient
 
 sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
 

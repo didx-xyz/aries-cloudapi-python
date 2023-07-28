@@ -1,9 +1,9 @@
 from uuid import uuid4
-from fastapi import HTTPException
 
 import pytest
 from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
+from fastapi import HTTPException
 
 from app.admin.tenants.tenants import router
 from app.dependencies.acapy_clients import get_tenant_controller

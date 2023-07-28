@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from httpx import Response, HTTPStatusError
+from httpx import HTTPStatusError, Response
 from mockito import verify, when
 from pytest_mock import MockerFixture
 

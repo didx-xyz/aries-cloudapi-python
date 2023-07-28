@@ -2,8 +2,6 @@
 
 This document provides a brief overview of the Aries Cloud API Architecture, focusing on the two key components: the Admin Agent and the Multi-tenant Agent.
 
-> Note: For a more detailed overview, refer to the Yoma Architecture Documents (link to be added).
-
 ## Admin Agent
 
 The Admin Agent and the Multi-tenant Agent are both exposed via the same Swagger UI under the same URL. They are differentiated based on the authorization method, which also specifies a role. For more information on this, refer to the workflows document.

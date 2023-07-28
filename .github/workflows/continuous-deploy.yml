@@ -287,7 +287,7 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: |
           redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
-       
+
       - name: Update deployments
         id: update_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
@@ -361,7 +361,7 @@ jobs:
       - name: Test with pytest
         id: test
         run: |
-          pytest --cov=trustregistry --cov=app --cov=webhooks trustregistry app webhooks
+          pytest --cov=app --cov=endorser --cov=trustregistry --cov=webhooks app endorser trustregistry webhooks
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:

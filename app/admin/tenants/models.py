@@ -1,4 +1,5 @@
 from typing import List, Optional
+
 from aries_cloudcontroller.model.wallet_record import WalletRecord
 from pydantic import BaseModel, Field, HttpUrl
 

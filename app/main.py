@@ -33,13 +33,13 @@ debug = not prod
 
 def create_app() -> FastAPI:
     routes = [
+        tenants,
         connections,
         definitions,
         issuer,
         jsonld,
         messaging,
         oob,
-        tenants,
         trust_registry,
         verifier,
         wallet,

@@ -324,12 +324,8 @@ async def onboard_issuer_no_public_did(
         endorser_connection, connection_record = await wait_for_connection_completion(
             invitation
         )
-        await coroutine_with_retry(
-            set_endorser_roles, (endorser_connection, connection_record), bound_logger
-        )
-        await coroutine_with_retry(
-            configure_endorsement, (connection_record, endorser_did), bound_logger
-        )
+        await set_endorser_roles(endorser_connection, connection_record)
+        await configure_endorsement(connection_record, endorser_did)
 
     try:
         logger.debug("Getting public DID for endorser")

@@ -153,8 +153,13 @@ async def onboard_issuer(
         bound_logger.debug("Obtained public DID for the to-be issuer")
     except CloudApiException:
         bound_logger.debug("No public DID for the to-be issuer")
-        issuer_did = await onboard_issuer_no_public_did(
-            name, endorser_controller, issuer_controller, issuer_wallet_id
+        # Onboarding an issuer with no public DID can fail when creating a connection with
+        # the endorser. If something goes wrong, the whole coroutine should be re-attempted
+        issuer_did: acapy_wallet.Did = await coroutine_with_retry(
+            onboard_issuer_no_public_did,
+            (name, endorser_controller, issuer_controller, issuer_wallet_id),
+            bound_logger,
+            max_attempts=3,
         )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")
@@ -324,12 +329,8 @@ async def onboard_issuer_no_public_did(
         endorser_connection, connection_record = await wait_for_connection_completion(
             invitation
         )
-        await coroutine_with_retry(
-            set_endorser_roles, (endorser_connection, connection_record), bound_logger
-        )
-        await coroutine_with_retry(
-            configure_endorsement, (connection_record, endorser_did), bound_logger
-        )
+        await set_endorser_roles(endorser_connection, connection_record)
+        await configure_endorsement(connection_record, endorser_did)
 
     try:
         logger.debug("Getting public DID for endorser")

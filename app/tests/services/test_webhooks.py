@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-import app.facades.webhooks as whf
+import app.services.webhooks as whf
 from shared.models.topics import Connection
 
 conn_record = Connection(

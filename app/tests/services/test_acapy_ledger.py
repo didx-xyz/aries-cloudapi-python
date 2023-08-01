@@ -14,7 +14,7 @@ from fastapi import HTTPException
 from mockito import mock, verify, when
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.acapy_ledger import (
+from app.services.acapy_ledger import (
     accept_taa,
     get_did_endpoint,
     get_taa,

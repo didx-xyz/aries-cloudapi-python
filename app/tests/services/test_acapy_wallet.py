@@ -4,7 +4,7 @@ from aries_cloudcontroller.model.did import DID
 from mockito import when
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades import acapy_wallet
+from app.services import acapy_wallet
 from app.tests.util.mock import to_async
 
 

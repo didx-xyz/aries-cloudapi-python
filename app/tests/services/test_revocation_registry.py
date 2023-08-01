@@ -16,7 +16,7 @@ from aries_cloudcontroller import (
 )
 from mockito import when
 
-import app.facades.revocation_registry as rg
+import app.services.revocation_registry as rg
 from app.exceptions.cloud_api_error import CloudApiException
 from app.tests.util.mock import to_async
 

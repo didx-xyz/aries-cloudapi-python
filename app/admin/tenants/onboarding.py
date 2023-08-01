@@ -209,7 +209,6 @@ async def onboard_issuer_no_public_did(
     bound_logger.info("Onboarding issuer that has no public DID")
 
     async def create_endorser_invitation():
-        # Make sure the issuer has a connection with the endorser
         bound_logger.debug("Create OOB invitation on behalf of endorser")
         invitation = await endorser_controller.out_of_band.create_invitation(
             auto_accept=True,
@@ -227,8 +226,6 @@ async def onboard_issuer_no_public_did(
             topic="connections", wallet_id="admin"
         )
 
-        # FIXME: make sure the connection with this alias doesn't exist yet
-        # Or does use_existing_connection take care of this?
         bound_logger.debug("Receive invitation from endorser on behalf of issuer")
         connection_record = await issuer_controller.out_of_band.receive_invitation(
             auto_accept=True,

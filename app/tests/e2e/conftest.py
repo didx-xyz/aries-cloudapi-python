@@ -18,7 +18,7 @@ from app.tests.e2e.test_fixtures import issue_credential_to_alice  # noqa: F401
 from app.tests.e2e.test_fixtures import schema_definition  # noqa: F401
 from app.tests.e2e.test_fixtures import schema_definition_alt  # noqa: F401
 from app.tests.util.ledger import create_public_did
-from app.tests.util.string import random_string
+from app.util.string import random_string
 
 
 # Governance should be provisioned with public did and registered for all e2e tests

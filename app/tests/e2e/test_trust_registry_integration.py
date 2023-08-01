@@ -4,7 +4,7 @@ from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
 from app.facades.trust_registry import actor_by_id
 from app.tests.util.client import get_tenant_client
-from app.tests.util.string import base64_to_json, random_string
+from app.util.string import base64_to_json, random_string
 from shared import RichAsyncClient
 
 

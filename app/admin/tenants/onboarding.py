@@ -19,7 +19,6 @@ from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
 from app.util.retry_method import coroutine_with_retry
-from app.util.string import random_string
 from shared import ACAPY_ENDORSER_ALIAS
 from shared.log_config import get_logger
 

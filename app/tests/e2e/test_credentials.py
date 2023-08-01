@@ -1,8 +1,8 @@
 import pytest
 
-from app.admin.tenants.models import CreateTenantResponse
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
 from app.event_handling.sse_listener import SseListener
+from app.models.tenants import CreateTenantResponse
 from app.routes.definitions import (
     CreateCredentialDefinition,
     CreateSchema,

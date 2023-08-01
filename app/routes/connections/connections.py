@@ -1,15 +1,11 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import (
-    CreateInvitationRequest,
-    InvitationResult,
-    ReceiveInvitationRequest,
-)
+from aries_cloudcontroller import CreateInvitationRequest, InvitationResult
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.models.connections import AcceptInvitation, CreateInvitation
 from shared.log_config import get_logger
 from shared.models.conversion import conn_record_to_connection
 from shared.models.topics import Connection
@@ -17,18 +13,6 @@ from shared.models.topics import Connection
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
-
-
-class CreateInvitation(BaseModel):
-    alias: Optional[str] = None
-    multi_use: Optional[bool] = None
-    use_public_did: Optional[bool] = None
-
-
-class AcceptInvitation(BaseModel):
-    alias: Optional[str] = None
-    use_existing_connection: Optional[bool] = None
-    invitation: ReceiveInvitationRequest
 
 
 @router.post("/create-invitation", response_model=InvitationResult)

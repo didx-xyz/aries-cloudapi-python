@@ -6,7 +6,6 @@ import base58
 from aries_cloudcontroller import (
     CreateWalletRequest,
     CreateWalletTokenRequest,
-    RemoveWalletRequest,
     UpdateWalletRequest,
     WalletRecord,
 )

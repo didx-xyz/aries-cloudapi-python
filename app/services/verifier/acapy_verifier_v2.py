@@ -1,5 +1,3 @@
-from typing import Optional
-
 from aries_cloudcontroller import (
     AcaPyClient,
     V20PresCreateRequestRequest,

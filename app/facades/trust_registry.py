@@ -1,26 +1,15 @@
 from typing import List, Literal, Optional
 
 import httpx
-from fastapi.exceptions import HTTPException
 from typing_extensions import TypedDict
 
+from app.exceptions.trust_registry_exception import TrustRegistryException
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
 TrustRegistryRole = Literal["issuer", "verifier"]
-
-
-class TrustRegistryException(HTTPException):
-    """Class that represents a trust registry error"""
-
-    def __init__(
-        self,
-        detail: str,
-        status_code: int = 403,
-    ) -> None:
-        super().__init__(status_code=status_code, detail=detail)
 
 
 class Actor(TypedDict):

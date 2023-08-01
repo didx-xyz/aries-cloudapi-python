@@ -3,7 +3,7 @@ from typing import List
 
 from aries_cloudcontroller import AcaPyClient, IndyCredPrecis
 
-from app.routes.verifier import (
+from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,

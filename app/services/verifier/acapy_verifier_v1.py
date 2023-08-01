@@ -6,7 +6,7 @@ from aries_cloudcontroller import (
 )
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.routes.verifier import (
+from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,

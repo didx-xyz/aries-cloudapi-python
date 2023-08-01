@@ -12,8 +12,8 @@ from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
 
-from app.generic.issuer.facades.acapy_issuer import Issuer
-from app.generic.issuer.models import Credential, CredentialNoConnection
+from app.routes.issuer.facades.acapy_issuer import Issuer
+from app.routes.issuer.models import Credential, CredentialNoConnection
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
 from shared.models.conversion import credential_record_to_model_v1

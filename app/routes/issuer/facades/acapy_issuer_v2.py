@@ -14,8 +14,8 @@ from aries_cloudcontroller import (
 from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.generic.issuer.facades.acapy_issuer import Issuer
-from app.generic.issuer.models import Credential, CredentialNoConnection
+from app.routes.issuer.facades.acapy_issuer import Issuer
+from app.routes.issuer.models import Credential, CredentialNoConnection
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
 from shared.models.conversion import credential_record_to_model_v2

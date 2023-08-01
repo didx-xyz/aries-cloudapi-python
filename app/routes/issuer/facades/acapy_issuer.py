@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient
 
-from app.generic.issuer.models import Credential, CredentialNoConnection
+from app.routes.issuer.models import Credential, CredentialNoConnection
 from shared.models.topics import CredentialExchange
 
 

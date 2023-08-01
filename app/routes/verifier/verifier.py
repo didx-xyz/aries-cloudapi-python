@@ -6,13 +6,13 @@ from fastapi import APIRouter, Depends
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
-from app.generic.verifier.facades.acapy_verifier_utils import (
+from app.routes.verifier.facades.acapy_verifier_utils import (
     VerifierFacade,
     assert_valid_prover,
     assert_valid_verifier,
     get_verifier_by_version,
 )
-from app.generic.verifier.models import (
+from app.routes.verifier.models import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,

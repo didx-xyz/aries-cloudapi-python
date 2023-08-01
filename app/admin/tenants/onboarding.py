@@ -19,6 +19,7 @@ from app.facades import acapy_ledger, acapy_wallet
 from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
 from app.util.retry_method import coroutine_with_retry
+from app.util.string import random_string
 from shared import ACAPY_ENDORSER_ALIAS
 from shared.log_config import get_logger
 
@@ -213,7 +214,7 @@ async def onboard_issuer_no_public_did(
         invitation = await endorser_controller.out_of_band.create_invitation(
             auto_accept=True,
             body=InvitationCreateRequest(
-                alias=name,
+                alias=f"{name}_{random_string(5)}",
                 handshake_protocols=["https://didcomm.org/didexchange/1.0"],
                 use_public_did=True,
             ),

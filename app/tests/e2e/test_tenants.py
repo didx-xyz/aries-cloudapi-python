@@ -5,7 +5,7 @@ from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 from fastapi import HTTPException
 
-from app.admin.tenants.tenants import router
+from app.routes.admin.tenants import router
 from app.dependencies.acapy_clients import get_tenant_controller
 from app.facades import acapy_wallet, trust_registry
 from app.tests.util.client import get_tenant_client

@@ -10,7 +10,6 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
-from app.admin.tenants import tenants
 from app.event_handling.websocket_manager import WebsocketManager
 from app.exceptions.cloud_api_error import CloudApiException
 from app.routes import (
@@ -26,6 +25,7 @@ from app.routes import (
     wallet,
     webhooks,
 )
+from app.routes.admin import tenants
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")

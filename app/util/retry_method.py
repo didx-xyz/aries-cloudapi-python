@@ -17,7 +17,9 @@ async def coroutine_with_retry(
                 raise e  # Re-raise the exception if max attempts exceeded
 
             logger.warning(
-                f"Failed to run coroutine (attempt {attempt + 1}). Retrying in {retry_delay} seconds..."
+                f"Failed to run coroutine (attempt {attempt + 1}). "
+                f"Reason: \n{e}.\n"
+                "Retrying in {retry_delay} seconds..."
             )
             await asyncio.sleep(retry_delay)
     return result

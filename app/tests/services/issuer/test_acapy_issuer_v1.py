@@ -11,7 +11,7 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from mockito import when
 
-from app.facades.issuer.acapy_issuer_v1 import IssuerV1
+from app.services.issuer.acapy_issuer_v1 import IssuerV1
 from app.models.issuer import Credential
 from app.tests.util.mock import to_async
 

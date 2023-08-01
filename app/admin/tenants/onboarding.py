@@ -213,7 +213,7 @@ async def onboard_issuer_no_public_did(
         invitation = await endorser_controller.out_of_band.create_invitation(
             auto_accept=True,
             body=InvitationCreateRequest(
-                alias=f"{name}_{random_string(5)}",
+                alias=name,
                 handshake_protocols=["https://didcomm.org/didexchange/1.0"],
                 use_public_did=True,
             ),

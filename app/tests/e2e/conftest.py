@@ -12,13 +12,13 @@ from app.services.trust_registry import (
 
 # pylint: disable=unused-import
 from app.tests.e2e.test_credentials import credential_definition_id  # noqa: F401
-from app.tests.e2e.test_credentials import (  # noqa: F401
-    credential_definition_id_revocable,
-)
 from app.tests.e2e.test_credentials import credential_exchange_id  # noqa: F401
 from app.tests.e2e.test_credentials import issue_credential_to_alice  # noqa: F401
 from app.tests.e2e.test_credentials import schema_definition  # noqa: F401
 from app.tests.e2e.test_credentials import schema_definition_alt  # noqa: F401
+from app.tests.e2e.test_credentials import (  # noqa: F401
+    credential_definition_id_revocable,
+)
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import random_string
 

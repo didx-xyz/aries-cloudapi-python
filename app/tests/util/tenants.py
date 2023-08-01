@@ -1,5 +1,5 @@
 from app.models.tenants import CreateTenantRequest, CreateTenantResponse
-from app.tests.util.string import random_string
+from app.util.string import random_string
 from shared import RichAsyncClient, parse_with_error_handling
 
 

@@ -11,8 +11,8 @@ from app.routes.definitions import (
 )
 from app.services import trust_registry
 from app.services.acapy_wallet import get_public_did
-from app.tests.util.string import random_string
 from app.tests.util.trust_registry import register_issuer
+from app.util.string import random_string
 from shared import RichAsyncClient
 
 

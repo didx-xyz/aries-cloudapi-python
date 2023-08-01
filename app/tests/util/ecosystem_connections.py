@@ -9,9 +9,9 @@ from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.services.trust_registry import actor_by_id
 from app.tests.util.ledger import create_public_did
-from app.tests.util.string import base64_to_json
 from app.tests.util.webhooks import check_webhook_state
 from app.util.acapy_verifier_utils import ed25519_verkey_to_did_key
+from app.util.string import base64_to_json
 from shared import RichAsyncClient
 
 

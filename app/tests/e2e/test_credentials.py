@@ -12,9 +12,9 @@ from app.routes.definitions import (
 )
 from app.routes.issuer import router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
-from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
+from app.util.string import random_version
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
 

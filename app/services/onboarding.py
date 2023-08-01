@@ -8,15 +8,15 @@ from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
 from pydantic.networks import AnyHttpUrl
 
-from app.admin.tenants.models import UpdateTenantRequest
 from app.dependencies.acapy_clients import (
     get_governance_controller,
     get_tenant_controller,
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades import acapy_ledger, acapy_wallet
-from app.facades.trust_registry import TrustRegistryRole, actor_by_id, update_actor
+from app.models.tenants import UpdateTenantRequest
+from app.services import acapy_ledger, acapy_wallet
+from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
 from app.util.retry_method import coroutine_with_retry
 from shared import ACAPY_ENDORSER_ALIAS

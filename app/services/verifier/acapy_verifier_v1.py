@@ -6,13 +6,13 @@ from aries_cloudcontroller import (
 )
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.services.verifier.acapy_verifier import Verifier
 from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
 )
+from app.services.verifier.acapy_verifier import Verifier
 from shared.log_config import get_logger
 from shared.models.conversion import presentation_record_to_model as record_to_model
 from shared.models.protocol import pres_id_no_version

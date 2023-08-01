@@ -9,11 +9,11 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from mockito import verify, when
 
-from app.admin.tenants import onboarding
-from app.admin.tenants.onboarding import acapy_ledger, acapy_wallet
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.acapy_wallet import Did
+from app.services import onboarding
+from app.services.acapy_wallet import Did
+from app.services.onboarding import acapy_ledger, acapy_wallet
 from app.tests.util.mock import to_async
 from shared.util.mock_agent_controller import get_mock_agent_controller
 

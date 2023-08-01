@@ -2,7 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
-import app.facades.acapy_wallet as wallet_facade
+import app.services.acapy_wallet as wallet_facade
 from app.dependencies.auth import AcaPyAuthVerified
 from app.models.wallet import SetDidEndpointRequest
 from app.routes.wallet import (

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
-from app.facades.sse import (
+from app.services.sse import (
     sse_subscribe_event_with_field_and_state,
     sse_subscribe_event_with_state,
     sse_subscribe_stream_with_fields,

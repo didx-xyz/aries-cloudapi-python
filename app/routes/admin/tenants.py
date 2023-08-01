@@ -14,15 +14,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from uplink import Consumer, Query, get, returns
 
-from app.admin.tenants.models import (
-    CreateTenantRequest,
-    CreateTenantResponse,
-    Tenant,
-    TenantAuth,
-    UpdateTenantRequest,
-    tenant_from_wallet_record,
-)
-from app.admin.tenants.onboarding import handle_tenant_update, onboard_tenant
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
     AcaPyAuth,
@@ -32,7 +23,16 @@ from app.dependencies.auth import (
     acapy_auth_tenant_admin,
 )
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.trust_registry import (
+from app.models.tenants import (
+    CreateTenantRequest,
+    CreateTenantResponse,
+    Tenant,
+    TenantAuth,
+    UpdateTenantRequest,
+    tenant_from_wallet_record,
+)
+from app.services.onboarding import handle_tenant_update, onboard_tenant
+from app.services.trust_registry import (
     Actor,
     TrustRegistryException,
     actor_by_id,

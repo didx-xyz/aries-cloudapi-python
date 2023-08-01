@@ -8,8 +8,8 @@ from aries_cloudcontroller import (
 )
 from assertpy import assert_that
 
-from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
+from app.models.tenants import CreateTenantResponse
 from app.routes.oob import AcceptOobInvitation, CreateOobInvitation
 from app.routes.verifier import (
     AcceptProofRequest,

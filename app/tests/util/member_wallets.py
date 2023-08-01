@@ -2,7 +2,7 @@ from typing import Any, Generator
 
 import pytest
 
-from app.admin.tenants.models import CreateTenantResponse
+from app.models.tenants import CreateTenantResponse
 from app.tests.util.client import get_tenant_admin_client
 from app.tests.util.tenants import (
     create_issuer_tenant,

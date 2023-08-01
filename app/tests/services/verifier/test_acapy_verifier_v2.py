@@ -4,13 +4,13 @@ from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
 )
+from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.util.mock import to_async
 from app.tests.verifier.utils import (
     indy_proof_request,

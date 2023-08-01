@@ -4,12 +4,12 @@ from typing import List, Optional, Set, Union
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.acapy_wallet import assert_public_did
-from app.facades.trust_registry import Actor, actor_by_did, get_trust_registry_schemas
-from app.facades.verifier.acapy_verifier import Verifier
-from app.facades.verifier.acapy_verifier_v1 import VerifierV1
-from app.facades.verifier.acapy_verifier_v2 import VerifierV2
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
+from app.services.acapy_wallet import assert_public_did
+from app.services.trust_registry import Actor, actor_by_did, get_trust_registry_schemas
+from app.services.verifier.acapy_verifier import Verifier
+from app.services.verifier.acapy_verifier_v1 import VerifierV1
+from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.util.did import ed25519_verkey_to_did_key
 from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion

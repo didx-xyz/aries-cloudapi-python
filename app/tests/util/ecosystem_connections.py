@@ -4,10 +4,10 @@ from typing import Any, Dict, TypedDict
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
-from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
-from app.facades.trust_registry import actor_by_id
+from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
+from app.services.trust_registry import actor_by_id
 from app.tests.util.ledger import create_public_did
 from app.tests.util.string import base64_to_json
 from app.tests.util.webhooks import check_webhook_state

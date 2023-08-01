@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-import app.facades.trust_registry as trust_registry_facade
+import app.services.trust_registry as trust_registry_facade
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

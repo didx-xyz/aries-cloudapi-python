@@ -5,8 +5,8 @@ from pytest_mock import MockerFixture
 
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
-from app.facades.issuer.acapy_issuer_v1 import IssuerV1
-from app.facades.issuer.acapy_issuer_v2 import IssuerV2
+from app.services.issuer.acapy_issuer_v1 import IssuerV1
+from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
 from shared.models.topics import CredentialExchange, IssueCredentialProtocolVersion
 from shared.util.mock_agent_controller import MockContextManagedController

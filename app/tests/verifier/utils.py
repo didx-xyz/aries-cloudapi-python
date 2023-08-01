@@ -32,9 +32,9 @@ from httpx import Response
 from mockito import mock, when
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.trust_registry import Actor
-from app.facades.verifier.acapy_verifier import Verifier
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
+from app.services.trust_registry import Actor
+from app.services.verifier.acapy_verifier import Verifier
 from app.tests.util.mock import to_async
 from app.util.acapy_verifier_utils import (
     are_valid_schemas,

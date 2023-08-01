@@ -26,8 +26,8 @@ from app.dependencies.auth import (
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades import acapy_wallet, trust_registry
-from app.facades.revocation_registry import (
+from app.services import acapy_wallet, trust_registry
+from app.services.revocation_registry import (
     create_revocation_registry,
     publish_revocation_registry_on_ledger,
 )

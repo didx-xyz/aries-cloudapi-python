@@ -14,8 +14,8 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from mockito import when
 
-from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.models.issuer import Credential
+from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
 
 schema_id_1 = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"

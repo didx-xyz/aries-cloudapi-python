@@ -3,7 +3,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends
 
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
-from app.facades.webhooks import get_hooks_for_wallet, get_hooks_for_wallet_by_topic
+from app.services.webhooks import get_hooks_for_wallet, get_hooks_for_wallet_by_topic
 from shared.log_config import get_logger
 from shared.models.topics import CloudApiTopics, TopicItem
 

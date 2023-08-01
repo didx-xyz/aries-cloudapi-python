@@ -1,9 +1,9 @@
 from enum import Enum
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.issuer.acapy_issuer import Issuer
-from app.facades.issuer.acapy_issuer_v1 import IssuerV1
-from app.facades.issuer.acapy_issuer_v2 import IssuerV2
+from app.services.issuer.acapy_issuer import Issuer
+from app.services.issuer.acapy_issuer_v1 import IssuerV1
+from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from shared.models.protocol import IssueCredentialProtocolVersion
 
 

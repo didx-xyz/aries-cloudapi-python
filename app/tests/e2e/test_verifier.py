@@ -10,14 +10,14 @@ from assertpy import assert_that
 
 from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
-from app.generic.oob.oob import AcceptOobInvitation, CreateOobInvitation
-from app.generic.verifier.models import (
+from app.routes.oob import AcceptOobInvitation, CreateOobInvitation
+from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,
     SendProofRequest,
+    router,
 )
-from app.generic.verifier.verifier import router
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request

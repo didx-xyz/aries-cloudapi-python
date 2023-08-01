@@ -11,8 +11,8 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from mockito import when
 
-from app.generic.issuer.facades.acapy_issuer_v1 import IssuerV1
-from app.generic.issuer.models import Credential
+from app.facades.issuer.acapy_issuer_v1 import IssuerV1
+from app.models.issuer import Credential
 from app.tests.util.mock import to_async
 
 v1_credential_exchange_records = [

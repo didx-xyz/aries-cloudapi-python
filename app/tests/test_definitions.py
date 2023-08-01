@@ -2,7 +2,7 @@ from aries_cloudcontroller import CredentialDefinition as AcaPyCredentialDefinit
 from aries_cloudcontroller import ModelSchema
 from assertpy import assert_that
 
-from app.generic.definitions import (
+from app.routes.definitions import (
     _credential_definition_from_acapy,
     _credential_schema_from_acapy,
 )

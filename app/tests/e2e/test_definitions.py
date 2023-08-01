@@ -5,8 +5,8 @@ from assertpy import assert_that
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
 from app.facades import trust_registry
 from app.facades.acapy_wallet import get_public_did
-from app.generic import definitions
-from app.generic.definitions import (
+from app.routes import definitions
+from app.routes.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
     CredentialSchema,

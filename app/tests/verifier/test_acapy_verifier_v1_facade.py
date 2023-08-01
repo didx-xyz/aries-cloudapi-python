@@ -2,8 +2,8 @@ import pytest
 from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 
-from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
-from app.generic.verifier.models import (
+from app.facades.verifier.acapy_verifier_v1 import VerifierV1
+from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,

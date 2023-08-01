@@ -3,7 +3,7 @@ from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
 from fastapi import HTTPException
 
-from app.generic.jsonld.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
+from app.routes.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange

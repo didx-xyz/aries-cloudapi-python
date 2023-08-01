@@ -3,14 +3,14 @@ import pytest
 from app.admin.tenants.models import CreateTenantResponse
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
 from app.event_handling.sse_listener import SseListener
-from app.generic.definitions import (
+from app.routes.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
     CredentialSchema,
     create_credential_definition,
     create_schema,
 )
-from app.generic.issuer.issuer import router
+from app.routes.issuer import router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.string import random_version
 from app.tests.util.trust_registry import register_issuer

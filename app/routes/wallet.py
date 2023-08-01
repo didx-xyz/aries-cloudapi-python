@@ -7,7 +7,7 @@ from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.facades import acapy_wallet
-from app.routes.wallet.models import SetDidEndpointRequest
+from app.models.wallet import SetDidEndpointRequest
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

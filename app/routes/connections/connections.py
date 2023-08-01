@@ -19,10 +19,6 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/generic/connections", tags=["connections"])
 
 
-class ConnectToPublicDid(BaseModel):
-    public_did: str
-
-
 class CreateInvitation(BaseModel):
     alias: Optional[str] = None
     multi_use: Optional[bool] = None

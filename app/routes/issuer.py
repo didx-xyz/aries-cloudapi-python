@@ -10,17 +10,17 @@ from app.facades import revocation_registry
 from app.facades.acapy_ledger import schema_id_from_credential_definition_id
 from app.facades.acapy_wallet import assert_public_did
 from app.facades.trust_registry import assert_valid_issuer
-from app.routes.issuer.facades.acapy_issuer_utils import (
-    IssueCredentialFacades,
-    issuer_from_id,
-    issuer_from_protocol_version,
-)
-from app.routes.issuer.models import (
+from app.routes.issuer import (
     CreateOffer,
     Credential,
     CredentialNoConnection,
     RevokeCredential,
     SendCredential,
+)
+from app.util.acapy_issuer_utils import (
+    IssueCredentialFacades,
+    issuer_from_id,
+    issuer_from_protocol_version,
 )
 from app.util.did import did_from_credential_definition_id
 from shared.log_config import get_logger

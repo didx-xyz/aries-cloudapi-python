@@ -12,6 +12,7 @@ from app.util.credentials import cred_id_no_version
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
 
+OOB_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 async def test_send_credential_oob_v1(

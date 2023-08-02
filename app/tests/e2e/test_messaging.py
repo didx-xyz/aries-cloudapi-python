@@ -6,6 +6,7 @@ from app.routes.messaging import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
 
+MESSAGING_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 async def test_send_trust_ping(

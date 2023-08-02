@@ -5,14 +5,14 @@ from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyCredInfo, IndyCre
 from mockito import verify, when
 from pytest_mock import MockerFixture
 
-import app.generic.verifier.verifier as test_module
+import app.routes.verifier as test_module
 from app.dependencies.auth import AcaPyAuth
-from app.facades.trust_registry import Actor
-from app.generic.verifier.facades import acapy_verifier_utils
-from app.generic.verifier.facades.acapy_verifier_v1 import VerifierV1
-from app.generic.verifier.facades.acapy_verifier_v2 import VerifierV2
+from app.services.trust_registry import Actor
+from app.services.verifier.acapy_verifier_v1 import VerifierV1
+from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.util.mock import to_async
 from app.tests.verifier.utils import indy_pres_spec, indy_proof_request
+from app.util import acapy_verifier_utils
 from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.topics import PresentationExchange
 from shared.util.mock_agent_controller import MockContextManagedController

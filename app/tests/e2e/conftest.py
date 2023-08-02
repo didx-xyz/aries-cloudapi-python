@@ -2,8 +2,8 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.facades.acapy_wallet import get_public_did
-from app.facades.trust_registry import (
+from app.services.acapy_wallet import get_public_did
+from app.services.trust_registry import (
     Actor,
     actor_by_id,
     register_actor,
@@ -11,14 +11,16 @@ from app.facades.trust_registry import (
 )
 
 # pylint: disable=unused-import
-from app.tests.e2e.test_fixtures import credential_definition_id  # noqa: F401
-from app.tests.e2e.test_fixtures import credential_definition_id_revocable  # noqa: F401
-from app.tests.e2e.test_fixtures import credential_exchange_id  # noqa: F401
-from app.tests.e2e.test_fixtures import issue_credential_to_alice  # noqa: F401
-from app.tests.e2e.test_fixtures import schema_definition  # noqa: F401
-from app.tests.e2e.test_fixtures import schema_definition_alt  # noqa: F401
+from app.tests.e2e.test_credentials import credential_definition_id  # noqa: F401
+from app.tests.e2e.test_credentials import credential_exchange_id  # noqa: F401
+from app.tests.e2e.test_credentials import issue_credential_to_alice  # noqa: F401
+from app.tests.e2e.test_credentials import schema_definition  # noqa: F401
+from app.tests.e2e.test_credentials import schema_definition_alt  # noqa: F401
+from app.tests.e2e.test_credentials import (  # noqa: F401
+    credential_definition_id_revocable,
+)
 from app.tests.util.ledger import create_public_did
-from app.tests.util.string import random_string
+from app.util.string import random_string
 
 
 # Governance should be provisioned with public did and registered for all e2e tests

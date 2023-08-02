@@ -3,7 +3,7 @@ import json
 import pytest
 from httpx import AsyncClient
 
-from app.tests.util.string import random_string
+from app.util.string import random_string
 from shared import TRUST_REGISTRY_URL
 
 new_actor = {

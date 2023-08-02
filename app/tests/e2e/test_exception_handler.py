@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from app.generic.connections.connections import router
+from app.routes.connections import router
 from shared import CLOUDAPI_URL
 
 CONNECTIONS_BASE_PATH = router.prefix

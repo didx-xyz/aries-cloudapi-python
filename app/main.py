@@ -10,17 +10,22 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
-from app.admin.tenants import tenants
 from app.event_handling.websocket_manager import WebsocketManager
 from app.exceptions.cloud_api_error import CloudApiException
-from app.generic import definitions, messaging, trust_registry
-from app.generic.connections import connections
-from app.generic.issuer import issuer
-from app.generic.jsonld import jsonld
-from app.generic.oob import oob
-from app.generic.verifier import verifier
-from app.generic.wallet import wallet
-from app.generic.webhooks import sse, webhooks
+from app.routes import (
+    connections,
+    definitions,
+    issuer,
+    jsonld,
+    messaging,
+    oob,
+    sse,
+    trust_registry,
+    verifier,
+    wallet,
+    webhooks,
+)
+from app.routes.admin import tenants
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
@@ -33,13 +38,13 @@ debug = not prod
 
 def create_app() -> FastAPI:
     routes = [
+        tenants,
         connections,
         definitions,
         issuer,
         jsonld,
         messaging,
         oob,
-        tenants,
         trust_registry,
         verifier,
         wallet,

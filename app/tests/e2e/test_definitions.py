@@ -3,16 +3,16 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
-from app.facades import trust_registry
-from app.facades.acapy_wallet import get_public_did
-from app.generic import definitions
-from app.generic.definitions import (
+from app.routes import definitions
+from app.routes.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
     CredentialSchema,
 )
-from app.tests.util.string import random_string
+from app.services import trust_registry
+from app.services.acapy_wallet import get_public_did
 from app.tests.util.trust_registry import register_issuer
+from app.util.string import random_string
 from shared import RichAsyncClient
 
 

@@ -2,7 +2,7 @@ import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
 
-from app.generic.connections.connections import router
+from app.routes.connections import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient

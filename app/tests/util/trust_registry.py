@@ -1,6 +1,6 @@
 from random import random
 
-from app.facades.trust_registry import (
+from app.services.trust_registry import (
     Actor,
     actor_by_did,
     register_actor,

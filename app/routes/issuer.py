@@ -28,7 +28,7 @@ from shared.models.topics import CredentialExchange
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/generic/issuer", tags=["issuer"])
+router = APIRouter(prefix="/generic/issuer/credentials", tags=["issuer"])
 
 
 @router.get("/credentials", response_model=List[CredentialExchange])

@@ -1,15 +1,14 @@
-from typing import List, Optional
+from typing import Optional
 
-from aries_cloudcontroller import InvitationMessage, InvitationRecord, OobRecord
-from aries_cloudcontroller.model.attachment_def import AttachmentDef
+from aries_cloudcontroller import InvitationRecord, OobRecord
 from aries_cloudcontroller.model.invitation_create_request import (
     InvitationCreateRequest,
 )
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.models.oob import AcceptOobInvitation, ConnectToPublicDid, CreateOobInvitation
 from shared.log_config import get_logger
 from shared.models.conversion import conn_record_to_connection
 from shared.models.topics import Connection
@@ -17,25 +16,6 @@ from shared.models.topics import Connection
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/oob", tags=["out-of-band"])
-
-
-class ConnectToPublicDid(BaseModel):
-    public_did: str
-
-
-class CreateOobInvitation(BaseModel):
-    alias: Optional[str] = None
-    multi_use: Optional[bool] = None
-    use_public_did: Optional[bool] = None
-    attachments: Optional[List[AttachmentDef]] = None
-    handshake_protocols: Optional[List[str]] = None
-    create_connection: Optional[bool] = None
-
-
-class AcceptOobInvitation(BaseModel):
-    alias: Optional[str] = None
-    use_existing_connection: Optional[bool] = None
-    invitation: InvitationMessage
 
 
 def strip_protocol_prefix(id: str):

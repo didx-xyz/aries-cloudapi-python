@@ -3,10 +3,8 @@ import json
 from typing import List, Optional
 
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller import CredentialDefinition as AcaPyCredentialDefinition
 from aries_cloudcontroller import (
-    ModelSchema,
+    AcaPyClient,
     RevRegUpdateTailsFileUri,
     SchemaSendRequest,
 )
@@ -14,7 +12,6 @@ from aries_cloudcontroller.model.credential_definition_send_request import (
     CredentialDefinitionSendRequest,
 )
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
 
 from app.dependencies.acapy_clients import client_from_auth, get_governance_controller
 from app.dependencies.auth import (
@@ -26,6 +23,12 @@ from app.dependencies.auth import (
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
+from app.models.definitions import (
+    CreateCredentialDefinition,
+    CreateSchema,
+    CredentialDefinition,
+    CredentialSchema,
+)
 from app.services import acapy_wallet, trust_registry
 from app.services.revocation_registry import (
     create_revocation_registry,
@@ -40,49 +43,6 @@ router = APIRouter(
     prefix="/generic/definitions",
     tags=["definitions"],
 )
-
-
-class CreateCredentialDefinition(BaseModel):
-    tag: str = Field(..., example="default")
-    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
-    support_revocation: bool = Field(default=True)
-    revocation_registry_size: int = Field(default=32767)
-
-
-class CredentialDefinition(BaseModel):
-    id: str = Field(..., example="5Q1Zz9foMeAA8Q7mrmzCfZ:3:CL:7:default")
-    tag: str = Field(..., example="default")
-    schema_id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
-
-
-class CreateSchema(BaseModel):
-    name: str = Field(..., example="test_schema")
-    version: str = Field(..., example="0.3.0")
-    attribute_names: List[str] = Field(..., example=["speed"])
-
-
-class CredentialSchema(BaseModel):
-    id: str = Field(..., example="CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3")
-    name: str = Field(..., example="test_schema")
-    version: str = Field(..., example="0.3.0")
-    attribute_names: List[str] = Field(..., example=["speed"])
-
-
-def _credential_schema_from_acapy(schema: ModelSchema):
-    return CredentialSchema(
-        id=schema.id,
-        name=schema.name,
-        version=schema.version,
-        attribute_names=schema.attr_names,
-    )
-
-
-def _credential_definition_from_acapy(credential_definition: AcaPyCredentialDefinition):
-    return CredentialDefinition(
-        id=credential_definition.id,
-        tag=credential_definition.tag,
-        schema_id=credential_definition.schema_id,
-    )
 
 
 @router.get("/credentials", response_model=List[CredentialDefinition])

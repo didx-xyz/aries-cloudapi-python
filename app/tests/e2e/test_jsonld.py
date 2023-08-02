@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.tests.util.ecosystem_connections import FaberAliceConnect
+from app.routes.jsonld import router
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
 

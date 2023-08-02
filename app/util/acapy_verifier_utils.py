@@ -53,8 +53,6 @@ async def assert_valid_prover(
         aries_controller=aries_controller, proof_id=proof_id, prover=prover
     )
 
-    # TODO: (In other PR) handle case where no connection id exists
-    # instead of simply rejecting the request
     if not connection_id:
         raise CloudApiException(
             "No connection id associated with proof request. Can not verify proof request.",

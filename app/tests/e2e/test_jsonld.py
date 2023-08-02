@@ -85,10 +85,7 @@ async def test_sign_jsonld(
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
+    assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
 
     # # Success verkey
     pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -103,10 +100,7 @@ async def test_sign_jsonld(
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
+    assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
 
     # Success bare
     json_ld_req.pub_did = None
@@ -119,10 +113,7 @@ async def test_sign_jsonld(
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
+    assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
 
 
 @pytest.mark.anyio

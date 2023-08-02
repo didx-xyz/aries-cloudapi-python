@@ -1,39 +1,19 @@
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import (
-    Doc,
-    SignatureOptions,
-    SignRequest,
-    SignResponse,
-    VerifyResponse,
-)
+from aries_cloudcontroller import Doc, SignRequest, SignResponse, VerifyResponse
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 from uplink import Body, Consumer, json, post, returns
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
+from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/jsonld", tags=["jsonld"])
-
-
-class JsonLdSignRequest(BaseModel):
-    credential_id: Optional[str]
-    credential: Optional[Dict[str, Any]]
-    verkey: Optional[str] = None
-    pub_did: Optional[str] = None
-    signature_options: Optional[SignatureOptions] = None
-
-
-class JsonLdVerifyRequest(BaseModel):
-    doc: Dict[str, Any]
-    public_did: Optional[str] = None
-    verkey: Optional[str] = None
 
 
 # NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint

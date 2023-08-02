@@ -1,7 +1,7 @@
 import pytest
 from assertpy.assertpy import assert_that
 
-from app.routes.messaging import Message, TrustPingMsg
+from app.models.messaging import Message, TrustPingMsg
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
 

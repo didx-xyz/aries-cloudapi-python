@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
-from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
+from app.dependencies.auth import (
+    AcaPyAuthVerified,
+    acapy_auth_verified,
+    verify_wallet_access,
+)
 from app.services.sse import (
     sse_subscribe_event_with_field_and_state,
     sse_subscribe_event_with_state,
@@ -14,11 +18,6 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/sse", tags=["sse"])
-
-
-def verify_wallet_access(auth: AcaPyAuthVerified, wallet_id: str):
-    if auth.wallet_id not in ("admin", wallet_id):
-        raise HTTPException(403, "Unauthorized")
 
 
 @router.get(

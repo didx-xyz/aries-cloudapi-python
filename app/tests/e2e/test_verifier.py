@@ -11,6 +11,7 @@ from assertpy import assert_that
 from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.oob import AcceptOobInvitation, CreateOobInvitation
+from app.routes.oob import router as oob_router
 from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -26,6 +27,7 @@ from shared.models.protocol import PresentProofProtocolVersion
 from shared.models.topics import CredentialExchange, PresentationExchange
 
 VERIFIER_BASE_PATH = router.prefix
+OOB_BASE_PATH = oob_router.prefix
 
 
 def create_send_request(
@@ -149,7 +151,7 @@ async def test_accept_proof_request_oob_v1(
     )
 
     invitation_response = await bob_member_client.post(
-        "/generic/oob/create-invitation", json=create_oob_invitation_request.dict()
+        f"{OOB_BASE_PATH}/create-invitation", json=create_oob_invitation_request.dict()
     )
     assert invitation_response.status_code == 200
     invitation = (invitation_response.json())["invitation"]

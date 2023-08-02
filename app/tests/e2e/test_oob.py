@@ -5,6 +5,7 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.tests.util.webhooks import check_webhook_state
+from app.tests.e2e.test_issuer import OOB_BASE_PATH
 from shared import RichAsyncClient
 
 

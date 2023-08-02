@@ -50,7 +50,7 @@ async def test_send_credential_oob_v1(
     assert_that(data).has_schema_id(schema_definition.id)
 
     invitation_response = await faber_client.post(
-        "/generic/oob/create-invitation",
+        OOB_BASE_PATH + "/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -64,7 +64,7 @@ async def test_send_credential_oob_v1(
     invitation = (invitation_response.json())["invitation"]
 
     accept_response = await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        OOB_BASE_PATH + "/accept-invitation",
         json={"invitation": invitation},
     )
 
@@ -111,7 +111,7 @@ async def test_send_credential_oob_v2(
     assert_that(data).has_schema_id(schema_definition.id)
 
     invitation_response = await faber_client.post(
-        "/generic/oob/create-invitation",
+        OOB_BASE_PATH + "/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -127,7 +127,7 @@ async def test_send_credential_oob_v2(
     thread_id = invitation["requests~attach"][0]["data"]["json"]["@id"]
 
     accept_response = await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        OOB_BASE_PATH + "/accept-invitation",
         json={"invitation": invitation},
     )
 

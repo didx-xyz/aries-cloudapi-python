@@ -142,6 +142,6 @@ async def delete_connection_by_id(
 
     async with client_from_auth(auth) as aries_controller:
         await aries_controller.connection.delete_connection(conn_id=connection_id)
-    # TODO what if id not found?
+        
     bound_logger.info("Successfully deleted connection by ID.")
     return {}

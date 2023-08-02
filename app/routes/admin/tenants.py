@@ -11,9 +11,9 @@ from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
-    Role,
     acapy_auth,
     acapy_auth_tenant_admin,
+    tenant_api_key,
 )
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import (
@@ -38,15 +38,6 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
-
-
-def tenant_api_key(role: Role, tenant_token: str):
-    "Get the cloud api key for a tenant with specified role."
-
-    if not role.agent_type.tenant_role:
-        raise CloudApiException("Invalid role", 403)
-
-    return f"{role.agent_type.tenant_role.name}.{tenant_token}"
 
 
 @router.post("", response_model=CreateTenantResponse)

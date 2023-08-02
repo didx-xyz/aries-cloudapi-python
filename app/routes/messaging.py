@@ -1,25 +1,15 @@
 from aries_cloudcontroller import PingRequest, SendMessage
 from aries_cloudcontroller.model.ping_request_response import PingRequestResponse
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.models.messaging import Message, TrustPingMsg
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/messaging", tags=["messaging"])
-
-
-class Message(BaseModel):
-    connection_id: str
-    content: str
-
-
-class TrustPingMsg(BaseModel):
-    connection_id: str
-    comment: str
 
 
 @router.post("/send-message")

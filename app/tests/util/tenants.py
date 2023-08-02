@@ -1,4 +1,4 @@
-from app.admin.tenants.models import CreateTenantRequest, CreateTenantResponse
+from app.models.tenants import CreateTenantRequest, CreateTenantResponse
 from app.util.string import random_string
 from shared import RichAsyncClient, parse_with_error_handling
 

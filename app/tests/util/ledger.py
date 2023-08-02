@@ -5,8 +5,8 @@ from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
-from app.facades import acapy_wallet
-from app.facades.acapy_ledger import accept_taa_if_required
+from app.services import acapy_wallet
+from app.services.acapy_ledger import accept_taa_if_required
 from shared import LEDGER_REGISTRATION_URL, LEDGER_TYPE
 
 

@@ -82,3 +82,8 @@ def acapy_auth_tenant_admin(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthV
         return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
     else:
         raise HTTPException(403, "Unauthorized")
+
+
+def verify_wallet_access(auth: AcaPyAuthVerified, wallet_id: str):
+    if auth.wallet_id not in ("admin", wallet_id):
+        raise HTTPException(403, "Unauthorized")

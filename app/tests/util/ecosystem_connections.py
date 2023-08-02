@@ -4,13 +4,13 @@ from typing import Any, Dict, TypedDict
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
-from app.admin.tenants.models import CreateTenantResponse
 from app.event_handling.sse_listener import SseListener
-from app.facades.trust_registry import actor_by_id
-from app.generic.connections.connections import CreateInvitation
-from app.generic.verifier.facades.acapy_verifier_utils import ed25519_verkey_to_did_key
+from app.models.tenants import CreateTenantResponse
+from app.routes.connections import CreateInvitation
+from app.services.trust_registry import actor_by_id
 from app.tests.util.ledger import create_public_did
 from app.tests.util.webhooks import check_webhook_state
+from app.util.acapy_verifier_utils import ed25519_verkey_to_did_key
 from app.util.string import base64_to_json
 from shared import RichAsyncClient
 

@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    V10CredentialStoreRequest,
     V20CredAttrSpec,
     V20CredExRecord,
     V20CredExRecordByFormat,
@@ -10,6 +9,7 @@ from aries_cloudcontroller import (
     V20CredExRecordListResult,
     V20CredPreview,
     V20CredRequestRequest,
+    V20CredStoreRequest,
 )
 from assertpy import assert_that
 from mockito import when
@@ -219,7 +219,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v2_0).store_credential(
         cred_ex_id=v2_record.cred_ex_record.cred_ex_id,
-        body=V10CredentialStoreRequest(credential_id=None),
+        body=V20CredStoreRequest(credential_id=None),
     ).thenReturn(to_async(v2_record))
 
     credential_exchange = await IssuerV2.store_credential(

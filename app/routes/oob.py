@@ -17,7 +17,6 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/generic/oob", tags=["out-of-band"])
 
 
-
 @router.post("/create-invitation", response_model=InvitationRecord)
 async def create_oob_invitation(
     body: Optional[CreateOobInvitation] = None,

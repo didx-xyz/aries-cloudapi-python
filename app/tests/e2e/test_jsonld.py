@@ -9,6 +9,8 @@ from app.routes.jsonld import router
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
 
+JSONLD_BASE_PATH = router.prefix
+
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
     "@id": "http://dbpedia.org/resource/John_Lennon",

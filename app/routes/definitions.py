@@ -34,6 +34,10 @@ from app.services.revocation_registry import (
     create_revocation_registry,
     publish_revocation_registry_on_ledger,
 )
+from app.util.definitions import (
+    credential_definition_from_acapy,
+    credential_schema_from_acapy,
+)
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from shared.log_config import get_logger
 
@@ -116,7 +120,7 @@ async def get_credential_definitions(
             bound_logger.debug("No definition ids returned")
 
     credential_definitions = [
-        _credential_definition_from_acapy(credential_definition.credential_definition)
+        credential_definition_from_acapy(credential_definition.credential_definition)
         for credential_definition in credential_definition_results
         if credential_definition.credential_definition
     ]
@@ -166,7 +170,7 @@ async def get_credential_definition_by_id(
             )
 
         bound_logger.debug("Cast credential definition response to model")
-        cloudapi_credential_definition = _credential_definition_from_acapy(
+        cloudapi_credential_definition = credential_definition_from_acapy(
             credential_definition.credential_definition
         )
 
@@ -417,7 +421,7 @@ async def get_schemas(
             bound_logger.debug("No created schema ids returned")
 
     schemas = [
-        _credential_schema_from_acapy(schema.schema_)
+        credential_schema_from_acapy(schema.schema_)
         for schema in schema_results
         if schema.schema_
     ]
@@ -454,7 +458,7 @@ async def get_schema(
         bound_logger.info("Bad request: schema id not found.")
         raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
-    result = _credential_schema_from_acapy(schema.schema_)
+    result = credential_schema_from_acapy(schema.schema_)
     bound_logger.info("Successfully fetched schema by id.")
     return result
 
@@ -548,7 +552,7 @@ async def create_schema(
                         409,
                     )
 
-                result = _credential_schema_from_acapy(_schema.schema_)
+                result = credential_schema_from_acapy(_schema.schema_)
                 bound_logger.info(
                     "Schema already exists on ledger. Returning schema definition: `{}`.",
                     result,
@@ -588,6 +592,6 @@ async def create_schema(
         else:
             raise error
 
-    result = _credential_schema_from_acapy(result.sent.schema_)
+    result = credential_schema_from_acapy(result.sent.schema_)
     bound_logger.info("Successfully published and registered schema.")
     return result

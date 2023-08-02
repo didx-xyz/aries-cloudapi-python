@@ -2,9 +2,9 @@ from aries_cloudcontroller import CredentialDefinition as AcaPyCredentialDefinit
 from aries_cloudcontroller import ModelSchema
 from assertpy import assert_that
 
-from app.routes.definitions import (
-    _credential_definition_from_acapy,
-    _credential_schema_from_acapy,
+from app.util.definitions import (
+    credential_definition_from_acapy,
+    credential_schema_from_acapy,
 )
 
 
@@ -18,7 +18,7 @@ def test_credential_schema_from_acapy():
         version="1.0",
     )
 
-    schema = _credential_schema_from_acapy(acapy_schema)
+    schema = credential_schema_from_acapy(acapy_schema)
 
     assert_that(schema.dict()).is_equal_to(
         {
@@ -37,7 +37,7 @@ def test_credential_definition_from_acapy():
         id="WgWxqztrNooG92RXvxSTWv:3:CL:20:tag2",
     )
 
-    cred_def = _credential_definition_from_acapy(acapy_cred_def)
+    cred_def = credential_definition_from_acapy(acapy_cred_def)
 
     assert_that(cred_def.dict()).is_equal_to(
         {

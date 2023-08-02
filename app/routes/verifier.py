@@ -284,6 +284,8 @@ async def accept_proof_request(
                     prover=prover,
                     presentation=presentation,
                 )
+            else:
+                bound_logger.warning("No connection associated with proof, OOB?")
 
             bound_logger.debug("Accepting proof record")
             result = await prover.accept_proof_request(

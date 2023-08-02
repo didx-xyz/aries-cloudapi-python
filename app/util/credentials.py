@@ -8,7 +8,7 @@ def cred_id_no_version(credential_id: str) -> str:
         raise ValueError("credential_id must start with prefix `v1-` or `v2-`.")
 
 
-def srtip_protocol_prefix(id: str):
+def strip_protocol_prefix(id: str):
     if id.startswith("v1-") or id.startswith("v2-"):
         return id[3:]
     else:

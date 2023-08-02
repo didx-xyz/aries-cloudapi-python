@@ -3,14 +3,8 @@ from typing import List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import (
-    CreateWalletRequest,
-    CreateWalletTokenRequest,
-    UpdateWalletRequest,
-    WalletRecord,
-)
+from aries_cloudcontroller import CreateWalletTokenRequest, UpdateWalletRequest
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from uplink import Consumer, Query, get, returns
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -44,18 +38,6 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
-
-
-class CreateWalletRequestWithGroups(CreateWalletRequest):
-    group_id: Optional[str] = None
-
-
-class WalletRecordWithGroups(WalletRecord):
-    group_id: Optional[str] = None
-
-
-class WalletListWithGroups(BaseModel):
-    results: Optional[List[WalletRecordWithGroups]] = None
 
 
 def tenant_api_key(role: Role, tenant_token: str):

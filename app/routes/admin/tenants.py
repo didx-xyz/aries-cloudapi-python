@@ -19,9 +19,11 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import (
     CreateTenantRequest,
     CreateTenantResponse,
+    CreateWalletRequestWithGroups,
     Tenant,
     TenantAuth,
     UpdateTenantRequest,
+    WalletListWithGroups,
     tenant_from_wallet_record,
 )
 from app.services.onboarding import handle_tenant_update, onboard_tenant

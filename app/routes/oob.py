@@ -1,9 +1,7 @@
 from typing import Optional
 
 from aries_cloudcontroller import InvitationRecord, OobRecord
-from aries_cloudcontroller.model.invitation_create_request import (
-    InvitationCreateRequest,
-)
+from aries_cloudcontroller.model import InvitationCreateRequest
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import client_from_auth

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.models.oob import AcceptOobInvitation, ConnectToPublicDid, CreateOobInvitation
+from app.util.credentials import strip_protocol_prefix
 from shared.log_config import get_logger
 from shared.models.conversion import conn_record_to_connection
 from shared.models.topics import Connection
@@ -15,12 +16,6 @@ logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/oob", tags=["out-of-band"])
 
-
-def strip_protocol_prefix(id: str):
-    if id.startswith("v1-") or id.startswith("v2-"):
-        return id[3:]
-    else:
-        return id
 
 
 @router.post("/create-invitation", response_model=InvitationRecord)

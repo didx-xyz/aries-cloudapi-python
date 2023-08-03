@@ -3,6 +3,7 @@ from app.util.string import random_string
 from shared import RichAsyncClient, parse_with_error_handling
 from app.routes.admin.tenants import router
 
+ADMIN_BASE_PATH = router.prefix
 
 def append_random_string(name):
     return f"{name}_{random_string(5)}"

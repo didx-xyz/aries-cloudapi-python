@@ -17,10 +17,6 @@ class CredentialNoConnection(BaseModel):
     attributes: Dict[str, str]
 
 
-class ProblemReportExplanation(TypedDict):
-    description: str
-
-
 class CredentialBase(BaseModel):
     protocol_version: IssueCredentialProtocolVersion
     credential_definition_id: str

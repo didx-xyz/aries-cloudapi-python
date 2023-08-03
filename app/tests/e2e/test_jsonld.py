@@ -4,8 +4,8 @@ from assertpy import assert_that
 from fastapi import HTTPException
 
 from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
-from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.routes.jsonld import router
+from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
 
@@ -69,7 +69,9 @@ async def test_sign_jsonld(
 
     # Error
     with pytest.raises(HTTPException) as exc:
-        await alice_member_client.post(JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict())
+        await alice_member_client.post(
+            JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
+        )
 
     assert_that(exc.value.detail).contains(
         "Please provide either or neither, but not both"

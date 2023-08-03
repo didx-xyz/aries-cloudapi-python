@@ -68,7 +68,7 @@ async def test_accept_proof_request_v1(
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
 
     requested_credentials = await alice_member_client.get(
-        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
     )
 
     assert await check_webhook_state(
@@ -158,7 +158,7 @@ async def test_accept_proof_request_oob_v1(
 
     accept_oob_invitation_request = AcceptOobInvitation(invitation=invitation)
     await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        f"{OOB_BASE_PATH}/accept-invitation",
         json=accept_oob_invitation_request.dict(by_alias=True),
     )
 
@@ -172,7 +172,7 @@ async def test_accept_proof_request_oob_v1(
     assert alice_proof_id
 
     requested_credentials = await alice_member_client.get(
-        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
     )
 
     referent = requested_credentials.json()[0]["cred_info"]["referent"]
@@ -237,7 +237,7 @@ async def test_accept_proof_request_oob_v2(
     thread_id = bob_exchange["thread_id"]
 
     invitation_response = await bob_member_client.post(
-        "/generic/oob/create-invitation",
+        f"{OOB_BASE_PATH}/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -249,7 +249,7 @@ async def test_accept_proof_request_oob_v2(
     invitation = (invitation_response.json())["invitation"]
 
     await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        f"{OOB_BASE_PATH}/accept-invitation",
         json={"invitation": invitation},
     )
 
@@ -263,7 +263,7 @@ async def test_accept_proof_request_oob_v2(
     assert alice_proof_id
 
     requested_credentials = await alice_member_client.get(
-        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
     )
 
     referent = requested_credentials.json()[0]["cred_info"]["referent"]
@@ -347,7 +347,7 @@ async def test_accept_proof_request_v2(
     alice_proof_id = payload["proof_id"]
 
     requested_credentials = await alice_member_client.get(
-        f"/generic/verifier/proofs/{alice_proof_id}/credentials"
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]
@@ -629,7 +629,7 @@ async def test_delete_proof(
     proof_id = (proof_req_res.json())["proof_id"]
 
     response = await acme_client.delete(
-        VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
+        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}",
     )
     assert response.status_code == 204
 

@@ -3,7 +3,7 @@ from app.routes.admin.tenants import router
 from app.util.string import random_string
 from shared import RichAsyncClient, parse_with_error_handling
 
-ADMIN_BASE_PATH = router.prefix
+TENANT_BASE_PATH = router.prefix
 
 
 def append_random_string(name):
@@ -13,7 +13,7 @@ def append_random_string(name):
 async def post_tenant_request(
     admin_client: RichAsyncClient, request: CreateTenantRequest
 ) -> CreateTenantResponse:
-    response = await admin_client.post(ADMIN_BASE_PATH, json=request.dict())
+    response = await admin_client.post(TENANT_BASE_PATH, json=request.dict())
     return parse_with_error_handling(CreateTenantResponse, response.text)
 
 
@@ -43,4 +43,4 @@ async def create_tenant(admin_client: RichAsyncClient, name: str):
 
 
 async def delete_tenant(admin_client: RichAsyncClient, tenant_id: str):
-    await admin_client.delete(f"{ADMIN_BASE_PATH}/{tenant_id}")
+    await admin_client.delete(f"{TENANT_BASE_PATH}/{tenant_id}")

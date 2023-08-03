@@ -8,6 +8,7 @@ from shared import RichAsyncClient
 
 MESSAGING_BASE_PATH = router.prefix
 
+
 @pytest.mark.anyio
 async def test_send_trust_ping(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient

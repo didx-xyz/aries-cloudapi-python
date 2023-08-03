@@ -118,7 +118,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     issuer_credential_exchange = (
         await issuer_client.post(
-            ISSUER_BASE_PATH + "/credentials",
+            f"{ISSUER_BASE_PATH}",
             json={
                 "protocol_version": "v1",
                 "connection_id": issuer_holder_connection_id,
@@ -142,7 +142,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
 
     response = await holder_client.post(
-        f"{ISSUER_BASE_PATH}/credentials/{holder_credential_exchange_id}/request"
+        f"{ISSUER_BASE_PATH}/{holder_credential_exchange_id}/request"
     )
 
     # Wait for credential exchange to finish

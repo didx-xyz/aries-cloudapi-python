@@ -12,6 +12,9 @@ from app.routes.issuer import router as issuer_router
 from app.util.string import base64_to_json, random_string
 from shared import RichAsyncClient
 
+CONNECTIONS_BASE_PATH = conn_router.prefix
+DEFINITIONS_BASE_PATH = def_router.prefix
+ISSUER_BASE_PATH = issuer_router
 
 @pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(

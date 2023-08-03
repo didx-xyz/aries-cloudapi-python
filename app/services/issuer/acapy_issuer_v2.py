@@ -51,6 +51,30 @@ class IssuerV2(Issuer):
         return cls.__record_to_model(record)
 
     @classmethod
+    async def send_credential_jsonld(
+        cls, controller: AcaPyClient, jsonld_credential: JsonLdCredential
+    ):
+        bound_logger = logger.bind(body=jsonld_credential)
+
+        bound_logger.debug("Issue JSON-LD v2 credential (automated)")
+        record = await controller.issue_credential_v2_0.issue_credential_automated(
+            body=V20CredExFree(
+                connection_id=jsonld_credential.connection_id,
+                filter=V20CredFilter(
+                    ld_proof=LDProofVCDetail(
+                        credential=jsonld_credential.credential,
+                        options=jsonld_credential.options,
+                    )
+                ),
+            )
+        )
+
+        bound_logger.debug(
+            "Returning JSON-LD v2 credential result as CredentialExchange."
+        )
+        return cls.__record_to_model(record)
+
+    @classmethod
     async def create_offer(
         cls, controller: AcaPyClient, credential: CredentialNoConnection
     ):

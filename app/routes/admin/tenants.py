@@ -3,31 +3,27 @@ from typing import List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import (
-    CreateWalletRequest,
-    CreateWalletTokenRequest,
-    UpdateWalletRequest,
-    WalletRecord,
-)
+from aries_cloudcontroller import CreateWalletTokenRequest, UpdateWalletRequest
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
 from uplink import Consumer, Query, get, returns
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
-    Role,
     acapy_auth,
     acapy_auth_tenant_admin,
+    tenant_api_key,
 )
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import (
     CreateTenantRequest,
     CreateTenantResponse,
+    CreateWalletRequestWithGroups,
     Tenant,
     TenantAuth,
     UpdateTenantRequest,
+    WalletListWithGroups,
     tenant_from_wallet_record,
 )
 from app.services.onboarding import handle_tenant_update, onboard_tenant
@@ -44,27 +40,6 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
-
-
-class CreateWalletRequestWithGroups(CreateWalletRequest):
-    group_id: Optional[str] = None
-
-
-class WalletRecordWithGroups(WalletRecord):
-    group_id: Optional[str] = None
-
-
-class WalletListWithGroups(BaseModel):
-    results: Optional[List[WalletRecordWithGroups]] = None
-
-
-def tenant_api_key(role: Role, tenant_token: str):
-    "Get the cloud api key for a tenant with specified role."
-
-    if not role.agent_type.tenant_role:
-        raise CloudApiException("Invalid role", 403)
-
-    return f"{role.agent_type.tenant_role.name}.{tenant_token}"
 
 
 @router.post("", response_model=CreateTenantResponse)

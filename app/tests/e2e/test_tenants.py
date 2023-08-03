@@ -13,13 +13,13 @@ from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
 
-BASE_PATH = router.prefix
+TENANTS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
 async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": uuid4().hex,
@@ -33,7 +33,9 @@ async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
     tenant = response.json()
     tenant_id = tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}/{tenant_id}/access-token")
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}/{tenant_id}/access-token"
+    )
     assert response.status_code == 200
 
     token = response.json()
@@ -49,7 +51,7 @@ async def test_create_tenant_member(
     name = uuid4().hex
     group_id = "TestGroup"
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={"image_url": "https://image.ca", "name": name, "group_id": group_id},
     )
 
@@ -78,7 +80,7 @@ async def test_create_tenant_issuer(
     name = uuid4().hex
     group_id = "TestGroup"
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": name,
@@ -144,7 +146,7 @@ async def test_create_tenant_issuer(
 
     with pytest.raises(HTTPException) as http_error:
         await tenant_admin_client.post(
-            BASE_PATH,
+            TENANTS_BASE_PATH,
             json={
                 "image_url": "https://image.ca",
                 "name": name,
@@ -163,7 +165,7 @@ async def test_create_tenant_verifier(
 ):
     name = uuid4().hex
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": name,
@@ -217,7 +219,7 @@ async def test_update_tenant_verifier_to_issuer(
     name = uuid4().hex
     image_url = "https://image.ca"
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": image_url,
             "name": name,
@@ -264,7 +266,7 @@ async def test_update_tenant_verifier_to_issuer(
     new_roles = ["issuer", "verifier"]
 
     response = await tenant_admin_client.put(
-        f"{BASE_PATH}/{verifier_tenant_id}",
+        f"{TENANTS_BASE_PATH}/{verifier_tenant_id}",
         json={
             "image_url": new_image_url,
             "name": new_name,
@@ -284,7 +286,7 @@ async def test_update_tenant_verifier_to_issuer(
     acapy_token = (
         (
             await tenant_admin_client.get(
-                f"{BASE_PATH}/{verifier_tenant_id}/access-token"
+                f"{TENANTS_BASE_PATH}/{verifier_tenant_id}/access-token"
             )
         )
         .json()["access_token"]
@@ -330,7 +332,7 @@ async def test_update_tenant_verifier_to_issuer(
 @pytest.mark.anyio
 async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": uuid4().hex,
@@ -342,7 +344,9 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     created_tenant = response.json()
     first_tenant_id_id = created_tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}/{first_tenant_id_id}")
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}/{first_tenant_id_id}"
+    )
 
     assert response.status_code == 200
     retrieved_tenant = response.json()
@@ -350,7 +354,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     assert created_tenant == retrieved_tenant
 
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": uuid4().hex,
@@ -362,7 +366,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     assert response.status_code == 200
     last_tenant_id = response.json()["tenant_id"]
 
-    response = await tenant_admin_client.get(BASE_PATH)
+    response = await tenant_admin_client.get(TENANTS_BASE_PATH)
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) >= 1
@@ -377,7 +381,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     name = uuid4().hex
     group_id = "backstreetboys"
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": name,
@@ -390,7 +394,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     created_tenant = response.json()
     tenant_id = created_tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}?group_id={group_id}")
+    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id={group_id}")
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) >= 1
@@ -399,7 +403,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     assert_that(tenants).extracting("tenant_id").contains(tenant_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
-    response = await tenant_admin_client.get(f"{BASE_PATH}?group_id=spicegirls")
+    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id=spicegirls")
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) == 0
@@ -412,7 +416,7 @@ async def test_delete_tenant(
 ):
     name = uuid4().hex
     response = await tenant_admin_client.post(
-        BASE_PATH,
+        TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "name": name,
@@ -428,7 +432,7 @@ async def test_delete_tenant(
     actor = await trust_registry.actor_by_id(tenant_id)
     assert actor
 
-    response = await tenant_admin_client.delete(f"{BASE_PATH}/{tenant_id}")
+    response = await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{tenant_id}")
     assert response.status_code == 200
 
     # Actor doesn't exist anymore

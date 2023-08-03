@@ -18,7 +18,7 @@ from app.util.string import random_version
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
 
-CREDENTIALS_BASE_PATH = router.prefix + "/credentials"
+CREDENTIALS_BASE_PATH = router.prefix
 
 
 @pytest.fixture(scope="function")

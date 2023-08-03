@@ -4,12 +4,15 @@ from assertpy import assert_that
 from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.definitions import CredentialSchema
+from app.routes.oob import router
 from app.tests.e2e.test_credentials import CREDENTIALS_BASE_PATH
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.credentials import cred_id_no_version
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
+
+OOB_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
@@ -48,7 +51,7 @@ async def test_send_credential_oob_v1(
     assert_that(data).has_schema_id(schema_definition.id)
 
     invitation_response = await faber_client.post(
-        "/generic/oob/create-invitation",
+        OOB_BASE_PATH + "/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -62,7 +65,7 @@ async def test_send_credential_oob_v1(
     invitation = (invitation_response.json())["invitation"]
 
     accept_response = await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        OOB_BASE_PATH + "/accept-invitation",
         json={"invitation": invitation},
     )
 
@@ -109,7 +112,7 @@ async def test_send_credential_oob_v2(
     assert_that(data).has_schema_id(schema_definition.id)
 
     invitation_response = await faber_client.post(
-        "/generic/oob/create-invitation",
+        OOB_BASE_PATH + "/create-invitation",
         json={
             "create_connection": False,
             "use_public_did": False,
@@ -125,7 +128,7 @@ async def test_send_credential_oob_v2(
     thread_id = invitation["requests~attach"][0]["data"]["json"]["@id"]
 
     accept_response = await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        OOB_BASE_PATH + "/accept-invitation",
         json={"invitation": invitation},
     )
 

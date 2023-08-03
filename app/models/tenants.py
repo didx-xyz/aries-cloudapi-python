@@ -1,9 +1,22 @@
 from typing import List, Optional
 
+from aries_cloudcontroller import CreateWalletRequest
 from aries_cloudcontroller.model.wallet_record import WalletRecord
 from pydantic import BaseModel, Field, HttpUrl
 
 from app.services.trust_registry import TrustRegistryRole
+
+
+class CreateWalletRequestWithGroups(CreateWalletRequest):
+    group_id: Optional[str] = None
+
+
+class WalletRecordWithGroups(WalletRecord):
+    group_id: Optional[str] = None
+
+
+class WalletListWithGroups(BaseModel):
+    results: Optional[List[WalletRecordWithGroups]] = None
 
 
 class WalletRecordWithGroups(WalletRecord):

@@ -160,7 +160,7 @@ async def send_credential(
 
 @router.post("/jsonld", response_model=CredentialExchange)
 async def send_jsonld_credential(
-    credential: JsonLdCredential,
+    jsonld_credential: JsonLdCredential,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
@@ -177,7 +177,7 @@ async def send_jsonld_credential(
             The response object from sending a credential
         status_code: 200
     """
-    bound_logger = logger.bind(body=credential)
+    bound_logger = logger.bind(body=jsonld_credential)
     bound_logger.info("POST request received: Send JSON-LD credential")
 
     async with client_from_auth(auth) as aries_controller:
@@ -190,7 +190,7 @@ async def send_jsonld_credential(
         try:
             bound_logger.debug("Sending JSON-LD credential")
             result = await IssuerV2.send_credential_jsonld(
-                controller=aries_controller, credential=credential
+                controller=aries_controller, jsonld_credential=jsonld_credential
             )
         except ClientResponseError as e:
             logger.warning(

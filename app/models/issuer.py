@@ -13,6 +13,12 @@ class Credential(BaseModel):
     attributes: Dict[str, str]
 
 
+class JsonLdCredential(BaseModel):
+    connection_id: str
+    credential: AcaCredential
+    options: LDProofVCDetailOptions
+
+
 class CredentialNoConnection(BaseModel):
     cred_def_id: str
     attributes: Dict[str, str]

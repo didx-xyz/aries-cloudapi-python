@@ -30,13 +30,13 @@ async def bob_and_alice_connection(
 ) -> BobAliceConnect:
     # create invitation on bob side
     invitation = (
-        await bob_member_client.post("/generic/connections/create-invitation")
+        await bob_member_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
     ).json()
 
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
-            "/generic/connections/accept-invitation",
+            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
             json={"invitation": invitation["invitation"]},
         )
     ).json()
@@ -91,7 +91,7 @@ async def acme_and_alice_connection(
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
-            "/generic/oob/accept-invitation",
+            f"{OOB_BASE_PATH}/accept-invitation",
             json={"invitation": invitation_json},
         )
     ).json()
@@ -118,13 +118,13 @@ async def faber_and_alice_connection(
 ) -> FaberAliceConnect:
     # create invitation on faber side
     invitation = (
-        await faber_client.post("/generic/connections/create-invitation")
+        await faber_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
     ).json()
 
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
-            "/generic/connections/accept-invitation",
+            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
             json={"invitation": invitation["invitation"]},
         )
     ).json()
@@ -205,7 +205,7 @@ async def bob_multi_use_invitation(
     # Create a multi-use invitation
     invitation = (
         await bob_member_client.post(
-            "/generic/connections/create-invitation",
+            f"{CONNECTIONS_BASE_PATH}/create-invitation",
             json=create_invite_json,
         )
     ).json()
@@ -231,7 +231,7 @@ async def alice_bob_connect_multi(
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
-            "/generic/connections/accept-invitation",
+            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
             json={"invitation": invitation},
         )
     ).json()
@@ -249,7 +249,7 @@ async def alice_bob_connect_multi(
     # fetch and validate
     # both connections should be active - we have waited long enough for events to be exchanged
     bob_connection_records = (
-        await bob_member_client.get("/generic/connections")
+        await bob_member_client.get(CONNECTIONS_BASE_PATH)
     ).json()
 
     bob_connection_id = bob_connection_records[0]["connection_id"]

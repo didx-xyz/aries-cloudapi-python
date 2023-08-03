@@ -117,35 +117,35 @@ async def test_get_active_revocation_registry_for_credential(
 
 @pytest.mark.anyio
 async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClient):
-    cred_ex_id = "db9d7025-b276-4c32-ae38-fbad41864112"
+    cred_ex_id_b = "db9d7025-b276-4c32-ae38-fbad41864112"
     # Success
     when(mock_agent_controller.revocation).get_revocation_status(
-        cred_ex_id=cred_ex_id
+        cred_ex_id=cred_ex_id_b
     ).thenReturn(
         to_async(
             CredRevRecordResult(
                 result=IssuerCredRevRecord(
-                    cred_ex_id=cred_ex_id, cred_def_id=cred_def_id
+                    cred_ex_id=cred_ex_id_b, cred_def_id=cred_def_id
                 )
             )
         )
     )
     get_credential_revocation_status_result = await rg.get_credential_revocation_status(
-        controller=mock_agent_controller, credential_exchange_id=cred_ex_id
+        controller=mock_agent_controller, credential_exchange_id=cred_ex_id_b
     )
     assert isinstance(get_credential_revocation_status_result, IssuerCredRevRecord)
     assert get_credential_revocation_status_result.cred_def_id == cred_def_id
-    assert get_credential_revocation_status_result.cred_ex_id == cred_ex_id
+    assert get_credential_revocation_status_result.cred_ex_id == cred_ex_id_b
 
     # Fail
     with pytest.raises(
         CloudApiException, match="Error retrieving revocation status"
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
-            cred_ex_id=cred_ex_id
+            cred_ex_id=cred_ex_id_b
         ).thenReturn(to_async(None))
         await rg.get_credential_revocation_status(
-            controller=mock_agent_controller, credential_exchange_id=cred_ex_id
+            controller=mock_agent_controller, credential_exchange_id=cred_ex_id_b
         )
         assert exc.value.status_code == 500
 

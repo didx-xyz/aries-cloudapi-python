@@ -33,7 +33,9 @@ async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
     tenant = response.json()
     tenant_id = tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}/{tenant_id}/access-token")
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}/{tenant_id}/access-token"
+    )
     assert response.status_code == 200
 
     token = response.json()
@@ -342,7 +344,9 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     created_tenant = response.json()
     first_tenant_id_id = created_tenant["tenant_id"]
 
-    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}/{first_tenant_id_id}")
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}/{first_tenant_id_id}"
+    )
 
     assert response.status_code == 200
     retrieved_tenant = response.json()

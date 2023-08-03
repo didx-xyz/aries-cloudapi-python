@@ -8,14 +8,16 @@ from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.services.trust_registry import actor_by_id
-from app.tests.e2e.test_issuer import OOB_BASE_PATH
-from app.tests.e2e.test_trust_registry_integration import CONNECTIONS_BASE_PATH
+from app.routes.oob import router as oob_router
+from app.routes.connections import router as conn_router
 from app.tests.util.ledger import create_public_did
 from app.tests.util.webhooks import check_webhook_state
 from app.util.acapy_verifier_utils import ed25519_verkey_to_did_key
 from app.util.string import base64_to_json
 from shared import RichAsyncClient
 
+OOB_BASE_PATH = oob_router.prefix
+CONNECTIONS_BASE_PATH = conn_router.prefix
 
 @dataclass
 class BobAliceConnect:

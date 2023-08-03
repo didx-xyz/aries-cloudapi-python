@@ -25,7 +25,7 @@ class TrustRegistry(TypedDict):
     schemas: List[str]
 
 
-async def assert_valid_issuer(did: str, schema_id: Optional[str]):
+async def assert_valid_issuer(did: str, schema_id: Optional[str] = None):
     """Assert that an actor with the specified did is registered as issuer.
 
     This method asserts that there is an actor registered in the trust registry

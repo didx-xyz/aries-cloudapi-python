@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
+    LDProofVCDetail,
     V20CredAttrSpec,
     V20CredExFree,
     V20CredExRecord,
@@ -10,11 +11,11 @@ from aries_cloudcontroller import (
     V20CredOfferConnFreeRequest,
     V20CredPreview,
     V20CredRequestRequest,
+    V20CredStoreRequest,
 )
-from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.issuer import Credential, CredentialNoConnection
+from app.models.issuer import Credential, CredentialNoConnection, JsonLdCredential
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger

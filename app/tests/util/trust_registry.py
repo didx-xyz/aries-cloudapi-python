@@ -7,11 +7,13 @@ from app.services.trust_registry import (
     register_schema,
     registry_has_schema,
 )
+from app.routes.wallet import router
 from shared import RichAsyncClient
 
+WALLET_BASE_PATH = router.prefix
 
 async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
-    pub_did_res = await issuer_client.get("/wallet/dids/public")
+    pub_did_res = await issuer_client.get(f"{WALLET_BASE_PATH}/public")
     did = pub_did_res.json()["did"]
 
     if not await registry_has_schema(schema_id=schema_id):

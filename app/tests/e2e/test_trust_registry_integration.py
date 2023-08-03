@@ -14,7 +14,7 @@ from shared import RichAsyncClient
 
 CONNECTIONS_BASE_PATH = conn_router.prefix
 DEFINITIONS_BASE_PATH = def_router.prefix
-ISSUER_BASE_PATH = issuer_router
+ISSUER_BASE_PATH = issuer_router.prefix
 
 
 @pytest.mark.anyio

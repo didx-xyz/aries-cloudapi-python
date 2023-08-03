@@ -30,7 +30,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Create connection between issuer and holder
     invitation = (
-        await issuer_client.post("/generic/connections/create-invitation")
+        await issuer_client.post(CONNECTIONS_BASE_PATH + "/create-invitation")
     ).json()
 
     issuer_tenant_listener = SseListener(
@@ -39,7 +39,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     invitation_response = (
         await holder_client.post(
-            "/generic/connections/accept-invitation",
+            CONNECTIONS_BASE_PATH + "/accept-invitation",
             json={"invitation": invitation["invitation"]},
         )
     ).json()
@@ -71,7 +71,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
     invitation_response = (
         await holder_client.post(
-            "/generic/oob/accept-invitation",
+            OOB_BASE_PATH + "/accept-invitation",
             json={"invitation": invitation_json},
         )
     ).json()
@@ -84,7 +84,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     # Create schema as governance
     schema = (
         await governance_client.post(
-            "/generic/definitions/schemas",
+            DEFINITIONS_BASE_PATH + "/schemas",
             json={
                 "name": "e2e-flow",
                 "version": "1.0.0",
@@ -97,7 +97,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Create credential definition as issuer
     credential_definition = await issuer_client.post(
-        "/generic/definitions/credentials",
+        DEFINITIONS_BASE_PATH + "/credentials",
         json={
             "tag": random_string(5),
             "schema_id": schema_id,
@@ -117,7 +117,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     issuer_credential_exchange = (
         await issuer_client.post(
-            "/generic/issuer/credentials",
+            ISSUER_BASE_PATH + "/credentials",
             json={
                 "protocol_version": "v1",
                 "connection_id": issuer_holder_connection_id,
@@ -141,7 +141,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
 
     response = await holder_client.post(
-        f"/generic/issuer/credentials/{holder_credential_exchange_id}/request"
+        f"{ISSUER_BASE_PATH}/credentials/{holder_credential_exchange_id}/request"
     )
 
     # Wait for credential exchange to finish
@@ -158,7 +158,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
 
     response = await verifier_client.post(
-        "/generic/verifier/send-request",
+        VERIFIER_BASE_PATH + "/send-request",
         json={
             "protocol_version": "v1",
             "connection_id": verifier_holder_connection_id,
@@ -196,7 +196,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     available_credentials = (
         await holder_client.get(
-            f"/generic/verifier/proofs/{holder_proof_exchange_id}/credentials",
+            f"{VERIFIER_BASE_PATH}/proofs/{holder_proof_exchange_id}/credentials",
         )
     ).json()
 
@@ -207,7 +207,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
 
     response = await holder_client.post(
-        "/generic/verifier/accept-request",
+        VERIFIER_BASE_PATH + "/accept-request",
         json={
             "proof_id": holder_proof_exchange_id,
             "presentation_spec": {

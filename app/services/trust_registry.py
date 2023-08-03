@@ -25,7 +25,7 @@ class TrustRegistry(TypedDict):
     schemas: List[str]
 
 
-async def assert_valid_issuer(did: str, schema_id: str):
+async def assert_valid_issuer(did: str, schema_id: Optional[str]):
     """Assert that an actor with the specified did is registered as issuer.
 
     This method asserts that there is an actor registered in the trust registry
@@ -38,7 +38,7 @@ async def assert_valid_issuer(did: str, schema_id: str):
 
     Args:
         did (str): the did of the issuer in fully qualified format.
-        schema_id (str): the schema_id of the credential being issued.
+        schema_id (Optional[str]): the schema_id of the credential being issued (Optional).
 
     Raises:
         Exception: When the did is not registered, the actor doesn't have the issuer role
@@ -57,14 +57,16 @@ async def assert_valid_issuer(did: str, schema_id: str):
         raise TrustRegistryException(
             f"Actor {actor['id']} does not have required role 'issuer'."
         )
+    bound_logger.info("Issuer DID is valid")
 
-    has_schema = await registry_has_schema(schema_id)
-    if not has_schema:
-        bound_logger.info("Schema is not registered in the trust registry.")
-        raise TrustRegistryException(
-            f"Schema with id {schema_id} is not registered in trust registry."
-        )
-    bound_logger.info("Issuer DID and schema ID is valid.")
+    if schema_id:
+        has_schema = await registry_has_schema(schema_id)
+        if not has_schema:
+            bound_logger.info("Schema is not registered in the trust registry.")
+            raise TrustRegistryException(
+                f"Schema with id {schema_id} is not registered in trust registry."
+            )
+        bound_logger.info("Schema ID is registered.")
 
 
 async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:

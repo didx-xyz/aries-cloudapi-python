@@ -12,15 +12,11 @@ class CreateWalletRequestWithGroups(CreateWalletRequest):
 
 
 class WalletRecordWithGroups(WalletRecord):
-    group_id: Optional[str] = None
+    group_id: Optional[str] = Field(None, example="SomeGroupId")
 
 
 class WalletListWithGroups(BaseModel):
     results: Optional[List[WalletRecordWithGroups]] = None
-
-
-class WalletRecordWithGroups(WalletRecord):
-    group_id: Optional[str] = Field(None, example="SomeGroupId")
 
 
 class TenantRequestBase(BaseModel):

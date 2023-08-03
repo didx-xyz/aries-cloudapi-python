@@ -129,7 +129,7 @@ async def should_accept_endorsement(
         return False
 
     # `operation` key is asserted to exist in `is_credential_definition_transaction`
-    if "ref" not in attachment["operation"].keys():
+    if "ref" not in attachment["operation"]:
         bound_logger.debug(
             "Expected key `ref` does not exist in attachment `operation`. Got operation: `{}`.",
             attachment["operation"],
@@ -185,10 +185,7 @@ def get_endorsement_request_attachment(
             )
             return None
 
-        if (
-            not isinstance(attachment["data"], Dict)
-            or "json" not in attachment["data"].keys()
-        ):
+        if not isinstance(attachment["data"], dict) or "json" not in attachment["data"]:
             logger.debug(
                 "Attachment data does not contain expected keys `json`. Got attachment data: `{}`.",
                 attachment["data"],

@@ -4,8 +4,11 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
+from app.routes.oob import router
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
+
+OOB_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
@@ -13,7 +16,7 @@ async def test_create_invitation_oob(
     bob_member_client: RichAsyncClient,
 ):
     invitation_response = await bob_member_client.post(
-        "/generic/oob/create-invitation", json={"create_connection": True}
+        OOB_BASE_PATH + "/create-invitation", json={"create_connection": True}
     )
     assert_that(invitation_response.status_code).is_equal_to(200)
     invitation = invitation_response.json()
@@ -29,7 +32,7 @@ async def test_accept_invitation_oob(
     alice_acapy_client: AcaPyClient,
 ):
     invitation_response = await bob_member_client.post(
-        "/generic/oob/create-invitation",
+        OOB_BASE_PATH + "/create-invitation",
         json={
             "create_connection": True,
             "use_public_did": False,
@@ -40,7 +43,7 @@ async def test_accept_invitation_oob(
     invitation = (invitation_response.json())["invitation"]
 
     accept_response = await alice_member_client.post(
-        "/generic/oob/accept-invitation",
+        OOB_BASE_PATH + "/accept-invitation",
         json={"invitation": invitation},
     )
 
@@ -64,7 +67,7 @@ async def test_oob_connect_via_public_did(
 
     faber_public_did = await faber_acapy_client.wallet.get_public_did()
     connect_response = await bob_member_client.post(
-        "/generic/oob/connect-public-did",
+        OOB_BASE_PATH + "/connect-public-did",
         json={"public_did": faber_public_did.result.did},
     )
     bob_oob_record = connect_response.json()

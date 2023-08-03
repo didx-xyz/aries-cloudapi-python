@@ -4,9 +4,12 @@ from assertpy import assert_that
 from fastapi import HTTPException
 
 from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
+from app.routes.jsonld import router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
 from shared.models.topics import CredentialExchange
+
+JSONLD_BASE_PATH = router.prefix
 
 jsonld_credential = {
     "@context": "https://json-ld.org/contexts/person.jsonld",
@@ -66,7 +69,9 @@ async def test_sign_jsonld(
 
     # Error
     with pytest.raises(HTTPException) as exc:
-        await alice_member_client.post("/generic/jsonld/sign", json=json_ld_req.dict())
+        await alice_member_client.post(
+            JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
+        )
 
     assert_that(exc.value.detail).contains(
         "Please provide either or neither, but not both"
@@ -80,15 +85,12 @@ async def test_sign_jsonld(
     json_ld_req.credential_id = None
     json_ld_req.verkey = None
     jsonld_sign_response = await faber_client.post(
-        "/generic/jsonld/sign", json=json_ld_req.dict()
+        JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
     )
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
+    assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
 
     # # Success verkey
     pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -97,32 +99,26 @@ async def test_sign_jsonld(
     json_ld_req.verkey = faber_verkey
 
     jsonld_sign_response = await faber_client.post(
-        "/generic/jsonld/sign", json=json_ld_req.dict()
+        JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
     )
 
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
+    assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
 
     # Success bare
     json_ld_req.pub_did = None
     json_ld_req.verkey = None
 
     jsonld_sign_response = await faber_client.post(
-        "/generic/jsonld/sign", json=json_ld_req.dict()
+        JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
     )
 
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
-    assert all(
-        item in jsonld_sign_response["signed_doc"].keys()
-        for item in jsonld_credential.keys()
-    )
+    assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
 
 
 @pytest.mark.anyio
@@ -139,7 +135,7 @@ async def test_verify_jsonld(
     # Error wrong args
     with pytest.raises(HTTPException) as exc:
         response = await alice_member_client.post(
-            "/generic/jsonld/verify", json=jsonld_verify.dict()
+            JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict()
         )
     assert_that(exc.value.detail).contains(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
@@ -152,7 +148,7 @@ async def test_verify_jsonld(
     jsonld_verify.public_did = faber_pub_did
 
     with pytest.raises(HTTPException) as exc:
-        await faber_client.post("/generic/jsonld/verify", json=jsonld_verify.dict())
+        await faber_client.post(JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict())
 
     assert_that(exc.value.status_code).is_equal_to(422)
     assert_that(exc.value.detail).contains("Failed to verify payload with")
@@ -162,6 +158,6 @@ async def test_verify_jsonld(
     jsonld_verify.verkey = signed_doc["verkey"]
 
     response = await alice_member_client.post(
-        "/generic/jsonld/verify", json=jsonld_verify.dict()
+        JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict()
     )
     assert_that(response.status_code).is_equal_to(204)

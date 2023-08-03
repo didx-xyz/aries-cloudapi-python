@@ -2,8 +2,11 @@ import pytest
 from assertpy.assertpy import assert_that
 
 from app.models.messaging import Message, TrustPingMsg
+from app.routes.messaging import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
+
+MESSAGING_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
@@ -15,7 +18,7 @@ async def test_send_trust_ping(
     )
 
     response = await alice_member_client.post(
-        "/generic/messaging/trust-ping", json=trustping_msg.dict()
+        MESSAGING_BASE_PATH + "/trust-ping", json=trustping_msg.dict()
     )
     response_data = response.json()
 
@@ -32,7 +35,7 @@ async def test_send_message(
     )
 
     response = await alice_member_client.post(
-        "/generic/messaging/send-message", json=message.dict()
+        MESSAGING_BASE_PATH + "/send-message", json=message.dict()
     )
 
     assert_that(response.status_code).is_equal_to(200)

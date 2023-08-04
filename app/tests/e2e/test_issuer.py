@@ -1,4 +1,5 @@
 import pytest
+from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.event_handling.sse_listener import SseListener
@@ -412,9 +413,11 @@ async def test_revoke_credential(
 @pytest.mark.anyio
 async def test_send_jsonld_credential(
     faber_client: RichAsyncClient,
+    faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
+    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
     # Creating JSON-LD credential
     credential = {
         "credential": {
@@ -431,7 +434,7 @@ async def test_send_jsonld_credential(
                 "college": "Faber College",
             },
             "issuanceDate": "2021-04-12",
-            "issuer": "did:sov:LjgpST2rjsoxYegQDRm7EL",
+            "issuer": f"did:sov:{faber_pub_did}",
         },
         "options": {"proofType": "Ed25519Signature2018"},
         "connection_id": faber_and_alice_connection.faber_connection_id,

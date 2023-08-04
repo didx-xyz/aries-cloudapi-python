@@ -57,6 +57,11 @@ class CreateTenantResponse(Tenant, TenantAuth):
     pass
 
 
+class OnboardResult(BaseModel):
+    did: str
+    didcomm_invitation: Optional[AnyHttpUrl]
+
+
 def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
     label: str = wallet_record.settings["default_label"]
     image_url: Optional[str] = wallet_record.settings.get("image_url")

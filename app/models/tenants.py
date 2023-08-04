@@ -3,6 +3,7 @@ from typing import List, Optional
 from aries_cloudcontroller import CreateWalletRequest
 from aries_cloudcontroller.model.wallet_record import WalletRecord
 from pydantic import BaseModel, Field, HttpUrl
+from pydantic.networks import AnyHttpUrl
 
 from app.services.trust_registry import TrustRegistryRole
 

@@ -12,7 +12,7 @@ from app.dependencies.acapy_clients import (
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.tenants import UpdateTenantRequest, OnboardResult
+from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.services import acapy_ledger, acapy_wallet
 from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov

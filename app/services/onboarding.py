@@ -5,8 +5,6 @@ from aries_cloudcontroller.model.create_wallet_token_request import (
     CreateWalletTokenRequest,
 )
 from fastapi.exceptions import HTTPException
-from pydantic import BaseModel
-from pydantic.networks import AnyHttpUrl
 
 from app.dependencies.acapy_clients import (
     get_governance_controller,

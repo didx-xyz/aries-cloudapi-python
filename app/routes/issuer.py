@@ -149,7 +149,9 @@ async def send_credential(
                 "ClientResponseError was caught while sending credentials, with message `{}`.",
                 e.message,
             )
-            raise CloudApiException("Failed to create and send credential.", 500) from e
+            raise CloudApiException(
+                f"Failed to create or send credential: {e}", 500
+            ) from e
 
     if result:
         bound_logger.info("Successfully sent credential.")
@@ -197,7 +199,9 @@ async def send_jsonld_credential(
                 "ClientResponseError was caught while sending JSON-LD credential, with message `{}`.",
                 e.message,
             )
-            raise CloudApiException("Failed to send JSON-LD credential.", 500) from e
+            raise CloudApiException(
+                f"Failed to send JSON-LD credential: {e}", 500
+            ) from e
 
     if result:
         bound_logger.info("Successfully sent JSON-LD credential.")

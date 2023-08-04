@@ -423,7 +423,13 @@ async def test_send_jsonld_credential(
                 "https://www.w3.org/2018/credentials/examples/v1",
             ],
             "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-            "credentialSubject": {"test": "key"},
+            "credentialSubject": {
+                "degree": {
+                    "type": "BachelorDegree",
+                    "name": "Bachelor of Science and Arts",
+                },
+                "college": "Faber College",
+            },
             "issuanceDate": "2021-04-12",
             "issuer": "did:sov:LjgpST2rjsoxYegQDRm7EL",
         },

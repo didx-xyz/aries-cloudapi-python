@@ -25,7 +25,7 @@ async def alice_tenant() -> Generator[CreateTenantResponse, Any, None]:
 @pytest.fixture(scope="function")
 async def bob_tenant() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
-        tenant = await create_issuer_tenant(admin_client, "bob")
+        tenant = await create_tenant(admin_client, "bob")
 
         yield tenant
 

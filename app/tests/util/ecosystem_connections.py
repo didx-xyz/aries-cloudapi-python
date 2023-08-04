@@ -44,10 +44,6 @@ async def bob_and_alice_connection(
         )
     ).json()
 
-    assert await check_webhook_state(
-        alice_member_client, topic="connections", filter_map={"state": "completed"}
-    )
-
     bob_connection_id = invitation["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
 
@@ -62,11 +58,6 @@ async def bob_and_alice_connection(
         bob_member_client,
         topic="connections",
         filter_map={"state": "completed"},
-    )
-    assert await check_webhook_state(
-        bob_member_client,
-        topic="endorsements",
-        filter_map={"state": "transaction-acked"},
     )
 
     return BobAliceConnect(

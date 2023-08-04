@@ -418,6 +418,7 @@ async def test_send_jsonld_credential(
     alice_member_client: RichAsyncClient,
 ):
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
+
     # Creating JSON-LD credential
     credential = {
         "credential": {
@@ -469,5 +470,9 @@ async def test_send_jsonld_credential(
     assert len(records) == 1
 
     # Check if the received credential matches the sent one
-    # received_credential = records[-1]
-    # assert_that(received_credential).has_attributes(credential["attributes"])
+    received_credential = records[-1]
+    assert_that(received_credential).has_connection_id(
+        faber_and_alice_connection.alice_connection_id
+    )
+    assert_that(received_credential).has_state("offer-received")
+    assert_that(received_credential["credential_id"]).starts_with("v2-")

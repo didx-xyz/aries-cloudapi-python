@@ -25,11 +25,6 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 
-class OnboardResult(BaseModel):
-    did: str
-    didcomm_invitation: Optional[AnyHttpUrl]
-
-
 def create_sse_listener(wallet_id: str, topic: str) -> SseListener:
     # Helper method for passing MockListener to class
     return SseListener(topic=topic, wallet_id=wallet_id)

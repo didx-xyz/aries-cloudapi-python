@@ -19,7 +19,7 @@ async def coroutine_with_retry(
             logger.warning(
                 f"Failed to run coroutine (attempt {attempt + 1}). "
                 f"Reason: \n{e}.\n"
-                "Retrying in {retry_delay} seconds..."
+                f"Retrying in {retry_delay} seconds..."
             )
             await asyncio.sleep(retry_delay)
     return result

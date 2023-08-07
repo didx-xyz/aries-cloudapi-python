@@ -455,12 +455,7 @@ async def test_send_jsonld_credential(
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
 
-    # Check if Alice received the credential
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
-    )
-    records = response.json()
+    sent_credential_id = data["credential_id"]
 
     assert await check_webhook_state(
         client=alice_member_client,
@@ -476,4 +471,4 @@ async def test_send_jsonld_credential(
     received_credential = records[-1]
     assert_that(received_credential).has_connection_id(alice_connection_id)
     assert_that(received_credential).has_state("offer-received")
-    assert_that(received_credential["credential_id"]).starts_with("v2-")
+    assert_that(received_credential["credential_id"]).matches(sent_credential_id)

@@ -4,7 +4,7 @@ from typing import Any, Callable, Tuple
 
 
 async def coroutine_with_retry(
-    coroutine_func: Callable, args: Tuple, logger: Logger, max_attempts=5, retry_delay=1
+    coroutine_func: Callable, args: Tuple, logger: Logger, max_attempts=5, retry_delay=2
 ) -> Any:
     result = None
     for attempt in range(max_attempts):

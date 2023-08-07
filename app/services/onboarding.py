@@ -159,7 +159,6 @@ async def onboard_issuer(
             onboard_issuer_no_public_did,
             (name, endorser_controller, issuer_controller, issuer_wallet_id),
             bound_logger,
-            max_attempts=3,
         )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")

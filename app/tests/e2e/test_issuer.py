@@ -465,6 +465,15 @@ async def test_send_jsonld_credential(
             "connection_id": alice_connection_id,
         },
     )
+
+    # Check if Alice received the credential
+    response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH,
+        params={"connection_id": alice_connection_id},
+    )
+
+    records = response.json()
+
     assert len(records) == 1
 
     # Check if the received credential matches the sent one

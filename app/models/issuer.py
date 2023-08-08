@@ -7,27 +7,25 @@ from pydantic import BaseModel
 from shared.models.protocol import IssueCredentialProtocolVersion
 
 
-class Credential(BaseModel):
-    connection_id: str
-    cred_def_id: str
-    attributes: Dict[str, str]
-
-
-class JsonLdCredential(BaseModel):
-    connection_id: str
-    credential: AcaCredential
-    options: LDProofVCDetailOptions
-
-
 class CredentialNoConnection(BaseModel):
     cred_def_id: str
     attributes: Dict[str, str]
 
 
-class CredentialBase(BaseModel):
+class CredentialWithConnection(CredentialNoConnection):
+    connection_id: str
+
+
+class CredentialWithProtocol(CredentialNoConnection):
     protocol_version: IssueCredentialProtocolVersion
-    credential_definition_id: str
-    attributes: Dict[str, str]
+
+
+class SendCredential(CredentialWithConnection):
+    pass
+
+
+class CreateOffer(CredentialWithProtocol):
+    pass
 
 
 class RevokeCredential(BaseModel):
@@ -36,9 +34,7 @@ class RevokeCredential(BaseModel):
     auto_publish_on_ledger: Optional[bool] = False
 
 
-class SendCredential(CredentialBase):
+class JsonLdCredential(BaseModel):
     connection_id: str
-
-
-class CreateOffer(CredentialBase):
-    pass
+    credential: AcaCredential
+    options: LDProofVCDetailOptions

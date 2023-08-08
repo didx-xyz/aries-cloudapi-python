@@ -11,7 +11,7 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from mockito import when
 
-from app.models.issuer import Credential
+from app.models.issuer import CredentialWithConnection
 from app.services.issuer.acapy_issuer_v1 import IssuerV1
 from app.tests.util.mock import to_async
 
@@ -152,7 +152,7 @@ async def test_delete_credential_exchange_without_credential(
 async def test_send_credential(mock_agent_controller: AcaPyClient):
     record = v1_credential_exchange_records[0]
 
-    credential = Credential(
+    credential = CredentialWithConnection(
         connection_id=record.connection_id,
         cred_def_id=record.credential_definition_id,
         attributes={

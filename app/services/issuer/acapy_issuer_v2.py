@@ -15,7 +15,11 @@ from aries_cloudcontroller import (
 )
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.issuer import Credential, CredentialNoConnection, JsonLdCredential
+from app.models.issuer import (
+    CredentialNoConnection,
+    CredentialWithConnection,
+    JsonLdCredential,
+)
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
@@ -27,7 +31,9 @@ logger = get_logger(__name__)
 
 class IssuerV2(Issuer):
     @classmethod
-    async def send_credential(cls, controller: AcaPyClient, credential: Credential):
+    async def send_credential(
+        cls, controller: AcaPyClient, credential: CredentialWithConnection
+    ):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(

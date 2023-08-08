@@ -8,8 +8,8 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.issuer import (
     CreateOffer,
-    Credential,
     CredentialNoConnection,
+    CredentialWithConnection,
     JsonLdCredential,
     RevokeCredential,
     SendCredential,
@@ -138,7 +138,7 @@ async def send_credential(
             bound_logger.debug("Sending credential")
             result = await issuer.send_credential(
                 controller=aries_controller,
-                credential=Credential(
+                credential=CredentialWithConnection(
                     attributes=credential.attributes,
                     cred_def_id=credential.credential_definition_id,
                     connection_id=credential.connection_id,

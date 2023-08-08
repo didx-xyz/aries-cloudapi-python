@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from aries_cloudcontroller import AcaPyClient
 
-from app.models.issuer import Credential, CredentialNoConnection
+from app.models.issuer import CredentialNoConnection, CredentialWithConnection
 from shared.models.topics import CredentialExchange
 
 
@@ -13,7 +13,7 @@ class Issuer(ABC):
     @classmethod
     @abstractmethod
     async def send_credential(
-        cls, controller: AcaPyClient, credential: Credential
+        cls, controller: AcaPyClient, credential: CredentialWithConnection
     ) -> CredentialExchange:
         """
         Create and send indy credential using Issue Credential protocol. Automating the entire flow.

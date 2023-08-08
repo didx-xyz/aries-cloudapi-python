@@ -205,13 +205,11 @@ def schema_cred_def_from_record(
 
     if record.by_format and record.by_format.cred_offer:
         indy = record.by_format.cred_offer.get("indy", {})
-        schema_id = indy.get("schema_id", None)
-        credential_definition_id = indy.get("cred_def_id", None)
-
     elif record.by_format and record.by_format.cred_proposal:
         indy = record.by_format.cred_proposal.get("indy", {})
-        schema_id = indy.get("schema_id", None)
-        credential_definition_id = indy.get("cred_def_id", None)
+
+    schema_id = indy.get("schema_id", None)
+    credential_definition_id = indy.get("cred_def_id", None)
 
     return schema_id, credential_definition_id
 

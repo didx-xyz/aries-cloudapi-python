@@ -217,7 +217,9 @@ async def schema_id_from_credential_definition_id(
     -------
     schema_id : string
     """
-    bound_logger = logger.bind(body={"cred_def_id": credential_definition_id})
+    bound_logger = logger.bind(
+        body={"credential_definition_id": credential_definition_id}
+    )
     bound_logger.info("Getting schema id from credential definition id")
 
     # scrape schema id or sequence number from cred def id

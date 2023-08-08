@@ -39,7 +39,7 @@ async def test_send_credential(
     credential = test_module.SendCredential(
         protocol_version=IssueCredentialProtocolVersion.v1,
         connection_id="conn_id",
-        cred_def_id=cred_def_id,
+        credential_definition_id=cred_def_id,
         attributes={"name": "John", "age": "23"},
     )
 

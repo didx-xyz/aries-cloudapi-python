@@ -154,7 +154,7 @@ async def test_send_credential(mock_agent_controller: AcaPyClient):
 
     credential = CredentialWithConnection(
         connection_id=record.connection_id,
-        cred_def_id=record.credential_definition_id,
+        credential_definition_id=record.credential_definition_id,
         attributes={
             attr.name: attr.value
             for attr in record.credential_proposal_dict.credential_proposal.attributes

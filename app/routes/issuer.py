@@ -140,7 +140,7 @@ async def send_credential(
                 controller=aries_controller,
                 credential=CredentialWithConnection(
                     attributes=credential.attributes,
-                    cred_def_id=credential.credential_definition_id,
+                    credential_definition_id=credential.credential_definition_id,
                     connection_id=credential.connection_id,
                 ),
             )
@@ -249,7 +249,7 @@ async def create_offer(
             controller=aries_controller,
             credential=CredentialNoConnection(
                 attributes=credential.attributes,
-                cred_def_id=credential.credential_definition_id,
+                credential_definition_id=credential.credential_definition_id,
             ),
         )
 

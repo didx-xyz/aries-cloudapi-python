@@ -31,9 +31,9 @@ class CredentialBase(BaseModel):
 
 
 class RevokeCredential(BaseModel):
+    credential_exchange_id: str
     credential_definition_id: str = ""
     auto_publish_on_ledger: Optional[bool] = False
-    credential_exchange_id: str = ""
 
 
 class SendCredential(CredentialBase):

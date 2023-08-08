@@ -318,8 +318,8 @@ async def revoke_credential(
         await revocation_registry.revoke_credential(
             controller=aries_controller,
             credential_exchange_id=body.credential_exchange_id,
-            auto_publish_to_ledger=body.auto_publish_on_ledger,
             credential_definition_id=body.credential_definition_id,
+            auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
     bound_logger.info("Successfully revoked credential.")

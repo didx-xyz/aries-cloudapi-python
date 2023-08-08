@@ -8,7 +8,7 @@ from shared.models.protocol import IssueCredentialProtocolVersion
 
 
 class CredentialNoConnection(BaseModel):
-    cred_def_id: str
+    credential_definition_id: str
     attributes: Dict[str, str]
 
 

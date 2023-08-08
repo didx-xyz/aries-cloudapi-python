@@ -38,7 +38,7 @@ class IssuerV1(Issuer):
             body=V10CredentialProposalRequestMand(
                 connection_id=credential.connection_id,
                 credential_proposal=credential_preview,
-                cred_def_id=credential.cred_def_id,
+                cred_def_id=credential.credential_definition_id,
             )
         )
 
@@ -59,7 +59,7 @@ class IssuerV1(Issuer):
         record = await controller.issue_credential_v1_0.create_offer(
             body=V10CredentialConnFreeOfferRequest(
                 credential_preview=credential_preview,
-                cred_def_id=credential.cred_def_id,
+                cred_def_id=credential.credential_definition_id,
             )
         )
 

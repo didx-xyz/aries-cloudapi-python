@@ -47,7 +47,7 @@ class IssuerV2(Issuer):
                 credential_preview=credential_preview,
                 filter=V20CredFilter(
                     indy=V20CredFilterIndy(
-                        cred_def_id=credential.cred_def_id,
+                        cred_def_id=credential.credential_definition_id,
                     )
                 ),
             )
@@ -97,7 +97,7 @@ class IssuerV2(Issuer):
                     credential_preview=credential_preview,
                     filter=V20CredFilter(
                         indy=V20CredFilterIndy(
-                            cred_def_id=credential.cred_def_id,
+                            cred_def_id=credential.credential_definition_id,
                         )
                     ),
                 )

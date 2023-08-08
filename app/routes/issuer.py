@@ -128,7 +128,7 @@ async def send_credential(
 
         # Retrieve the schema_id based on the credential definition id
         schema_id = await schema_id_from_credential_definition_id(
-            aries_controller, credential.cred_def_id
+            aries_controller, credential.credential_definition_id
         )
 
         # Make sure we are allowed to issue according to trust registry rules
@@ -140,7 +140,7 @@ async def send_credential(
                 controller=aries_controller,
                 credential=CredentialWithConnection(
                     attributes=credential.attributes,
-                    cred_def_id=credential.cred_def_id,
+                    cred_def_id=credential.credential_definition_id,
                     connection_id=credential.connection_id,
                 ),
             )
@@ -238,7 +238,7 @@ async def create_offer(
 
         # Retrieve the schema_id based on the credential definition id
         schema_id = await schema_id_from_credential_definition_id(
-            aries_controller, credential.cred_def_id
+            aries_controller, credential.credential_definition_id
         )
 
         # Make sure we are allowed to issue according to trust registry rules
@@ -249,7 +249,7 @@ async def create_offer(
             controller=aries_controller,
             credential=CredentialNoConnection(
                 attributes=credential.attributes,
-                cred_def_id=credential.cred_def_id,
+                cred_def_id=credential.credential_definition_id,
             ),
         )
 

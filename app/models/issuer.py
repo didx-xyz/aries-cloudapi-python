@@ -24,14 +24,16 @@ class CredentialBase(BaseModel):
     indy_credential_detail: Optional[IndyCredential]
     ld_credential_detail: Optional[LDProofVCDetail]
 
+
+class CredentialWithConnection(CredentialBase):
     connection_id: str
 
 
-class CredentialWithProtocol(CredentialNoConnection):
+class CredentialWithProtocol(CredentialBase):
     protocol_version: IssueCredentialProtocolVersion
 
 
-class SendCredential(CredentialWithConnection):
+class SendCredential(CredentialWithProtocol, CredentialWithConnection):
     pass
 
 

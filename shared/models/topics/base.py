@@ -69,6 +69,7 @@ class CredentialExchange(BaseModel):
             "credential-issued",
             "credential-received",
             "done",
+            "deleted",
             "offer-received",
             "offer-sent",
             "proposal-received",

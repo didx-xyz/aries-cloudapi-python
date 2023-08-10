@@ -10,12 +10,14 @@ from app.models.issuer import (
     CreateOffer,
     Credential,
     CredentialNoConnection,
+    JsonLdCredential,
     RevokeCredential,
     SendCredential,
 )
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
 from app.services.acapy_wallet import assert_public_did
+from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.services.trust_registry import assert_valid_issuer
 from app.util.acapy_issuer_utils import (
     IssueCredentialFacades,
@@ -147,12 +149,64 @@ async def send_credential(
                 "ClientResponseError was caught while sending credentials, with message `{}`.",
                 e.message,
             )
-            raise CloudApiException("Failed to create and send credential.", 500) from e
+            raise CloudApiException(
+                f"Failed to create or send credential: {e}", 500
+            ) from e
 
     if result:
         bound_logger.info("Successfully sent credential.")
     else:
         bound_logger.warning("No result from sending credential.")
+    return result
+
+
+@router.post("/jsonld", response_model=CredentialExchange)
+async def send_jsonld_credential(
+    jsonld_credential: JsonLdCredential,
+    auth: AcaPyAuth = Depends(acapy_auth),
+):
+    """
+        Create and send a JSON-LD credential. Automating the entire flow.
+
+    Parameters:
+    ------------
+        credential: JsonLdCredential
+            payload for sending a JSON-LD credential
+
+    Returns:
+    --------
+        payload: CredentialExchange
+            The response object from sending a credential
+        status_code: 200
+    """
+    bound_logger = logger.bind(body=jsonld_credential)
+    bound_logger.info("POST request received: Send JSON-LD credential")
+
+    async with client_from_auth(auth) as aries_controller:
+        # Assert the agent has a public did
+        public_did = await assert_public_did(aries_controller)
+
+        # Make sure we are allowed to issue according to trust registry rules
+        await assert_valid_issuer(public_did)  # JSON-LD doesn't have schema_id
+
+        try:
+            bound_logger.debug("Sending JSON-LD credential")
+            result = await IssuerV2.send_credential_jsonld(
+                controller=aries_controller, jsonld_credential=jsonld_credential
+            )
+        except ClientResponseError as e:
+            logger.warning(
+                "ClientResponseError was caught while sending JSON-LD credential, with message `{}`.",
+                e.message,
+            )
+            raise CloudApiException(
+                f"Failed to send JSON-LD credential: {e}", 500
+            ) from e
+
+    if result:
+        bound_logger.info("Successfully sent JSON-LD credential.")
+    else:
+        bound_logger.warning("No result from sending JSON-LD credential.")
     return result
 
 

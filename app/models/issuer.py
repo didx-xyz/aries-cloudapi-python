@@ -1,7 +1,8 @@
 from typing import Dict, Optional
 
+from aries_cloudcontroller import Credential as AcaCredential
+from aries_cloudcontroller import LDProofVCDetailOptions
 from pydantic import BaseModel
-from typing_extensions import TypedDict
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
@@ -12,13 +13,15 @@ class Credential(BaseModel):
     attributes: Dict[str, str]
 
 
+class JsonLdCredential(BaseModel):
+    connection_id: str
+    credential: AcaCredential
+    options: LDProofVCDetailOptions
+
+
 class CredentialNoConnection(BaseModel):
     cred_def_id: str
     attributes: Dict[str, str]
-
-
-class ProblemReportExplanation(TypedDict):
-    description: str
 
 
 class CredentialBase(BaseModel):

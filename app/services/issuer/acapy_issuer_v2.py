@@ -2,6 +2,7 @@ from typing import Dict, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
+    LDProofVCDetail,
     V20CredAttrSpec,
     V20CredExFree,
     V20CredExRecord,
@@ -10,11 +11,11 @@ from aries_cloudcontroller import (
     V20CredOfferConnFreeRequest,
     V20CredPreview,
     V20CredRequestRequest,
+    V20CredStoreRequest,
 )
-from aries_cloudcontroller.model.v20_cred_store_request import V20CredStoreRequest
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.issuer import Credential, CredentialNoConnection
+from app.models.issuer import Credential, CredentialNoConnection, JsonLdCredential
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
@@ -47,6 +48,30 @@ class IssuerV2(Issuer):
         )
 
         bound_logger.debug("Returning v2 credential result as CredentialExchange.")
+        return cls.__record_to_model(record)
+
+    @classmethod
+    async def send_credential_jsonld(
+        cls, controller: AcaPyClient, jsonld_credential: JsonLdCredential
+    ):
+        bound_logger = logger.bind(body=jsonld_credential)
+
+        bound_logger.debug("Issue JSON-LD v2 credential (automated)")
+        record = await controller.issue_credential_v2_0.issue_credential_automated(
+            body=V20CredExFree(
+                connection_id=jsonld_credential.connection_id,
+                filter=V20CredFilter(
+                    ld_proof=LDProofVCDetail(
+                        credential=jsonld_credential.credential,
+                        options=jsonld_credential.options,
+                    )
+                ),
+            )
+        )
+
+        bound_logger.debug(
+            "Returning JSON-LD v2 credential result as CredentialExchange."
+        )
         return cls.__record_to_model(record)
 
     @classmethod

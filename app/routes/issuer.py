@@ -8,16 +8,14 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.issuer import (
     CreateOffer,
-    CredentialNoConnection,
-    CredentialWithConnection,
-    JsonLdCredential,
+    CredentialBase,
+    CredentialType,
     RevokeCredential,
     SendCredential,
 )
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
 from app.services.acapy_wallet import assert_public_did
-from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.services.trust_registry import assert_valid_issuer
 from app.util.acapy_issuer_utils import (
     IssueCredentialFacades,
@@ -197,7 +195,7 @@ async def create_offer(
         bound_logger.debug("Creating offer")
         result = await issuer.create_offer(
             controller=aries_controller,
-            credential=CredentialNoConnection(
+            credential=CredentialBase(
                 attributes=credential.attributes,
                 credential_definition_id=credential.credential_definition_id,
             ),

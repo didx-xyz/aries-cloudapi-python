@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Dict, Optional
 
 from aries_cloudcontroller import Credential as AcaCredential
@@ -7,7 +8,12 @@ from pydantic import BaseModel
 from shared.models.protocol import IssueCredentialProtocolVersion
 
 
-class CredentialNoConnection(BaseModel):
+class CredentialType(Enum):
+    INDY = "indy"
+    JWT = "jwt"
+    LD_PROOF = "ld_proof"
+
+
     credential_definition_id: str
     attributes: Dict[str, str]
 

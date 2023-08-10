@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
@@ -22,6 +22,22 @@ class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential]
     ld_credential_detail: Optional[LDProofVCDetail]
+
+    @validator("indy_credential_detail", pre=True, always=True)
+    def check_indy_credential_detail(cls, value, values):
+        if values.get("type") == CredentialType.INDY and value is None:
+            raise ValueError(
+                "indy_credential_detail must be populated if CredentialType.INDY is selected"
+            )
+        return value
+
+    @validator("ld_credential_detail", pre=True, always=True)
+    def check_ld_credential_detail(cls, value, values):
+        if values.get("type") == CredentialType.LD_PROOF and value is None:
+            raise ValueError(
+                "ld_credential_detail must be populated if CredentialType.LD_PROOF is selected"
+            )
+        return value
 
 
 class CredentialWithConnection(CredentialBase):

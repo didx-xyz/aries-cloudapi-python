@@ -362,11 +362,13 @@ async def test_revoke_credential(
         topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
-    # create and send credential offer- issuer
-    await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
+    # create and send credential offer: issuer
+    faber_credential_id = (
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    ).json()["credential_id"]
 
     payload = await alice_credentials_listener.wait_for_event(
         field="connection_id",

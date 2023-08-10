@@ -286,7 +286,9 @@ async def accept_proof_request(
                     presentation=presentation,
                 )
             else:
-                bound_logger.warning("No connection associated with proof, OOB?")
+                bound_logger.warning(
+                    "No connection associated with proof. Skip validating prover"
+                )
 
             bound_logger.debug("Accepting proof record")
             result = await verifier.accept_proof_request(

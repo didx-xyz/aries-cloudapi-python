@@ -19,7 +19,11 @@ class IndyCredential(BaseModel):
     attributes: Dict[str, str]
 
 
-class CredentialWithConnection(CredentialNoConnection):
+class CredentialBase(BaseModel):
+    type: CredentialType = CredentialType.INDY
+    indy_credential_detail: Optional[IndyCredential]
+    ld_credential_detail: Optional[LDProofVCDetail]
+
     connection_id: str
 
 

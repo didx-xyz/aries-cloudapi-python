@@ -2,7 +2,6 @@ from typing import Dict, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    LDProofVCDetail,
     V20CredAttrSpec,
     V20CredExFree,
     V20CredExRecord,
@@ -57,50 +56,22 @@ class IssuerV2(Issuer):
         return cls.__record_to_model(record)
 
     @classmethod
-    async def send_credential_jsonld(
-        cls, controller: AcaPyClient, jsonld_credential: JsonLdCredential
-    ):
-        bound_logger = logger.bind(body=jsonld_credential)
-
-        bound_logger.debug("Issue JSON-LD v2 credential (automated)")
-        record = await controller.issue_credential_v2_0.issue_credential_automated(
-            body=V20CredExFree(
-                connection_id=jsonld_credential.connection_id,
-                filter=V20CredFilter(
-                    ld_proof=LDProofVCDetail(
-                        credential=jsonld_credential.credential,
-                        options=jsonld_credential.options,
-                    )
-                ),
-            )
-        )
-
-        bound_logger.debug(
-            "Returning JSON-LD v2 credential result as CredentialExchange."
-        )
-        return cls.__record_to_model(record)
-
-    @classmethod
-    async def create_offer(
-        cls, controller: AcaPyClient, credential: CredentialNoConnection
-    ):
+    async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
+            attributes=credential.indy_credential_detail.attributes
         )
 
         bound_logger.debug("Creating v2 credential offer")
-        record = (
-            await controller.issue_credential_v2_0.issue_credential20_create_offer_post(
-                body=V20CredOfferConnFreeRequest(
-                    credential_preview=credential_preview,
-                    filter=V20CredFilter(
-                        indy=V20CredFilterIndy(
-                            cred_def_id=credential.credential_definition_id,
-                        )
-                    ),
-                )
+        record = await controller.issue_credential_v2_0.issue_credential20_create_offer_post(
+            body=V20CredOfferConnFreeRequest(
+                credential_preview=credential_preview,
+                filter=V20CredFilter(
+                    indy=V20CredFilterIndy(
+                        cred_def_id=credential.indy_credential_detail.credential_definition_id,
+                    )
+                ),
             )
         )
 

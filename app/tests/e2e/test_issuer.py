@@ -339,7 +339,6 @@ async def test_send_credential_request(
     )
 
 
-@pytest.mark.skip(reason="Inconsistent results, skipping for now until it's reworked")
 @pytest.mark.anyio
 async def test_revoke_credential(
     faber_client: RichAsyncClient,

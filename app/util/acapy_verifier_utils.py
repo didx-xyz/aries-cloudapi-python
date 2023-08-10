@@ -29,9 +29,8 @@ def get_verifier_by_version(
         isinstance(version_candidate, str) and version_candidate.startswith("v1-")
     ):
         return VerifierFacade.v1.value
-    elif (
-        version_candidate == PresentProofProtocolVersion.v2
-        or version_candidate.startswith("v2-")
+    elif version_candidate == PresentProofProtocolVersion.v2 or (
+        isinstance(version_candidate, str) and version_candidate.startswith("v2-")
     ):
         return VerifierFacade.v2.value
     else:

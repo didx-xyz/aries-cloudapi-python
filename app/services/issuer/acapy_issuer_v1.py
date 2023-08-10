@@ -30,7 +30,7 @@ class IssuerV1(Issuer):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
+            attributes=credential.indy_credential_detail.attributes
         )
 
         bound_logger.debug("Issue v1 credential (automated)")
@@ -38,7 +38,7 @@ class IssuerV1(Issuer):
             body=V10CredentialProposalRequestMand(
                 connection_id=credential.connection_id,
                 credential_proposal=credential_preview,
-                cred_def_id=credential.credential_definition_id,
+                cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
         )
 
@@ -50,14 +50,14 @@ class IssuerV1(Issuer):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
+            attributes=credential.indy_credential_detail.attributes
         )
 
         bound_logger.debug("Creating v1 credential offer")
         record = await controller.issue_credential_v1_0.create_offer(
             body=V10CredentialConnFreeOfferRequest(
                 credential_preview=credential_preview,
-                cred_def_id=credential.credential_definition_id,
+                cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
         )
 

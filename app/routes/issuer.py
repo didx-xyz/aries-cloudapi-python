@@ -135,12 +135,7 @@ async def send_credential(
         try:
             bound_logger.debug("Sending credential")
             result = await issuer.send_credential(
-                controller=aries_controller,
-                credential=CredentialWithConnection(
-                    attributes=credential.attributes,
-                    credential_definition_id=credential.credential_definition_id,
-                    connection_id=credential.connection_id,
-                ),
+                controller=aries_controller, credential=credential
             )
         except ClientResponseError as e:
             logger.warning(

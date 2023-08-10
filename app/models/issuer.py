@@ -14,6 +14,7 @@ class CredentialType(Enum):
     LD_PROOF = "ld_proof"
 
 
+class IndyCredential(BaseModel):
     credential_definition_id: str
     attributes: Dict[str, str]
 

@@ -68,16 +68,16 @@ jobs:
             context: .
             file: dockerfiles/agents/Dockerfile.author.agent
           - image: ledger-browser
-            context: https://github.com/didx-xyz/von-network.git
+            context: https://github.com/bcgov/von-network.git#main
             file: Dockerfile
           - image: ledger-nodes
-            context: https://github.com/didx-xyz/von-network.git
+            context: https://github.com/bcgov/von-network.git#main
             file: Dockerfile
           - image: governance-endorser
             context: .
             file: dockerfiles/endorser/Dockerfile
           - image: tails-server
-            context: https://github.com/bcgov/indy-tails-server.git#v1.0.0
+            context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
             file: docker/Dockerfile.tails-server
 
     steps:

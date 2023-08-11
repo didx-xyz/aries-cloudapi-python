@@ -340,9 +340,6 @@ async def revoke_credential(
             bound_logger.exception("Exception caught when revoking credential.")
             raise e
 
-        # FIXME: Using create_transaction_for_endorser nothing is returned from aca-py
-        # This is unexpected and throws and error in the controller validating the pydantic model.
-        # It still creates the transaction record though that can be endorsed below.
         await endorser_revoke()
 
     bound_logger.info("Successfully revoked credential.")

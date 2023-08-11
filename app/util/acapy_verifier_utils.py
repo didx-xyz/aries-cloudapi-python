@@ -29,9 +29,8 @@ def get_verifier_by_version(
         isinstance(version_candidate, str) and version_candidate.startswith("v1-")
     ):
         return VerifierFacade.v1.value
-    elif (
-        version_candidate == PresentProofProtocolVersion.v2
-        or version_candidate.startswith("v2-")
+    elif version_candidate == PresentProofProtocolVersion.v2 or (
+        isinstance(version_candidate, str) and version_candidate.startswith("v2-")
     ):
         return VerifierFacade.v2.value
     else:
@@ -39,7 +38,7 @@ def get_verifier_by_version(
 
 
 async def assert_valid_prover(
-    aries_controller: AcaPyClient, presentation: AcceptProofRequest, prover: Verifier
+    aries_controller: AcaPyClient, presentation: AcceptProofRequest, verifier: Verifier
 ) -> None:
     """Check transaction requirements against trust registry for prover"""
     # get connection record
@@ -50,11 +49,9 @@ async def assert_valid_prover(
 
     bound_logger.debug("Getting connection from proof")
     connection_id = await get_connection_from_proof(
-        aries_controller=aries_controller, proof_id=proof_id, prover=prover
+        aries_controller=aries_controller, proof_id=proof_id, verifier=verifier
     )
 
-    # TODO: (In other PR) handle case where no connection id exists
-    # instead of simply rejecting the request
     if not connection_id:
         raise CloudApiException(
             "No connection id associated with proof request. Can not verify proof request.",
@@ -70,7 +67,6 @@ async def assert_valid_prover(
     if not connection_record.connection_id:
         raise CloudApiException("Cannot proceed. No connection id.", 404)
 
-    invitation_key = connection_record.invitation_key
     # Case 1: connection made with public DID
     if connection_record.their_public_did:
         public_did = f"did:sov:{connection_record.their_public_did}"
@@ -204,9 +200,9 @@ async def get_schema_ids(
 
 
 async def get_connection_from_proof(
-    aries_controller: AcaPyClient, prover: Verifier, proof_id: str
+    aries_controller: AcaPyClient, verifier: Verifier, proof_id: str
 ) -> Optional[str]:
-    proof_record = await prover.get_proof_record(
+    proof_record = await verifier.get_proof_record(
         controller=aries_controller, proof_id=proof_id
     )
     return proof_record.connection_id

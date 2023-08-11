@@ -18,9 +18,6 @@ async def on_events(data, topic):
 
 
 async def main():
-    # Create a client and subscribe to topics
-    client = PubSubClient(["ALL_WEBHOOKS"], callback=on_events)
-
     """
     # You can also register it using the commented code below
     async def on_data(data, topic):
@@ -28,6 +25,8 @@ async def main():
 
     [client.subscribe(topic, on_data) for topic in topics]
     """
+    # Create a client and subscribe to topics
+    client = PubSubClient(["ALL_WEBHOOKS"], callback=on_events)
 
     client.start_client(f"ws://{URL}:{PORT}/pubsub")
     print("Started")

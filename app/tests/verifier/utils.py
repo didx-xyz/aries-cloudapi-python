@@ -342,9 +342,9 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
         },
     )
 
-    prover = mock(Verifier)
+    verifier = mock(Verifier)
 
-    when(prover).get_proof_record(
+    when(verifier).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -366,7 +366,7 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
             presentation=AcceptProofRequest(
                 proof_id=pres_exchange.proof_id, presentation_spec=presentation
             ),
-            prover=prover,
+            verifier=verifier,
         )
 
 
@@ -405,9 +405,9 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
         },
     )
 
-    prover = mock(Verifier)
+    verifier = mock(Verifier)
 
-    when(prover).get_proof_record(
+    when(verifier).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -429,7 +429,7 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
             presentation=AcceptProofRequest(
                 proof_id=pres_exchange.proof_id, presentation_spec=presentation
             ),
-            prover=prover,
+            verifier=verifier,
         )
 
 
@@ -451,9 +451,9 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
     )
     conn_record = ConnRecord(connection_id=pres_exchange.connection_id)
 
-    prover = mock(Verifier)
+    verifier = mock(Verifier)
 
-    when(prover).get_proof_record(
+    when(verifier).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -468,7 +468,7 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
             presentation=AcceptProofRequest(
                 proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
             ),
-            prover=prover,
+            verifier=verifier,
         )
 
 
@@ -500,9 +500,9 @@ async def test_assert_valid_prover_x_actor_invalid_role(
         connection_id=pres_exchange.connection_id, their_public_did="xxx"
     )
 
-    prover = mock(Verifier)
+    verifier = mock(Verifier)
 
-    when(prover).get_proof_record(
+    when(verifier).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -519,7 +519,7 @@ async def test_assert_valid_prover_x_actor_invalid_role(
                 presentation=AcceptProofRequest(
                     proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
                 ),
-                prover=prover,
+                verifier=verifier,
             )
 
 
@@ -543,9 +543,9 @@ async def test_assert_valid_prover_x_invalid_schemas(
         connection_id=pres_exchange.connection_id, their_public_did="xxx"
     )
 
-    prover = mock(Verifier)
+    verifier = mock(Verifier)
 
-    when(prover).get_proof_record(
+    when(verifier).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
     when(mock_agent_controller.connection).get_connection(
@@ -570,7 +570,7 @@ async def test_assert_valid_prover_x_invalid_schemas(
                 presentation=AcceptProofRequest(
                     proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
                 ),
-                prover=prover,
+                verifier=verifier,
             )
 
 
@@ -590,9 +590,9 @@ async def test_assert_valid_prover_x_no_connection_id(
         verified="false",
     )
 
-    prover = mock(Verifier)
+    verifier = mock(Verifier)
 
-    when(prover).get_proof_record(
+    when(verifier).get_proof_record(
         controller=mock_agent_controller, proof_id=pres_exchange.proof_id
     ).thenReturn(to_async(pres_exchange))
 
@@ -604,7 +604,7 @@ async def test_assert_valid_prover_x_no_connection_id(
             presentation=AcceptProofRequest(
                 proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
             ),
-            prover=prover,
+            verifier=verifier,
         )
 
 

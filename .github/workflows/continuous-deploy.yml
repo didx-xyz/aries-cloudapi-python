@@ -77,7 +77,7 @@ jobs:
             context: .
             file: dockerfiles/endorser/Dockerfile
           - image: tails-server
-            context: https://github.com/bcgov/indy-tails-server.git#v1.0.0
+            context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
             file: docker/Dockerfile.tails-server
 
     steps:

@@ -2,10 +2,10 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
-from app.models.issuer import IndyCredential
 
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
+from app.models.issuer import IndyCredential
 from app.services.issuer.acapy_issuer_v1 import IssuerV1
 from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async

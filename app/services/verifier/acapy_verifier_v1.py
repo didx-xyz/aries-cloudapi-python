@@ -26,19 +26,19 @@ class VerifierV1(Verifier):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: CreateProofRequest,
+        create_proof_request: CreateProofRequest,
     ) -> PresentationExchange:
-        bound_logger = logger.bind(body=proof_request)
+        bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v1 proof request")
 
         try:
             presentation_exchange = (
                 await controller.present_proof_v1_0.create_proof_request(
                     body=V10PresentationCreateRequestRequest(
-                        proof_request=proof_request.proof_request,
-                        auto_verify=proof_request.auto_verify,
-                        comment=proof_request.comment,
-                        trace=proof_request.trace,
+                        proof_request=create_proof_request.proof_request,
+                        auto_verify=create_proof_request.auto_verify,
+                        comment=create_proof_request.comment,
+                        trace=create_proof_request.trace,
                     )
                 )
             )
@@ -54,19 +54,19 @@ class VerifierV1(Verifier):
     async def send_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: SendProofRequest,
+        send_proof_request: SendProofRequest,
     ) -> PresentationExchange:
-        bound_logger = logger.bind(body=proof_request)
+        bound_logger = logger.bind(body=send_proof_request)
         try:
             bound_logger.debug("Send free v1 presentation request")
             presentation_exchange = (
                 await controller.present_proof_v1_0.send_request_free(
                     body=V10PresentationSendRequestRequest(
-                        connection_id=proof_request.connection_id,
-                        proof_request=proof_request.proof_request,
-                        auto_verify=proof_request.auto_verify,
-                        comment=proof_request.comment,
-                        trace=proof_request.trace,
+                        connection_id=send_proof_request.connection_id,
+                        proof_request=send_proof_request.proof_request,
+                        auto_verify=send_proof_request.auto_verify,
+                        comment=send_proof_request.comment,
+                        trace=send_proof_request.trace,
                     )
                 )
             )
@@ -85,15 +85,15 @@ class VerifierV1(Verifier):
 
     @classmethod
     async def accept_proof_request(
-        cls, controller: AcaPyClient, proof_request: AcceptProofRequest
+        cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
-        bound_logger = logger.bind(body=proof_request)
-        proof_id = pres_id_no_version(proof_id=proof_request.proof_id)
+        bound_logger = logger.bind(body=accept_proof_request)
+        proof_id = pres_id_no_version(proof_id=accept_proof_request.proof_id)
 
         try:
             bound_logger.debug("Send v1 proof presentation")
             presentation_record = await controller.present_proof_v1_0.send_presentation(
-                pres_ex_id=proof_id, body=proof_request.presentation_spec
+                pres_ex_id=proof_id, body=accept_proof_request.presentation_spec
             )
             result = record_to_model(presentation_record)
         except Exception as e:
@@ -110,20 +110,20 @@ class VerifierV1(Verifier):
 
     @classmethod
     async def reject_proof_request(
-        cls, controller: AcaPyClient, proof_request: RejectProofRequest
+        cls, controller: AcaPyClient, reject_proof_request: RejectProofRequest
     ) -> None:
-        bound_logger = logger.bind(body=proof_request)
+        bound_logger = logger.bind(body=reject_proof_request)
         bound_logger.info("Request to reject v1 presentation exchange record")
-        proof_id = pres_id_no_version(proof_id=proof_request.proof_id)
+        proof_id = pres_id_no_version(proof_id=reject_proof_request.proof_id)
 
         # Report problem if desired
-        if proof_request.problem_report:
+        if reject_proof_request.problem_report:
             try:
                 bound_logger.debug("Submitting v1 problem report")
                 await controller.present_proof_v1_0.report_problem(
                     pres_ex_id=proof_id,
                     body=V10PresentationProblemReportRequest(
-                        description=proof_request.problem_report
+                        description=reject_proof_request.problem_report
                     ),
                 )
             except Exception as e:

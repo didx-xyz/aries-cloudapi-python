@@ -192,7 +192,7 @@ async def create_proof_request(
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Creating proof request")
             result = await verifier.create_proof_request(
-                controller=aries_controller, proof_request=proof_request
+                controller=aries_controller, create_proof_request=proof_request
             )
     except Exception as e:
         bound_logger.exception("Failed to create presentation record.")
@@ -236,7 +236,7 @@ async def send_proof_request(
 
             bound_logger.debug("Sending proof request")
             result = await verifier.send_proof_request(
-                controller=aries_controller, proof_request=proof_request
+                controller=aries_controller, send_proof_request=proof_request
             )
     except Exception as e:
         bound_logger.exception("Failed to send proof request.")
@@ -292,7 +292,7 @@ async def accept_proof_request(
 
             bound_logger.debug("Accepting proof record")
             result = await verifier.accept_proof_request(
-                controller=aries_controller, proof_request=presentation
+                controller=aries_controller, accept_proof_request=presentation
             )
     except Exception as e:
         bound_logger.exception("Failed to accept proof request.")
@@ -345,7 +345,7 @@ async def reject_proof_request(
 
             bound_logger.debug("Rejecting proof request")
             await verifier.reject_proof_request(
-                controller=aries_controller, proof_request=proof_request
+                controller=aries_controller, reject_proof_request=proof_request
             )
     except Exception as e:
         bound_logger.exception("Failed to reject request.")

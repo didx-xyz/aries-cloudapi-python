@@ -20,7 +20,7 @@ class Verifier(ABC):
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: CreateProofRequest,
+        create_proof_request: CreateProofRequest,
     ) -> PresentationExchange:
         """
         Create proof request
@@ -29,7 +29,7 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: CreateProofRequest
+        create_proof_request: CreateProofRequest
             The proof request object
 
         Returns:
@@ -43,7 +43,7 @@ class Verifier(ABC):
     async def send_proof_request(
         cls,
         controller: AcaPyClient,
-        proof_request: SendProofRequest,
+        send_proof_request: SendProofRequest,
     ) -> PresentationExchange:
         """
         Request proof from a connection ID.
@@ -52,7 +52,7 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: SendProofRequest
+        send_proof_request: SendProofRequest
             The proof request object
 
         Returns:
@@ -64,7 +64,7 @@ class Verifier(ABC):
     @classmethod
     @abstractmethod
     async def accept_proof_request(
-        cls, controller: AcaPyClient, proof_request: AcceptProofRequest
+        cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
         """
         Accept proof request
@@ -73,7 +73,7 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: AcceptProofRequest
+        accept_proof_request: AcceptProofRequest
             The proof request object
 
         Returns:
@@ -85,7 +85,7 @@ class Verifier(ABC):
     @classmethod
     @abstractmethod
     async def reject_proof_request(
-        cls, controller: AcaPyClient, proof_request: RejectProofRequest
+        cls, controller: AcaPyClient, reject_proof_request: RejectProofRequest
     ) -> None:
         """
         Reject proof request
@@ -94,7 +94,7 @@ class Verifier(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        proof_request: RejectProofRequest
+        reject_proof_request: RejectProofRequest
             The proof request object
 
         Returns:

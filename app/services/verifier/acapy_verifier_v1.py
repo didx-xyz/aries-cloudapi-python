@@ -30,18 +30,25 @@ class VerifierV1(Verifier):
     ) -> PresentationExchange:
         bound_logger = logger.bind(body=proof_request)
         bound_logger.debug("Creating v1 proof request")
-        presentation_exchange = (
-            await controller.present_proof_v1_0.create_proof_request(
-                body=V10PresentationCreateRequestRequest(
-                    proof_request=proof_request.proof_request,
-                    auto_verify=proof_request.auto_verify,
-                    comment=proof_request.comment,
-                    trace=proof_request.trace,
+
+        try:
+            presentation_exchange = (
+                await controller.present_proof_v1_0.create_proof_request(
+                    body=V10PresentationCreateRequestRequest(
+                        proof_request=proof_request.proof_request,
+                        auto_verify=proof_request.auto_verify,
+                        comment=proof_request.comment,
+                        trace=proof_request.trace,
+                    )
                 )
             )
-        )
-        bound_logger.debug("Returning v1 PresentationExchange.")
-        return record_to_model(presentation_exchange)
+            bound_logger.debug("Returning v1 PresentationExchange.")
+            return record_to_model(presentation_exchange)
+        except Exception as e:
+            bound_logger.exception(
+                "An unexpected error occurred while creating presentation request."
+            )
+            raise CloudApiException("Failed to create presentation request.") from e
 
     @classmethod
     async def get_credentials_by_proof_id(cls, controller: AcaPyClient, proof_id: str):

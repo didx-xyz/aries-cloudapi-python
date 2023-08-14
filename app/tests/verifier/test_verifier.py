@@ -443,7 +443,7 @@ async def test_get_credentials_for_request(
         controller=mock_agent_controller, proof_id="v1-abcd"
     ).thenReturn(to_async([cred_precis]))
 
-    result = await test_module.get_credentials_for_request(
+    result = await test_module.get_credentials_by_proof_id(
         proof_id="v1-abcd",
         auth=mock_tenant_auth,
     )
@@ -458,7 +458,7 @@ async def test_get_credentials_for_request(
         controller=mock_agent_controller, proof_id="v2-abcd"
     ).thenReturn(to_async([cred_precis]))
 
-    result = await test_module.get_credentials_for_request(
+    result = await test_module.get_credentials_by_proof_id(
         proof_id="v2-abcd",
         auth=mock_tenant_auth,
     )

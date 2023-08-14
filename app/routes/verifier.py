@@ -101,7 +101,7 @@ async def get_proof_record(
 
 
 @router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
-async def get_credentials_for_request(
+async def get_credentials_by_proof_id(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[IndyCredPrecis]:
@@ -125,7 +125,7 @@ async def get_credentials_for_request(
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching credentials for request")
-            result = await verifier.get_credentials_for_request(
+            result = await verifier.get_credentials_by_proof_id(
                 controller=aries_controller, proof_id=proof_id
             )
     except Exception as e:

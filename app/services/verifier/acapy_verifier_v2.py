@@ -52,7 +52,7 @@ class VerifierV2(Verifier):
             raise CloudApiException("Failed to create presentation request.") from e
 
     @classmethod
-    async def get_credentials_for_request(cls, controller: AcaPyClient, proof_id: str):
+    async def get_credentials_by_proof_id(cls, controller: AcaPyClient, proof_id: str):
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
         try:

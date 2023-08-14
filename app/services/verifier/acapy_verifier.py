@@ -164,7 +164,7 @@ class Verifier(ABC):
 
     @classmethod
     @abstractmethod
-    async def get_credentials_for_request(
+    async def get_credentials_by_proof_id(
         cls, controller: AcaPyClient, proof_id: str
     ) -> List[IndyCredPrecis]:
         """

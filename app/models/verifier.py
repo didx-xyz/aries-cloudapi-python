@@ -6,21 +6,16 @@ from pydantic import BaseModel
 from shared.models.protocol import PresentProofProtocolVersion
 
 
-class SendProofRequest(BaseModel):
-    connection_id: str
-    proof_request: IndyProofRequest
-    auto_verify: Optional[bool] = None
-    comment: Optional[str] = None
-    trace: Optional[bool] = None
-    protocol_version: PresentProofProtocolVersion
-
-
 class CreateProofRequest(BaseModel):
     proof_request: IndyProofRequest
     auto_verify: Optional[bool] = None
     comment: Optional[str] = None
     trace: Optional[bool] = None
     protocol_version: PresentProofProtocolVersion
+
+
+class SendProofRequest(CreateProofRequest):
+    connection_id: str
 
 
 class AcceptProofRequest(BaseModel):

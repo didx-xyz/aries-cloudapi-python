@@ -87,7 +87,7 @@ async def test_send_proof_request_v1(
     )
 
     result = await test_module.send_proof_request(
-        proof_request=send_proof_request,
+        send_proof_request=send_proof_request,
         auth=mock_tenant_auth,
     )
 
@@ -130,7 +130,7 @@ async def test_send_proof_request_v2(
     )
 
     result = await test_module.send_proof_request(
-        proof_request=send_proof_request,
+        send_proof_request=send_proof_request,
         auth=mock_tenant_auth,
     )
 
@@ -147,7 +147,7 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
         to_async(presentation_exchange_record_1)
     )
     result = await test_module.create_proof_request(
-        proof_request=test_module.CreateProofRequest(
+        create_proof_request=test_module.CreateProofRequest(
             protocol_version="v1",
             proof_request=indy_proof_request,
             connection_id="abcde",
@@ -161,7 +161,7 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
         to_async(presentation_exchange_record_2)
     )
     result = await test_module.create_proof_request(
-        proof_request=test_module.CreateProofRequest(
+        create_proof_request=test_module.CreateProofRequest(
             protocol_version="v2",
             proof_request=indy_proof_request,
             connection_id="abcde",
@@ -201,7 +201,7 @@ async def test_accept_proof_request_v1(
     )
 
     result = await test_module.accept_proof_request(
-        presentation=presentation,
+        accept_proof_request=presentation,
         auth=mock_tenant_auth,
     )
 
@@ -239,7 +239,7 @@ async def test_accept_proof_request_v2(
     )
 
     result = await test_module.accept_proof_request(
-        presentation=presentation,
+        accept_proof_request=presentation,
         auth=mock_tenant_auth,
     )
 
@@ -272,7 +272,7 @@ async def test_reject_proof_request(
     ).thenReturn(to_async(presentation_exchange_record_1))
 
     result = await test_module.reject_proof_request(
-        proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
+        reject_proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
         auth=mock_tenant_auth,
     )
 
@@ -296,7 +296,7 @@ async def test_reject_proof_request(
     ).thenReturn(to_async(presentation_exchange_record_2))
 
     result = await test_module.reject_proof_request(
-        proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
+        reject_proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
         auth=mock_tenant_auth,
     )
 

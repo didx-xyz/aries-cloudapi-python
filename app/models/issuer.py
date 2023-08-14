@@ -24,7 +24,7 @@ class CredentialBase(BaseModel):
     ld_credential_detail: Optional[LDProofVCDetail]
 
     @validator("indy_credential_detail", pre=True, always=True)
-    def check_indy_credential_detail(cls, value, values):
+    def check_indy_credential_detail(self, value, values):
         if values.get("type") == CredentialType.INDY and value is None:
             raise ValueError(
                 "indy_credential_detail must be populated if CredentialType.INDY is selected"
@@ -32,7 +32,7 @@ class CredentialBase(BaseModel):
         return value
 
     @validator("ld_credential_detail", pre=True, always=True)
-    def check_ld_credential_detail(cls, value, values):
+    def check_ld_credential_detail(self, value, values):
         if values.get("type") == CredentialType.LD_PROOF and value is None:
             raise ValueError(
                 "ld_credential_detail must be populated if CredentialType.LD_PROOF is selected"

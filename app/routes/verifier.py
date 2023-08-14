@@ -46,6 +46,7 @@ async def create_proof_request(
     """
     bound_logger = logger.bind(body=create_proof_request)
     bound_logger.info("POST request received: Create proof request")
+
     try:
         verifier = get_verifier_by_version(create_proof_request.protocol_version)
 
@@ -85,6 +86,7 @@ async def send_proof_request(
     """
     bound_logger = logger.bind(body=send_proof_request)
     bound_logger.info("POST request received: Send proof request")
+
     try:
         verifier = get_verifier_by_version(send_proof_request.protocol_version)
 
@@ -129,6 +131,7 @@ async def accept_proof_request(
     """
     bound_logger = logger.bind(body=accept_proof_request)
     bound_logger.info("POST request received: Accept proof request")
+
     try:
         verifier = get_verifier_by_version(accept_proof_request.proof_id)
 
@@ -184,6 +187,7 @@ async def reject_proof_request(
     """
     bound_logger = logger.bind(body=reject_proof_request)
     bound_logger.info("POST request received: Reject proof request")
+
     try:
         verifier = get_verifier_by_version(reject_proof_request.proof_id)
 
@@ -227,6 +231,7 @@ async def get_proof_records(
         The list of presentation exchange records
     """
     logger.info("GET request received: Get all proof records")
+
     try:
         async with client_from_auth(auth) as aries_controller:
             logger.debug("Fetching v1 proof records")
@@ -269,6 +274,7 @@ async def get_proof_record(
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get proof record by id")
+
     try:
         verifier = get_verifier_by_version(version_candidate=proof_id)
 
@@ -307,6 +313,7 @@ async def delete_proof(
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("DELETE request received: Delete proof record by id")
+
     try:
         verifier = get_verifier_by_version(version_candidate=proof_id)
 
@@ -339,6 +346,7 @@ async def get_credentials_by_proof_id(
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get credentials for a proof request")
+
     try:
         verifier = get_verifier_by_version(version_candidate=proof_id)
 

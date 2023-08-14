@@ -11,6 +11,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
+    ProofRequestType,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -33,12 +34,24 @@ class VerifierV2(Verifier):
         bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v2 proof request")
 
+        if create_proof_request.type == ProofRequestType.INDY:
+            presentation_request = V20PresRequestByFormat(
+                indy=create_proof_request.indy_proof_request
+            )
+        elif create_proof_request.type == ProofRequestType.LD_PROOF:
+            presentation_request = V20PresRequestByFormat(
+                dif=create_proof_request.ld_proof_request
+            )
+        else:
+            raise CloudApiException(
+                f"Unsupported credential type: {create_proof_request.type}",
+                status_code=501,
+            )
+
         try:
             proof_record = await controller.present_proof_v2_0.create_proof_request(
                 body=V20PresCreateRequestRequest(
-                    presentation_request=V20PresRequestByFormat(
-                        indy=create_proof_request.proof_request
-                    ),
+                    presentation_request=presentation_request,
                     auto_verify=create_proof_request.auto_verify,
                     comment=create_proof_request.comment,
                     trace=create_proof_request.trace,

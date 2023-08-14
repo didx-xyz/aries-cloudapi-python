@@ -18,11 +18,13 @@ class SendProofRequest(CreateProofRequest):
     connection_id: str
 
 
-class AcceptProofRequest(BaseModel):
+class ProofId(BaseModel):
     proof_id: str
-    presentation_spec: IndyPresSpec
 
 
-class RejectProofRequest(BaseModel):
-    proof_id: str
+class AcceptProofRequest(ProofId):
+    indy_presentation_spec: Optional[IndyPresSpec]
+
+
+class RejectProofRequest(ProofId):
     problem_report: Optional[str] = None

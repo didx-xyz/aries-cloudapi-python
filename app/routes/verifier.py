@@ -26,41 +26,6 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 
 
-@router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
-async def get_credentials_for_request(
-    proof_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
-) -> List[IndyCredPrecis]:
-    """
-    Get matching credentials for presentation exchange
-
-    Parameters:
-    ----------
-    proof_id: str
-         The proof ID
-
-    Returns:
-    --------
-    presentation_exchange_list: [IndyCredPrecis]
-        The list of Indy presentation credentials
-    """
-    bound_logger = logger.bind(body={"proof_id": proof_id})
-    bound_logger.info("GET request received: Get credentials for a proof request")
-    try:
-        verifier = get_verifier_by_version(version_candidate=proof_id)
-
-        async with client_from_auth(auth) as aries_controller:
-            bound_logger.debug("Fetching credentials for request")
-            result = await verifier.get_credentials_for_request(
-                controller=aries_controller, proof_id=proof_id
-            )
-    except Exception as e:
-        bound_logger.exception("Failed to get matching credentials.")
-        raise e from e
-    bound_logger.info("Successfully fetched credentials for proof request.")
-    return result
-
-
 @router.get("/proofs", response_model=List[PresentationExchange])
 async def get_proof_records(
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -135,6 +100,41 @@ async def get_proof_record(
     return result
 
 
+@router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
+async def get_credentials_for_request(
+    proof_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth),
+) -> List[IndyCredPrecis]:
+    """
+    Get matching credentials for presentation exchange
+
+    Parameters:
+    ----------
+    proof_id: str
+         The proof ID
+
+    Returns:
+    --------
+    presentation_exchange_list: [IndyCredPrecis]
+        The list of Indy presentation credentials
+    """
+    bound_logger = logger.bind(body={"proof_id": proof_id})
+    bound_logger.info("GET request received: Get credentials for a proof request")
+    try:
+        verifier = get_verifier_by_version(version_candidate=proof_id)
+
+        async with client_from_auth(auth) as aries_controller:
+            bound_logger.debug("Fetching credentials for request")
+            result = await verifier.get_credentials_for_request(
+                controller=aries_controller, proof_id=proof_id
+            )
+    except Exception as e:
+        bound_logger.exception("Failed to get matching credentials.")
+        raise e from e
+    bound_logger.info("Successfully fetched credentials for proof request.")
+    return result
+
+
 @router.delete("/proofs/{proof_id}", status_code=204)
 async def delete_proof(
     proof_id: str,
@@ -164,6 +164,45 @@ async def delete_proof(
         bound_logger.exception("Failed to delete proof record.")
         raise e from e
     bound_logger.info("Successfully deleted proof record.")
+
+
+@router.post("/create-request", response_model=PresentationExchange)
+async def create_proof_request(
+    proof_request: CreateProofRequest,
+    auth: AcaPyAuth = Depends(acapy_auth),
+) -> PresentationExchange:
+    """
+    Create proof request.
+
+    Parameters:
+    -----------
+    proof_request: CreateProofRequest
+        The proof request object
+
+    Returns:
+    --------
+    presentation_exchange: PresentationExchange
+        The presentation exchange record
+    """
+    bound_logger = logger.bind(body=proof_request)
+    bound_logger.info("POST request received: Create proof request")
+    try:
+        verifier = get_verifier_by_version(proof_request.protocol_version)
+
+        async with client_from_auth(auth) as aries_controller:
+            bound_logger.debug("Creating proof request")
+            result = await verifier.create_proof_request(
+                controller=aries_controller, proof_request=proof_request
+            )
+    except Exception as e:
+        bound_logger.exception("Failed to create presentation record.")
+        raise e from e
+
+    if result:
+        bound_logger.info("Successfully created proof request.")
+    else:
+        bound_logger.warning("No result obtained from creating proof request.")
+    return result
 
 
 @router.post("/send-request", response_model=PresentationExchange)
@@ -207,45 +246,6 @@ async def send_proof_request(
         bound_logger.info("Successfully sent proof request.")
     else:
         bound_logger.warning("No result obtained from sending proof request.")
-    return result
-
-
-@router.post("/create-request", response_model=PresentationExchange)
-async def create_proof_request(
-    proof_request: CreateProofRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
-) -> PresentationExchange:
-    """
-    Create proof request.
-
-    Parameters:
-    -----------
-    proof_request: CreateProofRequest
-        The proof request object
-
-    Returns:
-    --------
-    presentation_exchange: PresentationExchange
-        The presentation exchange record
-    """
-    bound_logger = logger.bind(body=proof_request)
-    bound_logger.info("POST request received: Create proof request")
-    try:
-        verifier = get_verifier_by_version(proof_request.protocol_version)
-
-        async with client_from_auth(auth) as aries_controller:
-            bound_logger.debug("Creating proof request")
-            result = await verifier.create_proof_request(
-                controller=aries_controller, proof_request=proof_request
-            )
-    except Exception as e:
-        bound_logger.exception("Failed to create presentation record.")
-        raise e from e
-
-    if result:
-        bound_logger.info("Successfully created proof request.")
-    else:
-        bound_logger.warning("No result obtained from creating proof request.")
     return result
 
 

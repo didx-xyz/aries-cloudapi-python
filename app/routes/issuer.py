@@ -182,10 +182,13 @@ async def create_offer(
         # Assert the agent has a public did
         public_did = await assert_public_did(aries_controller)
 
-        # Retrieve the schema_id based on the credential definition id
-        schema_id = await schema_id_from_credential_definition_id(
-            aries_controller, credential.credential_definition_id
-        )
+        schema_id = None
+        if credential.type == CredentialType.INDY:
+            # Retrieve the schema_id based on the credential definition id
+            schema_id = await schema_id_from_credential_definition_id(
+                aries_controller,
+                credential.indy_credential_detail.credential_definition_id,
+            )
 
         # Make sure we are allowed to issue according to trust registry rules
         await assert_valid_issuer(public_did, schema_id)

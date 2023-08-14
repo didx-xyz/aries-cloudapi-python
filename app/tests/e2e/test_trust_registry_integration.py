@@ -122,8 +122,10 @@ async def test_accept_proof_request_verifier_no_public_did(
             json={
                 "protocol_version": "v1",
                 "connection_id": issuer_holder_connection_id,
-                "credential_definition_id": credential_definition_id,
-                "attributes": {"name": "Alice", "age": "44"},
+                "indy_credential_detail": {
+                    "credential_definition_id": credential_definition_id,
+                    "attributes": {"name": "Alice", "age": "44"},
+                },
             },
         )
     ).json()

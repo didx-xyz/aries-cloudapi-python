@@ -2,6 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
+from app.models.issuer import IndyCredential
 
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
@@ -39,8 +40,10 @@ async def test_send_credential(
     credential = test_module.SendCredential(
         protocol_version=IssueCredentialProtocolVersion.v1,
         connection_id="conn_id",
-        credential_definition_id=cred_def_id,
-        attributes={"name": "John", "age": "23"},
+        indy_credential_detail=IndyCredential(
+            credential_definition_id=cred_def_id,
+            attributes={"name": "John", "age": "23"},
+        ),
     )
 
     result = await test_module.send_credential(credential, mock_tenant_auth)

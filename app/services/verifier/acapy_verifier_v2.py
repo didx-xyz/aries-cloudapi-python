@@ -181,7 +181,9 @@ class VerifierV2(Verifier):
             result = record_to_model(presentation_exchange)
         except Exception as e:
             bound_logger.exception("An unexpected error occurred while getting record.")
-            raise CloudApiException("Failed to get proof record.") from e
+            raise CloudApiException(
+                f"Failed to get proof record with proof id `{proof_id}`."
+            ) from e
 
         if result:
             bound_logger.debug("Successfully got v2 present-proof record.")
@@ -201,7 +203,9 @@ class VerifierV2(Verifier):
             bound_logger.exception(
                 "An unexpected error occurred while deleting record."
             )
-            raise CloudApiException("Failed to delete record.") from e
+            raise CloudApiException(
+                f"Failed to delete record with proof id `{proof_id}`."
+            ) from e
 
         bound_logger.debug("Successfully deleted v2 present-proof record.")
 
@@ -219,7 +223,9 @@ class VerifierV2(Verifier):
             bound_logger.exception(
                 "An unexpected error occurred while getting matching credentials."
             )
-            raise CloudApiException("Failed to get credentials for request.") from e
+            raise CloudApiException(
+                f"Failed to get credentials with proof id `{proof_id}`."
+            ) from e
 
         if result:
             bound_logger.debug("Successfully got matching v2 credentials.")

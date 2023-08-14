@@ -24,7 +24,10 @@ cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a7
 cred_ex_id = "5mJRavkcQFrqgKqKKZua3z:3:CL:30:tag"
 cred_id = "c7c909f4-f670-49bd-9d81-53fba6bb23b8"
 max_cred_num = 32767
-revocation_registry_id = "VagGATdBsVdBeFKeoYPe7H:4:VagGATdBsVdBeFKeoYPe7H:3:CL:141:QIOPN:CL_ACCUM:5d211963-3478-4de4-b8b6-9072759a71c8"
+revocation_registry_id = (
+    "VagGATdBsVdBeFKeoYPe7H:4:VagGATdBsVdBeFKeoYPe7H:3:CL:141:"
+    "QIOPN:CL_ACCUM:5d211963-3478-4de4-b8b6-9072759a71c8"
+)
 conn_id = "12345"
 transaction_id = "1234"
 
@@ -117,35 +120,35 @@ async def test_get_active_revocation_registry_for_credential(
 
 @pytest.mark.anyio
 async def test_get_credential_revocation_status(mock_agent_controller: AcaPyClient):
-    cred_ex_id = "db9d7025-b276-4c32-ae38-fbad41864112"
+    cred_ex_id_b = "db9d7025-b276-4c32-ae38-fbad41864112"
     # Success
     when(mock_agent_controller.revocation).get_revocation_status(
-        cred_ex_id=cred_ex_id
+        cred_ex_id=cred_ex_id_b
     ).thenReturn(
         to_async(
             CredRevRecordResult(
                 result=IssuerCredRevRecord(
-                    cred_ex_id=cred_ex_id, cred_def_id=cred_def_id
+                    cred_ex_id=cred_ex_id_b, cred_def_id=cred_def_id
                 )
             )
         )
     )
     get_credential_revocation_status_result = await rg.get_credential_revocation_status(
-        controller=mock_agent_controller, credential_exchange_id=cred_ex_id
+        controller=mock_agent_controller, credential_exchange_id=cred_ex_id_b
     )
     assert isinstance(get_credential_revocation_status_result, IssuerCredRevRecord)
     assert get_credential_revocation_status_result.cred_def_id == cred_def_id
-    assert get_credential_revocation_status_result.cred_ex_id == cred_ex_id
+    assert get_credential_revocation_status_result.cred_ex_id == cred_ex_id_b
 
     # Fail
     with pytest.raises(
         CloudApiException, match="Error retrieving revocation status"
     ) as exc:
         when(mock_agent_controller.revocation).get_revocation_status(
-            cred_ex_id=cred_ex_id
+            cred_ex_id=cred_ex_id_b
         ).thenReturn(to_async(None))
         await rg.get_credential_revocation_status(
-            controller=mock_agent_controller, credential_exchange_id=cred_ex_id
+            controller=mock_agent_controller, credential_exchange_id=cred_ex_id_b
         )
         assert exc.value.status_code == 500
 

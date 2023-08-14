@@ -47,11 +47,11 @@ async def get_credentials_for_request(
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get credentials for a proof request")
     try:
-        prover = get_verifier_by_version(version_candidate=proof_id)
+        verifier = get_verifier_by_version(version_candidate=proof_id)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching credentials for request")
-            result = await prover.get_credentials_for_request(
+            result = await verifier.get_credentials_for_request(
                 controller=aries_controller, proof_id=proof_id
             )
     except Exception as e:
@@ -117,11 +117,11 @@ async def get_proof_record(
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get proof record by id")
     try:
-        prover = get_verifier_by_version(version_candidate=proof_id)
+        verifier = get_verifier_by_version(version_candidate=proof_id)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Fetching proof record")
-            result = await prover.get_proof_record(
+            result = await verifier.get_proof_record(
                 controller=aries_controller, proof_id=proof_id
             )
     except Exception as e:
@@ -155,10 +155,11 @@ async def delete_proof(
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("DELETE request received: Delete proof record by id")
     try:
-        prover = get_verifier_by_version(version_candidate=proof_id)
+        verifier = get_verifier_by_version(version_candidate=proof_id)
+
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Deleting proof record")
-            await prover.delete_proof(controller=aries_controller, proof_id=proof_id)
+            await verifier.delete_proof(controller=aries_controller, proof_id=proof_id)
     except Exception as e:
         bound_logger.exception("Failed to delete proof record.")
         raise e from e
@@ -186,7 +187,7 @@ async def send_proof_request(
     bound_logger = logger.bind(body=proof_request)
     bound_logger.info("POST request received: Send proof request")
     try:
-        prover = get_verifier_by_version(proof_request.protocol_version)
+        verifier = get_verifier_by_version(proof_request.protocol_version)
 
         async with client_from_auth(auth) as aries_controller:
             if proof_request.connection_id:
@@ -195,7 +196,7 @@ async def send_proof_request(
                 )
 
             bound_logger.debug("Sending proof request")
-            result = await prover.send_proof_request(
+            result = await verifier.send_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
     except Exception as e:
@@ -230,11 +231,11 @@ async def create_proof_request(
     bound_logger = logger.bind(body=proof_request)
     bound_logger.info("POST request received: Create proof request")
     try:
-        prover = get_verifier_by_version(proof_request.protocol_version)
+        verifier = get_verifier_by_version(proof_request.protocol_version)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Creating proof request")
-            result = await prover.create_proof_request(
+            result = await verifier.create_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
     except Exception as e:
@@ -269,11 +270,11 @@ async def accept_proof_request(
     bound_logger = logger.bind(body=presentation)
     bound_logger.info("POST request received: Accept proof request")
     try:
-        prover = get_verifier_by_version(presentation.proof_id)
+        verifier = get_verifier_by_version(presentation.proof_id)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Get proof record")
-            proof_record = await prover.get_proof_record(
+            proof_record = await verifier.get_proof_record(
                 controller=aries_controller, proof_id=presentation.proof_id
             )
 
@@ -281,12 +282,16 @@ async def accept_proof_request(
             if proof_record.connection_id:
                 await assert_valid_prover(
                     aries_controller=aries_controller,
-                    prover=prover,
+                    verifier=verifier,
                     presentation=presentation,
+                )
+            else:
+                bound_logger.warning(
+                    "No connection associated with proof. Skip validating prover"
                 )
 
             bound_logger.debug("Accepting proof record")
-            result = await prover.accept_proof_request(
+            result = await verifier.accept_proof_request(
                 controller=aries_controller, proof_request=presentation
             )
     except Exception as e:
@@ -320,11 +325,11 @@ async def reject_proof_request(
     bound_logger = logger.bind(body=proof_request)
     bound_logger.info("POST request received: Reject proof request")
     try:
-        prover = get_verifier_by_version(proof_request.proof_id)
+        verifier = get_verifier_by_version(proof_request.proof_id)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Getting proof record")
-            proof_record = await prover.get_proof_record(
+            proof_record = await verifier.get_proof_record(
                 controller=aries_controller, proof_id=proof_request.proof_id
             )
 
@@ -339,7 +344,7 @@ async def reject_proof_request(
                 )
 
             bound_logger.debug("Rejecting proof request")
-            await prover.reject_proof_request(
+            await verifier.reject_proof_request(
                 controller=aries_controller, proof_request=proof_request
             )
     except Exception as e:

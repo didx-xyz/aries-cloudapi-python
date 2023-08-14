@@ -9,7 +9,7 @@ bug and credit the discoverer.
 
 Security bugs can be reported via email. The process is as follows:
 
-(email) Subject: Security Issue: [repo-name] - [Type of bug]
+(email) Subject: Security Issue: \[repo-name\] - \[Type of bug\]
 
 (email) Content: Description of the bug + how to reproduce the bug
 

@@ -5,8 +5,6 @@ from aries_cloudcontroller.model.create_wallet_token_request import (
     CreateWalletTokenRequest,
 )
 from fastapi.exceptions import HTTPException
-from pydantic import BaseModel
-from pydantic.networks import AnyHttpUrl
 
 from app.dependencies.acapy_clients import (
     get_governance_controller,
@@ -14,7 +12,7 @@ from app.dependencies.acapy_clients import (
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.tenants import UpdateTenantRequest
+from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.services import acapy_ledger, acapy_wallet
 from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
@@ -23,11 +21,6 @@ from shared import ACAPY_ENDORSER_ALIAS
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
-
-
-class OnboardResult(BaseModel):
-    did: str
-    didcomm_invitation: Optional[AnyHttpUrl]
 
 
 def create_sse_listener(wallet_id: str, topic: str) -> SseListener:

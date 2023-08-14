@@ -200,13 +200,12 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
 def schema_cred_def_from_record(
     record: V20CredExRecord,
 ) -> Tuple[Optional[str], Optional[str]]:
-    schema_id = None
-    credential_definition_id = None
-
     if record.by_format and record.by_format.cred_offer:
         indy = record.by_format.cred_offer.get("indy", {})
     elif record.by_format and record.by_format.cred_proposal:
         indy = record.by_format.cred_proposal.get("indy", {})
+    else:
+        indy = {}
 
     schema_id = indy.get("schema_id", None)
     credential_definition_id = indy.get("cred_def_id", None)

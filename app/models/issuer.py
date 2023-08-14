@@ -24,6 +24,7 @@ class CredentialBase(BaseModel):
     ld_credential_detail: Optional[LDProofVCDetail]
 
     @validator("indy_credential_detail", pre=True, always=True)
+    @classmethod
     def check_indy_credential_detail(cls, value, values):
         if values.get("type") == CredentialType.INDY and value is None:
             raise ValueError(
@@ -32,6 +33,7 @@ class CredentialBase(BaseModel):
         return value
 
     @validator("ld_credential_detail", pre=True, always=True)
+    @classmethod
     def check_ld_credential_detail(cls, value, values):
         if values.get("type") == CredentialType.LD_PROOF and value is None:
             raise ValueError(

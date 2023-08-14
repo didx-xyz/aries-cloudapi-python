@@ -95,8 +95,10 @@ async def credential_exchange_id(
     credential = {
         "protocol_version": "v1",
         "connection_id": faber_and_alice_connection.faber_connection_id,
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "average"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "average"},
+        },
     }
 
     response = await faber_client.post(
@@ -137,8 +139,10 @@ async def issue_credential_to_alice(
     credential = {
         "protocol_version": "v1",
         "connection_id": faber_and_alice_connection.faber_connection_id,
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
     }
 
     listener = SseListener(topic="credentials", wallet_id=alice_tenant.tenant_id)

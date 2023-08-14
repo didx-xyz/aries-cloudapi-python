@@ -196,10 +196,7 @@ async def create_offer(
         bound_logger.debug("Creating offer")
         result = await issuer.create_offer(
             controller=aries_controller,
-            credential=CredentialBase(
-                attributes=credential.attributes,
-                credential_definition_id=credential.credential_definition_id,
-            ),
+            credential=credential,
         )
 
     if result:

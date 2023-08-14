@@ -35,7 +35,7 @@ class VerifierV1(Verifier):
             presentation_exchange = (
                 await controller.present_proof_v1_0.create_proof_request(
                     body=V10PresentationCreateRequestRequest(
-                        proof_request=create_proof_request.proof_request,
+                        proof_request=create_proof_request.indy_proof_request,
                         auto_verify=create_proof_request.auto_verify,
                         comment=create_proof_request.comment,
                         trace=create_proof_request.trace,
@@ -63,7 +63,7 @@ class VerifierV1(Verifier):
                 await controller.present_proof_v1_0.send_request_free(
                     body=V10PresentationSendRequestRequest(
                         connection_id=send_proof_request.connection_id,
-                        proof_request=send_proof_request.proof_request,
+                        proof_request=send_proof_request.indy_proof_request,
                         auto_verify=send_proof_request.auto_verify,
                         comment=send_proof_request.comment,
                         trace=send_proof_request.trace,
@@ -93,7 +93,7 @@ class VerifierV1(Verifier):
         try:
             bound_logger.debug("Send v1 proof presentation")
             presentation_record = await controller.present_proof_v1_0.send_presentation(
-                pres_ex_id=proof_id, body=accept_proof_request.presentation_spec
+                pres_ex_id=proof_id, body=accept_proof_request.indy_presentation_spec
             )
             result = record_to_model(presentation_record)
         except Exception as e:

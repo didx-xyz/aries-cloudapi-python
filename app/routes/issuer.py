@@ -8,7 +8,6 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.issuer import (
     CreateOffer,
-    CredentialBase,
     CredentialType,
     RevokeCredential,
     SendCredential,

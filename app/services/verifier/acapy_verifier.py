@@ -17,29 +17,6 @@ class Verifier(ABC):
 
     @classmethod
     @abstractmethod
-    async def send_proof_request(
-        cls,
-        controller: AcaPyClient,
-        proof_request: SendProofRequest,
-    ) -> PresentationExchange:
-        """
-        Request proof from a connection ID.
-
-        Parameters:
-        -----------
-        controller: AcaPyClient
-            The aries_cloudcontroller object
-        proof_request: SendProofRequest
-            The proof request object
-
-        Returns:
-        --------
-        exchange_record: PresentationExchange
-            The proof exchange record
-        """
-
-    @classmethod
-    @abstractmethod
     async def create_proof_request(
         cls,
         controller: AcaPyClient,
@@ -53,6 +30,29 @@ class Verifier(ABC):
         controller: AcaPyClient
             The aries_cloudcontroller object
         proof_request: CreateProofRequest
+            The proof request object
+
+        Returns:
+        --------
+        exchange_record: PresentationExchange
+            The proof exchange record
+        """
+
+    @classmethod
+    @abstractmethod
+    async def send_proof_request(
+        cls,
+        controller: AcaPyClient,
+        proof_request: SendProofRequest,
+    ) -> PresentationExchange:
+        """
+        Request proof from a connection ID.
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+        proof_request: SendProofRequest
             The proof request object
 
         Returns:
@@ -105,25 +105,6 @@ class Verifier(ABC):
 
     @classmethod
     @abstractmethod
-    async def delete_proof(cls, controller: AcaPyClient, proof_id: str) -> None:
-        """
-        Delete proof request
-
-        Parameters:
-        -----------
-        controller: AcaPyClient
-            The aries_cloudcontroller object
-        proof_id: str
-            The proof record exchange id
-
-        Returns:
-        --------
-        None
-            Returns None on successful record deletion.
-        """
-
-    @classmethod
-    @abstractmethod
     async def get_proof_records(
         cls, controller: AcaPyClient
     ) -> List[PresentationExchange]:
@@ -160,6 +141,25 @@ class Verifier(ABC):
         --------
         PresentationExchange
             A presentation exchange records
+        """
+
+    @classmethod
+    @abstractmethod
+    async def delete_proof(cls, controller: AcaPyClient, proof_id: str) -> None:
+        """
+        Delete proof request
+
+        Parameters:
+        -----------
+        controller: AcaPyClient
+            The aries_cloudcontroller object
+        proof_id: str
+            The proof record exchange id
+
+        Returns:
+        --------
+        None
+            Returns None on successful record deletion.
         """
 
     @classmethod

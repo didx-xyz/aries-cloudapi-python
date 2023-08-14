@@ -53,83 +53,6 @@ class VerifierV2(Verifier):
             raise CloudApiException("Failed to create presentation request.") from e
 
     @classmethod
-    async def get_credentials_by_proof_id(cls, controller: AcaPyClient, proof_id: str):
-        bound_logger = logger.bind(body={"proof_id": proof_id})
-        pres_ex_id = pres_id_no_version(proof_id=proof_id)
-
-        try:
-            bound_logger.debug("Getting v2 matching credentials from proof id")
-            result = await controller.present_proof_v2_0.get_matching_credentials(
-                pres_ex_id=pres_ex_id
-            )
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while getting matching credentials."
-            )
-            raise CloudApiException("Failed to get credentials for request.") from e
-
-        if result:
-            bound_logger.debug("Successfully got matching v2 credentials.")
-        else:
-            bound_logger.debug("No matching v2 credentials obtained.")
-        return result
-
-    @classmethod
-    async def get_proof_records(cls, controller: AcaPyClient):
-        try:
-            logger.debug("Fetching v2 present-proof exchange records")
-            presentation_exchange = await controller.present_proof_v2_0.get_records()
-            result = [
-                record_to_model(rec) for rec in presentation_exchange.results or []
-            ]
-        except Exception as e:
-            logger.exception("An unexpected error occurred while getting records.")
-            raise CloudApiException("Failed to get proof records.") from e
-
-        if result:
-            logger.debug("Successfully got v2 present-proof records.")
-        else:
-            logger.info("No v2 present-proof records obtained.")
-        return result
-
-    @classmethod
-    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str):
-        bound_logger = logger.bind(body={"proof_id": proof_id})
-        pres_ex_id = pres_id_no_version(proof_id)
-
-        try:
-            bound_logger.debug("Fetching single v2 present-proof exchange record")
-            presentation_exchange = await controller.present_proof_v2_0.get_record(
-                pres_ex_id=pres_ex_id
-            )
-            result = record_to_model(presentation_exchange)
-        except Exception as e:
-            bound_logger.exception("An unexpected error occurred while getting record.")
-            raise CloudApiException("Failed to get proof record.") from e
-
-        if result:
-            bound_logger.debug("Successfully got v2 present-proof record.")
-        else:
-            bound_logger.info("No v2 present-proof record obtained.")
-        return result
-
-    @classmethod
-    async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
-        bound_logger = logger.bind(body={"proof_id": proof_id})
-        pres_ex_id = pres_id_no_version(proof_id=proof_id)
-
-        try:
-            bound_logger.debug("Deleting v2 present-proof exchange record")
-            await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while deleting record."
-            )
-            raise CloudApiException("Failed to delete record.") from e
-
-        bound_logger.debug("Successfully deleted v2 present-proof record.")
-
-    @classmethod
     async def send_proof_request(
         cls,
         controller: AcaPyClient,
@@ -224,3 +147,80 @@ class VerifierV2(Verifier):
             raise CloudApiException("Failed to delete record.") from e
 
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
+
+    @classmethod
+    async def get_proof_records(cls, controller: AcaPyClient):
+        try:
+            logger.debug("Fetching v2 present-proof exchange records")
+            presentation_exchange = await controller.present_proof_v2_0.get_records()
+            result = [
+                record_to_model(rec) for rec in presentation_exchange.results or []
+            ]
+        except Exception as e:
+            logger.exception("An unexpected error occurred while getting records.")
+            raise CloudApiException("Failed to get proof records.") from e
+
+        if result:
+            logger.debug("Successfully got v2 present-proof records.")
+        else:
+            logger.info("No v2 present-proof records obtained.")
+        return result
+
+    @classmethod
+    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str):
+        bound_logger = logger.bind(body={"proof_id": proof_id})
+        pres_ex_id = pres_id_no_version(proof_id)
+
+        try:
+            bound_logger.debug("Fetching single v2 present-proof exchange record")
+            presentation_exchange = await controller.present_proof_v2_0.get_record(
+                pres_ex_id=pres_ex_id
+            )
+            result = record_to_model(presentation_exchange)
+        except Exception as e:
+            bound_logger.exception("An unexpected error occurred while getting record.")
+            raise CloudApiException("Failed to get proof record.") from e
+
+        if result:
+            bound_logger.debug("Successfully got v2 present-proof record.")
+        else:
+            bound_logger.info("No v2 present-proof record obtained.")
+        return result
+
+    @classmethod
+    async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
+        bound_logger = logger.bind(body={"proof_id": proof_id})
+        pres_ex_id = pres_id_no_version(proof_id=proof_id)
+
+        try:
+            bound_logger.debug("Deleting v2 present-proof exchange record")
+            await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
+        except Exception as e:
+            bound_logger.exception(
+                "An unexpected error occurred while deleting record."
+            )
+            raise CloudApiException("Failed to delete record.") from e
+
+        bound_logger.debug("Successfully deleted v2 present-proof record.")
+
+    @classmethod
+    async def get_credentials_by_proof_id(cls, controller: AcaPyClient, proof_id: str):
+        bound_logger = logger.bind(body={"proof_id": proof_id})
+        pres_ex_id = pres_id_no_version(proof_id=proof_id)
+
+        try:
+            bound_logger.debug("Getting v2 matching credentials from proof id")
+            result = await controller.present_proof_v2_0.get_matching_credentials(
+                pres_ex_id=pres_ex_id
+            )
+        except Exception as e:
+            bound_logger.exception(
+                "An unexpected error occurred while getting matching credentials."
+            )
+            raise CloudApiException("Failed to get credentials for request.") from e
+
+        if result:
+            bound_logger.debug("Successfully got matching v2 credentials.")
+        else:
+            bound_logger.debug("No matching v2 credentials obtained.")
+        return result

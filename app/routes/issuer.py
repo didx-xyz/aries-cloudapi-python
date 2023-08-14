@@ -8,16 +8,13 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.issuer import (
     CreateOffer,
-    Credential,
-    CredentialNoConnection,
-    JsonLdCredential,
+    CredentialType,
     RevokeCredential,
     SendCredential,
 )
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
 from app.services.acapy_wallet import assert_public_did
-from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.services.trust_registry import assert_valid_issuer
 from app.util.acapy_issuer_utils import (
     IssueCredentialFacades,
@@ -126,10 +123,13 @@ async def send_credential(
         # Assert the agent has a public did
         public_did = await assert_public_did(aries_controller)
 
-        # Retrieve the schema_id based on the credential definition id
-        schema_id = await schema_id_from_credential_definition_id(
-            aries_controller, credential.credential_definition_id
-        )
+        schema_id = None
+        if credential.type == CredentialType.INDY:
+            # Retrieve the schema_id based on the credential definition id
+            schema_id = await schema_id_from_credential_definition_id(
+                aries_controller,
+                credential.indy_credential_detail.credential_definition_id,
+            )
 
         # Make sure we are allowed to issue according to trust registry rules
         await assert_valid_issuer(public_did, schema_id)
@@ -137,12 +137,7 @@ async def send_credential(
         try:
             bound_logger.debug("Sending credential")
             result = await issuer.send_credential(
-                controller=aries_controller,
-                credential=Credential(
-                    attributes=credential.attributes,
-                    cred_def_id=credential.credential_definition_id,
-                    connection_id=credential.connection_id,
-                ),
+                controller=aries_controller, credential=credential
             )
         except ClientResponseError as e:
             logger.warning(
@@ -157,56 +152,6 @@ async def send_credential(
         bound_logger.info("Successfully sent credential.")
     else:
         bound_logger.warning("No result from sending credential.")
-    return result
-
-
-@router.post("/jsonld", response_model=CredentialExchange)
-async def send_jsonld_credential(
-    jsonld_credential: JsonLdCredential,
-    auth: AcaPyAuth = Depends(acapy_auth),
-):
-    """
-        Create and send a JSON-LD credential. Automating the entire flow.
-
-    Parameters:
-    ------------
-        credential: JsonLdCredential
-            payload for sending a JSON-LD credential
-
-    Returns:
-    --------
-        payload: CredentialExchange
-            The response object from sending a credential
-        status_code: 200
-    """
-    bound_logger = logger.bind(body=jsonld_credential)
-    bound_logger.info("POST request received: Send JSON-LD credential")
-
-    async with client_from_auth(auth) as aries_controller:
-        # Assert the agent has a public did
-        public_did = await assert_public_did(aries_controller)
-
-        # Make sure we are allowed to issue according to trust registry rules
-        await assert_valid_issuer(public_did)  # JSON-LD doesn't have schema_id
-
-        try:
-            bound_logger.debug("Sending JSON-LD credential")
-            result = await IssuerV2.send_credential_jsonld(
-                controller=aries_controller, jsonld_credential=jsonld_credential
-            )
-        except ClientResponseError as e:
-            logger.warning(
-                "ClientResponseError was caught while sending JSON-LD credential, with message `{}`.",
-                e.message,
-            )
-            raise CloudApiException(
-                f"Failed to send JSON-LD credential: {e}", 500
-            ) from e
-
-    if result:
-        bound_logger.info("Successfully sent JSON-LD credential.")
-    else:
-        bound_logger.warning("No result from sending JSON-LD credential.")
     return result
 
 
@@ -236,10 +181,13 @@ async def create_offer(
         # Assert the agent has a public did
         public_did = await assert_public_did(aries_controller)
 
-        # Retrieve the schema_id based on the credential definition id
-        schema_id = await schema_id_from_credential_definition_id(
-            aries_controller, credential.credential_definition_id
-        )
+        schema_id = None
+        if credential.type == CredentialType.INDY:
+            # Retrieve the schema_id based on the credential definition id
+            schema_id = await schema_id_from_credential_definition_id(
+                aries_controller,
+                credential.indy_credential_detail.credential_definition_id,
+            )
 
         # Make sure we are allowed to issue according to trust registry rules
         await assert_valid_issuer(public_did, schema_id)
@@ -247,10 +195,7 @@ async def create_offer(
         bound_logger.debug("Creating offer")
         result = await issuer.create_offer(
             controller=aries_controller,
-            credential=CredentialNoConnection(
-                attributes=credential.attributes,
-                cred_def_id=credential.credential_definition_id,
-            ),
+            credential=credential,
         )
 
     if result:
@@ -318,8 +263,8 @@ async def revoke_credential(
         await revocation_registry.revoke_credential(
             controller=aries_controller,
             credential_exchange_id=body.credential_exchange_id,
-            auto_publish_to_ledger=body.auto_publish_on_ledger,
             credential_definition_id=body.credential_definition_id,
+            auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
     bound_logger.info("Successfully revoked credential.")

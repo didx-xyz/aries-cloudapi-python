@@ -5,6 +5,7 @@ from pytest_mock import MockerFixture
 
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
+from app.models.issuer import IndyCredential
 from app.services.issuer.acapy_issuer_v1 import IssuerV1
 from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
@@ -39,8 +40,10 @@ async def test_send_credential(
     credential = test_module.SendCredential(
         protocol_version=IssueCredentialProtocolVersion.v1,
         connection_id="conn_id",
-        credential_definition_id=cred_def_id,
-        attributes={"name": "John", "age": "23"},
+        indy_credential_detail=IndyCredential(
+            credential_definition_id=cred_def_id,
+            attributes={"name": "John", "age": "23"},
+        ),
     )
 
     result = await test_module.send_credential(credential, mock_tenant_auth)

@@ -12,7 +12,7 @@ from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
 
-from app.models.issuer import Credential, CredentialNoConnection
+from app.models.issuer import CredentialBase, CredentialWithConnection
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
@@ -24,11 +24,13 @@ logger = get_logger(__name__)
 
 class IssuerV1(Issuer):
     @classmethod
-    async def send_credential(cls, controller: AcaPyClient, credential: Credential):
+    async def send_credential(
+        cls, controller: AcaPyClient, credential: CredentialWithConnection
+    ):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
+            attributes=credential.indy_credential_detail.attributes
         )
 
         bound_logger.debug("Issue v1 credential (automated)")
@@ -36,7 +38,7 @@ class IssuerV1(Issuer):
             body=V10CredentialProposalRequestMand(
                 connection_id=credential.connection_id,
                 credential_proposal=credential_preview,
-                cred_def_id=credential.cred_def_id,
+                cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
         )
 
@@ -44,20 +46,18 @@ class IssuerV1(Issuer):
         return cls.__record_to_model(record)
 
     @classmethod
-    async def create_offer(
-        cls, controller: AcaPyClient, credential: CredentialNoConnection
-    ):
+    async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
+            attributes=credential.indy_credential_detail.attributes
         )
 
         bound_logger.debug("Creating v1 credential offer")
         record = await controller.issue_credential_v1_0.create_offer(
             body=V10CredentialConnFreeOfferRequest(
                 credential_preview=credential_preview,
-                cred_def_id=credential.cred_def_id,
+                cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
         )
 

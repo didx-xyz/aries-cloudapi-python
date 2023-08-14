@@ -27,8 +27,10 @@ async def test_send_credential_oob_v1(
 ):
     credential = {
         "protocol_version": "v1",
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
     }
 
     response = await alice_member_client.get(
@@ -97,8 +99,10 @@ async def test_send_credential_oob_v2(
 
     credential = {
         "protocol_version": "v2",
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
     }
 
     create_offer_response = await faber_client.post(
@@ -159,8 +163,10 @@ async def test_send_credential(
     credential = {
         "protocol_version": "v1",
         "connection_id": faber_and_alice_connection.faber_connection_id,
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
     }
 
     response = await alice_member_client.get(
@@ -232,8 +238,10 @@ async def test_create_offer(
 ):
     credential = {
         "protocol_version": "v1",
-        "credential_definition_id": credential_definition_id,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
     }
 
     response = await faber_client.post(
@@ -298,9 +306,11 @@ async def test_send_credential_request(
 ):
     credential = {
         "protocol_version": "v1",
-        "credential_definition_id": credential_definition_id,
         "connection_id": faber_and_alice_connection.faber_connection_id,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
     }
 
     response = await faber_client.post(
@@ -344,8 +354,10 @@ async def test_revoke_credential(
     credential = {
         "protocol_version": "v1",
         "connection_id": faber_connection_id,
-        "credential_definition_id": credential_definition_id_revocable,
-        "attributes": {"speed": "10"},
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id_revocable,
+            "attributes": {"speed": "10"},
+        },
     }
 
     alice_credentials_listener = SseListener(
@@ -424,29 +436,33 @@ async def test_send_jsonld_credential(
 
     # Creating JSON-LD credential
     credential = {
-        "credential": {
-            "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://www.w3.org/2018/credentials/examples/v1",
-            ],
-            "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-            "credentialSubject": {
-                "degree": {
-                    "type": "BachelorDegree",
-                    "name": "Bachelor of Science and Arts",
-                },
-                "college": "Faber College",
-            },
-            "issuanceDate": "2021-04-12",
-            "issuer": f"did:sov:{faber_pub_did}",
-        },
-        "options": {"proofType": "Ed25519Signature2018"},
+        "type": "ld_proof",
         "connection_id": faber_connection_id,
+        "protocol_version": "v2",
+        "ld_credential_detail": {
+            "credential": {
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://www.w3.org/2018/credentials/examples/v1",
+                ],
+                "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+                "credentialSubject": {
+                    "degree": {
+                        "type": "BachelorDegree",
+                        "name": "Bachelor of Science and Arts",
+                    },
+                    "college": "Faber College",
+                },
+                "issuanceDate": "2021-04-12",
+                "issuer": f"did:sov:{faber_pub_did}",
+            },
+            "options": {"proofType": "Ed25519Signature2018"},
+        },
     }
 
     # Send credential
     response = await faber_client.post(
-        CREDENTIALS_BASE_PATH + "/jsonld",
+        CREDENTIALS_BASE_PATH,
         json=credential,
     )
 

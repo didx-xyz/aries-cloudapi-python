@@ -2,7 +2,6 @@ from typing import Dict, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    LDProofVCDetail,
     V20CredAttrSpec,
     V20CredExFree,
     V20CredExRecord,
@@ -15,7 +14,7 @@ from aries_cloudcontroller import (
 )
 
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.issuer import Credential, CredentialNoConnection, JsonLdCredential
+from app.models.issuer import CredentialBase, CredentialType, CredentialWithConnection
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
@@ -27,23 +26,36 @@ logger = get_logger(__name__)
 
 class IssuerV2(Issuer):
     @classmethod
-    async def send_credential(cls, controller: AcaPyClient, credential: Credential):
+    async def send_credential(
+        cls, controller: AcaPyClient, credential: CredentialWithConnection
+    ):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
-        credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
-        )
+
+        credential_preview = None
+        # Determine the appropriate filter based on the type
+        if credential.type == CredentialType.INDY:
+            credential_preview = cls.__preview_from_attributes(
+                attributes=credential.indy_credential_detail.attributes
+            )
+            cred_filter = V20CredFilter(
+                indy=V20CredFilterIndy(
+                    cred_def_id=credential.indy_credential_detail.credential_definition_id,
+                )
+            )
+        elif credential.type == CredentialType.LD_PROOF:
+            cred_filter = V20CredFilter(ld_proof=credential.ld_credential_detail)
+        else:
+            raise CloudApiException(
+                f"Unsupported credential type: {credential.type}", status_code=501
+            )
 
         bound_logger.debug("Issue v2 credential (automated)")
         record = await controller.issue_credential_v2_0.issue_credential_automated(
             body=V20CredExFree(
                 connection_id=credential.connection_id,
+                filter=cred_filter,
                 credential_preview=credential_preview,
-                filter=V20CredFilter(
-                    indy=V20CredFilterIndy(
-                        cred_def_id=credential.cred_def_id,
-                    )
-                ),
             )
         )
 
@@ -51,49 +63,33 @@ class IssuerV2(Issuer):
         return cls.__record_to_model(record)
 
     @classmethod
-    async def send_credential_jsonld(
-        cls, controller: AcaPyClient, jsonld_credential: JsonLdCredential
-    ):
-        bound_logger = logger.bind(body=jsonld_credential)
-
-        bound_logger.debug("Issue JSON-LD v2 credential (automated)")
-        record = await controller.issue_credential_v2_0.issue_credential_automated(
-            body=V20CredExFree(
-                connection_id=jsonld_credential.connection_id,
-                filter=V20CredFilter(
-                    ld_proof=LDProofVCDetail(
-                        credential=jsonld_credential.credential,
-                        options=jsonld_credential.options,
-                    )
-                ),
-            )
-        )
-
-        bound_logger.debug(
-            "Returning JSON-LD v2 credential result as CredentialExchange."
-        )
-        return cls.__record_to_model(record)
-
-    @classmethod
-    async def create_offer(
-        cls, controller: AcaPyClient, credential: CredentialNoConnection
-    ):
+    async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
-        credential_preview = cls.__preview_from_attributes(
-            attributes=credential.attributes
-        )
+
+        credential_preview = None
+        # Determine the appropriate filter based on the type
+        if credential.type == CredentialType.INDY:
+            credential_preview = cls.__preview_from_attributes(
+                attributes=credential.indy_credential_detail.attributes
+            )
+            cred_filter = V20CredFilter(
+                indy=V20CredFilterIndy(
+                    cred_def_id=credential.indy_credential_detail.credential_definition_id,
+                )
+            )
+        elif credential.type == CredentialType.LD_PROOF:
+            cred_filter = V20CredFilter(ld_proof=credential.ld_credential_detail)
+        else:
+            raise CloudApiException(
+                f"Unsupported credential type: {credential.type}", status_code=501
+            )
 
         bound_logger.debug("Creating v2 credential offer")
         record = (
             await controller.issue_credential_v2_0.issue_credential20_create_offer_post(
                 body=V20CredOfferConnFreeRequest(
-                    credential_preview=credential_preview,
-                    filter=V20CredFilter(
-                        indy=V20CredFilterIndy(
-                            cred_def_id=credential.cred_def_id,
-                        )
-                    ),
+                    credential_preview=credential_preview, filter=cred_filter
                 )
             )
         )

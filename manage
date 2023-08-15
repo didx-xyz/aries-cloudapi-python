@@ -247,6 +247,15 @@ up-daemon-usecache)
     --build \
     -d ${_startupParams}
   ;;
+tests)
+  echoYellow "Starting up... This can take a couple of minutes."
+  tests=true
+  _startupParams=$(getStartupParams $@)
+  configureEnvironment "$@"
+  docker --log-level ERROR \
+    compose up \
+    --build --remove-orphans \
+    -d ${_startupParams}
 restart)
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"

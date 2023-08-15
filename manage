@@ -256,6 +256,7 @@ tests)
     compose up \
     --build --remove-orphans \
     -d ${_startupParams}
+  echo "Testing ..."
 restart)
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"

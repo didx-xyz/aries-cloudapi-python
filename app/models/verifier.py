@@ -1,7 +1,12 @@
 from enum import Enum
 from typing import Optional
 
-from aries_cloudcontroller import DIFProofRequest, IndyPresSpec, IndyProofRequest
+from aries_cloudcontroller import (
+    DIFPresSpec,
+    DIFProofRequest,
+    IndyPresSpec,
+    IndyProofRequest,
+)
 from pydantic import BaseModel, validator
 
 from shared.models.protocol import PresentProofProtocolVersion
@@ -57,7 +62,27 @@ class ProofId(BaseModel):
 
 
 class AcceptProofRequest(ProofRequestBase, ProofId):
-    pass
+    type: ProofRequestType = ProofRequestType.INDY
+    indy_presentation_spec: Optional[IndyPresSpec]
+    dif_presentation_spec: Optional[DIFPresSpec]
+
+    @validator("indy_presentation_spec", pre=True, always=True)
+    @classmethod
+    def check_indy_presentation_spec(cls, value, values):
+        if values.get("type") == ProofRequestType.INDY and value is None:
+            raise ValueError(
+                "indy_presentation_spec must be populated if `indy` type is selected"
+            )
+        return value
+
+    @validator("dif_presentation_spec", pre=True, always=True)
+    @classmethod
+    def check_dif_presentation_spec(cls, value, values):
+        if values.get("type") == ProofRequestType.LD_PROOF and value is None:
+            raise ValueError(
+                "dif_presentation_spec must be populated if `ld_proof` type is selected"
+            )
+        return value
 
 
 class RejectProofRequest(ProofId):

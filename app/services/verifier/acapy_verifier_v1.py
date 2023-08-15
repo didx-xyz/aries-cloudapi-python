@@ -9,6 +9,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
+    ProofRequestType,
     RejectProofRequest,
     SendProofRequest,
 )
@@ -28,6 +29,12 @@ class VerifierV1(Verifier):
         controller: AcaPyClient,
         create_proof_request: CreateProofRequest,
     ) -> PresentationExchange:
+        if create_proof_request.type != ProofRequestType.INDY:
+            raise CloudApiException(
+                f"Only Indy credential types are supported in v1. Requested type: {create_proof_request.type}",
+                status_code=400,
+            )
+
         bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v1 proof request")
 
@@ -56,6 +63,12 @@ class VerifierV1(Verifier):
         controller: AcaPyClient,
         send_proof_request: SendProofRequest,
     ) -> PresentationExchange:
+        if send_proof_request.type != ProofRequestType.INDY:
+            raise CloudApiException(
+                f"Only Indy credential types are supported in v1. Requested type: {send_proof_request.type}",
+                status_code=400,
+            )
+
         bound_logger = logger.bind(body=send_proof_request)
         try:
             bound_logger.debug("Send free v1 presentation request")
@@ -87,6 +100,12 @@ class VerifierV1(Verifier):
     async def accept_proof_request(
         cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
+        if accept_proof_request.type != ProofRequestType.INDY:
+            raise CloudApiException(
+                f"Only Indy credential types are supported in v1. Requested type: {accept_proof_request.type}",
+                status_code=400,
+            )
+
         bound_logger = logger.bind(body=accept_proof_request)
         proof_id = pres_id_no_version(proof_id=accept_proof_request.proof_id)
 

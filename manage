@@ -47,6 +47,7 @@ usage() {
       down - Brings down the services and removes the volumes (storage) and containers.
       rm - Same as down
 
+      tests - Same as up but run the Tests container too
 
 EOF
   exit 1

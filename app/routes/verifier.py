@@ -28,7 +28,7 @@ router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
 
 @router.post("/create-request", response_model=PresentationExchange)
 async def create_proof_request(
-    create_proof_request: CreateProofRequest,
+    body: CreateProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
@@ -36,7 +36,7 @@ async def create_proof_request(
 
     Parameters:
     -----------
-    create_proof_request: CreateProofRequest
+    body: CreateProofRequest
         The proof request object
 
     Returns:
@@ -44,16 +44,16 @@ async def create_proof_request(
     presentation_exchange: PresentationExchange
         The presentation exchange record
     """
-    bound_logger = logger.bind(body=create_proof_request)
+    bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create proof request")
 
     try:
-        verifier = get_verifier_by_version(create_proof_request.protocol_version)
+        verifier = get_verifier_by_version(body.protocol_version)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Creating proof request")
             result = await verifier.create_proof_request(
-                controller=aries_controller, create_proof_request=create_proof_request
+                controller=aries_controller, create_proof_request=body
             )
     except Exception as e:
         bound_logger.exception("Failed to create presentation record.")
@@ -68,7 +68,7 @@ async def create_proof_request(
 
 @router.post("/send-request", response_model=PresentationExchange)
 async def send_proof_request(
-    send_proof_request: SendProofRequest,
+    body: SendProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
@@ -76,7 +76,7 @@ async def send_proof_request(
 
     Parameters:
     -----------
-    send_proof_request: SendProofRequest
+    body: SendProofRequest
         The proof request object
 
     Returns:
@@ -84,21 +84,21 @@ async def send_proof_request(
     presentation_exchange: PresentationExchange
         The presentation exchange record
     """
-    bound_logger = logger.bind(body=send_proof_request)
+    bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Send proof request")
 
     try:
-        verifier = get_verifier_by_version(send_proof_request.protocol_version)
+        verifier = get_verifier_by_version(body.protocol_version)
 
         async with client_from_auth(auth) as aries_controller:
-            if send_proof_request.connection_id:
+            if body.connection_id:
                 await assert_valid_verifier(
-                    aries_controller=aries_controller, proof_request=send_proof_request
+                    aries_controller=aries_controller, proof_request=body
                 )
 
             bound_logger.debug("Sending proof request")
             result = await verifier.send_proof_request(
-                controller=aries_controller, send_proof_request=send_proof_request
+                controller=aries_controller, send_proof_request=body
             )
     except Exception as e:
         bound_logger.exception("Failed to send proof request.")
@@ -113,7 +113,7 @@ async def send_proof_request(
 
 @router.post("/accept-request", response_model=PresentationExchange)
 async def accept_proof_request(
-    accept_proof_request: AcceptProofRequest,
+    body: AcceptProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
@@ -121,7 +121,7 @@ async def accept_proof_request(
 
     Parameters:
     -----------
-    accept_proof_request: AcceptProofRequest
+    body: AcceptProofRequest
         The proof request object
 
     Returns:
@@ -129,16 +129,16 @@ async def accept_proof_request(
     presentation_exchange: PresentationExchange
         The presentation exchange record
     """
-    bound_logger = logger.bind(body=accept_proof_request)
+    bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept proof request")
 
     try:
-        verifier = get_verifier_by_version(accept_proof_request.proof_id)
+        verifier = get_verifier_by_version(body.proof_id)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Get proof record")
             proof_record = await verifier.get_proof_record(
-                controller=aries_controller, proof_id=accept_proof_request.proof_id
+                controller=aries_controller, proof_id=body.proof_id
             )
 
             # If there is a connection id the proof is not connectionless
@@ -146,7 +146,7 @@ async def accept_proof_request(
                 await assert_valid_prover(
                     aries_controller=aries_controller,
                     verifier=verifier,
-                    presentation=accept_proof_request,
+                    presentation=body,
                 )
             else:
                 bound_logger.warning(
@@ -155,7 +155,7 @@ async def accept_proof_request(
 
             bound_logger.debug("Accepting proof record")
             result = await verifier.accept_proof_request(
-                controller=aries_controller, accept_proof_request=accept_proof_request
+                controller=aries_controller, accept_proof_request=body
             )
     except Exception as e:
         bound_logger.exception("Failed to accept proof request.")
@@ -170,7 +170,7 @@ async def accept_proof_request(
 
 @router.post("/reject-request", status_code=204)
 async def reject_proof_request(
-    reject_proof_request: RejectProofRequest,
+    body: RejectProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> None:
     """
@@ -178,23 +178,23 @@ async def reject_proof_request(
 
     Parameters:
     -----------
-    reject_proof_request: RejectProofRequest
+    body: RejectProofRequest
         The proof request object
 
     Returns:
     --------
     None
     """
-    bound_logger = logger.bind(body=reject_proof_request)
+    bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Reject proof request")
 
     try:
-        verifier = get_verifier_by_version(reject_proof_request.proof_id)
+        verifier = get_verifier_by_version(body.proof_id)
 
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Getting proof record")
             proof_record = await verifier.get_proof_record(
-                controller=aries_controller, proof_id=reject_proof_request.proof_id
+                controller=aries_controller, proof_id=body.proof_id
             )
 
             if proof_record.state != "request-received":
@@ -209,7 +209,7 @@ async def reject_proof_request(
 
             bound_logger.debug("Rejecting proof request")
             await verifier.reject_proof_request(
-                controller=aries_controller, reject_proof_request=reject_proof_request
+                controller=aries_controller, reject_proof_request=body
             )
     except Exception as e:
         bound_logger.exception("Failed to reject request.")

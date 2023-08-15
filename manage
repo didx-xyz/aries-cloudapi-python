@@ -147,6 +147,9 @@ getStartupParams() {
     esac
   done
 
+  if [ $tests ]; then
+    CONTAINERS="$TEST_CONTAINERS"
+  fi
   if [ -z "$CONTAINERS" ]; then
     CONTAINERS="$DEFAULT_CONTAINERS"
   fi

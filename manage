@@ -257,6 +257,9 @@ tests)
     --build --remove-orphans \
     -d ${_startupParams}
   echo "Testing ..."
+  docker --log-level ERROR \
+    compose logs \
+    -f | \
 restart)
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"

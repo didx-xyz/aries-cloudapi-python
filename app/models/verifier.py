@@ -43,7 +43,7 @@ class ProofRequestBase(BaseModel):
 
 
 class ProofRequestMetadata(BaseModel):
-    protocol_version: PresentProofProtocolVersion
+    protocol_version: PresentProofProtocolVersion = PresentProofProtocolVersion.v2
     auto_verify: Optional[bool] = None
     comment: Optional[str] = None
     trace: Optional[bool] = None

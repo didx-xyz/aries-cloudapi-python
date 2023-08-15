@@ -47,7 +47,7 @@ class CredentialWithConnection(CredentialBase):
 
 
 class CredentialWithProtocol(CredentialBase):
-    protocol_version: IssueCredentialProtocolVersion
+    protocol_version: IssueCredentialProtocolVersion = IssueCredentialProtocolVersion.v2
 
 
 class SendCredential(CredentialWithProtocol, CredentialWithConnection):

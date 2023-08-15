@@ -38,8 +38,8 @@ class ProofId(BaseModel):
     proof_id: str
 
 
-class AcceptProofRequest(ProofId):
-    indy_presentation_spec: Optional[IndyPresSpec]
+class AcceptProofRequest(ProofRequestBase, ProofId):
+    pass
 
 
 class RejectProofRequest(ProofId):

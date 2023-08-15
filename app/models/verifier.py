@@ -23,7 +23,7 @@ class ProofRequestBase(BaseModel):
     def check_indy_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.INDY and value is None:
             raise ValueError(
-                "indy_proof_request must be populated if ProofRequestType.INDY is selected"
+                "indy_proof_request must be populated if `indy` type is selected"
             )
         return value
 
@@ -32,7 +32,7 @@ class ProofRequestBase(BaseModel):
     def check_ld_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.LD_PROOF and value is None:
             raise ValueError(
-                "ld_proof_request must be populated if ProofRequestType.LD_PROOF is selected"
+                "ld_proof_request must be populated if `ld_proof` type is selected"
             )
         return value
 

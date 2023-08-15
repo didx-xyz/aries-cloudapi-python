@@ -28,7 +28,7 @@ class CredentialBase(BaseModel):
     def check_indy_credential_detail(cls, value, values):
         if values.get("type") == CredentialType.INDY and value is None:
             raise ValueError(
-                "indy_credential_detail must be populated if CredentialType.INDY is selected"
+                "indy_credential_detail must be populated if `indy` credential type is selected"
             )
         return value
 
@@ -37,7 +37,7 @@ class CredentialBase(BaseModel):
     def check_ld_credential_detail(cls, value, values):
         if values.get("type") == CredentialType.LD_PROOF and value is None:
             raise ValueError(
-                "ld_credential_detail must be populated if CredentialType.LD_PROOF is selected"
+                "ld_credential_detail must be populated if `ld_proof` credential type is selected"
             )
         return value
 

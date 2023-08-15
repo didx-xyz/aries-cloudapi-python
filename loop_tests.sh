@@ -4,5 +4,5 @@ while true; do
     echo "this is run ${nr}"
     ./manage tests
     ./manage down
-    ((nr=$nr+1))
+    ((nr=nr+1))
 done

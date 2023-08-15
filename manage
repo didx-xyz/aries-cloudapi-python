@@ -260,6 +260,13 @@ tests)
   docker --log-level ERROR \
     compose logs \
     -f | \
+    while IFS= read -r line; do
+      if [[ "$line" == "tests exited with code"* ]]; then
+        # React to the desired log entry
+        echo "Detected 'tests exited with code' in log. Stopping services..."
+        break
+      fi
+    done
 restart)
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"

@@ -341,6 +341,9 @@ services:
         --port 6543
         --storage-path ./
         --log-level INFO
+    depends_on:
+      governance-ga-web-health:
+        condition: service_completed_successfully
   governance-ga-web-health:
     image: curlimages/curl
     container_name: governance-ga-web-health

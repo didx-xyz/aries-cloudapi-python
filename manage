@@ -267,6 +267,8 @@ tests)
         break
       fi
     done
+  exit 0
+  ;;
 restart)
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"

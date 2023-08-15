@@ -27,7 +27,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     created_proof_request = await VerifierV1.create_proof_request(
         controller=mock_agent_controller,
         create_proof_request=CreateProofRequest(
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             comment=None,
             protocol_version=PresentProofProtocolVersion.v1,
         ),
@@ -58,7 +58,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller,
         send_proof_request=SendProofRequest(
             connection_id="abcde",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             protocol_version=PresentProofProtocolVersion.v1,
         ),
     )
@@ -76,7 +76,7 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
         mock_agent_controller,
         accept_proof_request=AcceptProofRequest(
             proof_id="v1-123",
-            presentation_spec=IndyPresSpec(
+            indy_presentation_spec=IndyPresSpec(
                 requested_attributes={},
                 requested_predicates={},
                 self_attested_attributes={},

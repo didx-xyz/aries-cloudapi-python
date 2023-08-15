@@ -76,7 +76,7 @@ async def test_send_proof_request_v1(
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
-        proof_request=indy_proof_request,
+        indy_proof_request=indy_proof_request,
         protocol_version="v1",
     )
 
@@ -119,7 +119,7 @@ async def test_send_proof_request_v2(
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
-        proof_request=indy_proof_request,
+        indy_proof_request=indy_proof_request,
         protocol_version="v2",
     )
 
@@ -149,7 +149,7 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
     result = await test_module.create_proof_request(
         create_proof_request=test_module.CreateProofRequest(
             protocol_version="v1",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             connection_id="abcde",
         ),
         auth=mock_tenant_auth,
@@ -163,7 +163,7 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
     result = await test_module.create_proof_request(
         create_proof_request=test_module.CreateProofRequest(
             protocol_version="v2",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             connection_id="abcde",
         ),
         auth=mock_tenant_auth,
@@ -187,7 +187,7 @@ async def test_accept_proof_request_v1(
     )
 
     presentation = test_module.AcceptProofRequest(
-        proof_id="v1-1234", presentation_spec=indy_pres_spec
+        proof_id="v1-1234", indy_presentation_spec=indy_pres_spec
     )
 
     mocker.patch.object(
@@ -225,7 +225,7 @@ async def test_accept_proof_request_v2(
     )
 
     presentation = test_module.AcceptProofRequest(
-        proof_id="v2-1234", presentation_spec=indy_pres_spec
+        proof_id="v2-1234", indy_presentation_spec=indy_pres_spec
     )
 
     mocker.patch.object(

@@ -88,7 +88,8 @@ async def assert_valid_prover(
     # Get schema ids
     bound_logger.debug("Getting schema ids from presentation")
     schema_ids = await get_schema_ids(
-        aries_controller=aries_controller, presentation=presentation.presentation_spec
+        aries_controller=aries_controller,
+        presentation=presentation.indy_presentation_spec,
     )
 
     # Verify the schemas are actually in the list from TR

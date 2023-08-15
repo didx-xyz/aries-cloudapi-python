@@ -93,7 +93,7 @@ async def test_send_proof_request_v1(
 
     assert result is presentation_exchange_record_1
     verify(VerifierV1).send_proof_request(
-        controller=mock_agent_controller, proof_request=send_proof_request
+        controller=mock_agent_controller, send_proof_request=send_proof_request
     )
 
 
@@ -136,7 +136,7 @@ async def test_send_proof_request_v2(
 
     assert result is presentation_exchange_record_2
     verify(VerifierV2).send_proof_request(
-        controller=mock_agent_controller, proof_request=send_proof_request
+        controller=mock_agent_controller, send_proof_request=send_proof_request
     )
 
 
@@ -264,7 +264,7 @@ async def test_reject_proof_request(
     )
 
     when(VerifierV1).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v1
+        controller=mock_agent_controller, reject_proof_request=proof_request_v1
     ).thenReturn(to_async(None))
     presentation_exchange_record_1.state = "request-received"
     when(VerifierV1).get_proof_record(
@@ -278,7 +278,7 @@ async def test_reject_proof_request(
 
     assert result is None
     verify(VerifierV1).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v1
+        controller=mock_agent_controller, reject_proof_request=proof_request_v1
     )
     verify(VerifierV1).get_proof_record(
         controller=mock_agent_controller, proof_id=proof_request_v1.proof_id
@@ -288,7 +288,7 @@ async def test_reject_proof_request(
 
     # V2
     when(VerifierV2).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v2
+        controller=mock_agent_controller, reject_proof_request=proof_request_v2
     ).thenReturn(to_async(None))
     presentation_exchange_record_2.state = "request-received"
     when(VerifierV2).get_proof_record(
@@ -302,7 +302,7 @@ async def test_reject_proof_request(
 
     assert result is None
     verify(VerifierV2).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v2
+        controller=mock_agent_controller, reject_proof_request=proof_request_v2
     )
     verify(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=proof_request_v2.proof_id

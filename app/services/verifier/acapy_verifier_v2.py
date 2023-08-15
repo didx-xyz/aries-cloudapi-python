@@ -31,9 +31,6 @@ class VerifierV2(Verifier):
         controller: AcaPyClient,
         create_proof_request: CreateProofRequest,
     ) -> PresentationExchange:
-        bound_logger = logger.bind(body=create_proof_request)
-        bound_logger.debug("Creating v2 proof request")
-
         if create_proof_request.type == ProofRequestType.INDY:
             presentation_request = V20PresRequestByFormat(
                 indy=create_proof_request.indy_proof_request
@@ -47,6 +44,9 @@ class VerifierV2(Verifier):
                 f"Unsupported credential type: {create_proof_request.type}",
                 status_code=501,
             )
+
+        bound_logger = logger.bind(body=create_proof_request)
+        bound_logger.debug("Creating v2 proof request")
 
         try:
             proof_record = await controller.present_proof_v2_0.create_proof_request(
@@ -71,16 +71,29 @@ class VerifierV2(Verifier):
         controller: AcaPyClient,
         send_proof_request: SendProofRequest,
     ) -> PresentationExchange:
+        if send_proof_request.type == ProofRequestType.INDY:
+            presentation_request = V20PresRequestByFormat(
+                indy=send_proof_request.indy_proof_request
+            )
+        elif send_proof_request.type == ProofRequestType.LD_PROOF:
+            presentation_request = V20PresRequestByFormat(
+                dif=send_proof_request.ld_proof_request
+            )
+        else:
+            raise CloudApiException(
+                f"Unsupported credential type: {send_proof_request.type}",
+                status_code=501,
+            )
+
         bound_logger = logger.bind(body=send_proof_request)
+
         try:
             bound_logger.debug("Send free v2 presentation request")
             presentation_exchange = (
                 await controller.present_proof_v2_0.send_request_free(
                     body=V20PresSendRequestRequest(
                         connection_id=send_proof_request.connection_id,
-                        presentation_request=V20PresRequestByFormat(
-                            dif=None, indy=send_proof_request.proof_request
-                        ),
+                        presentation_request=presentation_request,
                         auto_verify=send_proof_request.auto_verify,
                         comment=send_proof_request.comment,
                         trace=send_proof_request.trace,
@@ -104,16 +117,27 @@ class VerifierV2(Verifier):
     async def accept_proof_request(
         cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
+        if accept_proof_request.type == ProofRequestType.INDY:
+            presentation_spec = V20PresSpecByFormatRequest(
+                indy=accept_proof_request.indy_proof_request
+            )
+        elif accept_proof_request.type == ProofRequestType.LD_PROOF:
+            presentation_spec = V20PresSpecByFormatRequest(
+                dif=accept_proof_request.ld_proof_request
+            )
+        else:
+            raise CloudApiException(
+                f"Unsupported credential type: {accept_proof_request.type}",
+                status_code=501,
+            )
+
         bound_logger = logger.bind(body=accept_proof_request)
         pres_ex_id = pres_id_no_version(proof_id=accept_proof_request.proof_id)
 
         try:
             bound_logger.debug("Send v2 proof presentation")
             presentation_record = await controller.present_proof_v2_0.send_presentation(
-                pres_ex_id=pres_ex_id,
-                body=V20PresSpecByFormatRequest(
-                    indy=accept_proof_request.presentation_spec
-                ),
+                pres_ex_id=pres_ex_id, body=presentation_spec
             )
             result = record_to_model(presentation_record)
         except Exception as e:

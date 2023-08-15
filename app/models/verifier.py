@@ -21,7 +21,7 @@ class ProofRequestType(Enum):
 class ProofRequestBase(BaseModel):
     type: ProofRequestType = ProofRequestType.INDY
     indy_proof_request: Optional[IndyProofRequest]
-    ld_proof_request: Optional[DIFProofRequest]
+    dif_proof_request: Optional[DIFProofRequest]
 
     @validator("indy_proof_request", pre=True, always=True)
     @classmethod
@@ -32,12 +32,12 @@ class ProofRequestBase(BaseModel):
             )
         return value
 
-    @validator("ld_proof_request", pre=True, always=True)
+    @validator("dif_proof_request", pre=True, always=True)
     @classmethod
-    def check_ld_proof_request(cls, value, values):
+    def check_dif_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.LD_PROOF and value is None:
             raise ValueError(
-                "ld_proof_request must be populated if `ld_proof` type is selected"
+                "dif_proof_request must be populated if `ld_proof` type is selected"
             )
         return value
 

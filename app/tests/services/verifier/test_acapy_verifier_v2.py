@@ -2,8 +2,8 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
+from pydantic import ValidationError
 
-from app.exceptions.cloud_api_error import CloudApiException
 from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -61,9 +61,10 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 
     assert isinstance(created_proof_send_request, PresentationExchange)
 
-    with pytest.raises(CloudApiException):
+    with pytest.raises(ValidationError):
         await VerifierV2.send_proof_request(
-            mock_agent_controller, send_proof_request="I am invalid"
+            mock_agent_controller,
+            send_proof_request=SendProofRequest(indy_proof_request="I am invalid"),
         )
 
 

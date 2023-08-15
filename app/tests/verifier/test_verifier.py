@@ -424,7 +424,7 @@ async def test_get_proof_records(
 
 
 @pytest.mark.anyio
-async def test_get_credentials_for_request(
+async def test_get_credentials_by_proof_id(
     mock_agent_controller: AcaPyClient,
     mock_context_managed_controller: MockContextManagedController,
     mock_tenant_auth: AcaPyAuth,
@@ -439,7 +439,7 @@ async def test_get_credentials_for_request(
         cred_info=IndyCredInfo(cred_def_id="WgWxqztrNooG92RXvxSTWv:3:CL:20:tag")
     )
     # V1
-    when(VerifierV1).get_credentials_for_request(
+    when(VerifierV1).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v1-abcd"
     ).thenReturn(to_async([cred_precis]))
 
@@ -449,12 +449,12 @@ async def test_get_credentials_for_request(
     )
 
     assert result == [cred_precis]
-    verify(VerifierV1).get_credentials_for_request(
+    verify(VerifierV1).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v1-abcd"
     )
 
     # V2
-    when(VerifierV2).get_credentials_for_request(
+    when(VerifierV2).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v2-abcd"
     ).thenReturn(to_async([cred_precis]))
 
@@ -464,6 +464,6 @@ async def test_get_credentials_for_request(
     )
 
     assert result == [cred_precis]
-    verify(VerifierV2).get_credentials_for_request(
+    verify(VerifierV2).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v2-abcd"
     )

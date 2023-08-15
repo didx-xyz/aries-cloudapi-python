@@ -12,10 +12,10 @@ from pydantic import BaseModel, validator
 from shared.models.protocol import PresentProofProtocolVersion
 
 
-class ProofRequestType(Enum):
-    INDY = "indy"
-    JWT = "jwt"
-    LD_PROOF = "ld_proof"
+class ProofRequestType(str, Enum):
+    INDY: str = "indy"
+    JWT: str = "jwt"
+    LD_PROOF: str = "ld_proof"
 
 
 class ProofRequestBase(BaseModel):

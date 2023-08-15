@@ -7,10 +7,10 @@ from pydantic import BaseModel, validator
 from shared.models.protocol import IssueCredentialProtocolVersion
 
 
-class CredentialType(Enum):
-    INDY = "indy"
-    JWT = "jwt"
-    LD_PROOF = "ld_proof"
+class CredentialType(str, Enum):
+    INDY: str = "indy"
+    JWT: str = "jwt"
+    LD_PROOF: str = "ld_proof"
 
 
 class IndyCredential(BaseModel):

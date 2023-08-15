@@ -61,7 +61,7 @@ class ProofId(BaseModel):
     proof_id: str
 
 
-class AcceptProofRequest(ProofRequestBase, ProofId):
+class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
     indy_presentation_spec: Optional[IndyPresSpec]
     dif_presentation_spec: Optional[DIFPresSpec]

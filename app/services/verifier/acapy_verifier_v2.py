@@ -37,7 +37,7 @@ class VerifierV2(Verifier):
             )
         elif create_proof_request.type == ProofRequestType.LD_PROOF:
             presentation_request = V20PresRequestByFormat(
-                dif=create_proof_request.ld_proof_request
+                dif=create_proof_request.dif_proof_request
             )
         else:
             raise CloudApiException(
@@ -77,7 +77,7 @@ class VerifierV2(Verifier):
             )
         elif send_proof_request.type == ProofRequestType.LD_PROOF:
             presentation_request = V20PresRequestByFormat(
-                dif=send_proof_request.ld_proof_request
+                dif=send_proof_request.dif_proof_request
             )
         else:
             raise CloudApiException(
@@ -119,11 +119,11 @@ class VerifierV2(Verifier):
     ) -> PresentationExchange:
         if accept_proof_request.type == ProofRequestType.INDY:
             presentation_spec = V20PresSpecByFormatRequest(
-                indy=accept_proof_request.indy_proof_request
+                indy=accept_proof_request.indy_presentation_spec
             )
         elif accept_proof_request.type == ProofRequestType.LD_PROOF:
             presentation_spec = V20PresSpecByFormatRequest(
-                dif=accept_proof_request.ld_proof_request
+                dif=accept_proof_request.dif_presentation_spec
             )
         else:
             raise CloudApiException(

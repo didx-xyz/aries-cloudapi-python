@@ -341,6 +341,21 @@ services:
         --port 6543
         --storage-path ./
         --log-level INFO
+  governance-ga-web-health:
+    image: curlimages/curl
+    container_name: governance-ga-web-health
+    restart: "no"
+    command:
+      - /bin/sh
+      - -c
+      - |-
+        until curl -fsS http://governance-ga-web:8000/docs; do sleep 5; done
+    networks:
+      - governance-ga
+      - host
+    depends_on:
+      governance-ga-web:
+        condition: service_started
 
 volumes:
   webserver-cli:

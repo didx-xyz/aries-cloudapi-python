@@ -364,7 +364,7 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=pres_exchange.proof_id, presentation_spec=presentation
+                proof_id=pres_exchange.proof_id, indy_presentation_spec=presentation
             ),
             verifier=verifier,
         )
@@ -427,7 +427,7 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=pres_exchange.proof_id, presentation_spec=presentation
+                proof_id=pres_exchange.proof_id, indy_presentation_spec=presentation
             ),
             verifier=verifier,
         )
@@ -466,7 +466,7 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
         await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
+                proof_id=pres_exchange.proof_id, indy_presentation_spec=indy_pres_spec
             ),
             verifier=verifier,
         )
@@ -517,7 +517,8 @@ async def test_assert_valid_prover_x_actor_invalid_role(
             await assert_valid_prover(
                 aries_controller=mock_agent_controller,
                 presentation=AcceptProofRequest(
-                    proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
+                    proof_id=pres_exchange.proof_id,
+                    indy_presentation_spec=indy_pres_spec,
                 ),
                 verifier=verifier,
             )
@@ -568,7 +569,8 @@ async def test_assert_valid_prover_x_invalid_schemas(
             await assert_valid_prover(
                 aries_controller=mock_agent_controller,
                 presentation=AcceptProofRequest(
-                    proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
+                    proof_id=pres_exchange.proof_id,
+                    indy_presentation_spec=indy_pres_spec,
                 ),
                 verifier=verifier,
             )
@@ -602,7 +604,7 @@ async def test_assert_valid_prover_x_no_connection_id(
         assert await assert_valid_prover(
             aries_controller=mock_agent_controller,
             presentation=AcceptProofRequest(
-                proof_id=pres_exchange.proof_id, presentation_spec=indy_pres_spec
+                proof_id=pres_exchange.proof_id, indy_presentation_spec=indy_pres_spec
             ),
             verifier=verifier,
         )
@@ -631,7 +633,7 @@ async def test_assert_valid_verifier_invitation_key(mock_agent_controller: AcaPy
             proof_request=SendProofRequest(
                 protocol_version=PresentProofProtocolVersion.v1,
                 connection_id="a-connection-id",
-                proof_request=indy_proof_request,
+                indy_proof_request=indy_proof_request,
             ),
         )
 
@@ -650,7 +652,7 @@ async def test_assert_valid_verifier_public_did(mock_agent_controller: AcaPyClie
             proof_request=SendProofRequest(
                 protocol_version=PresentProofProtocolVersion.v1,
                 connection_id="abcde",
-                proof_request=indy_proof_request,
+                indy_proof_request=indy_proof_request,
             ),
         )
 
@@ -680,7 +682,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
                 proof_request=SendProofRequest(
                     protocol_version=PresentProofProtocolVersion.v1,
                     connection_id="a-connection-id",
-                    proof_request=indy_proof_request,
+                    indy_proof_request=indy_proof_request,
                 ),
             )
 
@@ -720,6 +722,6 @@ async def test_assert_valid_verifier_x_not_verifier(
                 proof_request=SendProofRequest(
                     protocol_version=PresentProofProtocolVersion.v1,
                     connection_id="a-connection-id",
-                    proof_request=indy_proof_request,
+                    indy_proof_request=indy_proof_request,
                 ),
             )

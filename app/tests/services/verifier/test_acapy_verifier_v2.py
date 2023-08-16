@@ -2,8 +2,8 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
 from mockito import when
+from pydantic import ValidationError
 
-from app.exceptions.cloud_api_error import CloudApiException
 from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -27,8 +27,8 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 
     created_proof_request = await VerifierV2.create_proof_request(
         controller=mock_agent_controller,
-        proof_request=CreateProofRequest(
-            protocol_version="v2", proof_request=indy_proof_request
+        create_proof_request=CreateProofRequest(
+            protocol_version="v2", indy_proof_request=indy_proof_request
         ),
     )
 
@@ -52,18 +52,19 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 
     created_proof_send_request = await VerifierV2.send_proof_request(
         controller=mock_agent_controller,
-        proof_request=SendProofRequest(
+        send_proof_request=SendProofRequest(
             protocol_version="v2",
             connection_id="abcde",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
         ),
     )
 
     assert isinstance(created_proof_send_request, PresentationExchange)
 
-    with pytest.raises(CloudApiException):
+    with pytest.raises(ValidationError):
         await VerifierV2.send_proof_request(
-            mock_agent_controller, proof_request="I am invalid"
+            mock_agent_controller,
+            send_proof_request=SendProofRequest(indy_proof_request="I am invalid"),
         )
 
 
@@ -75,10 +76,10 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
 
     accepted_proof_request = await VerifierV2.accept_proof_request(
         mock_agent_controller,
-        proof_request=AcceptProofRequest(
+        accept_proof_request=AcceptProofRequest(
             protocol_version="v2",
             proof_id="v2-abcd",
-            presentation_spec=IndyPresSpec(
+            indy_presentation_spec=IndyPresSpec(
                 requested_predicates={},
                 requested_attributes={},
                 self_attested_attributes={},
@@ -103,7 +104,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
 
     deleted_proof_request = await VerifierV2.reject_proof_request(
         controller=mock_agent_controller,
-        proof_request=RejectProofRequest(
+        reject_proof_request=RejectProofRequest(
             protocol_version="v2", proof_id="v2-abc", problem_report=None
         ),
     )
@@ -121,5 +122,5 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
 
     with pytest.raises(AttributeError):
         deleted_proof_request = await VerifierV2.reject_proof_request(
-            controller=mock_agent_controller, proof_request="abc"
+            controller=mock_agent_controller, reject_proof_request="abc"
         )

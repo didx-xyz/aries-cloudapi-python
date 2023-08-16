@@ -26,8 +26,8 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
 
     created_proof_request = await VerifierV1.create_proof_request(
         controller=mock_agent_controller,
-        proof_request=CreateProofRequest(
-            proof_request=indy_proof_request,
+        create_proof_request=CreateProofRequest(
+            indy_proof_request=indy_proof_request,
             comment=None,
             protocol_version=PresentProofProtocolVersion.v1,
         ),
@@ -56,9 +56,9 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
 
     created_proof_send_proposal = await VerifierV1.send_proof_request(
         controller=mock_agent_controller,
-        proof_request=SendProofRequest(
+        send_proof_request=SendProofRequest(
             connection_id="abcde",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             protocol_version=PresentProofProtocolVersion.v1,
         ),
     )
@@ -74,9 +74,9 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
 
     accepted_proof_request = await VerifierV1.accept_proof_request(
         mock_agent_controller,
-        proof_request=AcceptProofRequest(
+        accept_proof_request=AcceptProofRequest(
             proof_id="v1-123",
-            presentation_spec=IndyPresSpec(
+            indy_presentation_spec=IndyPresSpec(
                 requested_attributes={},
                 requested_predicates={},
                 self_attested_attributes={},
@@ -101,7 +101,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
 
     deleted_proof_request = await VerifierV1.reject_proof_request(
         controller=mock_agent_controller,
-        proof_request=RejectProofRequest(proof_id="v1-abc"),
+        reject_proof_request=RejectProofRequest(proof_id="v1-abc"),
     )
 
     assert deleted_proof_request is None
@@ -118,5 +118,5 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
     with pytest.raises(AttributeError):
         deleted_proof_request = await VerifierV1.reject_proof_request(
             controller=mock_agent_controller,
-            proof_request="v1-abc",
+            reject_proof_request="v1-abc",
         )

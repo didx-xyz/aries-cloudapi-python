@@ -36,7 +36,7 @@ def create_send_request(
     return SendProofRequest(
         protocol_version=protocol_version.value,
         connection_id=connection_id,
-        proof_request=indy_proof_request,
+        indy_proof_request=indy_proof_request,
     )
 
 
@@ -52,7 +52,7 @@ async def test_accept_proof_request_v1(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
     acme_exchange = response.json()
@@ -85,7 +85,7 @@ async def test_accept_proof_request_v1(
 
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        presentation_spec=IndyPresSpec(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -132,7 +132,7 @@ async def test_accept_proof_request_oob_v1(
 
     # Create the proof request against aca-py
     create_proof_request = CreateProofRequest(
-        proof_request=indy_proof_request,
+        indy_proof_request=indy_proof_request,
         auto_verify=True,
         comment="some comment",
         protocol_version=PresentProofProtocolVersion.v1.value,
@@ -183,7 +183,7 @@ async def test_accept_proof_request_oob_v1(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        presentation_spec=IndyPresSpec(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -229,7 +229,7 @@ async def test_accept_proof_request_oob_v2(
         json={
             "comment": "some comment",
             "protocol_version": "v2",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
     bob_exchange = response.json()
@@ -274,7 +274,7 @@ async def test_accept_proof_request_oob_v2(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        presentation_spec=IndyPresSpec(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -322,7 +322,7 @@ async def test_accept_proof_request_v2(
             "protocol_version": "v2",
             # Custom proof request because v2 doesn't support proof request without restrictions
             # see: https://github.com/hyperledger/aries-cloudagent-python/issues/1755
-            "proof_request": {
+            "indy_proof_request": {
                 "name": "Proof Request",
                 "version": "1.0.0",
                 "requested_attributes": {
@@ -356,7 +356,7 @@ async def test_accept_proof_request_v2(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        presentation_spec=IndyPresSpec(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -400,7 +400,7 @@ async def test_send_proof_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -429,7 +429,7 @@ async def test_send_proof_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -471,7 +471,7 @@ async def test_reject_proof_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -506,7 +506,7 @@ async def test_get_proof_single(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -527,7 +527,7 @@ async def test_get_proof_single(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -556,7 +556,7 @@ async def test_get_proofs_multi(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -578,7 +578,7 @@ async def test_get_proofs_multi(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -605,7 +605,7 @@ async def test_delete_proof(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -622,7 +622,7 @@ async def test_delete_proof(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -651,7 +651,7 @@ async def test_get_credentials_for_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 
@@ -686,7 +686,7 @@ async def test_get_credentials_for_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.dict(),
         },
     )
 

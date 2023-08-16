@@ -101,7 +101,7 @@ To create schemas and effectively write them to the ledger as well as registerin
    {
      "protocol_version": "v1",
      "connection_id": "string",
-     "proof_request": {
+     "indy_proof_request": {
        "requested_attributes": {
          "additionalProp1": {
            "name": "string",
@@ -144,7 +144,7 @@ To create schemas and effectively write them to the ledger as well as registerin
    {
      "protocol_version": "v1",
      "proof_id": "string",
-     "presentation_spec": {
+     "indy_presentation_spec": {
        "requested_attributes": {
          "additionalProp1": {
            "cred_id": "string",

@@ -369,7 +369,7 @@ services:
       LEDGER_REGISTRATION_URL: http://ledger-browser:8000/register
       REDIS_HOST: wh-redis
     volumes:
-      - ./test-outputs:/tests/outputs
+      - ./logs/containerized-tests:/tests/outputs
     networks:
       - governance-ga
       - host

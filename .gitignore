@@ -58,6 +58,7 @@ junit.xml
 .hypothesis/
 .pytest_cache/
 cover/
+logs/containerized-tests
 
 # Translations
 *.mo

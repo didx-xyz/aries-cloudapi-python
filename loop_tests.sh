@@ -14,6 +14,10 @@ else
         exit 1
     fi
 fi
+
+# Loop based on the user input
+while [[ $nr -le $loop_count ]]; do
+    echo "This is run ${nr}"
     ./manage tests
     ./manage down
     ((nr=nr+1))

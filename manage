@@ -264,10 +264,9 @@ tests)
       if [[ "$line" == "tests exited with code"* ]]; then
         # React to the desired log entry
         echo "Detected 'tests exited with code' in log. Stopping services..."
-        break
+        exit 0
       fi
     done
-  exit 0
   ;;
 restart)
   _startupParams=$(getStartupParams $@)

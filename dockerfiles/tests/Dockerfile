@@ -13,4 +13,5 @@ RUN pip install -r requirements.txt -r requirements.dev.txt
 
 COPY . .
 
+# docker compose overwrites this
 CMD ["pytest", "--junitxml=test_output.xml"]

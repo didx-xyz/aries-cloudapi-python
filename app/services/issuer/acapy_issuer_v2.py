@@ -30,11 +30,11 @@ class IssuerV2(Issuer):
         cls, controller: AcaPyClient, credential: CredentialWithConnection
     ):
         bound_logger = logger.bind(body=credential)
-        bound_logger.debug("Getting credential preview from attributes")
 
         credential_preview = None
         # Determine the appropriate filter based on the type
         if credential.type == CredentialType.INDY:
+            bound_logger.debug("Getting credential preview from attributes")
             credential_preview = cls.__preview_from_attributes(
                 attributes=credential.indy_credential_detail.attributes
             )
@@ -65,11 +65,11 @@ class IssuerV2(Issuer):
     @classmethod
     async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
         bound_logger = logger.bind(body=credential)
-        bound_logger.debug("Getting credential preview from attributes")
 
         credential_preview = None
         # Determine the appropriate filter based on the type
         if credential.type == CredentialType.INDY:
+            bound_logger.debug("Getting credential preview from attributes")
             credential_preview = cls.__preview_from_attributes(
                 attributes=credential.indy_credential_detail.attributes
             )

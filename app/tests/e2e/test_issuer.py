@@ -11,7 +11,6 @@ from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.credentials import cred_id_no_version
 from shared import RichAsyncClient
-from shared.models.topics import CredentialExchange
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
@@ -340,7 +339,6 @@ async def test_send_credential_request(
     )
 
 
-@pytest.mark.skip(reason="Inconsistent results, skipping for now until it's reworked")
 @pytest.mark.anyio
 async def test_revoke_credential(
     faber_client: RichAsyncClient,
@@ -364,11 +362,13 @@ async def test_revoke_credential(
         topic="credentials", wallet_id=alice_tenant.tenant_id
     )
 
-    # create and send credential offer- issuer
-    await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
+    # create and send credential offer: issuer
+    faber_credential_id = (
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    ).json()["credential_id"]
 
     payload = await alice_credentials_listener.wait_for_event(
         field="connection_id",
@@ -378,7 +378,7 @@ async def test_revoke_credential(
 
     alice_credential_id = payload["credential_id"]
 
-    # send credential request - holder
+    # send credential request: holder
     response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
@@ -389,27 +389,7 @@ async def test_revoke_credential(
         desired_state="done",
     )
 
-    # Retrieve an issued credential
-    records = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
-    record_as_issuer_for_alice = [
-        rec
-        for rec in records
-        if (
-            rec["role"] == "issuer"
-            and rec["state"] in ("credential-issued", "done")
-            and rec["connection_id"] == faber_connection_id
-        )
-    ]
-
-    if record_as_issuer_for_alice:
-        record_issuer_for_alice: CredentialExchange = record_as_issuer_for_alice[-1]
-    else:
-        raise Exception(
-            "No records matched state: `credential-issued` or `done` with role: `issuer`."
-            + f"Looking for connection_id = {faber_connection_id}. List of records retrieved: {records}.\n"
-        )
-
-    cred_id = cred_id_no_version(record_issuer_for_alice["credential_id"])
+    cred_id = cred_id_no_version(faber_credential_id)
 
     response = await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/revoke",

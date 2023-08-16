@@ -76,7 +76,7 @@ async def test_send_proof_request_v1(
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
-        proof_request=indy_proof_request,
+        indy_proof_request=indy_proof_request,
         protocol_version="v1",
     )
 
@@ -87,13 +87,13 @@ async def test_send_proof_request_v1(
     )
 
     result = await test_module.send_proof_request(
-        proof_request=send_proof_request,
+        body=send_proof_request,
         auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_1
     verify(VerifierV1).send_proof_request(
-        controller=mock_agent_controller, proof_request=send_proof_request
+        controller=mock_agent_controller, send_proof_request=send_proof_request
     )
 
 
@@ -119,7 +119,7 @@ async def test_send_proof_request_v2(
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
-        proof_request=indy_proof_request,
+        indy_proof_request=indy_proof_request,
         protocol_version="v2",
     )
 
@@ -130,13 +130,13 @@ async def test_send_proof_request_v2(
     )
 
     result = await test_module.send_proof_request(
-        proof_request=send_proof_request,
+        body=send_proof_request,
         auth=mock_tenant_auth,
     )
 
     assert result is presentation_exchange_record_2
     verify(VerifierV2).send_proof_request(
-        controller=mock_agent_controller, proof_request=send_proof_request
+        controller=mock_agent_controller, send_proof_request=send_proof_request
     )
 
 
@@ -147,9 +147,9 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
         to_async(presentation_exchange_record_1)
     )
     result = await test_module.create_proof_request(
-        proof_request=test_module.CreateProofRequest(
+        body=test_module.CreateProofRequest(
             protocol_version="v1",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             connection_id="abcde",
         ),
         auth=mock_tenant_auth,
@@ -161,9 +161,9 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
         to_async(presentation_exchange_record_2)
     )
     result = await test_module.create_proof_request(
-        proof_request=test_module.CreateProofRequest(
+        body=test_module.CreateProofRequest(
             protocol_version="v2",
-            proof_request=indy_proof_request,
+            indy_proof_request=indy_proof_request,
             connection_id="abcde",
         ),
         auth=mock_tenant_auth,
@@ -187,7 +187,7 @@ async def test_accept_proof_request_v1(
     )
 
     presentation = test_module.AcceptProofRequest(
-        proof_id="v1-1234", presentation_spec=indy_pres_spec
+        proof_id="v1-1234", indy_presentation_spec=indy_pres_spec
     )
 
     mocker.patch.object(
@@ -201,7 +201,7 @@ async def test_accept_proof_request_v1(
     )
 
     result = await test_module.accept_proof_request(
-        presentation=presentation,
+        body=presentation,
         auth=mock_tenant_auth,
     )
 
@@ -225,7 +225,7 @@ async def test_accept_proof_request_v2(
     )
 
     presentation = test_module.AcceptProofRequest(
-        proof_id="v2-1234", presentation_spec=indy_pres_spec
+        proof_id="v2-1234", indy_presentation_spec=indy_pres_spec
     )
 
     mocker.patch.object(
@@ -239,7 +239,7 @@ async def test_accept_proof_request_v2(
     )
 
     result = await test_module.accept_proof_request(
-        presentation=presentation,
+        body=presentation,
         auth=mock_tenant_auth,
     )
 
@@ -264,7 +264,7 @@ async def test_reject_proof_request(
     )
 
     when(VerifierV1).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v1
+        controller=mock_agent_controller, reject_proof_request=proof_request_v1
     ).thenReturn(to_async(None))
     presentation_exchange_record_1.state = "request-received"
     when(VerifierV1).get_proof_record(
@@ -272,13 +272,13 @@ async def test_reject_proof_request(
     ).thenReturn(to_async(presentation_exchange_record_1))
 
     result = await test_module.reject_proof_request(
-        proof_request=test_module.RejectProofRequest(proof_id="v1-1234"),
+        body=test_module.RejectProofRequest(proof_id="v1-1234"),
         auth=mock_tenant_auth,
     )
 
     assert result is None
     verify(VerifierV1).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v1
+        controller=mock_agent_controller, reject_proof_request=proof_request_v1
     )
     verify(VerifierV1).get_proof_record(
         controller=mock_agent_controller, proof_id=proof_request_v1.proof_id
@@ -288,7 +288,7 @@ async def test_reject_proof_request(
 
     # V2
     when(VerifierV2).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v2
+        controller=mock_agent_controller, reject_proof_request=proof_request_v2
     ).thenReturn(to_async(None))
     presentation_exchange_record_2.state = "request-received"
     when(VerifierV2).get_proof_record(
@@ -296,13 +296,13 @@ async def test_reject_proof_request(
     ).thenReturn(to_async(presentation_exchange_record_2))
 
     result = await test_module.reject_proof_request(
-        proof_request=test_module.RejectProofRequest(proof_id="v2-1234"),
+        body=test_module.RejectProofRequest(proof_id="v2-1234"),
         auth=mock_tenant_auth,
     )
 
     assert result is None
     verify(VerifierV2).reject_proof_request(
-        controller=mock_agent_controller, proof_request=proof_request_v2
+        controller=mock_agent_controller, reject_proof_request=proof_request_v2
     )
     verify(VerifierV2).get_proof_record(
         controller=mock_agent_controller, proof_id=proof_request_v2.proof_id
@@ -424,7 +424,7 @@ async def test_get_proof_records(
 
 
 @pytest.mark.anyio
-async def test_get_credentials_for_request(
+async def test_get_credentials_by_proof_id(
     mock_agent_controller: AcaPyClient,
     mock_context_managed_controller: MockContextManagedController,
     mock_tenant_auth: AcaPyAuth,
@@ -439,31 +439,31 @@ async def test_get_credentials_for_request(
         cred_info=IndyCredInfo(cred_def_id="WgWxqztrNooG92RXvxSTWv:3:CL:20:tag")
     )
     # V1
-    when(VerifierV1).get_credentials_for_request(
+    when(VerifierV1).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v1-abcd"
     ).thenReturn(to_async([cred_precis]))
 
-    result = await test_module.get_credentials_for_request(
+    result = await test_module.get_credentials_by_proof_id(
         proof_id="v1-abcd",
         auth=mock_tenant_auth,
     )
 
     assert result == [cred_precis]
-    verify(VerifierV1).get_credentials_for_request(
+    verify(VerifierV1).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v1-abcd"
     )
 
     # V2
-    when(VerifierV2).get_credentials_for_request(
+    when(VerifierV2).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v2-abcd"
     ).thenReturn(to_async([cred_precis]))
 
-    result = await test_module.get_credentials_for_request(
+    result = await test_module.get_credentials_by_proof_id(
         proof_id="v2-abcd",
         auth=mock_tenant_auth,
     )
 
     assert result == [cred_precis]
-    verify(VerifierV2).get_credentials_for_request(
+    verify(VerifierV2).get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v2-abcd"
     )

@@ -12,7 +12,8 @@ from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
 
-from app.models.issuer import CredentialBase, CredentialWithConnection
+from app.exceptions.cloud_api_error import CloudApiException
+from app.models.issuer import CredentialBase, CredentialType, CredentialWithConnection
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
@@ -27,6 +28,12 @@ class IssuerV1(Issuer):
     async def send_credential(
         cls, controller: AcaPyClient, credential: CredentialWithConnection
     ):
+        if credential.type != CredentialType.INDY:
+            raise CloudApiException(
+                f"Only Indy credential types are supported in v1. Requested type: {credential.type}",
+                status_code=400,
+            )
+
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
@@ -47,6 +54,12 @@ class IssuerV1(Issuer):
 
     @classmethod
     async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
+        if credential.type != CredentialType.INDY:
+            raise CloudApiException(
+                f"Only Indy credential types are supported in v1. Requested type: {credential.type}",
+                status_code=400,
+            )
+
         bound_logger = logger.bind(body=credential)
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(

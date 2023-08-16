@@ -165,7 +165,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         json={
             "protocol_version": "v1",
             "connection_id": verifier_holder_connection_id,
-            "proof_request": {
+            "indy_proof_request": {
                 "name": "Age Check",
                 "version": "1.0",
                 "requested_attributes": {
@@ -213,7 +213,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         VERIFIER_BASE_PATH + "/accept-request",
         json={
             "proof_id": holder_proof_exchange_id,
-            "presentation_spec": {
+            "indy_presentation_spec": {
                 "requested_attributes": {
                     "name": {
                         "cred_id": cred_id,

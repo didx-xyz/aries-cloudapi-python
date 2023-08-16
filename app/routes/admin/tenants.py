@@ -24,7 +24,6 @@ from app.models.tenants import (
     TenantAuth,
     UpdateTenantRequest,
     WalletListWithGroups,
-    tenant_from_wallet_record,
 )
 from app.services.onboarding import handle_tenant_update, onboard_tenant
 from app.services.trust_registry import (
@@ -35,6 +34,7 @@ from app.services.trust_registry import (
     register_actor,
     remove_actor_by_id,
 )
+from app.util.tenants import tenant_from_wallet_record
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

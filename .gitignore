@@ -1,7 +1,6 @@
 # data
 data/
 **.db
-test-outputs/
 
 # VSCode
 .vscode

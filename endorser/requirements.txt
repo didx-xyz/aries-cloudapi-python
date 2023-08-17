@@ -1,0 +1,5 @@
+aries-cloudcontroller==0.9.1b0
+fastapi_websocket_pubsub~=0.3.4
+httpx~=0.24.1
+loguru~=0.7.0
+typing-extensions~=4.7.0

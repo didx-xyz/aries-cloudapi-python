@@ -1,96 +1,355 @@
 version: "3"
 
 services:
-  yoma-ga-web:
+  governance-ga-web:
+    image: ${REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
+    container_name: governance-ga-web
     build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
-      - "8000:8000"
+      - 0.0.0.0:8000:8000
     volumes:
       - ./app:/app
+      - ./environments/governance-ga/fastapi.default.env:/app/.env
+      - ./logs/governance:/logs
     depends_on:
-      - yoma-ga-wallets-db
+      governance-ga-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+      governance-multitenant-agent:
+        condition: service_healthy
     networks:
-      - yoma-ga
+      - governance-ga
+      - host
     env_file:
-      - environments/yoma-ga/fastapi.default.env
-  yoma-ga-wallets-db:
-    image: postgres:11
-    container_name: yoma-ga-wallets-db
+      - environments/governance-ga/fastapi.default.env
+  governance-ga-wallets-db:
+    image: postgres:15
+    container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*'
     env_file:
-      - environments/yoma-ga/db.default.env
+      - environments/governance-ga/db.default.env
     volumes:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - yoma-ga
+      - governance-ga
+      - host
     tty: true
-  ngrok-yoma-ga:
-    image: wernight/ngrok
-    env_file:
-      - environments/yoma-ga/aca-py-agent.default.env
-    command: ngrok http yoma-ga-agent:3020 --log stdout
-    networks:
-      - yoma-ga
-  yoma-ga-agent:
+  # ngrok-governance-ga:
+  #   image: wernight/ngrok
+  #   env_file:
+  #     - environments/governance-ga/aca-py-agent.default.env
+  #   command: ngrok http governance-ga-agent:3020 --log stdout
+  #   networks:
+  #     - governance-ga
+  #     - host
+  #   depends_on:
+  #     - ledger-nodes
+  #     - ledger-browser
+  governance-ga-agent:
+    image: ${REGISTRY:-local}/governance-ga-agent:${IMAGE_TAG:-latest}
+    container_name: governance-ga-agent
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.agent
     env_file:
-      - environments/yoma-ga/aca-py-agent.default.env
+      - environments/governance-ga/aca-py-agent.default.env
     ports:
-      - 3020:3020
-      - 3021:3021
+      - 0.0.0.0:3020:3020
+      - 0.0.0.0:3021:3021
     depends_on:
-      - yoma-ga-wallets-db
+      governance-ga-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
     networks:
-      - yoma-ga
-  yoma-multitenant-web:
-    build: 
+      - governance-ga
+      - host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3021/status/ready"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+  governance-trust-registry:
+    image: ${REGISTRY:-local}/governance-trust-registry:${IMAGE_TAG:-latest}
+    container_name: governance-trust-registry
+    build:
+      context: .
+      dockerfile: ./dockerfiles/trustregistry/Dockerfile
+    env_file:
+      - environments/trustregistry/trustregistry.default.env
+    ports:
+      - 0.0.0.0:8001:8001
+    volumes:
+      - ./trustregistry:/trustregistry
+      - ./logs:/logs
+    networks:
+      - governance-ga
+      - governance-multitenant
+      - host
+    depends_on:
+      trustregistry-db:
+        condition: service_started
+  trustregistry-db:
+    image: postgres:15
+    container_name: trustregistry-db
+    command: postgres -c listen_addresses='*'
+    environment:
+      - POSTGRES_DB=trustregistry
+      - POSTGRES_USER=trustregistry
+      - POSTGRES_PASSWORD=trustregistry
+    networks:
+      - governance-ga
+      - governance-multitenant
+      - host
+    tty: true
+  governance-multitenant-web:
+    image: ${REGISTRY:-local}/governance-multitenant-web:${IMAGE_TAG:-latest}
+    container_name: governance-multitenant-web
+    build:
       context: .
       dockerfile: ./dockerfiles/fastapi/Dockerfile
     ports:
-      - "8100:8000"
+      - 0.0.0.0:8100:8000
     volumes:
       - ./app:/app
+      - ./environments/governance-multitenant/fastapi.default.env:/app/.env
+      - ./logs/multitenant:/logs
     depends_on:
-      - yoma-multitenant-wallets-db
+      governance-multitenant-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+      governance-multitenant-agent:
+        condition: service_healthy
     networks:
-      - yoma-multitenant
-    env_file: 
-      - environments/yoma-multitenant/fastapi.default.env
-  yoma-multitenant-wallets-db:
-    image: postgres:11
-    container_name: yoma-multitenant-wallets-db
+      - governance-multitenant
+      - host
+    env_file:
+      - environments/governance-multitenant/fastapi.default.env
+  governance-webhooks-web:
+    image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
+    container_name: governance-webhooks-web
+    build:
+      context: .
+      dockerfile: ./dockerfiles/webhooks/Dockerfile
+    ports:
+      - 0.0.0.0:3010:3010
+    volumes:
+      - ./webhooks:/webhooks
+      - ./logs:/logs
+    networks:
+      - governance-multitenant
+      - governance-ga
+      - host
+    env_file:
+      - environments/webhooks/fastapi.webhooks.env
+    environment:
+      - REDIS_HOST=wh-redis
+  governance-endorser:
+    image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
+    container_name: governance-endorser
+    build:
+      context: .
+      dockerfile: ./dockerfiles/endorser/Dockerfile
+    volumes:
+      - ./endorser:/endorser
+      - ./logs:/logs
+    networks:
+      - governance-multitenant
+      - governance-ga
+      - host
+    env_file:
+      - environments/endorser/endorser.env
+  wh-redis:
+    image: redis:latest
+    container_name: wh-redis
+    restart: always
+    ports:
+      - 0.0.0.0:6379:6379
+    volumes:
+      - $PWD/data:/data
+    networks:
+      - host
+    env_file:
+      - environments/webhooks/redis.env
+  governance-multitenant-wallets-db:
+    image: postgres:15
+    container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*'
-    env_file: 
-      - environments/yoma-multitenant/db.default.env
+    env_file:
+      - environments/governance-multitenant/db.default.env
     volumes:
       - ./resources/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - yoma-multitenant
+      - governance-multitenant
+      - host
     tty: true
-  ngrok-yoma-multitenant:
+  ngrok-governance-multitenant:
     image: wernight/ngrok
+    container_name: ngrok-governance-multitenant
     env_file:
-      - environments/yoma-multitenant/aca-py-agent.default.env
-    command: ngrok http yoma-multitenant-agent:3020 --log stdout
+      - environments/governance-multitenant/aca-py-agent.default.env
+    command: ngrok http governance-multitenant-agent:3020 --log stdout
     networks:
-      - yoma-multitenant
-  yoma-multitenant-agent:
+      - governance-multitenant
+      - host
+    depends_on:
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+  governance-multitenant-agent:
+    image: ${REGISTRY:-local}/governance-multitenant-agent:${IMAGE_TAG:-latest}
+    container_name: governance-multitenant-agent
     build:
       context: .
-      dockerfile: dockerfiles/agents/Dockerfile.agent
+      dockerfile: dockerfiles/agents/Dockerfile.author.agent
     env_file:
-      - environments/yoma-multitenant/aca-py-agent.default.env
+      - environments/governance-multitenant/aca-py-agent.default.env
     ports:
-      - 4020:3020
-      - 4021:3021
+      - 0.0.0.0:4020:3020
+      - 0.0.0.0:4021:3021
     depends_on:
-      - yoma-multitenant-wallets-db
+      governance-multitenant-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
     networks:
-      - yoma-multitenant
+      - governance-multitenant
+      - governance-ga
+      - host
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3021/status/ready"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+  ledger-browser:
+    image: ${REGISTRY:-local}/ledger-browser
+    container_name: ledger-browser
+    build:
+      context: https://github.com/bcgov/von-network.git#main
+      dockerfile: Dockerfile
+    command: "bash -c './scripts/start_webserver.sh'"
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
+      - MAX_FETCH=50000
+      - RESYNC_TIME=120
+      - REGISTER_NEW_DIDS=True
+      - LEDGER_INSTANCE_NAME=localhost
+      - LOG_LEVEL=WARNING
+      # - POOL_CONNECTION_ATTEMPTS=${POOL_CONNECTION_ATTEMPTS:-5}
+      # - POOL_CONNECTION_DELAY=${POOL_CONNECTION_DELAY:-10}
+      - LEDGER_SEED=${LEDGER_SEED:-000000000000000000000000Trustee1}
+    ports:
+      - ${WEB_SERVER_HOST_PORT:-9000}:8000
+    volumes:
+      - webserver-cli:/home/indy/.indy-cli
+      - webserver-ledger:/home/indy/ledger
+    networks:
+      - governance-multitenant
+      - governance-ga
+      - host
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://ledger-browser:8000" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    depends_on:
+      ledger-nodes:
+        condition: service_healthy
+  ledger-nodes:
+    image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
+    container_name: ledger-nodes
+    build:
+      context: https://github.com/bcgov/von-network.git#main
+      dockerfile: Dockerfile
+    command: "bash -c './scripts/start_nodes.sh'"
+    ports:
+      - 0.0.0.0:9701:9701
+      - 0.0.0.0:9702:9702
+      - 0.0.0.0:9703:9703
+      - 0.0.0.0:9704:9704
+      - 0.0.0.0:9705:9705
+      - 0.0.0.0:9706:9706
+      - 0.0.0.0:9707:9707
+      - 0.0.0.0:9708:9708
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
+      - LOG_LEVEL=WARNING
+    volumes:
+      - nodes-data:/home/indy/ledger
+      - ./scripts/indy_healthcheck.sh:/home/indy/indy_healthcheck.sh
+    networks:
+      - governance-multitenant
+      - governance-ga
+      - host
+    healthcheck:
+      test: [ "CMD-SHELL", "/home/indy/indy_healthcheck.sh" ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+  tails-server:
+    image: ${REGISTRY:-local}/tails-server:${IMAGE_TAG:-latest}
+    container_name: tails-server
+    build:
+      context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
+      dockerfile: docker/Dockerfile.tails-server
+    ports:
+      - 0.0.0.0:6543:6543
+    networks:
+      - governance-multitenant
+      - governance-ga
+      - host
+    environment:
+      - DOCKERHOST=${DOCKERHOST}
+    command: >
+      tails-server
+        --host 0.0.0.0
+        --port 6543
+        --storage-path ./
+        --log-level INFO
+
+volumes:
+  webserver-cli:
+  webserver-ledger:
+  nodes-data:
+  data:
+
+
 networks:
-  yoma-multitenant:
-  yoma-ga:
+  governance-multitenant:
+  governance-ga:
+  host:

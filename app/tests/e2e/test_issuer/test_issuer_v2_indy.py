@@ -104,3 +104,9 @@ async def test_send_credential(
 
     # nothing currently in alice's records
     assert len(records) == 0
+
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+

@@ -290,3 +290,5 @@ async def test_revoke_credential(
             "credential_exchange_id": cred_id,
         },
     )
+
+    assert response.status_code == 204

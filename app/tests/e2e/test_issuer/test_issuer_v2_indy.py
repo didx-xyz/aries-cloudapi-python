@@ -179,3 +179,7 @@ async def test_send_credential_request(
         },
     }
 
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )

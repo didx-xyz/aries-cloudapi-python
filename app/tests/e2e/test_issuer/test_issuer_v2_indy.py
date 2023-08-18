@@ -24,3 +24,11 @@ async def test_send_credential_oob_v2(
 ):
     wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_credentials_listener = SseListener(topic="credentials", wallet_id=wallet_id)
+
+    credential = {
+        "protocol_version": "v2",
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+    }

@@ -116,3 +116,15 @@ async def test_send_credential(
     assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
+
+    assert await check_webhook_state(
+        client=faber_client,
+        topic="credentials",
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": data["credential_id"],
+        },
+    )
+
+
+

@@ -228,3 +228,11 @@ async def test_send_credential_request(
     )
 
 
+@pytest.mark.anyio
+async def test_revoke_credential(
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    credential_definition_id_revocable: str,
+    faber_and_alice_connection: FaberAliceConnect,
+):

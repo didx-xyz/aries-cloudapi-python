@@ -163,3 +163,10 @@ async def test_create_offer(
         },
     )
 
+@pytest.mark.anyio
+async def test_send_credential_request(
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    credential_definition_id: str,
+):

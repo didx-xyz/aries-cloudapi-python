@@ -83,3 +83,10 @@ async def test_send_jsonld_credential(
     records = response.json()
 
     assert len(records) == 1
+
+    # Check if the received credential matches the sent one
+    received_credential = records[-1]
+    assert_that(received_credential).has_connection_id(alice_connection_id)
+    assert_that(received_credential).has_state("offer-received")
+    assert_that(received_credential).has_role("holder")
+    assert_that(received_credential["credential_id"]).starts_with("v2")

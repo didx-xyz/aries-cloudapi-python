@@ -280,3 +280,10 @@ async def test_revoke_credential(
 
     cred_id = cred_id_no_version(faber_credential_id)
 
+    response = await faber_client.post(
+        f"{CREDENTIALS_BASE_PATH}/revoke",
+        json={
+            "credential_definition_id": credential_definition_id_revocable,
+            "credential_exchange_id": cred_id,
+        },
+    )

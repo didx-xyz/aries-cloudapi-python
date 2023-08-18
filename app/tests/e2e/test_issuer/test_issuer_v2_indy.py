@@ -221,3 +221,10 @@ async def test_send_credential_request(
         topic="credentials",
     )
 
+    assert await check_webhook_state(
+        client=faber_client,
+        filter_map={"state":"request-received"},
+        topic="credentials"
+    )
+
+

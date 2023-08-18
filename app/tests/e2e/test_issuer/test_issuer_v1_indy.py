@@ -182,3 +182,9 @@ async def test_send_credential_request(
             "attributes": {"speed": "10"},
         },
     }
+
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()

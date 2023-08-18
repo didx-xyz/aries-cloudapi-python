@@ -174,3 +174,11 @@ async def test_send_credential_request(
     faber_and_alice_connection: FaberAliceConnect,
     credential_definition_id: str,
 ):
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": faber_and_alice_connection.faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+    }

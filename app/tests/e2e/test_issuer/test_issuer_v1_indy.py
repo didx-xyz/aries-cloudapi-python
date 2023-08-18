@@ -51,3 +51,14 @@ async def test_send_credential_oob_v1(
     assert_that(data).has_protocol_version("v1")
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
+
+    invitation_response = await faber_client.post(
+        OOB_BASE_PATH + "/create-invitation",
+        json={
+            "create_connection": False,
+            "use_public_did": False,
+            "attachments": [
+                {"id": data["credential_id"][3:], "type": "credential-offer"}
+            ],
+        },
+    )

@@ -188,3 +188,4 @@ async def test_send_credential_request(
         json=credential,
     )
     credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v1"

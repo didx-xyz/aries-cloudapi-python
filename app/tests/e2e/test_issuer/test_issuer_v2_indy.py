@@ -214,3 +214,10 @@ async def test_send_credential_request(
     )
 
     assert  request_response.status_code == 200
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="credentials",
+    )
+

@@ -28,3 +28,28 @@ async def test_send_jsonld_credential(
 
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
 
+    # Creating JSON-LD credential
+    credential = {
+        "type": "ld_proof",
+        "connection_id": faber_connection_id,
+        "protocol_version": "v2",
+        "ld_credential_detail": {
+            "credential": {
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://www.w3.org/2018/credentials/examples/v1",
+                ],
+                "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+                "credentialSubject": {
+                    "degree": {
+                        "type": "BachelorDegree",
+                        "name": "Bachelor of Science and Arts",
+                    },
+                    "college": "Faber College",
+                },
+                "issuanceDate": "2021-04-12",
+                "issuer": f"did:sov:{faber_pub_did}",
+            },
+            "options": {"proofType": "Ed25519Signature2018"},
+        },
+    }

@@ -278,3 +278,5 @@ async def test_revoke_credential(
         desired_state="done",
     )
 
+    cred_id = cred_id_no_version(faber_credential_id)
+

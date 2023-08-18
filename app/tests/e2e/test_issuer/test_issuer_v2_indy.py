@@ -258,3 +258,10 @@ async def test_revoke_credential(
             json=credential,
         )
     ).json()["credential_id"]
+
+    payload = await alice_credentials_listener.wait_for_event(
+        field="connection_id",
+        field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
+    )
+

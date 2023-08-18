@@ -146,3 +146,8 @@ async def test_create_offer(
         },
     }
 
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH + "/create-offer",
+        json=credential,
+    )
+

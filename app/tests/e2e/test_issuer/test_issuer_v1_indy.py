@@ -30,3 +30,12 @@ async def test_send_credential_oob_v1(
             "attributes": {"speed": "10"},
         },
     }
+
+    response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH,
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
+    )
+    records = response.json()
+
+    # nothing currently in alice's records
+    assert len(records) == 0

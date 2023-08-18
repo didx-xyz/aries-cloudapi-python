@@ -22,3 +22,5 @@ async def test_send_credential_oob_v2(
     credential_definition_id: str,
     alice_member_client: RichAsyncClient,
 ):
+    wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    alice_credentials_listener = SseListener(topic="credentials", wallet_id=wallet_id)

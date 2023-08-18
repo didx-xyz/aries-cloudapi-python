@@ -267,3 +267,6 @@ async def test_revoke_credential(
         field_id=faber_and_alice_connection.alice_connection_id,
         desired_state="offer-received",
     )
+
+    alice_credential_id = payload["credential_id"]
+

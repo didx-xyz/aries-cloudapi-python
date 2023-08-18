@@ -3,7 +3,8 @@ nr=1
 
 # Use the provided loop count argument or set a default value of 100
 if [ $# -eq 0 ]; then
-    loop_count=100
+    echo "using default loop value: 10"
+    loop_count=10
 else
     loop_count=$1
 

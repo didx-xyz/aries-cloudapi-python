@@ -213,3 +213,4 @@ async def test_send_credential_request(
 
     )
 
+    assert  request_response.status_code == 200

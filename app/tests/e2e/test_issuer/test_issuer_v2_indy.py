@@ -70,3 +70,10 @@ async def test_send_credential_oob_v2(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
+    result = await alice_credentials_listener.wait_for_event(
+        field="thread_id",
+        field_id=thread_id,
+        desired_state="offer-received",
+    )
+

@@ -32,3 +32,8 @@ async def test_send_credential_oob_v2(
             "attributes": {"speed": "10"},
         },
     }
+
+    create_offer_response = await faber_client.post(
+        CREDENTIALS_BASE_PATH + "/create-offer",
+        json=credential,
+    )

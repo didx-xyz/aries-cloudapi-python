@@ -238,3 +238,12 @@ async def test_revoke_credential(
 ):
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
+    credential = {
+        "protocol_version": "v2",
+        "connection_id": faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id_revocable,
+            "attributes": {"speed": "10"},
+        },
+    }
+

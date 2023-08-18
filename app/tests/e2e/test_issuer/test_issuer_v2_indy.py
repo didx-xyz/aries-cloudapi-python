@@ -37,3 +37,10 @@ async def test_send_credential_oob_v2(
         CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
     )
+
+    data = create_offer_response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_schema_id(schema_definition.id)

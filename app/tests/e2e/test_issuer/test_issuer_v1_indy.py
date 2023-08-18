@@ -23,3 +23,10 @@ async def test_send_credential_oob_v1(
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
+    credential = {
+        "protocol_version": "v1",
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+    }

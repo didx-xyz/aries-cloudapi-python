@@ -66,3 +66,9 @@ async def test_send_credential_oob_v1(
 
     invitation = (invitation_response.json())["invitation"]
 
+    accept_response = await alice_member_client.post(
+        OOB_BASE_PATH + "/accept-invitation",
+        json={"invitation": invitation},
+    )
+
+    oob_record = accept_response.json()

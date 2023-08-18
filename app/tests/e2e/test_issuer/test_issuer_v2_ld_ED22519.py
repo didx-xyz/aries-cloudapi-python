@@ -53,3 +53,10 @@ async def test_send_jsonld_credential(
             "options": {"proofType": "Ed25519Signature2018"},
         },
     }
+
+    # Send credential
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+

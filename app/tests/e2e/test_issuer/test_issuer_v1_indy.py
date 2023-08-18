@@ -131,3 +131,10 @@ async def test_send_credential(
         },
     )
 
+
+@pytest.mark.anyio
+async def test_create_offer(
+    faber_client: RichAsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+):

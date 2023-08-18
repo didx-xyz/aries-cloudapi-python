@@ -247,3 +247,8 @@ async def test_revoke_credential(
         },
     }
 
+    alice_credentials_listener = SseListener(
+        topic="credentials", wallet_id=alice_tenant.tenant_id
+    )
+
+    # create and send credential offer: issuer

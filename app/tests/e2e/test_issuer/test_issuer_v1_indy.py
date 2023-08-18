@@ -75,3 +75,12 @@ async def test_send_credential_oob_v1(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        filter_map={
+            "state": "offer-received",
+            "credential_definition_id": credential_definition_id,
+        },
+    )
+

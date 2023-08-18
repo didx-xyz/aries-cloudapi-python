@@ -272,3 +272,9 @@ async def test_revoke_credential(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
+    await alice_credentials_listener.wait_for_event(
+        field="credential_id",
+        field_id=alice_credential_id,
+        desired_state="done",
+    )
+

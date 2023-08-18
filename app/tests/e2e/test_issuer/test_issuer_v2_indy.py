@@ -134,3 +134,11 @@ async def test_create_offer(
     schema_definition: CredentialSchema,
     credential_definition_id: str,
 ):
+    credential = {
+        "protocol_version": "v2",
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+    }
+

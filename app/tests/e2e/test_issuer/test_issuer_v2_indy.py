@@ -195,3 +195,9 @@ async def test_send_credential_request(
         },
     )
 
+    response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH,
+        params={"connection_id": faber_and_alice_connection.alice_connection_id},
+    )
+
+    credential_id = (response.json())[0]["credential_id"]

@@ -239,3 +239,5 @@ async def test_revoke_credential(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
+

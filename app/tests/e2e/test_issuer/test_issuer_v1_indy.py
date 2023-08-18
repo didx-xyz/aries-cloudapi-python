@@ -249,3 +249,7 @@ async def test_revoke_credential(
             "attributes": {"speed": "10"},
         },
     }
+
+    alice_credentials_listener = SseListener(
+        topic="credentials", wallet_id=alice_tenant.tenant_id
+    )

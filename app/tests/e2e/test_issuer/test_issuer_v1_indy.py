@@ -211,3 +211,8 @@ async def test_send_credential_request(
         filter_map={"state": "offer-received"},
         topic="credentials",
     )
+
+    request_response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+
+    )

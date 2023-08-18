@@ -25,3 +25,6 @@ async def test_send_jsonld_credential(
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
+
+    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
+

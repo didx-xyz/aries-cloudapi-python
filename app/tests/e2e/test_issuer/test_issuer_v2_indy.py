@@ -252,3 +252,9 @@ async def test_revoke_credential(
     )
 
     # create and send credential offer: issuer
+    faber_credential_id = (
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    ).json()["credential_id"]

@@ -14,3 +14,12 @@ from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
+
+@pytest.mark.anyio
+async def test_send_credential_oob_v1(
+    faber_client: RichAsyncClient,
+    schema_definition: CredentialSchema,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+):

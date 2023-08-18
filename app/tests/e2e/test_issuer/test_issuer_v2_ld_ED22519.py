@@ -60,3 +60,8 @@ async def test_send_jsonld_credential(
         json=credential,
     )
 
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+

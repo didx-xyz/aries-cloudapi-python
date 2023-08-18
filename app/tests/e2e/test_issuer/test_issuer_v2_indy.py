@@ -67,3 +67,6 @@ async def test_send_credential_oob_v2(
     )
 
     oob_record = accept_response.json()
+
+    assert_that(accept_response.status_code).is_equal_to(200)
+    assert_that(oob_record).contains("created_at", "oob_id", "invitation")

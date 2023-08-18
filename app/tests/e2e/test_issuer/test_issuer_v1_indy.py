@@ -216,3 +216,5 @@ async def test_send_credential_request(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
 
     )
+
+    assert  request_response.status_code == 200

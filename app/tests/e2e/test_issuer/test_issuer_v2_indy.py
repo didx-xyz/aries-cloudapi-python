@@ -185,3 +185,13 @@ async def test_send_credential_request(
     )
     credential_exchange = response.json()
     assert credential_exchange["protocol_version"] == "v2"
+
+    assert await check_webhook_state(
+        client=faber_client,
+        topic="credentials",
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
+    )
+

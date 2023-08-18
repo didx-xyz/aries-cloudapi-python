@@ -201,3 +201,10 @@ async def test_send_credential_request(
     )
 
     credential_id = (response.json())[0]["credential_id"]
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="credentials",
+    )
+

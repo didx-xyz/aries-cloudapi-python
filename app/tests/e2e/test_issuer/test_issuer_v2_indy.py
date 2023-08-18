@@ -208,3 +208,8 @@ async def test_send_credential_request(
         topic="credentials",
     )
 
+    request_response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+
+    )
+

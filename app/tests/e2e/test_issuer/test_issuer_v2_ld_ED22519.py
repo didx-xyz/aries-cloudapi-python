@@ -65,3 +65,12 @@ async def test_send_jsonld_credential(
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
 
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        filter_map={
+            "state": "offer-received",
+            "connection_id": alice_connection_id,
+        },
+    )
+

@@ -18,6 +18,7 @@ router = APIRouter(prefix="/wallet/dids", tags=["wallet"])
 
 @router.post("", response_model=DID)
 async def create_did(
+    did_create: Optional[DIDCreate] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Create Local DID."""

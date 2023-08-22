@@ -18,23 +18,9 @@ CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 WALLET = wallet_router.prefix
 
-
-@pytest.mark.anyio
-async def test_send_jsonld_credential_sov(
-    faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
-):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
-    faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-
-    # Creating JSON-LD credential did:sov
-    credential = {
+credential = {
         "type": "ld_proof",
-        "connection_id": faber_connection_id,
+        "connection_id": "",
         "protocol_version": "v2",
         "ld_credential_detail": {
             "credential": {
@@ -51,9 +37,9 @@ async def test_send_jsonld_credential_sov(
                     "college": "Faber College",
                 },
                 "issuanceDate": "2021-04-12",
-                "issuer": f"did:sov:{faber_pub_did}",
+                "issuer": "",
             },
-            "options": {"proofType": "Ed25519Signature2018"},
+            "options": "",
         },
     }
 

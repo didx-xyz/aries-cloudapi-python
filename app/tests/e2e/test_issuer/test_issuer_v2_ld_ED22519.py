@@ -19,7 +19,7 @@ WALLET = wallet_router.prefix
 
 
 @pytest.mark.anyio
-async def test_send_jsonld_credential(
+async def test_send_jsonld_credential_sov(
     faber_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,

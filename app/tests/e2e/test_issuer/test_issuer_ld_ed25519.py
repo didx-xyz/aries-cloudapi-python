@@ -4,6 +4,7 @@ from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.event_handling.sse_listener import SseListener
+from app.models.issuer import SendCredential
 from app.models.tenants import CreateTenantResponse
 from app.routes.definitions import CredentialSchema
 from app.routes.issuer import router as issuer_router

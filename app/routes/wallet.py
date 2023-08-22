@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends

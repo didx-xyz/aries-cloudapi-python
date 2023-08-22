@@ -92,3 +92,12 @@ async def test_send_jsonld_credential_sov(
     assert_that(received_credential).has_state("offer-received")
     assert_that(received_credential).has_role("holder")
     assert_that(received_credential["credential_id"]).starts_with("v2")
+
+
+@pytest.mark.anyio
+async def test_send_jsonld_key(
+    faber_client: RichAsyncClient,
+    faber_acapy_client: AcaPyClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+):

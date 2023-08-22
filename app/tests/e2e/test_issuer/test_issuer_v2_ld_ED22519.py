@@ -30,7 +30,7 @@ async def test_send_jsonld_credential_sov(
 
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
 
-    # Creating JSON-LD credential
+    # Creating JSON-LD credential did:sov
     credential = {
         "type": "ld_proof",
         "connection_id": faber_connection_id,

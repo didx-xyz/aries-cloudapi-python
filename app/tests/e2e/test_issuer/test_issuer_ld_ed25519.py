@@ -43,6 +43,13 @@ credential = {
         },
     }
 
+@pytest.mark.anyio
+async def test_send_jsonld_credential_sov(
+    faber_client: RichAsyncClient,
+    faber_acapy_client: AcaPyClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+):
     # Send credential
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,

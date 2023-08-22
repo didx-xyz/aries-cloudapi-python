@@ -8,6 +8,7 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.wallet import SetDidEndpointRequest
 from app.services import acapy_wallet
+from aries_cloudcontroller.model.did_create import DIDCreate
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

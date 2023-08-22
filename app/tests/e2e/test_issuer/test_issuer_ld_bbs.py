@@ -138,31 +138,9 @@ async def test_send_jsonld_mismatch_bbs_ed(
     did = (wallet_response.json())["did"]
 
     # Creating JSON-LD credential did:sov
-    credential = {
-        "type": "ld_proof",
-        "connection_id": faber_connection_id,
-        "protocol_version": "v2",
-        "ld_credential_detail": {
-            "credential": {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://www.w3.org/2018/credentials/examples/v1",
-                ],
-                "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-                "credentialSubject": {
-                    "degree": {
-                        "type": "BachelorDegree",
-                        "name": "Bachelor of Science and Arts",
-                    },
-                    "college": "Faber College",
-                },
-                "issuanceDate": "2021-04-12",
-                "issuer": f"{did}",
-            },
-            "options": {"proofType": "Ed25519Signature2018"},
-        },
-    }
-
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
+    credential["ld_credential_detail"]["options"] = {"proofType": "Ed25519Signature2018"}
     # Send credential must fail did:sov cant issue proofType: BbsBlsSignature2020
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(

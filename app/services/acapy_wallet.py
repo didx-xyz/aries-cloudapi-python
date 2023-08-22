@@ -48,7 +48,8 @@ async def create_did(controller: AcaPyClient, did_create:Optional[DIDCreate] = N
         Did: The created did
     """
     logger.info("Creating local DID")
-    did_result = await controller.wallet.create_did(body=DIDCreate())
+    if did_create == None:
+        did_create = DIDCreate()
 
     if (
         not did_result.result

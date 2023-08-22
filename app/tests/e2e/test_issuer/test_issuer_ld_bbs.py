@@ -17,26 +17,9 @@ from shared import RichAsyncClient
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 WALLET = wallet_router.prefix
-
-
-@pytest.mark.anyio
-async def test_send_jsonld_key_bbs(
-    faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
-):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
-    faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    did_create_options = {"method": "key", "options": {"key_type":"bls12381g2"}}
-    wallet_response = await faber_client.post(WALLET, json=did_create_options)
-    did = (wallet_response.json())["did"]
-
-    # Creating JSON-LD credential did:key
-    credential = {
+credential = {
         "type": "ld_proof",
-        "connection_id": faber_connection_id,
+        "connection_id":"" ,
         "protocol_version": "v2",
         "ld_credential_detail": {
             "credential": {
@@ -53,9 +36,9 @@ async def test_send_jsonld_key_bbs(
                     "college": "Faber College",
                 },
                 "issuanceDate": "2021-04-12",
-                "issuer": f"{did}",
+                "issuer": "",
             },
-            "options": {"proofType": "BbsBlsSignature2020"},
+            "options":"" ,
         },
     }
 

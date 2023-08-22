@@ -26,7 +26,9 @@ async def create_did(
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
-        result = await acapy_wallet.create_did(aries_controller)
+        result = await acapy_wallet.create_did(
+            did_create=did_create, controller=aries_controller
+        )
 
     logger.info("Successfully created DID.")
     return result

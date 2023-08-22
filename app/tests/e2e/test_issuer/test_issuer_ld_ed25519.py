@@ -109,7 +109,7 @@ async def test_send_jsonld_key_ed25519(
     wallet_response = await faber_client.post(WALLET, json=did_create_options)
     did = (wallet_response.json())["did"]
 
-    # Creating JSON-LD credential did:key
+    # Creating JSON-LD credential did:key with proofType ed25519
     credential = {
         "type": "ld_proof",
         "connection_id": faber_connection_id,
@@ -185,7 +185,7 @@ async def test_send_jsonld_mismatch_ed_bbs(
     wallet_response = await faber_client.post(WALLET, json=did_create_options)
     did = (wallet_response.json())["did"]
 
-    # Creating JSON-LD credential did:sov
+    # Creating JSON-LD credential did:sov with proofType: BbsBlsSignature2020
     credential = {
         "type": "ld_proof",
         "connection_id": faber_connection_id,

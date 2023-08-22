@@ -50,6 +50,8 @@ async def test_send_jsonld_credential_sov(
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
+    alice_connection_id = faber_and_alice_connection.alice_connection_id
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
     # Send credential
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,

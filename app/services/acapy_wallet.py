@@ -1,3 +1,4 @@
+from typing import Optional
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate

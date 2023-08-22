@@ -56,6 +56,11 @@ async def test_send_jsonld_key_bbs(
     wallet_response = await faber_client.post(WALLET, json=did_create_options)
     did = (wallet_response.json())["did"]
 
+    # Creating JSON-LD credential did:key
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
+    credential["ld_credential_detail"]["options"] = {"proofType": "BbsBlsSignature2020"}
+
     # Send credential
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,

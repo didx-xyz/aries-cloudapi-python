@@ -39,3 +39,21 @@ sorted_test_cases = sorted(fail_json.keys(), key=sorting_key, reverse=True)
 
 # Create a new dictionary with sorted test cases
 sorted_data = {test_case: fail_json[test_case] for test_case in sorted_test_cases}
+
+
+with open(dir + 'summary.txt',"w") as file_write:
+    file_write.write('Summary: \n')
+    file_write.write(f'\tFailures = {failures} \n')
+    file_write.write(f'\tErrors = {errors} \n')
+    file_write.write(f'\tIn {len(xml_files)} testing iterations \n')
+    file_write.write('-' * 50 + '\n')
+
+    for test_case, failure_messages in sorted_data.items():
+        file_write.write(f"Test Case: {test_case}\n")
+        for failure_message, file_locations in failure_messages.items():
+            file_write.write(f"\t Failure Message: {failure_message}\n")
+            file_write.write(f"\t Count: {len(file_locations)}\n")
+            file_write.write("\t File:\n")
+            for file_location in file_locations:
+                file_write.write(f"\t\t - {file_location}\n")
+        file_write.write("-" * 50 + '\n')

@@ -4,3 +4,6 @@ import os
 fail_json = {}
 dir = "logs/containerized-tests/"
 xml_files = [filename for filename in os.listdir(dir) if filename.endswith(".xml")]
+failures = 0
+errors = 0
+

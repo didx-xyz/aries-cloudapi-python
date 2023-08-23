@@ -12,3 +12,7 @@ for xml_file in xml_files:
     with open(file_path,"r") as file_read:
 
         soup = BeautifulSoup(file_read, 'xml')
+
+        testsuite = soup.find('testsuite')
+        failures = failures + int(testsuite['failures'])
+        errors = errors + int(testsuite['errors'])

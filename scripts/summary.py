@@ -16,3 +16,9 @@ for xml_file in xml_files:
         testsuite = soup.find('testsuite')
         failures = failures + int(testsuite['failures'])
         errors = errors + int(testsuite['errors'])
+
+        testcases = soup.find_all('testcase')
+        for testcase in testcases:
+            class_name = testcase['classname']
+            name = testcase['name']
+            failure = testcase.find('failure')

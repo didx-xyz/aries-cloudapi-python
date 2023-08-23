@@ -10,3 +10,5 @@ errors = 0
 for xml_file in xml_files:
     file_path = os.path.join(dir, xml_file)
     with open(file_path,"r") as file_read:
+
+        soup = BeautifulSoup(file_read, 'xml')

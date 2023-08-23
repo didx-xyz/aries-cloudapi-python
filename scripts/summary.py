@@ -22,3 +22,11 @@ for xml_file in xml_files:
             class_name = testcase['classname']
             name = testcase['name']
             failure = testcase.find('failure')
+
+            if failure:
+                failure_message = failure['message']
+                if f'{name} in Class: {class_name}'  not in fail_json:
+                    fail_json[f'{name} in Class: {class_name}'] = {}
+                if failure_message not in fail_json[f'{name} in Class: {class_name}']:
+                    fail_json[f'{name} in Class: {class_name}'][failure_message] = []
+                fail_json[f'{name} in Class: {class_name}'][failure_message].append(xml_file)

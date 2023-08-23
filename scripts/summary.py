@@ -30,3 +30,12 @@ for xml_file in xml_files:
                 if failure_message not in fail_json[f'{name} in Class: {class_name}']:
                     fail_json[f'{name} in Class: {class_name}'][failure_message] = []
                 fail_json[f'{name} in Class: {class_name}'][failure_message].append(xml_file)
+
+def sorting_key(test_case):
+    return sum(len(files) for files in fail_json[test_case].values())
+
+# Sort the test cases based on the total length of failure message count
+sorted_test_cases = sorted(fail_json.keys(), key=sorting_key, reverse=True)
+
+# Create a new dictionary with sorted test cases
+sorted_data = {test_case: fail_json[test_case] for test_case in sorted_test_cases}

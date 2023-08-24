@@ -1,0 +1,17 @@
+# Ignore everything
+**
+
+# Except the following
+!requirements.dev.txt
+!requirements.txt
+!app/
+!shared/
+!endorser/
+!trustregistry/
+!webhooks/
+!scripts/
+!configuration/
+
+!LICENSE
+
+**/__pycache__/

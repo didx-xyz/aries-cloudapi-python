@@ -9,4 +9,6 @@ pylint~=2.17.4
 pytest~=7.4.0
 pytest-cov~=4.1.0
 pytest-mock~=3.11.1
-setuptools~=68.0.0
+lxml~=4.9.3
+beautifulsoup4~=4.12.2
+setuptools~=68.1.2

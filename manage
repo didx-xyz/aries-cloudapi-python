@@ -47,6 +47,7 @@ usage() {
       down - Brings down the services and removes the volumes (storage) and containers.
       rm - Same as down
 
+      tests - Same as up but run the Tests container too
 
 EOF
   exit 1
@@ -56,6 +57,7 @@ EOF
 # -----------------------------------------------------------------------------------------------------------------
 DEFAULT_CONTAINERS="governance-trust-registry trustregistry-db governance-multitenant-wallets-db governance-multitenant-agent tails-server ledger-nodes ledger-browser
                     governance-ga-wallets-db governance-ga-agent governance-multitenant-web governance-ga-web wh-redis governance-webhooks-web governance-endorser"
+TEST_CONTAINERS="${DEFAULT_CONTAINERS} tests"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------------------------------------------
@@ -145,6 +147,9 @@ getStartupParams() {
     esac
   done
 
+  if [ $tests ]; then
+    CONTAINERS="$TEST_CONTAINERS"
+  fi
   if [ -z "$CONTAINERS" ]; then
     CONTAINERS="$DEFAULT_CONTAINERS"
   fi
@@ -241,6 +246,27 @@ up-daemon-usecache)
     compose up \
     --build \
     -d ${_startupParams}
+  ;;
+tests)
+  echoYellow "Starting up... This can take a couple of minutes."
+  tests=true
+  _startupParams=$(getStartupParams $@)
+  configureEnvironment "$@"
+  docker --log-level ERROR \
+    compose up \
+    --build --remove-orphans \
+    -d ${_startupParams}
+  echo "Testing ..."
+  docker --log-level ERROR \
+    compose logs \
+    -f | \
+    while IFS= read -r line; do
+      if [[ "$line" == "tests exited with code"* ]]; then
+        # React to the desired log entry
+        echo "Detected 'tests exited with code' in log. Stopping services..."
+        exit 0
+      fi
+    done
   ;;
 restart)
   _startupParams=$(getStartupParams $@)

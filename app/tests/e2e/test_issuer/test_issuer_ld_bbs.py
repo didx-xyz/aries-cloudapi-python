@@ -166,7 +166,7 @@ async def test_send_jsonld_mismatch_bbs_ed(
 ):
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
-    did_create_options = {"method": "key", "options": {"key_type":"bls12381g2"}}
+    did_create_options = {"method": "key", "options": {"key_type": "bls12381g2"}}
     wallet_response = await faber_client.post(WALLET, json=did_create_options)
     did = (wallet_response.json())["did"]
 

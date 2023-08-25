@@ -301,6 +301,9 @@ async def request_credential(
         if record.type == "indy":
             did = did_from_credential_definition_id(record.credential_definition_id)
             await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
+        elif record.type == "ld_proof":
+            did = record.did
+            await assert_valid_issuer(did)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
         await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
 

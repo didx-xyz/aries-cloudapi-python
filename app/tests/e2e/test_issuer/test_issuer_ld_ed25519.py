@@ -1,6 +1,11 @@
 from fastapi import HTTPException
 import pytest
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import (
+    AcaPyClient,
+    Credential,
+    LDProofVCDetail,
+    LDProofVCDetailOptions,
+)
 from assertpy import assert_that
 
 from app.event_handling.sse_listener import SseListener

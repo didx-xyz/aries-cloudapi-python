@@ -14,7 +14,7 @@ from app.routes.oob import router as oob_router
 from app.routes.wallet import router as wallet_router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
-from app.util.credentials import cred_id_no_version
+from app.tests.util.trust_registry import register_key_issuer, remove_key_issuer
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix

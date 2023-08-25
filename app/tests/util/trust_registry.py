@@ -7,6 +7,7 @@ from app.services.trust_registry import (
     register_actor,
     register_schema,
     registry_has_schema,
+    remove_actor_by_id
 )
 from shared import RichAsyncClient
 

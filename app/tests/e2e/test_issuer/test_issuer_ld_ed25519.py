@@ -213,7 +213,7 @@ async def test_send_jsonld_mismatch_ed_bbs(
     credential["connection_id"] = faber_connection_id
     credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
     credential["ld_credential_detail"]["options"] = {"proofType": "BbsBlsSignature2020"}
-    
+
     # Send credential must fail did:sov cant issue proofType: BbsBlsSignature2020
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(

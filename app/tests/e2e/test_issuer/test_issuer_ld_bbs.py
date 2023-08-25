@@ -20,30 +20,32 @@ from shared import RichAsyncClient
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 WALLET = wallet_router.prefix
-credential = {
-        "type": "ld_proof",
-        "connection_id":"" ,
-        "protocol_version": "v2",
-        "ld_credential_detail": {
-            "credential": {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://www.w3.org/2018/credentials/examples/v1",
-                ],
-                "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-                "credentialSubject": {
-                    "degree": {
-                        "type": "BachelorDegree",
-                        "name": "Bachelor of Science and Arts",
-                    },
-                    "college": "Faber College",
-                },
-                "issuanceDate": "2021-04-12",
-                "issuer": "",
-            },
-            "options":"" ,
-        },
-    }
+
+# This is the json of the below credential
+# {
+#     "type": "ld_proof",
+#     "connection_id": "",
+#     "protocol_version": "v2",
+#     "ld_credential_detail": {
+#         "credential": {
+#             "@context": [
+#                 "https://www.w3.org/2018/credentials/v1",
+#                 "https://www.w3.org/2018/credentials/examples/v1",
+#             ],
+#             "type": ["VerifiableCredential", "UniversityDegreeCredential"],
+#             "credentialSubject": {
+#                 "degree": {
+#                     "type": "BachelorDegree",
+#                     "name": "Bachelor of Science and Arts",
+#                 },
+#                 "college": "Faber College",
+#             },
+#             "issuanceDate": "2021-04-12",
+#             "issuer": "",
+#         },
+#         "options": "",
+#     },
+# }
 
 @pytest.mark.anyio
 async def test_send_jsonld_key_bbs(

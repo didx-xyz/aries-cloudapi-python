@@ -307,6 +307,8 @@ async def request_credential(
             raise CloudApiException(
                 "Could not resolve record type"
             )
+
+        await assert_valid_issuer(issuer_did, schema_id)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
 
         bound_logger.debug("Requesting credential")

@@ -21,7 +21,7 @@ from app.util.acapy_issuer_utils import (
     issuer_from_id,
     issuer_from_protocol_version,
 )
-from app.util.did import did_from_credential_definition_id
+from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from shared.log_config import get_logger
 from shared.models.topics import CredentialExchange
 

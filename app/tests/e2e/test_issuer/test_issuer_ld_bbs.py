@@ -162,9 +162,7 @@ async def test_send_jsonld_mismatch_sov_bbs(
 @pytest.mark.anyio
 async def test_send_jsonld_mismatch_bbs_ed(
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
 ):
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 

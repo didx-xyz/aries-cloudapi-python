@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -7,14 +6,15 @@ from aries_cloudcontroller import (
     LDProofVCDetailOptions,
 )
 from assertpy import assert_that
+from fastapi import HTTPException
 
 from app.models.issuer import SendCredential
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.routes.wallet import router as wallet_router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
-from app.tests.util.webhooks import check_webhook_state
 from app.tests.util.trust_registry import register_key_issuer, remove_key_issuer
+from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
@@ -190,7 +190,7 @@ async def test_send_jsonld_key_ed25519(
     assert_that(received_credential).has_role("holder")
     assert_that(received_credential["credential_id"]).starts_with("v2")
 
-    #clean up faber key issuer
+    # clean up faber key issuer
     await remove_key_issuer(faber_key_id)
 
 
@@ -219,7 +219,7 @@ async def test_send_jsonld_mismatch_ed_bbs(
         )
     assert_that(exc.value.status_code).is_equal_to(500)
 
-    #clean up faber key issuer
+    # clean up faber key issuer
     await remove_key_issuer(faber_key_id)
 
 
@@ -230,7 +230,6 @@ async def test_send_jsonld_oob(
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
-
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
@@ -254,8 +253,7 @@ async def test_send_jsonld_oob(
         "proofType": "Ed25519Signature2018"
     }
 
-
-    #faber create offer
+    # faber create offer
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH + "/create-offer",
         json=credential,
@@ -304,7 +302,6 @@ async def test_send_jsonld_request(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
 ):
-
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
@@ -351,10 +348,9 @@ async def test_send_jsonld_request(
 
     request_response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
-
     )
 
-    assert  request_response.status_code == 200
+    assert request_response.status_code == 200
 
     assert await check_webhook_state(
         client=alice_member_client,
@@ -364,9 +360,9 @@ async def test_send_jsonld_request(
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state":"request-received"},
-        topic="credentials"
+        filter_map={"state": "request-received"},
+        topic="credentials",
     )
 
-    #clean up faber key issuer
+    # clean up faber key issuer
     await remove_key_issuer(faber_key_id)

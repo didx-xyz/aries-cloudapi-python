@@ -294,21 +294,21 @@ async def request_credential(
 
         schema_id = None
         if record.type == "indy":
-            if (not record.credential_definition_id or not record.schema_id):
+            if not record.credential_definition_id or not record.schema_id:
                 raise CloudApiException(
                     "Record has no credential definition or schema associated. "
                     "This probably means you haven't received an offer yet.",
                     412,
                 )
-            issuer_did = did_from_credential_definition_id(record.credential_definition_id)
+            issuer_did = did_from_credential_definition_id(
+                record.credential_definition_id
+            )
             issuer_did = qualified_did_sov(issuer_did)
             schema_id = record.schema_id
         elif record.type == "ld_proof":
             issuer_did = record.did
         else:
-            raise CloudApiException(
-                "Could not resolve record type"
-            )
+            raise CloudApiException("Could not resolve record type")
 
         await assert_valid_issuer(issuer_did, schema_id)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules

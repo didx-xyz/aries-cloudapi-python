@@ -139,7 +139,7 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         state=v1_credential_state_to_rfc_state(record.state),
         thread_id=record.thread_id,
         updated_at=record.updated_at,
-        type="indy"
+        type="indy",
     )
 
 
@@ -188,7 +188,9 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
         created_at=record.created_at,
         credential_definition_id=credential_definition_id,
         credential_id=f"v2-{record.cred_ex_id}",
-        did= record.by_format.cred_offer["ld_proof"]["credential"]["issuer"] if record.by_format and "ld_proof" in record.by_format.cred_offer else None,
+        did=record.by_format.cred_offer["ld_proof"]["credential"]["issuer"]
+        if record.by_format and "ld_proof" in record.by_format.cred_offer
+        else None,
         error_msg=record.error_msg,
         protocol_version=IssueCredentialProtocolVersion.v2,
         role=record.role,

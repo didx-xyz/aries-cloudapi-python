@@ -304,8 +304,7 @@ async def request_credential(
             issuer_did = qualified_did_sov(issuer_did)
             schema_id = record.schema_id
         elif record.type == "ld_proof":
-            did = record.did
-            await assert_valid_issuer(did)
+            issuer_did = record.did
         else:
             raise CloudApiException(
                 "Could not resolve record type"

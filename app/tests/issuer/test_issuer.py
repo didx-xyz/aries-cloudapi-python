@@ -236,7 +236,8 @@ async def test_request_credential_x_no_schema_cred_def(
 
     v1_record.credential_definition_id = None
     v1_record.schema_id = None
-
+    v1_record.type = "indy"
+    
     with when(IssuerV1).get_record(...).thenReturn(to_async(v1_record)), pytest.raises(
         Exception, match="Record has no credential definition or schema associated."
     ):

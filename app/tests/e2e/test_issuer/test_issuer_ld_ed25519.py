@@ -75,6 +75,7 @@ credential = SendCredential(
     ),
 ).dict(by_alias=True, exclude_unset=True)
 
+
 @pytest.mark.anyio
 async def test_send_jsonld_credential_sov(
     faber_client: RichAsyncClient,

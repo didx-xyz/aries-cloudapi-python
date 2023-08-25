@@ -50,6 +50,31 @@ WALLET = wallet_router.prefix
 #     },
 # }
 
+credential = SendCredential(
+    type="ld_proof",
+    connection_id="",
+    protocol_version="v2",
+    ld_credential_detail=LDProofVCDetail(
+        credential=Credential(
+            context=[
+                "https://www.w3.org/2018/credentials/v1",
+                "https://www.w3.org/2018/credentials/examples/v1",
+            ],
+            type=["VerifiableCredential", "UniversityDegreeCredential"],
+            credentialSubject={
+                "degree": {
+                    "type": "BachelorDegree",
+                    "name": "Bachelor of Science and Arts",
+                },
+                "college": "Faber College",
+            },
+            issuanceDate="2021-04-12",
+            issuer="",
+        ),
+        options=LDProofVCDetailOptions(proofType=""),
+    ),
+).dict(by_alias=True, exclude_unset=True)
+
 @pytest.mark.anyio
 async def test_send_jsonld_credential_sov(
     faber_client: RichAsyncClient,

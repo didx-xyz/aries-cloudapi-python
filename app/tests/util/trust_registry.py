@@ -7,7 +7,7 @@ from app.services.trust_registry import (
     register_actor,
     register_schema,
     registry_has_schema,
-    remove_actor_by_id
+    remove_actor_by_id,
 )
 from shared import RichAsyncClient
 
@@ -33,20 +33,22 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
             )
         )
 
-async def register_key_issuer(did:str)->str:
+
+async def register_key_issuer(did: str) -> str:
     rand = random()
     test_id = f"test-actor-{rand}"
     await register_actor(
-            Actor(
-                id=test_id,
-                name=f"Test Actor-{rand}",
-                roles=["issuer"],
-                did=f"{did}",
-                didcomm_invitation=None,
-            )
+        Actor(
+            id=test_id,
+            name=f"Test Actor-{rand}",
+            roles=["issuer"],
+            did=f"{did}",
+            didcomm_invitation=None,
         )
+    )
 
     return test_id
 
-async def remove_key_issuer(id:str):
+
+async def remove_key_issuer(id: str):
     await remove_actor_by_id(id)

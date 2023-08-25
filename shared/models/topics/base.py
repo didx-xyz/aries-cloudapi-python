@@ -58,7 +58,7 @@ class CredentialExchange(BaseModel):
     created_at: str
     credential_definition_id: Optional[str]
     credential_id: str
-    did:Optional[str] = None
+    did: Optional[str] = None
     error_msg: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion
     role: Literal["issuer", "holder"]

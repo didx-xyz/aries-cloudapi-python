@@ -183,3 +183,75 @@ async def test_send_jsonld_mismatch_bbs_ed(
             json=credential,
         )
     assert_that(exc.value.status_code).is_equal_to(500)
+
+
+@pytest.mark.anyio
+async def test_send_jsonld_bbs_oob(
+    faber_client: RichAsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+):
+    alice_connection_id = faber_and_alice_connection.alice_connection_id
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
+
+    response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH,
+        params={"connection_id": alice_connection_id},
+    )
+    records = response.json()
+
+    # nothing currently in alice's records
+    assert len(records) == 0
+    did_create_options = {"method": "key", "options": {"key_type": "bls12381g2"}}
+    wallet_response = (await faber_client.post(WALLET, json=did_create_options)).json()
+    did = wallet_response["did"]
+    faber_key_id = await register_key_issuer(did=did)
+
+    # Updating JSON-LD credential did:sov
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
+    credential["ld_credential_detail"]["options"] = {"proofType": "BbsBlsSignature2020"}
+
+    # faber create offer
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH + "/create-offer",
+        json=credential,
+    )
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+
+    invitation_response = await faber_client.post(
+        OOB_BASE_PATH + "/create-invitation",
+        json={
+            "create_connection": False,
+            "use_public_did": False,
+            "attachments": [
+                {"id": data["credential_id"][3:], "type": "credential-offer"}
+            ],
+        },
+    )
+    assert_that(invitation_response.status_code).is_equal_to(200)
+
+    invitation = (invitation_response.json())["invitation"]
+
+    accept_response = await alice_member_client.post(
+        OOB_BASE_PATH + "/accept-invitation",
+        json={"invitation": invitation},
+    )
+
+    oob_record = accept_response.json()
+
+    assert_that(accept_response.status_code).is_equal_to(200)
+    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        filter_map={
+            "state": "offer-received",
+        },
+    )
+    # clean up faber key issuer
+    await remove_key_issuer(faber_key_id)

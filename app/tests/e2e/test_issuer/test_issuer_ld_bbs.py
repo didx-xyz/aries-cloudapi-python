@@ -146,7 +146,9 @@ async def test_send_jsonld_mismatch_sov_bbs(
 
     # Creating JSON-LD credential did:sov
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = f"did:sov:{faber_pub_did}"
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = f"did:sov:{faber_pub_did}"
     credential["ld_credential_detail"]["options"] = {"proofType": "BbsBlsSignature2020"}
 
     # Send credential must fail did:sov cant issue proofType: BbsBlsSignature2020

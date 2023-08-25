@@ -298,9 +298,9 @@ async def request_credential(
                 "This probably means you haven't received an offer yet.",
                 412,
             )
-
-        did = did_from_credential_definition_id(record.credential_definition_id)
-
+        if record.type == "indy":
+            did = did_from_credential_definition_id(record.credential_definition_id)
+            await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
         await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
 

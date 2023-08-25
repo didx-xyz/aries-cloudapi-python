@@ -300,6 +300,8 @@ async def request_credential(
                     "This probably means you haven't received an offer yet.",
                     412,
                 )
+            issuer_did = did_from_credential_definition_id(record.credential_definition_id)
+            issuer_did = qualified_did_sov(issuer_did)
         elif record.type == "ld_proof":
             did = record.did
             await assert_valid_issuer(did)

@@ -90,8 +90,12 @@ async def test_send_jsonld_credential_sov(
 
     # Updating JSON-LD credential did:sov
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = f"did:sov:{faber_pub_did}"
-    credential["ld_credential_detail"]["options"] = {"proofType": "Ed25519Signature2018"}
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = f"did:sov:{faber_pub_did}"
+    credential["ld_credential_detail"]["options"] = {
+        "proofType": "Ed25519Signature2018"
+    }
 
     # Send credential
     response = await faber_client.post(

@@ -193,6 +193,10 @@ async def test_send_jsonld_key_ed25519(
     assert_that(received_credential).has_role("holder")
     assert_that(received_credential["credential_id"]).starts_with("v2")
 
+    #clean up faber key issuer
+    await remove_key_issuer(faber_key_id)
+
+
 @pytest.mark.anyio
 async def test_send_jsonld_mismatch_ed_bbs(
     faber_client: RichAsyncClient,

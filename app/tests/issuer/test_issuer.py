@@ -186,9 +186,11 @@ async def test_request_credential(
 
     v1_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
     v1_record.schema_id = "schema_id1"
+    v1_record.type = "indy"
 
     v2_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
     v2_record.schema_id = "schema_id2"
+    v2_record.type = "indy"
 
     with when(IssuerV1).request_credential(...).thenReturn(to_async(v1_record)), when(
         test_module

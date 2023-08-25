@@ -302,6 +302,7 @@ async def request_credential(
                 )
             issuer_did = did_from_credential_definition_id(record.credential_definition_id)
             issuer_did = qualified_did_sov(issuer_did)
+            schema_id = record.schema_id
         elif record.type == "ld_proof":
             did = record.did
             await assert_valid_issuer(did)

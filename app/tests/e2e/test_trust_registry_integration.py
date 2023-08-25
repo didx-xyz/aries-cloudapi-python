@@ -6,7 +6,7 @@ from app.routes.connections import router as conn_router
 from app.routes.definitions import router as def_router
 from app.routes.issuer import router as issuer_router
 from app.services.trust_registry import actor_by_id
-from app.tests.e2e.test_issuer import OOB_BASE_PATH
+from app.routes.oob import router as oob_router
 from app.tests.e2e.test_verifier import VERIFIER_BASE_PATH
 from app.tests.util.client import get_tenant_client
 from app.util.string import base64_to_json, random_string
@@ -15,6 +15,7 @@ from shared import RichAsyncClient
 CONNECTIONS_BASE_PATH = conn_router.prefix
 DEFINITIONS_BASE_PATH = def_router.prefix
 ISSUER_BASE_PATH = issuer_router.prefix
+OOB_BASE_PATH = oob_router.prefix
 
 
 @pytest.mark.anyio

@@ -138,7 +138,6 @@ async def test_send_jsonld_credential_sov(
 @pytest.mark.anyio
 async def test_send_jsonld_key_ed25519(
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):

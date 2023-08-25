@@ -46,3 +46,6 @@ async def register_key_issuer(did:str)->str:
         )
 
     return test_id
+
+async def remove_key_issuer(id:str):
+    await remove_actor_by_id(id)

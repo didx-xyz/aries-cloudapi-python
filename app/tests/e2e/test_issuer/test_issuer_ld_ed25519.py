@@ -221,3 +221,8 @@ async def test_send_jsonld_mismatch_ed_bbs(
             json=credential,
         )
     assert_that(exc.value.status_code).is_equal_to(500)
+
+    #clean up faber key issuer
+    await remove_key_issuer(faber_key_id)
+
+

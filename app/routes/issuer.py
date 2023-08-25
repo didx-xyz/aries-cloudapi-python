@@ -292,15 +292,14 @@ async def request_credential(
         bound_logger.debug("Fetching records")
         record = await issuer.get_record(aries_controller, credential_id)
 
-        if (record.type == "indy") and (not record.credential_definition_id or not record.schema_id):
-            raise CloudApiException(
-                "Record has no credential definition or schema associated. "
-                "This probably means you haven't received an offer yet.",
-                412,
-            )
+        schema_id = None
         if record.type == "indy":
-            did = did_from_credential_definition_id(record.credential_definition_id)
-            await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
+            if (not record.credential_definition_id or not record.schema_id):
+                raise CloudApiException(
+                    "Record has no credential definition or schema associated. "
+                    "This probably means you haven't received an offer yet.",
+                    412,
+                )
         elif record.type == "ld_proof":
             did = record.did
             await assert_valid_issuer(did)

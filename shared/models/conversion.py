@@ -139,6 +139,7 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         state=v1_credential_state_to_rfc_state(record.state),
         thread_id=record.thread_id,
         updated_at=record.updated_at,
+        type="indy"
     )
 
 

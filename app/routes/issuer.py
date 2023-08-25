@@ -304,8 +304,11 @@ async def request_credential(
         elif record.type == "ld_proof":
             did = record.did
             await assert_valid_issuer(did)
+        else:
+            raise CloudApiException(
+                "Could not resolve record type"
+            )
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
-        await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
 
         bound_logger.debug("Requesting credential")
         result = await issuer.request_credential(

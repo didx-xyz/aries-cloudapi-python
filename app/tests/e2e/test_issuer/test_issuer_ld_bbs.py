@@ -8,9 +8,7 @@ from aries_cloudcontroller import (
 )
 from assertpy import assert_that
 
-from app.event_handling.sse_listener import SseListener
-from app.models.tenants import CreateTenantResponse
-from app.routes.definitions import CredentialSchema
+from app.models.issuer import SendCredential
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.routes.wallet import router as wallet_router

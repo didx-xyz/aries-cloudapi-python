@@ -147,6 +147,7 @@ async def test_send_jsonld_key_ed25519(
     did_create_options = {"method": "key", "options": {"key_type": "ed25519"}}
     wallet_response = (await faber_client.post(WALLET, json=did_create_options)).json()
     did = wallet_response["did"]
+    faber_key_id = await register_key_issuer(did=did)
 
     # Updating JSON-LD credential did:key with proofType ed25519
     credential["connection_id"] = faber_connection_id

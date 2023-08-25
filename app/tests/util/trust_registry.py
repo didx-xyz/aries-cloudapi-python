@@ -31,3 +31,18 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
                 didcomm_invitation=None,
             )
         )
+
+async def register_key_issuer(did:str)->str:
+    rand = random()
+    test_id = f"test-actor-{rand}"
+    await register_actor(
+            Actor(
+                id=test_id,
+                name=f"Test Actor-{rand}",
+                roles=["issuer"],
+                did=f"{did}",
+                didcomm_invitation=None,
+            )
+        )
+
+    return test_id

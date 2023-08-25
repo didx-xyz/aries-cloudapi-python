@@ -152,7 +152,9 @@ async def test_send_jsonld_key_ed25519(
     # Updating JSON-LD credential did:key with proofType ed25519
     credential["connection_id"] = faber_connection_id
     credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
-    credential["ld_credential_detail"]["options"] = {"proofType": "Ed25519Signature2018"}
+    credential["ld_credential_detail"]["options"] = {
+        "proofType": "Ed25519Signature2018"
+    }
 
     # Send credential
     response = await faber_client.post(

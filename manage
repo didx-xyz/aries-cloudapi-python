@@ -252,10 +252,21 @@ tests)
   tests=true
   _startupParams=$(getStartupParams $@)
   configureEnvironment "$@"
+  # Create a directory for logs if it doesn't exist
+  log_dir="logs/compose-up"
+  mkdir -p "$log_dir"
+
+  # Generate a timestamp for the log file
+  timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
+
+  # Construct the log file path
+  log_file="$log_dir/docker_startup_${timestamp}.log"
+
   docker --log-level ERROR \
     compose up \
     --build --remove-orphans \
-    -d ${_startupParams}
+    -d ${_startupParams} 2>&1 | tee "$log_file"
+
   echo "Testing ..."
   docker --log-level ERROR \
     compose logs \

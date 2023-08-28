@@ -36,7 +36,9 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
     return f"did:sov:{public_did.result.did}"
 
 
-async def create_did(controller: AcaPyClient, did_create:Optional[DIDCreate] = None) -> Did:
+async def create_did(
+    controller: AcaPyClient, did_create: Optional[DIDCreate] = None
+) -> Did:
     """Create a local did
 
     Args:

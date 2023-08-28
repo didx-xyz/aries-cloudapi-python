@@ -15,6 +15,7 @@ from shared import RichAsyncClient
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
 
+
 @pytest.mark.anyio
 async def test_send_credential_oob_v2(
     faber_client: RichAsyncClient,
@@ -79,6 +80,7 @@ async def test_send_credential_oob_v2(
 
     assert result["credential_id"]
 
+
 @pytest.mark.anyio
 async def test_send_credential(
     faber_client: RichAsyncClient,
@@ -127,7 +129,6 @@ async def test_send_credential(
     )
 
 
-
 @pytest.mark.anyio
 async def test_create_offer(
     faber_client: RichAsyncClient,
@@ -162,6 +163,7 @@ async def test_create_offer(
             "credential_id": data["credential_id"],
         },
     )
+
 
 @pytest.mark.anyio
 async def test_send_credential_request(
@@ -210,10 +212,9 @@ async def test_send_credential_request(
 
     request_response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
-
     )
 
-    assert  request_response.status_code == 200
+    assert request_response.status_code == 200
 
     assert await check_webhook_state(
         client=alice_member_client,
@@ -223,8 +224,8 @@ async def test_send_credential_request(
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state":"request-received"},
-        topic="credentials"
+        filter_map={"state": "request-received"},
+        topic="credentials",
     )
 
 

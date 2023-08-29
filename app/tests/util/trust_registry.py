@@ -1,5 +1,7 @@
 from random import random
 
+import pytest
+
 from app.routes.wallet import router
 from app.services.trust_registry import (
     Actor,

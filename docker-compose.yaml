@@ -341,6 +341,56 @@ services:
         --port 6543
         --storage-path ./
         --log-level INFO
+  tests:
+    image: local/tests
+    container_name: tests
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./dockerfiles/tests/Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - |-
+        pytest --junitxml="/tests/outputs/test_output_$(date +'%Y-%m-%d_%H-%M-%S').xml"
+    environment:
+      ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
+      ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey
+      ACAPY_TENANT_AGENT_URL: http://governance-multitenant-agent:3021
+      ACAPY_TENANT_AGENT_API_KEY: adminApiKey
+      TRUST_REGISTRY_URL: http://governance-trust-registry:8001
+      WEBHOOKS_URL: http://governance-webhooks-web:3010
+      ACAPY_MULTITENANT_JWT_SECRET: jwtSecret
+      CLOUDAPI_URL: http://governance-ga-web:8000
+      GOVERNANCE_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
+      GOVERNANCE_ACAPY_API_KEY: adminApiKey
+      TENANT_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
+      TENANT_ACAPY_API_KEY: adminApiKey
+      LEDGER_REGISTRATION_URL: http://ledger-browser:8000/register
+      REDIS_HOST: wh-redis
+    volumes:
+      - ./logs/containerized-tests:/tests/outputs
+    networks:
+      - governance-ga
+      - host
+    depends_on:
+      governance-ga-web-health:
+        condition: service_completed_successfully
+  governance-ga-web-health:
+    image: curlimages/curl
+    container_name: governance-ga-web-health
+    restart: "no"
+    command:
+      - /bin/sh
+      - -c
+      - |-
+        until curl -fsS http://governance-ga-web:8000/docs; do sleep 5; done
+    networks:
+      - governance-ga
+      - host
+    depends_on:
+      governance-ga-web:
+        condition: service_started
 
 volumes:
   webserver-cli:

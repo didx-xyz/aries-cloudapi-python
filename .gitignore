@@ -58,6 +58,7 @@ junit.xml
 .hypothesis/
 .pytest_cache/
 cover/
+logs/
 
 # Translations
 *.mo

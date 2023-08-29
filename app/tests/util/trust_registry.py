@@ -59,7 +59,7 @@ async def register_key_issuer(request, faber_client: RichAsyncClient):
         )
     )
 
-    return test_id
+    yield did
 
 
 async def remove_key_issuer(id: str):

@@ -61,6 +61,4 @@ async def register_key_issuer(request, faber_client: RichAsyncClient):
 
     yield did
 
-
-async def remove_key_issuer(id: str):
-    await remove_actor_by_id(id)
+    await remove_actor_by_id(test_id)

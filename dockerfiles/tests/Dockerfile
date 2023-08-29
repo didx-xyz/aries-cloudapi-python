@@ -9,7 +9,7 @@ COPY endorser/requirements.txt endorser/
 COPY trustregistry/requirements.txt trustregistry/
 COPY webhooks/requirements.txt webhooks/
 
-RUN pip install -r requirements.txt -r requirements.dev.txt
+RUN pip install -r requirements.txt
 
 COPY . .
 

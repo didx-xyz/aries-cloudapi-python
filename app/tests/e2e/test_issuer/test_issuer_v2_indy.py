@@ -1,5 +1,4 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.event_handling.sse_listener import SseListener

@@ -37,6 +37,7 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
 
 
 @pytest.fixture(scope="function")
+async def register_key_issuer(request, faber_client: RichAsyncClient):
     rand = random()
     test_id = f"test-actor-{rand}"
     await register_actor(

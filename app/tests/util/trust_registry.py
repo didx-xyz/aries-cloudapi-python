@@ -45,8 +45,10 @@ async def register_key_issuer(request, faber_client: RichAsyncClient):
         await faber_client.post(WALLET_BASE_PATH, json=did_create_options)
     ).json()
     did = wallet_response["did"]
+
     rand = random()
     test_id = f"test-actor-{rand}"
+
     await register_actor(
         Actor(
             id=test_id,

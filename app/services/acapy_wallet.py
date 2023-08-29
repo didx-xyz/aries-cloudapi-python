@@ -51,7 +51,7 @@ async def create_did(
         Did: The created did
     """
     logger.info("Creating local DID")
-    if did_create == None:
+    if did_create is None:
         did_create = DIDCreate()
     did_result = await controller.wallet.create_did(body=did_create)
 

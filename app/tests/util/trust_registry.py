@@ -36,8 +36,13 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
         )
 
 
+@dataclass
+class DidKey:
+    did: str
+
+
 @pytest.fixture(scope="function")
-async def register_key_issuer(request, faber_client: RichAsyncClient):
+async def register_key_issuer(request, faber_client: RichAsyncClient) -> DidKey:
     key_type = request.param
     did_create_options = {"method": "key", "options": {"key_type": key_type}}
 

@@ -128,9 +128,6 @@ async def test_send_jsonld_key_bbs(
     assert_that(received_credential).has_role("holder")
     assert_that(received_credential["credential_id"]).starts_with("v2")
 
-    # clean up faber key issuer
-    await remove_key_issuer(faber_key_id)
-
 
 @pytest.mark.anyio
 async def test_send_jsonld_mismatch_sov_bbs(
@@ -251,8 +248,6 @@ async def test_send_jsonld_bbs_oob(
             "state": "offer-received",
         },
     )
-    # clean up faber key issuer
-    await remove_key_issuer(faber_key_id)
 
 
 @pytest.mark.anyio
@@ -319,6 +314,3 @@ async def test_send_jsonld_request(
         filter_map={"state": "request-received"},
         topic="credentials",
     )
-
-    # clean up faber key issuer
-    await remove_key_issuer(faber_key_id)

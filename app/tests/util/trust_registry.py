@@ -40,6 +40,11 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
 async def register_key_issuer(request, faber_client: RichAsyncClient):
     key_type = request.param
     did_create_options = {"method": "key", "options": {"key_type": key_type}}
+
+    wallet_response = (
+        await faber_client.post(WALLET_BASE_PATH, json=did_create_options)
+    ).json()
+    did = wallet_response["did"]
     rand = random()
     test_id = f"test-actor-{rand}"
     await register_actor(

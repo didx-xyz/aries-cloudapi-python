@@ -354,3 +354,71 @@ async def test_send_jsonld_request(
         filter_map={"state": "request-received"},
         topic="credentials",
     )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("register_key_issuer", ["ed25519"], indirect=True)
+async def test_issue_jsonld_ed(
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    register_key_issuer: DidKey,
+):
+    alice_connection_id = faber_and_alice_connection.alice_connection_id
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
+
+    did = register_key_issuer
+
+    # Updating JSON-LD credential did:key with proofType ed25519
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
+    credential["ld_credential_detail"]["options"] = {
+        "proofType": "Ed25519Signature2018"
+    }
+
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+    credential_exchange = response.json()
+    assert credential_exchange["protocol_version"] == "v2"
+
+    assert await check_webhook_state(
+        client=faber_client,
+        topic="credentials",
+        filter_map={
+            "state": "offer-sent",
+            "credential_id": credential_exchange["credential_id"],
+        },
+    )
+
+    response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH,
+        params={"connection_id": alice_connection_id},
+    )
+
+    credential_id = (response.json())[0]["credential_id"]
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="credentials",
+    )
+
+    request_response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+    )
+
+    assert request_response.status_code == 200
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "done"},
+        topic="credentials",
+    )
+
+    assert await check_webhook_state(
+        client=faber_client,
+        filter_map={"state": "done"},
+        topic="credentials",
+    )

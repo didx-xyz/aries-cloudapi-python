@@ -198,7 +198,7 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
         state=record.state,
         thread_id=record.thread_id,
         updated_at=record.updated_at,
-        type=list(record.by_format.cred_offer.keys())[0] if record.by_format else None,
+        type=list(record.by_format.cred_offer.keys())[0] if record.by_format else "indy",
     )
 
 

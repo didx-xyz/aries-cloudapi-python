@@ -81,7 +81,7 @@ class CredentialExchange(BaseModel):
     ] = None
     # Thread id can be None in connectionless exchanges
     thread_id: Optional[str] = None
-    type: Optional[str] = None
+    type: str = "indy"
     updated_at: str
 
 

@@ -106,7 +106,7 @@ services:
       - host
     depends_on:
       trustregistry-db:
-        condition: service_started
+        condition: service_healthy
   trustregistry-db:
     image: postgres:15
     container_name: trustregistry-db
@@ -115,6 +115,12 @@ services:
       - POSTGRES_DB=trustregistry
       - POSTGRES_USER=trustregistry
       - POSTGRES_PASSWORD=trustregistry
+      - PGUSER=trustregistry
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - governance-ga
       - governance-multitenant

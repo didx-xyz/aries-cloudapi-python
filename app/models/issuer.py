@@ -20,9 +20,11 @@ class IndyCredential(BaseModel):
 
 class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
-    indy_credential_detail: Optional[IndyCredential]
-    ld_credential_detail: Optional[LDProofVCDetail]
+    indy_credential_detail: Optional[IndyCredential] = None
+    ld_credential_detail: Optional[LDProofVCDetail] = None
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("indy_credential_detail", pre=True, always=True)
     @classmethod
     def check_indy_credential_detail(cls, value, values):
@@ -32,6 +34,8 @@ class CredentialBase(BaseModel):
             )
         return value
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("ld_credential_detail", pre=True, always=True)
     @classmethod
     def check_ld_credential_detail(cls, value, values):

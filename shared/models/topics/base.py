@@ -2,7 +2,6 @@ from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from aries_cloudcontroller import IndyProof, IndyProofRequest
 from pydantic import BaseModel
-from pydantic.generics import GenericModel
 from typing_extensions import Literal, TypedDict
 
 from shared.models.protocol import (
@@ -41,7 +40,7 @@ class Connection(BaseModel):
     invitation_key: Optional[str] = None
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
     invitation_msg_id: Optional[str] = None
-    my_did: Optional[str]
+    my_did: Optional[str] = None
     state: Optional[str] = None  # did-exchange state
     their_did: Optional[str] = None
     their_label: Optional[str] = None
@@ -56,12 +55,12 @@ class CredentialExchange(BaseModel):
     # Connection id can be None in connectionless exchanges
     connection_id: Optional[str] = None
     created_at: str
-    credential_definition_id: Optional[str]
+    credential_definition_id: Optional[str] = None
     credential_id: str
     error_msg: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion
     role: Literal["issuer", "holder"]
-    schema_id: Optional[str]
+    schema_id: Optional[str] = None
     # state can be None in proposed state
     state: Optional[
         Literal[
@@ -123,7 +122,7 @@ class BasicMessage(BaseModel):
 PayloadType = TypeVar("PayloadType", bound=BaseModel)
 
 
-class TopicItem(GenericModel, Generic[PayloadType]):
+class TopicItem(BaseModel, Generic[PayloadType]):
     topic: str
     wallet_id: str
     origin: str

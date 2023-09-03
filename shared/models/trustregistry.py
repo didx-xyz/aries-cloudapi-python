@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import field_validator, ConfigDict, BaseModel, Field, root_validator
 from pydantic.class_validators import validator
 
 
@@ -11,17 +11,14 @@ class Actor(BaseModel):
     did: str
     didcomm_invitation: Optional[str] = None
 
-    @validator("did")
+    @field_validator("did")
     @classmethod
     def did_validator(cls, did: str):
         if not did.startswith("did:"):
             raise ValueError("Only fully qualified DIDs allowed.")
 
         return did
-
-    class Config:
-        validate_assignment = True
-        orm_mode = True
+    model_config = ConfigDict(validate_assignment=True, from_attributes=True)
 
 
 def calc_schema_id(did: str, name: str, version: str) -> str:
@@ -73,7 +70,4 @@ class Schema(BaseModel):
         values["version"] = version
         values["id"] = id
         return values
-
-    class Config:
-        validate_assignment = True
-        orm_mode = True
+    model_config = ConfigDict(validate_assignment=True, from_attributes=True)

@@ -20,9 +20,11 @@ class ProofRequestType(str, Enum):
 
 class ProofRequestBase(BaseModel):
     type: ProofRequestType = ProofRequestType.INDY
-    indy_proof_request: Optional[IndyProofRequest]
-    dif_proof_request: Optional[DIFProofRequest]
+    indy_proof_request: Optional[IndyProofRequest] = None
+    dif_proof_request: Optional[DIFProofRequest] = None
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("indy_proof_request", pre=True, always=True)
     @classmethod
     def check_indy_proof_request(cls, value, values):
@@ -32,6 +34,8 @@ class ProofRequestBase(BaseModel):
             )
         return value
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("dif_proof_request", pre=True, always=True)
     @classmethod
     def check_dif_proof_request(cls, value, values):
@@ -63,9 +67,11 @@ class ProofId(BaseModel):
 
 class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
-    indy_presentation_spec: Optional[IndyPresSpec]
-    dif_presentation_spec: Optional[DIFPresSpec]
+    indy_presentation_spec: Optional[IndyPresSpec] = None
+    dif_presentation_spec: Optional[DIFPresSpec] = None
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("indy_presentation_spec", pre=True, always=True)
     @classmethod
     def check_indy_presentation_spec(cls, value, values):
@@ -75,6 +81,8 @@ class AcceptProofRequest(ProofId):
             )
         return value
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("dif_presentation_spec", pre=True, always=True)
     @classmethod
     def check_dif_presentation_spec(cls, value, values):

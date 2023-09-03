@@ -59,4 +59,4 @@ class CreateTenantResponse(Tenant, TenantAuth):
 
 class OnboardResult(BaseModel):
     did: str
-    didcomm_invitation: Optional[AnyHttpUrl]
+    didcomm_invitation: Optional[AnyHttpUrl] = None

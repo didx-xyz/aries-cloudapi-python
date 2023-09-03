@@ -5,8 +5,8 @@ from pydantic import BaseModel
 
 
 class JsonLdSignRequest(BaseModel):
-    credential_id: Optional[str]
-    credential: Optional[Dict[str, Any]]
+    credential_id: Optional[str] = None
+    credential: Optional[Dict[str, Any]] = None
     verkey: Optional[str] = None
     pub_did: Optional[str] = None
     signature_options: Optional[SignatureOptions] = None

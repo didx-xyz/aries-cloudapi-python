@@ -7,7 +7,7 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyProofRequest,
 )
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -23,9 +23,7 @@ class ProofRequestBase(BaseModel):
     indy_proof_request: Optional[IndyProofRequest] = None
     dif_proof_request: Optional[DIFProofRequest] = None
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("indy_proof_request", pre=True, always=True)
+    @field_validator("indy_proof_request", mode="before", always=True)
     @classmethod
     def check_indy_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.INDY and value is None:
@@ -34,9 +32,7 @@ class ProofRequestBase(BaseModel):
             )
         return value
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("dif_proof_request", pre=True, always=True)
+    @field_validator("dif_proof_request", mode="before", always=True)
     @classmethod
     def check_dif_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.LD_PROOF and value is None:

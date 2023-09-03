@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from pydantic import field_validator, ConfigDict, BaseModel, Field, root_validator
-from pydantic.class_validators import validator
+from pydantic.class_validators import field_validator
 
 
 class Actor(BaseModel):
@@ -18,6 +18,7 @@ class Actor(BaseModel):
             raise ValueError("Only fully qualified DIDs allowed.")
 
         return did
+
     model_config = ConfigDict(validate_assignment=True, from_attributes=True)
 
 
@@ -70,4 +71,5 @@ class Schema(BaseModel):
         values["version"] = version
         values["id"] = id
         return values
+
     model_config = ConfigDict(validate_assignment=True, from_attributes=True)

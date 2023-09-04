@@ -1,7 +1,7 @@
 aioredis~=2.0.1
 aries-cloudcontroller==0.9.1b1
 dependency-injector~=4.41.0
-fastapi~=0.102.0
+fastapi~=0.103.0
 fastapi_websocket_pubsub~=0.3.4
 loguru~=0.7.0
 sse-starlette~=1.6.1

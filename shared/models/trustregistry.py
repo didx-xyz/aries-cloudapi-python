@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, root_validator
-from pydantic.class_validators import field_validator
 
 
 class Actor(BaseModel):

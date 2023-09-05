@@ -7,7 +7,6 @@ from assertpy import assert_that
 from app.models.issuer import SendCredential
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
-from app.routes.wallet import router as wallet_router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.trust_registry import DidKey
 from app.tests.util.webhooks import check_webhook_state

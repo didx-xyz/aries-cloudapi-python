@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 from aries_cloudcontroller.model.create_wallet_token_request import (

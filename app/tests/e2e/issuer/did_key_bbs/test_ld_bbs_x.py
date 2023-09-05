@@ -104,12 +104,10 @@ async def test_send_jsonld_mismatch_bbs_ed(
 ):
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
-    did = register_key_issuer_bbs
-
     # Creating JSON-LD credential did:key
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = f"{did}"
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_bbs
     credential["ld_credential_detail"]["options"] = {
         "proofType": "Ed25519Signature2018"
     }

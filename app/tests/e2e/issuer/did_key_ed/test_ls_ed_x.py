@@ -1,11 +1,7 @@
 from copy import deepcopy
 
 import pytest
-from aries_cloudcontroller import (
-    Credential,
-    LDProofVCDetail,
-    LDProofVCDetailOptions,
-)
+from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCDetailOptions
 from assertpy import assert_that
 from fastapi import HTTPException
 

@@ -95,6 +95,7 @@ async def test_send_jsonld_mismatch_sov_bbs(
         )
     assert_that(exc.value.status_code).is_equal_to(500)
 
+
 @pytest.mark.anyio
 async def test_send_jsonld_mismatch_bbs_ed(
     faber_client: RichAsyncClient,

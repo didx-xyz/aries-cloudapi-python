@@ -144,7 +144,9 @@ async def test_send_jsonld_key_ed25519(
     # Updating JSON-LD credential did:key with proofType ed25519
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_ed25519
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = register_key_issuer_ed25519
 
     # Send credential
     response = await faber_client.post(
@@ -268,7 +270,9 @@ async def test_send_jsonld_request(
     # Updating JSON-LD credential did:key with proofType ed25519
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_ed25519
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = register_key_issuer_ed25519
 
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,
@@ -331,7 +335,9 @@ async def test_issue_jsonld_ed(
     # Updating JSON-LD credential did:key with proofType ed25519
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_ed25519
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = register_key_issuer_ed25519
 
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,

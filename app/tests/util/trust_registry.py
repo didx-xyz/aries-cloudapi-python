@@ -43,9 +43,35 @@ class DidKey:
 
 
 @pytest.fixture(scope="function")
-async def register_key_issuer(request, faber_client: RichAsyncClient) -> DidKey:
-    key_type = request.param
-    did_create_options = {"method": "key", "options": {"key_type": key_type}}
+async def register_key_issuer_ed25519(faber_client: RichAsyncClient) -> DidKey:
+    did_create_options = {"method": "key", "options": {"key_type": "ed25519"}}
+
+    wallet_response = (
+        await faber_client.post(WALLET_BASE_PATH, json=did_create_options)
+    ).json()
+    did = wallet_response["did"]
+
+    rand = random()
+    test_id = f"test-actor-{rand}"
+
+    await register_actor(
+        Actor(
+            id=test_id,
+            name=f"Test Actor-{rand}",
+            roles=["issuer"],
+            did=f"{did}",
+            didcomm_invitation=None,
+        )
+    )
+
+    yield did
+
+    await remove_actor_by_id(test_id)
+
+
+@pytest.fixture(scope="function")
+async def register_key_issuer_bbs(faber_client: RichAsyncClient) -> DidKey:
+    did_create_options = {"method": "key", "options": {"key_type": "bls12381g2"}}
 
     wallet_response = (
         await faber_client.post(WALLET_BASE_PATH, json=did_create_options)

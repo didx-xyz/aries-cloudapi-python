@@ -106,7 +106,9 @@ jobs:
         with:
           images: ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}
           tags: |
-            type=ref,event=branch
+            type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
+            type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
+            type=ref,event=branch,priority=600
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -165,6 +167,8 @@ jobs:
       id-token: write # This is required for requesting the JWT
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
+    environment:
+      name: dev
     env:
       projects: |
         ledger-nodes
@@ -218,6 +222,35 @@ jobs:
 
       - name: Update Kubeconfig
         run: aws eks update-kubeconfig --name cloudapi-dev
+
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/governance-ga-agent
+          tags: |
+            type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
+            type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
+            type=ref,event=branch,priority=600
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Helmfile Diff
+        uses: helmfile/helmfile-action@v1.0.0 # https://github.com/helmfile/helmfile-action
+        with:
+          helmfile-args: |
+            diff \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }}
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: 'v0.154.0'
+          helm-version: 'v3.12.0'
+        env:
+          IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
       - name: Install Helm
         uses: azure/setup-helm@v3

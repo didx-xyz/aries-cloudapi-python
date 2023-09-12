@@ -235,14 +235,15 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: 1.42.0
 
-      - name: Helmfile Diff
+      - name: Helmfile Destroy
+        id: destroy_deployments
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
         uses: helmfile/helmfile-action@v1.0.0 # https://github.com/helmfile/helmfile-action
         with:
           helmfile-args: |
-            diff \
+            destroy \
               --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-              --set image.tag=${{ env.IMAGE_TAG }}
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -250,6 +251,20 @@ jobs:
           helm-version: 'v3.12.0'
         env:
           IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+
+      - name: Wait for pods to terminate
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        run: |
+          while true; do
+            not_terminated_count=$(kubectl -n dev-cloudapi get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' | grep -o 'false' | wc -l)
+            if [ "$not_terminated_count" -eq 0 ]; then
+              echo "All pods terminated"
+              break
+            else
+              echo "Waiting for pods to terminate"
+              sleep 10
+            fi
+          done
 
       - name: Drop DBs
         id: drop_dbs
@@ -292,6 +307,9 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }}
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
           helmfile-version: 'v0.154.0'
           helm-version: 'v3.12.0'
         env:

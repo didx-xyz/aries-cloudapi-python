@@ -229,34 +229,6 @@ jobs:
           # helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
           helm plugin install https://github.com/databus23/helm-diff
 
-      - name: Diff upgrade
-        run: |
-          for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
-            helm -n dev-cloudapi \
-              diff upgrade "${project}" \
-              --install \
-              --set image.tag=${{ needs.build.outputs.image_version }} \
-              -f ./helm/Chart/values/dev/${project}.yaml \
-              ./helm/Chart | tee -a diff_output.txt
-          done
-
-      - name: Quiet diff # Display lines with actual changes and lines indicating the component that has changed
-        run: |
-          grep -E '^[-+]\s|has changed:$' diff_output.txt | awk '{$1=$1};1'
-
-      - name: Destroy deployments
-        id: destroy_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
-        continue-on-error: true
-        run: |
-          for project in $(echo "${{ env.workaround }}" | sed 's/\n/ /g'); do
-            if helm -n dev-cloudapi ls --filter "^${project}$" | grep -q ${project}; then
-              helm -n dev-cloudapi delete ${project}
-            else
-              echo "Deployment ${project} not found. Skipping..."
-            fi
-          done
-
       - name: Drop DBs
         id: drop_dbs
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'

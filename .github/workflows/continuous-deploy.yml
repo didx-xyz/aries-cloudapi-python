@@ -159,16 +159,16 @@ jobs:
             ]
   deploy:
     name: Deploy to EKS
-    needs:
-      - start-runner
-      - build
-    runs-on: ${{ needs.start-runner.outputs.label }}
-    permissions:
-      id-token: write # This is required for requesting the JWT
-    outputs:
-      output: ${{ steps.updated_deployments.outputs.success }}
     environment:
       name: dev
+    needs:
+      - build
+    permissions:
+      id-token: write # Required to authenticate with AWS
+      contents: read # Required to clone this repository
+    runs-on: ubuntu-latest
+    outputs:
+      output: ${{ steps.updated_deployments.outputs.success }}
     env:
       projects: |
         ledger-nodes
@@ -189,29 +189,19 @@ jobs:
         governance-webhooks-web
         governance-endorser
         tails-server
-      KUBECONFIG: /root/.kube/config
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          apt-get update && apt-get upgrade -y
-          apt-get install -y unzip postgresql-client python-is-python3 redis-tools
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-          curl -Lo sops.deb https://github.com/mozilla/sops/releases/download/v3.7.3/sops_3.7.3_amd64.deb
-          apt-get --fix-broken install ./sops.deb
-
-      - name: Checkout Helm chart
+      - name: Checkout Charts
         uses: actions/checkout@v3
         with:
-          repository: didx-xyz/cloud_api_helm
-          token: ${{ secrets.PAT }} # private access token here, for HTTPS clones
-          path: helm/Chart
+          repository: didx-xyz/charts
+          token: ${{ secrets.PAT }}
+          path: charts
 
-      - name: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1
+      - name: Sops Binary Installer
+        uses: mdgreenwald/mozilla-sops-action@v1.4.1
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -227,7 +217,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ steps.login-ecr.outputs.registry }}/governance-ga-agent
+          images: doesnot/matter
           tags: |
             type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
             type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
@@ -236,12 +226,10 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Checkout Charts
-        uses: actions/checkout@v3
+      - uses: tailscale/github-action@main
         with:
-          repository: didx-xyz/charts
-          token: ${{ secrets.PAT }}
-          path: charts
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          version: 1.42.0
 
       - name: Helmfile Diff
         uses: helmfile/helmfile-action@v1.0.0 # https://github.com/helmfile/helmfile-action
@@ -258,16 +246,6 @@ jobs:
           helm-version: 'v3.12.0'
         env:
           IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: latest
-
-      - name: Install helm plugins
-        run: |
-          # helm plugin install https://github.com/jkroepke/helm-secrets --version v4.4.2
-          helm plugin install https://github.com/databus23/helm-diff
 
       - name: Drop DBs
         id: drop_dbs

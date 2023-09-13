@@ -75,63 +75,6 @@ credential_ = SendCredential(
 
 
 @pytest.mark.anyio
-async def test_send_jsonld_credential_sov(
-    faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
-):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
-    faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-
-    # Updating JSON-LD credential did:sov
-    credential = deepcopy(credential_)
-    credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"][
-        "issuer"
-    ] = f"did:sov:{faber_pub_did}"
-
-    # Send credential
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        filter_map={
-            "state": "offer-received",
-            "connection_id": alice_connection_id,
-        },
-    )
-
-    # Check if Alice received the credential
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
-    )
-
-    records = response.json()
-
-    assert len(records) == 1
-
-    # Check if the received credential matches the sent one
-    received_credential = records[-1]
-    assert_that(received_credential).has_connection_id(alice_connection_id)
-    assert_that(received_credential).has_state("offer-received")
-    assert_that(received_credential).has_role("holder")
-    assert_that(received_credential["credential_id"]).starts_with("v2")
-
-
-@pytest.mark.anyio
 async def test_send_jsonld_key_ed25519(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
@@ -189,9 +132,9 @@ async def test_send_jsonld_key_ed25519(
 @pytest.mark.anyio
 async def test_send_jsonld_oob(
     faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
+    register_issuer_key_ed25519: DidKey,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -205,14 +148,12 @@ async def test_send_jsonld_oob(
     # nothing currently in alice's records
     assert len(records) == 0
 
-    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-
     # Updating JSON-LD credential did:sov
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
     credential["ld_credential_detail"]["credential"][
         "issuer"
-    ] = f"did:sov:{faber_pub_did}"
+    ] = register_issuer_key_ed25519
 
     # faber create offer
     response = await faber_client.post(

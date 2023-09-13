@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Optional
 
 from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
+from aries_cloudcontroller.model.did_create import DIDCreate
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/wallet/dids", tags=["wallet"])
 
 @router.post("", response_model=DID)
 async def create_did(
+    did_create: Optional[DIDCreate] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """Create Local DID."""
@@ -24,7 +26,9 @@ async def create_did(
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Creating DID")
-        result = await acapy_wallet.create_did(aries_controller)
+        result = await acapy_wallet.create_did(
+            did_create=did_create, controller=aries_controller
+        )
 
     logger.info("Successfully created DID.")
     return result

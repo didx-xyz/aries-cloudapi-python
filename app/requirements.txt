@@ -1,5 +1,5 @@
 aiohttp~=3.8.4
-aries-cloudcontroller==0.9.1b0
+aries-cloudcontroller==0.9.1b1
 base58~=2.1.1
 fastapi~=0.103.0
 fastapi_websocket_pubsub~=0.3.4

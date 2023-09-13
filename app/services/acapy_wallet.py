@@ -1,3 +1,5 @@
+from typing import Optional
+
 from aries_cloudcontroller import AcaPyClient
 from aries_cloudcontroller.model.did import DID
 from aries_cloudcontroller.model.did_create import DIDCreate
@@ -34,7 +36,9 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
     return f"did:sov:{public_did.result.did}"
 
 
-async def create_did(controller: AcaPyClient) -> Did:
+async def create_did(
+    controller: AcaPyClient, did_create: Optional[DIDCreate] = None
+) -> Did:
     """Create a local did
 
     Args:
@@ -47,7 +51,9 @@ async def create_did(controller: AcaPyClient) -> Did:
         Did: The created did
     """
     logger.info("Creating local DID")
-    did_result = await controller.wallet.create_did(body=DIDCreate())
+    if did_create is None:
+        did_create = DIDCreate()
+    did_result = await controller.wallet.create_did(body=did_create)
 
     if (
         not did_result.result

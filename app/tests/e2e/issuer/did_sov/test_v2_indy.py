@@ -1,5 +1,4 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
 from app.event_handling.sse_listener import SseListener
@@ -14,76 +13,6 @@ from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
-
-
-@pytest.mark.anyio
-async def test_send_credential_oob_v1(
-    faber_client: RichAsyncClient,
-    schema_definition: CredentialSchema,
-    credential_definition_id: str,
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
-):
-    credential = {
-        "protocol_version": "v1",
-        "indy_credential_detail": {
-            "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
-        },
-    }
-
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
-
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH + "/create-offer",
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    invitation_response = await faber_client.post(
-        OOB_BASE_PATH + "/create-invitation",
-        json={
-            "create_connection": False,
-            "use_public_did": False,
-            "attachments": [
-                {"id": data["credential_id"][3:], "type": "credential-offer"}
-            ],
-        },
-    )
-    assert_that(invitation_response.status_code).is_equal_to(200)
-
-    invitation = (invitation_response.json())["invitation"]
-
-    accept_response = await alice_member_client.post(
-        OOB_BASE_PATH + "/accept-invitation",
-        json={"invitation": invitation},
-    )
-
-    oob_record = accept_response.json()
-
-    assert_that(accept_response.status_code).is_equal_to(200)
-    assert_that(oob_record).contains("created_at", "oob_id", "invitation")
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        filter_map={
-            "state": "offer-received",
-            "credential_definition_id": credential_definition_id,
-        },
-    )
 
 
 @pytest.mark.anyio
@@ -160,7 +89,7 @@ async def test_send_credential(
     alice_member_client: RichAsyncClient,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": "v2",
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -185,18 +114,6 @@ async def test_send_credential(
     data = response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    credential["protocol_version"] = "v2"
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
@@ -209,24 +126,6 @@ async def test_send_credential(
             "credential_id": data["credential_id"],
         },
     )
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
-    )
-    records = response.json()
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        filter_map={
-            "state": "offer-received",
-            "credential_id": records[-1]["credential_id"],
-        },
-    )
-    assert len(records) == 2
-
-    # Expect one v1 record, one v2 record
-    assert_that(records).extracting("protocol_version").contains("v1", "v2")
 
 
 @pytest.mark.anyio
@@ -236,7 +135,7 @@ async def test_create_offer(
     credential_definition_id: str,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": "v2",
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
             "attributes": {"speed": "10"},
@@ -251,18 +150,6 @@ async def test_create_offer(
     data = response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
-    assert_that(data).has_attributes({"speed": "10"})
-    assert_that(data).has_schema_id(schema_definition.id)
-
-    credential["protocol_version"] = "v2"
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH + "/create-offer",
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
@@ -275,25 +162,6 @@ async def test_create_offer(
             "credential_id": data["credential_id"],
         },
     )
-    response = await faber_client.get(
-        CREDENTIALS_BASE_PATH,
-    )
-    records = response.json()
-
-    assert await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        filter_map={
-            "state": "offer-sent",
-            "credential_id": records[-1]["credential_id"],
-        },
-    )
-    # Two from this and two from previous test potentially. Depending on order.
-    # So let's do >= 2 instead of == 2 or == 4
-    assert len(records) >= 2
-
-    # Expect one v1 record, one v2 record
-    assert_that(records).extracting("protocol_version").contains("v1", "v2")
 
 
 @pytest.mark.anyio
@@ -304,7 +172,7 @@ async def test_send_credential_request(
     credential_definition_id: str,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": "v2",
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -317,7 +185,7 @@ async def test_send_credential_request(
         json=credential,
     )
     credential_exchange = response.json()
-    assert credential_exchange["protocol_version"] == "v1"
+    assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
         client=faber_client,
@@ -332,9 +200,30 @@ async def test_send_credential_request(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection.alice_connection_id},
     )
+
+    credential_id = (response.json())[0]["credential_id"]
+
     assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
+        topic="credentials",
+    )
+
+    request_response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+    )
+
+    assert request_response.status_code == 200
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-sent"},
+        topic="credentials",
+    )
+
+    assert await check_webhook_state(
+        client=faber_client,
+        filter_map={"state": "request-received"},
         topic="credentials",
     )
 
@@ -350,7 +239,7 @@ async def test_revoke_credential(
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": "v2",
         "connection_id": faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id_revocable,
@@ -400,79 +289,3 @@ async def test_revoke_credential(
     )
 
     assert response.status_code == 204
-
-
-@pytest.mark.anyio
-async def test_send_jsonld_credential(
-    faber_client: RichAsyncClient,
-    faber_acapy_client: AcaPyClient,
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
-):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
-    faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-
-    # Creating JSON-LD credential
-    credential = {
-        "type": "ld_proof",
-        "connection_id": faber_connection_id,
-        "protocol_version": "v2",
-        "ld_credential_detail": {
-            "credential": {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://www.w3.org/2018/credentials/examples/v1",
-                ],
-                "type": ["VerifiableCredential", "UniversityDegreeCredential"],
-                "credentialSubject": {
-                    "degree": {
-                        "type": "BachelorDegree",
-                        "name": "Bachelor of Science and Arts",
-                    },
-                    "college": "Faber College",
-                },
-                "issuanceDate": "2021-04-12",
-                "issuer": f"did:sov:{faber_pub_did}",
-            },
-            "options": {"proofType": "Ed25519Signature2018"},
-        },
-    }
-
-    # Send credential
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        filter_map={
-            "state": "offer-received",
-            "connection_id": alice_connection_id,
-        },
-    )
-
-    # Check if Alice received the credential
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
-    )
-
-    records = response.json()
-
-    assert len(records) == 1
-
-    # Check if the received credential matches the sent one
-    received_credential = records[-1]
-    assert_that(received_credential).has_connection_id(alice_connection_id)
-    assert_that(received_credential).has_state("offer-received")
-    assert_that(received_credential).has_role("holder")
-    assert_that(received_credential["credential_id"]).starts_with("v2")

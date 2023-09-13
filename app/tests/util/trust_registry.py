@@ -43,7 +43,7 @@ class DidKey:
 
 
 @pytest.fixture(scope="function")
-async def register_key_issuer_ed25519(faber_client: RichAsyncClient) -> DidKey:
+async def register_issuer_key_ed25519(faber_client: RichAsyncClient) -> DidKey:
     did_create_options = {"method": "key", "options": {"key_type": "ed25519"}}
 
     wallet_response = (
@@ -70,7 +70,7 @@ async def register_key_issuer_ed25519(faber_client: RichAsyncClient) -> DidKey:
 
 
 @pytest.fixture(scope="function")
-async def register_key_issuer_bbs(faber_client: RichAsyncClient) -> DidKey:
+async def register_issuer_key_bbs(faber_client: RichAsyncClient) -> DidKey:
     did_create_options = {"method": "key", "options": {"key_type": "bls12381g2"}}
 
     wallet_response = (

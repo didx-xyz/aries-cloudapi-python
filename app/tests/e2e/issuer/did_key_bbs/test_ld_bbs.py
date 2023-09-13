@@ -72,7 +72,7 @@ async def test_send_jsonld_key_bbs(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    register_key_issuer_bbs: DidKey,
+    register_issuer_key_bbs: DidKey,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -80,7 +80,7 @@ async def test_send_jsonld_key_bbs(
     # Creating JSON-LD credential did:key
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_bbs
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
 
     # Send credential
     response = await faber_client.post(
@@ -125,7 +125,7 @@ async def test_send_jsonld_bbs_oob(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    register_key_issuer_bbs: DidKey,
+    register_issuer_key_bbs: DidKey,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -142,7 +142,7 @@ async def test_send_jsonld_bbs_oob(
     # Updating JSON-LD credential did:key (bbs)
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_bbs
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
 
     # faber create offer
     response = await faber_client.post(
@@ -192,7 +192,7 @@ async def test_send_jsonld_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
-    register_key_issuer_bbs: DidKey,
+    register_issuer_key_bbs: DidKey,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -200,7 +200,7 @@ async def test_send_jsonld_request(
     # Updating JSON-LD credential did:key with proofType bbs
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_bbs
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
 
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,
@@ -255,7 +255,7 @@ async def test_issue_jsonld_bbs(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
-    register_key_issuer_bbs: DidKey,
+    register_issuer_key_bbs: DidKey,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -263,7 +263,7 @@ async def test_issue_jsonld_bbs(
     # Updating JSON-LD credential did:key with proofType bbs
     credential = deepcopy(credential_)
     credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_key_issuer_bbs
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,
         json=credential,

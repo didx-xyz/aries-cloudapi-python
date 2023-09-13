@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from aries_cloudcontroller import IndyProof, IndyProofRequest
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic.generics import GenericModel
 from typing_extensions import Literal, TypedDict
 

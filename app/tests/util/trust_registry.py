@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from random import random
 
@@ -42,6 +43,7 @@ class DidKey:
     did: str
 
 
+@asynccontextmanager
 async def register_issuer_key(faber_client: RichAsyncClient, key_type: str) -> DidKey:
     did_create_options = {"method": "key", "options": {"key_type": key_type}}
 
@@ -63,16 +65,19 @@ async def register_issuer_key(faber_client: RichAsyncClient, key_type: str) -> D
         )
     )
 
-    yield did
-
-    await remove_actor_by_id(test_id)
+    try:
+        yield did
+    finally:
+        await remove_actor_by_id(test_id)
 
 
 @pytest.fixture(scope="function")
 async def register_issuer_key_ed25519(faber_client: RichAsyncClient) -> DidKey:
-    return await register_issuer_key(faber_client, "ed25519")
+    async with register_issuer_key(faber_client, "ed25519") as did:
+        yield did
 
 
 @pytest.fixture(scope="function")
 async def register_issuer_key_bbs(faber_client: RichAsyncClient) -> DidKey:
-    return await register_issuer_key(faber_client, "bls12381g2")
+    async with register_issuer_key(faber_client, "bls12381g2") as did:
+        yield did

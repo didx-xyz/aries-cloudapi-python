@@ -20,6 +20,7 @@ from shared.models.topics import (
     PresentationExchange,
     RedisItem,
     TopicItem,
+    ProblemReport,
 )
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import (
@@ -46,6 +47,7 @@ class Service:
             "oob": self._oob,
             "revocation": self._revocation,
             "issuer_cred_rev": self._issuer_cred_rev,
+            "problem_report": self._problem_report,
         }
 
     def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:
@@ -71,6 +73,9 @@ class Service:
 
     def _issuer_cred_rev(self, item: RedisItem) -> IssuerCredRevRecord:
         return IssuerCredRevRecord(**item.payload)
+
+    def _problem_report(self, item: RedisItem) -> ProblemReport:
+        return ProblemReport(**item.payload)
 
     def _to_item(self, data: RedisItem) -> Optional[BaseModel]:
         transformer = self._topic_to_transformer.get(data.topic)

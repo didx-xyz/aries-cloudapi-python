@@ -18,9 +18,9 @@ from shared.models.topics import (
     Endorsement,
     PayloadType,
     PresentationExchange,
+    ProblemReport,
     RedisItem,
     TopicItem,
-    ProblemReport,
 )
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import (

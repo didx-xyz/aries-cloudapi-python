@@ -148,11 +148,11 @@ class DescriptionInfo(BaseModel):
 class ProblemReport(BaseModel):
     type: Optional[str] = Field(None, alias="@type")
     id: Optional[str] = Field(None, alias="@id")
-    thread: Optional[Dict[str,str]] = Field(None, alias="~thread")
-    description: Optional[DescriptionInfo]= None
-    problem_items :Optional[List[Dict[str,str]]] = None
+    thread: Optional[Dict[str, str]] = Field(None, alias="~thread")
+    description: Optional[DescriptionInfo] = None
+    problem_items: Optional[List[Dict[str, str]]] = None
     who_retries: Optional[str] = None
-    fix_hint: Optional[Dict[str,str]] = None
+    fix_hint: Optional[Dict[str, str]] = None
     impact: Optional[str] = None
     where: Optional[str] = None
     noticed_time: Optional[str] = None

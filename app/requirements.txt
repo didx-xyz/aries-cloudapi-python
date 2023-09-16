@@ -3,7 +3,7 @@ aries-cloudcontroller==0.9.1b1
 base58~=2.1.1
 fastapi~=0.103.0
 fastapi_websocket_pubsub~=0.3.4
-httpx~=0.24.1
+httpx~=0.25.0
 loguru~=0.7.0
 pydantic~=1.10.9
 pyjwt~=2.8.0

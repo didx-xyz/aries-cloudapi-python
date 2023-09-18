@@ -6,11 +6,13 @@ on:
       run-update-deployments:
         description: "Run Update Deployments step manually"
         required: false
-        default: "true"
+        default: true
+        type: boolean
       run-tests:
         description: "Run tests step"
         required: false
-        default: "true"
+        default: true
+        type: boolean
 
   push:
     branches:
@@ -29,9 +31,10 @@ concurrency:
 
 jobs:
   build:
-    name: Build image and push to ECR
+    name: Build images and push to GHCR
     permissions:
       id-token: write # This is required for requesting the JWT
+      packages: write # To push to GHCR.io
     runs-on: ubuntu-latest
 
     outputs:
@@ -84,28 +87,20 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: af-south-1
-          role-to-assume: arn:aws:iam::402177810328:role/cicd
-          role-session-name: github-cicd
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      - uses: docker/login-action@v3
         with:
-          registries: "324190738845" # org registry
-          mask-password: 'true'
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
 
       - name: Docker Metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
             type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
@@ -224,7 +219,7 @@ jobs:
 
       - name: Helmfile Destroy
         id: destroy_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         uses: helmfile/helmfile-action@v1.2.0
         with:
           helmfile-args: |
@@ -240,7 +235,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pods to terminate
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         run: |
           while true; do
             not_terminated_count=$(kubectl -n dev-cloudapi get pods -o jsonpath='{.items[*].status.containerStatuses[*].ready}' | grep -o 'false' | wc -l)
@@ -255,7 +250,7 @@ jobs:
 
       - name: Drop DBs
         id: drop_dbs
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -269,14 +264,14 @@ jobs:
           bash ./scripts/aurora-delete.sh -o $MT_ACAPY_WALLET_NAME -d
 
       - name: List Elasticache Redis
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
 
       - name: Clean Elasticache Redis
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
@@ -284,14 +279,15 @@ jobs:
 
       - name: Helmfile Apply
         id: update_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         uses: helmfile/helmfile-action@v1.2.0
         with:
           helmfile-args: |
             apply \
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-              --set image.tag=${{ env.IMAGE_TAG }}
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }}
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -302,7 +298,7 @@ jobs:
 
       # - name: Update deployments
       #   id: update_deployments
-      #   if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
+      #   if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
       #   run: |
       #     for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
       #       helm -n dev-cloudapi \
@@ -336,7 +332,7 @@ jobs:
         run: echo "success=true" >> "$GITHUB_OUTPUT"
 
   test:
-    # if: (needs.deploy.outputs.output == 'true' && github.event.inputs.run-tests != 'false') || github.event.inputs.run-tests == 'true'
+    # if: (needs.deploy.outputs.output == 'true' && github.event.inputs.run-tests != 'false') || github.event.inputs.run-tests
     # Only run external testing manually for now due to idiosyncrasies between local and external testing.
     if: github.event.inputs.run-tests == 'true'
     needs:

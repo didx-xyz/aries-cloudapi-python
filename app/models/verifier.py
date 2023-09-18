@@ -66,9 +66,7 @@ class AcceptProofRequest(ProofId):
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("indy_presentation_spec", pre=True, always=True)
+    @field_validator("indy_presentation_spec", mode="before", always=True)
     @classmethod
     def check_indy_presentation_spec(cls, value, values):
         if values.get("type") == ProofRequestType.INDY and value is None:
@@ -77,9 +75,7 @@ class AcceptProofRequest(ProofId):
             )
         return value
 
-    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
-    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
-    @validator("dif_presentation_spec", pre=True, always=True)
+    @field_validator("dif_presentation_spec", mode="before", always=True)
     @classmethod
     def check_dif_presentation_spec(cls, value, values):
         if values.get("type") == ProofRequestType.LD_PROOF and value is None:

@@ -82,27 +82,28 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: af-south-1
           role-to-assume: arn:aws:iam::402177810328:role/cicd
           role-session-name: github-cicd
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         with:
           registries: "324190738845" # org registry
+          mask-password: 'true'
 
       - name: Docker Metadata
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ steps.login-ecr.outputs.registry }}/${{ matrix.image }}
           tags: |
@@ -114,7 +115,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push Docker images
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.file }}
@@ -134,7 +135,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: af-south-1
           role-to-assume: arn:aws:iam::402177810328:role/cicd
@@ -191,24 +192,23 @@ jobs:
         tails-server
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Checkout Charts
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
 
       - name: Install dependencies
-        run: |
-          sudo apt-get install -y postgresql-client redis-tools
+        run: sudo apt-get install -y postgresql-client redis-tools
 
       - name: Sops Binary Installer
         uses: mdgreenwald/mozilla-sops-action@v1.4.1
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: af-south-1
           role-to-assume: arn:aws:iam::402177810328:role/cicd
@@ -217,28 +217,15 @@ jobs:
       - name: Update Kubeconfig
         run: aws eks update-kubeconfig --name cloudapi-dev
 
-      - name: Docker Metadata
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: doesnot/matter
-          tags: |
-            type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
-            type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
-            type=ref,event=branch,priority=600
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-
       - uses: tailscale/github-action@main
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-          version: 1.42.0
+          version: 1.48.2
 
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.0.0 # https://github.com/helmfile/helmfile-action
+        uses: helmfile/helmfile-action@v1.2.0
         with:
           helmfile-args: |
             destroy \
@@ -247,10 +234,10 @@ jobs:
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
-          helmfile-version: 'v0.154.0'
-          helm-version: 'v3.12.0'
+          helmfile-version: v0.157.0
+          helm-version: v3.12.3
         env:
-          IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pods to terminate
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
@@ -286,21 +273,19 @@ jobs:
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
-        run: |
-          redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
+        run: redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
 
       - name: Clean Elasticache Redis
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
-        run: |
-          redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
+        run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
       - name: Helmfile Apply
         id: update_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.0.0 # https://github.com/helmfile/helmfile-action
+        uses: helmfile/helmfile-action@v1.2.0
         with:
           helmfile-args: |
             apply \
@@ -310,10 +295,10 @@ jobs:
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
-          helmfile-version: 'v0.154.0'
-          helm-version: 'v3.12.0'
+          helmfile-version: v0.157.0
+          helm-version: v3.12.3
         env:
-          IMAGE_TAG: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       # - name: Update deployments
       #   id: update_deployments
@@ -364,7 +349,7 @@ jobs:
     env:
       KUBECONFIG: /root/.kube/config
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -379,7 +364,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: af-south-1
           role-to-assume: arn:aws:iam::402177810328:role/cicd
@@ -424,7 +409,7 @@ jobs:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: af-south-1
           role-to-assume: arn:aws:iam::402177810328:role/cicd

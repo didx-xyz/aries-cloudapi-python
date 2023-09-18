@@ -36,6 +36,10 @@ from app.tests.util.member_wallets import (
     bob_tenant,
     faber_issuer,
 )
+from app.tests.util.trust_registry import (
+    register_issuer_key_bbs,
+    register_issuer_key_ed25519,
+)
 from shared.util.mock_agent_controller import (
     mock_admin_auth,
     mock_agent_controller,

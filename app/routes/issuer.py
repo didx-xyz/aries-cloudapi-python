@@ -21,7 +21,7 @@ from app.util.acapy_issuer_utils import (
     issuer_from_id,
     issuer_from_protocol_version,
 )
-from app.util.did import did_from_credential_definition_id
+from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from shared.log_config import get_logger
 from shared.models.topics import CredentialExchange
 
@@ -292,17 +292,26 @@ async def request_credential(
         bound_logger.debug("Fetching records")
         record = await issuer.get_record(aries_controller, credential_id)
 
-        if not record.credential_definition_id or not record.schema_id:
-            raise CloudApiException(
-                "Record has no credential definition or schema associated. "
-                "This probably means you haven't received an offer yet.",
-                412,
+        schema_id = None
+        if record.type == "indy":
+            if not record.credential_definition_id or not record.schema_id:
+                raise CloudApiException(
+                    "Record has no credential definition or schema associated. "
+                    "This probably means you haven't received an offer yet.",
+                    412,
+                )
+            issuer_did = did_from_credential_definition_id(
+                record.credential_definition_id
             )
+            issuer_did = qualified_did_sov(issuer_did)
+            schema_id = record.schema_id
+        elif record.type == "ld_proof":
+            issuer_did = record.did
+        else:
+            raise CloudApiException("Could not resolve record type")
 
-        did = did_from_credential_definition_id(record.credential_definition_id)
-
+        await assert_valid_issuer(issuer_did, schema_id)
         # Make sure the issuer is allowed to issue this credential according to trust registry rules
-        await assert_valid_issuer(f"did:sov:{did}", record.schema_id)
 
         bound_logger.debug("Requesting credential")
         result = await issuer.request_credential(

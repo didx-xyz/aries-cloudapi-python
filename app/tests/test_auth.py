@@ -2,6 +2,7 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.dependencies.auth import Role
+from app.tests.util.client import get_tenant_acapy_client
 from shared import GOVERNANCE_ACAPY_API_KEY, TENANT_ACAPY_API_KEY
 
 
@@ -16,7 +17,8 @@ async def test_governance_agent(governance_acapy_client: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_tenant_agent(alice_acapy_client: AcaPyClient):
+async def test_tenant_agent():
+    alice_acapy_client = get_tenant_acapy_client(token="Alice")
     assert isinstance(alice_acapy_client, AcaPyClient)
     assert alice_acapy_client.base_url == Role.TENANT.agent_type.base_url
     assert "Bearer " in alice_acapy_client.client.headers["Authorization"]

@@ -57,6 +57,7 @@ class CredentialExchange(BaseModel):
     created_at: str
     credential_definition_id: Optional[str] = None
     credential_id: str
+    did: Optional[str] = None
     error_msg: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion
     role: Literal["issuer", "holder"]
@@ -79,6 +80,7 @@ class CredentialExchange(BaseModel):
     ] = None
     # Thread id can be None in connectionless exchanges
     thread_id: Optional[str] = None
+    type: str = "indy"
     updated_at: str
 
 

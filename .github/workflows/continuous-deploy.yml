@@ -53,6 +53,7 @@ jobs:
             governance-webhooks-web,
             governance-multitenant-agent,
             governance-endorser,
+            pytest,
           ]
         include:
           - image: governance-ga-agent
@@ -82,6 +83,9 @@ jobs:
           - image: tails-server
             context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
             file: docker/Dockerfile.tails-server
+          - image: pytest
+            context: .
+            file: dockerfiles/tests/Dockerfile
 
     steps:
       - name: Check out code

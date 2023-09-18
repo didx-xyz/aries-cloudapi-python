@@ -11,7 +11,7 @@ jobs:
     name: style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
@@ -26,9 +26,7 @@ jobs:
             black~=23.9.0
 
       - name: Check import style with isort
-        run: |
-          isort . --check --profile black --diff
+        run: isort . --check --profile black --diff
 
       - name: Check code style with Black
-        run: |
-          black . --check --diff
+        run: black . --check --diff

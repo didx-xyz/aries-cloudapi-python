@@ -118,6 +118,7 @@ async def get_credential_definitions(
             )
         else:
             bound_logger.debug("No definition ids returned")
+            credential_definition_results = []
 
     credential_definitions = [
         credential_definition_from_acapy(credential_definition.credential_definition)

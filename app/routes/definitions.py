@@ -420,6 +420,7 @@ async def get_schemas(
             schema_results = await asyncio.gather(*get_schema_futures)
         else:
             bound_logger.debug("No created schema ids returned")
+            schema_results = []
 
     schemas = [
         credential_schema_from_acapy(schema.schema_)

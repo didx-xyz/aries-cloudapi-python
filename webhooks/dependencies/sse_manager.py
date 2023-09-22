@@ -8,12 +8,14 @@ from shared.log_config import get_logger
 from shared.models.topics import WEBHOOK_TOPIC_ALL, TopicItem
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
-logger = get_logger(__name__)
+from shared.constants import (
+    MAX_EVENT_AGE_SECONDS,
+    MAX_QUEUE_SIZE,
+    QUEUE_CLEANUP_PERIOD,
+    CLIENT_QUEUE_POLL_PERIOD,
+)
 
-MAX_EVENT_AGE_SECONDS = 30
-MAX_QUEUE_SIZE = 200
-QUEUE_CLEANUP_PERIOD = 60
-CLIENT_QUEUE_POLL_PERIOD = 0.2
+logger = get_logger(__name__)
 
 
 class SseManager:

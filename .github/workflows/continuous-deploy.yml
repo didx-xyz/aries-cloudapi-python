@@ -221,6 +221,24 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: 1.48.2
 
+      - name: Helmfile Diff
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        uses: helmfile/helmfile-action@v1.2.0
+        with:
+          helmfile-args: |
+            diff \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }}
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: v0.157.0
+          helm-version: v3.12.3
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
@@ -281,6 +299,8 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
+
+
       - name: Helmfile Apply
         id: update_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
@@ -299,36 +319,6 @@ jobs:
           helm-version: v3.12.3
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      # - name: Update deployments
-      #   id: update_deployments
-      #   if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-      #   run: |
-      #     for project in $(echo "${{ env.projects }}" | sed 's/\n/ /g'); do
-      #       helm -n dev-cloudapi \
-      #         upgrade "${project}" \
-      #         --install \
-      #         --atomic \
-      #         --timeout=300s \
-      #         --set image.tag=${{ needs.build.outputs.image_version }} \
-      #         -f ./helm/Chart/values/dev/${project}.yaml \
-      #         ./helm/Chart &
-      #     done
-      #     wait
-      #     # TODO: there is an istio bug
-      #     kubectl -n dev-cloudapi rollout restart deploy governance-multitenant-web
-      #     kubectl -n dev-cloudapi rollout status deploy governance-multitenant-web
-      #     # Wait for governance-multitenant-web to be ready
-      #     while true; do
-      #       not_ready_count=$(kubectl -n dev-cloudapi get pods -l app=governance-multitenant-web -o jsonpath='{.items[*].status.containerStatuses[*].ready}' | grep -o 'false' | wc -l)
-      #       if [ "$not_ready_count" -eq 0 ]; then
-      #         echo "governance-multitenant-web is ready"
-      #         break
-      #       else
-      #         echo "Waiting for containers to be ready"
-      #         sleep 10
-      #       fi
-      #     done
 
       - name: Output
         id: updated_deployments

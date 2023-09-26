@@ -140,7 +140,8 @@ list_db_function() {
 create_db_function() {
   local DB_OWNER="$1"
   local STEP="create-db"
-  local SQL_QUERY="CREATE DATABASE \"trust-registry-dev\"
+  log "$STEP: in progress"
+  local SQL_QUERY="CREATE DATABASE \"${DB_OWNER}\"
                    WITH OWNER = '${DB_OWNER}';"
 
   PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d postgres -t -c "${SQL_QUERY}"

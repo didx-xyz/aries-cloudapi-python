@@ -299,7 +299,13 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
-
+      - name: Re-create Trust Registry DB
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        env:
+          REDIS_HOST: ${{ secrets.TRUST_REGISTRY_DB_OWNER }}
+        run: |
+          bash ./scripts/aurora-delete.sh -o TRUST_REGISTRY_DB_OWNER -d
+          bash ./scripts/aurora-create.sh -o TRUST_REGISTRY_DB_OWNER -c
 
       - name: Helmfile Apply
         id: update_deployments

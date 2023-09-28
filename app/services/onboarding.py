@@ -220,7 +220,7 @@ async def onboard_issuer_no_public_did(
         bound_logger.debug("Receive invitation from endorser on behalf of issuer")
         connection_record = await issuer_controller.out_of_band.receive_invitation(
             auto_accept=True,
-            use_existing_connection=False,
+            use_existing_connection=True,
             body=invitation.invitation,
             alias=ACAPY_ENDORSER_ALIAS,
         )

@@ -1,4 +1,4 @@
-import pytest
+import pytest, time
 
 from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
@@ -144,6 +144,8 @@ async def test_accept_proof_request_verifier_no_public_did(
     issuer_tenant_cred_listener = SseListener(
         topic="credentials", wallet_id=faber_issuer.tenant_id
     )
+
+    time.sleep(10)
 
     response = await holder_client.post(
         f"{ISSUER_BASE_PATH}/{holder_credential_exchange_id}/request"

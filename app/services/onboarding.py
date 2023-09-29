@@ -153,7 +153,9 @@ async def onboard_issuer(
         #     (name, endorser_controller, issuer_controller, issuer_wallet_id),
         #     bound_logger,
         # )
-        issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(name, endorser_controller, issuer_controller, issuer_wallet_id)
+        issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(
+            name, endorser_controller, issuer_controller, issuer_wallet_id
+        )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")
     invitation = await issuer_controller.out_of_band.create_invitation(

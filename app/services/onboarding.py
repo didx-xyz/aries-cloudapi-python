@@ -1,5 +1,7 @@
 from typing import List
 
+import time
+
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 from aries_cloudcontroller.model.create_wallet_token_request import (
     CreateWalletTokenRequest,
@@ -251,13 +253,13 @@ async def onboard_issuer_no_public_did(
             conn_id=endorser_connection["connection_id"],
             transaction_my_job="TRANSACTION_ENDORSER",
         )
-
+        bound_logger.debug("XXX Set roles for endorser...sleep 5")
+        time.sleep(5)
         await issuer_controller.endorse_transaction.set_endorser_role(
             conn_id=connection_record.connection_id,
             transaction_my_job="TRANSACTION_AUTHOR",
         )
         bound_logger.debug("Successfully set roles for endorser.")
-
     async def configure_endorsement(connection_record, endorser_did):
         # Make sure endorsement has been configured
         # There is currently no way to retrieve endorser info. We'll just set it

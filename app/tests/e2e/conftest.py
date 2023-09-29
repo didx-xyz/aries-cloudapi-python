@@ -46,4 +46,4 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
 
     yield did
 
-    # await remove_actor_by_id(gov_id)
+    await remove_actor_by_id(gov_id)

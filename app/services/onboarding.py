@@ -148,11 +148,12 @@ async def onboard_issuer(
         bound_logger.debug("No public DID for the to-be issuer")
         # Onboarding an issuer with no public DID can fail when creating a connection with
         # the endorser. If something goes wrong, the whole coroutine should be re-attempted
-        issuer_did: acapy_wallet.Did = await coroutine_with_retry(
-            onboard_issuer_no_public_did,
-            (name, endorser_controller, issuer_controller, issuer_wallet_id),
-            bound_logger,
-        )
+        # issuer_did: acapy_wallet.Did = await coroutine_with_retry(
+        #     onboard_issuer_no_public_did,
+        #     (name, endorser_controller, issuer_controller, issuer_wallet_id),
+        #     bound_logger,
+        # )
+        issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(name, endorser_controller, issuer_controller, issuer_wallet_id)
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")
     invitation = await issuer_controller.out_of_band.create_invitation(

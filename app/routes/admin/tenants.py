@@ -106,14 +106,14 @@ async def create_tenant(
                 )
         except HTTPException as http_error:
             bound_logger.error("Could not register actor: {}", http_error.detail)
-            if wallet_response:
-                bound_logger.info(
-                    "Stray wallet was created for unregistered actor; deleting wallet"
-                )
-                await admin_controller.multitenancy.delete_wallet(
-                    wallet_id=wallet_response.wallet_id
-                )
-                bound_logger.info("Wallet deleted.")
+            # if wallet_response:
+            #     bound_logger.info(
+            #         "Stray wallet was created for unregistered actor; deleting wallet"
+            #     )
+            #     await admin_controller.multitenancy.delete_wallet(
+            #         wallet_id=wallet_response.wallet_id
+            #     )
+            #     bound_logger.info("Wallet deleted.")
             raise
         except Exception:
             bound_logger.exception("An unhandled exception occurred")

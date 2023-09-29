@@ -49,4 +49,4 @@ async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
 
         yield issuer_tenant
 
-        await delete_tenant(admin_client, issuer_tenant.tenant_id)
+        # await delete_tenant(admin_client, issuer_tenant.tenant_id)

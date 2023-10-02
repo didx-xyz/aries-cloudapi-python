@@ -31,3 +31,24 @@ ACAPY_TAILS_SERVER_BASE_URL = os.getenv("ACAPY_TAILS_SERVER_BASE_URL", f"{url}:6
 # For testing ledger
 LEDGER_TYPE: str = "von"
 LEDGER_REGISTRATION_URL = os.getenv("LEDGER_REGISTRATION_URL", f"{url}:9000/register")
+
+# Sse manager
+MAX_EVENT_AGE_SECONDS = int(os.getenv("MAX_EVENT_AGE_SECONDS", "30"))
+MAX_QUEUE_SIZE = int(os.getenv("MAX_QUEUE_SIZE", "200"))
+QUEUE_CLEANUP_PERIOD = int(os.getenv("QUEUE_CLEANUP_PERIOD", "60"))
+CLIENT_QUEUE_POLL_PERIOD = float(os.getenv("CLIENT_QUEUE_POLL_PERIOD", "0.2"))
+
+# Sse
+SSE_TIMEOUT = int(
+    os.getenv("SSE_TIMEOUT", "150")
+)  # maximum duration of an SSE connection
+QUEUE_POLL_PERIOD = float(
+    os.getenv("QUEUE_POLL_PERIOD", "0.1")
+)  # period in seconds to retry reading empty queues
+DISCONNECT_CHECK_PERIOD = float(
+    os.getenv("DISCONNECT_CHECK_PERIOD", "0.2")
+)  # period in seconds to check for disconnection
+
+# client.py
+TEST_CLIENT_TIMEOUT = int(os.getenv("TEST_CLIENT_TIMEOUT", "300"))
+MAX_NUM_RETRIES = int(os.getenv("MAX_NUM_RETRIES", "3"))

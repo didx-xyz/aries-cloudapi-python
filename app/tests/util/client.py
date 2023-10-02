@@ -7,14 +7,13 @@ from shared import (
     GOVERNANCE_ACAPY_API_KEY,
     GOVERNANCE_AGENT_URL,
     GOVERNANCE_FASTAPI_ENDPOINT,
+    MAX_NUM_RETRIES,
     TENANT_ACAPY_API_KEY,
     TENANT_AGENT_URL,
     TENANT_FASTAPI_ENDPOINT,
+    TEST_CLIENT_TIMEOUT,
     RichAsyncClient,
 )
-
-TEST_CLIENT_TIMEOUT = 300
-MAX_NUM_RETRIES = 3
 
 
 def get_common_settings(api_key: str, app: Optional[Any] = None) -> Dict[str, Any]:

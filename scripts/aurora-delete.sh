@@ -36,6 +36,10 @@ main() {
       operation="list"
       shift
       ;;
+    -c | --create-db)
+      operation="create"
+      shift
+      ;;
     -h | --help)
       usage
       exit 0
@@ -60,6 +64,9 @@ main() {
     ;;
   "list")
     list_db_function "$owner"
+    ;;
+  "create")
+    create_db_function "$owner"
     ;;
   *)
     echo "Error: No operation selected (-d, --drop-db or -l, --list-db)."
@@ -128,6 +135,16 @@ list_db_function() {
   done
   log "$STEP: done"
   echo ""
+}
+
+create_db_function() {
+  local DB_OWNER="$1"
+  local STEP="create-db"
+  log "$STEP: in progress"
+  local SQL_QUERY="CREATE DATABASE \"${DB_OWNER}\"
+                   WITH OWNER = '${DB_OWNER}';"
+
+  PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d postgres -t -c "${SQL_QUERY}"
 }
 
 main "$@"

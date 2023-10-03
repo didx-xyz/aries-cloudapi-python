@@ -284,6 +284,8 @@ services:
     volumes:
       - webserver-cli:/home/indy/.indy-cli
       - webserver-ledger:/home/indy/ledger
+      - ./resources/ledger-nodes/aml.json:/home/indy/config/aml.json
+      - ./resources/ledger-nodes/taa.json:/home/indy/config/taa.json
     networks:
       - governance-multitenant
       - governance-ga

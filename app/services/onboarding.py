@@ -15,6 +15,11 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.services import acapy_ledger, acapy_wallet
 from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
+from app.util.assert_connection_metadata import (
+    assert_author_role_set,
+    assert_endorser_info_set,
+    assert_endorser_role_set,
+)
 from app.util.did import qualified_did_sov
 from shared import ACAPY_ENDORSER_ALIAS
 from shared.log_config import get_logger
@@ -249,10 +254,17 @@ async def onboard_issuer_no_public_did(
             transaction_my_job="TRANSACTION_ENDORSER",
         )
 
+        bound_logger.debug("Assert that the endorser role is set")
+        await assert_endorser_role_set(endorser_controller, endorser_connection_id)
+
         await issuer_controller.endorse_transaction.set_endorser_role(
             conn_id=issuer_connection_id,
             transaction_my_job="TRANSACTION_AUTHOR",
         )
+
+        bound_logger.debug("Assert that the author role is set")
+        await assert_author_role_set(issuer_controller, issuer_connection_id)
+
         bound_logger.debug("Successfully set roles for connection.")
 
     async def configure_endorsement(connection_record, endorser_did):
@@ -263,6 +275,11 @@ async def onboard_issuer_no_public_did(
         await issuer_controller.endorse_transaction.set_endorser_info(
             conn_id=connection_record.connection_id,
             endorser_did=endorser_did.did,
+        )
+
+        bound_logger.debug("Assert that the endorser info is set")
+        await assert_endorser_info_set(
+            issuer_controller, connection_record.connection_id, endorser_did.did
         )
         bound_logger.debug("Successfully set endorser info.")
 

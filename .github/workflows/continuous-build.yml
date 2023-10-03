@@ -13,6 +13,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module:
+          [
+            app/tests/e2e/test_definitions.py,
+            app/tests/e2e/issuer/did_sov/test_v2_indy.py,
+            app/tests/e2e/issuer/did_sov/test_v1_indy.py,
+            endorser,
+            trustregistry,
+            webhooks,
+            app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py,
+          ]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,13 +38,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run Pylint
+      - name: Run Pylint on ${{ matrix.module }}
         run: |
-          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+          pylint ${{ matrix.module }} --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
       - name: Install Compose
         uses: ndeloof/install-compose-action@v0.0.1
         with:
-          # version: v2.1.0 # defaults to 'latest'
           legacy: true # will also install in PATH as `docker-compose`
       - name: Start Test Harness
         run: |
@@ -47,14 +58,11 @@ jobs:
           echo waiting for aca-py container to startup
           ./manage up-daemon-usecache
         shell: bash
-      - name: Test with pytest
+      - name: Test with pytest on ${{ matrix.module }}
         id: test
-        # continue-on-error: true
         run: |
-          pytest --durations=0 --cov=app --cov=endorser --cov=trustregistry --cov=webhooks app endorser trustregistry webhooks
+          pytest --durations=0 --cov=${{ matrix.module }} ${{ matrix.module }}
           bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
-      - name: Tear down test harness
-        run: ./manage down || true

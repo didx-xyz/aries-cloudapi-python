@@ -89,12 +89,13 @@ async def test_onboard_issuer_no_public_did(
     mock_agent_controller: AcaPyClient,
 ):
     endorser_controller = get_mock_agent_controller()
+    endorser_did = "EndorserDid"
 
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
         CloudApiException(detail="Error")
     )
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        to_async(Did(did="EndorserController", verkey="EndorserVerkey"))
+        to_async(Did(did=endorser_did, verkey="EndorserVerkey"))
     )
 
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(

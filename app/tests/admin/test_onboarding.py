@@ -2,6 +2,7 @@ import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
     ConnRecord,
+    ConnectionMetadata,
     InvitationCreateRequest,
     InvitationMessage,
     InvitationRecord,
@@ -119,12 +120,40 @@ async def test_onboard_issuer_no_public_did(
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
+    # Mock the assert_connection_metadata methods
+    when(endorser_controller.connection).get_metadata(...).thenReturn(
+        to_async(
+            ConnectionMetadata(
+                results={
+                    "transaction_jobs": {
+                        "transaction_my_job": "TRANSACTION_ENDORSER",
+                    },
+                }
+            )
+        )
+    )
+
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
+    when(mock_agent_controller.connection).get_metadata(...).thenReturn(
+        to_async(
+            ConnectionMetadata(
+                results={
+                    "transaction_jobs": {
+                        "transaction_my_job": "TRANSACTION_AUTHOR",
+                        "transaction_their_job": "TRANSACTION_ENDORSER",
+                    },
+                }
+            )
+        )
+    )
+
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
         to_async()
     )
+    when(onboarding).assert_endorser_info_set(...).thenReturn(to_async(True))
+
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
         to_async(
             Did(

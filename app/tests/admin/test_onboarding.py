@@ -1,8 +1,8 @@
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    ConnRecord,
     ConnectionMetadata,
+    ConnRecord,
     InvitationCreateRequest,
     InvitationMessage,
     InvitationRecord,

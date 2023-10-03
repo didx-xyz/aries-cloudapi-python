@@ -1,7 +1,7 @@
 import asyncio
 from typing import Callable
-from aiohttp import ClientResponseError
 
+from aiohttp import ClientResponseError
 from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions.cloud_api_error import CloudApiException

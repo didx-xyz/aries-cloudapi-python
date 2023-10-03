@@ -20,10 +20,8 @@ jobs:
             app/tests/e2e/test_definitions.py,
             app/tests/e2e/issuer/did_sov/test_v2_indy.py,
             app/tests/e2e/issuer/did_sov/test_v1_indy.py,
-            endorser,
-            trustregistry,
-            webhooks,
             app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py,
+            endorser trustregistry webhooks,
           ]
     steps:
       - uses: actions/checkout@v4
@@ -61,8 +59,9 @@ jobs:
       - name: Test with pytest on ${{ matrix.module }}
         id: test
         run: |
-          pytest --durations=0 --cov=${{ matrix.module }} ${{ matrix.module }}
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
+          # pytest --durations=0 --cov=${{ matrix.module }} ${{ matrix.module }}
+          pytest --durations=0 ${{ matrix.module }}
+          # bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
           echo done
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting

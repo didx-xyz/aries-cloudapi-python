@@ -60,6 +60,8 @@ services:
       dockerfile: dockerfiles/agents/Dockerfile.agent
     env_file:
       - environments/governance-ga/aca-py-agent.default.env
+    environment:
+      ACAPY_AUTO_ENDORSE_TRANSACTIONS: false
     ports:
       - 0.0.0.0:3020:3020
       - 0.0.0.0:3021:3021
@@ -376,12 +378,46 @@ services:
       REDIS_HOST: wh-redis
     volumes:
       - ./logs/containerized-tests:/tests/outputs
+      - ./scripts/test_runner.sh:/tests/test_runner.sh
     networks:
       - governance-ga
       - host
     depends_on:
       governance-ga-web-health:
         condition: service_completed_successfully
+  pytest:
+    image: local/tests
+    container_name: tests
+    restart: "no"
+    build:
+      context: .
+      dockerfile: ./dockerfiles/tests/Dockerfile
+    command:
+      - /bin/sh
+      - -c
+      - |-
+        ./test_runner.sh pytest app/tests/e2e/test_trust_registry_integration.py
+    environment:
+      ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
+      ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey
+      ACAPY_TENANT_AGENT_URL: http://governance-multitenant-agent:3021
+      ACAPY_TENANT_AGENT_API_KEY: adminApiKey
+      TRUST_REGISTRY_URL: http://governance-trust-registry:8001
+      WEBHOOKS_URL: http://governance-webhooks-web:3010
+      ACAPY_MULTITENANT_JWT_SECRET: jwtSecret
+      CLOUDAPI_URL: http://governance-ga-web:8000
+      GOVERNANCE_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
+      GOVERNANCE_ACAPY_API_KEY: adminApiKey
+      TENANT_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
+      TENANT_ACAPY_API_KEY: adminApiKey
+      LEDGER_REGISTRATION_URL: http://ledger-browser:8000/register
+      REDIS_HOST: wh-redis
+    volumes:
+      - ./logs/containerized-tests:/tests/outputs
+      - ./scripts/test_runner.sh:/tests/test_runner.sh
+    networks:
+      - governance-ga
+      - host
   governance-ga-web-health:
     image: curlimages/curl
     container_name: governance-ga-web-health

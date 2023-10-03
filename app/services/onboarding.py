@@ -240,17 +240,20 @@ async def onboard_issuer_no_public_did(
         return endorser_connection, connection_record
 
     async def set_endorser_roles(endorser_connection, connection_record):
+        endorser_connection_id = endorser_connection["connection_id"]
+        issuer_connection_id = connection_record.connection_id
+
         bound_logger.debug("Setting roles for endorser")
         await endorser_controller.endorse_transaction.set_endorser_role(
-            conn_id=endorser_connection["connection_id"],
+            conn_id=endorser_connection_id,
             transaction_my_job="TRANSACTION_ENDORSER",
         )
 
         await issuer_controller.endorse_transaction.set_endorser_role(
-            conn_id=connection_record.connection_id,
+            conn_id=issuer_connection_id,
             transaction_my_job="TRANSACTION_AUTHOR",
         )
-        bound_logger.debug("Successfully set roles for endorser.")
+        bound_logger.debug("Successfully set roles for connection.")
 
     async def configure_endorsement(connection_record, endorser_did):
         # Make sure endorsement has been configured

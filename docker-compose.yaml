@@ -396,7 +396,7 @@ services:
       - /bin/sh
       - -c
       - |-
-        ./test_runner.sh pytest app/tests/e2e/test_trust_registry_integration.py
+        ./test_runner.sh 100 pytest app/tests/e2e/test_trust_registry_integration.py
     environment:
       ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
       ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey

@@ -77,6 +77,16 @@ To run specific tests, you can specify the path to the test file and the test me
 pytest app/tests/e2e/test_verifier.py::test_accept_proof_request_oob_v1 --log-cli-level=1
 ```
 
+## Running containerised tests
+
+```bash
+./manage up
+```
+In another terminal:
+```bash
+./manage up pytest
+```
+
 ## CI/CD
 
 Please, refer to the [CI/CD docs](./.github/workflows/README.md) for more information.

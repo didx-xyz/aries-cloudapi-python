@@ -321,8 +321,6 @@ services:
     volumes:
       - nodes-data:/home/indy/ledger
       - ./scripts/indy_healthcheck.sh:/home/indy/indy_healthcheck.sh
-      - ./resources/ledger-nodes/aml.json:/home/indy/config/aml.json
-      - ./resources/ledger-nodes/taa.json:/home/indy/config/taa.json
     networks:
       - governance-multitenant
       - governance-ga

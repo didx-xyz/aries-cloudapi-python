@@ -16,7 +16,6 @@ from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.services import acapy_ledger, acapy_wallet
 from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.did import qualified_did_sov
-from app.util.retry_method import coroutine_with_retry
 from shared import ACAPY_ENDORSER_ALIAS
 from shared.log_config import get_logger
 
@@ -148,10 +147,8 @@ async def onboard_issuer(
         bound_logger.debug("No public DID for the to-be issuer")
         # Onboarding an issuer with no public DID can fail when creating a connection with
         # the endorser. If something goes wrong, the whole coroutine should be re-attempted
-        issuer_did: acapy_wallet.Did = await coroutine_with_retry(
-            onboard_issuer_no_public_did,
-            (name, endorser_controller, issuer_controller, issuer_wallet_id),
-            bound_logger,
+        issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(
+            name, endorser_controller, issuer_controller, issuer_wallet_id
         )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")

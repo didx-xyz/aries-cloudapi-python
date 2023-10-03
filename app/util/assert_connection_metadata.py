@@ -59,10 +59,10 @@ async def assert_endorser_role_set(
     )
     try:
         await assert_metadata_set(controller, conn_id, check_fn, retries, delay)
-    except CloudApiException:
+    except Exception as e:
         raise CloudApiException(
             "Failed to assert that the endorser role has been set in the connection metadata."
-        )
+        ) from e
 
 
 async def assert_author_role_set(
@@ -76,10 +76,10 @@ async def assert_author_role_set(
     )
     try:
         await assert_metadata_set(controller, conn_id, check_fn, retries, delay)
-    except CloudApiException:
+    except Exception as e:
         raise CloudApiException(
             "Failed to assert that the author role has been set in the connection metadata."
-        )
+        ) from e
 
 
 async def assert_endorser_info_set(
@@ -94,7 +94,7 @@ async def assert_endorser_info_set(
     )
     try:
         await assert_metadata_set(controller, conn_id, check_fn, retries, delay)
-    except CloudApiException:
+    except Exception as e:
         raise CloudApiException(
             "Failed to assert that the endorser info has been set in the connection metadata."
-        )
+        ) from e

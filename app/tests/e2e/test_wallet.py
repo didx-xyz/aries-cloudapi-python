@@ -5,7 +5,7 @@ from assertpy import assert_that
 import app.services.acapy_wallet as wallet_facade
 from app.dependencies.auth import AcaPyAuthVerified
 from app.models.wallet import SetDidEndpointRequest
-from app.routes.wallet import (
+from app.routes.wallet.dids import (
     get_did_endpoint,
     get_public_did,
     list_dids,

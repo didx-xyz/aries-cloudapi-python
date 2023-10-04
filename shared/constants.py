@@ -25,7 +25,7 @@ WEBHOOKS_PUBSUB_URL = os.getenv("WEBHOOKS_PUBSUB_URL", f"ws://{host}:3010/pubsub
 ACAPY_MULTITENANT_JWT_SECRET = os.getenv("ACAPY_MULTITENANT_JWT_SECRET", "jwtSecret")
 ACAPY_ENDORSER_ALIAS = os.getenv("ACAPY_ENDORSER_ALIAS", "endorser")
 
-CLOUDAPI_URL = os.getenv("CLOUDAPI_URL", f"{url}:8000")
+CLOUDAPI_URL = os.getenv("CLOUDAPI_URL", f"{url}:8100")
 ACAPY_TAILS_SERVER_BASE_URL = os.getenv("ACAPY_TAILS_SERVER_BASE_URL", f"{url}:6543")
 
 # For testing ledger

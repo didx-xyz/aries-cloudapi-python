@@ -1,34 +1,6 @@
 version: "3"
 
 services:
-  governance-ga-web:
-    image: ${REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
-    container_name: governance-ga-web
-    build:
-      context: .
-      dockerfile: ./dockerfiles/fastapi/Dockerfile
-    ports:
-      - 0.0.0.0:8000:8000
-    volumes:
-      - ./app:/app
-      - ./environments/governance-ga/fastapi.default.env:/app/.env
-      - ./logs/governance:/logs
-    depends_on:
-      governance-ga-wallets-db:
-        condition: service_started
-      ledger-nodes:
-        condition: service_healthy
-      ledger-browser:
-        condition: service_healthy
-      governance-ga-agent:
-        condition: service_healthy
-      governance-multitenant-agent:
-        condition: service_healthy
-    networks:
-      - governance-ga
-      - host
-    env_file:
-      - environments/governance-ga/fastapi.default.env
   governance-ga-wallets-db:
     image: postgres:15
     container_name: governance-ga-wallets-db
@@ -263,7 +235,7 @@ services:
       retries: 10
       start_period: 15s
   ledger-browser:
-    image: ${REGISTRY:-local}/ledger-browser
+    image: ${REGISTRY:-local}/ledger-nodes:${IMAGE_TAG:-latest}
     container_name: ledger-browser
     build:
       context: https://github.com/bcgov/von-network.git#main
@@ -371,7 +343,7 @@ services:
       TRUST_REGISTRY_URL: http://governance-trust-registry:8001
       WEBHOOKS_URL: http://governance-webhooks-web:3010
       ACAPY_MULTITENANT_JWT_SECRET: jwtSecret
-      CLOUDAPI_URL: http://governance-ga-web:8000
+      CLOUDAPI_URL: http://governance-multitenant-web:8000
       GOVERNANCE_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
       GOVERNANCE_ACAPY_API_KEY: adminApiKey
       TENANT_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
@@ -385,7 +357,7 @@ services:
       - governance-ga
       - host
     depends_on:
-      governance-ga-web-health:
+      governance-multitenant-web-health:
         condition: service_completed_successfully
   pytest:
     image: local/tests
@@ -407,7 +379,7 @@ services:
       TRUST_REGISTRY_URL: http://governance-trust-registry:8001
       WEBHOOKS_URL: http://governance-webhooks-web:3010
       ACAPY_MULTITENANT_JWT_SECRET: jwtSecret
-      CLOUDAPI_URL: http://governance-ga-web:8000
+      CLOUDAPI_URL: http://governance-multitenant-web:8000
       GOVERNANCE_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
       GOVERNANCE_ACAPY_API_KEY: adminApiKey
       TENANT_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
@@ -420,20 +392,20 @@ services:
     networks:
       - governance-ga
       - host
-  governance-ga-web-health:
+  governance-multitenant-web-health:
     image: curlimages/curl
-    container_name: governance-ga-web-health
+    container_name: governance-multitenant-web-health
     restart: "no"
     command:
       - /bin/sh
       - -c
       - |-
-        until curl -fsS http://governance-ga-web:8000/docs; do sleep 5; done
+        until curl -fsS http://governance-multitenant-web:8000/docs; do sleep 5; done
     networks:
       - governance-ga
       - host
     depends_on:
-      governance-ga-web:
+      governance-multitenant-web:
         condition: service_started
 
 volumes:

@@ -1,5 +1,4 @@
 import pytest
-import time
 from httpx import AsyncClient
 
 from app.routes.connections import router
@@ -14,5 +13,3 @@ async def test_error_handler():
         response = await client.get(CONNECTIONS_BASE_PATH)
         assert response.status_code == 403
         assert response.text == '{"detail":"Not authenticated"}'
-
-    time.sleep(10)

@@ -171,7 +171,8 @@ jobs:
             app/tests/e2e/issuer/did_sov/test_v2_indy.py,
             app/tests/e2e/issuer/did_sov/test_v1_indy.py,
             app/tests/e2e/test_verifier.py,
-            app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py,
+            tests/e2e/test_trust_registry_integration.py,
+            app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py,
             endorser trustregistry webhooks,
           ]
     steps:

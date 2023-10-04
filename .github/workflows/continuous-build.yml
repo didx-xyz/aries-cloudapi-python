@@ -4,10 +4,10 @@
 name: Continuous Build
 
 on:
-  push:
-    branches: [development, main]
-  pull_request:
-    branches: [development]
+  # push:
+  #   branches: [development, main]
+  # pull_request:
+  #   branches: [development]
   workflow_dispatch:
 
 jobs:

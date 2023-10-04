@@ -1,5 +1,5 @@
-from aiohttp import ClientResponseError
 import pytest
+from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
     ConnectionMetadata,

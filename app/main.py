@@ -22,10 +22,11 @@ from app.routes import (
     sse,
     trust_registry,
     verifier,
-    wallet,
     webhooks,
 )
 from app.routes.admin import tenants
+from app.routes.wallet import credentials as wallet_credentials
+from app.routes.wallet import dids as wallet_dids
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
@@ -47,7 +48,8 @@ def create_app() -> FastAPI:
         oob,
         trust_registry,
         verifier,
-        wallet,
+        wallet_credentials,
+        wallet_dids,
         webhooks,
         sse,
     ]

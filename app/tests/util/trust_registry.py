@@ -4,7 +4,7 @@ from random import random
 
 import pytest
 
-from app.routes.wallet import router
+from app.routes.wallet.dids import router as wallet_router
 from app.services.trust_registry import (
     Actor,
     actor_by_did,
@@ -15,7 +15,7 @@ from app.services.trust_registry import (
 )
 from shared import RichAsyncClient
 
-WALLET_BASE_PATH = router.prefix
+WALLET_BASE_PATH = wallet_router.prefix
 
 
 async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):

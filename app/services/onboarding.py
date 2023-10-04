@@ -150,8 +150,6 @@ async def onboard_issuer(
         bound_logger.debug("Obtained public DID for the to-be issuer")
     except CloudApiException:
         bound_logger.debug("No public DID for the to-be issuer")
-        # Onboarding an issuer with no public DID can fail when creating a connection with
-        # the endorser. If something goes wrong, the whole coroutine should be re-attempted
         issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(
             name, endorser_controller, issuer_controller, issuer_wallet_id
         )

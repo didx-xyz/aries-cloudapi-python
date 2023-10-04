@@ -2,6 +2,7 @@
 export MSYS_NO_PATHCONV=1
 export DOCKERHOST=${APPLICATION_URL-$(docker run --rm --net=host codenvy/che-ip)}
 set -e
+set -x
 
 SCRIPT_HOME="$(cd "$(dirname "$0")" && pwd)"
 
@@ -109,6 +110,9 @@ configureEnvironment() {
   export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:controller}"
   export GENESIS_URL="http://localhost:9000/genesis"
   export WALLET_TYPE="askar"
+
+  export REGISTRY="${REGISTRY}"
+  export IMAGE_TAG="${IMAGE_TAG}"
 
 }
 
@@ -247,6 +251,15 @@ up-daemon-usecache)
     --build \
     -d ${_startupParams}
   ;;
+ up-as-daemon-no-build)
+  echoYellow "Starting up... This can take a couple of minutes."
+  _startupParams=$(getStartupParams $@)
+  configureEnvironment "$@"
+  docker --log-level ERROR \
+    compose up \
+    --no-build \
+    -d ${_startupParams}
+    ;;
 tests)
   echoYellow "Starting up... This can take a couple of minutes."
   tests=true

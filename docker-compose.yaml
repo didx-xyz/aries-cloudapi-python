@@ -414,7 +414,6 @@ volumes:
   nodes-data:
   data:
 
-
 networks:
   governance-multitenant:
   governance-ga:

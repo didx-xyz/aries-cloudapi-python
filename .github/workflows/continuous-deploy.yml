@@ -152,15 +152,13 @@ jobs:
     strategy:
       matrix:
         module:
-          [
-            app/tests/e2e/test_definitions.py,
-            app/tests/e2e/issuer/did_sov/test_v2_indy.py,
-            app/tests/e2e/issuer/did_sov/test_v1_indy.py,
-            app/tests/e2e/test_verifier.py,
-            app/tests/e2e/test_trust_registry_integration.py,
-            app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py,
-            endorser trustregistry webhooks,
-          ]
+          - { test: "app/tests/e2e/test_definitions.py", cov: "app" }
+          - { test: "app/tests/e2e/issuer/did_sov/test_v2_indy.py", cov: "app" }
+          - { test: "app/tests/e2e/issuer/did_sov/test_v1_indy.py", cov: "app" }
+          - { test: "app/tests/e2e/test_verifier.py", cov: "app" }
+          - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "app" }
+          - { test: "app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "app" }
+          - { test: "endorser trustregistry webhooks", cov: "endorser trustregistry webhooks" }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -189,12 +187,13 @@ jobs:
       - name: Test with pytest on ${{ matrix.module }}
         id: test
         run: |
-          # pytest --durations=0 --cov=${{ matrix.module }} ${{ matrix.module }}
           set +e
-          pytest --durations=0 ${{ matrix.module }} | tee test_output.txt
+          pytest --cov=${{ matrix.module.cov }} --durations=0 ${{ matrix.module.test }} | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           echo "Exit code: $EXIT_CODE"
+
+          mv .coverage .coverage-${{ matrix.module.test }}
 
           # very hacky way to get around the fact that teardown fails even if tests pass
           TEARDOWN_ERROR=false
@@ -218,6 +217,13 @@ jobs:
           fi
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+
+      - name: Cache .coverage files
+        uses: actions/cache@v2
+        with:
+          path: .coverage-${{ matrix.module.test }}
+          key: coverage-${{ matrix.module.test }}-${{ github.run_id }}
+          restore-keys: coverage-${{ matrix.module.test }}-
 
   deploy:
     name: Deploy to EKS

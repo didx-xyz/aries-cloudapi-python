@@ -173,6 +173,13 @@ async def test_send_jsonld_oob(
 
         if con['invitation_msg_id'] == invitation['@id']:
             faber_connection_id = con['connection_id']
+
+    # Updating JSON-LD credential did:key with proofType ed25519
+    credential = deepcopy(credential_)
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = register_issuer_key_ed25519
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",

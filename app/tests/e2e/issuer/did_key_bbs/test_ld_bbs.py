@@ -162,7 +162,7 @@ async def test_send_jsonld_bbs_oob(
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
 
-    faber_con = await faber_client.get(CON)
+    faber_con = await faber_client.get(CONNECTIONS_BASE_PATH)
 
     faber_connections = faber_con.json()
     for con in faber_connections:

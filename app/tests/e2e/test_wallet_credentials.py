@@ -1,7 +1,7 @@
 import logging
-from fastapi import HTTPException
 
 import pytest
+from fastapi import HTTPException
 
 from app.routes.wallet.credentials import router
 from shared import RichAsyncClient

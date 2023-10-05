@@ -1,5 +1,6 @@
 import asyncio
 import json
+import time
 from typing import List, Optional
 
 from aiohttp import ClientResponseError
@@ -286,7 +287,8 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def."
             )
-
+        # Temporary workaround for "Not issuer of credential definition" error PR #469
+        time.sleep(1)
         if credential_definition.support_revocation:
             bound_logger.debug("Supporting revocation. Creating revocation registry")
             try:

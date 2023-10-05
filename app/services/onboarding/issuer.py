@@ -248,3 +248,8 @@ async def onboard_issuer_no_public_did(
 
     bound_logger.info("Successfully registered DID for issuer.")
     return issuer_did
+
+
+def create_sse_listener(wallet_id: str, topic: str) -> SseListener:
+    # Helper method for passing a MockListener to a class
+    return SseListener(topic=topic, wallet_id=wallet_id)

@@ -50,7 +50,7 @@ async def assert_metadata_set(
             logger.error("Exception occurred when getting metadata: {}", e)
             pass
 
-    raise CloudApiException(
+    raise SettingMetadataException(
         f"Failed to assert that metadata meets the desired condition after {num_tries} attempts."
     )
 
@@ -71,7 +71,7 @@ async def assert_endorser_role_set(
             controller, conn_id, check_fn, logger, num_tries, delay
         )
     except Exception as e:
-        raise CloudApiException(
+        raise SettingMetadataException(
             "Failed to assert that the endorser role has been set in the connection metadata."
         ) from e
 
@@ -94,7 +94,7 @@ async def assert_author_role_set(
             controller, conn_id, check_fn, logger, num_tries, delay
         )
     except Exception as e:
-        raise CloudApiException(
+        raise SettingMetadataException(
             "Failed to assert that the author role has been set in the connection metadata."
         ) from e
 
@@ -119,6 +119,10 @@ async def assert_endorser_info_set(
             controller, conn_id, check_fn, logger, num_tries, delay
         )
     except Exception as e:
-        raise CloudApiException(
+        raise SettingMetadataException(
             "Failed to assert that the endorser info has been set in the connection metadata."
         ) from e
+
+
+class SettingMetadataException(CloudApiException):
+    pass

@@ -1,9 +1,15 @@
-from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
+from aries_cloudcontroller import (
+    AcaPyClient,
+    InvitationCreateRequest,
+    InvitationRecord,
+    OobRecord,
+)
 
 from app.event_handling.sse_listener import create_sse_listener
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import OnboardResult
 from app.services import acapy_ledger, acapy_wallet
+from app.services.acapy_wallet import Did
 from app.util.assert_connection_metadata import (
     assert_author_role_set,
     assert_endorser_info_set,
@@ -105,7 +111,7 @@ async def onboard_issuer_no_public_did(
         bound_logger.debug("Created OOB invitation")
         return invitation
 
-    async def wait_for_connection_completion(invitation):
+    async def wait_for_connection_completion(invitation: InvitationRecord):
         connections_listener = create_sse_listener(
             topic="connections", wallet_id="admin"
         )
@@ -135,22 +141,9 @@ async def onboard_issuer_no_public_did(
         bound_logger.info("Connection complete between issuer and endorser.")
         return endorser_connection, connection_record
 
-    async def set_endorser_roles(endorser_connection, connection_record):
-        endorser_connection_id = endorser_connection["connection_id"]
-        issuer_connection_id = connection_record.connection_id
-
-        bound_logger.debug("Setting roles for endorser")
-        await endorser_controller.endorse_transaction.set_endorser_role(
-            conn_id=endorser_connection_id,
-            transaction_my_job="TRANSACTION_ENDORSER",
-        )
-
-        bound_logger.debug("Assert that the endorser role is set")
-        await assert_endorser_role_set(endorser_controller, endorser_connection_id)
-
-        await issuer_controller.endorse_transaction.set_endorser_role(
-            conn_id=issuer_connection_id,
-            transaction_my_job="TRANSACTION_AUTHOR",
+    async def set_endorser_roles(
+        endorser_connection_id: str, issuer_connection_id: str
+    ):
         )
 
         bound_logger.debug("Assert that the author role is set")
@@ -158,7 +151,7 @@ async def onboard_issuer_no_public_did(
 
         bound_logger.debug("Successfully set roles for connection.")
 
-    async def configure_endorsement(connection_record, endorser_did):
+    async def configure_endorsement(connection_record: OobRecord, endorser_did: str):
         # Make sure endorsement has been configured
         # There is currently no way to retrieve endorser info. We'll just set it
         # to make sure the endorser info is set.
@@ -221,13 +214,15 @@ async def onboard_issuer_no_public_did(
         bound_logger.debug("Issuer DID registered and endorsed successfully.")
         return issuer_did
 
-    async def create_connection_with_endorser(endorser_did):
+    async def create_connection_with_endorser(endorser_did: Did):
         invitation = await create_endorser_invitation()
         endorser_connection, connection_record = await wait_for_connection_completion(
             invitation
         )
-        await set_endorser_roles(endorser_connection, connection_record)
-        await configure_endorsement(connection_record, endorser_did)
+        await set_endorser_roles(
+            endorser_connection["connection_id"], connection_record.connection_id
+        )
+        await configure_endorsement(connection_record, endorser_did.did)
 
     try:
         logger.debug("Getting public DID for endorser")

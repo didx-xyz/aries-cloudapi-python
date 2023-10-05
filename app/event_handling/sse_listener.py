@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict
 
 import httpx
 
@@ -26,7 +27,7 @@ class SseListener:
         self.wallet_id = wallet_id
         self.topic = topic
 
-    async def wait_for_state(self, desired_state, timeout: int = 120):
+    async def wait_for_state(self, desired_state, timeout: int = 120) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
@@ -46,7 +47,9 @@ class SseListener:
 
         raise SseListenerTimeout("Event with request state was not returned by server.")
 
-    async def wait_for_event(self, field, field_id, desired_state, timeout: int = 120):
+    async def wait_for_event(
+        self, field, field_id, desired_state, timeout: int = 120
+    ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """

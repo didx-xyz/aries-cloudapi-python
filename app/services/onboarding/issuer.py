@@ -1,20 +1,9 @@
-from typing import List
+from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
 
-from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
-from aries_cloudcontroller.model.create_wallet_token_request import (
-    CreateWalletTokenRequest,
-)
-from fastapi.exceptions import HTTPException
-
-from app.dependencies.acapy_clients import (
-    get_governance_controller,
-    get_tenant_controller,
-)
-from app.event_handling.sse_listener import SseListener
+from app.event_handling.sse_listener import create_sse_listener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.models.tenants import OnboardResult, UpdateTenantRequest
+from app.models.tenants import OnboardResult
 from app.services import acapy_ledger, acapy_wallet
-from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
 from app.util.assert_connection_metadata import (
     assert_author_role_set,
     assert_endorser_info_set,
@@ -25,102 +14,6 @@ from shared import ACAPY_ENDORSER_ALIAS
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
-
-
-def create_sse_listener(wallet_id: str, topic: str) -> SseListener:
-    # Helper method for passing MockListener to class
-    return SseListener(topic=topic, wallet_id=wallet_id)
-
-
-async def handle_tenant_update(
-    admin_controller: AcaPyClient,
-    tenant_id: str,
-    update: UpdateTenantRequest,
-):
-    bound_logger = logger.bind(body={"tenant_id": tenant_id})
-    bound_logger.bind(body=update).info("Handling tenant update")
-
-    bound_logger.debug("Retrieving the wallet")
-    wallet = await admin_controller.multitenancy.get_wallet(wallet_id=tenant_id)
-    if not wallet:
-        bound_logger.error("Bad request: Wallet not found.")
-        raise HTTPException(404, f"Wallet for tenant id `{tenant_id}` not found.")
-
-    bound_logger.debug("Retrieving tenant from trust registry")
-    actor = await actor_by_id(wallet.wallet_id)
-    if not actor:
-        bound_logger.error(
-            "Tenant not found in trust registry. "
-            "Holder tenants cannot be updated with new roles."
-        )
-        raise HTTPException(409, "Holder tenants cannot be updated with new roles.")
-
-    updated_actor = actor.copy()
-    if update.name:
-        updated_actor["name"] = update.name
-
-    if update.roles:
-        bound_logger.info("Updating tenant roles")
-        # We only care about the added roles, as that's what needs the setup.
-        # Teardown is not required at the moment, besides from removing it from
-        # the trust registry
-        added_roles = list(set(update.roles) - set(actor["roles"]))
-
-        # We need to pose as the tenant to onboard for the specified role
-        token_response = await admin_controller.multitenancy.get_auth_token(
-            wallet_id=tenant_id, body=CreateWalletTokenRequest()
-        )
-
-        onboard_result = await onboard_tenant(
-            name=updated_actor["name"],
-            roles=added_roles,
-            tenant_auth_token=token_response.token,
-            tenant_id=tenant_id,
-        )
-
-        # Remove duplicates from the role list
-        updated_actor["roles"] = list(set(update.roles))
-        updated_actor["did"] = onboard_result.did
-        updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
-
-    await update_actor(updated_actor)
-    bound_logger.info("Tenant update handled successfully.")
-
-
-async def onboard_tenant(
-    *, name: str, roles: List[TrustRegistryRole], tenant_auth_token: str, tenant_id: str
-) -> OnboardResult:
-    bound_logger = logger.bind(
-        body={"name": name, "roles": roles, "tenant_id": tenant_id}
-    )
-    bound_logger.bind(body=roles).info("Start onboarding tenant")
-
-    if "issuer" in roles:
-        bound_logger.debug("Tenant has 'issuer' role, onboarding as issuer")
-        # Get governance and tenant controllers, onboard issuer
-        async with get_governance_controller() as governance_controller, get_tenant_controller(
-            tenant_auth_token
-        ) as tenant_controller:
-            onboard_result = await onboard_issuer(
-                name=name,
-                endorser_controller=governance_controller,
-                issuer_controller=tenant_controller,
-                issuer_wallet_id=tenant_id,
-            )
-            bound_logger.info("Onboarding as issuer completed successfully.")
-            return onboard_result
-
-    elif "verifier" in roles:
-        bound_logger.debug("Tenant has 'verifier' role, onboarding as verifier")
-        async with get_tenant_controller(tenant_auth_token) as tenant_controller:
-            onboard_result = await onboard_verifier(
-                name=name, verifier_controller=tenant_controller
-            )
-            bound_logger.info("Onboarding as verifier completed successfully.")
-            return onboard_result
-
-    bound_logger.error("Tenant request does not have valid role(s) for onboarding.")
-    raise CloudApiException("Unable to onboard tenant without role(s).")
 
 
 async def onboard_issuer(
@@ -355,82 +248,3 @@ async def onboard_issuer_no_public_did(
 
     bound_logger.info("Successfully registered DID for issuer.")
     return issuer_did
-
-
-async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
-    """Onboard the controller as verifier.
-
-    The onboarding will take care of the following:
-      - create a multi_use invitation to use in the
-
-    Args:
-        verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
-    """
-    bound_logger = logger.bind(body={"name": name})
-    bound_logger.info("Onboarding verifier")
-
-    onboarding_result = {}
-
-    # If the verifier already has a public did it doesn't need an invitation. The invitation
-    # is just to bypass having to pay for a public did for every verifier
-    try:
-        bound_logger.debug("Getting public DID for to-be verifier")
-        public_did = await acapy_wallet.get_public_did(controller=verifier_controller)
-
-        onboarding_result["did"] = qualified_did_sov(public_did.did)
-    except CloudApiException:
-        bound_logger.info(
-            "No public DID found for to-be verifier. "
-            "Creating OOB invitation on their behalf."
-        )
-        # create a multi_use invitation from the did
-        invitation: InvitationRecord = (
-            await verifier_controller.out_of_band.create_invitation(
-                auto_accept=True,
-                multi_use=True,
-                body=InvitationCreateRequest(
-                    use_public_did=False,
-                    alias=f"Trust Registry {name}",
-                    handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-                ),
-            )
-        )
-
-        # check if invitation and necessary attributes exist
-        if invitation and invitation.invitation and invitation.invitation.services:
-            try:
-                # Because we're not creating an invitation with a public did the invitation will always
-                # contain a did:key as the first recipientKey in the first service
-                bound_logger.debug("Getting DID from verifier's invitation")
-                service = invitation.invitation.services[0]
-                if (
-                    service
-                    and "recipientKeys" in service
-                    and len(service["recipientKeys"]) > 0
-                ):
-                    onboarding_result["did"] = service["recipientKeys"][0]
-                else:
-                    raise KeyError(
-                        f"RecipientKeys not present in the invitation service: `{service}`."
-                    )
-                onboarding_result["didcomm_invitation"] = invitation.invitation_url
-            except (KeyError, IndexError) as e:
-                bound_logger.error(
-                    "Created invitation does not contain expected keys: {}", e
-                )
-                raise CloudApiException(
-                    "Error onboarding verifier: No public DID found. "
-                    "Tried to create invitation, but found no service/recipientKeys."
-                ) from e
-        else:
-            bound_logger.error(
-                "Created invitation does not have necessary attributes. Got: `{}`.",
-                invitation,
-            )
-            raise CloudApiException(
-                "Error onboarding verifier: No public DID found. "
-                "Tried and failed to create invitation on their behalf."
-            )
-
-    bound_logger.info("Returning verifier onboard result.")
-    return OnboardResult(**onboarding_result)

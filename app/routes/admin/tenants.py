@@ -25,7 +25,7 @@ from app.models.tenants import (
     UpdateTenantRequest,
     WalletListWithGroups,
 )
-from app.services.onboarding import handle_tenant_update, onboard_tenant
+from app.services.onboarding.tenants import handle_tenant_update, onboard_tenant
 from app.services.trust_registry import (
     Actor,
     TrustRegistryException,

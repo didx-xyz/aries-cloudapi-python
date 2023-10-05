@@ -5,6 +5,7 @@ from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCDetailOp
 from assertpy import assert_that
 
 from app.models.issuer import SendCredential
+from app.routes.connections import router as con_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
@@ -14,6 +15,8 @@ from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
+CON = con_router.prefix
+
 
 credential_ = SendCredential(
     type="ld_proof",
@@ -123,48 +126,18 @@ async def test_send_jsonld_key_bbs(
 @pytest.mark.anyio
 async def test_send_jsonld_bbs_oob(
     faber_client: RichAsyncClient,
-    faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     register_issuer_key_bbs: DidKey,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
-    faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
-
-    # Updating JSON-LD credential did:key (bbs)
-    credential = deepcopy(credential_)
-    credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
-
-    # faber create offer
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH + "/create-offer",
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
-
     invitation_response = await faber_client.post(
         OOB_BASE_PATH + "/create-invitation",
         json={
-            "create_connection": False,
+            "create_connection": True,
             "use_public_did": False,
-            "attachments": [
-                {"id": data["credential_id"][3:], "type": "credential-offer"}
-            ],
+            "attachments": [],
         },
     )
+
     assert_that(invitation_response.status_code).is_equal_to(200)
 
     invitation = (invitation_response.json())["invitation"]
@@ -175,14 +148,49 @@ async def test_send_jsonld_bbs_oob(
     )
 
     oob_record = accept_response.json()
+    alice_connection_id = oob_record["connection_id"]
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="connections",
+        filter_map={
+            "state": "completed",
+            "connection_id": alice_connection_id,
+        },
+    )
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
+    faber_con = await faber_client.get(CON)
+
+    faber_connections = faber_con.json()
+    for con in faber_connections:
+        if con["invitation_msg_id"] == invitation["@id"]:
+            faber_connection_id = con["connection_id"]
+
+    # Updating JSON-LD credential did:key (bbs)
+    credential = deepcopy(credential_)
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
+
+    # Send credential
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
+
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         filter_map={
             "state": "offer-received",
+            "connection_id": alice_connection_id,
         },
     )
 
@@ -218,18 +226,18 @@ async def test_send_jsonld_request(
         },
     )
 
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="credentials",
+    )
+
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": alice_connection_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "offer-received"},
-        topic="credentials",
-    )
 
     request_response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
@@ -280,18 +288,18 @@ async def test_issue_jsonld_bbs(
         },
     )
 
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="credentials",
+    )
+
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": alice_connection_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "offer-received"},
-        topic="credentials",
-    )
 
     request_response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",

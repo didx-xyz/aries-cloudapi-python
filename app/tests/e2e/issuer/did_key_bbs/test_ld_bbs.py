@@ -172,6 +172,11 @@ async def test_send_jsonld_bbs_oob(
 
         if con['invitation_msg_id'] == invitation['@id']:
             faber_connection_id = con['connection_id']
+
+    # Updating JSON-LD credential did:key (bbs)
+    credential = deepcopy(credential_)
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",

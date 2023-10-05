@@ -132,7 +132,6 @@ async def test_send_jsonld_oob(
     alice_member_client: RichAsyncClient,
     register_issuer_key_ed25519: DidKey,
 ):
-
     invitation_response = await faber_client.post(
         OOB_BASE_PATH + "/create-invitation",
         json={
@@ -152,7 +151,7 @@ async def test_send_jsonld_oob(
     )
 
     oob_record = accept_response.json()
-    alice_connection_id = oob_record['connection_id']
+    alice_connection_id = oob_record["connection_id"]
 
     assert await check_webhook_state(
         client=alice_member_client,
@@ -166,15 +165,12 @@ async def test_send_jsonld_oob(
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
 
-    faber_con = await faber_client.get(
-        CON
-    )
+    faber_con = await faber_client.get(CON)
 
     faber_connections = faber_con.json()
     for con in faber_connections:
-
-        if con['invitation_msg_id'] == invitation['@id']:
-            faber_connection_id = con['connection_id']
+        if con["invitation_msg_id"] == invitation["@id"]:
+            faber_connection_id = con["connection_id"]
 
     # Updating JSON-LD credential did:key with proofType ed25519
     credential = deepcopy(credential_)

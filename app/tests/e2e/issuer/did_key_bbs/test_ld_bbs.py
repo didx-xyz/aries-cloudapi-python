@@ -5,6 +5,7 @@ from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCDetailOp
 from assertpy import assert_that
 
 from app.models.issuer import SendCredential
+from app.routes.connections import router as con_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
@@ -14,6 +15,8 @@ from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
+CON = con_router.prefix
+
 
 credential_ = SendCredential(
     type="ld_proof",

@@ -16,6 +16,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.services import acapy_ledger, acapy_wallet
 from app.services.acapy_wallet import Did
 from app.services.onboarding import issuer, verifier
+from app.services.onboarding.util import register_issuer_did
 from app.tests.util.mock import to_async
 from shared.util.mock_agent_controller import get_mock_agent_controller
 
@@ -57,10 +58,10 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     # Mock event listeners
-    when(issuer).create_sse_listener(topic="connections", wallet_id="admin").thenReturn(
-        MockSseListener(topic="connections", wallet_id="admin")
-    )
-    when(issuer).create_sse_listener(
+    when(register_issuer_did).create_sse_listener(
+        topic="connections", wallet_id="admin"
+    ).thenReturn(MockSseListener(topic="connections", wallet_id="admin"))
+    when(register_issuer_did).create_sse_listener(
         topic="endorsements", wallet_id="admin"
     ).thenReturn(
         MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
@@ -105,10 +106,12 @@ async def test_onboard_issuer_no_public_did(
     )
 
     # Mock event listeners
-    when(issuer).create_sse_listener(topic="connections", wallet_id="admin").thenReturn(
+    when(register_issuer_did).create_sse_listener(
+        topic="connections", wallet_id="admin"
+    ).thenReturn(
         MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
     )
-    when(issuer).create_sse_listener(
+    when(register_issuer_did).create_sse_listener(
         topic="endorsements", wallet_id="admin"
     ).thenReturn(MockListenerRequestReceived(topic="endorsements", wallet_id="admin"))
 

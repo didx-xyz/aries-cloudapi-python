@@ -5,15 +5,15 @@ from aries_cloudcontroller import (
     OobRecord,
 )
 
-from app.event_handling.sse_listener import create_sse_listener
+from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import OnboardResult
 from app.services import acapy_ledger, acapy_wallet
 from app.services.acapy_wallet import Did
-from app.util.assert_connection_metadata import (
-    assert_author_role_set,
-    assert_endorser_info_set,
-    assert_endorser_role_set,
+from app.services.onboarding.util import (
+    set_author_role,
+    set_endorser_info,
+    set_endorser_role,
 )
 from app.util.did import qualified_did_sov
 from shared import ACAPY_ENDORSER_ALIAS
@@ -144,10 +144,13 @@ async def onboard_issuer_no_public_did(
     async def set_endorser_roles(
         endorser_connection_id: str, issuer_connection_id: str
     ):
+        bound_logger.debug("Setting roles for endorser")
+        await set_endorser_role(
+            endorser_controller, endorser_connection_id, bound_logger
         )
 
-        bound_logger.debug("Assert that the author role is set")
-        await assert_author_role_set(issuer_controller, issuer_connection_id)
+        bound_logger.debug("Setting roles for author")
+        await set_author_role(issuer_controller, issuer_connection_id, bound_logger)
 
         bound_logger.debug("Successfully set roles for connection.")
 
@@ -156,14 +159,11 @@ async def onboard_issuer_no_public_did(
         # There is currently no way to retrieve endorser info. We'll just set it
         # to make sure the endorser info is set.
         bound_logger.debug("Setting endorser info")
-        await issuer_controller.endorse_transaction.set_endorser_info(
-            conn_id=connection_record.connection_id,
-            endorser_did=endorser_did.did,
-        )
-
-        bound_logger.debug("Assert that the endorser info is set")
-        await assert_endorser_info_set(
-            issuer_controller, connection_record.connection_id, endorser_did.did
+        await set_endorser_info(
+            issuer_controller,
+            connection_record.connection_id,
+            endorser_did,
+            bound_logger,
         )
         bound_logger.debug("Successfully set endorser info.")
 

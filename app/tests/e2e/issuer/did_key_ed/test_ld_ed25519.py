@@ -130,46 +130,16 @@ async def test_send_jsonld_oob(
     alice_member_client: RichAsyncClient,
     register_issuer_key_ed25519: DidKey,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
-    faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
-
-    # Updating JSON-LD credential did:sov
-    credential = deepcopy(credential_)
-    credential["connection_id"] = faber_connection_id
-    credential["ld_credential_detail"]["credential"][
-        "issuer"
-    ] = register_issuer_key_ed25519
-
-    # faber create offer
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH + "/create-offer",
-        json=credential,
-    )
-
-    data = response.json()
-    assert_that(data).contains("credential_id")
-    assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v2")
 
     invitation_response = await faber_client.post(
         OOB_BASE_PATH + "/create-invitation",
         json={
-            "create_connection": False,
+            "create_connection": True,
             "use_public_did": False,
-            "attachments": [
-                {"id": data["credential_id"][3:], "type": "credential-offer"}
-            ],
+            "attachments": [],
         },
     )
+
     assert_that(invitation_response.status_code).is_equal_to(200)
 
     invitation = (invitation_response.json())["invitation"]

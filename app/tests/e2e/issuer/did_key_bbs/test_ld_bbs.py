@@ -126,7 +126,6 @@ async def test_send_jsonld_key_bbs(
 @pytest.mark.anyio
 async def test_send_jsonld_bbs_oob(
     faber_client: RichAsyncClient,
-    faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     register_issuer_key_bbs: DidKey,
 ):

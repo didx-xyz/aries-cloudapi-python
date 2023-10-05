@@ -194,6 +194,7 @@ async def test_send_jsonld_bbs_oob(
         topic="credentials",
         filter_map={
             "state": "offer-received",
+            "connection_id": alice_connection_id,
         },
     )
 

@@ -291,18 +291,18 @@ async def test_issue_jsonld_bbs(
         },
     )
 
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "offer-received"},
+        topic="credentials",
+    )
+
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": alice_connection_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        filter_map={"state": "offer-received"},
-        topic="credentials",
-    )
 
     request_response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",

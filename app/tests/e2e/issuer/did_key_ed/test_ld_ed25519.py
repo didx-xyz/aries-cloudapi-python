@@ -180,6 +180,17 @@ async def test_send_jsonld_oob(
     credential["ld_credential_detail"]["credential"][
         "issuer"
     ] = register_issuer_key_ed25519
+
+    # Send credential
+    response = await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+
+    data = response.json()
+    assert_that(data).contains("credential_id")
+    assert_that(data).has_state("offer-sent")
+    assert_that(data).has_protocol_version("v2")
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",

@@ -56,7 +56,7 @@ EOF
 # Default Settings:
 # -----------------------------------------------------------------------------------------------------------------
 DEFAULT_CONTAINERS="governance-trust-registry trustregistry-db governance-multitenant-wallets-db governance-multitenant-agent tails-server ledger-nodes ledger-browser
-                    governance-ga-wallets-db governance-ga-agent governance-multitenant-web governance-ga-web wh-redis governance-webhooks-web governance-endorser"
+                    governance-ga-wallets-db governance-ga-agent governance-multitenant-web wh-redis governance-webhooks-web governance-endorser"
 TEST_CONTAINERS="${DEFAULT_CONTAINERS} tests"
 # -----------------------------------------------------------------------------------------------------------------
 # Functions:
@@ -109,6 +109,9 @@ configureEnvironment() {
   export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:controller}"
   export GENESIS_URL="http://localhost:9000/genesis"
   export WALLET_TYPE="askar"
+
+  export REGISTRY="${REGISTRY}"
+  export IMAGE_TAG="${IMAGE_TAG}"
 
 }
 
@@ -247,6 +250,15 @@ up-daemon-usecache)
     --build \
     -d ${_startupParams}
   ;;
+ up-as-daemon-no-build)
+  echoYellow "Starting up... This can take a couple of minutes."
+  _startupParams=$(getStartupParams $@)
+  configureEnvironment "$@"
+  docker --log-level ERROR \
+    compose up \
+    --no-build \
+    -d ${_startupParams}
+    ;;
 tests)
   echoYellow "Starting up... This can take a couple of minutes."
   tests=true

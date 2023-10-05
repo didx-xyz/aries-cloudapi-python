@@ -163,6 +163,16 @@ async def test_send_jsonld_oob(
 
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
+
+    faber_con = await faber_client.get(
+        CON
+    )
+
+    faber_connections = faber_con.json()
+    for con in faber_connections:
+
+        if con['invitation_msg_id'] == invitation['@id']:
+            faber_connection_id = con['connection_id']
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",

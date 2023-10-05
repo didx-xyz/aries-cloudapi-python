@@ -7,7 +7,7 @@ from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions.cloud_api_error import CloudApiException
 
-DEFAULT_NUM_TRIES = 10
+DEFAULT_NUM_TRIES = 5
 DEFAULT_DELAY = 0.2
 
 

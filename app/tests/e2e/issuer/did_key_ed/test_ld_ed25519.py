@@ -16,8 +16,8 @@ from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
 OOB_BASE_PATH = oob_router.prefix
-WALLET = wallet_router.prefix
-CON = con_router.prefix
+WALLET_BASE_PATH = wallet_router.prefix
+CONNECTIONS_BASE_PATH = con_router.prefix
 
 credential_ = SendCredential(
     type="ld_proof",

@@ -184,7 +184,6 @@ async def assert_metadata_set(
                 return True
         except ClientResponseError as e:
             logger.error("Exception occurred when getting metadata: {}", e)
-            pass
 
     raise SettingMetadataException(
         f"Failed to assert that metadata meets the desired condition after {num_tries} attempts."

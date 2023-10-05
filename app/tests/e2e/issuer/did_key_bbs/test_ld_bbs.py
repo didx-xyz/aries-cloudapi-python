@@ -149,7 +149,17 @@ async def test_send_jsonld_bbs_oob(
     )
 
     oob_record = accept_response.json()
+    alice_connection_id = oob_record['connection_id']
 
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="connections",
+        filter_map={
+            "state": "completed",
+            "connection_id": alice_connection_id,
+        },
+    )
+    
     assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
     assert await check_webhook_state(

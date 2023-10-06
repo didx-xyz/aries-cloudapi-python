@@ -59,12 +59,12 @@ async def set_endorser_info(
     logger: Logger,
 ):
     try:
-        logger.debug(f"Setting endorser info on issuer-endorser connection")
+        logger.debug("Setting endorser info on issuer-endorser connection")
         await issuer_controller.endorse_transaction.set_endorser_info(
             conn_id=issuer_connection_id,
             endorser_did=endorser_did,
         )
-        logger.debug(f"Successfully set endorser info.")
+        logger.debug("Successfully set endorser info.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
     except ClientResponseError as e:
         logger.error("Failed to set endorser info: {}.", e)

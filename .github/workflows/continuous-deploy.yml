@@ -26,7 +26,7 @@ on:
     types: [submitted]
 
 concurrency:
-  group: continuous-deploy-${{ github.ref }}
+  group: cicd-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,6 +36,10 @@ jobs:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: cicd-build-${{ matrix.image }}}
+      cancel-in-progress: false
 
     outputs:
       image_version: ${{ steps.meta.outputs.version }}
@@ -149,18 +153,16 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ toJson(strategy.matrix) }}
     strategy:
       matrix:
         module:
-          - { test: "app/tests/e2e/test_definitions.py", cov: "app", id: "1" }
-          - { test: "app/tests/e2e/issuer/did_sov/test_v2_indy.py", cov: "app", id: "2" }
-          - { test: "app/tests/e2e/issuer/did_sov/test_v1_indy.py", cov: "app", id: "3" }
-          - { test: "app/tests/e2e/test_verifier.py", cov: "app", id: "4" }
-          - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "app", id: "5" }
-          - { test: "app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "app", id: "6" }
-          - { test: "endorser trustregistry webhooks", cov: "endorser --cov=trustregistry --cov=webhooks", id: "7" }
+          - { test: "app/tests/e2e/test_definitions.py", cov: "--cov=app", id: "1" }
+          - { test: "app/tests/e2e/issuer/did_sov/test_v2_indy.py", cov: "--cov=app", id: "2" }
+          - { test: "app/tests/e2e/issuer/did_sov/test_v1_indy.py", cov: "--cov=app", id: "3" }
+          - { test: "app/tests/e2e/test_verifier.py", cov: "--cov=app", id: "4" }
+          - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "5" }
+          - { test: "app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "6" }
+          - { test: "endorser trustregistry webhooks", cov: "--cov=endorser --cov=trustregistry --cov=webhooks", id: "7" }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -190,7 +192,7 @@ jobs:
         id: test
         run: |
           set +e
-          pytest --cov=${{ matrix.module.cov }} --durations=0 ${{ matrix.module.test }} | tee test_output.txt
+          pytest --durations=0 ${{ matrix.module.cov }} ${{ matrix.module.test }} | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           echo "Exit code: $EXIT_CODE"
@@ -226,6 +228,7 @@ jobs:
           path: coverage-files/.coverage.${{ matrix.module.id }}
 
   combine-coverage:
+    name: Coverage
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -258,6 +261,7 @@ jobs:
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+
   deploy:
     name: Deploy to EKS
     environment:
@@ -268,6 +272,9 @@ jobs:
       id-token: write # Required to authenticate with AWS
       contents: read # Required to clone this repository
     runs-on: ubuntu-latest
+    concurrency:
+      group: cicd-deploy
+      cancel-in-progress: false
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
     steps:

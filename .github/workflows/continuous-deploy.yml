@@ -22,12 +22,12 @@ on:
   pull_request:
     branches:
       - "development"
-  pull_request_review:
-    types: [submitted]
+  # pull_request_review:
+  #   types: [submitted]
 
 concurrency:
-  group: continuous-deploy
-  cancel-in-progress: false
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -36,6 +36,10 @@ jobs:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: cicd-build-${{ matrix.image }}}
+      cancel-in-progress: false
 
     outputs:
       image_version: ${{ steps.meta.outputs.version }}
@@ -152,15 +156,13 @@ jobs:
     strategy:
       matrix:
         module:
-          [
-            app/tests/e2e/test_definitions.py,
-            app/tests/e2e/issuer/did_sov/test_v2_indy.py,
-            app/tests/e2e/issuer/did_sov/test_v1_indy.py,
-            app/tests/e2e/test_verifier.py,
-            app/tests/e2e/test_trust_registry_integration.py,
-            app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py,
-            endorser trustregistry webhooks,
-          ]
+          - { test: "app/tests/e2e/test_definitions.py", cov: "--cov=app", id: "1" }
+          - { test: "app/tests/e2e/issuer/did_sov/test_v2_indy.py", cov: "--cov=app", id: "2" }
+          - { test: "app/tests/e2e/issuer/did_sov/test_v1_indy.py", cov: "--cov=app", id: "3" }
+          - { test: "app/tests/e2e/test_verifier.py", cov: "--cov=app", id: "4" }
+          - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "5" }
+          - { test: "app --ignore=app/tests/e2e/test_definitions.py --ignore=app/tests/e2e/issuer/did_sov/test_v2_indy.py --ignore=app/tests/e2e/issuer/did_sov/test_v1_indy.py --ignore=app/tests/e2e/test_verifier.py --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "6" }
+          - { test: "endorser trustregistry webhooks", cov: "--cov=endorser --cov=trustregistry --cov=webhooks", id: "7" }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -186,15 +188,17 @@ jobs:
         env:
           REGISTRY: ghcr.io/${{ github.repository_owner }}
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-      - name: Test with pytest on ${{ matrix.module }}
+      - name: Test with pytest
         id: test
         run: |
-          # pytest --durations=0 --cov=${{ matrix.module }} ${{ matrix.module }}
           set +e
-          pytest --durations=0 ${{ matrix.module }} | tee test_output.txt
+          pytest --durations=0 ${{ matrix.module.cov }} ${{ matrix.module.test }} | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           echo "Exit code: $EXIT_CODE"
+
+          mkdir coverage-files
+          mv .coverage coverage-files/.coverage.${{ matrix.module.id }}
 
           # very hacky way to get around the fact that teardown fails even if tests pass
           TEARDOWN_ERROR=false
@@ -216,8 +220,46 @@ jobs:
           else
               exit $EXIT_CODE
           fi
+      - name: Upload .coverage files as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-files-${{ matrix.module.id }}
+          path: coverage-files/.coverage.${{ matrix.module.id }}
+
+  combine-coverage:
+    name: Coverage
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: pip install coverage
+      - name: Download all .coverage artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: coverage-files
+      - name: Move coverage files to top-level directory
+        run: |
+          for dir in coverage-files/coverage-files-*; do
+            mv "$dir"/.coverage.* .
+          done
+      - name: Combine coverage files
+        run: |
+          coverage combine
+          coverage report
+      - name: Generate XML coverage report
+        run: |
+          coverage xml
+      - name: Upload coverage to Codacy
+        run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }} # Needed for Codacy reporting
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   deploy:
     name: Deploy to EKS
@@ -229,6 +271,9 @@ jobs:
       id-token: write # Required to authenticate with AWS
       contents: read # Required to clone this repository
     runs-on: ubuntu-latest
+    concurrency:
+      group: cicd-deploy
+      cancel-in-progress: false
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
     steps:

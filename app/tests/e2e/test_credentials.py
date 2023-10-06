@@ -145,7 +145,9 @@ async def issue_credential_to_alice(
         },
     }
 
-    listener = SseListener(topic="credentials", wallet_id=alice_tenant.tenant_id)
+    alice_credentials_listener = SseListener(
+        topic="credentials", wallet_id=alice_tenant.tenant_id
+    )
 
     # create and send credential offer- issuer
     await faber_client.post(
@@ -153,7 +155,7 @@ async def issue_credential_to_alice(
         json=credential,
     )
 
-    payload = await listener.wait_for_event(
+    payload = await alice_credentials_listener.wait_for_event(
         field="connection_id",
         field_id=faber_and_alice_connection.alice_connection_id,
         desired_state="offer-received",
@@ -166,7 +168,7 @@ async def issue_credential_to_alice(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
-    await listener.wait_for_event(
+    await alice_credentials_listener.wait_for_event(
         field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
 

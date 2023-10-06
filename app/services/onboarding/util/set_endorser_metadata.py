@@ -1,4 +1,5 @@
 import asyncio
+import os
 from logging import Logger
 from typing import Callable
 
@@ -8,7 +9,7 @@ from aries_cloudcontroller import AcaPyClient
 from app.exceptions.cloud_api_error import CloudApiException
 
 DEFAULT_NUM_TRIES = 1
-DEFAULT_DELAY = 0.2
+DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))
 
 
 async def set_endorser_role(

@@ -218,8 +218,7 @@ jobs:
               echo "Tests passed with teardown error"
               exit 0
           else
-              # exit $EXIT_CODE
-              exit 0
+              exit $EXIT_CODE
           fi
       - name: Upload .coverage files as artifact
         uses: actions/upload-artifact@v3

@@ -13,9 +13,10 @@ from mockito import verify, when
 
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
-from app.services import onboarding
+from app.services import acapy_ledger, acapy_wallet
 from app.services.acapy_wallet import Did
-from app.services.onboarding import acapy_ledger, acapy_wallet
+from app.services.onboarding import issuer, verifier
+from app.services.onboarding.util import register_issuer_did
 from app.tests.util.mock import to_async
 from shared.util.mock_agent_controller import get_mock_agent_controller
 
@@ -57,10 +58,10 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     # Mock event listeners
-    when(onboarding).create_sse_listener(
+    when(register_issuer_did).create_sse_listener(
         topic="connections", wallet_id="admin"
     ).thenReturn(MockSseListener(topic="connections", wallet_id="admin"))
-    when(onboarding).create_sse_listener(
+    when(register_issuer_did).create_sse_listener(
         topic="endorsements", wallet_id="admin"
     ).thenReturn(
         MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
@@ -76,7 +77,7 @@ async def test_onboard_issuer_public_did_exists(
         )
     )
 
-    onboard_result = await onboarding.onboard_issuer(
+    onboard_result = await issuer.onboard_issuer(
         name="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
@@ -105,12 +106,12 @@ async def test_onboard_issuer_no_public_did(
     )
 
     # Mock event listeners
-    when(onboarding).create_sse_listener(
+    when(register_issuer_did).create_sse_listener(
         topic="connections", wallet_id="admin"
     ).thenReturn(
         MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
     )
-    when(onboarding).create_sse_listener(
+    when(register_issuer_did).create_sse_listener(
         topic="endorsements", wallet_id="admin"
     ).thenReturn(MockListenerRequestReceived(topic="endorsements", wallet_id="admin"))
 
@@ -137,8 +138,8 @@ async def test_onboard_issuer_no_public_did(
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
-    when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenReturn(
-        to_async()
+    when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenAnswer(
+        lambda conn_id, endorser_did: to_async()
     )
 
     # Expanding the test scenario: we want to ensure that the coroutine is successfully retried in the
@@ -212,7 +213,7 @@ async def test_onboard_issuer_no_public_did(
         )
     )
 
-    onboard_result = await onboarding.onboard_issuer(
+    onboard_result = await issuer.onboard_issuer(
         name="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
@@ -246,7 +247,7 @@ async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyCl
         )
     )
 
-    onboard_result = await onboarding.onboard_verifier(
+    onboard_result = await verifier.onboard_verifier(
         name="verifier_name", verifier_controller=mock_agent_controller
     )
 
@@ -272,7 +273,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
         )
     )
 
-    onboard_result = await onboarding.onboard_verifier(
+    onboard_result = await verifier.onboard_verifier(
         name="verifier_name", verifier_controller=mock_agent_controller
     )
 
@@ -303,7 +304,7 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
     )
 
     with pytest.raises(CloudApiException):
-        await onboarding.onboard_verifier(
+        await verifier.onboard_verifier(
             name="verifier_name", verifier_controller=mock_agent_controller
         )
 

@@ -1,7 +1,5 @@
 from typing import List, Optional
 
-import httpx
-
 from app.exceptions.trust_registry_exception import TrustRegistryException
 from app.models.trust_registry import Actor, TrustRegistryRole
 from shared.constants import TRUST_REGISTRY_URL

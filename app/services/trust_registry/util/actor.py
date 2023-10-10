@@ -1,6 +1,6 @@
 from app.exceptions.trust_registry_exception import TrustRegistryException
 from app.models.trust_registry import TrustRegistryRole
-from app.services.trustregistry.actors import actor_by_id
+from app.services.trust_registry.actors import actor_by_id
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
 from shared.util.rich_async_client import RichAsyncClient

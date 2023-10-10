@@ -46,7 +46,7 @@ async def sse_subscribe_wallet(
         bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe by wallet."
         )
-        raise e from e
+        raise e
 
 
 async def sse_subscribe_wallet_topic(
@@ -72,7 +72,7 @@ async def sse_subscribe_wallet_topic(
         bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe by wallet and topic."
         )
-        raise e from e
+        raise e
 
 
 async def sse_subscribe_event_with_state(
@@ -105,7 +105,7 @@ async def sse_subscribe_event_with_state(
         bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe event by wallet, topic and state."
         )
-        raise e from e
+        raise e
 
 
 async def sse_subscribe_stream_with_fields(
@@ -139,7 +139,7 @@ async def sse_subscribe_stream_with_fields(
         bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe stream by wallet, topic, and fields."
         )
-        raise e from e
+        raise e
 
 
 async def sse_subscribe_event_with_field_and_state(
@@ -180,4 +180,4 @@ async def sse_subscribe_event_with_field_and_state(
         bound_logger.exception(
             "Caught HTTPError while handling SSE subscribe event by wallet, topic, fields, and state."
         )
-        raise e from e
+        raise e

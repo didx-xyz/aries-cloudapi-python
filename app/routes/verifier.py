@@ -57,7 +57,7 @@ async def create_proof_request(
             )
     except Exception as e:
         bound_logger.exception("Failed to create presentation record.")
-        raise e from e
+        raise e
 
     if result:
         bound_logger.info("Successfully created proof request.")
@@ -102,7 +102,7 @@ async def send_proof_request(
             )
     except Exception as e:
         bound_logger.exception("Failed to send proof request.")
-        raise e from e
+        raise e
 
     if result:
         bound_logger.info("Successfully sent proof request.")
@@ -159,7 +159,7 @@ async def accept_proof_request(
             )
     except Exception as e:
         bound_logger.exception("Failed to accept proof request.")
-        raise e from e
+        raise e
 
     if result:
         bound_logger.info("Successfully accepted proof request.")
@@ -213,7 +213,7 @@ async def reject_proof_request(
             )
     except Exception as e:
         bound_logger.exception("Failed to reject request.")
-        raise e from e
+        raise e
 
     bound_logger.info("Successfully rejected proof request.")
 
@@ -244,7 +244,7 @@ async def get_proof_records(
             )
     except Exception as e:
         logger.exception("Failed to get proof records.")
-        raise e from e
+        raise e
 
     result = v1_records + v2_records
     if result:
@@ -285,7 +285,7 @@ async def get_proof_record(
             )
     except Exception as e:
         bound_logger.exception("Failed to get proof record.")
-        raise e from e
+        raise e
 
     if result:
         bound_logger.info("Successfully fetched proof record.")
@@ -322,7 +322,7 @@ async def delete_proof(
             await verifier.delete_proof(controller=aries_controller, proof_id=proof_id)
     except Exception as e:
         bound_logger.exception("Failed to delete proof record.")
-        raise e from e
+        raise e
     bound_logger.info("Successfully deleted proof record.")
 
 
@@ -357,6 +357,6 @@ async def get_credentials_by_proof_id(
             )
     except Exception as e:
         bound_logger.exception("Failed to get matching credentials.")
-        raise e from e
+        raise e
     bound_logger.info("Successfully fetched credentials for proof request.")
     return result

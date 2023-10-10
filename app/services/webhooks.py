@@ -17,7 +17,7 @@ def get_hooks_for_wallet_by_topic(wallet_id: str, topic: CloudApiTopics) -> List
         return hooks if hooks else []
     except HTTPError as e:
         bound_logger.exception("HTTP Error caught when fetching webhooks.")
-        raise e from e
+        raise e
 
 
 def get_hooks_for_wallet(wallet_id: str) -> List:
@@ -31,4 +31,4 @@ def get_hooks_for_wallet(wallet_id: str) -> List:
         return hooks if hooks else []
     except HTTPError as e:
         bound_logger.exception("HTTP Error caught when fetching webhooks.")
-        raise e from e
+        raise e

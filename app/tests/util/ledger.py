@@ -52,7 +52,7 @@ async def post_to_ledger(
                 LEDGER_REGISTRATION_URL, json=payload.model_dump(), timeout=300
             )
     except HTTPError as e:
-        raise e from e
+        raise e
 
     if response.is_error:
         raise HTTPException(

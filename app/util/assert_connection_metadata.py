@@ -7,7 +7,7 @@ from aries_cloudcontroller import AcaPyClient
 from app.exceptions.cloud_api_error import CloudApiException
 
 DEFAULT_RETRIES = 10
-DEFAULT_DELAY = 0.2
+DEFAULT_DELAY = 1.5
 
 
 async def assert_metadata_set(

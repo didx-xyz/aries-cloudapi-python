@@ -32,6 +32,7 @@ from app.routes.wallet import dids as wallet_dids
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
+ROLE = os.getenv("ROLE", "*")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
 
 logger = get_logger(__name__)
@@ -47,8 +48,42 @@ async def lifespan(_: FastAPI):
     logger.info("Calling WebsocketManager shutdown")
     await WebsocketManager.disconnect_all()
 
-
-def create_app() -> FastAPI:
+if ROLE == "governance":
+    routes = [
+        # tenants,
+        connections,
+        definitions,
+        issuer,
+        jsonld,
+        messaging,
+        oob,
+        trust_registry,
+        verifier,
+        wallet_credentials,
+        wallet_dids,
+        webhooks,
+        sse,
+    ]
+elif ROLE == "tenant-admin":
+    routes = [
+        tenants
+    ]
+elif ROLE == "tenant":
+    routes = [
+        connections,
+        definitions,
+        issuer,
+        jsonld,
+        messaging,
+        oob,
+        trust_registry,
+        verifier,
+        wallet_credentials,
+        wallet_dids,
+        webhooks,
+        sse,
+    ]
+elif ROLE == "*":
     routes = [
         tenants,
         connections,
@@ -64,6 +99,24 @@ def create_app() -> FastAPI:
         webhooks,
         sse,
     ]
+
+
+def create_app() -> FastAPI:
+    # routes = [
+    #     tenants,
+    #     connections,
+    #     definitions,
+    #     issuer,
+    #     jsonld,
+    #     messaging,
+    #     oob,
+    #     trust_registry,
+    #     verifier,
+    #     wallet_credentials,
+    #     wallet_dids,
+    #     webhooks,
+    #     sse,
+    # ]
 
     application = FastAPI(
         debug=debug,

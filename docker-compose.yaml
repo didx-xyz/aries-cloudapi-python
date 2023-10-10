@@ -128,6 +128,60 @@ services:
       - host
     env_file:
       - environments/governance-multitenant/fastapi.default.env
+  governance-ga-web:
+    image: ${REGISTRY:-local}/governance-ga-web:${IMAGE_TAG:-latest}
+    container_name: governance-ga-web
+    build:
+      context: .
+      dockerfile: ./dockerfiles/fastapi/Dockerfile
+    ports:
+      - 0.0.0.0:8200:8000
+    volumes:
+      - ./app:/app
+      - ./environments/governance-ga/fastapi.default.env:/app/.env
+      - ./logs/ga:/logs
+    depends_on:
+      governance-ga-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+    networks:
+      - governance-ga
+      - host
+    env_file:
+      - environments/governance-ga/fastapi.default.env
+  governance-tenant-web:
+    image: ${REGISTRY:-local}/governance-tenant-web:${IMAGE_TAG:-latest}
+    container_name: governance-tenant-web
+    build:
+      context: .
+      dockerfile: ./dockerfiles/fastapi/Dockerfile
+    ports:
+      - 0.0.0.0:8300:8000
+    volumes:
+      - ./app:/app
+      - ./environments/governance-tenant/fastapi.default.env:/app/.env
+      - ./logs/tenant:/logs
+    depends_on:
+      governance-multitenant-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+      governance-multitenant-agent:
+        condition: service_healthy
+    networks:
+      - governance-multitenant
+      - host
+    env_file:
+      - environments/governance-tenant/fastapi.default.env
   governance-webhooks-web:
     image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
     container_name: governance-webhooks-web

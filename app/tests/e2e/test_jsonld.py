@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from aries_cloudcontroller import AcaPyClient, SignatureOptions
 from assertpy import assert_that
@@ -145,9 +147,10 @@ async def test_verify_jsonld(
     assert_that(exc.value.status_code).is_equal_to(400)
 
     # # Error invalid
-    jsonld_verify.verkey = None
+    time.sleep(1)  # Sleep in case reading public did is too soon after registering it
     faber_pub_did_result = await faber_acapy_client.wallet.get_public_did()
     jsonld_verify.public_did = faber_pub_did_result.result.did
+    jsonld_verify.verkey = None
 
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict())

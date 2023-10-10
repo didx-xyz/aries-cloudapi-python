@@ -10,21 +10,6 @@ from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
 
-TrustRegistryRole = Literal["issuer", "verifier"]
-
-
-class Actor(TypedDict):
-    id: str
-    name: str
-    roles: List[TrustRegistryRole]
-    did: str
-    didcomm_invitation: Optional[str]
-
-
-class TrustRegistry(TypedDict):
-    actors: List[Actor]
-    schemas: List[str]
-
 
 async def assert_valid_issuer(did: str, schema_id: Optional[str] = None):
     """Assert that an actor with the specified did is registered as issuer.

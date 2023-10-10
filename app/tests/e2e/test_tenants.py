@@ -5,9 +5,10 @@ from aries_cloudcontroller.acapy_client import AcaPyClient
 from assertpy.assertpy import assert_that
 from fastapi import HTTPException
 
+import app.services.trust_registry.actors as trust_registry
 from app.dependencies.acapy_clients import get_tenant_controller
 from app.routes.admin.tenants import router
-from app.services import acapy_wallet, trust_registry
+from app.services import acapy_wallet
 from app.tests.util.client import get_tenant_client
 from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key

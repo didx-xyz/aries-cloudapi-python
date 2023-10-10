@@ -54,43 +54,6 @@ async def assert_valid_issuer(did: str, schema_id: Optional[str] = None):
         bound_logger.info("Schema ID is registered.")
 
 
-async def registry_has_schema(schema_id: str) -> bool:
-    """Check whether the trust registry has a schema registered
-
-    Args:
-        schema_id (str): the schema id to check
-
-    Raises:
-        TrustRegistryException: If an error occurred while retrieving the schemas
-
-    Returns:
-        bool: whether the schema exists in the trust registry
-    """
-    bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info(
-        "Asserting if schema is registered. Fetching schema by ID from trust registry"
-    )
-    try:
-        async with RichAsyncClient(raise_status_error=False) as client:
-            bound_logger.debug("Fetch schema from trust registry")
-            schema_res = await client.get(
-                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-            )
-            schema_res.raise_for_status()
-    except httpx.HTTPStatusError as http_err:
-        if http_err.response.status_code == 404:
-            bound_logger.info("Schema id not registered in trust registry.")
-            return False
-        else:
-            bound_logger.exception(
-                "Something went wrong when fetching schema from trust registry."
-            )
-            raise http_err
-
-    bound_logger.info("Schema exists in registry.")
-    return True
-
-
 async def get_trust_registry() -> TrustRegistry:
     """Retrieve the complete trust registry
 

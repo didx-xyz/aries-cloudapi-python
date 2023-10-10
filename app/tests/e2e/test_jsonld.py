@@ -146,8 +146,8 @@ async def test_verify_jsonld(
 
     # # Error invalid
     jsonld_verify.verkey = None
-    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-    jsonld_verify.public_did = faber_pub_did
+    faber_pub_did_result = await faber_acapy_client.wallet.get_public_did()
+    jsonld_verify.public_did = faber_pub_did_result.result.did
 
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict())

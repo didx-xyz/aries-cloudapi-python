@@ -15,6 +15,7 @@ from app.dependencies.auth import (
     tenant_api_key,
 )
 from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions.trust_registry_exception import TrustRegistryException
 from app.models.tenants import (
     CreateTenantRequest,
     CreateTenantResponse,
@@ -23,15 +24,14 @@ from app.models.tenants import (
     TenantAuth,
     UpdateTenantRequest,
 )
+from app.models.trust_registry import Actor
 from app.services.onboarding.tenants import handle_tenant_update, onboard_tenant
-from app.services.trust_registry import (
-    Actor,
-    TrustRegistryException,
+from app.services.trust_registry.actors import (
     actor_by_id,
-    assert_actor_name,
     register_actor,
     remove_actor_by_id,
 )
+from app.services.trust_registry.util.actor import assert_actor_name
 from app.util.tenants import tenant_from_wallet_record
 from shared.log_config import get_logger
 

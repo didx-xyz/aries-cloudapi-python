@@ -2,9 +2,9 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions.cloud_api_error import CloudApiException
+from app.models.trust_registry import Actor
 from app.services.acapy_wallet import get_public_did
-from app.services.trust_registry import (
-    Actor,
+from app.services.trust_registry.actors import (
     actor_by_id,
     register_actor,
     remove_actor_by_id,

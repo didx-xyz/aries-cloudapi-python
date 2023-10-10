@@ -4,15 +4,15 @@ from random import random
 
 import pytest
 
+from app.models.trust_registry import Actor
 from app.routes.wallet.dids import router as wallet_router
-from app.services.trust_registry import (
-    Actor,
+from app.services.trust_registry.actors import (
     actor_by_did,
     register_actor,
-    register_schema,
-    registry_has_schema,
     remove_actor_by_id,
 )
+from app.services.trust_registry.schemas import register_schema
+from app.services.trust_registry.util.schema import registry_has_schema
 from shared import RichAsyncClient
 
 WALLET_BASE_PATH = wallet_router.prefix

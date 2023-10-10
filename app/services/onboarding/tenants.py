@@ -9,9 +9,10 @@ from app.dependencies.acapy_clients import (
 )
 from app.exceptions.cloud_api_error import CloudApiException
 from app.models.tenants import OnboardResult, UpdateTenantRequest
+from app.models.trust_registry import TrustRegistryRole
 from app.services.onboarding.issuer import onboard_issuer
 from app.services.onboarding.verifier import onboard_verifier
-from app.services.trust_registry import TrustRegistryRole, actor_by_id, update_actor
+from app.services.trust_registry.actors import actor_by_id, update_actor
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

@@ -4,9 +4,11 @@ from typing import List, Optional, Set, Union
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
 from app.exceptions.cloud_api_error import CloudApiException
+from app.models.trust_registry import Actor
 from app.models.verifier import AcceptProofRequest, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
-from app.services.trust_registry import Actor, actor_by_did, get_trust_registry_schemas
+from app.services.trust_registry.actors import actor_by_did
+from app.services.trust_registry.schemas import get_trust_registry_schemas
 from app.services.verifier.acapy_verifier import Verifier
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2

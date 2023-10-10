@@ -1,9 +1,10 @@
 from typing import List
-from fastapi import APIRouter
-from app.models.trust_registry import Actor
 
-import app.services.trustregistry.actors as registry_actors
-import app.services.trustregistry.schemas as registry_schemas
+from fastapi import APIRouter
+
+import app.services.trust_registry.actors as registry_actors
+import app.services.trust_registry.schemas as registry_schemas
+from app.models.trust_registry import Actor
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

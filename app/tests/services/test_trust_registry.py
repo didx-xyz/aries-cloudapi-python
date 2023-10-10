@@ -4,7 +4,20 @@ import pytest
 from httpx import HTTPStatusError, Response
 from pytest_mock import MockerFixture
 
-import app.services.trust_registry as trf
+from app.exceptions.trust_registry_exception import TrustRegistryException
+from app.models.trust_registry import Actor
+from app.services.trust_registry.actors import (
+    actor_by_did,
+    actors_with_role,
+    register_actor,
+    remove_actor_by_id,
+    update_actor,
+)
+from app.services.trust_registry.schemas import register_schema, remove_schema_by_id
+from app.services.trust_registry.util.actor import actor_has_role, assert_actor_name
+from app.services.trust_registry.util.issuer import assert_valid_issuer
+from app.services.trust_registry.util.schema import registry_has_schema
+from shared.constants import TRUST_REGISTRY_URL
 
 
 @pytest.fixture
@@ -38,12 +51,12 @@ async def test_assert_valid_issuer(mock_async_client):
         ]
     )
 
-    await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+    await assert_valid_issuer(did=did, schema_id=schema_id)
 
     # No actor with specified did
     mock_async_client.get = AsyncMock(return_value=Response(404))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+    with pytest.raises(TrustRegistryException):
+        await assert_valid_issuer(did=did, schema_id=schema_id)
 
     # Actor does not have required role 'issuer'
     mock_async_client.get = AsyncMock(
@@ -51,8 +64,8 @@ async def test_assert_valid_issuer(mock_async_client):
             200, json={"id": "actor-id", "roles": ["verifier"], "did": did}
         )
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+    with pytest.raises(TrustRegistryException):
+        await assert_valid_issuer(did=did, schema_id=schema_id)
 
     # Schema is not registered in registry
     not_found_response = Response(status_code=404)
@@ -69,8 +82,8 @@ async def test_assert_valid_issuer(mock_async_client):
             not_found_response,
         ]
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.assert_valid_issuer(did=did, schema_id=schema_id)
+    with pytest.raises(TrustRegistryException):
+        await assert_valid_issuer(did=did, schema_id=schema_id)
 
 
 @pytest.mark.anyio
@@ -78,24 +91,24 @@ async def test_actor_has_role(mock_async_client):
     mock_async_client.get = AsyncMock(
         return_value=Response(200, json={"roles": ["verifier"]})
     )
-    assert await trf.actor_has_role("governance", "issuer") is False
+    assert await actor_has_role("governance", "issuer") is False
 
     mock_async_client.get = AsyncMock(
         return_value=Response(428, json={"roles": ["verifier"]})
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.actor_has_role("governance", "issuer")
+    with pytest.raises(TrustRegistryException):
+        await actor_has_role("governance", "issuer")
 
     mock_async_client.get = AsyncMock(
         return_value=Response(428, json={"roles": ["issuer"]})
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.actor_has_role("governance", "issuer")
+    with pytest.raises(TrustRegistryException):
+        await actor_has_role("governance", "issuer")
 
     mock_async_client.get = AsyncMock(
         return_value=Response(200, json={"roles": ["issuer"]})
     )
-    assert await trf.actor_has_role("governance", "issuer") is True
+    assert await actor_has_role("governance", "issuer") is True
 
 
 @pytest.mark.anyio
@@ -106,18 +119,18 @@ async def test_actor_by_did(mock_async_client):
     }
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=res))
-    actor = await trf.actor_by_did("did:sov:xxx")
+    actor = await actor_by_did("did:sov:xxx")
     mock_async_client.get.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + "/registry/actors/did/did:sov:xxx"
+        TRUST_REGISTRY_URL + "/registry/actors/did/did:sov:xxx"
     )
     assert actor == res
 
     mock_async_client.get = AsyncMock(return_value=Response(500, json=res))
-    with pytest.raises(trf.TrustRegistryException):
-        actor = await trf.actor_by_did("did:sov:xxx")
+    with pytest.raises(TrustRegistryException):
+        actor = await actor_by_did("did:sov:xxx")
 
     mock_async_client.get = AsyncMock(return_value=Response(404, json={}))
-    actor = await trf.actor_by_did("did:sov:xxx")
+    actor = await actor_by_did("did:sov:xxx")
     assert actor is None
 
 
@@ -130,7 +143,7 @@ async def test_actor_with_role(mock_async_client):
     mock_async_client.get = AsyncMock(
         return_value=Response(200, json={"actors": actors})
     )
-    assert await trf.actors_with_role("issuer") == actors
+    assert await actors_with_role("issuer") == actors
 
     actors = [
         {"id": "governance", "roles": ["issuer"]},
@@ -139,7 +152,7 @@ async def test_actor_with_role(mock_async_client):
     mock_async_client.get = AsyncMock(
         return_value=Response(200, json={"actors": actors})
     )
-    assert await trf.actors_with_role("issuer") == [actors[0]]
+    assert await actors_with_role("issuer") == [actors[0]]
 
     actors = [
         {"id": "governance", "roles": ["verifier"]},
@@ -148,8 +161,8 @@ async def test_actor_with_role(mock_async_client):
     mock_async_client.get = AsyncMock(
         return_value=Response(428, json={"actors": actors})
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.actors_with_role("issuer")
+    with pytest.raises(TrustRegistryException):
+        await actors_with_role("issuer")
 
     actors = [
         {"id": "governance", "roles": ["verifier"]},
@@ -158,7 +171,7 @@ async def test_actor_with_role(mock_async_client):
     mock_async_client.get = AsyncMock(
         return_value=Response(200, json={"actors": actors})
     )
-    assert await trf.actors_with_role("issuer") == []
+    assert await actors_with_role("issuer") == []
 
 
 @pytest.mark.anyio
@@ -172,7 +185,7 @@ async def test_registry_has_schema(mock_async_client):
     )
     response.raise_for_status = Mock()
     mock_async_client.get = AsyncMock(return_value=response)
-    assert await trf.registry_has_schema(schema_id) is True
+    assert await registry_has_schema(schema_id) is True
 
     schema_id = "did_3:name:version"
     # mock does not have schema
@@ -186,7 +199,7 @@ async def test_registry_has_schema(mock_async_client):
     )
 
     mock_async_client.get = AsyncMock(return_value=not_found_response)
-    assert await trf.registry_has_schema(schema_id) is False
+    assert await registry_has_schema(schema_id) is False
 
     # mock 500
     error_response = Response(status_code=500)
@@ -200,27 +213,27 @@ async def test_registry_has_schema(mock_async_client):
 
     mock_async_client.get = AsyncMock(return_value=error_response)
     with pytest.raises(HTTPStatusError):
-        await trf.registry_has_schema(schema_id)
+        await registry_has_schema(schema_id)
 
 
 @pytest.mark.anyio
 async def test_register_schema(mock_async_client):
     schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
     mock_async_client.post = AsyncMock(return_value=Response(200))
-    await trf.register_schema(schema_id=schema_id)
+    await register_schema(schema_id=schema_id)
     mock_async_client.post.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + "/registry/schemas",
+        TRUST_REGISTRY_URL + "/registry/schemas",
         json={"schema_id": schema_id},
     )
 
     mock_async_client.post = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.register_schema(schema_id=schema_id)
+    with pytest.raises(TrustRegistryException):
+        await register_schema(schema_id=schema_id)
 
 
 @pytest.mark.anyio
 async def test_register_actor(mock_async_client):
-    actor = trf.Actor(
+    actor = Actor(
         id="actor-id",
         name="actor-name",
         roles=["issuer", "verifier"],
@@ -228,78 +241,56 @@ async def test_register_actor(mock_async_client):
         didcomm_invitation="actor-didcomm-invitation",
     )
     mock_async_client.post = AsyncMock(return_value=Response(200))
-    await trf.register_actor(actor=actor)
+    await register_actor(actor=actor)
     mock_async_client.post.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + "/registry/actors", json=actor
+        TRUST_REGISTRY_URL + "/registry/actors", json=actor
     )
 
     mock_async_client.post = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.register_actor(actor=actor)
+    with pytest.raises(TrustRegistryException):
+        await register_actor(actor=actor)
 
     mock_async_client.post = AsyncMock(
         return_value=Response(422, json={"error": "some error"})
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.register_actor(actor=actor)
+    with pytest.raises(TrustRegistryException):
+        await register_actor(actor=actor)
 
 
 @pytest.mark.anyio
 async def test_remove_actor_by_id(mock_async_client):
     actor_id = "actor_id"
     mock_async_client.delete = AsyncMock(return_value=Response(200))
-    await trf.remove_actor_by_id(actor_id=actor_id)
+    await remove_actor_by_id(actor_id=actor_id)
     mock_async_client.delete.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}"
+        TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}"
     )
 
     mock_async_client.delete = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.remove_actor_by_id(actor_id="actor_id")
+    with pytest.raises(TrustRegistryException):
+        await remove_actor_by_id(actor_id="actor_id")
 
 
 @pytest.mark.anyio
 async def test_remove_schema_by_id(mock_async_client):
     schema_id = "schema_id"
     mock_async_client.delete = AsyncMock(return_value=Response(200))
-    await trf.remove_schema_by_id(schema_id=schema_id)
+    await remove_schema_by_id(schema_id=schema_id)
     mock_async_client.delete.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
+        TRUST_REGISTRY_URL + f"/registry/schemas/{schema_id}"
     )
 
     mock_async_client.delete = AsyncMock(return_value=Response(500, text="The error"))
     with pytest.raises(
-        trf.TrustRegistryException, match="Error removing schema from trust registry"
+        TrustRegistryException, match="Error removing schema from trust registry"
     ):
-        await trf.remove_schema_by_id(schema_id="schema_id")
-
-
-@pytest.mark.anyio
-async def test_get_actor_by_did(mock_async_client):
-    res = {
-        "actors": [],
-        "schemas": [],
-    }
-
-    mock_async_client.get = AsyncMock(return_value=Response(200, json=res))
-
-    tr = await trf.get_trust_registry()
-    mock_async_client.get.assert_called_once_with(trf.TRUST_REGISTRY_URL + "/registry")
-    assert tr == res
-
-    mock_async_client.get = AsyncMock(return_value=Response(500, json=res))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.get_trust_registry()
-
-    mock_async_client.get = AsyncMock(return_value=Response(404, json={}))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.get_trust_registry()
+        await remove_schema_by_id(schema_id="schema_id")
 
 
 @pytest.mark.anyio
 async def test_update_actor(mock_async_client):
     actor_id = "actor_id"
-    actor = trf.Actor(
+    actor = Actor(
         id=actor_id,
         name="actor-name",
         roles=["issuer", "verifier"],
@@ -308,27 +299,27 @@ async def test_update_actor(mock_async_client):
     )
 
     mock_async_client.put = AsyncMock(return_value=Response(200, json=actor))
-    await trf.update_actor(actor=actor)
+    await update_actor(actor=actor)
     mock_async_client.put.assert_called_once_with(
-        trf.TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}", json=actor
+        TRUST_REGISTRY_URL + f"/registry/actors/{actor_id}", json=actor
     )
 
     mock_async_client.put = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.update_actor(actor=actor)
+    with pytest.raises(TrustRegistryException):
+        await update_actor(actor=actor)
 
     mock_async_client.put = AsyncMock(
         return_value=Response(422, json={"error": "some error"})
     )
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.update_actor(actor=actor)
+    with pytest.raises(TrustRegistryException):
+        await update_actor(actor=actor)
 
 
 @pytest.mark.anyio
 async def test_assert_actor_name(mock_async_client):
     # test actor exists
     name = "Numuhukumakiaki'aialunamor"
-    actor = trf.Actor(
+    actor = Actor(
         id="some_id",
         name=name,
         roles=["issuer", "verifier"],
@@ -339,14 +330,14 @@ async def test_assert_actor_name(mock_async_client):
         return_value=Response(status_code=200, json=actor)
     )
 
-    assert await trf.assert_actor_name(name) is True
+    assert await assert_actor_name(name) is True
 
     # test actor does not exists
     mock_async_client.get = AsyncMock(return_value=Response(status_code=404))
 
-    assert await trf.assert_actor_name("not_an_actor") is False
+    assert await assert_actor_name("not_an_actor") is False
 
     # test exception (500)
     mock_async_client.get = AsyncMock(return_value=Response(500))
-    with pytest.raises(trf.TrustRegistryException):
-        await trf.assert_actor_name(name)
+    with pytest.raises(TrustRegistryException):
+        await assert_actor_name(name)

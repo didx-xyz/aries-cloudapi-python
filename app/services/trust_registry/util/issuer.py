@@ -1,7 +1,7 @@
 from typing import Optional
 
 from app.exceptions.trust_registry_exception import TrustRegistryException
-from app.services.trust_registry.util.actor import actor_by_did
+from app.services.trust_registry.actors import actor_by_did
 from app.services.trust_registry.util.schema import registry_has_schema
 from shared.log_config import get_logger
 

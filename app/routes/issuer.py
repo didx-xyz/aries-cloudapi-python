@@ -15,7 +15,7 @@ from app.models.issuer import (
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
 from app.services.acapy_wallet import assert_public_did
-from app.services.trust_registry import assert_valid_issuer
+from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.acapy_issuer_utils import (
     IssueCredentialFacades,
     issuer_from_id,

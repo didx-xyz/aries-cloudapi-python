@@ -13,6 +13,8 @@ class Actor(TypedDict):
     didcomm_invitation: Optional[str]
 
 
-class TrustRegistry(TypedDict):
-    actors: List[Actor]
-    schemas: List[str]
+class Schema(TypedDict):
+    did: str 
+    name: str
+    version: str
+    id: str

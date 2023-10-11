@@ -182,6 +182,34 @@ services:
       - host
     env_file:
       - environments/governance-tenant/fastapi.default.env
+  governance-trust-registry-web:
+    image: ${REGISTRY:-local}/governance-trust-registry-web:${IMAGE_TAG:-latest}
+    container_name: governance-trust-registry-web
+    build:
+      context: .
+      dockerfile: ./dockerfiles/fastapi/Dockerfile
+    ports:
+      - 0.0.0.0:8400:8000
+    volumes:
+      - ./app:/app
+      - ./environments/governance-trust-registry/fastapi.default.env:/app/.env
+      - ./logs/tenant:/logs
+    depends_on:
+      governance-multitenant-wallets-db:
+        condition: service_started
+      ledger-nodes:
+        condition: service_healthy
+      ledger-browser:
+        condition: service_healthy
+      governance-ga-agent:
+        condition: service_healthy
+      governance-multitenant-agent:
+        condition: service_healthy
+    networks:
+      - governance-multitenant
+      - host
+    env_file:
+      - environments/governance-trust-registry/fastapi.default.env
   governance-webhooks-web:
     image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
     container_name: governance-webhooks-web

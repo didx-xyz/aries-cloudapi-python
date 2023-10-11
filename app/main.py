@@ -66,7 +66,8 @@ if ROLE == "governance":
     ]
 elif ROLE == "tenant-admin":
     routes = [
-        tenants
+        tenants,
+        trust_registry
     ]
 elif ROLE == "tenant":
     routes = [
@@ -82,6 +83,10 @@ elif ROLE == "tenant":
         wallet_dids,
         webhooks,
         sse,
+    ]
+elif ROLE == "trust-registry":
+    routes = [
+        trust_registry
     ]
 elif ROLE == "*":
     routes = [

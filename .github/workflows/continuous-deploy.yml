@@ -319,7 +319,7 @@ jobs:
 
       - name: Helmfile Diff
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-        uses: helmfile/helmfile-action@v1.2.0
+        uses: helmfile/helmfile-action@v1.3.0
         with:
           helmfile-args: |
             diff \
@@ -338,7 +338,7 @@ jobs:
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-        uses: helmfile/helmfile-action@v1.2.0
+        uses: helmfile/helmfile-action@v1.3.0
         with:
           helmfile-args: |
             destroy \
@@ -401,7 +401,7 @@ jobs:
       - name: Helmfile Apply
         id: update_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-        uses: helmfile/helmfile-action@v1.2.0
+        uses: helmfile/helmfile-action@v1.3.0
         with:
           helmfile-args: |
             apply \

@@ -66,8 +66,7 @@ if ROLE == "governance":
     ]
 elif ROLE == "tenant-admin":
     routes = [
-        tenants,
-        trust_registry
+        tenants
     ]
 elif ROLE == "tenant":
     routes = [
@@ -123,10 +122,11 @@ def create_app() -> FastAPI:
     #     sse,
     # ]
 
-    application = FastAPI(
-        debug=debug,
-        title=OPENAPI_NAME,
-        description="""
+    if (ROLE == "governance" or ROLE == "tenant" or ROLE == "*"):
+        application = FastAPI(
+            debug=debug,
+            title=OPENAPI_NAME,
+            description="""
 Welcome to the Aries CloudAPI Python project.
 
 In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events.
@@ -149,12 +149,26 @@ Please refer to our API documentation for more details about our authentication 
         lifespan=lifespan,
     )
 
-    for route in routes:
-        # Routes will appear in the openapi docs with the same order as defined in `routes`
-        application.include_router(route.router)
+        for route in routes:
+            # Routes will appear in the openapi docs with the same order as defined in `routes`
+            application.include_router(route.router)
 
-    return application
+        return application
+    else:
+        application = FastAPI(
+            debug=debug,
+            title=OPENAPI_NAME,
+            description="""
+Welcome to the Aries CloudAPI Python project.
+        """,
+            version=PROJECT_VERSION,
+        )
 
+        for route in routes:
+            # Routes will appear in the openapi docs with the same order as defined in `routes`
+            application.include_router(route.router)
+
+        return application
 
 app = create_app()
 

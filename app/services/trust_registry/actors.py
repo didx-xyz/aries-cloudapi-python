@@ -220,6 +220,17 @@ async def all_actors() -> list[Actor]:
             f"Unable to retrieve actors from registry: `{actors_response.text}`.",
             actors_response.status_code,
         )
+
+    actors = actors_response.json()
+
+    if actors:
+        bound_logger.info("Successfully got all actors.")
+    else:
+        bound_logger.info("No actors found.")
+
+    return actors["actors"]
+
+
 async def remove_actor_by_id(actor_id: str) -> None:
     """Remove actor from trust registry by id
 

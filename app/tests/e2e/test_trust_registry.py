@@ -23,3 +23,15 @@ async def test_get_schemas(
     assert schemas_response.status_code == 200
     schemas = schemas_response.json()
     assert len(schemas) >= 2
+
+
+@pytest.mark.anyio
+async def test_get_schema_by_id(schema_definition: CredentialSchema):
+    async with RichAsyncClient() as client:
+        schema_response = await client.get(
+            f"{CLOUDAPI_URL}{TRUST_REGISTRY}/schemas/{schema_definition.id}"
+        )
+
+    assert schema_response.status_code == 200
+    schema = schema_response.json()
+    assert_that(schema).contains("did", "name", "version", "id")

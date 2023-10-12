@@ -27,7 +27,6 @@ class SchemaID(BaseModel):
 async def get_schemas(db_session: Session = Depends(get_db)) -> GetSchemasResponse:
     logger.info("GET request received: Fetch all schemas")
     db_schemas = crud.get_schemas(db_session)
-    schemas_ids = [schema.id for schema in db_schemas]
 
     return GetSchemasResponse(schemas=db_schemas)
 

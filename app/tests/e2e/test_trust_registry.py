@@ -63,3 +63,11 @@ async def test_get_actors(faber_issuer: CreateTenantResponse):
         assert_that(actors_by_id.json()[0]).contains(
             "id", "name", "roles", "did", "didcomm_invitation"
         )
+
+        actors_by_did = await client.get(
+            f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_did={actor_did}"
+        )
+        assert actors_by_did.status_code == 200
+        assert_that(actors_by_did.json()[0]).contains(
+            "id", "name", "roles", "did", "didcomm_invitation"
+        )

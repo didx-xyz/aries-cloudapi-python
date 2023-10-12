@@ -97,7 +97,7 @@ async def get_actors(
 
     else:
         logger.info("GET request received: Get all actors from the trust registry")
-        actors = await registry_actors.actors_with_role("")
+        actors = await registry_actors.all_actors()
 
         logger.info("Successfully retrieved actors.")
         return actors

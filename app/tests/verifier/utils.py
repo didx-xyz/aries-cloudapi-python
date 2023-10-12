@@ -104,7 +104,7 @@ v10_presentation_proposal_request = V10PresentationProposalRequest(
 
 indy_proof_request = IndyProofRequest(
     name="string",
-    non_revoked=IndyProofRequestNonRevoked(from_=0, to=20),
+    non_revoked=IndyProofRequestNonRevoked(var_from=0, to=20),
     nonce="12345",
     requested_attributes={
         "0_speed_uuid": IndyProofReqAttrSpec(

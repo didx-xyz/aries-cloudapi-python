@@ -59,10 +59,17 @@ async def get_actors(
 ):
     """
     Get all actors from the trust registry.
+    Alternatively add one of did, name or id as a query parameter to get one actor
+
+    Parameters:
+    -----------
+    actor_did: str (Optional)
+    actor_name: str (Optional)
+    actor_id: str (Optional)
 
     Returns:
     ---------
-    All actors from the trust registry
+    All actors from the trust registry or one actor if a query parameter is passed
     """
     logger.info("GET request received: Get all actors from the trust registry")
     actors = await registry_actors.actors_with_role("")

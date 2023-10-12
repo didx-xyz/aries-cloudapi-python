@@ -39,17 +39,16 @@ class Schema(BaseModel):
     id: str = Field(default=None)
 
     # pylint: disable=no-self-argument
-    @root_validator
-    def validate_and_set_values(cls, values: ValidationInfo):
-        values_data = values.data
+    @root_validator(pre=True)
+    def validate_and_set_values(cls, values):
         for v in ["did", "name", "version"]:
-            if ":" in values_data.get(v, ""):
+            if ":" in values.get(v, ""):
                 raise ValueError(f"Schema field `{v}` must not contain colon.")
 
-        did = values_data.get("did")
-        name = values_data.get("name")
-        version = values_data.get("version")
-        id = values_data.get("id")
+        did = values.get("did")
+        name = values.get("name")
+        version = values.get("version")
+        id = values.get("id")
 
         if id is None:
             if None in (did, name, version):

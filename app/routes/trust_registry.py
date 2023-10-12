@@ -52,7 +52,11 @@ async def get_schema_by_id(schema_id:str):
     
     
 @router.get("/actors", response_model=List[Actor])
-async def get_actors():
+async def get_actors(
+    actor_did: str = None,
+    actor_name: str = None,
+    actor_id: str = None
+):
     """
     Get all actors from the trust registry.
 

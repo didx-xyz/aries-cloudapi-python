@@ -147,8 +147,8 @@ async def assert_valid_verifier(
 
 async def are_valid_schemas(schema_ids: List[str]) -> bool:
     schemas_from_tr = await get_trust_registry_schemas()
-
-    schemas_valid_list = [id in schemas_from_tr for id in schema_ids]
+    schemas_ids_from_tr = [schema["id"] for schema in schemas_from_tr ]
+    schemas_valid_list = [id in schemas_ids_from_tr for id in schema_ids]
 
     return all(schemas_valid_list)
 

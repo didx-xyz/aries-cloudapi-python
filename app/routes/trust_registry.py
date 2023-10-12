@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 import app.services.trust_registry.actors as registry_actors
 import app.services.trust_registry.schemas as registry_schemas
-from app.models.trust_registry import Actor
+from app.models.trust_registry import Actor, Schema
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

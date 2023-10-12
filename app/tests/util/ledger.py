@@ -44,7 +44,7 @@ async def post_to_ledger(
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                LEDGER_REGISTRATION_URL, json=payload.dict(), timeout=300
+                LEDGER_REGISTRATION_URL, json=payload.model_dump(), timeout=300
             )
     except httpx.HTTPError as e:
         raise e from e

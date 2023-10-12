@@ -25,7 +25,7 @@ async def test_create_credential_definition(mock_governance_auth: AcaPyAuthVerif
 
     schema_result = (
         await definitions.create_schema(schema, mock_governance_auth)
-    ).dict()
+    ).model_dump()
     schema_id = schema_result["id"]
 
     credential_definition = CreateCredentialDefinition(
@@ -37,7 +37,7 @@ async def test_create_credential_definition(mock_governance_auth: AcaPyAuthVerif
         await definitions.create_credential_definition(
             credential_definition, mock_governance_auth
         )
-    ).dict()
+    ).model_dump()
 
     assert_that(result).has_tag(credential_definition.tag)
     assert_that(result).has_schema_id(credential_definition.schema_id)
@@ -53,7 +53,7 @@ async def test_create_schema(
         name=random_string(15), version="0.1", attribute_names=["average"]
     )
 
-    result = (await definitions.create_schema(send, mock_governance_auth)).dict()
+    result = (await definitions.create_schema(send, mock_governance_auth)).model_dump()
 
     # Assert schemas has been registered in the trust registry
     assert await trust_registry.registry_has_schema(result["id"])
@@ -75,7 +75,7 @@ async def test_get_schema(
 
     create_result = (
         await definitions.create_schema(schema, mock_governance_auth)
-    ).dict()
+    ).model_dump()
     result = await definitions.get_schema(create_result["id"], mock_governance_auth)
 
     assert await trust_registry.registry_has_schema(result.id)
@@ -97,7 +97,7 @@ async def test_get_credential_definition(
 
     schema_result = (
         await definitions.create_schema(schema_send, mock_governance_auth)
-    ).dict()
+    ).model_dump()
 
     await register_issuer(governance_client, schema_result["id"])
     credential_definition = CreateCredentialDefinition(
@@ -109,13 +109,13 @@ async def test_get_credential_definition(
         await definitions.create_credential_definition(
             credential_definition, mock_governance_auth
         )
-    ).dict()
+    ).model_dump()
 
     result = (
         await definitions.get_credential_definition_by_id(
             create_result["id"], mock_governance_auth
         )
-    ).dict()
+    ).model_dump()
 
     assert_that(result).has_tag(credential_definition.tag)
     assert_that(result).has_schema_id(credential_definition.schema_id)
@@ -138,7 +138,7 @@ async def test_create_credential_definition_issuer_tenant(
 
     result = (
         await definitions.create_credential_definition(credential_definition, auth)
-    ).dict()
+    ).model_dump()
 
     faber_public_did = await get_public_did(faber_acapy_client)
     schema = await faber_acapy_client.schema.get_schema(schema_id=schema_definition.id)

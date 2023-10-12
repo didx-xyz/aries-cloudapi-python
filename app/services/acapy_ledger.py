@@ -72,7 +72,7 @@ async def accept_taa(
     logger.bind(body=taa).info("Accepting TAA")
     try:
         accept_taa_response = await controller.ledger.accept_taa(
-            body=TAAAccept(**taa.dict(), mechanism=mechanism)
+            body=TAAAccept(**taa.model_dump(), mechanism=mechanism)
         )
     except Exception as e:
         logger.exception("An exception occurred while trying to accept TAA.")

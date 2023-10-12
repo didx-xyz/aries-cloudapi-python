@@ -55,7 +55,7 @@ async def sign_jsonld(
                         await aries_controller.credentials.get_record(
                             credential_id=body.credential_id
                         )
-                    ).dict()
+                    ).model_dump()
                 else:
                     raise CloudApiException(
                         "Cannot retrieve credential without credential ID."

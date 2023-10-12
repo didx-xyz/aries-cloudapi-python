@@ -94,7 +94,7 @@ async def set_public_did(
         raise CloudApiException(f"Error setting public did to `{did}`.", 400)
 
     logger.info("Successfully set public DID.")
-    return result.dict()
+    return result.model_dump()
 
 
 async def get_public_did(controller: AcaPyClient) -> Did:

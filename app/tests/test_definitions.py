@@ -20,7 +20,7 @@ def test_credential_schema_from_acapy():
 
     schema = credential_schema_from_acapy(acapy_schema)
 
-    assert_that(schema.dict()).is_equal_to(
+    assert_that(schema.model_dump()).is_equal_to(
         {
             "id": acapy_schema.id,
             "name": acapy_schema.name,
@@ -39,7 +39,7 @@ def test_credential_definition_from_acapy():
 
     cred_def = credential_definition_from_acapy(acapy_cred_def)
 
-    assert_that(cred_def.dict()).is_equal_to(
+    assert_that(cred_def.model_dump()).is_equal_to(
         {
             "id": acapy_cred_def.id,
             "schema_id": acapy_cred_def.schema_id,

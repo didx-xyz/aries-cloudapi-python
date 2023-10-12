@@ -21,26 +21,28 @@ async def register_actor(actor: Actor) -> None:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Registering actor on trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
-        actor_res = await client.post(
+        actor_response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors", json=actor
         )
 
-    if actor_res.status_code == 422:
+    if actor_response.status_code == 422:
         bound_logger.error(
             "Unprocessable entity response when registering actor: `{}`.",
-            actor_res.json(),
+            actor_response.json(),
         )
         raise TrustRegistryException(
-            f"Unprocessable response when registering actor: `{actor_res.json()}`.", 422
+            f"Unprocessable response when registering actor: `{actor_response.json()}`.",
+            422,
         )
-    if actor_res.is_error:
+    if actor_response.is_error:
         bound_logger.error(
             "Error registering actor. Got status code {} with message `{}`.",
-            actor_res.status_code,
-            actor_res.text,
+            actor_response.status_code,
+            actor_response.text,
         )
         raise TrustRegistryException(
-            f"Error registering actor: `{actor_res.text}`.", actor_res.status_code
+            f"Error registering actor: `{actor_response.text}`.",
+            actor_response.status_code,
         )
 
     bound_logger.info("Successfully registered actor on trust registry.")
@@ -90,23 +92,26 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("Fetching actor by DID from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
-        actor_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}")
+        actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
+        )
 
-    if actor_res.status_code == 404:
-        bound_logger.info("Bad request: actor not found.")
+    if actor_response.status_code == 404:
+        bound_logger.info("Bad request: Actor not found.")
         return None
-    elif actor_res.is_error:
+    elif actor_response.is_error:
         bound_logger.error(
             "Error fetching actor by DID. Got status code {} with message `{}`.",
-            actor_res.status_code,
-            actor_res.text,
+            actor_response.status_code,
+            actor_response.text,
         )
         raise TrustRegistryException(
-            f"Error fetching actor by DID: `{actor_res.text}`.", actor_res.status_code
+            f"Error fetching actor by DID: `{actor_response.text}`.",
+            actor_response.status_code,
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
-    return actor_res.json()
+    return actor_response.json()
 
 
 async def actor_by_id(actor_id: str) -> Optional[Actor]:
@@ -124,23 +129,26 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Fetching actor by ID from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
-        actor_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
+        actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
+        )
 
-    if actor_res.status_code == 404:
+    if actor_response.status_code == 404:
         bound_logger.info("Bad request: actor not found.")
         return None
-    elif actor_res.is_error:
+    elif actor_response.is_error:
         bound_logger.error(
             "Error fetching actor by id. Got status code {} with message `{}`.",
-            actor_res.status_code,
-            actor_res.text,
+            actor_response.status_code,
+            actor_response.text,
         )
         raise TrustRegistryException(
-            f"Error fetching actor by id: `{actor_res.text}`.", actor_res.status_code
+            f"Error fetching actor by id: `{actor_response.text}`.",
+            actor_response.status_code,
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
-    return actor_res.json()
+    return actor_response.json()
 
 
 async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
@@ -158,20 +166,20 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     bound_logger = logger.bind(body={"role": role})
     bound_logger.info("Fetching all actors with requested role from trust registry")
     async with RichAsyncClient(raise_status_error=False) as client:
-        actors_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+        actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
-    if actors_res.is_error:
+    if actors_response.is_error:
         bound_logger.error(
             "Error fetching actors by role. Got status code {} with message `{}`.",
-            actors_res.status_code,
-            actors_res.text,
+            actors_response.status_code,
+            actors_response.text,
         )
         raise TrustRegistryException(
-            f"Unable to retrieve actors from registry: `{actors_res.text}`.",
-            actors_res.status_code,
+            f"Unable to retrieve actors from registry: `{actors_response.text}`.",
+            actors_response.status_code,
         )
 
-    actors = actors_res.json()
+    actors = actors_response.json()
     actors_with_role_list = [
         actor for actor in actors["actors"] if role in actor["roles"]
     ]

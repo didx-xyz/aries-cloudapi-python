@@ -13,3 +13,13 @@ from shared.util.rich_async_client import RichAsyncClient
 TRUST_REGISTRY = router.prefix
 
 
+@pytest.mark.anyio
+async def test_get_schemas(
+    schema_definition: CredentialSchema, schema_definition_alt: CredentialSchema
+):
+    async with RichAsyncClient() as client:
+        schemas_response = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/schemas")
+
+    assert schemas_response.status_code == 200
+    schemas = schemas_response.json()
+    assert len(schemas) >= 2

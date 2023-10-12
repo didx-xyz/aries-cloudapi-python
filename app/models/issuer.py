@@ -23,7 +23,7 @@ class CredentialBase(BaseModel):
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
 
-    @field_validator("indy_credential_detail", mode="before", always=True)
+    @field_validator("indy_credential_detail", mode="before")
     @classmethod
     def check_indy_credential_detail(cls, value, values):
         if values.get("type") == CredentialType.INDY and value is None:
@@ -32,7 +32,7 @@ class CredentialBase(BaseModel):
             )
         return value
 
-    @field_validator("ld_credential_detail", mode="before", always=True)
+    @field_validator("ld_credential_detail", mode="before")
     @classmethod
     def check_ld_credential_detail(cls, value, values):
         if values.get("type") == CredentialType.LD_PROOF and value is None:

@@ -23,7 +23,7 @@ class ProofRequestBase(BaseModel):
     indy_proof_request: Optional[IndyProofRequest] = None
     dif_proof_request: Optional[DIFProofRequest] = None
 
-    @field_validator("indy_proof_request", mode="before", always=True)
+    @field_validator("indy_proof_request", mode="before")
     @classmethod
     def check_indy_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.INDY and value is None:
@@ -32,7 +32,7 @@ class ProofRequestBase(BaseModel):
             )
         return value
 
-    @field_validator("dif_proof_request", mode="before", always=True)
+    @field_validator("dif_proof_request", mode="before")
     @classmethod
     def check_dif_proof_request(cls, value, values):
         if values.get("type") == ProofRequestType.LD_PROOF and value is None:
@@ -66,7 +66,7 @@ class AcceptProofRequest(ProofId):
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
 
-    @field_validator("indy_presentation_spec", mode="before", always=True)
+    @field_validator("indy_presentation_spec", mode="before")
     @classmethod
     def check_indy_presentation_spec(cls, value, values):
         if values.get("type") == ProofRequestType.INDY and value is None:
@@ -75,7 +75,7 @@ class AcceptProofRequest(ProofId):
             )
         return value
 
-    @field_validator("dif_presentation_spec", mode="before", always=True)
+    @field_validator("dif_presentation_spec", mode="before")
     @classmethod
     def check_dif_presentation_spec(cls, value, values):
         if values.get("type") == ProofRequestType.LD_PROOF and value is None:

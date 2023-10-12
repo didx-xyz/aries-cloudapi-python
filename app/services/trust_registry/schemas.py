@@ -128,3 +128,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
         raise TrustRegistryException(
             f"Unable to fetch schema: `{schema_response.text}`.", schema_response.status_code
         )
+
+    result = schema_response.json()
+    logger.info("Successfully fetched schema from trust registry.")
+    return result

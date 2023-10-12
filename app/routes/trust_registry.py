@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 import app.services.trust_registry.actors as registry_actors
 import app.services.trust_registry.schemas as registry_schemas

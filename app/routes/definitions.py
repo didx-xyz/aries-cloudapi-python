@@ -456,11 +456,11 @@ async def get_schema(
         bound_logger.debug("Fetching schema")
         schema = await aries_controller.schema.get_schema(schema_id=schema_id)
 
-    if not schema.schema_:
+    if not schema.var_schema:
         bound_logger.info("Bad request: schema id not found.")
         raise HTTPException(404, f"Schema with id {schema_id} not found.")
 
-    result = credential_schema_from_acapy(schema.schema_)
+    result = credential_schema_from_acapy(schema.var_schema)
     bound_logger.info("Successfully fetched schema by id.")
     return result
 
@@ -516,7 +516,7 @@ async def create_schema(
                 # Edge case where the governance agent has changed its public did
                 # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
                 # will not be correct due to different public did.
-                if _schema.schema_ is None:
+                if _schema.var_schema is None:
                     bound_logger.debug(
                         "Schema not found. Governance agent may have changed public DID. "
                         "Fetching schemas created by governance agent with request name and version"

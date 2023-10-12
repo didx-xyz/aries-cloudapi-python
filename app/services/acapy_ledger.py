@@ -4,6 +4,7 @@ from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinitionSendRequest,
+    SchemaGetResult,
     TAAAccept,
     TAAInfo,
     TAARecord,
@@ -232,11 +233,11 @@ async def schema_id_from_credential_definition_id(
     seq_no = tokens[3]
 
     bound_logger.debug("Fetching schema using sequence number: `{}`", seq_no)
-    schema = await controller.schema.get_schema(schema_id=seq_no)
+    schema: SchemaGetResult = await controller.schema.get_schema(schema_id=seq_no)
 
-    if not schema.schema_ or not schema.schema_.id:
+    if not schema.var_schema or not schema.var_schema.id:
         bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)
         raise CloudApiException(f"Schema with id {seq_no} not found.", 404)
 
     bound_logger.info("Successfully obtained schema id from credential definition.")
-    return schema.schema_.id
+    return schema.var_schema.id

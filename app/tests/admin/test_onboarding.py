@@ -122,70 +122,12 @@ async def test_onboard_issuer_no_public_did(
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
-    # Mock the assert_connection_metadata methods
-    when(endorser_controller.connection).get_metadata(...).thenReturn(
-        to_async(
-            ConnectionMetadata(
-                results={
-                    "transaction_jobs": {
-                        "transaction_my_job": "TRANSACTION_ENDORSER",
-                    },
-                }
-            )
-        )
-    )
 
     when(endorser_controller.endorse_transaction).set_endorser_role(...).thenReturn(
         to_async()
     )
     when(mock_agent_controller.endorse_transaction).set_endorser_info(...).thenAnswer(
         lambda conn_id, endorser_did: to_async()
-    )
-
-    # Expanding the test scenario: we want to ensure that the coroutine is successfully retried in the
-    # assert method after failing. We also need to mock `when(mock_agent_controller.connection).get_metadata`
-    # to return different results for each assert call. So, create a counter iterable + method to simulate the
-    # first assert_author_role_set check succeeding, then the assert_endorser_info_set call failing, and then succeeding
-
-    call_counter = iter([0, 1, 2])
-
-    async def mock_get_metadata_side_effect(*args, **kwargs):
-        call_num = next(call_counter)
-
-        # On the first call, it is for the assert_author_role_set method
-        if call_num == 0:
-            return ConnectionMetadata(
-                results={
-                    "transaction_jobs": {
-                        "transaction_my_job": "TRANSACTION_AUTHOR",
-                        "transaction_their_job": "TRANSACTION_ENDORSER",
-                    },
-                }
-            )
-
-        # On this call, raise the exception
-        if call_num == 1:
-            # Mocking the ClientResponseError to always return an exception instance without arguments
-            class MockClientResponseError(ClientResponseError):
-                def __init__(self):
-                    pass
-
-            raise MockClientResponseError
-
-        # On this call, return a successful response for assert_endorser_info_set
-        else:
-            return ConnectionMetadata(
-                results={
-                    "transaction_jobs": {
-                        "transaction_my_job": "TRANSACTION_AUTHOR",
-                        "transaction_their_job": "TRANSACTION_ENDORSER",
-                    },
-                    "endorser_info": {"endorser_did": endorser_did},
-                }
-            )
-
-    when(mock_agent_controller.connection).get_metadata(...).thenAnswer(
-        mock_get_metadata_side_effect
     )
 
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(

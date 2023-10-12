@@ -225,3 +225,19 @@ async def remove_actor_by_id(actor_id: str) -> None:
         )
 
     bound_logger.info("Successfully removed actor from trust registry.")
+
+
+async def actor_by_name(actor_name: str) -> Optional[Actor]:
+    """Retrieve actor by name from trust registry
+
+    Args:
+        actor_name (str): Identifier of the actor to retrieve
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actor.
+
+    Returns:
+        Actor: The actor with specified name.
+    """
+    bound_logger = logger.bind(body={"actor_id": actor_name})
+    bound_logger.info("Fetching actor by NAME from trust registry")

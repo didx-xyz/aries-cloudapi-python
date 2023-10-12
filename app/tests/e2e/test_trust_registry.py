@@ -86,3 +86,10 @@ async def test_get_actors(faber_issuer: CreateTenantResponse):
             )
 
         assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_get_issuers(faber_issuer: CreateTenantResponse):
+    async with RichAsyncClient() as client:
+        actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors/issuers")
+        assert actors.status_code == 200

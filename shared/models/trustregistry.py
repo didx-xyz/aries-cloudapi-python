@@ -1,6 +1,13 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, root_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+    root_validator,
+)
 
 
 class Actor(BaseModel):
@@ -33,15 +40,16 @@ class Schema(BaseModel):
 
     # pylint: disable=no-self-argument
     @root_validator
-    def validate_and_set_values(cls, values):
+    def validate_and_set_values(cls, values: ValidationInfo):
+        values_data = values.data
         for v in ["did", "name", "version"]:
-            if ":" in values.get(v, ""):
+            if ":" in values_data.get(v, ""):
                 raise ValueError(f"Schema field `{v}` must not contain colon.")
 
-        did = values.get("did")
-        name = values.get("name")
-        version = values.get("version")
-        id = values.get("id")
+        did = values_data.get("did")
+        name = values_data.get("name")
+        version = values_data.get("version")
+        id = values_data.get("id")
 
         if id is None:
             if None in (did, name, version):

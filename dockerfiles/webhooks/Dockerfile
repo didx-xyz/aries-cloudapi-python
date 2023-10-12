@@ -1,11 +1,13 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+## https://fastapi.tiangolo.com/deployment/docker/?h=#when-to-use
+# FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
+FROM python:3.9
 
 COPY webhooks /webhooks
 COPY shared /shared
 
 WORKDIR /webhooks
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 3010
 

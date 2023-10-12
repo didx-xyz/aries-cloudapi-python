@@ -5,7 +5,7 @@ COPY shared /shared
 
 WORKDIR /endorser
 
-RUN pip install -r requirements.txt -r requirements.dev.txt
+RUN pip install --no-cache-dir -r requirements.txt -r requirements.dev.txt
 
 WORKDIR /
 

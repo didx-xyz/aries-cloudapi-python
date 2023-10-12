@@ -9,7 +9,7 @@ COPY endorser/requirements.txt endorser/
 COPY trustregistry/requirements.txt trustregistry/
 COPY webhooks/requirements.txt webhooks/
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 

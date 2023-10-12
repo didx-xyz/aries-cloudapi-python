@@ -9,3 +9,7 @@ from app.routes.trust_registry import router
 
 from shared.constants import CLOUDAPI_URL
 from shared.util.rich_async_client import RichAsyncClient
+
+TRUST_REGISTRY = router.prefix
+
+

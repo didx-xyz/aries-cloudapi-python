@@ -79,3 +79,10 @@ async def test_get_actors(faber_issuer: CreateTenantResponse):
         assert_that(actors_by_name.json()[0]).contains(
             "id", "name", "roles", "did", "didcomm_invitation"
         )
+
+        with pytest.raises(HTTPException) as exc:
+            actors_by_name = await client.get(
+                f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_name=Bad_actor_name"
+            )
+
+        assert exc.value.status_code == 404

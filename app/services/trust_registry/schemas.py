@@ -112,3 +112,6 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     try:
         async with httpx.AsyncClient() as client:
             schema_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+    except httpx.HTTPError as e:
+        logger.exception("HTTP Error caught when fetching from trust registry.")
+        raise e

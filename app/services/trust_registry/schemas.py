@@ -108,3 +108,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Fetching schema from trust registry")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            schema_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")

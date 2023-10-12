@@ -95,3 +95,16 @@ async def remove_schema_by_id(schema_id: str) -> None:
         )
 
     bound_logger.info("Successfully removed schema from trust registry.")
+
+
+async def get_schema_by_id(schema_id: str) -> Schema:
+    """Retrieve a schemas from the trust registry
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the trust registry schemas.
+
+    Returns:
+        A schema
+    """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("Fetching schema from trust registry")

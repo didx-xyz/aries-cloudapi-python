@@ -192,6 +192,18 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     return actors_with_role_list
 
 
+async def all_actors() -> list[Actor]:
+    """Get all actors from the trust registry
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actors
+
+    Returns:
+        List[Actor]: List of actors
+    """
+    bound_logger = logger.bind(body={"Getting all Actors"})
+    bound_logger.info("Fetching all actors from trust registry")
+
 async def remove_actor_by_id(actor_id: str) -> None:
     """Remove actor from trust registry by id
 

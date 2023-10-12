@@ -28,6 +28,29 @@ async def get_schemas():
     return schemas
 
 
+@router.get("/schemas/{schema_id}", response_model=Schema)
+async def get_schema_by_id(schema_id:str):
+    """
+    Retrieve schema by id.
+
+    Parameters:
+    -----------
+    schema_id: str
+
+    Returns:
+    -----------
+    A schema from the trust registry
+    """
+    logger.info("GET request received: Get schema by id from the trust registry")
+    schema = await registry_schemas.get_schema_by_id(schema_id)
+
+    if schema is not None:
+        logger.info("Successfully retrieved schema.")
+        return schema
+    else:
+        raise HTTPException(404, f"Schema with id: {schema_id} not found")
+    
+    
 @router.get("/actors", response_model=List[Actor])
 async def get_actors():
     """

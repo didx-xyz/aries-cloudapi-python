@@ -14,7 +14,7 @@ class Actor(TypedDict):
 
 
 class Schema(TypedDict):
-    did: str 
+    did: str
     name: str
     version: str
     id: str

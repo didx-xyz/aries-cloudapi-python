@@ -29,7 +29,7 @@ async def get_schemas():
 
 
 @router.get("/schemas/{schema_id}", response_model=Schema)
-async def get_schema_by_id(schema_id:str):
+async def get_schema_by_id(schema_id: str):
     """
     Retrieve schema by id.
 
@@ -49,13 +49,11 @@ async def get_schema_by_id(schema_id:str):
         return schema
     else:
         raise HTTPException(404, f"Schema with id: {schema_id} not found")
-    
-    
+
+
 @router.get("/actors", response_model=List[Actor])
 async def get_actors(
-    actor_did: str = None,
-    actor_name: str = None,
-    actor_id: str = None
+    actor_did: str = None, actor_name: str = None, actor_id: str = None
 ):
     """
     Get all actors from the trust registry.
@@ -72,19 +70,23 @@ async def get_actors(
     All actors from the trust registry or one actor if a query parameter is passed
     """
     param_count = sum(1 for var in [actor_did, actor_name, actor_id] if var is not None)
-    
+
     if param_count > 1:
         raise HTTPException(400, "Bad request: More than one query parameter given")
-    
+
     if param_count == 1:
         if actor_did is not None:
-            logger.info("GET request received: Get actor by did from the trust registry")
+            logger.info(
+                "GET request received: Get actor by did from the trust registry"
+            )
             actor = await registry_actors.actor_by_did(actor_did)
         elif actor_id is not None:
             logger.info("GET request received: Get actor by id from the trust registry")
             actor = await registry_actors.actor_by_id(actor_id)
         elif actor_name is not None:
-            logger.info("GET request received: Get actor by name from the trust registry")
+            logger.info(
+                "GET request received: Get actor by name from the trust registry"
+            )
             actor = await registry_actors.actor_by_name(actor_name)
 
         if actor is not None:
@@ -92,7 +94,7 @@ async def get_actors(
             return [actor]
         else:
             raise HTTPException(404, "Actor not found")
-    
+
     else:
         logger.info("GET request received: Get all actors from the trust registry")
         actors = await registry_actors.actors_with_role("")

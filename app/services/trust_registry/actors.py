@@ -251,9 +251,7 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
         raise e
 
     if actor_response.status_code == 404:
-        bound_logger.info(
-            "Bad request: Actor with name not found in registry."
-        )
+        bound_logger.info("Bad request: Actor with name not found in registry.")
         return None
     elif actor_response.is_error:
         bound_logger.error(
@@ -262,7 +260,8 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
             actor_response.text,
         )
         raise TrustRegistryException(
-            f"Error fetching actor by name: `{actor_response.text}`.", actor_response.status_code
+            f"Error fetching actor by name: `{actor_response.text}`.",
+            actor_response.status_code,
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")

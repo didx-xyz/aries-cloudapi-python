@@ -20,7 +20,7 @@ class GetSchemasResponse(BaseModel):
 
 
 class SchemaID(BaseModel):
-    schema_id: str = Field(..., example="WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0")
+    schema_id: str = Field(..., examples=["WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"])
 
 
 @router.get("", response_model=GetSchemasResponse)

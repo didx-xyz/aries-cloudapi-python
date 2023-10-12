@@ -93,3 +93,10 @@ async def test_get_issuers(faber_issuer: CreateTenantResponse):
     async with RichAsyncClient() as client:
         actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors/issuers")
         assert actors.status_code == 200
+
+
+@pytest.mark.anyio
+async def test_get_verifiers(acme_verifier: CreateTenantResponse):
+    async with RichAsyncClient() as client:
+        actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors/verifiers")
+        assert actors.status_code == 200

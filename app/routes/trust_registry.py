@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/trust-registry", tags=["trust-registry"])
 
 
-@router.get("/schemas", response_model=List[str])
+@router.get("/schemas", response_model=List[Schema])
 async def get_schemas():
     """
     Get only the schemas from the trust registry.

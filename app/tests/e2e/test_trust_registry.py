@@ -43,3 +43,14 @@ async def test_get_schema_by_id(schema_definition: CredentialSchema):
             )
 
     assert exc.value.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_get_actors(faber_issuer: CreateTenantResponse):
+    async with RichAsyncClient() as client:
+        all_actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors")
+        assert all_actors.status_code == 200
+        actors = all_actors.json()
+        assert_that(actors[0]).contains(
+            "id", "name", "roles", "did", "didcomm_invitation"
+        )

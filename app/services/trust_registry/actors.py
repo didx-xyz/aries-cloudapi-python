@@ -210,6 +210,16 @@ async def all_actors() -> list[Actor]:
         bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e
 
+    if actors_response.is_error:
+        bound_logger.error(
+            "Error fetching all actors. Got status code {} with message `{}`.",
+            actors_response.status_code,
+            actors_response.text,
+        )
+        raise TrustRegistryException(
+            f"Unable to retrieve actors from registry: `{actors_response.text}`.",
+            actors_response.status_code,
+        )
 async def remove_actor_by_id(actor_id: str) -> None:
     """Remove actor from trust registry by id
 

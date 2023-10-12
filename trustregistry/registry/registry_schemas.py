@@ -29,7 +29,7 @@ async def get_schemas(db_session: Session = Depends(get_db)) -> GetSchemasRespon
     db_schemas = crud.get_schemas(db_session)
     schemas_ids = [schema.id for schema in db_schemas]
 
-    return GetSchemasResponse(schemas=schemas_ids)
+    return GetSchemasResponse(schemas=db_schemas)
 
 
 @router.post("")

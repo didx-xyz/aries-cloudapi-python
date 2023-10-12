@@ -203,6 +203,12 @@ async def all_actors() -> list[Actor]:
     """
     bound_logger = logger.bind(body={"Getting all Actors"})
     bound_logger.info("Fetching all actors from trust registry")
+    try:
+        async with httpx.AsyncClient() as client:
+            actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+    except httpx.HTTPError as e:
+        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
+        raise e
 
 async def remove_actor_by_id(actor_id: str) -> None:
     """Remove actor from trust registry by id

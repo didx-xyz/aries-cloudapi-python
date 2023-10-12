@@ -264,3 +264,6 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
         raise TrustRegistryException(
             f"Error fetching actor by name: `{actor_response.text}`.", actor_response.status_code
         )
+
+    bound_logger.info("Successfully fetched actor from trust registry.")
+    return actor_response.json()

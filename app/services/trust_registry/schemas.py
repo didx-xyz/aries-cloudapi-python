@@ -9,7 +9,7 @@ from shared.util.rich_async_client import RichAsyncClient
 logger = get_logger(__name__)
 
 
-async def get_trust_registry_schemas() -> List[str]:
+async def get_trust_registry_schemas() -> List[Schema]:
     """Retrieve all schemas from the trust registry
 
     Raises:

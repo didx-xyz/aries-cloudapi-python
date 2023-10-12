@@ -92,6 +92,13 @@ async def get_actors(
             return [actor]
         else:
             raise HTTPException(404, "Actor not found")
+    
+    else:
+        logger.info("GET request received: Get all actors from the trust registry")
+        actors = await registry_actors.actors_with_role("")
+
+        logger.info("Successfully retrieved actors.")
+        return actors
 
 
 @router.get("/actors/issuers", response_model=List[Actor])

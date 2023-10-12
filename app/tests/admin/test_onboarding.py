@@ -67,7 +67,7 @@ async def test_onboard_issuer_public_did_exists(
         MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
     )
 
-    invitation_url = "https://invitation.com"
+    invitation_url = "https://invitation.com/"
 
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
         to_async(
@@ -204,7 +204,7 @@ async def test_onboard_issuer_no_public_did(
     )
 
     # Create an invitation as well
-    invitation_url = "https://invitation.com"
+    invitation_url = "https://invitation.com/"
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
         to_async(
             InvitationRecord(
@@ -262,7 +262,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     )
 
     did_key = "did:key:123"
-    invitation_url = "https://invitation.com"
+    invitation_url = "https://invitation.com/"
 
     when(mock_agent_controller.out_of_band).create_invitation(...).thenReturn(
         to_async(
@@ -278,7 +278,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     )
 
     assert_that(onboard_result).has_did(did_key)
-    assert_that(onboard_result).has_didcomm_invitation(invitation_url)
+    assert str(onboard_result.didcomm_invitation) == invitation_url
     verify(mock_agent_controller.out_of_band).create_invitation(
         auto_accept=True,
         multi_use=True,

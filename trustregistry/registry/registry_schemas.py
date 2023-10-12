@@ -16,7 +16,7 @@ router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
 
 class GetSchemasResponse(BaseModel):
-    schemas: List[str]
+    schemas: List[Schema]
 
 
 class SchemaID(BaseModel):

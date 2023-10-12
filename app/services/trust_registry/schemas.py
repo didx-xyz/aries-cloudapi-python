@@ -115,3 +115,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     except httpx.HTTPError as e:
         logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e
+
+    if schema_response.status_code == 404:
+        bound_logger.info("Bad request: Schema not found.")
+        return None

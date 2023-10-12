@@ -129,7 +129,7 @@ async def client_response_error_exception_handler(
             exception.status_code,
             exception.headers,
         )
-    if isinstance(exception, pydantic.error_wrappers.ValidationError):
+    if isinstance(exception, pydantic.ValidationError):
         return JSONResponse({"detail": exception.errors()}, status_code=422)
     else:
         return JSONResponse(

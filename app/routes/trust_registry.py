@@ -71,8 +71,10 @@ async def get_actors(
     ---------
     All actors from the trust registry or one actor if a query parameter is passed
     """
-    logger.info("GET request received: Get all actors from the trust registry")
-    actors = await registry_actors.actors_with_role("")
+    param_count = sum(1 for var in [actor_did, actor_name, actor_id] if var is not None)
+    
+    if param_count > 1:
+        raise HTTPException(400, "Bad request: More than one query parameter given")
 
     logger.info("Successfully retrieved actors.")
     return actors

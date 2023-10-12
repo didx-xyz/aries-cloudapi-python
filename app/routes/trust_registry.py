@@ -75,9 +75,23 @@ async def get_actors(
     
     if param_count > 1:
         raise HTTPException(400, "Bad request: More than one query parameter given")
+    
+    if param_count == 1:
+        if actor_did is not None:
+            logger.info("GET request received: Get actor by did from the trust registry")
+            actor = await registry_actors.actor_by_did(actor_did)
+        elif actor_id is not None:
+            logger.info("GET request received: Get actor by id from the trust registry")
+            actor = await registry_actors.actor_by_id(actor_id)
+        elif actor_name is not None:
+            logger.info("GET request received: Get actor by name from the trust registry")
+            actor = await registry_actors.actor_by_name(actor_name)
 
-    logger.info("Successfully retrieved actors.")
-    return actors
+        if actor is not None:
+            logger.info("Successfully retrieved actor.")
+            return [actor]
+        else:
+            raise HTTPException(404, "Actor not found")
 
 
 @router.get("/actors/issuers", response_model=List[Actor])

@@ -7,8 +7,6 @@ from aries_cloudcontroller import (
     V10CredentialConnFreeOfferRequest,
     V10CredentialExchange,
     V10CredentialProposalRequestMand,
-)
-from aries_cloudcontroller.model.v10_credential_store_request import (
     V10CredentialStoreRequest,
 )
 

@@ -1,5 +1,4 @@
-from aries_cloudcontroller import PingRequest, SendMessage
-from aries_cloudcontroller.model.ping_request_response import PingRequestResponse
+from aries_cloudcontroller import PingRequest, PingRequestResponse, SendMessage
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth

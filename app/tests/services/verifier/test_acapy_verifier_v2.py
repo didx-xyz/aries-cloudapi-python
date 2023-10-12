@@ -1,6 +1,5 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.model.indy_pres_spec import IndyPresSpec
+from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 from pydantic import ValidationError
 

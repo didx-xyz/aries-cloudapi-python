@@ -6,11 +6,9 @@ from typing import List, Optional
 from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
+    CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
     SchemaSendRequest,
-)
-from aries_cloudcontroller.model.credential_definition_send_request import (
-    CredentialDefinitionSendRequest,
 )
 from fastapi import APIRouter, Depends, HTTPException
 

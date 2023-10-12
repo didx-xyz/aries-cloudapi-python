@@ -249,3 +249,9 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
     except httpx.HTTPError as e:
         bound_logger.exception("HTTP Error caught when fetching from trust registry.")
         raise e
+
+    if actor_response.status_code == 404:
+        bound_logger.info(
+            "Bad request: Actor with name not found in registry."
+        )
+        return None

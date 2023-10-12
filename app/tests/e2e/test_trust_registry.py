@@ -35,3 +35,11 @@ async def test_get_schema_by_id(schema_definition: CredentialSchema):
     assert schema_response.status_code == 200
     schema = schema_response.json()
     assert_that(schema).contains("did", "name", "version", "id")
+
+    with pytest.raises(HTTPException) as exc:
+        async with RichAsyncClient() as client:
+            schema_response = await client.get(
+                f"{CLOUDAPI_URL}{TRUST_REGISTRY}/schemas/bad_schema_id"
+            )
+
+    assert exc.value.status_code == 404

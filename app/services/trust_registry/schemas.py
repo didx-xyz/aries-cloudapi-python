@@ -119,3 +119,12 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     if schema_response.status_code == 404:
         bound_logger.info("Bad request: Schema not found.")
         return None
+    if schema_response.is_error:
+        logger.error(
+            "Error fetching schema. Got status code {} with message `{}`.",
+            schema_response.status_code,
+            schema_response.text,
+        )
+        raise TrustRegistryException(
+            f"Unable to fetch schema: `{schema_response.text}`.", schema_response.status_code
+        )

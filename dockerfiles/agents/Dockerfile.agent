@@ -4,7 +4,8 @@ USER root
 
 RUN pip3 install -U --no-cache-dir \
   acapy-wallet-groups-plugin==0.4.1 \
-  typing-extensions==4.8.0
+  typing-extensions==4.8.0 \
+  pydid==0.4.0.post1
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

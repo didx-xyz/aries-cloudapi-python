@@ -1,6 +1,4 @@
-# https://fastapi.tiangolo.com/deployment/docker/?h=#when-to-use
-# FROM tiangolo/uvicorn-gunicorn-fastapi:python3.9
-FROM python:3.9
+FROM python:3.9-slim
 
 COPY app /app
 COPY shared /shared

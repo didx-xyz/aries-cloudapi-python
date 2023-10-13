@@ -138,8 +138,8 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
-          cache: "pip"
+          python-version: 3.9
+          cache: pip
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
@@ -179,8 +179,8 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
-          cache: "pip"
+          python-version: 3.9
+          cache: pip
       - name: Install test dependencies.
         run: |
           python -m pip install --upgrade pip
@@ -191,8 +191,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
       - name: Start Test Harness
-        run: |
-          ./manage up-as-daemon-no-build
+        run: ./manage up-as-daemon-no-build
         shell: bash
         env:
           REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -263,8 +262,7 @@ jobs:
           coverage combine
           coverage report
       - name: Generate XML coverage report
-        run: |
-          coverage xml
+        run: coverage xml
       - name: Upload coverage to Codacy
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         env:
@@ -280,11 +278,18 @@ jobs:
       id-token: write # Required to authenticate with AWS
       contents: read # Required to clone this repository
     runs-on: ubuntu-latest
+    env:
+      TAILSCALE_VERSION: 1.50.1
+      HELMFILE_VERSION: v0.157.0
+      HELM_VERSION: v3.13.3
+
     concurrency:
       group: cicd-deploy
       cancel-in-progress: false
+
     outputs:
       output: ${{ steps.updated_deployments.outputs.success }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -315,11 +320,11 @@ jobs:
       - uses: tailscale/github-action@main
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-          version: 1.48.2
+          version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile Diff
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-        uses: helmfile/helmfile-action@v1.2.0
+        uses: helmfile/helmfile-action@v1.3.0
         with:
           helmfile-args: |
             diff \
@@ -330,15 +335,15 @@ jobs:
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
-          helmfile-version: v0.157.0
-          helm-version: v3.12.3
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-        uses: helmfile/helmfile-action@v1.2.0
+        uses: helmfile/helmfile-action@v1.3.0
         with:
           helmfile-args: |
             destroy \
@@ -347,8 +352,8 @@ jobs:
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
-          helmfile-version: v0.157.0
-          helm-version: v3.12.3
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
@@ -401,7 +406,7 @@ jobs:
       - name: Helmfile Apply
         id: update_deployments
         if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
-        uses: helmfile/helmfile-action@v1.2.0
+        uses: helmfile/helmfile-action@v1.3.0
         with:
           helmfile-args: |
             apply \
@@ -412,8 +417,8 @@ jobs:
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
-          helmfile-version: v0.157.0
-          helm-version: v3.12.3
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 

@@ -1,16 +1,13 @@
 FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.9.0
 
 USER root
-RUN apt-get update && apt-get install -y gcc jq
 
-RUN pip3 install --no-cache-dir -U pip==21.3.1
 RUN pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.4.1
-RUN pip3 install --no-cache-dir aries-cloudagent==0.9.0
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
 
-USER $user
+USER aries
 
 ENTRYPOINT [ "./startup.sh" ]
-CMD ["--wallet-type", "askar", "--auto-promote-author-did", "--plugin", "acapy_wallet_groups_plugin" ]
+CMD [ "--wallet-type", "askar", "--auto-promote-author-did", "--plugin", "acapy_wallet_groups_plugin" ]

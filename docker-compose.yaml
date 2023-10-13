@@ -4,7 +4,7 @@ services:
   governance-ga-wallets-db:
     image: postgres:15
     container_name: governance-ga-wallets-db
-    command: postgres -c listen_addresses='*'
+    command: postgres -c listen_addresses='*' -c 'max_connections=500'
     env_file:
       - environments/governance-ga/db.default.env
     volumes:
@@ -84,7 +84,7 @@ services:
   trustregistry-db:
     image: postgres:15
     container_name: trustregistry-db
-    command: postgres -c listen_addresses='*'
+    command: postgres -c listen_addresses='*' -c 'max_connections=500'
     environment:
       - POSTGRES_DB=trustregistry
       - POSTGRES_USER=trustregistry
@@ -177,7 +177,7 @@ services:
   governance-multitenant-wallets-db:
     image: postgres:15
     container_name: governance-multitenant-wallets-db
-    command: postgres -c listen_addresses='*'
+    command: postgres -c listen_addresses='*' -c 'max_connections=500'
     env_file:
       - environments/governance-multitenant/db.default.env
     volumes:

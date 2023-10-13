@@ -1,8 +1,7 @@
 from typing import List, Optional
 
 from aries_cloudcontroller import CreateWalletRequest
-from pydantic import BaseModel, Field, HttpUrl
-from pydantic.networks import AnyHttpUrl
+from pydantic import BaseModel, Field
 
 from app.services.trust_registry import TrustRegistryRole
 
@@ -12,7 +11,7 @@ class CreateWalletRequestWithGroups(CreateWalletRequest):
 
 
 class TenantRequestBase(BaseModel):
-    image_url: Optional[HttpUrl] = Field(
+    image_url: Optional[str] = Field(
         None, examples=["https://yoma.africa/images/sample.png"]
     )
 
@@ -50,4 +49,4 @@ class CreateTenantResponse(Tenant, TenantAuth):
 
 class OnboardResult(BaseModel):
     did: str
-    didcomm_invitation: Optional[AnyHttpUrl] = None
+    didcomm_invitation: Optional[str] = None

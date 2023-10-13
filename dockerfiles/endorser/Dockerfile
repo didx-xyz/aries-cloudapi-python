@@ -9,4 +9,6 @@ RUN pip install --no-cache-dir -r requirements.txt -r requirements.dev.txt
 
 WORKDIR /
 
+USER nobody
+
 CMD ["watchfiles", "python -m endorser.main", "/endorser"]

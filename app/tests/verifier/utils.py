@@ -123,7 +123,7 @@ v20_presentation_exchange_records = [
         by_format=V20PresExRecordByFormat(
             pres={"indy": {"hello": "world"}},
             pres_proposal={"indy": {"hello": "world"}},
-            pres_request={"indy": indy_proof_request.model_dump()},
+            pres_request={"indy": indy_proof_request.to_dict()},
         ),
         connection_id="abc",
         created_at="2021-09-15 13:49:47Z",

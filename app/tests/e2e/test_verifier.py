@@ -52,7 +52,7 @@ async def test_accept_proof_request_v1(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
     acme_exchange = response.json()
@@ -94,7 +94,7 @@ async def test_accept_proof_request_v1(
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.model_dump(),
+        json=proof_accept.to_dict(),
     )
 
     assert await check_webhook_state(
@@ -139,7 +139,7 @@ async def test_accept_proof_request_oob_v1(
     )
 
     create_proof_response = await bob_member_client.post(
-        VERIFIER_BASE_PATH + "/create-request", json=create_proof_request.model_dump()
+        VERIFIER_BASE_PATH + "/create-request", json=create_proof_request.to_dict()
     )
     bob_exchange = create_proof_response.json()
     thread_id = bob_exchange["thread_id"]
@@ -152,7 +152,7 @@ async def test_accept_proof_request_oob_v1(
 
     invitation_response = await bob_member_client.post(
         f"{OOB_BASE_PATH}/create-invitation",
-        json=create_oob_invitation_request.model_dump(),
+        json=create_oob_invitation_request.to_dict(),
     )
     assert invitation_response.status_code == 200
     invitation = (invitation_response.json())["invitation"]
@@ -160,7 +160,7 @@ async def test_accept_proof_request_oob_v1(
     accept_oob_invitation_request = AcceptOobInvitation(invitation=invitation)
     await alice_member_client.post(
         f"{OOB_BASE_PATH}/accept-invitation",
-        json=accept_oob_invitation_request.model_dump(by_alias=True),
+        json=accept_oob_invitation_request.to_dict(by_alias=True),
     )
 
     alice_request_received = await alice_proofs_listener.wait_for_event(
@@ -193,7 +193,7 @@ async def test_accept_proof_request_oob_v1(
 
     accept_response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.model_dump(),
+        json=proof_accept.to_dict(),
     )
     assert accept_response.status_code == 200
 
@@ -230,7 +230,7 @@ async def test_accept_proof_request_oob_v2(
         json={
             "comment": "some comment",
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
     bob_exchange = response.json()
@@ -284,7 +284,7 @@ async def test_accept_proof_request_oob_v2(
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.model_dump(),
+        json=proof_accept.to_dict(),
     )
 
     alice_presentation_sent = await alice_proofs_listener.wait_for_event(
@@ -370,7 +370,7 @@ async def test_accept_proof_request_v2(
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.model_dump(),
+        json=proof_accept.to_dict(),
     )
 
     acme_proof_event = await acme_proofs_listener.wait_for_event(
@@ -401,7 +401,7 @@ async def test_send_proof_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -430,7 +430,7 @@ async def test_send_proof_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -472,7 +472,7 @@ async def test_reject_proof_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -493,7 +493,7 @@ async def test_reject_proof_request(
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/reject-request",
-        json=reject_proof_request_v1.model_dump(),
+        json=reject_proof_request_v1.to_dict(),
     )
     assert response.status_code == 204
 
@@ -508,7 +508,7 @@ async def test_get_proof_single(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -529,7 +529,7 @@ async def test_get_proof_single(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -558,7 +558,7 @@ async def test_get_proofs_multi(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -580,7 +580,7 @@ async def test_get_proofs_multi(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -607,7 +607,7 @@ async def test_delete_proof(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -624,7 +624,7 @@ async def test_delete_proof(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -653,7 +653,7 @@ async def test_get_credentials_for_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -688,7 +688,7 @@ async def test_get_credentials_for_request(
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.model_dump(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 

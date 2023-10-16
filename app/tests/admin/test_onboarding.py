@@ -1,8 +1,6 @@
 import pytest
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
-    ConnectionMetadata,
     ConnRecord,
     InvitationCreateRequest,
     InvitationMessage,

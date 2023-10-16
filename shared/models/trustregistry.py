@@ -1,13 +1,6 @@
 from typing import List, Optional
 
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    ValidationInfo,
-    field_validator,
-    root_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, field_validator, root_validator
 
 
 class Actor(BaseModel):

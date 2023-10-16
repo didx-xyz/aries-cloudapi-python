@@ -1,12 +1,19 @@
 from unittest.mock import AsyncMock, Mock
-from fastapi import HTTPException
 
 import pytest
+from fastapi import HTTPException
 from httpx import HTTPStatusError, Response
 from pytest_mock import MockerFixture
 
 from app.exceptions.trust_registry_exception import TrustRegistryException
 from app.models.trust_registry import Actor
+from app.routes.trust_registry import (
+    get_actors,
+    get_issuers,
+    get_schema_by_id,
+    get_schemas,
+    get_verifiers,
+)
 from app.services.trust_registry.actors import (
     actor_by_did,
     actors_with_role,
@@ -18,13 +25,6 @@ from app.services.trust_registry.schemas import register_schema, remove_schema_b
 from app.services.trust_registry.util.actor import actor_has_role, assert_actor_name
 from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.services.trust_registry.util.schema import registry_has_schema
-from app.routes.trust_registry import (
-    get_schemas,
-    get_schema_by_id,
-    get_actors,
-    get_issuers,
-    get_verifiers,
-)
 from shared.constants import TRUST_REGISTRY_URL
 
 

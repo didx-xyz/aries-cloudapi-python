@@ -446,3 +446,11 @@ async def test_get_actor(mock_async_client):
     mock_async_client.get.assert_called_with(
         f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
     )
+
+    mock_async_client.get = AsyncMock(
+        return_value=Response(
+            400, json={"error": "Bad request: More than one query parameter given"}
+        )
+    )
+    with pytest.raises(HTTPException):
+        await get_actors(actor_id=actor_id, actor_did=actor_did)

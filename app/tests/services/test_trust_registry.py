@@ -349,3 +349,37 @@ async def test_assert_actor_name(mock_async_client):
     mock_async_client.get = AsyncMock(return_value=Response(500))
     with pytest.raises(TrustRegistryException):
         await assert_actor_name(name)
+
+
+@pytest.mark.anyio
+async def test_get_schemas(mock_async_client):
+    schemas = {
+        "schemas": [
+            {
+                "did": "CW2GEk5zZ7DcF818i3gLUs",
+                "name": "test_schema",
+                "version": "9.46.70",
+                "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:9.46.70",
+            },
+            {
+                "did": "CW2GEk5zZ7DcF818i3gLUs",
+                "name": "test_schema_alt",
+                "version": "74.84.49",
+                "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema_alt:74.84.49",
+            },
+            {
+                "did": "CW2GEk5zZ7DcF818i3gLUs",
+                "name": "test_schema",
+                "version": "35.12.23",
+                "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:35.12.23",
+            },
+        ]
+    }
+
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
+
+    await get_schemas()
+
+    mock_async_client.get.assert_called_once_with(
+        f"{TRUST_REGISTRY_URL}/registry/schemas"
+    )

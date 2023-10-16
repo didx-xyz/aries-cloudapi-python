@@ -278,6 +278,9 @@ jobs:
       id-token: write # Required to authenticate with AWS
       contents: read # Required to clone this repository
     runs-on: ubuntu-latest
+
+    if: github.actor != 'dependabot[bot]'
+
     env:
       TAILSCALE_VERSION: 1.50.1
       HELMFILE_VERSION: v0.157.0

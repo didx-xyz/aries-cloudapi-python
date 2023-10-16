@@ -431,3 +431,8 @@ async def test_get_actor(mock_async_client):
 
     await get_actors()
     mock_async_client.get.assert_called_with(f"{TRUST_REGISTRY_URL}/registry/actors")
+
+    await get_actors(actor_did=actor_did)
+    mock_async_client.get.assert_called_with(
+        f"{TRUST_REGISTRY_URL}/registry/actors/did/{actor_did}"
+    )

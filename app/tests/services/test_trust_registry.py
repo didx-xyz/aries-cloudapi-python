@@ -401,3 +401,9 @@ async def test_get_schema_by_id(mock_async_client):
     mock_async_client.get.assert_called_once_with(
         f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
     )
+
+    mock_async_client.get = AsyncMock(
+        return_value=Response(404, json={"error": "Schema not found"})
+    )
+    with pytest.raises(HTTPException):
+        await get_schema_by_id(schema_id="bad_id")

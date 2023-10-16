@@ -482,3 +482,25 @@ async def test_get_issuers(mock_async_client):
     mock_async_client.get.assert_called_once_with(
         f"{TRUST_REGISTRY_URL}/registry/actors"
     )
+
+
+@pytest.mark.anyio
+async def test_get_verifiers(mock_async_client):
+    actor = {
+        "actors": [
+            {
+                "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
+                "name": "faber_GWNKQ",
+                "roles": ["verifiers"],
+                "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
+                "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+            },
+        ]
+    }
+
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=actor))
+
+    await get_verifiers()
+    mock_async_client.get.assert_called_once_with(
+        f"{TRUST_REGISTRY_URL}/registry/actors"
+    )

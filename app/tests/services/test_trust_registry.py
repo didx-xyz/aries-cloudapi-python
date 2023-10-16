@@ -454,3 +454,9 @@ async def test_get_actor(mock_async_client):
     )
     with pytest.raises(HTTPException):
         await get_actors(actor_id=actor_id, actor_did=actor_did)
+
+    mock_async_client.get = AsyncMock(
+        return_value=Response(404, json={"error": "Actor not found"})
+    )
+    with pytest.raises(HTTPException):
+        await get_actors(actor_id="bad_id")

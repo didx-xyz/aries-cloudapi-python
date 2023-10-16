@@ -18,6 +18,13 @@ from app.services.trust_registry.schemas import register_schema, remove_schema_b
 from app.services.trust_registry.util.actor import actor_has_role, assert_actor_name
 from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.services.trust_registry.util.schema import registry_has_schema
+from app.routes.trust_registry import (
+    get_schemas,
+    get_schema_by_id,
+    get_actors,
+    get_issuers,
+    get_verifiers,
+)
 from shared.constants import TRUST_REGISTRY_URL
 
 

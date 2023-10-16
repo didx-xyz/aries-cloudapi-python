@@ -1,4 +1,5 @@
 from unittest.mock import AsyncMock, Mock
+from fastapi import HTTPException
 
 import pytest
 from httpx import HTTPStatusError, Response

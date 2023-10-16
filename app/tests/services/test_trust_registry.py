@@ -407,3 +407,27 @@ async def test_get_schema_by_id(mock_async_client):
     )
     with pytest.raises(HTTPException):
         await get_schema_by_id(schema_id="bad_id")
+
+
+@pytest.mark.anyio
+async def test_get_actor(mock_async_client):
+    actor = {
+        "actors": [
+            {
+                "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
+                "name": "faber_GWNKQ",
+                "roles": ["issuer"],
+                "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
+                "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+            }
+        ]
+    }
+
+    actor_did = "did:sov:2kzVyyTsHmt4WrJLXXRqQU"
+    actor_id = "418bec12-7252-4edf-8bef-ee8dd661f934"
+    actor_name = "faber_GWNKQ"
+
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=actor))
+
+    await get_actors()
+    mock_async_client.get.assert_called_with(f"{TRUST_REGISTRY_URL}/registry/actors")

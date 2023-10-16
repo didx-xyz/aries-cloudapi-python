@@ -383,3 +383,21 @@ async def test_get_schemas(mock_async_client):
     mock_async_client.get.assert_called_once_with(
         f"{TRUST_REGISTRY_URL}/registry/schemas"
     )
+
+
+@pytest.mark.anyio
+async def test_get_schema_by_id(mock_async_client):
+    schema = {
+        "did": "CW2GEk5zZ7DcF818i3gLUs",
+        "name": "test_schema",
+        "version": "9.46.70",
+        "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:9.46.70",
+    }
+    schema_id = schema["id"]
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=schema))
+
+    await get_schema_by_id(schema_id)
+
+    mock_async_client.get.assert_called_once_with(
+        f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+    )

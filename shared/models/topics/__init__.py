@@ -20,6 +20,7 @@ AcaPyTopics = Literal[
     "present_proof",
     "present_proof_v2_0",
     "revocation_registry",
+    "problem_report",
 ]
 
 CloudApiTopics = Literal[
@@ -31,6 +32,7 @@ CloudApiTopics = Literal[
     "oob",
     "revocation",
     "issuer_cred_rev",
+    "problem_report",
 ]
 
 topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
@@ -44,4 +46,5 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "out_of_band": "oob",
     "present_proof": "proofs",
     "present_proof_v2_0": "proofs",
+    "problem_report": "problem_report",
 }

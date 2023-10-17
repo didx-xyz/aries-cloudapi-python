@@ -288,3 +288,41 @@ async def test_store_credential(
 
 @pytest.mark.anyio
 @unittest.mock.patch("app.services.acapy_wallet.assert_public_did", return_value="did:sov:123456879")
+async def test_create_offer(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+    v1_credential = mock(CredentialWithProtocol)
+    v2_credential = mock(CredentialWithProtocol)
+
+    v1_credential.protocol_version = IssueCredentialProtocolVersion.v1
+    v2_credential.protocol_version = IssueCredentialProtocolVersion.v2
+
+    v1_credential.type = "Indy"
+    v2_credential.type = "Indy"
+    
+    v1_record = mock(CredentialExchange)
+    v2_record = mock(CredentialExchange)
+
+    # public_did = {"result":{"did":"did:sov:123456879"}}
+    
+    # when(mock_agent_controller.wallet).get_public_did(...).thenReturn(to_async(public_did))
+    when(IssuerV1).create_offer(...).thenReturn(to_async(v1_record))
+    when(IssuerV2).create_offer(...).thenReturn(to_async(v2_record))
+
+    await test_module.create_offer(v1_credential, mock_tenant_auth)
+    await test_module.create_offer(v2_credential, mock_tenant_auth)
+
+    verify(IssuerV1).create_offer(
+        controller=mock_agent_controller, credential=v1_credential
+    )
+    verify(IssuerV2).create_offer(
+        controller=mock_agent_controller, credential=v2_credential
+    )

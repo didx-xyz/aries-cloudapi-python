@@ -8,6 +8,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
+    SchemaGetResult,
     SchemaSendRequest,
 )
 from fastapi import APIRouter, Depends, HTTPException
@@ -417,15 +418,17 @@ async def get_schemas(
         # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
         if get_schema_futures:
             bound_logger.debug("Fetching each of the created schemas")
-            schema_results = await asyncio.gather(*get_schema_futures)
+            schema_results: List[SchemaGetResult] = await asyncio.gather(
+                *get_schema_futures
+            )
         else:
             bound_logger.debug("No created schema ids returned")
             schema_results = []
 
     schemas = [
-        credential_schema_from_acapy(schema.schema_)
+        credential_schema_from_acapy(schema.var_schema)
         for schema in schema_results
-        if schema.schema_
+        if schema.var_schema
     ]
 
     if schemas:
@@ -512,7 +515,9 @@ async def create_schema(
                     "Fetching schema id `{}` which is associated with request",
                     _schema_id,
                 )
-                _schema = await aries_controller.schema.get_schema(schema_id=_schema_id)
+                _schema: SchemaGetResult = await aries_controller.schema.get_schema(
+                    schema_id=_schema_id
+                )
                 # Edge case where the governance agent has changed its public did
                 # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
                 # will not be correct due to different public did.
@@ -527,7 +532,7 @@ async def create_schema(
                         )
                     )
                     bound_logger.debug("Getting schemas associated with fetched ids")
-                    schemas = [
+                    schemas: List[SchemaGetResult] = [
                         await aries_controller.schema.get_schema(schema_id=schema_id)
                         for schema_id in schemas_created_ids.schema_ids
                         if schema_id is not None
@@ -541,20 +546,20 @@ async def create_schema(
                             )
 
                         bound_logger.debug("Using updated schema id with new DID")
-                        _schema = schemas[0]
+                        _schema: SchemaGetResult = schemas[0]
                     else:
                         # if schema already exists, we should at least fetch 1, so this should never happen
                         raise CloudApiException("Could not publish schema.", 500)
                 # Schema exists with different attributes
-                if set(_schema.schema_.attr_names) != set(schema.attribute_names):
+                if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
                     raise CloudApiException(
                         "Error creating schema: Schema already exists with different attribute names."
-                        + f"Given: `{str(set(_schema.schema_.attr_names))}`. "
+                        + f"Given: `{str(set(_schema.var_schema.attr_names))}`. "
                         f"Found: `{str(set(schema.attribute_names))}`.",
                         409,
                     )
 
-                result = credential_schema_from_acapy(_schema.schema_)
+                result = credential_schema_from_acapy(_schema.var_schema)
                 bound_logger.info(
                     "Schema already exists on ledger. Returning schema definition: `{}`.",
                     result,
@@ -594,6 +599,6 @@ async def create_schema(
         else:
             raise error
 
-    result = credential_schema_from_acapy(result.sent.schema_)
+    result = credential_schema_from_acapy(result.sent.var_schema)
     bound_logger.info("Successfully published and registered schema.")
     return result

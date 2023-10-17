@@ -144,6 +144,6 @@ async def test_create_credential_definition_issuer_tenant(
     schema = await faber_acapy_client.schema.get_schema(schema_id=schema_definition.id)
 
     assert_that(result).has_id(
-        f"{faber_public_did.did}:3:CL:{schema.schema_.seq_no}:{credential_definition.tag}"
+        f"{faber_public_did.did}:3:CL:{schema.var_schema.seq_no}:{credential_definition.tag}"
     )
     assert_that(result).has_tag(credential_definition.tag)

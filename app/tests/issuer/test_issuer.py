@@ -328,3 +328,33 @@ async def test_create_offer(
     verify(IssuerV2).create_offer(
         controller=mock_agent_controller, credential=v2_credential
     )
+
+
+@pytest.mark.anyio
+async def test_revoke_credential(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
+    revoke_credential = mock(RevokeCredential)
+    revoke_credential.credential_exchange_id = "random_cred_ex_id"
+    revoke_credential.credential_definition_id = "some_random_cred_def_id"
+    revoke_credential.auto_publish_on_ledger = True
+    status_code = 204
+
+    when(revocation_registry).revoke_credential(...).thenReturn(to_async(status_code))
+    await test_module.revoke_credential(body=revoke_credential, auth=mock_tenant_auth)
+
+    verify(revocation_registry).revoke_credential(
+        controller=mock_agent_controller,
+        credential_definition_id=revoke_credential.credential_definition_id,
+        credential_exchange_id=revoke_credential.credential_exchange_id,
+        auto_publish_to_ledger=revoke_credential.auto_publish_on_ledger,
+    )

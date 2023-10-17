@@ -21,11 +21,16 @@ from app.tests.e2e.test_credentials import (  # noqa: F401
 )
 from app.tests.util.ledger import create_public_did
 from app.util.string import random_string
+from shared.log_config import get_logger
+
+logger = get_logger(__name__)
 
 
 # Governance should be provisioned with public did and registered for all e2e tests
 @pytest.fixture(autouse=True, scope="session")
 async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
+    logger.info("Configuring public did for governance")
+
     try:
         response = await get_public_did(governance_acapy_client)
     except CloudApiException:
@@ -35,6 +40,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
 
     gov_id = f"test-governance-id-{random_string(3)}"
     if not await actor_by_id(gov_id):
+        logger.info("Registering actor for governance controller")
         await register_actor(
             Actor(
                 id=gov_id,
@@ -46,4 +52,6 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
 
     yield did
 
+    logger.info("Removing governance actor in test teardown")
     await remove_actor_by_id(gov_id)
+    logger.info("Successfully removed governance actor in teardown.")

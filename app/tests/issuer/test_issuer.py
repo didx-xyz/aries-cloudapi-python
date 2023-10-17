@@ -283,3 +283,7 @@ async def test_store_credential(
     verify(IssuerV2).store_credential(
         controller=mock_agent_controller, credential_exchange_id="v2-credential_id2"
     )
+
+
+@pytest.mark.anyio
+@unittest.mock.patch("app.services.acapy_wallet.assert_public_did", return_value="did:sov:123456879")

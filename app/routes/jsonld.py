@@ -1,5 +1,5 @@
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import Doc, SignRequest, SignResponse
+from aries_cloudcontroller import Doc, SignRequest, SignResponse, VerifyRequest
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -113,7 +113,7 @@ async def verify_jsonld(
 
             bound_logger.debug("Verifying JsonLD")
             jsonld_verify_response = await aries_controller.jsonld.verify(
-                body=JsonLdVerifyRequest(doc=body.doc, verkey=verkey)
+                body=VerifyRequest(doc=body.doc, verkey=verkey)
             )
             if not jsonld_verify_response.valid:
                 raise CloudApiException(

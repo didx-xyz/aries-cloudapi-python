@@ -180,7 +180,7 @@ async def test_accept_proof_request_verifier_no_public_did(
                     "age_over_21": {
                         "name": "age",
                         "p_type": ">=",
-                        "p_value": "21",
+                        "p_value": 21,
                         "restrictions": [{"cred_def_id": credential_definition_id}],
                     }
                 },

@@ -158,7 +158,7 @@ async def get_did_and_schema_id_from_cred_def_attachment(
     schema_seq_id = attachment["operation"]["ref"]
 
     logger.debug("Fetching schema with seq id: `{}`", schema_seq_id)
-    schema = await client.schema.get_schema(schema_id=schema_seq_id)
+    schema = await client.schema.get_schema(schema_id=str(schema_seq_id))
 
     if not schema.var_schema or not schema.var_schema.id:
         raise Exception("Could not extract schema id from schema response.")

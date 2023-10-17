@@ -314,13 +314,12 @@ async def test_create_offer(
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
-    # public_did = {"result":{"did":"did:sov:123456879"}}
-
-    # when(mock_agent_controller.wallet).get_public_did(...).thenReturn(to_async(public_did))
     when(IssuerV1).create_offer(...).thenReturn(to_async(v1_record))
     when(IssuerV2).create_offer(...).thenReturn(to_async(v2_record))
-
+    
+    when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     await test_module.create_offer(v1_credential, mock_tenant_auth)
+    when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     await test_module.create_offer(v2_credential, mock_tenant_auth)
 
     verify(IssuerV1).create_offer(

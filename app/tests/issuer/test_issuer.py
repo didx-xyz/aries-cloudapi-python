@@ -1,5 +1,6 @@
-import pytest
 import unittest
+
+import pytest
 from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
@@ -287,7 +288,9 @@ async def test_store_credential(
 
 
 @pytest.mark.anyio
-@unittest.mock.patch("app.services.acapy_wallet.assert_public_did", return_value="did:sov:123456879")
+@unittest.mock.patch(
+    "app.services.acapy_wallet.assert_public_did", return_value="did:sov:123456879"
+)
 async def test_create_offer(
     mock_agent_controller: AcaPyClient,
     mock_context_managed_controller: MockContextManagedController,
@@ -307,12 +310,12 @@ async def test_create_offer(
 
     v1_credential.type = "Indy"
     v2_credential.type = "Indy"
-    
+
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
     # public_did = {"result":{"did":"did:sov:123456879"}}
-    
+
     # when(mock_agent_controller.wallet).get_public_did(...).thenReturn(to_async(public_did))
     when(IssuerV1).create_offer(...).thenReturn(to_async(v1_record))
     when(IssuerV2).create_offer(...).thenReturn(to_async(v2_record))

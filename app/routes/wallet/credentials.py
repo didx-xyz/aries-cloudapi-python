@@ -115,7 +115,7 @@ async def get_credential_revocation_status(
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching revocation status")
         result = await aries_controller.credentials.get_revocation_status(
-            credential_id=credential_id, from_=from_, to=to
+            credential_id=credential_id, var_from=from_, to=to
         )
 
     bound_logger.info("Successfully fetched revocation status.")

@@ -93,7 +93,7 @@ async def test_send_jsonld_mismatch_sov_bbs(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
-    assert_that(exc.value.status_code).is_equal_to(500)
+    assert_that(exc.value.status_code).is_equal_to(400)
 
 
 @pytest.mark.anyio
@@ -117,4 +117,4 @@ async def test_send_jsonld_mismatch_bbs_ed(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
-    assert_that(exc.value.status_code).is_equal_to(500)
+    assert_that(exc.value.status_code).is_equal_to(400)

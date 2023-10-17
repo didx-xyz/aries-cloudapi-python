@@ -87,4 +87,4 @@ async def test_send_jsonld_mismatch_ed_bbs(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
-    assert_that(exc.value.status_code).is_equal_to(500)
+    assert_that(exc.value.status_code).is_equal_to(400)

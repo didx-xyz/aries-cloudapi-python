@@ -1,4 +1,4 @@
-fastapi~=0.103.0
+fastapi~=0.104.0
 httpx~=0.25.0
 loguru~=0.7.0
 psycopg2-binary~=2.9.6

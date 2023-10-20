@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from pydantic import BaseModel, Field, root_validator
-from pydantic.class_validators import validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class Actor(BaseModel):
@@ -11,7 +10,7 @@ class Actor(BaseModel):
     did: str
     didcomm_invitation: Optional[str] = None
 
-    @validator("did")
+    @field_validator("did")
     @classmethod
     def did_validator(cls, did: str):
         if not did.startswith("did:"):
@@ -19,9 +18,7 @@ class Actor(BaseModel):
 
         return did
 
-    class Config:
-        validate_assignment = True
-        orm_mode = True
+    model_config = ConfigDict(validate_assignment=True, from_attributes=True)
 
 
 def calc_schema_id(did: str, name: str, version: str) -> str:
@@ -35,16 +32,28 @@ class Schema(BaseModel):
     id: str = Field(default=None)
 
     # pylint: disable=no-self-argument
-    @root_validator
-    def validate_and_set_values(cls, values):
-        for v in ["did", "name", "version"]:
-            if ":" in values.get(v, ""):
-                raise ValueError(f"Schema field `{v}` must not contain colon.")
+    @model_validator(mode="before")
+    def validate_and_set_values(cls, values: Union[dict, "Schema"]):
+        # pydantic v2 removed safe way to get key, because `values` can be a dict or this type
+        if not isinstance(values, dict):
+            values = values.__dict__
 
-        did = values.get("did")
-        name = values.get("name")
-        version = values.get("version")
-        id = values.get("id")
+        try:
+            for v in ["did", "name", "version"]:
+                if ":" in values[v]:
+                    raise ValueError(f"Schema field `{v}` must not contain colon.")
+            did = values["did"]
+            name = values["name"]
+            version = values["version"]
+        except KeyError:
+            did = None
+            name = None
+            version = None
+
+        try:
+            id = values["id"]
+        except KeyError:
+            id = None
 
         if id is None:
             if None in (did, name, version):
@@ -74,6 +83,4 @@ class Schema(BaseModel):
         values["id"] = id
         return values
 
-    class Config:
-        validate_assignment = True
-        orm_mode = True
+    model_config = ConfigDict(validate_assignment=True, from_attributes=True)

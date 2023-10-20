@@ -1,6 +1,5 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, DIDResult
-from aries_cloudcontroller.model.did import DID
+from aries_cloudcontroller import DID, AcaPyClient, DIDResult
 from mockito import when
 
 from app.exceptions.cloud_api_error import CloudApiException

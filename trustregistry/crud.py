@@ -84,7 +84,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
 
     try:
         bound_logger.debug("Adding actor to database")
-        db_actor = db.Actor(**actor.dict())
+        db_actor = db.Actor(**actor.model_dump())
         db_session.add(db_actor)
         db_session.commit()
         db_session.refresh(db_actor)
@@ -243,7 +243,7 @@ def create_schema(db_session: Session, schema: Schema) -> db.Schema:
 
     bound_logger.debug("Adding schema to database")
 
-    db_schema = db.Schema(**schema.dict())
+    db_schema = db.Schema(**schema.model_dump())
     db_session.add(db_schema)
     db_session.commit()
     db_session.refresh(db_schema)

@@ -1,8 +1,6 @@
 from typing import Optional
 
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.model.did import DID
-from aries_cloudcontroller.model.did_create import DIDCreate
+from aries_cloudcontroller import DID, AcaPyClient, DIDCreate
 from pydantic import BaseModel
 
 from app.exceptions.cloud_api_error import CloudApiException
@@ -96,7 +94,7 @@ async def set_public_did(
         raise CloudApiException(f"Error setting public did to `{did}`.", 400)
 
     logger.info("Successfully set public DID.")
-    return result.dict()
+    return result.to_dict()
 
 
 async def get_public_did(controller: AcaPyClient) -> Did:

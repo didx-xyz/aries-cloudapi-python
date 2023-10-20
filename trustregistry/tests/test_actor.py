@@ -176,15 +176,10 @@ async def test_update_actor_x():
         )
 
     assert response.status_code == 422
-    assert response.json() == {
-        "detail": [
-            {
-                "loc": ["body", "did"],
-                "msg": "none is not an allowed value",
-                "type": "type_error.none.not_allowed",
-            }
-        ]
-    }
+    response_detail = response.json()["detail"][0]
+    assert response_detail["loc"] == ["body", "did"]
+    assert response_detail["msg"] == "Input should be a valid string"
+    assert response_detail["type"] == "string_type"
 
 
 @pytest.mark.anyio

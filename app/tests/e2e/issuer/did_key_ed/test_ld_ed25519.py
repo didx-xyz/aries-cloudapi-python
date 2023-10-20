@@ -40,7 +40,7 @@ credential_ = SendCredential(
         ),
         options=LDProofVCDetailOptions(proofType="Ed25519Signature2018"),
     ),
-).dict(by_alias=True, exclude_unset=True)
+).model_dump(by_alias=True, exclude_unset=True)
 
 # This is the json of the above credential
 # {

@@ -7,7 +7,7 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyProofRequest,
 )
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ValidationInfo, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -20,22 +20,22 @@ class ProofRequestType(str, Enum):
 
 class ProofRequestBase(BaseModel):
     type: ProofRequestType = ProofRequestType.INDY
-    indy_proof_request: Optional[IndyProofRequest]
-    dif_proof_request: Optional[DIFProofRequest]
+    indy_proof_request: Optional[IndyProofRequest] = None
+    dif_proof_request: Optional[DIFProofRequest] = None
 
-    @validator("indy_proof_request", pre=True, always=True)
+    @field_validator("indy_proof_request", mode="before")
     @classmethod
-    def check_indy_proof_request(cls, value, values):
-        if values.get("type") == ProofRequestType.INDY and value is None:
+    def check_indy_proof_request(cls, value, values: ValidationInfo):
+        if values.data.get("type") == ProofRequestType.INDY and value is None:
             raise ValueError(
                 "indy_proof_request must be populated if `indy` type is selected"
             )
         return value
 
-    @validator("dif_proof_request", pre=True, always=True)
+    @field_validator("dif_proof_request", mode="before")
     @classmethod
-    def check_dif_proof_request(cls, value, values):
-        if values.get("type") == ProofRequestType.LD_PROOF and value is None:
+    def check_dif_proof_request(cls, value, values: ValidationInfo):
+        if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
             raise ValueError(
                 "dif_proof_request must be populated if `ld_proof` type is selected"
             )
@@ -63,22 +63,22 @@ class ProofId(BaseModel):
 
 class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
-    indy_presentation_spec: Optional[IndyPresSpec]
-    dif_presentation_spec: Optional[DIFPresSpec]
+    indy_presentation_spec: Optional[IndyPresSpec] = None
+    dif_presentation_spec: Optional[DIFPresSpec] = None
 
-    @validator("indy_presentation_spec", pre=True, always=True)
+    @field_validator("indy_presentation_spec", mode="before")
     @classmethod
-    def check_indy_presentation_spec(cls, value, values):
-        if values.get("type") == ProofRequestType.INDY and value is None:
+    def check_indy_presentation_spec(cls, value, values: ValidationInfo):
+        if values.data.get("type") == ProofRequestType.INDY and value is None:
             raise ValueError(
                 "indy_presentation_spec must be populated if `indy` type is selected"
             )
         return value
 
-    @validator("dif_presentation_spec", pre=True, always=True)
+    @field_validator("dif_presentation_spec", mode="before")
     @classmethod
-    def check_dif_presentation_spec(cls, value, values):
-        if values.get("type") == ProofRequestType.LD_PROOF and value is None:
+    def check_dif_presentation_spec(cls, value, values: ValidationInfo):
+        if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
             raise ValueError(
                 "dif_presentation_spec must be populated if `ld_proof` type is selected"
             )

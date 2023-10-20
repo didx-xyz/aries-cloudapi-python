@@ -1,5 +1,7 @@
+from typing import List
+
 import pytest
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import DID, AcaPyClient
 from assertpy import assert_that
 
 import app.services.acapy_wallet as wallet_facade
@@ -34,8 +36,9 @@ async def test_list_dids(
     assert response.status_code == 200
     response = response.json()
 
-    res_method = await list_dids(auth=mock_governance_auth)
-    assert res_method == response
+    res_method: List[DID] = await list_dids(auth=mock_governance_auth)
+    res_method_dict = list(map(lambda x: x.to_dict(), res_method))
+    assert res_method_dict == response
 
 
 @pytest.mark.anyio
@@ -59,8 +62,8 @@ async def test_get_public_did(
 
     assert_that(response).contains("did", "verkey")
 
-    res_method = await get_public_did(auth=mock_governance_auth)
-    assert res_method == response
+    res_method: DID = await get_public_did(auth=mock_governance_auth)
+    assert res_method.to_dict() == response
 
 
 @pytest.mark.anyio

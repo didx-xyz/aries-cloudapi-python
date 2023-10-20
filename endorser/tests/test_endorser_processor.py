@@ -68,7 +68,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment(
 ):
     attachment = {"identifier": "123", "operation": {"ref": "456"}}
 
-    schema = Mock(schema_=Mock(id="the-schema-id"))
+    schema = Mock(var_schema=Mock(id="the-schema-id"))
 
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
         to_async(schema)
@@ -90,7 +90,7 @@ async def test_get_did_and_schema_id_from_cred_def_attachment_err_no_schema_id(
 ):
     attachment = {"identifier": "123", "operation": {"ref": "456"}}
 
-    schema = Mock(schema_=Mock(id=None))
+    schema = Mock(var_schema=Mock(id=None))
 
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
         to_async(schema)
@@ -234,7 +234,7 @@ async def test_should_accept_endorsement(mock_agent_controller: AcaPyClient):
         ],
     )
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        to_async(Mock(schema_=Mock(id="the-schema-id")))
+        to_async(Mock(var_schema=Mock(id="the-schema-id")))
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"
@@ -326,7 +326,7 @@ async def test_should_accept_endorsement_not_valid_issuer(
         ],
     )
     when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        to_async(Mock(schema_=Mock(id="the-schema-id")))
+        to_async(Mock(var_schema=Mock(id="the-schema-id")))
     )
     when(mock_agent_controller.endorse_transaction).get_transaction(
         tran_id="the-tran-id"

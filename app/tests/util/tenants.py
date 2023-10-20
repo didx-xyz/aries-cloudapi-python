@@ -13,7 +13,7 @@ def append_random_string(name):
 async def post_tenant_request(
     admin_client: RichAsyncClient, request: CreateTenantRequest
 ) -> CreateTenantResponse:
-    response = await admin_client.post(TENANT_BASE_PATH, json=request.dict())
+    response = await admin_client.post(TENANT_BASE_PATH, json=request.model_dump())
     return parse_with_error_handling(CreateTenantResponse, response.text)
 
 

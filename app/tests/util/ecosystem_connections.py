@@ -195,7 +195,7 @@ async def bob_multi_use_invitation(
         alias=None,
         multi_use=True,
         use_public_did=False,
-    ).dict()
+    ).model_dump()
     # Create a multi-use invitation
     invitation = (
         await bob_member_client.post(

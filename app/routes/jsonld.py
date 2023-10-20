@@ -1,9 +1,6 @@
-from typing import Optional
-
 from aiohttp import ClientResponseError
-from aries_cloudcontroller import Doc, SignRequest, SignResponse, VerifyResponse
+from aries_cloudcontroller import Doc, SignRequest, SignResponse, VerifyRequest
 from fastapi import APIRouter, Depends
-from uplink import Body, Consumer, json, post, returns
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
@@ -14,24 +11,6 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/generic/jsonld", tags=["jsonld"])
-
-
-# NOTE: Wrong/incomplete aca-py openAPI spec results in wrong/overly-strict model for controller endpoint
-# Hence, custom override api endpoint that is incorrect in aca-py
-class JsonldApi(Consumer):
-    async def verify(
-        self, *, body: Optional[JsonLdVerifyRequest] = None
-    ) -> VerifyResponse:
-        """Verify a JSON-LD structure."""
-        return await self.__verify(
-            body=body,
-        )
-
-    @returns.json
-    @json
-    @post("/jsonld/verify")
-    def __verify(self, *, body: Body(type=JsonLdVerifyRequest) = {}) -> VerifyResponse:
-        """Internal uplink method for verify"""
 
 
 @router.post("/sign", response_model=SignResponse)
@@ -76,7 +55,7 @@ async def sign_jsonld(
                         await aries_controller.credentials.get_record(
                             credential_id=body.credential_id
                         )
-                    ).dict()
+                    ).to_dict()
                 else:
                     raise CloudApiException(
                         "Cannot retrieve credential without credential ID."
@@ -132,12 +111,9 @@ async def verify_jsonld(
             else:
                 verkey = body.verkey
 
-            aries_controller.jsonld = JsonldApi(
-                base_url=aries_controller.base_url, client=aries_controller.client
-            )
             bound_logger.debug("Verifying JsonLD")
             jsonld_verify_response = await aries_controller.jsonld.verify(
-                body=JsonLdVerifyRequest(doc=body.doc, verkey=verkey)
+                body=VerifyRequest(doc=body.doc, verkey=verkey)
             )
             if not jsonld_verify_response.valid:
                 raise CloudApiException(

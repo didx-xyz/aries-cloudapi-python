@@ -18,7 +18,7 @@ async def test_send_trust_ping(
     )
 
     response = await alice_member_client.post(
-        MESSAGING_BASE_PATH + "/trust-ping", json=trustping_msg.dict()
+        MESSAGING_BASE_PATH + "/trust-ping", json=trustping_msg.model_dump()
     )
     response_data = response.json()
 
@@ -35,7 +35,7 @@ async def test_send_message(
     )
 
     response = await alice_member_client.post(
-        MESSAGING_BASE_PATH + "/send-message", json=message.dict()
+        MESSAGING_BASE_PATH + "/send-message", json=message.model_dump()
     )
 
     assert_that(response.status_code).is_equal_to(200)

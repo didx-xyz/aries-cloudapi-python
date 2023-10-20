@@ -72,7 +72,7 @@ async def test_schema_id_from_credential_definition_id_seq_no(
     when(mock_agent_controller.schema).get_schema(schema_id=seq_no).thenReturn(
         to_async(
             SchemaGetResult(
-                schema_=ModelSchema(
+                var_schema=ModelSchema(
                     id=schema_id,
                 )
             )

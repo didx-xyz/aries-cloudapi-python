@@ -3,11 +3,7 @@
 from typing import List, Optional
 
 from aioredis import Redis
-from aries_cloudcontroller.model import (
-    IssuerCredRevRecord,
-    IssuerRevRegRecord,
-    OobRecord,
-)
+from aries_cloudcontroller import IssuerCredRevRecord, IssuerRevRegRecord, OobRecord
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger

@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import InvitationMessage
-from aries_cloudcontroller.model.attachment_def import AttachmentDef
+from aries_cloudcontroller import AttachmentDef, InvitationMessage
 from pydantic import BaseModel
 
 

@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import DID, DIDEndpoint, DIDEndpointWithType
-from aries_cloudcontroller.model.did_create import DIDCreate
+from aries_cloudcontroller import DID, DIDCreate, DIDEndpoint, DIDEndpointWithType
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth

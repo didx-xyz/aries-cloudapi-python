@@ -1,11 +1,10 @@
 from secrets import token_urlsafe
-from typing import List, Optional
+from typing import List
 from uuid import uuid4
 
 import base58
 from aries_cloudcontroller import CreateWalletTokenRequest, UpdateWalletRequest
 from fastapi import APIRouter, Depends, HTTPException
-from uplink import Consumer, Query, get, returns
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
@@ -23,7 +22,6 @@ from app.models.tenants import (
     Tenant,
     TenantAuth,
     UpdateTenantRequest,
-    WalletListWithGroups,
 )
 from app.services.onboarding.tenants import handle_tenant_update, onboard_tenant
 from app.services.trust_registry import (
@@ -76,7 +74,7 @@ async def create_tenant(
                     image_url=body.image_url,
                     key_management_mode="managed",
                     label=body.name,
-                    wallet_key=base58.b58encode(token_urlsafe(48)),
+                    wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
                     wallet_name=uuid4().hex,
                     wallet_type="askar",
                     group_id=body.group_id,
@@ -257,29 +255,7 @@ async def get_tenants(
     bound_logger = logger.bind(body={"group_id": group_id})
     bound_logger.info("GET request received: Fetch tenants by group id")
 
-    # NOTE: Since this is using the groups plugin we need to override the
-    # controller to be aware of this
-    class MultitenancyApi(Consumer):
-        async def get_wallets(
-            self, *, group_id: Optional[str] = None, wallet_name: Optional[str] = None
-        ) -> WalletListWithGroups:
-            """Query subwallets"""
-            return await self.__get_wallets(
-                group_id=group_id,
-                wallet_name=wallet_name,
-            )
-
-        @returns.json
-        @get("/multitenancy/wallets")
-        def __get_wallets(
-            self, *, group_id: Query = None, wallet_name: Query = None
-        ) -> WalletListWithGroups:
-            """Internal uplink method for get_wallets"""
-
     async with get_tenant_admin_controller() as admin_controller:
-        admin_controller.multitenancy = MultitenancyApi(
-            base_url=admin_controller.base_url, client=admin_controller.client
-        )
         if not group_id:
             bound_logger.info("No group id specified; fetching all wallets")
             wallets = await admin_controller.multitenancy.get_wallets()

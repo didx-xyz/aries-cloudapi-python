@@ -41,7 +41,7 @@ credential_ = SendCredential(
         ),
         options=LDProofVCDetailOptions(proofType="BbsBlsSignature2020"),
     ),
-).dict(by_alias=True, exclude_unset=True)
+).model_dump(by_alias=True, exclude_unset=True)
 
 # This is the json of the below credential
 # {

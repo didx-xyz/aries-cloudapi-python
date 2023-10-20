@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ValidationInfo, field_validator
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
@@ -20,22 +20,22 @@ class IndyCredential(BaseModel):
 
 class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
-    indy_credential_detail: Optional[IndyCredential]
-    ld_credential_detail: Optional[LDProofVCDetail]
+    indy_credential_detail: Optional[IndyCredential] = None
+    ld_credential_detail: Optional[LDProofVCDetail] = None
 
-    @validator("indy_credential_detail", pre=True, always=True)
+    @field_validator("indy_credential_detail", mode="before")
     @classmethod
-    def check_indy_credential_detail(cls, value, values):
-        if values.get("type") == CredentialType.INDY and value is None:
+    def check_indy_credential_detail(cls, value, values: ValidationInfo):
+        if values.data.get("type") == CredentialType.INDY and value is None:
             raise ValueError(
                 "indy_credential_detail must be populated if `indy` credential type is selected"
             )
         return value
 
-    @validator("ld_credential_detail", pre=True, always=True)
+    @field_validator("ld_credential_detail", mode="before")
     @classmethod
-    def check_ld_credential_detail(cls, value, values):
-        if values.get("type") == CredentialType.LD_PROOF and value is None:
+    def check_ld_credential_detail(cls, value, values: ValidationInfo):
+        if values.data.get("type") == CredentialType.LD_PROOF and value is None:
             raise ValueError(
                 "ld_credential_detail must be populated if `ld_proof` credential type is selected"
             )

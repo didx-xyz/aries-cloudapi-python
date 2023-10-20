@@ -66,13 +66,13 @@ async def test_sign_jsonld(
         credential_id=issue_credential_to_alice["credential_id"][3:],
         signature_options=SignatureOptions(
             proof_purpose="test", verification_method="ed25519"
-        ).dict(),
+        ).model_dump(),
     )
 
     # Error
     with pytest.raises(HTTPException) as exc:
         await alice_member_client.post(
-            JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
+            JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
         )
 
     assert_that(exc.value.detail).contains(
@@ -87,7 +87,7 @@ async def test_sign_jsonld(
     json_ld_req.credential_id = None
     json_ld_req.verkey = None
     jsonld_sign_response = await faber_client.post(
-        JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
+        JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
     jsonld_sign_response = jsonld_sign_response.json()
@@ -101,7 +101,7 @@ async def test_sign_jsonld(
     json_ld_req.verkey = faber_verkey
 
     jsonld_sign_response = await faber_client.post(
-        JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
+        JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )
 
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
@@ -114,7 +114,7 @@ async def test_sign_jsonld(
     json_ld_req.verkey = None
 
     jsonld_sign_response = await faber_client.post(
-        JSONLD_BASE_PATH + "/sign", json=json_ld_req.dict()
+        JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )
 
     assert_that(jsonld_sign_response.status_code).is_equal_to(200)
@@ -137,7 +137,7 @@ async def test_verify_jsonld(
     # Error wrong args
     with pytest.raises(HTTPException) as exc:
         response = await alice_member_client.post(
-            JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict()
+            JSONLD_BASE_PATH + "/verify", json=jsonld_verify.model_dump()
         )
     assert_that(exc.value.detail).contains(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
@@ -150,7 +150,9 @@ async def test_verify_jsonld(
     jsonld_verify.public_did = faber_pub_did
 
     with pytest.raises(HTTPException) as exc:
-        await faber_client.post(JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict())
+        await faber_client.post(
+            JSONLD_BASE_PATH + "/verify", json=jsonld_verify.model_dump()
+        )
 
     assert_that(exc.value.status_code).is_equal_to(422)
     assert_that(exc.value.detail).contains("Failed to verify payload with")
@@ -160,6 +162,6 @@ async def test_verify_jsonld(
     jsonld_verify.verkey = signed_doc["verkey"]
 
     response = await alice_member_client.post(
-        JSONLD_BASE_PATH + "/verify", json=jsonld_verify.dict()
+        JSONLD_BASE_PATH + "/verify", json=jsonld_verify.model_dump()
     )
     assert_that(response.status_code).is_equal_to(204)

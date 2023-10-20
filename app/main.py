@@ -6,6 +6,7 @@ from distutils.util import strtobool
 import pydantic
 import yaml
 from aiohttp import ClientResponseError
+from aries_cloudcontroller import ApiException
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
@@ -118,20 +119,29 @@ async def client_response_error_exception_handler(
             {"detail": exception.message, **(stacktrace if debug else {})},
             exception.status or 500,
         )
+
     if isinstance(exception, CloudApiException):
         return JSONResponse(
             {"detail": exception.detail, **(stacktrace if debug else {})},
             exception.status_code,
         )
+
+    if isinstance(exception, ApiException):
+        return JSONResponse(
+            {"detail": exception.reason, **(stacktrace if debug else {})},
+            exception.status,
+        )
+
     if isinstance(exception, HTTPException):
         return JSONResponse(
             {**exception.detail, **(stacktrace if debug else {})},
             exception.status_code,
             exception.headers,
         )
-    if isinstance(exception, pydantic.error_wrappers.ValidationError):
+
+    if isinstance(exception, pydantic.ValidationError):
         return JSONResponse({"detail": exception.errors()}, status_code=422)
-    else:
-        return JSONResponse(
-            {"detail": "Internal server error", "exception": str(exception)}, 500
-        )
+
+    return JSONResponse(
+        {"detail": "Internal server error", "exception": str(exception)}, 500
+    )

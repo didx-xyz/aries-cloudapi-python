@@ -1,9 +1,6 @@
 from typing import List
 
-from aries_cloudcontroller import AcaPyClient
-from aries_cloudcontroller.model.create_wallet_token_request import (
-    CreateWalletTokenRequest,
-)
+from aries_cloudcontroller import AcaPyClient, CreateWalletTokenRequest
 from fastapi.exceptions import HTTPException
 
 from app.dependencies.acapy_clients import (

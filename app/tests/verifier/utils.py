@@ -104,7 +104,7 @@ v10_presentation_proposal_request = V10PresentationProposalRequest(
 
 indy_proof_request = IndyProofRequest(
     name="string",
-    non_revoked=IndyProofRequestNonRevoked(from_=0, to=20),
+    non_revoked=IndyProofRequestNonRevoked(var_from=0, to=20),
     nonce="12345",
     requested_attributes={
         "0_speed_uuid": IndyProofReqAttrSpec(
@@ -123,7 +123,7 @@ v20_presentation_exchange_records = [
         by_format=V20PresExRecordByFormat(
             pres={"indy": {"hello": "world"}},
             pres_proposal={"indy": {"hello": "world"}},
-            pres_request={"indy": indy_proof_request.dict()},
+            pres_request={"indy": indy_proof_request.to_dict()},
         ),
         connection_id="abc",
         created_at="2021-09-15 13:49:47Z",

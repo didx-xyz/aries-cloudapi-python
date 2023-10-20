@@ -1,6 +1,8 @@
 from typing import Optional
 
-from app.models.tenants import Tenant, WalletRecordWithGroups
+from aries_cloudcontroller import WalletRecordWithGroups
+
+from app.models.tenants import Tenant
 
 
 def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:

@@ -1,4 +1,5 @@
 import logging
+import ssl
 from typing import Optional
 
 from fastapi import HTTPException
@@ -6,17 +7,20 @@ from httpx import AsyncClient, HTTPStatusError
 
 logger = logging.getLogger(__name__)
 
+ssl_context = ssl.create_default_context()
 
-# Async Client with built in error handling
+
+# Async Client with built in error handling and re-using SSL certs
 class RichAsyncClient(AsyncClient):
     def __init__(
         self,
         *args,
         name: Optional[str] = None,
-        verify=True,
+        verify=ssl_context,
         raise_status_error=True,
         **kwargs,
     ):
+        super().__init__(verify=verify, *args, **kwargs)
         self._name = (
             name + " - HTTP" if name else "HTTP"
         )  # prepend to exception messages to add context

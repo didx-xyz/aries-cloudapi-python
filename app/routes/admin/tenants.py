@@ -52,23 +52,26 @@ async def create_tenant(
     name = body.name
     roles = body.roles
 
-    try:
-        actor_name_exists = await assert_actor_name(body.name)
-    except TrustRegistryException:
-        raise CloudApiException(
-            "An error occurred when trying to register actor. Please try again"
-        )
+    if roles:
+        bound_logger.info("Create tenant with roles. Assert name is unique")
+        try:
+            actor_name_exists = await assert_actor_name(body.name)
+        except TrustRegistryException:
+            raise CloudApiException(
+                "An error occurred when trying to register actor. Please try again"
+            )
 
-    if actor_name_exists:
-        bound_logger.info("Actor exists can't create wallet")
-        raise HTTPException(
-            409, f"Can't create Tenant. Actor with name `{name}` already exists."
-        )
+        if actor_name_exists:
+            bound_logger.info("Actor exists can't create wallet")
+            raise HTTPException(
+                409, f"Can't create Tenant. Actor with name `{name}` already exists."
+            )
+        bound_logger.info("Actor name is unique")
 
-    bound_logger.info("Actor name is unique, creating wallet")
     wallet_response = None
     async with get_tenant_admin_controller() as admin_controller:
         try:
+            bound_logger.info("Creating wallet")
             wallet_response = await admin_controller.multitenancy.create_wallet(
                 body=CreateWalletRequestWithGroups(
                     image_url=body.image_url,

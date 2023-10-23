@@ -6,6 +6,7 @@ from typing_extensions import TypedDict
 from app.exceptions.trust_registry_exception import TrustRegistryException
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
+from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
 
@@ -110,7 +111,7 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("Fetching actor by DID from trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
@@ -151,7 +152,7 @@ async def assert_actor_name(actor_name: str) -> bool:
     bound_logger.info("Fetching actor by name from trust registry")
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             actor_response = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
             )
@@ -191,7 +192,7 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Fetching actor by ID from trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
             )
@@ -231,7 +232,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     bound_logger = logger.bind(body={"role": role})
     bound_logger.info("Fetching all actors with requested role from trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             actors_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
     except httpx.HTTPError as e:
         bound_logger.exception("HTTP Error caught when fetching from trust registry.")
@@ -278,7 +279,7 @@ async def registry_has_schema(schema_id: str) -> bool:
         "Asserting if schema is registered. Fetching schema by ID from trust registry"
     )
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             bound_logger.debug("Fetch schema from trust registry")
             schema_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
@@ -309,7 +310,7 @@ async def get_trust_registry_schemas() -> List[str]:
     """
     logger.info("Fetching all schemas from trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     except httpx.HTTPError as e:
         logger.exception("HTTP Error caught when fetching from trust registry.")
@@ -341,7 +342,7 @@ async def get_trust_registry() -> TrustRegistry:
     """
     logger.info("Fetching complete trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             trust_registry_res = await client.get(f"{TRUST_REGISTRY_URL}/registry")
     except httpx.HTTPError as e:
         logger.exception("HTTP Error caught when fetching trust registry.")
@@ -375,7 +376,7 @@ async def register_schema(schema_id: str) -> None:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Registering schema on trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             schema_res = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/schemas", json={"schema_id": schema_id}
             )
@@ -409,7 +410,7 @@ async def register_actor(actor: Actor) -> None:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Registering actor on trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             actor_res = await client.post(
                 f"{TRUST_REGISTRY_URL}/registry/actors", json=actor
             )
@@ -450,7 +451,7 @@ async def remove_actor_by_id(actor_id: str) -> None:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("Removing actor from trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             remove_response = await client.delete(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
             )
@@ -489,7 +490,7 @@ async def remove_schema_by_id(schema_id: str) -> None:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Removing schema from trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             remove_response = await client.delete(
                 f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
             )
@@ -515,7 +516,7 @@ async def update_actor(actor: Actor) -> None:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Updating actor on trust registry")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             update_response = await client.put(
                 f"{TRUST_REGISTRY_URL}/registry/actors/{actor['id']}", json=actor
             )

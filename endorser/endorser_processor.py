@@ -1,9 +1,9 @@
 import json
 from typing import Any, Dict, Optional
 
-import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
+from httpx import HTTPError, HTTPStatusError
 from pydantic import BaseModel
 
 from shared import (
@@ -14,6 +14,7 @@ from shared import (
 )
 from shared.log_config import get_logger
 from shared.models.topics import Endorsement
+from shared.util.rich_async_client import RichAsyncClient
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
@@ -264,12 +265,12 @@ async def is_valid_issuer(did: str, schema_id: str):
     bound_logger = logger.bind(body={"did": did, "schema_id": schema_id})
     bound_logger.debug("Assert that did is registered as issuer")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             bound_logger.debug("Fetch actor with did `{}` from trust registry", did)
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
-    except httpx.HTTPError as e:
+    except HTTPError as e:
         bound_logger.exception(
             "Caught HTTP error when reading actor from trust registry."
         )
@@ -290,13 +291,13 @@ async def is_valid_issuer(did: str, schema_id: str):
         return False
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             bound_logger.debug("Fetch schema from trust registry")
             schema_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
             )
             schema_res.raise_for_status()
-    except httpx.HTTPStatusError as http_err:
+    except HTTPStatusError as http_err:
         if http_err.response.status_code == 404:
             bound_logger.info("Schema id not registered in trust registry.")
             return False

@@ -117,7 +117,7 @@ def test_is_governance_agent():
 
 @pytest.mark.anyio
 async def test_is_valid_issuer(mocker: MockerFixture):
-    patch_async_client = mocker.patch("httpx.AsyncClient")
+    patch_async_client = mocker.patch("RichAsyncClient")
     mocked_async_client = MagicMock()
     patch_async_client.return_value.__aenter__.return_value = mocked_async_client
 
@@ -131,7 +131,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
     )
     schema_response.raise_for_status = Mock()
     mocked_async_client.get = AsyncMock(side_effect=[actor_response, schema_response])
-    # Mock the `async with httpx.AsyncClient` to return mocked_async_client
+    # Mock the `async with RichAsyncClient` to return mocked_async_client
 
     assert await is_valid_issuer(did, schema_id)
 
@@ -146,7 +146,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
 
 @pytest.mark.anyio
 async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
-    patch_async_client = mocker.patch("httpx.AsyncClient")
+    patch_async_client = mocker.patch("RichAsyncClient")
     mocked_async_client = MagicMock()
     patch_async_client.return_value.__aenter__.return_value = mocked_async_client
 

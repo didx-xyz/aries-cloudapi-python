@@ -2,7 +2,7 @@ import base64
 import json
 from typing import Dict, List, Optional
 
-import httpx
+from httpx import HTTPError
 from pydantic import BaseModel
 
 from app.event_handling.sse_listener import SseListener
@@ -82,10 +82,10 @@ async def get_hooks_per_topic_per_wallet(
 ) -> List:
     wallet_id = get_wallet_id_from_async_client(client)
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             hooks = await client.get(
                 f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}"
             ).json()
         return hooks if hooks else []
-    except httpx.HTTPError as e:
+    except HTTPError as e:
         raise e from e

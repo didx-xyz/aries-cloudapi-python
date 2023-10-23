@@ -1,10 +1,11 @@
 import json
 from typing import Any, Dict
 
-import httpx
+from httpx import Timeout
 
 from shared import WEBHOOKS_URL
 from shared.log_config import get_logger
+from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
 base_url = f"{WEBHOOKS_URL}/sse"
@@ -33,8 +34,8 @@ class SseListener:
         """
         url = f"{base_url}/{self.wallet_id}/{self.topic}/{desired_state}"
 
-        timeout = httpx.Timeout(timeout)
-        async with httpx.AsyncClient(timeout=timeout) as client:
+        timeout = Timeout(timeout)
+        async with RichAsyncClient(timeout=timeout) as client:
             async with client.stream("GET", url) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
@@ -55,8 +56,8 @@ class SseListener:
         """
         url = f"{base_url}/{self.wallet_id}/{self.topic}/{field}/{field_id}/{desired_state}"
 
-        timeout = httpx.Timeout(timeout)
-        async with httpx.AsyncClient(timeout=timeout) as client:
+        timeout = Timeout(timeout)
+        async with RichAsyncClient(timeout=timeout) as client:
             async with client.stream("GET", url) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):

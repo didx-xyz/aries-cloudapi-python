@@ -117,7 +117,7 @@ def test_is_governance_agent():
 
 @pytest.mark.anyio
 async def test_is_valid_issuer(mocker: MockerFixture):
-    patch_async_client = mocker.patch("RichAsyncClient")
+    patch_async_client = mocker.patch("endorser.endorser_processor.RichAsyncClient")
     mocked_async_client = MagicMock()
     patch_async_client.return_value.__aenter__.return_value = mocked_async_client
 
@@ -146,7 +146,7 @@ async def test_is_valid_issuer(mocker: MockerFixture):
 
 @pytest.mark.anyio
 async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
-    patch_async_client = mocker.patch("RichAsyncClient")
+    patch_async_client = mocker.patch("endorser.endorser_processor.RichAsyncClient")
     mocked_async_client = MagicMock()
     patch_async_client.return_value.__aenter__.return_value = mocked_async_client
 

@@ -35,6 +35,15 @@ async def create_verifier_tenant(admin_client: RichAsyncClient, name: str):
     return await post_tenant_request(admin_client, request)
 
 
+async def create_issuer_and_verifier_tenant(admin_client: RichAsyncClient, name: str):
+    request = CreateTenantRequest(
+        name=append_random_string(name),
+        roles=["issuer", "verifier"],
+        group_id="IssuerAndVerifierGroup",
+    )
+    return await post_tenant_request(admin_client, request)
+
+
 async def create_tenant(admin_client: RichAsyncClient, name: str):
     request = CreateTenantRequest(
         image_url="https://aries.ca/images/sample.png",

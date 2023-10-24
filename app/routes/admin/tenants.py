@@ -55,14 +55,14 @@ async def create_tenant(
     if roles:
         bound_logger.info("Create tenant with roles. Assert name is unique")
         try:
-            actor_name_exists = await assert_actor_name(body.name)
+            actor_name_exists = await assert_actor_name(name)
         except TrustRegistryException:
             raise CloudApiException(
                 "An error occurred when trying to register actor. Please try again"
             )
 
         if actor_name_exists:
-            bound_logger.info("Actor exists can't create wallet")
+            bound_logger.info("Actor name already exists; can't create wallet")
             raise HTTPException(
                 409, f"Can't create Tenant. Actor with name `{name}` already exists."
             )
@@ -76,7 +76,7 @@ async def create_tenant(
                 body=CreateWalletRequestWithGroups(
                     image_url=body.image_url,
                     key_management_mode="managed",
-                    label=body.name,
+                    label=name,
                     wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
                     wallet_name=uuid4().hex,
                     wallet_type="askar",

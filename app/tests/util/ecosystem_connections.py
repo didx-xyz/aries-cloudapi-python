@@ -145,6 +145,51 @@ async def faber_and_alice_connection(
 
 
 @dataclass
+class MeldCoAliceConnect:
+    alice_connection_id: str
+    meld_co_connection_id: str
+
+
+@pytest.fixture(scope="function")
+async def meld_co_and_alice_connection(
+    alice_member_client: RichAsyncClient, meld_co_client: RichAsyncClient
+) -> MeldCoAliceConnect:
+    # create invitation on faber side
+    invitation = (
+        await meld_co_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
+    ).json()
+
+    # accept invitation on alice side
+    invitation_response = (
+        await alice_member_client.post(
+            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
+            json={"invitation": invitation["invitation"]},
+        )
+    ).json()
+
+    meld_co_connection_id = invitation["connection_id"]
+    alice_connection_id = invitation_response["connection_id"]
+
+    # fetch and validate
+    # both connections should be active - we have waited long enough for events to be exchanged
+    assert await check_webhook_state(
+        alice_member_client,
+        topic="connections",
+        filter_map={"state": "completed", "connection_id": alice_connection_id},
+    )
+    assert await check_webhook_state(
+        meld_co_client,
+        topic="connections",
+        filter_map={"state": "completed", "connection_id": meld_co_connection_id},
+    )
+
+    return MeldCoAliceConnect(
+        alice_connection_id=alice_connection_id,
+        meld_co_connection_id=meld_co_connection_id,
+    )
+
+
+@dataclass
 class BobAlicePublicDid:
     alice_public_did: str
     bob_public_did: str

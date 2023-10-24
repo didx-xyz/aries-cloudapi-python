@@ -78,7 +78,7 @@ async def create_tenant(
                     key_management_mode="managed",
                     label=name,
                     wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
-                    wallet_name=uuid4().hex,
+                    wallet_name=body.wallet_name or uuid4().hex,
                     wallet_type="askar",
                     group_id=body.group_id,
                 )

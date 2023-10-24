@@ -72,7 +72,7 @@ async def assert_valid_prover(
     # Case 1: connection made with public DID
     if connection_record.their_public_did:
         public_did = f"did:sov:{connection_record.their_public_did}"
-    # Case 2: connection made with public DID
+    # Case 2: connection made without public DID
     elif connection_record.invitation_key:
         invitation_key = connection_record.invitation_key
         public_did = ed25519_verkey_to_did_key(key=invitation_key)

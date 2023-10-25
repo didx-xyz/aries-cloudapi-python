@@ -19,14 +19,16 @@ async def post_tenant_request(
 
 async def create_issuer_tenant(admin_client: RichAsyncClient, name: str):
     request = CreateTenantRequest(
-        name=append_random_string(name), roles=["issuer"], group_id="IssuerGroup"
+        wallet_label=append_random_string(name),
+        roles=["issuer"],
+        group_id="IssuerGroup",
     )
     return await post_tenant_request(admin_client, request)
 
 
 async def create_verifier_tenant(admin_client: RichAsyncClient, name: str):
     request = CreateTenantRequest(
-        name=append_random_string(name),
+        wallet_label=append_random_string(name),
         roles=["verifier"],
         group_id="VerifierGroup",
     )
@@ -36,7 +38,7 @@ async def create_verifier_tenant(admin_client: RichAsyncClient, name: str):
 async def create_tenant(admin_client: RichAsyncClient, name: str):
     request = CreateTenantRequest(
         image_url="https://aries.ca/images/sample.png",
-        name=append_random_string(name),
+        wallet_label=append_random_string(name),
         group_id="TenantGroup",
     )
     return await post_tenant_request(admin_client, request)

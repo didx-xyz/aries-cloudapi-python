@@ -31,7 +31,7 @@ async def get_webhooks_for_wallet(
         "GET request received: Get webhooks for wallet"
     )
 
-    return get_hooks_for_wallet(wallet_id=auth.wallet_id)
+    return await get_hooks_for_wallet(wallet_id=auth.wallet_id)
 
 
 @router.get("/{topic}")
@@ -54,4 +54,4 @@ async def get_webhooks_for_wallet_by_topic(
         "GET request received: Get webhooks for wallet by topic"
     )
 
-    return get_hooks_for_wallet_by_topic(wallet_id=auth.wallet_id, topic=topic)
+    return await get_hooks_for_wallet_by_topic(wallet_id=auth.wallet_id, topic=topic)

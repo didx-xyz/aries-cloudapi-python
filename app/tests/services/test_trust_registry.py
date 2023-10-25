@@ -43,7 +43,7 @@ def mock_async_client(mocker: MockerFixture, request) -> Mock:
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry.util"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.util.issuer"], indirect=True
 )
 async def test_assert_valid_issuer(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -102,7 +102,7 @@ async def test_assert_valid_issuer(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry.util"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.util.actor"], indirect=True
 )
 async def test_actor_has_role(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -132,7 +132,7 @@ async def test_actor_has_role(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_actor_by_did(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -160,7 +160,7 @@ async def test_actor_by_did(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_actor_with_role(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -205,7 +205,7 @@ async def test_actor_with_role(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry.util"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.util.schema"], indirect=True
 )
 async def test_registry_has_schema(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -252,7 +252,7 @@ async def test_registry_has_schema(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.schemas"], indirect=True
 )
 async def test_register_schema(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -272,7 +272,7 @@ async def test_register_schema(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_register_actor(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -303,7 +303,7 @@ async def test_register_actor(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_remove_actor_by_id(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -322,7 +322,7 @@ async def test_remove_actor_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.schemas"], indirect=True
 )
 async def test_remove_schema_by_id(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -343,7 +343,7 @@ async def test_remove_schema_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_update_actor(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -376,7 +376,7 @@ async def test_update_actor(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry.util"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.util.actor"], indirect=True
 )
 async def test_assert_actor_name(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -409,7 +409,7 @@ async def test_assert_actor_name(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.schemas"], indirect=True
 )
 async def test_get_schemas(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -448,7 +448,7 @@ async def test_get_schemas(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.schemas"], indirect=True
 )
 async def test_get_schema_by_id(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -477,7 +477,7 @@ async def test_get_schema_by_id(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_get_actor(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -535,7 +535,7 @@ async def test_get_actor(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_get_issuers(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -562,7 +562,7 @@ async def test_get_issuers(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_get_verifiers(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name

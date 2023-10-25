@@ -1,4 +1,4 @@
-from httpx import HTTPStatusError
+from fastapi import HTTPException
 
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
@@ -27,8 +27,8 @@ async def registry_has_schema(schema_id: str) -> bool:
         async with RichAsyncClient() as client:
             bound_logger.debug("Fetch schema from trust registry")
             await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
-    except HTTPStatusError as http_err:
-        if http_err.response.status_code == 404:
+    except HTTPException as http_err:
+        if http_err.status_code == 404:
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:

@@ -49,14 +49,14 @@ async def create_tenant(
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
 
-    name = body.name
     roles = body.roles
+    wallet_label = body.wallet_label
     wallet_name = body.wallet_name or uuid4().hex
 
     if roles:
         bound_logger.info("Create tenant with roles. Assert name is unique")
         try:
-            actor_name_exists = await assert_actor_name(name)
+            actor_name_exists = await assert_actor_name(wallet_label)
         except TrustRegistryException:
             raise CloudApiException(
                 "An error occurred when trying to register actor. Please try again"
@@ -65,7 +65,8 @@ async def create_tenant(
         if actor_name_exists:
             bound_logger.info("Actor name already exists; can't create wallet")
             raise HTTPException(
-                409, f"Can't create Tenant. Actor with name `{name}` already exists."
+                409,
+                f"Can't create Tenant. Actor with label `{wallet_label}` already exists.",
             )
         bound_logger.info("Actor name is unique")
 
@@ -77,7 +78,7 @@ async def create_tenant(
                 body=CreateWalletRequestWithGroups(
                     image_url=body.image_url,
                     key_management_mode="managed",
-                    label=name,
+                    label=wallet_label,
                     wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
                     wallet_name=wallet_name,
                     wallet_type="askar",
@@ -88,10 +89,10 @@ async def create_tenant(
 
             if roles:
                 bound_logger.info(
-                    "Onboarding `{}` with requested roles: `{}`", name, roles
+                    "Onboarding `{}` with requested roles: `{}`", wallet_label, roles
                 )
                 onboard_result = await onboard_tenant(
-                    name=name,
+                    tenant_label=wallet_label,
                     roles=roles,
                     wallet_auth_token=wallet_response.token,
                     wallet_id=wallet_response.wallet_id,
@@ -100,7 +101,7 @@ async def create_tenant(
                 await register_actor(
                     actor=Actor(
                         id=wallet_response.wallet_id,
-                        name=name,
+                        name=wallet_label,
                         roles=roles,
                         did=onboard_result.did,
                         didcomm_invitation=onboard_result.didcomm_invitation,
@@ -131,7 +132,7 @@ async def create_tenant(
 
     response = CreateTenantResponse(
         wallet_id=wallet_response.wallet_id,
-        tenant_name=name,
+        wallet_label=wallet_label,
         wallet_name=wallet_name,
         created_at=wallet_response.created_at,
         image_url=body.image_url,
@@ -221,7 +222,7 @@ async def update_tenant(
             wallet_id=wallet_id,
             body=UpdateWalletRequest(
                 image_url=body.image_url,
-                label=body.name,
+                label=body.wallet_label,
             ),
         )
 

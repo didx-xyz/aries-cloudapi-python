@@ -45,7 +45,7 @@ An example of a successful response to create a new Issuer Tenant:
 {
   "access_token": "tenant.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiIzNTM3NmU0Yy1lYTI5LTQ1MDAtYTBhZC0xMGY3NTBkZGExM2UifQ.DEoMAD4AhLF-gHfr8JdqiRnZl31RltFIWk-al30F9Ak",
   "wallet_id": "35376e4c-ea29-4500-a0ad-10f750dda13e",
-  "tenant_name": "Issuer",
+  "wallet_label": "Issuer",
   "image_url": "https://www.abc.xyz/assets/images/logo/logo.png",
   "created_at": "2022-06-07T07:53:12.584044Z",
   "updated_at": "2022-06-07T07:53:12.584044Z"
@@ -74,7 +74,7 @@ Tenants, functioning as custodial wallets, are established within the Trust Ecos
    {
      "access_token": "tenant.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiIxOTkwYzkzNS1iNTFlLTQ0NjMtODQ0Ny1hMGFmMzFlNDRlNDIifQ.SqmG9--tCLgJ1FV_31uc4yVOchX_t7oc7jHyVKq8W3w",
      "wallet_id": "1990c935-b51e-4463-8447-a0af31e44e42",
-     "tenant_name": "Verifier",
+     "wallet_label": "Verifier",
      "image_url": "https://www.abc.xyz/assets/images/logo/logo.png",
      "created_at": "2022-06-07T07:56:45.045014Z",
      "updated_at": "2022-06-07T07:56:45.045014Z"
@@ -102,7 +102,7 @@ Similar to Verifiers, Tenants for Holders are created within the Trust Ecosystem
    {
      "access_token": "tenant.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiJjZmFmMjc2ZS1jZTc2LTQxMTYtYmUwZC03YTU0OWQ2NDgwNWIifQ.eQNCRQvKuNSlelUNZuDGpUPK7Dtvgo3uO4gDorZd2I4",
      "wallet_id": "cfaf276e-ce76-4116-be0d-7a549d64805b",
-     "tenant_name": "Holder",
+     "wallet_label": "Holder",
      "image_url": "https://www.abc.xyz/assets/images/logo/logo.png",
      "created_at": "2022-06-07T07:58:22.043147Z",
      "updated_at": "2022-06-07T07:58:22.043147Z"

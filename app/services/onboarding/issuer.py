@@ -15,10 +15,10 @@ logger = get_logger(__name__)
 
 async def onboard_issuer(
     *,
-    name: str = None,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     issuer_wallet_id: str,
+    issuer_label: str = None,
 ):
     """Onboard the controller as issuer.
 
@@ -28,9 +28,9 @@ async def onboard_issuer(
       - make sure the issuer has set up endorsement with the endorser connection
 
     Args:
-        name (str): name of the issuer
         issuer_controller (AcaPyClient): authenticated ACA-Py client for issuer
         endorser_controller (AcaPyClient): authenticated ACA-Py client for endorser
+        issuer_label (str): alias for the issuer
     """
     bound_logger = logger.bind(body={"issuer_wallet_id": issuer_wallet_id})
     bound_logger.info("Onboarding issuer")
@@ -41,7 +41,7 @@ async def onboard_issuer(
     except CloudApiException:
         bound_logger.debug("No public DID for the to-be issuer")
         issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(
-            name, endorser_controller, issuer_controller, issuer_wallet_id
+            endorser_controller, issuer_controller, issuer_wallet_id, issuer_label
         )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")
@@ -49,7 +49,7 @@ async def onboard_issuer(
         auto_accept=True,
         multi_use=True,
         body=InvitationCreateRequest(
-            alias=f"Trust Registry {name}",
+            alias=f"Trust Registry {issuer_label}",
             handshake_protocols=["https://didcomm.org/didexchange/1.0"],
         ),
     )
@@ -61,10 +61,10 @@ async def onboard_issuer(
 
 
 async def onboard_issuer_no_public_did(
-    name: str,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     issuer_wallet_id: str,
+    issuer_label: str,
 ):
     """
     Onboard an issuer without a public DID.
@@ -78,7 +78,7 @@ async def onboard_issuer_no_public_did(
       - Register the issuer DID on the ledger
 
     Args:
-        name (str): Name of the issuer
+        issuer_label (str): Alias of the issuer
         endorser_controller (AcaPyClient): Authenticated ACA-Py client for endorser
         issuer_controller (AcaPyClient): Authenticated ACA-Py client for issuer
         issuer_wallet_id (str): Wallet id of the issuer
@@ -99,10 +99,14 @@ async def onboard_issuer_no_public_did(
     try:
         bound_logger.info("Creating connection with endorser")
         await create_connection_with_endorser(
-            endorser_controller, issuer_controller, endorser_did, name, bound_logger
+            endorser_controller,
+            issuer_controller,
+            endorser_did,
+            issuer_label,
+            bound_logger,
         )
         issuer_did = await register_issuer_did(
-            endorser_controller, issuer_controller, name, bound_logger
+            endorser_controller, issuer_controller, issuer_label, bound_logger
         )
     except Exception as e:
         bound_logger.exception("Could not create connection with endorser.")

@@ -122,7 +122,7 @@ async def configure_endorsement(
 async def register_issuer_did(
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
-    name: str,
+    issuer_label: str,
     logger: Logger,
 ):
     logger.info("Creating DID for issuer")
@@ -132,7 +132,7 @@ async def register_issuer_did(
         endorser_controller,
         did=issuer_did.did,
         verkey=issuer_did.verkey,
-        alias=name,
+        alias=issuer_label,
     )
 
     logger.debug("Accepting TAA on behalf of issuer")

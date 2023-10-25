@@ -15,7 +15,7 @@ def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
 
     return Tenant(
         wallet_id=wallet_record.wallet_id,
-        tenant_name=label,
+        wallet_label=label,
         wallet_name=wallet_name,
         created_at=wallet_record.created_at,
         updated_at=wallet_record.updated_at,

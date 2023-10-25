@@ -67,7 +67,7 @@ async def test_create_tenant_member_wo_wallet_name(
     wallet_name = wallet.settings["wallet.name"]
     assert tenant["wallet_id"] == wallet.wallet_id
     assert tenant["group_id"] == group_id
-    assert tenant["tenant_name"] == name
+    assert tenant["wallet_label"] == name
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
     assert tenant["wallet_name"] == wallet_name
@@ -102,7 +102,7 @@ async def test_create_tenant_member_w_wallet_name(
     wallet_name = wallet.settings["wallet.name"]
     assert tenant["wallet_id"] == wallet.wallet_id
     assert tenant["group_id"] == group_id
-    assert tenant["tenant_name"] == name
+    assert tenant["wallet_label"] == name
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
     assert tenant["wallet_name"] == wallet_name
@@ -136,7 +136,7 @@ async def test_create_tenant_member_w_wallet_name(
 
     assert tenant["wallet_id"] == wallet.wallet_id
     assert tenant["group_id"] == group_id
-    assert tenant["tenant_name"] == name
+    assert tenant["wallet_label"] == name
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
     assert tenant["wallet_name"] == wallet_name
@@ -202,7 +202,7 @@ async def test_create_tenant_issuer(
         )
 
     # Actor
-    assert_that(actor).has_name(tenant["tenant_name"])
+    assert_that(actor).has_name(tenant["wallet_label"])
     assert_that(actor).has_did(f"did:sov:{public_did.did}")
     assert_that(actor).has_roles(["issuer"])
 
@@ -211,7 +211,7 @@ async def test_create_tenant_issuer(
 
     # Tenant
     assert_that(tenant).has_wallet_id(wallet.wallet_id)
-    assert_that(tenant).has_tenant_name(name)
+    assert_that(tenant).has_wallet_label(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
@@ -270,13 +270,13 @@ async def test_create_tenant_verifier(
     # Connection invitation
     assert_that(connection).has_state("invitation")
 
-    assert_that(actor).has_name(tenant["tenant_name"])
+    assert_that(actor).has_name(tenant["wallet_label"])
     assert_that(actor).has_did(ed25519_verkey_to_did_key(connection.invitation_key))
     assert_that(actor).has_roles(["verifier"])
 
     # Tenant
     assert_that(tenant).has_wallet_id(wallet.wallet_id)
-    assert_that(tenant).has_tenant_name(name)
+    assert_that(tenant).has_wallet_label(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
@@ -329,7 +329,7 @@ async def test_update_tenant_verifier_to_issuer(
     # Tenant
     assert_that(verifier_tenant).has_wallet_id(wallet.wallet_id)
     assert_that(verifier_tenant).has_image_url(image_url)
-    assert_that(verifier_tenant).has_tenant_name(name)
+    assert_that(verifier_tenant).has_wallet_label(name)
     assert_that(verifier_tenant).has_created_at(wallet.created_at)
     assert_that(verifier_tenant).has_updated_at(wallet.updated_at)
 
@@ -348,7 +348,7 @@ async def test_update_tenant_verifier_to_issuer(
     new_tenant = response.json()
     assert_that(new_tenant).has_wallet_id(wallet.wallet_id)
     assert_that(new_tenant).has_image_url(new_image_url)
-    assert_that(new_tenant).has_tenant_name(new_name)
+    assert_that(new_tenant).has_wallet_label(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
 
     new_actor = await trust_registry.fetch_actor_by_id(verifier_wallet_id)

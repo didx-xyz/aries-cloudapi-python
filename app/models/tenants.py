@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 from app.models.trust_registry import TrustRegistryRole
 
 # Deduplicate some descriptions and field definitions
-name_description = "A required alias for the tenant, publicized to other agents when forming a connection. "
-"If the tenant is an issuer or verifier, this name will be displayed on the trust registry and must be unique."
-name_examples = ["A required alias for the tenant"]
+label_description = "A required alias for the tenant, publicized to other agents when forming a connection. "
+"If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique."
+label_examples = ["Tenant Label"]
 group_id_field = Field(
     None,
     description="An optional group identifier. Useful with `get_tenants` to fetch wallets by group id.",
@@ -25,7 +25,9 @@ class CreateWalletRequestWithGroups(CreateWalletRequest):
 
 
 class CreateTenantRequest(BaseModel):
-    name: str = Field(..., description=name_description, examples=name_examples)
+    wallet_label: str = Field(
+        ..., description=label_description, examples=label_examples
+    )
     wallet_name: Optional[str] = Field(
         None,
         description="An optional wallet name. Useful with `get_tenants` to fetch wallets by wallet name. "
@@ -38,8 +40,8 @@ class CreateTenantRequest(BaseModel):
 
 
 class UpdateTenantRequest(BaseModel):
-    name: Optional[str] = Field(
-        None, description=name_description, examples=name_examples
+    wallet_label: Optional[str] = Field(
+        None, description=label_description, examples=label_examples
     )
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field
@@ -48,7 +50,7 @@ class UpdateTenantRequest(BaseModel):
 
 class Tenant(BaseModel):
     wallet_id: str = Field(..., examples=["545135a4-ecbc-4400-8594-bdb74c51c88d"])
-    tenant_name: str = Field(..., examples=["Alice"])
+    wallet_label: str = Field(..., examples=["Alice"])
     wallet_name: str = Field(..., examples=["SomeWalletName"])
     created_at: str = Field(...)
     updated_at: Optional[str] = Field(None)

@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Any, Dict, Optional
 
@@ -141,15 +142,36 @@ async def should_accept_endorsement(
         client, attachment
     )
 
-    if not await is_valid_issuer(did, schema_id):
-        bound_logger.debug(
-            "Endorsement request with transaction id `{}` is not for did "
-            "and schema registered in the trust registry.",
-            transaction_id,
-        )
-        return False
+    MAX_RETRIES = 5
+    RETRY_DELAY = 1  # in seconds
 
-    return True
+    for attempt in range(MAX_RETRIES):
+        try:
+            valid_issuer = await is_valid_issuer(did, schema_id)
+
+            if not valid_issuer:
+                bound_logger.info(
+                    "Endorsement request with transaction id `{}` is not for did "
+                    "and schema registered in the trust registry.",
+                    transaction_id,
+                )
+                return False
+
+            return True
+
+        except HTTPError as e:
+            bound_logger.error(
+                "Attempt {}: Exception caught when asserting valid issuer: {}",
+                attempt + 1,
+                e,
+            )
+
+            if attempt < MAX_RETRIES - 1:
+                bound_logger.info("Retrying...")
+                await asyncio.sleep(RETRY_DELAY)
+            else:
+                bound_logger.error("Max retries reached. Giving up.")
+                return False
 
 
 async def get_did_and_schema_id_from_cred_def_attachment(
@@ -277,12 +299,18 @@ async def is_valid_issuer(did: str, schema_id: str):
         raise e from e
 
     if actor_res.is_error:
-        bound_logger.error(
-            "Error retrieving actor for did `{}` from trust registry: `{}`.",
-            did,
-            actor_res.text,
-        )
-        return False
+        if actor_res.status_code == 404:
+            bound_logger.info("Not valid issuer; DID not found on trust registry.")
+            return False
+        else:
+            bound_logger.error(
+                "Error retrieving actor for did `{}` from trust registry: `{}`.",
+                did,
+                actor_res.text,
+            )
+            raise HTTPError(
+                f"Error fetching actor by DID: {actor_res.status_code} - `{actor_res.text}`.",
+            )
     actor = actor_res.json()
 
     # We need role issuer

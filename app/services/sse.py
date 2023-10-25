@@ -35,9 +35,7 @@ async def sse_subscribe_wallet(
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     try:
-        async with RichAsyncClient(
-            timeout=default_timeout, raise_status_error=False
-        ) as client:
+        async with RichAsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id")
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}"
@@ -63,9 +61,7 @@ async def sse_subscribe_wallet_topic(
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     try:
-        async with RichAsyncClient(
-            timeout=default_timeout, raise_status_error=False
-        ) as client:
+        async with RichAsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id/topic")
             async with client.stream(
                 "GET", f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}"
@@ -96,9 +92,7 @@ async def sse_subscribe_event_with_state(
         body={"wallet_id": wallet_id, "topic": topic, "state": desired_state}
     )
     try:
-        async with RichAsyncClient(
-            timeout=event_timeout, raise_status_error=False
-        ) as client:
+        async with RichAsyncClient(timeout=event_timeout) as client:
             bound_logger.debug(
                 "Connecting stream to /sse/wallet_id/topic/desired_state"
             )
@@ -132,9 +126,7 @@ async def sse_subscribe_stream_with_fields(
         body={"wallet_id": wallet_id, "topic": topic, field: field_id}
     )
     try:
-        async with RichAsyncClient(
-            timeout=default_timeout, raise_status_error=False
-        ) as client:
+        async with RichAsyncClient(timeout=default_timeout) as client:
             bound_logger.debug(
                 "Connecting stream to /sse/wallet_id/topic/field/field_id"
             )
@@ -174,9 +166,7 @@ async def sse_subscribe_event_with_field_and_state(
         }
     )
     try:
-        async with RichAsyncClient(
-            timeout=event_timeout, raise_status_error=False
-        ) as client:
+        async with RichAsyncClient(timeout=event_timeout) as client:
             bound_logger.debug(
                 "Connecting stream to /sse/wallet_id/topic/field/field_id/desired_state"
             )

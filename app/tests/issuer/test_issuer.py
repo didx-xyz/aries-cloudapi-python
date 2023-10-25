@@ -252,6 +252,21 @@ async def test_request_credential(
             "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id2"
         )
 
+    with when(IssuerV2).request_credential(...).thenReturn(to_async(ld_record)), when(
+        IssuerV2
+    ).get_record(...).thenReturn(to_async(ld_record)), when(
+        test_module
+    ).assert_valid_issuer(
+        ...
+    ).thenReturn(
+        to_async(True)
+    ):
+        await test_module.request_credential("v2-credential_id", mock_tenant_auth)
+
+        verify(IssuerV2).request_credential(
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+        )
+        verify(test_module).assert_valid_issuer("did:sov:WgWxqztrNooG92RXvxSTWv", None)
 
 @pytest.mark.anyio
 async def test_request_credential_x_no_schema_cred_def(

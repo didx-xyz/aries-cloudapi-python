@@ -1,14 +1,15 @@
 from typing import Literal, Optional
 
-import httpx
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
+from httpx import HTTPError
 from pydantic import BaseModel, Field
 
 from app.services import acapy_wallet
 from app.services.acapy_ledger import accept_taa_if_required
 from shared import LEDGER_REGISTRATION_URL, LEDGER_TYPE
 from shared.log_config import get_logger
+from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
 
@@ -46,11 +47,11 @@ async def post_to_ledger(
 
     logger.info(f"Try post to ledger: {payload}")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient(raise_status_error=False) as client:
             response = await client.post(
                 LEDGER_REGISTRATION_URL, json=payload.model_dump(), timeout=300
             )
-    except httpx.HTTPError as e:
+    except HTTPError as e:
         raise e from e
 
     if response.is_error:

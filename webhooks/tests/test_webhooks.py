@@ -1,5 +1,4 @@
 import pytest
-from httpx import AsyncClient
 
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
@@ -11,7 +10,7 @@ from webhooks.main import app
 async def test_connection_webhooks(
     alice_member_client: RichAsyncClient, bob_and_alice_connection: BobAliceConnect
 ):
-    async with AsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
+    async with RichAsyncClient(app=app, base_url=WEBHOOKS_URL) as client:
         alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
         alice_connection_id = bob_and_alice_connection.alice_connection_id
 

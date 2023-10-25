@@ -1,9 +1,10 @@
+import asyncio
 import json
 from typing import Any, Dict, Optional
 
-import httpx
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 from fastapi_websocket_pubsub import PubSubClient
+from httpx import HTTPError, HTTPStatusError
 from pydantic import BaseModel
 
 from shared import (
@@ -14,6 +15,7 @@ from shared import (
 )
 from shared.log_config import get_logger
 from shared.models.topics import Endorsement
+from shared.util.rich_async_client import RichAsyncClient
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
@@ -140,15 +142,36 @@ async def should_accept_endorsement(
         client, attachment
     )
 
-    if not await is_valid_issuer(did, schema_id):
-        bound_logger.debug(
-            "Endorsement request with transaction id `{}` is not for did "
-            "and schema registered in the trust registry.",
-            transaction_id,
-        )
-        return False
+    max_retries = 5
+    retry_delay = 1  # in seconds
 
-    return True
+    for attempt in range(max_retries):
+        try:
+            valid_issuer = await is_valid_issuer(did, schema_id)
+
+            if not valid_issuer:
+                bound_logger.info(
+                    "Endorsement request with transaction id `{}` is not for did "
+                    "and schema registered in the trust registry.",
+                    transaction_id,
+                )
+                return False
+
+            return True
+
+        except HTTPError as e:
+            bound_logger.error(
+                "Attempt {}: Exception caught when asserting valid issuer: {}",
+                attempt + 1,
+                e,
+            )
+
+            if attempt < max_retries - 1:
+                bound_logger.info("Retrying...")
+                await asyncio.sleep(retry_delay)
+            else:
+                bound_logger.error("Max retries reached. Giving up.")
+                return False
 
 
 async def get_did_and_schema_id_from_cred_def_attachment(
@@ -264,24 +287,22 @@ async def is_valid_issuer(did: str, schema_id: str):
     bound_logger = logger.bind(body={"did": did, "schema_id": schema_id})
     bound_logger.debug("Assert that did is registered as issuer")
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient() as client:
             bound_logger.debug("Fetch actor with did `{}` from trust registry", did)
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
-    except httpx.HTTPError as e:
-        bound_logger.exception(
-            "Caught HTTP error when reading actor from trust registry."
-        )
-        raise e from e
-
-    if actor_res.is_error:
-        bound_logger.error(
-            "Error retrieving actor for did `{}` from trust registry: `{}`.",
-            did,
-            actor_res.text,
-        )
-        return False
+    except HTTPStatusError as http_err:
+        if http_err.response.status_code == 404:
+            bound_logger.info("Not valid issuer; DID not found on trust registry.")
+            return False
+        else:
+            bound_logger.error(
+                "Error retrieving actor from trust registry: `{}`.",
+                did,
+                http_err.response,
+            )
+            raise http_err
     actor = actor_res.json()
 
     # We need role issuer
@@ -290,19 +311,17 @@ async def is_valid_issuer(did: str, schema_id: str):
         return False
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with RichAsyncClient() as client:
             bound_logger.debug("Fetch schema from trust registry")
-            schema_res = await client.get(
-                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-            )
-            schema_res.raise_for_status()
-    except httpx.HTTPStatusError as http_err:
+            await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
+    except HTTPStatusError as http_err:
         if http_err.response.status_code == 404:
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:
-            bound_logger.exception(
-                "Something went wrong when fetching schema from trust registry."
+            bound_logger.error(
+                "Something went wrong when fetching schema from trust registry: `{}`.",
+                http_err.response,
             )
             raise http_err
 

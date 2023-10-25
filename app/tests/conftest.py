@@ -1,9 +1,5 @@
-from unittest.mock import AsyncMock, Mock
-
 import mockito
 import pytest
-from httpx import Response
-from pytest_mock import MockerFixture
 
 # flake8: noqa
 # pylint: disable=unused-import
@@ -81,15 +77,3 @@ def unstub_mockito():
 
     # Teardown phase: After each test, unstub all stubbed methods
     mockito.unstub()
-
-
-@pytest.fixture
-def mock_async_client(mocker: MockerFixture) -> Mock:
-    patch_async_client = mocker.patch("httpx.AsyncClient")
-
-    mocked_async_client = Mock()
-    response = Response(status_code=200)
-    mocked_async_client.get = AsyncMock(return_value=response)
-    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
-
-    return mocked_async_client

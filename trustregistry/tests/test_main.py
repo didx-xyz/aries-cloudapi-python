@@ -1,12 +1,12 @@
 import pytest
-from httpx import AsyncClient
 
 from shared import TRUST_REGISTRY_URL
+from shared.util.rich_async_client import RichAsyncClient
 
 
 @pytest.mark.anyio
 async def test_root():
-    async with AsyncClient() as client:
+    async with RichAsyncClient() as client:
         resp = await client.get(f"{TRUST_REGISTRY_URL}")
 
     assert resp.status_code == 200
@@ -16,7 +16,7 @@ async def test_root():
 
 @pytest.mark.anyio
 async def test_registry():
-    async with AsyncClient() as client:
+    async with RichAsyncClient() as client:
         resp = await client.get(f"{TRUST_REGISTRY_URL}/registry")
 
     assert resp.status_code == 200

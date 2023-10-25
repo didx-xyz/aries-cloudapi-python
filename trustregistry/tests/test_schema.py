@@ -1,7 +1,7 @@
 import pytest
-from httpx import AsyncClient
 
 from shared import TRUST_REGISTRY_URL
+from shared.util.rich_async_client import RichAsyncClient
 from trustregistry.registry.registry_schemas import SchemaID, _get_schema_attrs
 
 schema_id = "string:2:string:string"
@@ -10,7 +10,7 @@ updated_schema_id = "string_updated:2:string_updated:string_updated"
 
 @pytest.mark.anyio
 async def test_get_schemas():
-    async with AsyncClient() as client:
+    async with RichAsyncClient() as client:
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     assert response.status_code == 200
     assert "schemas" in response.json()
@@ -26,7 +26,7 @@ async def test_register_schema():
     }
     payload = {"schema_id": schema_id}
 
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/schemas",
             json=payload,
@@ -59,7 +59,7 @@ async def test_get_schema_by_id():
         "version": "string",
     }
 
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.get(
             f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
         )
@@ -83,7 +83,7 @@ async def test_update_schema():
     }
     payload = {"schema_id": updated_schema_id}
 
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}",
             json=payload,
@@ -108,7 +108,7 @@ async def test_update_schema():
 
 @pytest.mark.anyio
 async def test_remove_schema():
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.delete(
             f"{TRUST_REGISTRY_URL}/registry/schemas/{updated_schema_id}"
         )

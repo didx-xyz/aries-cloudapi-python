@@ -2,8 +2,21 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from httpx import HTTPStatusError, Response
+from pytest_mock import MockerFixture
 
 import app.services.trust_registry as trf
+
+
+@pytest.fixture
+def mock_async_client(mocker: MockerFixture) -> Mock:
+    patch_async_client = mocker.patch("app.services.trust_registry.RichAsyncClient")
+
+    mocked_async_client = Mock()
+    response = Response(status_code=200)
+    mocked_async_client.get = AsyncMock(return_value=response)
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+
+    return mocked_async_client
 
 
 @pytest.mark.anyio

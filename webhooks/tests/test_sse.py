@@ -3,7 +3,7 @@ import logging
 
 import httpx
 import pytest
-from httpx import AsyncClient, Response, Timeout
+from httpx import Response, Timeout
 
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
@@ -112,7 +112,7 @@ async def test_sse_subscribe_event(
 async def get_sse_stream_response(url, duration=2) -> Response:
     timeout = Timeout(duration)
     try:
-        async with AsyncClient(timeout=timeout) as client:
+        async with RichAsyncClient(timeout=timeout) as client:
             async with client.stream("GET", url) as response:
                 response_text = ""
                 try:
@@ -139,7 +139,7 @@ def response_to_json(response_text):
 
 async def listen_for_event(url, duration=10):
     timeout = Timeout(duration)
-    async with AsyncClient(timeout=timeout) as client:
+    async with RichAsyncClient(timeout=timeout) as client:
         async with client.stream("GET", url) as response:
             async for line in response.aiter_lines():
                 if line.startswith("data: "):

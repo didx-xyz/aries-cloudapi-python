@@ -1,18 +1,10 @@
 import base64
 import json
-from typing import Dict, List, Optional
-
-import httpx
-from pydantic import BaseModel
+from typing import Dict, Optional
 
 from app.event_handling.sse_listener import SseListener
-from shared import WEBHOOKS_URL, RichAsyncClient
+from shared import RichAsyncClient
 from shared.models.topics import CloudApiTopics
-
-
-class FilterMap(BaseModel):
-    filter_key: str
-    filter_value: str
 
 
 def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
@@ -75,17 +67,3 @@ async def check_webhook_state(
         return True
     else:
         raise Exception(f"Could not satisfy webhook filter: `{filter_map}`.")
-
-
-async def get_hooks_per_topic_per_wallet(
-    client: RichAsyncClient, topic: CloudApiTopics
-) -> List:
-    wallet_id = get_wallet_id_from_async_client(client)
-    try:
-        async with httpx.AsyncClient() as client:
-            hooks = await client.get(
-                f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}"
-            ).json()
-        return hooks if hooks else []
-    except httpx.HTTPError as e:
-        raise e from e

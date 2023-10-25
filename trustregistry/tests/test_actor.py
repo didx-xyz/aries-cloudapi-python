@@ -1,10 +1,10 @@
 import json
 
 import pytest
-from httpx import AsyncClient
 
 from app.util.string import random_string
 from shared import TRUST_REGISTRY_URL
+from shared.util.rich_async_client import RichAsyncClient
 
 new_actor = {
     "id": "darth-vader",
@@ -30,7 +30,7 @@ def generate_actor():
 
 @pytest.mark.anyio
 async def test_get_actors():
-    async with AsyncClient() as client:
+    async with RichAsyncClient() as client:
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
     assert response.status_code == 200
@@ -56,7 +56,7 @@ async def test_register_actor():
     id_payload["id"] = new_actor["id"]
     id_payload = json.dumps(id_payload)
 
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
             content=payload,
@@ -100,7 +100,7 @@ async def test_register_actor():
 
 @pytest.mark.anyio
 async def test_get_actor():
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         # test by id
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}")
 
@@ -144,7 +144,7 @@ async def test_get_actor():
 
 @pytest.mark.anyio
 async def test_update_actor():
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}",
             json=new_actor,
@@ -169,7 +169,7 @@ async def test_update_actor_x():
     updated_actor = new_actor.copy()
     updated_actor["did"] = None
 
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}",
             json=updated_actor,
@@ -184,7 +184,7 @@ async def test_update_actor_x():
 
 @pytest.mark.anyio
 async def test_remove_actors():
-    async with AsyncClient() as client:
+    async with RichAsyncClient(raise_status_error=False) as client:
         response = await client.delete(
             f"{TRUST_REGISTRY_URL}/registry/actors/{actor_id}"
         )

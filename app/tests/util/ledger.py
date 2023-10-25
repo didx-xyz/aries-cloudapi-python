@@ -2,7 +2,6 @@ from typing import Literal, Optional
 
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
-from httpx import HTTPError
 from pydantic import BaseModel, Field
 
 from app.services import acapy_wallet

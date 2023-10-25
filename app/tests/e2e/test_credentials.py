@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
@@ -118,6 +120,7 @@ async def credential_exchange_id(
         },
     )
 
+    asyncio.sleep(0.1)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection.alice_connection_id},

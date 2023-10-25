@@ -1,12 +1,14 @@
 import unittest
 
 import pytest
+from aiohttp import ClientResponseError, RequestInfo
 from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
 
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
+from app.exceptions.cloud_api_error import CloudApiException
 from app.models.issuer import CredentialWithProtocol, IndyCredential, RevokeCredential
 from app.services import revocation_registry
 from app.services.issuer.acapy_issuer_v1 import IssuerV1

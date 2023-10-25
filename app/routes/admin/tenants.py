@@ -51,6 +51,7 @@ async def create_tenant(
 
     name = body.name
     roles = body.roles
+    wallet_name=body.wallet_name or uuid4().hex,
 
     if roles:
         bound_logger.info("Create tenant with roles. Assert name is unique")
@@ -78,7 +79,7 @@ async def create_tenant(
                     key_management_mode="managed",
                     label=name,
                     wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
-                    wallet_name=body.wallet_name or uuid4().hex,
+                    wallet_name=wallet_name,
                     wallet_type="askar",
                     group_id=body.group_id,
                 )
@@ -130,10 +131,11 @@ async def create_tenant(
 
     response = CreateTenantResponse(
         wallet_id=wallet_response.wallet_id,
+        tenant_name=name,
+        wallet_name=wallet_name,
         created_at=wallet_response.created_at,
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
-        tenant_name=name,
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )

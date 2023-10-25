@@ -109,14 +109,10 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Fetching schema from trust registry")
 
-    try:
-        async with httpx.AsyncClient() as client:
-            schema_response = await client.get(
-                f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-            )
-    except httpx.HTTPError as e:
-        logger.exception("HTTP Error caught when fetching from trust registry.")
-        raise e
+    async with RichAsyncClient(raise_status_error=False) as client:
+        schema_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+        )
 
     if schema_response.status_code == 404:
         bound_logger.info("Bad request: Schema not found.")

@@ -203,12 +203,8 @@ async def all_actors() -> list[Actor]:
     """
     bound_logger = logger.bind(body={"Getting all Actors"})
     bound_logger.info("Fetching all actors from trust registry")
-    try:
-        async with httpx.AsyncClient() as client:
-            actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
-    except httpx.HTTPError as e:
-        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
-        raise e
+    async with RichAsyncClient(raise_status_error=False) as client:
+        actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
     if actors_response.is_error:
         bound_logger.error(
@@ -280,14 +276,10 @@ async def actor_by_name(actor_name: str) -> Optional[Actor]:
     """
     bound_logger = logger.bind(body={"actor_id": actor_name})
     bound_logger.info("Fetching actor by NAME from trust registry")
-    try:
-        async with httpx.AsyncClient() as client:
-            actor_response = await client.get(
-                f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
-            )
-    except httpx.HTTPError as e:
-        bound_logger.exception("HTTP Error caught when fetching from trust registry.")
-        raise e
+    async with RichAsyncClient(raise_status_error=False) as client:
+        actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
+        )
 
     if actor_response.status_code == 404:
         bound_logger.info("Bad request: Actor with name not found in registry.")

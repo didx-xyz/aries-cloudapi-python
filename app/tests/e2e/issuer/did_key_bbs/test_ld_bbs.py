@@ -1,3 +1,4 @@
+import asyncio
 from copy import deepcopy
 
 import pytest
@@ -106,6 +107,7 @@ async def test_send_jsonld_key_bbs(
     )
 
     # Check if Alice received the credential
+    asyncio.sleep(0.1)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": alice_connection_id},
@@ -232,6 +234,7 @@ async def test_send_jsonld_request(
         topic="credentials",
     )
 
+    asyncio.sleep(0.1)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": alice_connection_id},
@@ -294,6 +297,7 @@ async def test_issue_jsonld_bbs(
         topic="credentials",
     )
 
+    asyncio.sleep(0.1)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": alice_connection_id},

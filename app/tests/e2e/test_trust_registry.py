@@ -13,8 +13,8 @@ TRUST_REGISTRY = router.prefix
 
 @pytest.mark.anyio
 async def test_get_schemas(
-    schema_definition: CredentialSchema,  # noqa: F401
-    schema_definition_alt: CredentialSchema,  # noqa: F401
+    schema_definition: CredentialSchema,  # noqa: F841
+    schema_definition_alt: CredentialSchema,  # noqa: F841
 ):
     async with RichAsyncClient() as client:
         schemas_response = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/schemas")
@@ -88,14 +88,14 @@ async def test_get_actors(faber_issuer: CreateTenantResponse):
 
 
 @pytest.mark.anyio
-async def test_get_issuers(faber_issuer: CreateTenantResponse):  # noqa: F401
+async def test_get_issuers(faber_issuer: CreateTenantResponse):  # noqa: F841
     async with RichAsyncClient() as client:
         actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors/issuers")
         assert actors.status_code == 200
 
 
 @pytest.mark.anyio
-async def test_get_verifiers(acme_verifier: CreateTenantResponse):  # noqa: F401
+async def test_get_verifiers(acme_verifier: CreateTenantResponse):  # noqa: F841
     async with RichAsyncClient() as client:
         actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors/verifiers")
         assert actors.status_code == 200

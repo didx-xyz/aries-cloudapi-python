@@ -41,7 +41,7 @@ def mock_async_client(mocker: MockerFixture) -> Mock:
 
 
 @pytest.mark.anyio
-async def test_assert_valid_issuer(mock_async_client):
+async def test_assert_valid_issuer(mock_async_client: Mock):
     did = "did:sov:xxxx"
     actor = {"id": "actor-id", "roles": ["issuer"], "did": did}
     schema_id = "a_schema_id"
@@ -95,7 +95,7 @@ async def test_assert_valid_issuer(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_actor_has_role(mock_async_client):
+async def test_actor_has_role(mock_async_client: Mock):
     mock_async_client.get = AsyncMock(
         return_value=Response(200, json={"roles": ["verifier"]})
     )
@@ -120,7 +120,7 @@ async def test_actor_has_role(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_actor_by_did(mock_async_client):
+async def test_actor_by_did(mock_async_client: Mock):
     res = {
         "id": "governance",
         "roles": ["verifier"],
@@ -143,7 +143,7 @@ async def test_actor_by_did(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_actor_with_role(mock_async_client):
+async def test_actor_with_role(mock_async_client: Mock):
     actors = [
         {"id": "governance", "roles": ["issuer"]},
         {"id": "governance2", "roles": ["issuer"]},
@@ -183,7 +183,7 @@ async def test_actor_with_role(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_registry_has_schema(mock_async_client):
+async def test_registry_has_schema(mock_async_client: Mock):
     schema_id = "did:name:version"
     did = "did:sov:xxxx"
     # mock has schema
@@ -225,7 +225,7 @@ async def test_registry_has_schema(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_register_schema(mock_async_client):
+async def test_register_schema(mock_async_client: Mock):
     schema_id = "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
     mock_async_client.post = AsyncMock(return_value=Response(200))
     await register_schema(schema_id=schema_id)
@@ -240,7 +240,7 @@ async def test_register_schema(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_register_actor(mock_async_client):
+async def test_register_actor(mock_async_client: Mock):
     actor = Actor(
         id="actor-id",
         name="actor-name",
@@ -266,7 +266,7 @@ async def test_register_actor(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_remove_actor_by_id(mock_async_client):
+async def test_remove_actor_by_id(mock_async_client: Mock):
     actor_id = "actor_id"
     mock_async_client.delete = AsyncMock(return_value=Response(200))
     await remove_actor_by_id(actor_id=actor_id)
@@ -280,7 +280,7 @@ async def test_remove_actor_by_id(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_remove_schema_by_id(mock_async_client):
+async def test_remove_schema_by_id(mock_async_client: Mock):
     schema_id = "schema_id"
     mock_async_client.delete = AsyncMock(return_value=Response(200))
     await remove_schema_by_id(schema_id=schema_id)
@@ -296,7 +296,7 @@ async def test_remove_schema_by_id(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_update_actor(mock_async_client):
+async def test_update_actor(mock_async_client: Mock):
     actor_id = "actor_id"
     actor = Actor(
         id=actor_id,
@@ -324,7 +324,7 @@ async def test_update_actor(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_assert_actor_name(mock_async_client):
+async def test_assert_actor_name(mock_async_client: Mock):
     # test actor exists
     name = "Numuhukumakiaki'aialunamor"
     actor = Actor(
@@ -352,7 +352,7 @@ async def test_assert_actor_name(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_get_schemas(mock_async_client):
+async def test_get_schemas(mock_async_client: Mock):
     schemas = {
         "schemas": [
             {
@@ -386,7 +386,7 @@ async def test_get_schemas(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_get_schema_by_id(mock_async_client):
+async def test_get_schema_by_id(mock_async_client: Mock):
     schema = {
         "did": "CW2GEk5zZ7DcF818i3gLUs",
         "name": "test_schema",
@@ -410,7 +410,7 @@ async def test_get_schema_by_id(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_get_actor(mock_async_client):
+async def test_get_actor(mock_async_client: Mock):
     actor = {
         "actors": [
             {
@@ -463,7 +463,7 @@ async def test_get_actor(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_get_issuers(mock_async_client):
+async def test_get_issuers(mock_async_client: Mock):
     actor = {
         "actors": [
             {
@@ -485,7 +485,7 @@ async def test_get_issuers(mock_async_client):
 
 
 @pytest.mark.anyio
-async def test_get_verifiers(mock_async_client):
+async def test_get_verifiers(mock_async_client: Mock):
     actor = {
         "actors": [
             {

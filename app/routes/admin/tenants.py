@@ -44,7 +44,7 @@ router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 async def create_tenant(
     body: CreateTenantRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-) -> Tenant:
+) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
@@ -178,7 +178,7 @@ async def delete_tenant_by_id(
 async def get_wallet_auth_token(
     wallet_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Access token for tenant")
 

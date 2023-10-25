@@ -10,7 +10,7 @@ def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
     image_url: Optional[str] = wallet_record.settings.get("image_url")
 
     return Tenant(
-        tenant_id=wallet_record.wallet_id,
+        wallet_id=wallet_record.wallet_id,
         tenant_name=label,
         image_url=image_url,
         created_at=wallet_record.created_at,

@@ -17,7 +17,7 @@ TENANTS_BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
+async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -31,10 +31,10 @@ async def test_get_tenant_auth_token(tenant_admin_client: RichAsyncClient):
     assert response.status_code == 200
 
     tenant = response.json()
-    tenant_id = tenant["tenant_id"]
+    wallet_id = tenant["wallet_id"]
 
     response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}/{tenant_id}/access-token"
+        f"{TENANTS_BASE_PATH}/{wallet_id}/access-token"
     )
     assert response.status_code == 200
 
@@ -60,10 +60,10 @@ async def test_create_tenant_member(
     tenant = response.json()
 
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
-        wallet_id=tenant["tenant_id"]
+        wallet_id=tenant["wallet_id"]
     )
 
-    assert tenant["tenant_id"] == wallet.wallet_id
+    assert tenant["wallet_id"] == wallet.wallet_id
     assert tenant["group_id"] == group_id
     assert tenant["tenant_name"] == name
     assert tenant["created_at"] == wallet.created_at
@@ -91,14 +91,14 @@ async def test_create_tenant_issuer(
     assert response.status_code == 200
 
     tenant = response.json()
-    tenant_id = tenant["tenant_id"]
+    wallet_id = tenant["wallet_id"]
 
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
-        wallet_id=tenant_id
+        wallet_id=wallet_id
     )
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
-    actor = await trust_registry.actor_by_id(tenant_id)
+    actor = await trust_registry.actor_by_id(wallet_id)
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
@@ -138,7 +138,7 @@ async def test_create_tenant_issuer(
     assert_that(connection).has_their_public_did(endorser_did.did)
 
     # Tenant
-    assert_that(tenant).has_tenant_id(wallet.wallet_id)
+    assert_that(tenant).has_wallet_id(wallet.wallet_id)
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
@@ -175,13 +175,13 @@ async def test_create_tenant_verifier(
     assert response.status_code == 200
 
     tenant = response.json()
-    tenant_id = tenant["tenant_id"]
+    wallet_id = tenant["wallet_id"]
 
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
-        wallet_id=tenant_id
+        wallet_id=wallet_id
     )
 
-    actor = await trust_registry.actor_by_id(tenant_id)
+    actor = await trust_registry.actor_by_id(wallet_id)
 
     if not actor:
         raise Exception("Missing actor")
@@ -203,7 +203,7 @@ async def test_create_tenant_verifier(
     assert_that(actor).has_roles(["verifier"])
 
     # Tenant
-    assert_that(tenant).has_tenant_id(wallet.wallet_id)
+    assert_that(tenant).has_wallet_id(wallet.wallet_id)
     assert_that(tenant).has_tenant_name(name)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
@@ -228,14 +228,14 @@ async def test_update_tenant_verifier_to_issuer(
     )
 
     verifier_tenant = response.json()
-    verifier_tenant_id = verifier_tenant["tenant_id"]
-    verifier_actor = await trust_registry.actor_by_id(verifier_tenant_id)
+    verifier_wallet_id = verifier_tenant["wallet_id"]
+    verifier_actor = await trust_registry.actor_by_id(verifier_wallet_id)
     assert verifier_actor
     assert_that(verifier_actor).has_name(name)
     assert_that(verifier_actor).has_roles(["verifier"])
 
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
-        wallet_id=verifier_tenant_id
+        wallet_id=verifier_wallet_id
     )
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
@@ -255,7 +255,7 @@ async def test_update_tenant_verifier_to_issuer(
     )
 
     # Tenant
-    assert_that(verifier_tenant).has_tenant_id(wallet.wallet_id)
+    assert_that(verifier_tenant).has_wallet_id(wallet.wallet_id)
     assert_that(verifier_tenant).has_image_url(image_url)
     assert_that(verifier_tenant).has_tenant_name(name)
     assert_that(verifier_tenant).has_created_at(wallet.created_at)
@@ -266,7 +266,7 @@ async def test_update_tenant_verifier_to_issuer(
     new_roles = ["issuer", "verifier"]
 
     response = await tenant_admin_client.put(
-        f"{TENANTS_BASE_PATH}/{verifier_tenant_id}",
+        f"{TENANTS_BASE_PATH}/{verifier_wallet_id}",
         json={
             "image_url": new_image_url,
             "name": new_name,
@@ -274,19 +274,19 @@ async def test_update_tenant_verifier_to_issuer(
         },
     )
     new_tenant = response.json()
-    assert_that(new_tenant).has_tenant_id(wallet.wallet_id)
+    assert_that(new_tenant).has_wallet_id(wallet.wallet_id)
     assert_that(new_tenant).has_image_url(new_image_url)
     assert_that(new_tenant).has_tenant_name(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
 
-    new_actor = await trust_registry.actor_by_id(verifier_tenant_id)
+    new_actor = await trust_registry.actor_by_id(verifier_wallet_id)
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
     acapy_token = (
         (
             await tenant_admin_client.get(
-                f"{TENANTS_BASE_PATH}/{verifier_tenant_id}/access-token"
+                f"{TENANTS_BASE_PATH}/{verifier_wallet_id}/access-token"
             )
         )
         .json()["access_token"]
@@ -342,10 +342,10 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
     assert response.status_code == 200
     created_tenant = response.json()
-    first_tenant_id_id = created_tenant["tenant_id"]
+    first_wallet_id_id = created_tenant["wallet_id"]
 
     response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}/{first_tenant_id_id}"
+        f"{TENANTS_BASE_PATH}/{first_wallet_id_id}"
     )
 
     assert response.status_code == 200
@@ -364,7 +364,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     )
 
     assert response.status_code == 200
-    last_tenant_id = response.json()["tenant_id"]
+    last_wallet_id = response.json()["wallet_id"]
 
     response = await tenant_admin_client.get(TENANTS_BASE_PATH)
     assert response.status_code == 200
@@ -372,7 +372,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     assert len(tenants) >= 1
 
     # Make sure created tenant is returned
-    assert_that(tenants).extracting("tenant_id").contains(last_tenant_id)
+    assert_that(tenants).extracting("wallet_id").contains(last_wallet_id)
     assert_that(tenants).extracting("group_id").contains("ac/dc")
 
 
@@ -392,7 +392,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
 
     assert response.status_code == 200
     created_tenant = response.json()
-    tenant_id = created_tenant["tenant_id"]
+    wallet_id = created_tenant["wallet_id"]
 
     response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id={group_id}")
     assert response.status_code == 200
@@ -400,7 +400,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     assert len(tenants) >= 1
 
     # Make sure created tenant is returned
-    assert_that(tenants).extracting("tenant_id").contains(tenant_id)
+    assert_that(tenants).extracting("wallet_id").contains(wallet_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
     response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id=spicegirls")
@@ -426,18 +426,18 @@ async def test_delete_tenant(
 
     assert response.status_code == 200
     tenant = response.json()
-    tenant_id = tenant["tenant_id"]
+    wallet_id = tenant["wallet_id"]
 
     # Actor exists
-    actor = await trust_registry.actor_by_id(tenant_id)
+    actor = await trust_registry.actor_by_id(wallet_id)
     assert actor
 
-    response = await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{tenant_id}")
+    response = await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{wallet_id}")
     assert response.status_code == 200
 
     # Actor doesn't exist anymore
-    actor = await trust_registry.actor_by_id(tenant_id)
+    actor = await trust_registry.actor_by_id(wallet_id)
     assert not actor
 
     with pytest.raises(Exception):
-        await tenant_admin_acapy_client.multitenancy.get_wallet(wallet_id=tenant_id)
+        await tenant_admin_acapy_client.multitenancy.get_wallet(wallet_id=wallet_id)

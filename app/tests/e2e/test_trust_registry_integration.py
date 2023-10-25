@@ -37,7 +37,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     ).json()
 
     issuer_tenant_listener = SseListener(
-        topic="connections", wallet_id=faber_issuer.tenant_id
+        topic="connections", wallet_id=faber_issuer.wallet_id
     )
 
     invitation_response = (
@@ -58,13 +58,13 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
-    verifier_actor = await actor_by_id(acme_verifier.tenant_id)
+    verifier_actor = await actor_by_id(acme_verifier.wallet_id)
 
     assert verifier_actor
 
     verifier_tenant_listener = SseListener(
         topic="connections",
-        wallet_id=acme_verifier.tenant_id,
+        wallet_id=acme_verifier.wallet_id,
     )
 
     assert verifier_actor["didcomm_invitation"]
@@ -115,7 +115,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Issue credential from issuer to holder
     holder_tenant_listener = SseListener(
-        topic="credentials", wallet_id=alice_tenant.tenant_id
+        topic="credentials", wallet_id=alice_tenant.wallet_id
     )
 
     issuer_credential_exchange = (
@@ -142,7 +142,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     holder_credential_exchange_id = payload["credential_id"]
 
     issuer_tenant_cred_listener = SseListener(
-        topic="credentials", wallet_id=faber_issuer.tenant_id
+        topic="credentials", wallet_id=faber_issuer.wallet_id
     )
 
     response = await holder_client.post(
@@ -159,7 +159,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     # Present proof from holder to verifier
 
     holder_tenant_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.wallet_id
     )
 
     response = await verifier_client.post(
@@ -208,7 +208,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     cred_id = available_credentials[0]["cred_info"]["referent"]
 
     verifier_tenant_proofs_listener = SseListener(
-        topic="proofs", wallet_id=acme_verifier.tenant_id
+        topic="proofs", wallet_id=acme_verifier.wallet_id
     )
 
     response = await holder_client.post(

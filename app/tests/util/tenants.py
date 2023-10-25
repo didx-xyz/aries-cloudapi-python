@@ -42,5 +42,5 @@ async def create_tenant(admin_client: RichAsyncClient, name: str):
     return await post_tenant_request(admin_client, request)
 
 
-async def delete_tenant(admin_client: RichAsyncClient, tenant_id: str):
-    await admin_client.delete(f"{TENANT_BASE_PATH}/{tenant_id}")
+async def delete_tenant(admin_client: RichAsyncClient, wallet_id: str):
+    await admin_client.delete(f"{TENANT_BASE_PATH}/{wallet_id}")

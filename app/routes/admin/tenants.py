@@ -51,7 +51,7 @@ async def create_tenant(
 
     name = body.name
     roles = body.roles
-    wallet_name=body.wallet_name or uuid4().hex,
+    wallet_name = body.wallet_name or uuid4().hex
 
     if roles:
         bound_logger.info("Create tenant with roles. Assert name is unique")

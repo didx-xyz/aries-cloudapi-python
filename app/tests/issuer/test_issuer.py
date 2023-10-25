@@ -205,6 +205,7 @@ async def test_request_credential(
 
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
+    ld_record = mock(CredentialExchange)
 
     v1_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
     v1_record.schema_id = "schema_id1"
@@ -213,6 +214,9 @@ async def test_request_credential(
     v2_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
     v2_record.schema_id = "schema_id2"
     v2_record.type = "indy"
+
+    ld_record.type = "ld_proof"
+    ld_record.did = "did:sov:WgWxqztrNooG92RXvxSTWv"
 
     with when(IssuerV1).request_credential(...).thenReturn(to_async(v1_record)), when(
         test_module

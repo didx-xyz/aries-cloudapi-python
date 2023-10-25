@@ -287,30 +287,22 @@ async def is_valid_issuer(did: str, schema_id: str):
     bound_logger = logger.bind(body={"did": did, "schema_id": schema_id})
     bound_logger.debug("Assert that did is registered as issuer")
     try:
-        async with RichAsyncClient(raise_status_error=False) as client:
+        async with RichAsyncClient() as client:
             bound_logger.debug("Fetch actor with did `{}` from trust registry", did)
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
-    except HTTPError as e:
-        bound_logger.exception(
-            "Caught HTTP error when reading actor from trust registry."
-        )
-        raise e from e
-
-    if actor_res.is_error:
-        if actor_res.status_code == 404:
+    except HTTPStatusError as http_err:
+        if http_err.response.status_code == 404:
             bound_logger.info("Not valid issuer; DID not found on trust registry.")
             return False
         else:
             bound_logger.error(
-                "Error retrieving actor for did `{}` from trust registry: `{}`.",
+                "Error retrieving actor from trust registry: `{}`.",
                 did,
-                actor_res.text,
+                http_err.response,
             )
-            raise HTTPError(
-                f"Error fetching actor by DID: {actor_res.status_code} - `{actor_res.text}`.",
-            )
+            raise http_err
     actor = actor_res.json()
 
     # We need role issuer
@@ -327,8 +319,9 @@ async def is_valid_issuer(did: str, schema_id: str):
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:
-            bound_logger.exception(
-                "Something went wrong when fetching schema from trust registry."
+            bound_logger.error(
+                "Something went wrong when fetching schema from trust registry: `{}`.",
+                http_err.response,
             )
             raise http_err
 

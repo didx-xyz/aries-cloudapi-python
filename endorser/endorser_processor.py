@@ -142,10 +142,10 @@ async def should_accept_endorsement(
         client, attachment
     )
 
-    MAX_RETRIES = 5
-    RETRY_DELAY = 1  # in seconds
+    max_retries = 5
+    retry_delay = 1  # in seconds
 
-    for attempt in range(MAX_RETRIES):
+    for attempt in range(max_retries):
         try:
             valid_issuer = await is_valid_issuer(did, schema_id)
 
@@ -166,9 +166,9 @@ async def should_accept_endorsement(
                 e,
             )
 
-            if attempt < MAX_RETRIES - 1:
+            if attempt < max_retries - 1:
                 bound_logger.info("Retrying...")
-                await asyncio.sleep(RETRY_DELAY)
+                await asyncio.sleep(retry_delay)
             else:
                 bound_logger.error("Max retries reached. Giving up.")
                 return False

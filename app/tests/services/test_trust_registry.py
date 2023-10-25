@@ -42,38 +42,43 @@ def mock_async_client(mocker: MockerFixture, request) -> Mock:
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry.util.issuer"], indirect=True
-)
 async def test_assert_valid_issuer(
-    mock_async_client: Mock,  # pylint: disable=redefined-outer-name
+    mocker: MockerFixture,
 ):
+    service_path = "app.services.trust_registry"
+    actors_path = f"{service_path}.actors"
+    schema_path = f"{service_path}.util.schema"
+
+    patch_client_actors = mocker.patch(f"{actors_path}.RichAsyncClient")
+    patch_client_schema = mocker.patch(f"{schema_path}.RichAsyncClient")
+
     did = "did:sov:xxxx"
     actor = {"id": "actor-id", "roles": ["issuer"], "did": did}
     schema_id = "a_schema_id"
 
     # Mock the actor_by_did and registry_has_schema calls
-    response = Response(
+    mocked_client_get_did = Mock()
+    response_actor_by_did = Response(200, json=actor)
+    mocked_client_get_did.get = AsyncMock(return_value=response_actor_by_did)
+    patch_client_actors.return_value.__aenter__.return_value = mocked_client_get_did
+
+    mocked_client_get_schema = Mock()
+    response_schema = Response(
         status_code=200,
         json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
     )
-    response.raise_for_status = Mock()
-    mock_async_client.get = AsyncMock(
-        side_effect=[
-            Response(200, json=actor),
-            response,
-        ]
-    )
+    mocked_client_get_schema.get = AsyncMock(return_value=response_schema)
+    patch_client_schema.return_value.__aenter__.return_value = mocked_client_get_schema
 
     await assert_valid_issuer(did=did, schema_id=schema_id)
 
     # No actor with specified did
-    mock_async_client.get = AsyncMock(return_value=Response(404))
+    mocked_client_get_did.get = AsyncMock(return_value=Response(404))
     with pytest.raises(TrustRegistryException):
         await assert_valid_issuer(did=did, schema_id=schema_id)
 
     # Actor does not have required role 'issuer'
-    mock_async_client.get = AsyncMock(
+    mocked_client_get_schema.get = AsyncMock(
         return_value=Response(
             200, json={"id": "actor-id", "roles": ["verifier"], "did": did}
         )
@@ -83,19 +88,7 @@ async def test_assert_valid_issuer(
 
     # Schema is not registered in registry
     not_found_response = Response(status_code=404)
-    not_found_response.raise_for_status = Mock(
-        side_effect=HTTPStatusError(
-            response=not_found_response,
-            message="Schema not found in registry",
-            request=schema_id,
-        )
-    )
-    mock_async_client.get = AsyncMock(
-        side_effect=[
-            Response(200, json=actor),
-            not_found_response,
-        ]
-    )
+    mocked_client_get_schema.get = AsyncMock(return_value=not_found_response)
     with pytest.raises(TrustRegistryException):
         await assert_valid_issuer(did=did, schema_id=schema_id)
 

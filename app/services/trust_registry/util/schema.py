@@ -32,7 +32,7 @@ async def registry_has_schema(schema_id: str) -> bool:
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:
-            bound_logger.exception(
+            bound_logger.error(
                 "Something went wrong when fetching schema from trust registry."
             )
             raise http_err

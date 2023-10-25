@@ -15,7 +15,9 @@ async def get_hooks_for_wallet_by_topic(wallet_id: str, topic: CloudApiTopics) -
     bound_logger.info("Fetching webhooks events from /webhooks/wallet_id/topic")
     try:
         async with RichAsyncClient() as client:
-            hooks = (client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")).json()
+            hooks = (
+                await client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}/{topic}")
+            ).json()
             return hooks if hooks else []
     except HTTPError as e:
         bound_logger.exception("HTTP Error caught when fetching webhooks.")
@@ -30,7 +32,7 @@ async def get_hooks_for_wallet(wallet_id: str) -> List:
     bound_logger.info("Fetching webhooks events from /webhooks/wallet_id")
     try:
         async with RichAsyncClient() as client:
-            hooks = (client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}")).json()
+            hooks = (await client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}")).json()
             return hooks if hooks else []
     except HTTPError as e:
         bound_logger.exception("HTTP Error caught when fetching webhooks.")

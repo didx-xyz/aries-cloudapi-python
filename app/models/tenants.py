@@ -31,7 +31,7 @@ class UpdateTenantRequest(TenantRequestBase):
 
 
 class Tenant(BaseModel):
-    tenant_id: str = Field(..., examples=["545135a4-ecbc-4400-8594-bdb74c51c88d"])
+    wallet_id: str = Field(..., examples=["545135a4-ecbc-4400-8594-bdb74c51c88d"])
     tenant_name: str = Field(..., examples=["Alice"])
     image_url: Optional[str] = Field(None, examples=["https://yoma.africa/image.png"])
     created_at: str = Field(...)

@@ -124,11 +124,11 @@ async def test_accept_proof_request_oob_v1(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
-    alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
-    bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    bob_wallet_id = get_wallet_id_from_async_client(bob_member_client)
 
-    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_tenant_id)
-    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_tenant_id)
+    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_wallet_id)
+    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_wallet_id)
 
     # Create the proof request against aca-py
     create_proof_request = CreateProofRequest(
@@ -219,11 +219,11 @@ async def test_accept_proof_request_oob_v2(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
-    alice_tenant_id = get_wallet_id_from_async_client(alice_member_client)
-    bob_tenant_id = get_wallet_id_from_async_client(bob_member_client)
+    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
+    bob_wallet_id = get_wallet_id_from_async_client(bob_member_client)
 
-    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_tenant_id)
-    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_tenant_id)
+    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_wallet_id)
+    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_wallet_id)
 
     # Create the proof request against aca-py
     response = await bob_member_client.post(
@@ -314,7 +314,7 @@ async def test_accept_proof_request_v2(
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.wallet_id
     )
 
     response = await acme_client.post(
@@ -366,7 +366,7 @@ async def test_accept_proof_request_v2(
     )
 
     acme_proofs_listener = SseListener(
-        topic="proofs", wallet_id=acme_verifier.tenant_id
+        topic="proofs", wallet_id=acme_verifier.wallet_id
     )
 
     response = await alice_member_client.post(
@@ -395,7 +395,7 @@ async def test_send_proof_request(
     alice_tenant: CreateTenantResponse,
 ):
     alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.wallet_id
     )
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -464,7 +464,7 @@ async def test_reject_proof_request(
     acme_client: RichAsyncClient,
 ):
     alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.wallet_id
     )
 
     # V1
@@ -646,7 +646,7 @@ async def test_get_credentials_for_request(
     alice_member_client: RichAsyncClient,
 ):
     alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.wallet_id
     )
     # V1
     await acme_client.post(

@@ -75,12 +75,12 @@ class AcmeAliceConnect:
 async def acme_and_alice_connection(
     alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
 ) -> AcmeAliceConnect:
-    acme_actor = await actor_by_id(acme_verifier.tenant_id)
+    acme_actor = await actor_by_id(acme_verifier.wallet_id)
     assert acme_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
 
-    acme_listener = SseListener(topic="connections", wallet_id=acme_verifier.tenant_id)
+    acme_listener = SseListener(topic="connections", wallet_id=acme_verifier.wallet_id)
 
     # accept invitation on alice side
     invitation_response = (

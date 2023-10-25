@@ -19,7 +19,7 @@ async def alice_tenant() -> Generator[CreateTenantResponse, Any, None]:
 
         yield tenant
 
-        await delete_tenant(admin_client, tenant.tenant_id)
+        await delete_tenant(admin_client, tenant.wallet_id)
 
 
 @pytest.fixture(scope="function")
@@ -29,7 +29,7 @@ async def bob_tenant() -> Generator[CreateTenantResponse, Any, None]:
 
         yield tenant
 
-        await delete_tenant(admin_client, tenant.tenant_id)
+        await delete_tenant(admin_client, tenant.wallet_id)
 
 
 @pytest.fixture(scope="function")
@@ -39,7 +39,7 @@ async def acme_verifier() -> Generator[CreateTenantResponse, Any, None]:
 
         yield verifier_tenant
 
-        await delete_tenant(admin_client, verifier_tenant.tenant_id)
+        await delete_tenant(admin_client, verifier_tenant.wallet_id)
 
 
 @pytest.fixture(scope="function")
@@ -49,4 +49,4 @@ async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
 
         yield issuer_tenant
 
-        await delete_tenant(admin_client, issuer_tenant.tenant_id)
+        await delete_tenant(admin_client, issuer_tenant.wallet_id)

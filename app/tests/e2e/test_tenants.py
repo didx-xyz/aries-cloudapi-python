@@ -46,7 +46,7 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
-async def test_create_tenant_member(
+async def test_create_tenant_member_wo_wallet_name(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
     name = uuid4().hex
@@ -64,12 +64,83 @@ async def test_create_tenant_member(
         wallet_id=tenant["wallet_id"]
     )
 
+    wallet_name = wallet.settings["wallet.name"]
     assert tenant["wallet_id"] == wallet.wallet_id
     assert tenant["group_id"] == group_id
     assert tenant["tenant_name"] == name
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
-    assert_that(wallet.settings["wallet.name"]).is_length(32)
+    assert tenant["wallet_name"] == wallet_name
+    assert_that(wallet_name).is_length(32)
+
+
+@pytest.mark.anyio
+async def test_create_tenant_member_w_wallet_name(
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
+):
+    name = uuid4().hex
+    wallet_name = "TestWalletName"
+    group_id = "TestGroup"
+    response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json={
+            "image_url": "https://image.ca",
+            "name": name,
+            "group_id": group_id,
+            "wallet_name": wallet_name,
+        },
+    )
+
+    assert response.status_code == 200
+
+    tenant = response.json()
+
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
+        wallet_id=tenant["wallet_id"]
+    )
+
+    wallet_name = wallet.settings["wallet.name"]
+    assert tenant["wallet_id"] == wallet.wallet_id
+    assert tenant["group_id"] == group_id
+    assert tenant["tenant_name"] == name
+    assert tenant["created_at"] == wallet.created_at
+    assert tenant["updated_at"] == wallet.updated_at
+    assert tenant["wallet_name"] == wallet_name
+    assert_that(wallet_name).is_length(32)
+
+
+@pytest.mark.anyio
+async def test_create_tenant_member_w_wallet_name(
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
+):
+    name = uuid4().hex
+    wallet_name = "TestWalletName"
+    group_id = "TestGroup"
+    response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json={
+            "image_url": "https://image.ca",
+            "name": name,
+            "group_id": group_id,
+            "wallet_name": wallet_name,
+        },
+    )
+
+    assert response.status_code == 200
+
+    tenant = response.json()
+
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
+        wallet_id=tenant["wallet_id"]
+    )
+
+    assert tenant["wallet_id"] == wallet.wallet_id
+    assert tenant["group_id"] == group_id
+    assert tenant["tenant_name"] == name
+    assert tenant["created_at"] == wallet.created_at
+    assert tenant["updated_at"] == wallet.updated_at
+    assert tenant["wallet_name"] == wallet_name
+    assert wallet.settings["wallet.name"] == wallet_name
 
 
 @pytest.mark.anyio

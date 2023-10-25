@@ -274,9 +274,7 @@ async def test_request_credential(
         CloudApiException("Could not resolve record type")
     )
     with pytest.raises(CloudApiException):
-        await test_module.request_credential(
-            "v1-credential_id", mock_tenant_auth
-        )
+        await test_module.request_credential("v1-credential_id", mock_tenant_auth)
 
 
 @pytest.mark.anyio

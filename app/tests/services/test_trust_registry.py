@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi import HTTPException
-from httpx import HTTPStatusError, Response
+from httpx import Response
 from pytest_mock import MockerFixture
 
 from app.exceptions.trust_registry_exception import TrustRegistryException
@@ -95,7 +95,7 @@ async def test_assert_valid_issuer(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "mock_async_client", ["app.services.trust_registry.util.actor"], indirect=True
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
 )
 async def test_actor_has_role(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
@@ -210,36 +210,27 @@ async def test_registry_has_schema(
         status_code=200,
         json={"id": schema_id, "did": did, "version": "1.0", "name": "name"},
     )
-    response.raise_for_status = Mock()
     mock_async_client.get = AsyncMock(return_value=response)
     assert await registry_has_schema(schema_id) is True
 
     schema_id = "did_3:name:version"
     # mock does not have schema
-    not_found_response = Response(status_code=404)
-    not_found_response.raise_for_status = Mock(
-        side_effect=HTTPStatusError(
-            response=not_found_response,
-            message="Something went wrong when fetching schema from trust registry.",
-            request=schema_id,
-        )
+    not_found_response = HTTPException(
+        status_code=404,
+        detail="Something went wrong when fetching schema from trust registry.",
     )
 
     mock_async_client.get = AsyncMock(return_value=not_found_response)
     assert await registry_has_schema(schema_id) is False
 
     # mock 500
-    error_response = Response(status_code=500)
-    error_response.raise_for_status = Mock(
-        side_effect=HTTPStatusError(
-            response=error_response,
-            message="Something went wrong when fetching schema from trust registry.",
-            request=schema_id,
-        )
+    error_response = HTTPException(
+        status_code=500,
+        detail="Something went wrong when fetching schema from trust registry.",
     )
 
     mock_async_client.get = AsyncMock(return_value=error_response)
-    with pytest.raises(HTTPStatusError):
+    with pytest.raises(HTTPException):
         await registry_has_schema(schema_id)
 
 

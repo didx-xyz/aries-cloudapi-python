@@ -157,11 +157,10 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     schema_response = Response(
         200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
     )
-    schema_response.raise_for_status = Mock()
     # Error actor res
     mocked_async_client.get = AsyncMock(
         side_effect=[
-            Response(400, json={}),
+            Response(404, json={}),
             schema_response,
         ]
     )
@@ -169,13 +168,10 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
 
     # Error schema res
     not_schema_id = "not-the-schema-id"
-    error_response = Response(status_code=400)
-    error_response.raise_for_status = Mock(
-        side_effect=HTTPStatusError(
-            response=error_response,
-            message="Something went wrong",
-            request=not_schema_id,
-        )
+    error_response = HTTPStatusError(
+        response=Response(status_code=500),
+        message="Something went wrong",
+        request=not_schema_id,
     )
     mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
     with pytest.raises(HTTPStatusError):
@@ -192,13 +188,10 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
 
     # schema not registered
     not_schema_id = "not-the-schema-id"
-    error_response = Response(status_code=404)
-    error_response.raise_for_status = Mock(
-        side_effect=HTTPStatusError(
-            response=error_response,
-            message="Schema does not exist in registry.",
-            request=not_schema_id,
-        )
+    error_response = HTTPStatusError(
+        response=Response(status_code=404),
+        message="Schema does not exist in registry.",
+        request=not_schema_id,
     )
     mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
     assert not await is_valid_issuer(did, schema_id)

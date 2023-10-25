@@ -7,7 +7,7 @@ from app.models.tenants import Tenant
 
 def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
     label: str = wallet_record.settings["default_label"]
-    wallet_name: str = wallet_record.settings["wallet_name"]
+    wallet_name: str = wallet_record.settings["wallet.name"]
     image_url: Optional[str] = wallet_record.settings.get("image_url")
     group_id: Optional[str] = (
         wallet_record.group_id if hasattr(wallet_record, "group_id") else None

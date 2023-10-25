@@ -49,9 +49,10 @@ class UpdateTenantRequest(BaseModel):
 class Tenant(BaseModel):
     wallet_id: str = Field(..., examples=["545135a4-ecbc-4400-8594-bdb74c51c88d"])
     tenant_name: str = Field(..., examples=["Alice"])
-    image_url: Optional[str] = image_url_field
+    wallet_name: str = Field(..., examples=["SomeWalletName"])
     created_at: str = Field(...)
     updated_at: Optional[str] = Field(None)
+    image_url: Optional[str] = image_url_field
     group_id: Optional[str] = group_id_field
 
 

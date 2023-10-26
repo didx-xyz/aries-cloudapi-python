@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException
 
@@ -44,7 +44,7 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     logger.info("GET request received: Get schema by id from the trust registry")
     schema = await registry_schemas.get_schema_by_id(schema_id)
 
-    if schema is not None:
+    if schema:
         logger.info("Successfully retrieved schema.")
         return schema
     else:
@@ -53,11 +53,13 @@ async def get_schema_by_id(schema_id: str) -> Schema:
 
 @router.get("/actors", response_model=List[Actor])
 async def get_actors(
-    actor_did: str = None, actor_name: str = None, actor_id: str = None
+    actor_did: Optional[str] = None,
+    actor_name: Optional[str] = None,
+    actor_id: Optional[str] = None,
 ) -> List[Actor]:
     """
     Get all actors from the trust registry.
-    Alternatively add one of did, name or id as a query parameter to get one actor
+    Alternatively, provide one of: did, name, or id, to fetch corresponding actor
 
     Parameters:
     -----------
@@ -67,7 +69,7 @@ async def get_actors(
 
     Returns:
     ---------
-    All actors from the trust registry or one actor if a query parameter is passed
+    All actors from the trust registry, or one actor if a query parameter is passed
     """
     param_count = sum(1 for var in [actor_did, actor_name, actor_id] if var is not None)
 
@@ -75,21 +77,21 @@ async def get_actors(
         raise HTTPException(400, "Bad request: More than one query parameter given")
 
     if param_count == 1:
-        if actor_did is not None:
+        if actor_did:
             logger.info(
                 "GET request received: Get actor by did from the trust registry"
             )
             actor = await registry_actors.actor_by_did(actor_did)
-        elif actor_id is not None:
+        elif actor_id:
             logger.info("GET request received: Get actor by id from the trust registry")
             actor = await registry_actors.actor_by_id(actor_id)
-        elif actor_name is not None:
+        elif actor_name:
             logger.info(
                 "GET request received: Get actor by name from the trust registry"
             )
             actor = await registry_actors.actor_by_name(actor_name)
 
-        if actor is not None:
+        if actor:
             logger.info("Successfully retrieved actor.")
             return [actor]
         else:
@@ -106,7 +108,7 @@ async def get_actors(
 @router.get("/actors/issuers", response_model=List[Actor])
 async def get_issuers() -> List[Actor]:
     """
-    Get only the issuers from the trust registry.
+    Get the issuers from the trust registry.
 
     Returns:
     ---------
@@ -122,11 +124,11 @@ async def get_issuers() -> List[Actor]:
 @router.get("/actors/verifiers", response_model=List[Actor])
 async def get_verifiers() -> List[Actor]:
     """
-    Get only the verifiers from the trust registry.
+    Get the verifiers from the trust registry.
 
     Returns:
     ---------
-    List of actor models, representing only the verifiers from the trust registry
+    List of actor models, representing the verifiers from the trust registry
     """
     logger.info("GET request received: Get only the verifiers from the trust registry")
     verifiers = await registry_actors.actors_with_role("verifier")

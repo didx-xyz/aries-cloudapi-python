@@ -393,11 +393,9 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
     assert response.status_code == 200
     created_tenant = response.json()
-    first_wallet_id_id = created_tenant["wallet_id"]
+    first_wallet_id = created_tenant["wallet_id"]
 
-    response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}/{first_wallet_id_id}"
-    )
+    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}/{first_wallet_id}")
 
     assert response.status_code == 200
     retrieved_tenant = response.json()

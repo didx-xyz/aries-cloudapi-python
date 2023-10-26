@@ -13,7 +13,7 @@ router = APIRouter(prefix="/trust-registry", tags=["trust-registry"])
 
 
 @router.get("/schemas", response_model=List[Schema])
-async def get_schemas():
+async def get_schemas() -> List[Schema]:
     """
     Get only the schemas from the trust registry.
 
@@ -29,7 +29,7 @@ async def get_schemas():
 
 
 @router.get("/schemas/{schema_id}", response_model=Schema)
-async def get_schema_by_id(schema_id: str):
+async def get_schema_by_id(schema_id: str) -> Schema:
     """
     Retrieve schema by id.
 
@@ -54,7 +54,7 @@ async def get_schema_by_id(schema_id: str):
 @router.get("/actors", response_model=List[Actor])
 async def get_actors(
     actor_did: str = None, actor_name: str = None, actor_id: str = None
-):
+) -> List[Actor]:
     """
     Get all actors from the trust registry.
     Alternatively add one of did, name or id as a query parameter to get one actor
@@ -104,7 +104,7 @@ async def get_actors(
 
 
 @router.get("/actors/issuers", response_model=List[Actor])
-async def get_issuers():
+async def get_issuers() -> List[Actor]:
     """
     Get only the issuers from the trust registry.
 
@@ -120,7 +120,7 @@ async def get_issuers():
 
 
 @router.get("/actors/verifiers", response_model=List[Actor])
-async def get_verifiers():
+async def get_verifiers() -> List[Actor]:
     """
     Get only the verifiers from the trust registry.
 

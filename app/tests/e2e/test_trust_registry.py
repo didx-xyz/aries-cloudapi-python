@@ -1,6 +1,7 @@
 import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
+from aries_cloudcontroller import AcaPyClient
 
 from app.models.definitions import CredentialSchema
 from app.models.tenants import CreateTenantResponse
@@ -45,7 +46,9 @@ async def test_get_schema_by_id(schema_definition: CredentialSchema):
 
 
 @pytest.mark.anyio
-async def test_get_actors(faber_issuer: CreateTenantResponse):
+async def test_get_actors(
+    faber_issuer: CreateTenantResponse, faber_acapy_client: AcaPyClient
+):
     async with RichAsyncClient() as client:
         all_actors = await client.get(f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors")
         assert all_actors.status_code == 200
@@ -58,10 +61,15 @@ async def test_get_actors(faber_issuer: CreateTenantResponse):
             f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_id={faber_issuer.wallet_id}"
         )
         assert actors_by_id.status_code == 200
-        actor_did = actors_by_id.json()[0]["did"]
-        assert_that(actors_by_id.json()[0]).contains(
-            "id", "name", "roles", "did", "didcomm_invitation"
-        )
+        actor = actors_by_id.json()[0]
+
+        actor_did = actor["did"]
+        did_result = await faber_acapy_client.wallet.get_public_did()
+        assert actor_did == f"did:sov:{did_result.result.did}"
+
+        actor_name = actor["name"]
+        assert actor_name == faber_issuer.tenant_name
+        assert_that(actor).contains("id", "name", "roles", "did", "didcomm_invitation")
 
         actors_by_did = await client.get(
             f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_did={actor_did}"
@@ -79,12 +87,33 @@ async def test_get_actors(faber_issuer: CreateTenantResponse):
             "id", "name", "roles", "did", "didcomm_invitation"
         )
 
+
+@pytest.mark.anyio
+async def test_get_actors_x():
+    async with RichAsyncClient() as client:
         with pytest.raises(HTTPException) as exc:
-            actors_by_name = await client.get(
+            await client.get(
                 f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_name=Bad_actor_name"
             )
-
         assert exc.value.status_code == 404
+
+        with pytest.raises(HTTPException) as exc:
+            await client.get(
+                f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_id=Bad_actor_id"
+            )
+        assert exc.value.status_code == 404
+
+        with pytest.raises(HTTPException) as exc:
+            await client.get(
+                f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_did=Bad_actor_did"
+            )
+        assert exc.value.status_code == 404
+
+        with pytest.raises(HTTPException) as exc:
+            await client.get(
+                f"{CLOUDAPI_URL}{TRUST_REGISTRY}/actors?actor_did=Bad&actor_id=Request"
+            )
+        assert exc.value.status_code == 400
 
 
 @pytest.mark.anyio

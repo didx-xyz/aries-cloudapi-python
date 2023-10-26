@@ -31,8 +31,8 @@ class CreateTenantRequest(BaseModel):
     wallet_name: Optional[str] = Field(
         None,
         description="An optional wallet name. Useful with `get_tenants` to fetch wallets by wallet name. "
-        "If selected, must be unique.",
-        examples=["An optional, unique wallet name"],
+        "If selected, must be unique. Otherwise, randomly generated.",
+        examples=["Unique name"],
     )
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field

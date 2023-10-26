@@ -180,9 +180,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
         )
 
     actors = actors_response.json()
-    actors_with_role_list = [
-        actor for actor in actors if role in actor["roles"]
-    ]
+    actors_with_role_list = [actor for actor in actors if role in actor["roles"]]
 
     if actors_with_role_list:
         bound_logger.info("Successfully got actors with requested role.")

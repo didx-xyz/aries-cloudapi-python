@@ -3,8 +3,7 @@ import os
 from logging import Logger
 from typing import Callable
 
-from aiohttp import ClientResponseError
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import AcaPyClient, ApiException
 
 from app.exceptions.cloud_api_error import CloudApiException
 
@@ -23,7 +22,7 @@ async def set_endorser_role(
         )
         logger.debug("Successfully set endorser role.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
-    except ClientResponseError as e:
+    except ApiException as e:
         logger.error("Failed to set endorser role: {}.", e)
         raise CloudApiException(
             "Failed to set the endorser role in the endorser-issuer connection, "
@@ -43,7 +42,7 @@ async def set_author_role(
         )
         logger.debug("Successfully set author role.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
-    except ClientResponseError as e:
+    except ApiException as e:
         logger.error("Failed to set author role: {}.", e)
         raise CloudApiException(
             "Failed to set the author role in the issuer-endorser connection, "
@@ -66,7 +65,7 @@ async def set_endorser_info(
         )
         logger.debug("Successfully set endorser info.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
-    except ClientResponseError as e:
+    except ApiException as e:
         logger.error("Failed to set endorser info: {}.", e)
         raise CloudApiException(
             "Failed to set the endorser info in the issuer-endorser connection, "
@@ -113,7 +112,7 @@ async def assert_metadata_set(
             metadata_dict = connection_metadata.results
             if check_fn(metadata_dict):
                 return True
-        except ClientResponseError as e:
+        except ApiException as e:
             logger.error("Exception occurred when getting metadata: {}", e)
 
     raise SettingMetadataException(

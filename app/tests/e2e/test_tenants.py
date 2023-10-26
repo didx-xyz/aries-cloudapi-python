@@ -23,8 +23,7 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": uuid4().hex,
-            "roles": ["verifier"],
+            "wallet_label": uuid4().hex,
             "group_id": "TestGroup",
         },
     )
@@ -46,14 +45,55 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
-async def test_create_tenant_member(
+async def test_create_tenant_member_wo_wallet_name(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
-    name = uuid4().hex
+    wallet_label = uuid4().hex
     group_id = "TestGroup"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
-        json={"image_url": "https://image.ca", "name": name, "group_id": group_id},
+        json={
+            "image_url": "https://image.ca",
+            "wallet_label": wallet_label,
+            "group_id": group_id,
+        },
+    )
+
+    assert response.status_code == 200
+
+    tenant = response.json()
+
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
+        wallet_id=tenant["wallet_id"]
+    )
+
+    wallet_name = wallet.settings["wallet.name"]
+    assert tenant["wallet_id"] == wallet.wallet_id
+    assert tenant["group_id"] == group_id
+    assert tenant["wallet_label"] == wallet_label
+    assert tenant["created_at"] == wallet.created_at
+    assert tenant["updated_at"] == wallet.updated_at
+    assert tenant["wallet_name"] == wallet_name
+    assert_that(wallet_name).is_length(32)
+
+
+@pytest.mark.anyio
+async def test_create_tenant_member_w_wallet_name(
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
+):
+    wallet_label = uuid4().hex
+    wallet_name = "TestWalletName"
+    group_id = "TestGroup"
+    create_tenant_payload = {
+        "image_url": "https://image.ca",
+        "wallet_label": wallet_label,
+        "group_id": group_id,
+        "wallet_name": wallet_name,
+    }
+
+    response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json=create_tenant_payload,
     )
 
     assert response.status_code == 200
@@ -66,10 +106,19 @@ async def test_create_tenant_member(
 
     assert tenant["wallet_id"] == wallet.wallet_id
     assert tenant["group_id"] == group_id
-    assert tenant["tenant_name"] == name
+    assert tenant["wallet_label"] == wallet_label
     assert tenant["created_at"] == wallet.created_at
     assert tenant["updated_at"] == wallet.updated_at
-    assert_that(wallet.settings["wallet.name"]).is_length(32)
+    assert tenant["wallet_name"] == wallet_name
+    assert wallet.settings["wallet.name"] == wallet_name
+
+    with pytest.raises(HTTPException) as http_error:
+        await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json=create_tenant_payload,
+        )
+    assert http_error.value.status_code == 409
+    assert "already exists" in http_error.value.detail
 
 
 @pytest.mark.anyio
@@ -78,13 +127,13 @@ async def test_create_tenant_issuer(
     tenant_admin_acapy_client: AcaPyClient,
     governance_acapy_client: AcaPyClient,
 ):
-    name = uuid4().hex
+    wallet_label = uuid4().hex
     group_id = "TestGroup"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
+            "wallet_label": wallet_label,
             "roles": ["issuer"],
             "group_id": group_id,
         },
@@ -131,7 +180,7 @@ async def test_create_tenant_issuer(
         )
 
     # Actor
-    assert_that(actor).has_name(tenant["tenant_name"])
+    assert_that(actor).has_name(tenant["wallet_label"])
     assert_that(actor).has_did(f"did:sov:{public_did.did}")
     assert_that(actor).has_roles(["issuer"])
 
@@ -140,7 +189,7 @@ async def test_create_tenant_issuer(
 
     # Tenant
     assert_that(tenant).has_wallet_id(wallet.wallet_id)
-    assert_that(tenant).has_tenant_name(name)
+    assert_that(tenant).has_wallet_label(wallet_label)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
@@ -150,7 +199,7 @@ async def test_create_tenant_issuer(
             TENANTS_BASE_PATH,
             json={
                 "image_url": "https://image.ca",
-                "name": name,
+                "wallet_label": wallet_label,
                 "roles": ["issuer"],
                 "group_id": group_id,
             },
@@ -164,12 +213,12 @@ async def test_create_tenant_issuer(
 async def test_create_tenant_verifier(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
-    name = uuid4().hex
+    wallet_label = uuid4().hex
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
+            "wallet_label": wallet_label,
             "roles": ["verifier"],
         },
     )
@@ -191,7 +240,7 @@ async def test_create_tenant_verifier(
 
     async with get_tenant_controller(acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
-            alias=f"Trust Registry {name}"
+            alias=f"Trust Registry {wallet_label}"
         )
 
     connection = connections.results[0]
@@ -199,13 +248,13 @@ async def test_create_tenant_verifier(
     # Connection invitation
     assert_that(connection).has_state("invitation")
 
-    assert_that(actor).has_name(tenant["tenant_name"])
+    assert_that(actor).has_name(tenant["wallet_label"])
     assert_that(actor).has_did(ed25519_verkey_to_did_key(connection.invitation_key))
     assert_that(actor).has_roles(["verifier"])
 
     # Tenant
     assert_that(tenant).has_wallet_id(wallet.wallet_id)
-    assert_that(tenant).has_tenant_name(name)
+    assert_that(tenant).has_wallet_label(wallet_label)
     assert_that(tenant).has_created_at(wallet.created_at)
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
@@ -217,13 +266,13 @@ async def test_update_tenant_verifier_to_issuer(
     tenant_admin_acapy_client: AcaPyClient,
     governance_acapy_client: AcaPyClient,
 ):
-    name = uuid4().hex
+    wallet_label = uuid4().hex
     image_url = "https://image.ca"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
             "image_url": image_url,
-            "name": name,
+            "wallet_label": wallet_label,
             "roles": ["verifier"],
         },
     )
@@ -232,7 +281,7 @@ async def test_update_tenant_verifier_to_issuer(
     verifier_wallet_id = verifier_tenant["wallet_id"]
     verifier_actor = await trust_registry.fetch_actor_by_id(verifier_wallet_id)
     assert verifier_actor
-    assert_that(verifier_actor).has_name(name)
+    assert_that(verifier_actor).has_name(wallet_label)
     assert_that(verifier_actor).has_roles(["verifier"])
 
     wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
@@ -244,7 +293,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     async with get_tenant_controller(acapy_token) as tenant_controller:
         connections = await tenant_controller.connection.get_connections(
-            alias=f"Trust Registry {name}"
+            alias=f"Trust Registry {wallet_label}"
         )
 
     connection = connections.results[0]
@@ -258,11 +307,11 @@ async def test_update_tenant_verifier_to_issuer(
     # Tenant
     assert_that(verifier_tenant).has_wallet_id(wallet.wallet_id)
     assert_that(verifier_tenant).has_image_url(image_url)
-    assert_that(verifier_tenant).has_tenant_name(name)
+    assert_that(verifier_tenant).has_wallet_label(wallet_label)
     assert_that(verifier_tenant).has_created_at(wallet.created_at)
     assert_that(verifier_tenant).has_updated_at(wallet.updated_at)
 
-    new_name = uuid4().hex
+    new_wallet_label = uuid4().hex
     new_image_url = "https://some-ssi-site.org/image.png"
     new_roles = ["issuer", "verifier"]
 
@@ -270,14 +319,14 @@ async def test_update_tenant_verifier_to_issuer(
         f"{TENANTS_BASE_PATH}/{verifier_wallet_id}",
         json={
             "image_url": new_image_url,
-            "name": new_name,
+            "wallet_label": new_wallet_label,
             "roles": new_roles,
         },
     )
     new_tenant = response.json()
     assert_that(new_tenant).has_wallet_id(wallet.wallet_id)
     assert_that(new_tenant).has_image_url(new_image_url)
-    assert_that(new_tenant).has_tenant_name(new_name)
+    assert_that(new_tenant).has_wallet_label(new_wallet_label)
     assert_that(new_tenant).has_created_at(wallet.created_at)
 
     new_actor = await trust_registry.fetch_actor_by_id(verifier_wallet_id)
@@ -323,7 +372,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(endorser_connection).has_their_public_did(endorser_did.did)
 
     assert new_actor
-    assert_that(new_actor).has_name(new_name)
+    assert_that(new_actor).has_name(new_wallet_label)
     assert_that(new_actor).has_did(f"{new_actor['did']}")
     assert_that(new_actor["roles"]).contains_only("issuer", "verifier")
 
@@ -336,18 +385,15 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": uuid4().hex,
-            "roles": ["verifier"],
+            "wallet_label": uuid4().hex,
         },
     )
 
     assert response.status_code == 200
     created_tenant = response.json()
-    first_wallet_id_id = created_tenant["wallet_id"]
+    first_wallet_id = created_tenant["wallet_id"]
 
-    response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}/{first_wallet_id_id}"
-    )
+    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}/{first_wallet_id}")
 
     assert response.status_code == 200
     retrieved_tenant = response.json()
@@ -358,8 +404,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": uuid4().hex,
-            "roles": ["verifier"],
+            "wallet_label": uuid4().hex,
             "group_id": "ac/dc",
         },
     )
@@ -379,14 +424,13 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
 @pytest.mark.anyio
 async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
-    name = uuid4().hex
+    wallet_label = uuid4().hex
     group_id = "backstreetboys"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
-            "roles": ["verifier"],
+            "wallet_label": wallet_label,
             "group_id": group_id,
         },
     )
@@ -412,15 +456,53 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
-async def test_delete_tenant(
-    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
-):
-    name = uuid4().hex
+async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
+    wallet_name = uuid4().hex
+    group_id = "backstreetboys"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
-            "name": name,
+            "wallet_label": "abc",
+            "wallet_name": wallet_name,
+            "group_id": group_id,
+        },
+    )
+
+    assert response.status_code == 200
+    created_tenant = response.json()
+    wallet_id = created_tenant["wallet_id"]
+
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}?wallet_name={wallet_name}"
+    )
+    assert response.status_code == 200
+    tenants = response.json()
+    assert len(tenants) == 1
+
+    # Make sure created tenant is returned
+    assert_that(tenants).extracting("wallet_id").contains(wallet_id)
+    assert_that(tenants).extracting("group_id").contains(group_id)
+
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}?wallet_name=spicegirls"
+    )
+    assert response.status_code == 200
+    tenants = response.json()
+    assert len(tenants) == 0
+    assert tenants == []
+
+
+@pytest.mark.anyio
+async def test_delete_tenant(
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
+):
+    wallet_label = uuid4().hex
+    response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json={
+            "image_url": "https://image.ca",
+            "wallet_label": wallet_label,
             "roles": ["verifier"],
         },
     )

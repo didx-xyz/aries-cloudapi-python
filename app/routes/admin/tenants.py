@@ -1,9 +1,13 @@
 from secrets import token_urlsafe
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import CreateWalletTokenRequest, UpdateWalletRequest
+from aries_cloudcontroller import (
+    ApiException,
+    CreateWalletTokenRequest,
+    UpdateWalletRequest,
+)
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -44,27 +48,29 @@ router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 async def create_tenant(
     body: CreateTenantRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-) -> Tenant:
+) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
 
-    name = body.name
     roles = body.roles
+    wallet_label = body.wallet_label
+    wallet_name = body.wallet_name or uuid4().hex
 
     if roles:
         bound_logger.info("Create tenant with roles. Assert name is unique")
         try:
-            actor_name_exists = await assert_actor_name(body.name)
+            actor_name_exists = await assert_actor_name(wallet_label)
         except TrustRegistryException:
             raise CloudApiException(
                 "An error occurred when trying to register actor. Please try again"
             )
 
         if actor_name_exists:
-            bound_logger.info("Actor exists can't create wallet")
+            bound_logger.info("Actor name already exists; can't create wallet")
             raise HTTPException(
-                409, f"Can't create Tenant. Actor with name `{name}` already exists."
+                409,
+                f"Can't create Tenant. Actor with label `{wallet_label}` already exists.",
             )
         bound_logger.info("Actor name is unique")
 
@@ -76,21 +82,35 @@ async def create_tenant(
                 body=CreateWalletRequestWithGroups(
                     image_url=body.image_url,
                     key_management_mode="managed",
-                    label=body.name,
+                    label=wallet_label,
                     wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
-                    wallet_name=uuid4().hex,
+                    wallet_name=wallet_name,
                     wallet_type="askar",
                     group_id=body.group_id,
                 )
             )
-            bound_logger.debug("Wallet creation successful")
+        except ApiException as e:
+            bound_logger.info(
+                "Error while trying to create wallet: `{}`",
+                e.reason,
+            )
+            if e.status == 400 and "already exists" in e.reason:
+                raise HTTPException(
+                    409,
+                    f"A wallet with name `{wallet_name}` already exists. "
+                    "The wallet name must be unique.",
+                )
+            raise
 
+        bound_logger.debug("Wallet creation successful")
+
+        try:
             if roles:
                 bound_logger.info(
-                    "Onboarding `{}` with requested roles: `{}`", name, roles
+                    "Onboarding `{}` with requested roles: `{}`", wallet_label, roles
                 )
                 onboard_result = await onboard_tenant(
-                    name=name,
+                    tenant_label=wallet_label,
                     roles=roles,
                     wallet_auth_token=wallet_response.token,
                     wallet_id=wallet_response.wallet_id,
@@ -99,7 +119,7 @@ async def create_tenant(
                 await register_actor(
                     actor=Actor(
                         id=wallet_response.wallet_id,
-                        name=name,
+                        name=wallet_label,
                         roles=roles,
                         did=onboard_result.did,
                         didcomm_invitation=onboard_result.didcomm_invitation,
@@ -130,10 +150,11 @@ async def create_tenant(
 
     response = CreateTenantResponse(
         wallet_id=wallet_response.wallet_id,
+        wallet_label=wallet_label,
+        wallet_name=wallet_name,
         created_at=wallet_response.created_at,
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
-        tenant_name=name,
         access_token=tenant_api_key(auth.role, wallet_response.token),
         group_id=body.group_id,
     )
@@ -178,7 +199,7 @@ async def delete_tenant_by_id(
 async def get_wallet_auth_token(
     wallet_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Access token for tenant")
 
@@ -219,7 +240,7 @@ async def update_tenant(
             wallet_id=wallet_id,
             body=UpdateWalletRequest(
                 image_url=body.image_url,
-                label=body.name,
+                label=body.wallet_label,
             ),
         )
 
@@ -251,39 +272,49 @@ async def get_tenant(
 
 @router.get("", response_model=List[Tenant])
 async def get_tenants(
-    group_id: str = None,
+    wallet_name: Optional[str] = None,
+    group_id: Optional[str] = None,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
-    """Get tenants (by group id.)"""
-    bound_logger = logger.bind(body={"group_id": group_id})
-    bound_logger.info("GET request received: Fetch tenants by group id")
+    """Get all tenants, or fetch by wallet name and/or group id."""
+    bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
+    bound_logger.info(
+        "GET request received: Fetch tenants by wallet name and/or group id"
+    )
 
     async with get_tenant_admin_controller() as admin_controller:
-        if not group_id:
-            bound_logger.info("No group id specified; fetching all wallets")
-            wallets = await admin_controller.multitenancy.get_wallets()
-
+        if wallet_name:
+            bound_logger.info("Fetching wallet by wallet name")
+            wallets = await admin_controller.multitenancy.get_wallets(
+                wallet_name=wallet_name
+            )
+            # TODO: fetching by wallet_name still returns all wallets ... bug in cc or group_id plugin?
+            # Filtering result as workaround:
             if not wallets.results:
                 bound_logger.info("No wallets found.")
                 return []
-
-            # Only return wallet with current authentication role.
-            response = [
-                tenant_from_wallet_record(wallet_record)
-                for wallet_record in wallets.results
+            wallet_list = wallets.results
+            wallets = [
+                w for w in wallet_list if w.settings["wallet.name"] == wallet_name
             ]
-            bound_logger.info("Successfully fetched wallets.")
+            response = [
+                tenant_from_wallet_record(wallet_record) for wallet_record in wallets
+            ]
+            bound_logger.info("Successfully fetched wallets by wallet name.")
             return response
-
-        bound_logger.info("Fetching wallets by group id")
-        wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
+        elif group_id:
+            bound_logger.info("Fetching wallets by group_id")
+            wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
+        else:
+            bound_logger.info("Fetching all wallets")
+            wallets = await admin_controller.multitenancy.get_wallets()
 
     if not wallets.results:
-        bound_logger.info("No wallets found for requested group id.")
+        bound_logger.info("No wallets found.")
         return []
 
     response = [
         tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
     ]
-    bound_logger.info("Successfully fetched wallets by group id.")
+    bound_logger.info("Successfully fetched wallets by wallet name and/or group id.")
     return response

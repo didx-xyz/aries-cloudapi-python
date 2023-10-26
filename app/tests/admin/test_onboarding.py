@@ -76,7 +76,7 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     onboard_result = await issuer.onboard_issuer(
-        name="issuer_name",
+        issuer_label="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
         issuer_wallet_id="issuer_wallet_id",
@@ -154,7 +154,7 @@ async def test_onboard_issuer_no_public_did(
     )
 
     onboard_result = await issuer.onboard_issuer(
-        name="issuer_name",
+        issuer_label="issuer_name",
         endorser_controller=endorser_controller,
         issuer_controller=mock_agent_controller,
         issuer_wallet_id="issuer_wallet_id",
@@ -188,7 +188,7 @@ async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyCl
     )
 
     onboard_result = await verifier.onboard_verifier(
-        name="verifier_name", verifier_controller=mock_agent_controller
+        verifier_label="verifier_name", verifier_controller=mock_agent_controller
     )
 
     assert_that(onboard_result).has_did("did:sov:WgWxqztrNooG92RXvxSTWv")
@@ -214,7 +214,7 @@ async def test_onboard_verifier_no_public_did(mock_agent_controller: AcaPyClient
     )
 
     onboard_result = await verifier.onboard_verifier(
-        name="verifier_name", verifier_controller=mock_agent_controller
+        verifier_label="verifier_name", verifier_controller=mock_agent_controller
     )
 
     assert_that(onboard_result).has_did(did_key)
@@ -245,7 +245,7 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
 
     with pytest.raises(CloudApiException):
         await verifier.onboard_verifier(
-            name="verifier_name", verifier_controller=mock_agent_controller
+            verifier_label="verifier_name", verifier_controller=mock_agent_controller
         )
 
 

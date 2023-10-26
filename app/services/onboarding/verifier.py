@@ -9,7 +9,7 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 
-async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
+async def onboard_verifier(*, verifier_controller: AcaPyClient, verifier_label: str):
     """Onboard the controller as verifier.
 
     The onboarding will take care of the following:
@@ -17,8 +17,9 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
 
     Args:
         verifier_controller (AcaPyClient): authenticated ACA-Py client for verifier
+        verifier_label (str): alias for the verifier
     """
-    bound_logger = logger.bind(body={"name": name})
+    bound_logger = logger.bind(body={"verifier_label": verifier_label})
     bound_logger.info("Onboarding verifier")
 
     onboarding_result = {}
@@ -42,7 +43,7 @@ async def onboard_verifier(*, name: str, verifier_controller: AcaPyClient):
                 multi_use=True,
                 body=InvitationCreateRequest(
                     use_public_did=False,
-                    alias=f"Trust Registry {name}",
+                    alias=f"Trust Registry {verifier_label}",
                     handshake_protocols=["https://didcomm.org/didexchange/1.0"],
                 ),
             )

@@ -1,5 +1,10 @@
-from aiohttp import ClientResponseError
-from aries_cloudcontroller import Doc, SignRequest, SignResponse, VerifyRequest
+from aries_cloudcontroller import (
+    ApiException,
+    Doc,
+    SignRequest,
+    SignResponse,
+    VerifyRequest,
+)
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -70,10 +75,10 @@ async def sign_jsonld(
                     verkey=verkey,
                 )
             )
-    except ClientResponseError as e:
+    except ApiException as e:
         logger.warning(
-            "A ClientResponseError was caught while signing jsonld. The error message is: '{}'.",
-            e.message,
+            "An ApiException was caught while signing jsonld. The error message is: '{}'.",
+            e.reason,
         )
         raise CloudApiException("Failed to sign payload.") from e
 
@@ -120,10 +125,10 @@ async def verify_jsonld(
                     f"Failed to verify payload with error message: `{jsonld_verify_response.error}`.",
                     422,
                 )
-    except ClientResponseError as e:
+    except ApiException as e:
         logger.warning(
-            "A ClientResponseError was caught while verifying jsonld. The error message is: '{}'.",
-            e.message,
+            "An ApiException was caught while verifying jsonld. The error message is: '{}'.",
+            e.reason,
         )
         raise CloudApiException("Failed to verify payload.") from e
 

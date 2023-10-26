@@ -42,8 +42,9 @@ async def handle_tenant_update(
         raise HTTPException(409, "Holder tenants cannot be updated with new roles.")
 
     updated_actor = actor.copy()
-    if update.name:
-        updated_actor["name"] = update.name
+    label = update.wallet_label
+    if label:
+        updated_actor["name"] = label
 
     if update.roles:
         bound_logger.info("Updating tenant roles")
@@ -58,7 +59,7 @@ async def handle_tenant_update(
         )
 
         onboard_result = await onboard_tenant(
-            name=updated_actor["name"],
+            tenant_label=label,
             roles=added_roles,
             wallet_auth_token=token_response.token,
             wallet_id=wallet_id,
@@ -74,10 +75,14 @@ async def handle_tenant_update(
 
 
 async def onboard_tenant(
-    *, name: str, roles: List[TrustRegistryRole], wallet_auth_token: str, wallet_id: str
+    *,
+    tenant_label: str,
+    roles: List[TrustRegistryRole],
+    wallet_auth_token: str,
+    wallet_id: str,
 ) -> OnboardResult:
     bound_logger = logger.bind(
-        body={"name": name, "roles": roles, "wallet_id": wallet_id}
+        body={"tenant_label": tenant_label, "roles": roles, "wallet_id": wallet_id}
     )
     bound_logger.bind(body=roles).info("Start onboarding tenant")
 
@@ -88,10 +93,10 @@ async def onboard_tenant(
             wallet_auth_token
         ) as tenant_controller:
             onboard_result = await onboard_issuer(
-                name=name,
                 endorser_controller=governance_controller,
                 issuer_controller=tenant_controller,
                 issuer_wallet_id=wallet_id,
+                issuer_label=tenant_label,
             )
             bound_logger.info("Onboarding as issuer completed successfully.")
             return onboard_result
@@ -100,7 +105,7 @@ async def onboard_tenant(
         bound_logger.debug("Tenant has 'verifier' role, onboarding as verifier")
         async with get_tenant_controller(wallet_auth_token) as tenant_controller:
             onboard_result = await onboard_verifier(
-                name=name, verifier_controller=tenant_controller
+                verifier_label=tenant_label, verifier_controller=tenant_controller
             )
             bound_logger.info("Onboarding as verifier completed successfully.")
             return onboard_result

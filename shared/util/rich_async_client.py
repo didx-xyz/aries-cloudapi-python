@@ -33,9 +33,11 @@ class RichAsyncClient(AsyncClient):
                 response.raise_for_status()  # Raise exception for 4xx and 5xx status codes
         except HTTPStatusError as e:
             code = e.response.status_code
-            detail = f"{self._name} POST `{url}` failed. Status code: {code}. Response: `{e.response.text}`."
-            logger.error(detail)
-            raise HTTPException(status_code=code, detail=detail) from e
+            message = e.response.text
+            log_message = f"{self._name} POST `{url}` failed. Status code: {code}. Response: `{message}`."
+            logger.error(log_message)
+
+            raise HTTPException(status_code=code, detail=message) from e
         return response
 
     async def get(self, url: str, **kwargs) -> Response:
@@ -45,9 +47,11 @@ class RichAsyncClient(AsyncClient):
                 response.raise_for_status()
         except HTTPStatusError as e:
             code = e.response.status_code
-            detail = f"{self._name} GET `{url}` failed. Status code: {code}. Response: `{e.response.text}`."
-            logger.error(detail)
-            raise HTTPException(status_code=code, detail=detail) from e
+            message = e.response.text
+            log_message = f"{self._name} GET `{url}` failed. Status code: {code}. Response: `{message}`."
+            logger.error(log_message)
+
+            raise HTTPException(status_code=code, detail=message) from e
         return response
 
     async def delete(self, url: str, **kwargs) -> Response:
@@ -57,9 +61,11 @@ class RichAsyncClient(AsyncClient):
                 response.raise_for_status()
         except HTTPStatusError as e:
             code = e.response.status_code
-            detail = f"{self._name} DELETE `{url}` failed. Status code: {code}. Response: `{e.response.text}`."
-            logger.error(detail)
-            raise HTTPException(status_code=code, detail=detail) from e
+            message = e.response.text
+            log_message = f"{self._name} DELETE `{url}` failed. Status code: {code}. Response: `{message}`."
+            logger.error(log_message)
+
+            raise HTTPException(status_code=code, detail=message) from e
         return response
 
     async def put(self, url: str, **kwargs) -> Response:
@@ -69,7 +75,9 @@ class RichAsyncClient(AsyncClient):
                 response.raise_for_status()
         except HTTPStatusError as e:
             code = e.response.status_code
-            detail = f"{self._name} PUT `{url}` failed. Status code: {code}. Response: `{e.response.text}`."
-            logger.error(detail)
-            raise HTTPException(status_code=code, detail=detail) from e
+            message = e.response.text
+            log_message = f"{self._name} PUT `{url}` failed. Status code: {code}. Response: `{message}`."
+            logger.error(log_message)
+
+            raise HTTPException(status_code=code, detail=message) from e
         return response

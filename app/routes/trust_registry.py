@@ -71,38 +71,50 @@ async def get_actors(
     ---------
     All actors from the trust registry, or one actor if a query parameter is passed
     """
-    param_count = sum(1 for var in [actor_did, actor_name, actor_id] if var is not None)
+    param_count = sum(1 for var in [actor_did, actor_name, actor_id] if var)
 
-    if param_count > 1:
-        raise HTTPException(400, "Bad request: More than one query parameter given")
-
-    if param_count == 1:
-        if actor_did:
-            logger.info(
-                "GET request received: Get actor by did from the trust registry"
-            )
-            actor = await registry_actors.actor_by_did(actor_did)
-        elif actor_id:
-            logger.info("GET request received: Get actor by id from the trust registry")
-            actor = await registry_actors.actor_by_id(actor_id)
-        elif actor_name:
-            logger.info(
-                "GET request received: Get actor by name from the trust registry"
-            )
-            actor = await registry_actors.actor_by_name(actor_name)
-
-        if actor:
-            logger.info("Successfully retrieved actor.")
-            return [actor]
-        else:
-            raise HTTPException(404, "Actor not found")
-
-    else:
-        logger.info("GET request received: Get all actors from the trust registry")
+    if param_count == 0:
+        logger.info("GET request received: Fetch all actors from the trust registry")
         actors = await registry_actors.all_actors()
 
         logger.info("Successfully retrieved actors.")
         return actors
+
+    bound_logger = logger.bind(
+        body={"actor_did": actor_did, "actor_id": actor_id, "actor_name": actor_name}
+    )
+    bound_logger.info("GET request received: Fetch actor by query param")
+
+    if param_count > 1:
+        bound_logger.info("Bad request, more than one query param provided.")
+        raise HTTPException(
+            400,
+            "Bad request: More than one query parameter provided when max 1 expected",
+        )
+
+    # One query param provided:
+    if actor_did:
+        bound_logger.info(
+            "GET request received: Fetch actor by did from the trust registry"
+        )
+        actor = await registry_actors.actor_by_did(actor_did)
+    elif actor_id:
+        bound_logger.info(
+            "GET request received: Fetch actor by id from the trust registry"
+        )
+        actor = await registry_actors.actor_by_id(actor_id)
+    elif actor_name:
+        bound_logger.info(
+            "GET request received: Fetch actor by name from the trust registry"
+        )
+        actor = await registry_actors.actor_by_name(actor_name)
+
+    if actor:
+        bound_logger.info("Successfully retrieved actor.")
+        return [actor]
+    else:
+        bound_logger.info("Bad request: actor not found.")
+        raise HTTPException(404, "Actor not found")
 
 
 @router.get("/actors/issuers", response_model=List[Actor])

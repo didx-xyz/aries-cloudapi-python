@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -20,10 +20,12 @@ conn_record = Connection(
 @pytest.mark.anyio
 async def test_get_hooks_for_wallet_by_topic():
     with patch.object(
-        whf, "get_hooks_for_wallet_by_topic"
+        whf, "get_hooks_for_wallet_by_topic", new_callable=AsyncMock
     ) as mock_hook_by_wallet_and_topic:
         mock_hook_by_wallet_and_topic.return_value = [conn_record]
-        whf.get_hooks_for_wallet_by_topic(wallet_id="wallet_id", topic="connections")
+        await whf.get_hooks_for_wallet_by_topic(
+            wallet_id="wallet_id", topic="connections"
+        )
 
         mock_hook_by_wallet_and_topic.assert_called_once_with(
             wallet_id="wallet_id", topic="connections"
@@ -32,8 +34,10 @@ async def test_get_hooks_for_wallet_by_topic():
 
 @pytest.mark.anyio
 async def test_get_hooks_for_wallet():
-    with patch.object(whf, "get_hooks_for_wallet") as mock_get_hooks_for_wallet:
+    with patch.object(
+        whf, "get_hooks_for_wallet", new_callable=AsyncMock
+    ) as mock_get_hooks_for_wallet:
         whf.get_hooks_for_wallet.return_value = [conn_record]
-        whf.get_hooks_for_wallet(wallet_id="wallet_id")
+        await whf.get_hooks_for_wallet(wallet_id="wallet_id")
 
         mock_get_hooks_for_wallet.assert_called_once_with(wallet_id="wallet_id")

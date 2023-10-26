@@ -390,28 +390,26 @@ async def test_assert_actor_name(
 async def test_get_schemas(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
-    schemas = {
-        [
-            {
-                "did": "CW2GEk5zZ7DcF818i3gLUs",
-                "name": "test_schema",
-                "version": "9.46.70",
-                "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:9.46.70",
-            },
-            {
-                "did": "CW2GEk5zZ7DcF818i3gLUs",
-                "name": "test_schema_alt",
-                "version": "74.84.49",
-                "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema_alt:74.84.49",
-            },
-            {
-                "did": "CW2GEk5zZ7DcF818i3gLUs",
-                "name": "test_schema",
-                "version": "35.12.23",
-                "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:35.12.23",
-            },
-        ]
-    }
+    schemas = [
+        {
+            "did": "CW2GEk5zZ7DcF818i3gLUs",
+            "name": "test_schema",
+            "version": "9.46.70",
+            "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:9.46.70",
+        },
+        {
+            "did": "CW2GEk5zZ7DcF818i3gLUs",
+            "name": "test_schema_alt",
+            "version": "74.84.49",
+            "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema_alt:74.84.49",
+        },
+        {
+            "did": "CW2GEk5zZ7DcF818i3gLUs",
+            "name": "test_schema",
+            "version": "35.12.23",
+            "id": "CW2GEk5zZ7DcF818i3gLUs:2:test_schema:35.12.23",
+        },
+    ]
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
 
@@ -458,17 +456,15 @@ async def test_get_schema_by_id(
 async def test_get_actor(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
-    actor = {
-        [
-            {
-                "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
-                "name": "faber_GWNKQ",
-                "roles": ["issuer"],
-                "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
-                "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
-            }
-        ]
-    }
+    actor = [
+        {
+            "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
+            "name": "faber_GWNKQ",
+            "roles": ["issuer"],
+            "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
+            "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+        }
+    ]
 
     actor_did = "did:sov:2kzVyyTsHmt4WrJLXXRqQU"
     actor_id = "418bec12-7252-4edf-8bef-ee8dd661f934"
@@ -516,17 +512,15 @@ async def test_get_actor(
 async def test_get_issuers(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
-    actor = {
-        [
-            {
-                "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
-                "name": "faber_GWNKQ",
-                "roles": ["issuer"],
-                "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
-                "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
-            }
-        ]
-    }
+    actor = [
+        {
+            "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
+            "name": "faber_GWNKQ",
+            "roles": ["issuer"],
+            "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
+            "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+        }
+    ]
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=actor))
     await get_issuers()
@@ -543,17 +537,15 @@ async def test_get_issuers(
 async def test_get_verifiers(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
-    actor = {
-        [
-            {
-                "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
-                "name": "faber_GWNKQ",
-                "roles": ["verifiers"],
-                "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
-                "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
-            },
-        ]
-    }
+    actor = [
+        {
+            "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
+            "name": "faber_GWNKQ",
+            "roles": ["verifiers"],
+            "did": "did:sov:2kzVyyTsHmt4WrJLXXRqQU",
+            "didcomm_invitation": "http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
+        },
+    ]
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=actor))
 

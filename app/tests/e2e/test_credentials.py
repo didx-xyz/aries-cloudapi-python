@@ -215,7 +215,7 @@ async def meld_co_issue_credential_to_alice(
     }
 
     alice_credentials_listener = SseListener(
-        topic="credentials", wallet_id=alice_tenant.tenant_id
+        topic="credentials", wallet_id=alice_tenant.wallet_id
     )
 
     # create and send credential offer- issuer

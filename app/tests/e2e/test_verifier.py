@@ -731,7 +731,7 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
         json={
             "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
     meld_co_exchange = response.json()
@@ -773,7 +773,7 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.dict(),
+        json=proof_accept.to_dict(),
     )
 
     assert await check_webhook_state(
@@ -804,14 +804,14 @@ async def test_send_proof_request_verifier_has_issuer_role(
     alice_tenant: CreateTenantResponse,
 ):
     alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.tenant_id
+        topic="proofs", wallet_id=alice_tenant.wallet_id
     )
     response = await meld_co_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
             "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
             "protocol_version": "v1",
-            "indy_proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
@@ -840,7 +840,7 @@ async def test_send_proof_request_verifier_has_issuer_role(
         json={
             "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
             "protocol_version": "v2",
-            "indy_proof_request": indy_proof_request.dict(),
+            "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 

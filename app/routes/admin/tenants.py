@@ -283,31 +283,34 @@ async def get_tenants(
     )
 
     async with get_tenant_admin_controller() as admin_controller:
-        if not (group_id or wallet_name):
-            bound_logger.info(
-                "No wallet name or group id specified; fetching all wallets"
+        if wallet_name:
+            bound_logger.info("Fetching wallet by wallet name")
+            wallets = await admin_controller.multitenancy.get_wallets(
+                wallet_name=wallet_name
             )
-            wallets = await admin_controller.multitenancy.get_wallets()
-
+            # TODO: fetching by wallet_name still returns all wallets ... bug in cc or group_id plugin?
+            # Filtering result as workaround:
             if not wallets.results:
                 bound_logger.info("No wallets found.")
                 return []
-
-            # Only return wallet with current authentication role.
-            response = [
-                tenant_from_wallet_record(wallet_record)
-                for wallet_record in wallets.results
+            wallet_list = wallets.results
+            wallets = [
+                w for w in wallet_list if w.settings["wallet.name"] == wallet_name
             ]
-            bound_logger.info("Successfully fetched wallets.")
+            response = [
+                tenant_from_wallet_record(wallet_record) for wallet_record in wallets
+            ]
+            bound_logger.info("Successfully fetched wallets by wallet name.")
             return response
-
-        bound_logger.info("Fetching wallets by wallet name and/or group id")
-        wallets = await admin_controller.multitenancy.get_wallets(
-            wallet_name=wallet_name, group_id=group_id
-        )
+        elif group_id:
+            bound_logger.info("Fetching wallets by group_id")
+            wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
+        else:
+            bound_logger.info("Fetching all wallets")
+            wallets = await admin_controller.multitenancy.get_wallets()
 
     if not wallets.results:
-        bound_logger.info("No wallets found for requested wallet name and/or group id.")
+        bound_logger.info("No wallets found.")
         return []
 
     response = [

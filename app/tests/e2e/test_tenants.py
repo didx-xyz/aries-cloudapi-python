@@ -85,14 +85,16 @@ async def test_create_tenant_member_w_wallet_name(
     wallet_label = uuid4().hex
     wallet_name = "TestWalletName"
     group_id = "TestGroup"
+    create_tenant_payload = {
+        "image_url": "https://image.ca",
+        "wallet_label": wallet_label,
+        "group_id": group_id,
+        "wallet_name": wallet_name,
+    }
+
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
-        json={
-            "image_url": "https://image.ca",
-            "wallet_label": wallet_label,
-            "group_id": group_id,
-            "wallet_name": wallet_name,
-        },
+        json=create_tenant_payload,
     )
 
     assert response.status_code == 200
@@ -110,6 +112,14 @@ async def test_create_tenant_member_w_wallet_name(
     assert tenant["updated_at"] == wallet.updated_at
     assert tenant["wallet_name"] == wallet_name
     assert wallet.settings["wallet.name"] == wallet_name
+
+    with pytest.raises(HTTPException) as http_error:
+        await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json=create_tenant_payload,
+        )
+    assert http_error.value.status_code == 409
+    assert "already exists" in http_error.value.detail
 
 
 @pytest.mark.anyio

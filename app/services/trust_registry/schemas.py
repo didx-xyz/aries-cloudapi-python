@@ -32,7 +32,7 @@ async def get_trust_registry_schemas() -> List[Schema]:
             f"Unable to fetch schemas: `{schemas_res.text}`.", schemas_res.status_code
         )
 
-    result = schemas_res.json()["schemas"]
+    result = schemas_res.json()
     logger.info("Successfully fetched schemas from trust registry.")
     return result
 

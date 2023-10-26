@@ -15,20 +15,16 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/registry/schemas", tags=["schema"])
 
 
-class GetSchemasResponse(BaseModel):
-    schemas: List[Schema]
-
-
 class SchemaID(BaseModel):
     schema_id: str = Field(..., examples=["WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"])
 
 
-@router.get("", response_model=GetSchemasResponse)
-async def get_schemas(db_session: Session = Depends(get_db)) -> GetSchemasResponse:
+@router.get("", response_model=List[Schema])
+async def get_schemas(db_session: Session = Depends(get_db)) -> List[Schema]:
     logger.info("GET request received: Fetch all schemas")
     db_schemas = crud.get_schemas(db_session)
 
-    return GetSchemasResponse(schemas=db_schemas)
+    return db_schemas
 
 
 @router.post("", response_model=Schema)

@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
@@ -12,16 +13,16 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/registry/actors", tags=["actor"])
 
 
-@router.get("")
-async def get_actors(db_session: Session = Depends(get_db)):
+@router.get("", response_model=List[Actor])
+async def get_actors(db_session: Session = Depends(get_db)) -> List[Actor]:
     logger.info("GET request received: Fetch all actors")
     db_actors = crud.get_actors(db_session)
 
     return db_actors
 
 
-@router.post("")
-async def register_actor(actor: Actor, db_session: Session = Depends(get_db)):
+@router.post("", response_model=Actor)
+async def register_actor(actor: Actor, db_session: Session = Depends(get_db)) -> Actor:
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("POST request received: Register actor")
     try:
@@ -36,10 +37,10 @@ async def register_actor(actor: Actor, db_session: Session = Depends(get_db)):
     return created_actor
 
 
-@router.put("/{actor_id}")
+@router.put("/{actor_id}", response_model=Actor)
 async def update_actor(
     actor_id: str, actor: Actor, db_session: Session = Depends(get_db)
-):
+) -> Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id, "actor": actor})
     bound_logger.info("PUT request received: Update actor")
     if actor.id and actor.id != actor_id:
@@ -63,8 +64,10 @@ async def update_actor(
     return update_actor_result
 
 
-@router.get("/did/{actor_did}")
-async def get_actor_by_did(actor_did: str, db_session: Session = Depends(get_db)):
+@router.get("/did/{actor_did}", response_model=Actor)
+async def get_actor_by_did(
+    actor_did: str, db_session: Session = Depends(get_db)
+) -> Actor:
     bound_logger = logger.bind(body={"actor_did": actor_did})
     bound_logger.info("GET request received: Get actor by DID")
     try:
@@ -78,8 +81,10 @@ async def get_actor_by_did(actor_did: str, db_session: Session = Depends(get_db)
     return actor
 
 
-@router.get("/{actor_id}")
-async def get_actor_by_id(actor_id: str, db_session: Session = Depends(get_db)):
+@router.get("/{actor_id}", response_model=Actor)
+async def get_actor_by_id(
+    actor_id: str, db_session: Session = Depends(get_db)
+) -> Actor:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("GET request received: Get actor by ID")
     try:
@@ -93,8 +98,10 @@ async def get_actor_by_id(actor_id: str, db_session: Session = Depends(get_db)):
     return actor
 
 
-@router.get("/name/{actor_name}")
-async def get_actor_by_name(actor_name: str, db_session: Session = Depends(get_db)):
+@router.get("/name/{actor_name}", response_model=Actor)
+async def get_actor_by_name(
+    actor_name: str, db_session: Session = Depends(get_db)
+) -> Actor:
     bound_logger = logger.bind(body={"actor_name": actor_name})
     bound_logger.info("GET request received: Get actor by name")
     try:
@@ -109,7 +116,7 @@ async def get_actor_by_name(actor_name: str, db_session: Session = Depends(get_d
 
 
 @router.delete("/{actor_id}", status_code=204)
-async def remove_actor(actor_id: str, db_session: Session = Depends(get_db)):
+async def remove_actor(actor_id: str, db_session: Session = Depends(get_db)) -> None:
     bound_logger = logger.bind(body={"actor_id": actor_id})
     bound_logger.info("DELETE request received: Delete actor by ID")
     try:

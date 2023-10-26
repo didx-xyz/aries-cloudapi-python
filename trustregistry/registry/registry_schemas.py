@@ -31,7 +31,7 @@ async def get_schemas(db_session: Session = Depends(get_db)) -> GetSchemasRespon
     return GetSchemasResponse(schemas=db_schemas)
 
 
-@router.post("")
+@router.post("", response_model=Schema)
 async def register_schema(
     schema_id: SchemaID, db_session: Session = Depends(get_db)
 ) -> Schema:
@@ -55,7 +55,7 @@ async def register_schema(
     return create_schema_res
 
 
-@router.put("/{schema_id}")
+@router.put("/{schema_id}", response_model=Schema)
 async def update_schema(
     schema_id: str, new_schema_id: SchemaID, db_session: Session = Depends(get_db)
 ) -> Schema:

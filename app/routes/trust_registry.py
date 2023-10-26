@@ -56,18 +56,20 @@ async def get_schema_by_id(schema_id: str) -> Schema:
 @router.get("/actors", response_model=List[Actor])
 async def get_actors(
     actor_did: Optional[str] = None,
-    actor_name: Optional[str] = None,
     actor_id: Optional[str] = None,
+    actor_name: Optional[str] = None,
 ) -> List[Actor]:
     """
     Fetch all actors from the trust registry.
-    Alternatively, provide one of: did, name, or id, to fetch corresponding actor
+    Alternatively, provide one of: did, id, or name, to fetch corresponding actor.
 
     Parameters:
     -----------
-    actor_did: str (Optional)
-    actor_name: str (Optional)
-    actor_id: str (Optional)
+    actor_did: str (Optional) - DID of the Actor
+
+    actor_id: str (Optional) - Wallet ID of the Actor
+
+    actor_name: str (Optional) - Alias of the Actor
 
     Returns:
     ---------
@@ -126,7 +128,7 @@ async def get_issuers() -> List[Actor]:
 
     Returns:
     ---------
-    List of actor models, representing the issuers from the trust registry
+    List of issuer actors
     """
     logger.info("GET request received: Fetch the issuers from the trust registry")
     issuers = await registry_actors.fetch_actors_with_role("issuer")
@@ -142,7 +144,7 @@ async def get_verifiers() -> List[Actor]:
 
     Returns:
     ---------
-    List of actor models, representing the verifiers from the trust registry
+    List of verifier actors
     """
     logger.info("GET request received: Fetch the verifiers from the trust registry")
     verifiers = await registry_actors.fetch_actors_with_role("verifier")

@@ -12,7 +12,7 @@ from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.models.trust_registry import TrustRegistryRole
 from app.services.onboarding.issuer import onboard_issuer
 from app.services.onboarding.verifier import onboard_verifier
-from app.services.trust_registry.actors import actor_by_id, update_actor
+from app.services.trust_registry.actors import fetch_actor_by_id, update_actor
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -33,7 +33,7 @@ async def handle_tenant_update(
         raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
     bound_logger.debug("Retrieving tenant from trust registry")
-    actor = await actor_by_id(wallet.wallet_id)
+    actor = await fetch_actor_by_id(wallet.wallet_id)
     if not actor:
         bound_logger.error(
             "Tenant not found in trust registry. "

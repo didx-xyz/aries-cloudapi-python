@@ -34,7 +34,6 @@ async def test_get_actors():
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
     assert response.status_code == 200
-    assert "actors" in response.json()
 
 
 @pytest.mark.anyio

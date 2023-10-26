@@ -5,7 +5,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.trust_registry import Actor
 from app.services.acapy_wallet import get_public_did
 from app.services.trust_registry.actors import (
-    actor_by_id,
+    fetch_actor_by_id,
     register_actor,
     remove_actor_by_id,
 )
@@ -39,7 +39,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
     did = response.did
 
     gov_id = f"test-governance-id-{random_string(3)}"
-    if not await actor_by_id(gov_id):
+    if not await fetch_actor_by_id(gov_id):
         logger.info("Registering actor for governance controller")
         await register_actor(
             Actor(

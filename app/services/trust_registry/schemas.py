@@ -9,34 +9,6 @@ from shared.util.rich_async_client import RichAsyncClient
 logger = get_logger(__name__)
 
 
-async def get_trust_registry_schemas() -> List[Schema]:
-    """Retrieve all schemas from the trust registry
-
-    Raises:
-        TrustRegistryException: If an error occurred while retrieving the trust registry schemas.
-
-    Returns:
-        A list of schemas
-    """
-    logger.info("Fetching all schemas from trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
-
-    if schemas_res.is_error:
-        logger.error(
-            "Error fetching schemas. Got status code {} with message `{}`.",
-            schemas_res.status_code,
-            schemas_res.text,
-        )
-        raise TrustRegistryException(
-            f"Unable to fetch schemas: `{schemas_res.text}`.", schemas_res.status_code
-        )
-
-    result = schemas_res.json()
-    logger.info("Successfully fetched schemas from trust registry.")
-    return result
-
-
 async def register_schema(schema_id: str) -> None:
     """Register a schema in the trust registry
 
@@ -67,34 +39,32 @@ async def register_schema(schema_id: str) -> None:
     bound_logger.info("Successfully registered schema on trust registry.")
 
 
-async def remove_schema_by_id(schema_id: str) -> None:
-    """Remove schema from trust registry by id
-
-    Args:
-        actor_id (str): identifier of the schema to remove
+async def fetch_schemas() -> List[Schema]:
+    """Retrieve all schemas from the trust registry
 
     Raises:
-        TrustRegistryException: If an error occurred while removing the schema
-    """
-    bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("Removing schema from trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        remove_response = await client.delete(
-            f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-        )
+        TrustRegistryException: If an error occurred while retrieving the trust registry schemas.
 
-    if remove_response.is_error:
-        bound_logger.error(
-            "Error removing schema. Got status code {} with message `{}`.",
-            remove_response.status_code,
-            remove_response.text,
+    Returns:
+        A list of schemas
+    """
+    logger.info("Fetching all schemas from trust registry")
+    async with RichAsyncClient(raise_status_error=False) as client:
+        schemas_res = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
+
+    if schemas_res.is_error:
+        logger.error(
+            "Error fetching schemas. Got status code {} with message `{}`.",
+            schemas_res.status_code,
+            schemas_res.text,
         )
         raise TrustRegistryException(
-            f"Error removing schema from trust registry: `{remove_response.text}`.",
-            remove_response.status_code,
+            f"Unable to fetch schemas: `{schemas_res.text}`.", schemas_res.status_code
         )
 
-    bound_logger.info("Successfully removed schema from trust registry.")
+    result = schemas_res.json()
+    logger.info("Successfully fetched schemas from trust registry.")
+    return result
 
 
 async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
@@ -131,3 +101,33 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
     result = schema_response.json()
     logger.info("Successfully fetched schema from trust registry.")
     return result
+
+
+async def remove_schema_by_id(schema_id: str) -> None:
+    """Remove schema from trust registry by id
+
+    Args:
+        actor_id (str): identifier of the schema to remove
+
+    Raises:
+        TrustRegistryException: If an error occurred while removing the schema
+    """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("Removing schema from trust registry")
+    async with RichAsyncClient(raise_status_error=False) as client:
+        remove_response = await client.delete(
+            f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
+        )
+
+    if remove_response.is_error:
+        bound_logger.error(
+            "Error removing schema. Got status code {} with message `{}`.",
+            remove_response.status_code,
+            remove_response.text,
+        )
+        raise TrustRegistryException(
+            f"Error removing schema from trust registry: `{remove_response.text}`.",
+            remove_response.status_code,
+        )
+
+    bound_logger.info("Successfully removed schema from trust registry.")

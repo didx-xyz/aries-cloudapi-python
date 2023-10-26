@@ -7,7 +7,7 @@ import pytest
 from app.models.trust_registry import Actor
 from app.routes.wallet.dids import router as wallet_router
 from app.services.trust_registry.actors import (
-    actor_by_did,
+    fetch_actor_by_did,
     register_actor,
     remove_actor_by_id,
 )
@@ -25,7 +25,7 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
     if not await registry_has_schema(schema_id=schema_id):
         await register_schema(schema_id)
 
-    if not await actor_by_did(f"did:sov:{did}"):
+    if not await fetch_actor_by_did(f"did:sov:{did}"):
         rand = random()
         await register_actor(
             Actor(

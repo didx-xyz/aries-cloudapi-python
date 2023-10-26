@@ -99,7 +99,7 @@ async def test_create_tenant_issuer(
     )
 
     acapy_token: str = tenant["access_token"].split(".", 1)[1]
-    actor = await trust_registry.actor_by_id(wallet_id)
+    actor = await trust_registry.fetch_actor_by_id(wallet_id)
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
@@ -182,7 +182,7 @@ async def test_create_tenant_verifier(
         wallet_id=wallet_id
     )
 
-    actor = await trust_registry.actor_by_id(wallet_id)
+    actor = await trust_registry.fetch_actor_by_id(wallet_id)
 
     if not actor:
         raise Exception("Missing actor")
@@ -230,7 +230,7 @@ async def test_update_tenant_verifier_to_issuer(
 
     verifier_tenant = response.json()
     verifier_wallet_id = verifier_tenant["wallet_id"]
-    verifier_actor = await trust_registry.actor_by_id(verifier_wallet_id)
+    verifier_actor = await trust_registry.fetch_actor_by_id(verifier_wallet_id)
     assert verifier_actor
     assert_that(verifier_actor).has_name(name)
     assert_that(verifier_actor).has_roles(["verifier"])
@@ -280,7 +280,7 @@ async def test_update_tenant_verifier_to_issuer(
     assert_that(new_tenant).has_tenant_name(new_name)
     assert_that(new_tenant).has_created_at(wallet.created_at)
 
-    new_actor = await trust_registry.actor_by_id(verifier_wallet_id)
+    new_actor = await trust_registry.fetch_actor_by_id(verifier_wallet_id)
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
@@ -430,14 +430,14 @@ async def test_delete_tenant(
     wallet_id = tenant["wallet_id"]
 
     # Actor exists
-    actor = await trust_registry.actor_by_id(wallet_id)
+    actor = await trust_registry.fetch_actor_by_id(wallet_id)
     assert actor
 
     response = await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{wallet_id}")
     assert response.status_code == 200
 
     # Actor doesn't exist anymore
-    actor = await trust_registry.actor_by_id(wallet_id)
+    actor = await trust_registry.fetch_actor_by_id(wallet_id)
     assert not actor
 
     with pytest.raises(Exception):

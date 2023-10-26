@@ -1,14 +1,14 @@
 from typing import Optional
 
 from app.exceptions.trust_registry_exception import TrustRegistryException
-from app.services.trust_registry.actors import actor_by_did
+from app.services.trust_registry.actors import fetch_actor_by_did
 from app.services.trust_registry.util.schema import registry_has_schema
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
 
-async def assert_valid_issuer(did: str, schema_id: Optional[str] = None):
+async def assert_valid_issuer(did: str, schema_id: Optional[str] = None) -> None:
     """Assert that an actor with the specified did is registered as issuer.
 
     This method asserts that there is an actor registered in the trust registry
@@ -29,7 +29,7 @@ async def assert_valid_issuer(did: str, schema_id: Optional[str] = None):
     """
     bound_logger = logger.bind(body={"did": did, "schema_id": schema_id})
     bound_logger.info("Asserting issuer DID and schema_id is registered")
-    actor = await actor_by_did(did)
+    actor = await fetch_actor_by_did(did)
 
     if not actor:
         bound_logger.info("DID not registered in the trust registry.")

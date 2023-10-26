@@ -22,7 +22,7 @@ async def get_schemas() -> List[Schema]:
     Only the schemas from the trust registry
     """
     logger.info("GET request received: Fetch schemas from the trust registry")
-    schemas = await registry_schemas.get_trust_registry_schemas()
+    schemas = await registry_schemas.fetch_schemas()
 
     logger.info("Successfully retrieved schemas.")
     return schemas
@@ -60,7 +60,7 @@ async def get_actors(
     actor_id: Optional[str] = None,
 ) -> List[Actor]:
     """
-    Get all actors from the trust registry.
+    Fetch all actors from the trust registry.
     Alternatively, provide one of: did, name, or id, to fetch corresponding actor
 
     Parameters:
@@ -77,7 +77,7 @@ async def get_actors(
 
     if param_count == 0:
         logger.info("GET request received: Fetch all actors from the trust registry")
-        actors = await registry_actors.all_actors()
+        actors = await registry_actors.fetch_all_actors()
 
         logger.info("Successfully retrieved actors.")
         return actors
@@ -99,17 +99,17 @@ async def get_actors(
         bound_logger.info(
             "GET request received: Fetch actor by did from the trust registry"
         )
-        actor = await registry_actors.actor_by_did(actor_did)
+        actor = await registry_actors.fetch_actor_by_did(actor_did)
     elif actor_id:
         bound_logger.info(
             "GET request received: Fetch actor by id from the trust registry"
         )
-        actor = await registry_actors.actor_by_id(actor_id)
+        actor = await registry_actors.fetch_actor_by_id(actor_id)
     else:  # actor_name
         bound_logger.info(
             "GET request received: Fetch actor by name from the trust registry"
         )
-        actor = await registry_actors.actor_by_name(actor_name)
+        actor = await registry_actors.fetch_actor_by_name(actor_name)
 
     if actor:
         bound_logger.info("Successfully retrieved actor.")
@@ -122,14 +122,14 @@ async def get_actors(
 @router.get("/actors/issuers", response_model=List[Actor])
 async def get_issuers() -> List[Actor]:
     """
-    Get the issuers from the trust registry.
+    Fetch the issuers from the trust registry.
 
     Returns:
     ---------
     List of actor models, representing the issuers from the trust registry
     """
-    logger.info("GET request received: Get only the issuers from the trust registry")
-    issuers = await registry_actors.actors_with_role("issuer")
+    logger.info("GET request received: Fetch the issuers from the trust registry")
+    issuers = await registry_actors.fetch_actors_with_role("issuer")
 
     logger.info("Successfully retrieved issuers.")
     return issuers
@@ -138,14 +138,14 @@ async def get_issuers() -> List[Actor]:
 @router.get("/actors/verifiers", response_model=List[Actor])
 async def get_verifiers() -> List[Actor]:
     """
-    Get the verifiers from the trust registry.
+    Fetch the verifiers from the trust registry.
 
     Returns:
     ---------
     List of actor models, representing the verifiers from the trust registry
     """
-    logger.info("GET request received: Get only the verifiers from the trust registry")
-    verifiers = await registry_actors.actors_with_role("verifier")
+    logger.info("GET request received: Fetch the verifiers from the trust registry")
+    verifiers = await registry_actors.fetch_actors_with_role("verifier")
 
     logger.info("Successfully retrieved verifiers.")
     return verifiers

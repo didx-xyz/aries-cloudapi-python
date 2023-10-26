@@ -536,7 +536,7 @@ async def create_schema(
                     schemas: List[SchemaGetResult] = [
                         await aries_controller.schema.get_schema(schema_id=schema_id)
                         for schema_id in schemas_created_ids.schema_ids
-                        if schema_id is not None
+                        if schema_id
                     ]
                     if schemas:
                         if len(schemas) > 1:

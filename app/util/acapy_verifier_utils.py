@@ -7,8 +7,8 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.trust_registry import Actor
 from app.models.verifier import AcceptProofRequest, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
-from app.services.trust_registry.actors import actor_by_did
-from app.services.trust_registry.schemas import get_trust_registry_schemas
+from app.services.trust_registry.actors import fetch_actor_by_did
+from app.services.trust_registry.schemas import fetch_schemas
 from app.services.verifier.acapy_verifier import Verifier
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
@@ -146,7 +146,7 @@ async def assert_valid_verifier(
 
 
 async def are_valid_schemas(schema_ids: List[str]) -> bool:
-    schemas_from_tr = await get_trust_registry_schemas()
+    schemas_from_tr = await fetch_schemas()
     schemas_ids_from_tr = [schema["id"] for schema in schemas_from_tr]
     schemas_valid_list = [id in schemas_ids_from_tr for id in schema_ids]
 
@@ -158,7 +158,7 @@ def is_verifier(actor: Actor) -> bool:
 
 
 async def get_actor(did: str) -> Actor:
-    actor = await actor_by_did(did)
+    actor = await fetch_actor_by_did(did)
     # Verify actor was in TR
     if not actor:
         raise CloudApiException(f"No actor with DID `{did}`.", 404)

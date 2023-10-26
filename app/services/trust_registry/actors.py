@@ -77,7 +77,41 @@ async def update_actor(actor: Actor) -> None:
         )
 
 
-async def actor_by_did(did: str) -> Optional[Actor]:
+async def fetch_all_actors() -> List[Actor]:
+    """Fetch all actors from the trust registry
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actors
+
+    Returns:
+        List[Actor]: List of actors
+    """
+    logger.info("Fetching all actors from trust registry")
+    async with RichAsyncClient(raise_status_error=False) as client:
+        actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+
+    if actors_response.is_error:
+        logger.error(
+            "Error fetching all actors. Got status code {} with message `{}`.",
+            actors_response.status_code,
+            actors_response.text,
+        )
+        raise TrustRegistryException(
+            f"Unable to retrieve actors from registry: `{actors_response.text}`.",
+            actors_response.status_code,
+        )
+
+    actors = actors_response.json()
+
+    if actors:
+        logger.info("Successfully got all actors.")
+    else:
+        logger.info("No actors found.")
+
+    return actors
+
+
+async def fetch_actor_by_did(did: str) -> Optional[Actor]:
     """Retrieve actor by did from trust registry
 
     Args:
@@ -114,7 +148,7 @@ async def actor_by_did(did: str) -> Optional[Actor]:
     return actor_response.json()
 
 
-async def actor_by_id(actor_id: str) -> Optional[Actor]:
+async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
     """Retrieve actor by id from trust registry
 
     Args:
@@ -151,8 +185,45 @@ async def actor_by_id(actor_id: str) -> Optional[Actor]:
     return actor_response.json()
 
 
-async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
-    """Get all actors from the trust registry by role
+async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
+    """Retrieve actor by name from trust registry
+
+    Args:
+        actor_name (str): Identifier of the actor to retrieve
+
+    Raises:
+        TrustRegistryException: If an error occurred while retrieving the actor.
+
+    Returns:
+        Actor: The actor with specified name.
+    """
+    bound_logger = logger.bind(body={"actor_id": actor_name})
+    bound_logger.info("Fetching actor by NAME from trust registry")
+    async with RichAsyncClient(raise_status_error=False) as client:
+        actor_response = await client.get(
+            f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
+        )
+
+    if actor_response.status_code == 404:
+        bound_logger.info("Bad request: Actor with name not found in registry.")
+        return None
+    elif actor_response.is_error:
+        bound_logger.error(
+            "Error fetching actor by name. Got status code {} with message `{}`.",
+            actor_response.status_code,
+            actor_response.text,
+        )
+        raise TrustRegistryException(
+            f"Error fetching actor by name: `{actor_response.text}`.",
+            actor_response.status_code,
+        )
+
+    bound_logger.info("Successfully fetched actor from trust registry.")
+    return actor_response.json()
+
+
+async def fetch_actors_with_role(role: TrustRegistryRole) -> List[Actor]:
+    """Fetch all actors from the trust registry by role
 
     Args:
         role (Role): The role to filter actors by
@@ -190,41 +261,6 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     return actors_with_role_list
 
 
-async def all_actors() -> List[Actor]:
-    """Get all actors from the trust registry
-
-    Raises:
-        TrustRegistryException: If an error occurred while retrieving the actors
-
-    Returns:
-        List[Actor]: List of actors
-    """
-    bound_logger = logger.bind(body={"Getting all Actors"})
-    bound_logger.info("Fetching all actors from trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
-
-    if actors_response.is_error:
-        bound_logger.error(
-            "Error fetching all actors. Got status code {} with message `{}`.",
-            actors_response.status_code,
-            actors_response.text,
-        )
-        raise TrustRegistryException(
-            f"Unable to retrieve actors from registry: `{actors_response.text}`.",
-            actors_response.status_code,
-        )
-
-    actors = actors_response.json()
-
-    if actors:
-        bound_logger.info("Successfully got all actors.")
-    else:
-        bound_logger.info("No actors found.")
-
-    return actors
-
-
 async def remove_actor_by_id(actor_id: str) -> None:
     """Remove actor from trust registry by id
 
@@ -258,40 +294,3 @@ async def remove_actor_by_id(actor_id: str) -> None:
         )
 
     bound_logger.info("Successfully removed actor from trust registry.")
-
-
-async def actor_by_name(actor_name: str) -> Optional[Actor]:
-    """Retrieve actor by name from trust registry
-
-    Args:
-        actor_name (str): Identifier of the actor to retrieve
-
-    Raises:
-        TrustRegistryException: If an error occurred while retrieving the actor.
-
-    Returns:
-        Actor: The actor with specified name.
-    """
-    bound_logger = logger.bind(body={"actor_id": actor_name})
-    bound_logger.info("Fetching actor by NAME from trust registry")
-    async with RichAsyncClient(raise_status_error=False) as client:
-        actor_response = await client.get(
-            f"{TRUST_REGISTRY_URL}/registry/actors/name/{actor_name}"
-        )
-
-    if actor_response.status_code == 404:
-        bound_logger.info("Bad request: Actor with name not found in registry.")
-        return None
-    elif actor_response.is_error:
-        bound_logger.error(
-            "Error fetching actor by name. Got status code {} with message `{}`.",
-            actor_response.status_code,
-            actor_response.text,
-        )
-        raise TrustRegistryException(
-            f"Error fetching actor by name: `{actor_response.text}`.",
-            actor_response.status_code,
-        )
-
-    bound_logger.info("Successfully fetched actor from trust registry.")
-    return actor_response.json()

@@ -15,8 +15,8 @@ from app.routes.trust_registry import (
     get_verifiers,
 )
 from app.services.trust_registry.actors import (
-    actor_by_did,
-    actors_with_role,
+    fetch_actor_by_did,
+    fetch_actors_with_role,
     register_actor,
     remove_actor_by_id,
     update_actor,
@@ -136,7 +136,7 @@ async def test_actor_by_did(
     }
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=res))
-    actor = await actor_by_did("did:sov:xxx")
+    actor = await fetch_actor_by_did("did:sov:xxx")
     mock_async_client.get.assert_called_once_with(
         TRUST_REGISTRY_URL + "/registry/actors/did/did:sov:xxx"
     )
@@ -144,10 +144,10 @@ async def test_actor_by_did(
 
     mock_async_client.get = AsyncMock(return_value=Response(500, json=res))
     with pytest.raises(TrustRegistryException):
-        actor = await actor_by_did("did:sov:xxx")
+        actor = await fetch_actor_by_did("did:sov:xxx")
 
     mock_async_client.get = AsyncMock(return_value=Response(404, json={}))
-    actor = await actor_by_did("did:sov:xxx")
+    actor = await fetch_actor_by_did("did:sov:xxx")
     assert actor is None
 
 
@@ -162,30 +162,30 @@ async def test_actor_with_role(
         {"id": "governance", "roles": ["issuer"]},
         {"id": "governance2", "roles": ["issuer"]},
     ]
-    mock_async_client.get = AsyncMock(return_value=Response(200, json={actors}))
-    assert await actors_with_role("issuer") == actors
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=actors))
+    assert await fetch_actors_with_role("issuer") == actors
 
     actors = [
         {"id": "governance", "roles": ["issuer"]},
         {"id": "governance2", "roles": ["verifier"]},
     ]
-    mock_async_client.get = AsyncMock(return_value=Response(200, json={actors}))
-    assert await actors_with_role("issuer") == [actors[0]]
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=actors))
+    assert await fetch_actors_with_role("issuer") == [actors[0]]
 
     actors = [
         {"id": "governance", "roles": ["verifier"]},
         {"id": "governance2", "roles": ["verifier"]},
     ]
-    mock_async_client.get = AsyncMock(return_value=Response(428, json={actors}))
+    mock_async_client.get = AsyncMock(return_value=Response(428, json=actors))
     with pytest.raises(TrustRegistryException):
-        await actors_with_role("issuer")
+        await fetch_actors_with_role("issuer")
 
     actors = [
         {"id": "governance", "roles": ["verifier"]},
         {"id": "governance2", "roles": ["verifier"]},
     ]
-    mock_async_client.get = AsyncMock(return_value=Response(200, json={actors}))
-    assert await actors_with_role("issuer") == []
+    mock_async_client.get = AsyncMock(return_value=Response(200, json=actors))
+    assert await fetch_actors_with_role("issuer") == []
 
 
 @pytest.mark.anyio

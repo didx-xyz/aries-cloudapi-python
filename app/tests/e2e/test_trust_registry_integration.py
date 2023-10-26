@@ -7,7 +7,7 @@ from app.routes.definitions import router as def_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.routes.verifier import router as verifier_router
-from app.services.trust_registry.actors import actor_by_id
+from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.client import get_tenant_client
 from app.util.string import base64_to_json, random_string
 from shared import RichAsyncClient
@@ -58,7 +58,7 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
-    verifier_actor = await actor_by_id(acme_verifier.wallet_id)
+    verifier_actor = await fetch_actor_by_id(acme_verifier.wallet_id)
 
     assert verifier_actor
 

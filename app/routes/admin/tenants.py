@@ -27,7 +27,7 @@ from app.models.tenants import (
 from app.models.trust_registry import Actor
 from app.services.onboarding.tenants import handle_tenant_update, onboard_tenant
 from app.services.trust_registry.actors import (
-    actor_by_id,
+    fetch_actor_by_id,
     register_actor,
     remove_actor_by_id,
 )
@@ -162,7 +162,7 @@ async def delete_tenant_by_id(
         # in the trust registry, especially if the tenant does not have
         # a public did.
         bound_logger.debug("Retrieving tenant from trust registry")
-        actor = await actor_by_id(wallet.wallet_id)
+        actor = await fetch_actor_by_id(wallet.wallet_id)
 
         # Remove actor if found
         if actor:

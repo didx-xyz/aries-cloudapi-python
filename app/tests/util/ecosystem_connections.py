@@ -9,7 +9,7 @@ from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
-from app.services.trust_registry.actors import actor_by_id
+from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.ledger import create_public_did
 from app.tests.util.webhooks import check_webhook_state
 from app.util.acapy_verifier_utils import ed25519_verkey_to_did_key
@@ -75,7 +75,7 @@ class AcmeAliceConnect:
 async def acme_and_alice_connection(
     alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
 ) -> AcmeAliceConnect:
-    acme_actor = await actor_by_id(acme_verifier.wallet_id)
+    acme_actor = await fetch_actor_by_id(acme_verifier.wallet_id)
     assert acme_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])

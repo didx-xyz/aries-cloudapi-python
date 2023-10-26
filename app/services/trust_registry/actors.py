@@ -192,7 +192,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
     return actors_with_role_list
 
 
-async def all_actors() -> list[Actor]:
+async def all_actors() -> List[Actor]:
     """Get all actors from the trust registry
 
     Raises:

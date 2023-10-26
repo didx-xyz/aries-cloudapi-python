@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from app.exceptions.trust_registry_exception import TrustRegistryException
 from app.models.trust_registry import Schema
@@ -97,7 +97,7 @@ async def remove_schema_by_id(schema_id: str) -> None:
     bound_logger.info("Successfully removed schema from trust registry.")
 
 
-async def get_schema_by_id(schema_id: str) -> Schema:
+async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
     """Retrieve a schemas from the trust registry
 
     Raises:

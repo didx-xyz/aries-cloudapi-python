@@ -162,27 +162,21 @@ async def test_actor_with_role(
         {"id": "governance", "roles": ["issuer"]},
         {"id": "governance2", "roles": ["issuer"]},
     ]
-    mock_async_client.get = AsyncMock(
-        return_value=Response(200, json={"actors": actors})
-    )
+    mock_async_client.get = AsyncMock(return_value=Response(200, json={actors}))
     assert await actors_with_role("issuer") == actors
 
     actors = [
         {"id": "governance", "roles": ["issuer"]},
         {"id": "governance2", "roles": ["verifier"]},
     ]
-    mock_async_client.get = AsyncMock(
-        return_value=Response(200, json={"actors": actors})
-    )
+    mock_async_client.get = AsyncMock(return_value=Response(200, json={actors}))
     assert await actors_with_role("issuer") == [actors[0]]
 
     actors = [
         {"id": "governance", "roles": ["verifier"]},
         {"id": "governance2", "roles": ["verifier"]},
     ]
-    mock_async_client.get = AsyncMock(
-        return_value=Response(428, json={"actors": actors})
-    )
+    mock_async_client.get = AsyncMock(return_value=Response(428, json={actors}))
     with pytest.raises(TrustRegistryException):
         await actors_with_role("issuer")
 
@@ -190,9 +184,7 @@ async def test_actor_with_role(
         {"id": "governance", "roles": ["verifier"]},
         {"id": "governance2", "roles": ["verifier"]},
     ]
-    mock_async_client.get = AsyncMock(
-        return_value=Response(200, json={"actors": actors})
-    )
+    mock_async_client.get = AsyncMock(return_value=Response(200, json={actors}))
     assert await actors_with_role("issuer") == []
 
 
@@ -399,7 +391,7 @@ async def test_get_schemas(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
     schemas = {
-        "schemas": [
+        [
             {
                 "did": "CW2GEk5zZ7DcF818i3gLUs",
                 "name": "test_schema",
@@ -467,7 +459,7 @@ async def test_get_actor(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
     actor = {
-        "actors": [
+        [
             {
                 "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
                 "name": "faber_GWNKQ",
@@ -525,7 +517,7 @@ async def test_get_issuers(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
     actor = {
-        "actors": [
+        [
             {
                 "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
                 "name": "faber_GWNKQ",
@@ -552,7 +544,7 @@ async def test_get_verifiers(
     mock_async_client: Mock,  # pylint: disable=redefined-outer-name
 ):
     actor = {
-        "actors": [
+        [
             {
                 "id": "418bec12-7252-4edf-8bef-ee8dd661f934",
                 "name": "faber_GWNKQ",

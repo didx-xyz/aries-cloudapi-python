@@ -3,9 +3,9 @@ import json
 import time
 from typing import List, Optional
 
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
+    ApiException,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
     SchemaGetResult,
@@ -352,10 +352,10 @@ async def create_credential_definition(
                     rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state="active"
                 )
                 credential_definition_id = active_rev_reg.result.cred_def_id
-            except ClientResponseError as e:
+            except ApiException as e:
                 bound_logger.debug(
-                    "A ClientResponseError was caught while supporting revocation. The error message is: '{}'.",
-                    e.message,
+                    "An ApiException was caught while supporting revocation. The error message is: '{}'.",
+                    e.reason,
                 )
                 raise e
 
@@ -501,12 +501,12 @@ async def create_schema(
             result = await aries_controller.schema.publish_schema(
                 body=schema_send_request, create_transaction_for_endorser=False
             )
-        except ClientResponseError as e:
+        except ApiException as e:
             bound_logger.info(
-                "ClientResponseError caught while trying to publish schema: `{}`",
-                e.message,
+                "ApiException caught while trying to publish schema: `{}`",
+                e.reason,
             )
-            if e.status == 400 and "already exist" in e.message:
+            if e.status == 400 and "already exist" in e.reason:
                 bound_logger.info("Handling case of schema already existing on ledger")
                 bound_logger.debug("Fetching public DID for governance controller")
                 pub_did = await aries_controller.wallet.get_public_did()
@@ -568,8 +568,8 @@ async def create_schema(
                 return result
             else:
                 bound_logger.warning(
-                    "An unhandled ClientResponseError was caught while publishing schema. The error message is: '{}'.",
-                    e.message,
+                    "An unhandled ApiException was caught while publishing schema. The error message is: '{}'.",
+                    e.reason,
                 )
                 raise CloudApiException("Error while creating schema.") from e
 

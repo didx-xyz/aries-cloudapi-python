@@ -1,7 +1,7 @@
 import pytest
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
+    ApiException,
     CredRevRecordResult,
     IssuerCredRevRecord,
     IssuerRevRegRecord,
@@ -320,7 +320,7 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         rev_reg_id=revocation_registry_id,
         conn_id=None,
         create_transaction_for_endorser=False,
-    ).thenRaise(ClientResponseError({}, ("x", "x")))
+    ).thenRaise(ApiException())
 
     when(rg).endorser_revoke().thenReturn(to_async(None))
 
@@ -362,7 +362,7 @@ async def test_get_credential_definition_id_from_exchange_id(
     # Success v2
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ClientResponseError({}, ("x", "x")))
+    ).thenRaise(ApiException())
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenReturn(
@@ -386,10 +386,10 @@ async def test_get_credential_definition_id_from_exchange_id(
     # Not found
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ClientResponseError({}, ("y", "y")))
+    ).thenRaise(ApiException())
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ClientResponseError({}, ("z", "z")))
+    ).thenRaise(ApiException())
 
     get_credential_definition_id_from_exchange_id_result = (
         await rg.get_credential_definition_id_from_exchange_id(

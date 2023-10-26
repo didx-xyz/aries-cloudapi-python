@@ -1,7 +1,7 @@
 import pytest
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
     AcaPyClient,
+    ApiException,
     ModelSchema,
     SchemaGetResult,
     TAAAccept,
@@ -39,7 +39,7 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
 async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
-    ).thenReturn(to_async(ClientResponseError(mock(), mock())))
+    ).thenReturn(to_async(ApiException()))
 
     with pytest.raises(CloudApiException) as exc:
         await accept_taa(

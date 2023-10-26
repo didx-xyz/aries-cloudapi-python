@@ -4,7 +4,7 @@ import pytest
 from aries_cloudcontroller import DID, AcaPyClient
 from assertpy import assert_that
 
-import app.services.acapy_wallet as wallet_facade
+import app.services.acapy_wallet as wallet_service
 from app.dependencies.auth import AcaPyAuthVerified
 from app.models.wallet import SetDidEndpointRequest
 from app.routes.wallet.dids import (
@@ -80,7 +80,7 @@ async def test_get_did_endpoint(governance_client: RichAsyncClient):
 async def test_set_public_did(
     governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
 ):
-    did_object = await wallet_facade.create_did(governance_acapy_client)
+    did_object = await wallet_service.create_did(governance_acapy_client)
     await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
 
     did = did_object.did

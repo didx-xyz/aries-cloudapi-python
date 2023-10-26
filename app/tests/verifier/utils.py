@@ -32,8 +32,8 @@ from httpx import Response
 from mockito import mock, when
 
 from app.exceptions.cloud_api_error import CloudApiException
+from app.models.trust_registry import Actor
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
-from app.services.trust_registry import Actor
 from app.services.verifier.acapy_verifier import Verifier
 from app.tests.util.mock import to_async
 from app.util.acapy_verifier_utils import (
@@ -172,7 +172,7 @@ indy_pres_spec = IndyPresSpec(
 async def test_are_valid_schemas(mock_async_client):
     # schemas are valid
     schemas = {
-        "schemas": [
+        [
             "NR6Y28AiZ893utPSfoQRrz:2:test_schema:0.3",
             "U8BpHgzm5H5WbmDqeQRnxh:2:test_schema:0.3",
             "WoWSMfxTHA14GR2FdJJcHk:2:test_schema:0.3",
@@ -180,7 +180,7 @@ async def test_are_valid_schemas(mock_async_client):
     }
     mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
 
-    assert await are_valid_schemas(schema_ids=schemas["schemas"]) is True
+    assert await are_valid_schemas(schema_ids=schemas) is True
 
     # has invalid schema
     mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))

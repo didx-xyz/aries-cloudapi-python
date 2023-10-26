@@ -4,15 +4,15 @@ from random import random
 
 import pytest
 
+from app.models.trust_registry import Actor
 from app.routes.wallet.dids import router as wallet_router
-from app.services.trust_registry import (
-    Actor,
-    actor_by_did,
+from app.services.trust_registry.actors import (
+    fetch_actor_by_did,
     register_actor,
-    register_schema,
-    registry_has_schema,
     remove_actor_by_id,
 )
+from app.services.trust_registry.schemas import register_schema
+from app.services.trust_registry.util.schema import registry_has_schema
 from shared import RichAsyncClient
 
 WALLET_BASE_PATH = wallet_router.prefix
@@ -25,7 +25,7 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
     if not await registry_has_schema(schema_id=schema_id):
         await register_schema(schema_id)
 
-    if not await actor_by_did(f"did:sov:{did}"):
+    if not await fetch_actor_by_did(f"did:sov:{did}"):
         rand = random()
         await register_actor(
             Actor(

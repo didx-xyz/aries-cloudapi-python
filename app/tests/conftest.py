@@ -25,6 +25,7 @@ from app.tests.util.member_async_clients import (
     faber_client,
     governance_client,
     tenant_admin_client,
+    unauthed_client,
 )
 from app.tests.util.member_wallets import (
     acme_verifier,

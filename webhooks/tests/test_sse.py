@@ -1,9 +1,8 @@
 import json
 import logging
 
-import httpx
 import pytest
-from httpx import Response, Timeout
+from httpx import ReadTimeout, Response, Timeout
 
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
@@ -120,7 +119,7 @@ async def get_sse_stream_response(url, duration=2) -> Response:
                         response_text += line
                 except TimeoutError:
                     pass  # Timeout reached, return the response text read so far
-    except httpx.ReadTimeout:
+    except ReadTimeout:
         # Closing connection gracefully, as event_stream is infinite
         pass
     finally:

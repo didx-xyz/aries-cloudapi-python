@@ -3,8 +3,8 @@ import json
 from typing import Any, Dict, Optional
 
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
+from fastapi import HTTPException
 from fastapi_websocket_pubsub import PubSubClient
-from httpx import HTTPError, HTTPStatusError
 from pydantic import BaseModel
 
 from shared import (
@@ -159,7 +159,7 @@ async def should_accept_endorsement(
 
             return True
 
-        except HTTPError as e:
+        except HTTPException as e:
             bound_logger.error(
                 "Attempt {}: Exception caught when asserting valid issuer: {}",
                 attempt + 1,
@@ -292,15 +292,14 @@ async def is_valid_issuer(did: str, schema_id: str):
             actor_res = await client.get(
                 f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
             )
-    except HTTPStatusError as http_err:
-        if http_err.response.status_code == 404:
+    except HTTPException as http_err:
+        if http_err.status_code == 404:
             bound_logger.info("Not valid issuer; DID not found on trust registry.")
             return False
         else:
             bound_logger.error(
                 "Error retrieving actor from trust registry: `{}`.",
-                did,
-                http_err.response,
+                http_err.detail,
             )
             raise http_err
     actor = actor_res.json()
@@ -314,14 +313,14 @@ async def is_valid_issuer(did: str, schema_id: str):
         async with RichAsyncClient() as client:
             bound_logger.debug("Fetch schema from trust registry")
             await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}")
-    except HTTPStatusError as http_err:
-        if http_err.response.status_code == 404:
+    except HTTPException as http_err:
+        if http_err.status_code == 404:
             bound_logger.info("Schema id not registered in trust registry.")
             return False
         else:
             bound_logger.error(
                 "Something went wrong when fetching schema from trust registry: `{}`.",
-                http_err.response,
+                http_err.detail,
             )
             raise http_err
 

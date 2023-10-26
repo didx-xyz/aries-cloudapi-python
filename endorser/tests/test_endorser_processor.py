@@ -3,7 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
-from httpx import HTTPStatusError, Response
+from fastapi import HTTPException
+from httpx import Response
 from mockito import verify, when
 from pytest_mock import MockerFixture
 
@@ -157,24 +158,23 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
     schema_response = Response(
         200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
     )
-    # Error actor res
-    mocked_async_client.get = AsyncMock(
-        side_effect=[
-            Response(404, json={}),
-            schema_response,
-        ]
-    )
-    assert not await is_valid_issuer(did, schema_id)
+    # Mock HTTPException to be raised on get call
+    error = HTTPException(status_code=404, detail="Not Found")
+
+    mocked_async_client.get = AsyncMock(side_effect=[actor_response, error])
+
+    result = await is_valid_issuer(did, schema_id)
+
+    assert result is False
 
     # Error schema res
     not_schema_id = "not-the-schema-id"
-    error_response = HTTPStatusError(
-        response=Response(status_code=500),
-        message="Something went wrong",
-        request=not_schema_id,
+    error_response = HTTPException(
+        status_code=500,
+        detail="Something went wrong",
     )
     mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
-    with pytest.raises(HTTPStatusError):
+    with pytest.raises(HTTPException):
         await is_valid_issuer(did, not_schema_id)
 
     # Invalid role
@@ -188,10 +188,9 @@ async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
 
     # schema not registered
     not_schema_id = "not-the-schema-id"
-    error_response = HTTPStatusError(
-        response=Response(status_code=404),
-        message="Schema does not exist in registry.",
-        request=not_schema_id,
+    error_response = HTTPException(
+        status_code=404,
+        detail="Schema does not exist in registry.",
     )
     mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
     assert not await is_valid_issuer(did, schema_id)

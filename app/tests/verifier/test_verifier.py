@@ -7,7 +7,7 @@ from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
 from app.dependencies.auth import AcaPyAuth
-from app.services.trust_registry import Actor
+from app.models.trust_registry import Actor
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.util.mock import to_async

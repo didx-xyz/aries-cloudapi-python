@@ -3,7 +3,7 @@ from typing import List, Optional
 from aries_cloudcontroller import CreateWalletRequest
 from pydantic import BaseModel, Field
 
-from app.services.trust_registry import TrustRegistryRole
+from app.models.trust_registry import TrustRegistryRole
 
 
 class CreateWalletRequestWithGroups(CreateWalletRequest):

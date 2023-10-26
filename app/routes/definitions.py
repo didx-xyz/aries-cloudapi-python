@@ -23,17 +23,20 @@ from app.dependencies.auth import (
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions.trust_registry_exception import TrustRegistryException
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
     CredentialDefinition,
     CredentialSchema,
 )
-from app.services import acapy_wallet, trust_registry
+from app.services import acapy_wallet
 from app.services.revocation_registry import (
     create_revocation_registry,
     publish_revocation_registry_on_ledger,
 )
+from app.services.trust_registry.schemas import register_schema
+from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
@@ -215,9 +218,7 @@ async def create_credential_definition(
 
         # Make sure we are allowed to issue this schema according to trust registry rules
         bound_logger.debug("Asserting client is a valid issuer")
-        await trust_registry.assert_valid_issuer(
-            public_did, credential_definition.schema_id
-        )
+        await assert_valid_issuer(public_did, credential_definition.schema_id)
 
         listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
 
@@ -535,7 +536,7 @@ async def create_schema(
                     schemas: List[SchemaGetResult] = [
                         await aries_controller.schema.get_schema(schema_id=schema_id)
                         for schema_id in schemas_created_ids.schema_ids
-                        if schema_id is not None
+                        if schema_id
                     ]
                     if schemas:
                         if len(schemas) > 1:
@@ -576,13 +577,13 @@ async def create_schema(
     try:
         if result.sent and result.sent.schema_id:
             bound_logger.debug("Registering schema after successful publish to ledger")
-            await trust_registry.register_schema(schema_id=result.sent.schema_id)
+            await register_schema(schema_id=result.sent.schema_id)
         else:
             bound_logger.error("No SchemaSendResult in `publish_schema` response.")
             raise CloudApiException(
                 "An unexpected error occurred: could not publish schema."
             )
-    except trust_registry.TrustRegistryException as error:
+    except TrustRegistryException as error:
         # If status_code is 405 it means the schema already exists in the trust registry
         # That's okay, because we've achieved our intended result:
         #   make sure the schema is registered in the trust registry

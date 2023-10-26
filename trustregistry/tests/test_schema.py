@@ -13,7 +13,6 @@ async def test_get_schemas():
     async with RichAsyncClient() as client:
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/schemas")
     assert response.status_code == 200
-    assert "schemas" in response.json()
 
 
 @pytest.mark.anyio

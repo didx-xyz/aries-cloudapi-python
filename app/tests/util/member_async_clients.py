@@ -9,6 +9,13 @@ from app.tests.util.client import (
     get_tenant_client,
 )
 from shared import RichAsyncClient
+from shared.constants import CLOUDAPI_URL
+
+
+@pytest.fixture
+async def unauthed_client() -> RichAsyncClient:
+    async with RichAsyncClient(base_url=CLOUDAPI_URL) as client:
+        yield client
 
 
 @pytest.fixture(scope="session")

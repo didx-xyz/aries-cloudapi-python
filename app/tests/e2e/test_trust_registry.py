@@ -68,7 +68,7 @@ async def test_get_actors(
     assert actor_did == f"did:sov:{did_result.result.did}"
 
     actor_name = actor["name"]
-    assert actor_name == faber_issuer.tenant_name
+    assert actor_name == faber_issuer.wallet_label
     assert_that(actor).contains("id", "name", "roles", "did", "didcomm_invitation")
 
     actors_by_did = await unauthed_client.get(
@@ -80,7 +80,7 @@ async def test_get_actors(
     )
 
     actors_by_name = await unauthed_client.get(
-        f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_name={faber_issuer.tenant_name}"
+        f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_name={faber_issuer.wallet_label}"
     )
     assert actors_by_name.status_code == 200
     assert_that(actors_by_name.json()[0]).contains(

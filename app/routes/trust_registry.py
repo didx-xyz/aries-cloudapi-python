@@ -41,13 +41,15 @@ async def get_schema_by_id(schema_id: str) -> Schema:
     -----------
     A schema from the trust registry
     """
-    logger.info("GET request received: Get schema by id from the trust registry")
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("GET request received: Fetch schema by id")
     schema = await registry_schemas.get_schema_by_id(schema_id)
 
     if schema:
-        logger.info("Successfully retrieved schema.")
+        bound_logger.info("Successfully fetched schema by id.")
         return schema
     else:
+        bound_logger.info("Bad request: schema not found.")
         raise HTTPException(404, f"Schema with id: {schema_id} not found")
 
 

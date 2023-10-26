@@ -15,13 +15,13 @@ router = APIRouter(prefix="/trust-registry", tags=["trust-registry"])
 @router.get("/schemas", response_model=List[Schema])
 async def get_schemas() -> List[Schema]:
     """
-    Get only the schemas from the trust registry.
+    Fetch the schemas from the trust registry.
 
     Returns:
     ---------
     Only the schemas from the trust registry
     """
-    logger.info("GET request received: Get only the schemas from the trust registry")
+    logger.info("GET request received: Fetch schemas from the trust registry")
     schemas = await registry_schemas.get_trust_registry_schemas()
 
     logger.info("Successfully retrieved schemas.")
@@ -105,7 +105,7 @@ async def get_actors(
             "GET request received: Fetch actor by id from the trust registry"
         )
         actor = await registry_actors.actor_by_id(actor_id)
-    elif actor_name:
+    else:  # actor_name
         bound_logger.info(
             "GET request received: Fetch actor by name from the trust registry"
         )

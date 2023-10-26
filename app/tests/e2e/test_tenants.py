@@ -503,6 +503,7 @@ async def test_delete_tenant(
         json={
             "image_url": "https://image.ca",
             "wallet_label": wallet_label,
+            "roles": ["verifier"],
         },
     )
 

@@ -180,7 +180,7 @@ async def issue_credential_to_alice(
 
 @pytest.fixture(scope="function")
 async def meld_co_credential_definition_id(
-    schema_definition: CredentialSchema,
+    schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
     meld_co_client: RichAsyncClient,
 ) -> str:
     await register_issuer(meld_co_client, schema_definition.id)
@@ -200,7 +200,7 @@ async def meld_co_credential_definition_id(
 @pytest.fixture(scope="function")
 async def meld_co_issue_credential_to_alice(
     meld_co_client: RichAsyncClient,
-    meld_co_credential_definition_id: str,
+    meld_co_credential_definition_id: str,  # pylint: disable=redefined-outer-name
     meld_co_and_alice_connection: MeldCoAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,

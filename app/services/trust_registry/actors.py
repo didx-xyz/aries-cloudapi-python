@@ -181,7 +181,7 @@ async def actors_with_role(role: TrustRegistryRole) -> List[Actor]:
 
     actors = actors_response.json()
     actors_with_role_list = [
-        actor for actor in actors["actors"] if role in actor["roles"]
+        actor for actor in actors if role in actor["roles"]
     ]
 
     if actors_with_role_list:
@@ -224,7 +224,7 @@ async def all_actors() -> List[Actor]:
     else:
         bound_logger.info("No actors found.")
 
-    return actors["actors"]
+    return actors
 
 
 async def remove_actor_by_id(actor_id: str) -> None:

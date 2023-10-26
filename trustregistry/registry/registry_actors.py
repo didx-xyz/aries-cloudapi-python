@@ -17,7 +17,7 @@ async def get_actors(db_session: Session = Depends(get_db)):
     logger.info("GET request received: Fetch all actors")
     db_actors = crud.get_actors(db_session)
 
-    return {"actors": db_actors}
+    return db_actors
 
 
 @router.post("")

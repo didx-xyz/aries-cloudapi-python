@@ -67,7 +67,7 @@ async def test_register_actor():
         new_actor_resp = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
         assert new_actor_resp.status_code == 200
         new_actors = new_actor_resp.json()
-        assert new_actor["id"] in [actor["id"] for actor in new_actors["actors"]]
+        assert new_actor["id"] in [actor["id"] for actor in new_actors]
 
         response = await client.post(
             f"{TRUST_REGISTRY_URL}/registry/actors",
@@ -155,7 +155,7 @@ async def test_update_actor():
         new_actors_resp = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
         assert new_actors_resp.status_code == 200
         new_actors_list = new_actors_resp.json()
-        assert new_actor in new_actors_list["actors"]
+        assert new_actor in new_actors_list
 
         response = await client.put(
             f"{TRUST_REGISTRY_URL}/registry/actors/idonotexist",

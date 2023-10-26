@@ -3,7 +3,11 @@ from typing import List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import CreateWalletTokenRequest, UpdateWalletRequest
+from aries_cloudcontroller import (
+    ApiException,
+    CreateWalletTokenRequest,
+    UpdateWalletRequest,
+)
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -85,8 +89,22 @@ async def create_tenant(
                     group_id=body.group_id,
                 )
             )
-            bound_logger.debug("Wallet creation successful")
+        except ApiException as e:
+            bound_logger.info(
+                "Error while trying to create wallet: `{}`",
+                e.reason,
+            )
+            if e.status == 400 and "already exists" in e.reason:
+                raise HTTPException(
+                    409,
+                    f"A wallet with name `{wallet_name}` already exists. "
+                    "The wallet name must be unique.",
+                )
+            raise
 
+        bound_logger.debug("Wallet creation successful")
+
+        try:
             if roles:
                 bound_logger.info(
                     "Onboarding `{}` with requested roles: `{}`", wallet_label, roles

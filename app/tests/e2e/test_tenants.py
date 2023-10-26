@@ -24,7 +24,6 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
         json={
             "image_url": "https://image.ca",
             "wallet_label": uuid4().hex,
-            "roles": ["verifier"],
             "group_id": "TestGroup",
         },
     )
@@ -387,7 +386,6 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
         json={
             "image_url": "https://image.ca",
             "wallet_label": uuid4().hex,
-            "roles": ["verifier"],
         },
     )
 
@@ -407,7 +405,6 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
         json={
             "image_url": "https://image.ca",
             "wallet_label": uuid4().hex,
-            "roles": ["verifier"],
             "group_id": "ac/dc",
         },
     )
@@ -434,7 +431,6 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
         json={
             "image_url": "https://image.ca",
             "wallet_label": wallet_label,
-            "roles": ["verifier"],
             "group_id": group_id,
         },
     )
@@ -469,7 +465,6 @@ async def test_delete_tenant(
         json={
             "image_url": "https://image.ca",
             "wallet_label": wallet_label,
-            "roles": ["verifier"],
         },
     )
 

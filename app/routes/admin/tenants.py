@@ -1,3 +1,4 @@
+import tracemalloc
 from secrets import token_urlsafe
 from typing import List, Optional
 from uuid import uuid4
@@ -49,6 +50,7 @@ async def create_tenant(
     body: CreateTenantRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> CreateTenantResponse:
+    tracemalloc.start()
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Starting tenant creation")
@@ -159,6 +161,10 @@ async def create_tenant(
         group_id=body.group_id,
     )
     bound_logger.debug("Successfully created tenant.")
+    snapshot = tracemalloc.take_snapshot()
+    top_stats = snapshot.statistics("lineno")
+    for stat in top_stats[:10]:  # print the top 10 memory consuming lines
+        print(stat)
     return response
 
 

@@ -205,12 +205,13 @@ jobs:
           set -e
           echo "Exit code: $EXIT_CODE"
 
-          mkdir coverage-files
+          mkdir -p coverage-files
           mv .coverage coverage-files/.coverage.${{ matrix.module.id }}
 
           # very hacky way to get around the fact that teardown fails even if tests pass
           TEARDOWN_ERROR=false
           SINGLE_ERROR=false
+          TEST_FAILURES=0
 
           if grep -q "ERROR at teardown" test_output.txt; then
               echo "ERROR at teardown"
@@ -222,7 +223,11 @@ jobs:
               SINGLE_ERROR=true
           fi
 
-          if [ "$TEARDOWN_ERROR" = true ] && [ "$SINGLE_ERROR" = true ]; then
+          # Count the number of test failures
+          TEST_FAILURES=$(grep -c "^FAILED" test_output.txt || true)
+          echo "Number of test failures: $TEST_FAILURES"
+
+          if [ "$TEARDOWN_ERROR" = true ] && [ "$SINGLE_ERROR" = true ] && [ "$TEST_FAILURES" -eq 0 ]; then
               echo "Tests passed with teardown error"
               exit 0
           else

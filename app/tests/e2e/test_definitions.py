@@ -9,8 +9,8 @@ from app.routes.definitions import (
     CreateSchema,
     CredentialSchema,
 )
-from app.services import trust_registry
 from app.services.acapy_wallet import get_public_did
+from app.services.trust_registry.util.schema import registry_has_schema
 from app.tests.util.trust_registry import register_issuer
 from app.util.string import random_string
 from shared import RichAsyncClient
@@ -56,7 +56,7 @@ async def test_create_schema(
     result = (await definitions.create_schema(send, mock_governance_auth)).model_dump()
 
     # Assert schemas has been registered in the trust registry
-    assert await trust_registry.registry_has_schema(result["id"])
+    assert await registry_has_schema(result["id"])
     expected_schema = f"{governance_public_did}:2:{send.name}:{send.version}"
     assert_that(result).has_id(expected_schema)
     assert_that(result).has_name(send.name)
@@ -78,7 +78,7 @@ async def test_get_schema(
     ).model_dump()
     result = await definitions.get_schema(create_result["id"], mock_governance_auth)
 
-    assert await trust_registry.registry_has_schema(result.id)
+    assert await registry_has_schema(result.id)
     expected_schema = f"{governance_public_did}:2:{schema.name}:{schema.version}"
     assert_that(result).has_id(expected_schema)
     assert_that(result).has_name(schema.name)

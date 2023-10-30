@@ -24,8 +24,8 @@ BASE_PATH = router.prefix
         ("alias", True, True),
     ],
 )
-async def test_create_invitation(
-    bob_member_client: RichAsyncClient,
+async def test_create_invitation_no_public_did(
+    bob_member_client: RichAsyncClient,  # bob has no public did
     alias: Optional[str],
     multi_use: Optional[bool],
     use_public_did: Optional[bool],
@@ -58,6 +58,41 @@ async def test_create_invitation(
             "@id", "@type", "recipientKeys", "serviceEndpoint"
         )
         assert_that(invitation["invitation_url"]).matches(r"^https?://")
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "alias,multi_use,use_public_did",
+    [
+        (None, None, None),
+        ("alias", False, False),
+        ("alias", True, False),
+        ("alias", False, True),
+        ("alias", True, True),
+    ],
+)
+async def test_create_invitation_has_public_did(
+    faber_client: RichAsyncClient,  # issuer has public did
+    alias: Optional[str],
+    multi_use: Optional[bool],
+    use_public_did: Optional[bool],
+):
+    invite_json = CreateInvitation(
+        alias=alias, multi_use=multi_use, use_public_did=use_public_did
+    ).model_dump()
+
+    response = await faber_client.post(
+        f"{BASE_PATH}/create-invitation", json=invite_json
+    )
+    assert response.status_code == 200
+
+    invitation = response.json()
+
+    assert_that(invitation["connection_id"]).is_not_empty()
+    assert_that(invitation["invitation"]).is_instance_of(dict).contains(
+        "@id", "@type", "recipientKeys", "serviceEndpoint"
+    )
+    assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
 
 @pytest.mark.anyio

@@ -355,6 +355,7 @@ async def test_create_offer(
 
     when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     await test_module.create_offer(v1_credential, mock_tenant_auth)
+
     when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     await test_module.create_offer(v2_credential, mock_tenant_auth)
 

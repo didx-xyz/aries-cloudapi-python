@@ -1,6 +1,8 @@
+from typing import Optional
 import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
+from app.models.connections import CreateInvitation
 
 from app.routes.connections import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
@@ -11,17 +13,50 @@ BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "alias,multi_use,use_public_did",
+    [
+        (None, None, None),
+        ("alias", False, False),
+        ("alias", True, False),
+        ("alias", False, True),
+        ("alias", True, True),
+    ],
+)
 async def test_create_invitation(
     bob_member_client: RichAsyncClient,
+    alias: Optional[str],
+    multi_use: Optional[bool],
+    use_public_did: Optional[bool],
 ):
-    response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
-    invitation = response.json()
+    invite_json = CreateInvitation(
+        alias=alias, multi_use=multi_use, use_public_did=use_public_did
+    ).model_dump()
 
-    assert_that(invitation["connection_id"]).is_not_empty()
-    assert_that(invitation["invitation"]).is_instance_of(dict).contains(
-        "@id", "@type", "recipientKeys", "serviceEndpoint"
-    )
-    assert_that(invitation["invitation_url"]).matches(r"^https?://")
+    if use_public_did:
+        with pytest.raises(HTTPException) as exc_info:
+            # regular holders cannot `use_public_did` as they do not have a public did
+            await bob_member_client.post(
+                f"{BASE_PATH}/create-invitation", json=invite_json
+            )
+        assert exc_info.value.status_code == 400
+        assert (
+            exc_info.value.detail
+            == """{"detail":"Cannot create public invitation with no public DID."}"""
+        )
+    else:
+        response = await bob_member_client.post(
+            f"{BASE_PATH}/create-invitation", json=invite_json
+        )
+        assert response.status_code == 200
+
+        invitation = response.json()
+
+        assert_that(invitation["connection_id"]).is_not_empty()
+        assert_that(invitation["invitation"]).is_instance_of(dict).contains(
+            "@id", "@type", "recipientKeys", "serviceEndpoint"
+        )
+        assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
 
 @pytest.mark.anyio

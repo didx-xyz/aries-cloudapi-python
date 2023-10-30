@@ -1,8 +1,8 @@
 import unittest
 
 import pytest
-from aiohttp import ClientResponseError, RequestInfo
-from aries_cloudcontroller import AcaPyClient
+from aiohttp import RequestInfo
+from aries_cloudcontroller import AcaPyClient, ApiException
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
 

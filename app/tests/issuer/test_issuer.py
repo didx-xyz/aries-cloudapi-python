@@ -268,14 +268,6 @@ async def test_request_credential(
         )
         verify(test_module).assert_valid_issuer("did:sov:WgWxqztrNooG92RXvxSTWv", None)
 
-    v1_record.type = "indyy"
-
-    when(test_module).request_credential(...).thenRaise(
-        CloudApiException("Could not resolve record type")
-    )
-    with pytest.raises(CloudApiException):
-        await test_module.request_credential("v1-credential_id", mock_tenant_auth)
-
 
 @pytest.mark.anyio
 async def test_request_credential_x_no_schema_cred_def(

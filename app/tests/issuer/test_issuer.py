@@ -66,14 +66,15 @@ async def test_send_credential(
 
     request_info = mock(RequestInfo)
     request_info.real_url = "www.real.co.za"
+
     when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
+    when(test_module).assert_public_did(...).thenReturn(to_async(did))
     when(test_module).schema_id_from_credential_definition_id(
         mock_agent_controller, cred_def_id
     ).thenReturn(to_async("schema_id"))
     when(IssuerV1).send_credential(...).thenRaise(
-        ClientResponseError(request_info, ("x", "x"))
+        ApiException()
     )
-    when(test_module).assert_public_did(...).thenReturn(to_async(did))
 
     with pytest.raises(CloudApiException):
         await test_module.send_credential(credential, mock_tenant_auth)

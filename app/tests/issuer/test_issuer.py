@@ -72,9 +72,7 @@ async def test_send_credential(
     when(test_module).schema_id_from_credential_definition_id(
         mock_agent_controller, cred_def_id
     ).thenReturn(to_async("schema_id"))
-    when(IssuerV1).send_credential(...).thenRaise(
-        ApiException()
-    )
+    when(IssuerV1).send_credential(...).thenRaise(ApiException())
 
     with pytest.raises(CloudApiException):
         await test_module.send_credential(credential, mock_tenant_auth)

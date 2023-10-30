@@ -113,7 +113,7 @@ async def test_accept_invitation(
 async def test_get_connections(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
     alice_connections = (await alice_member_client.get(f"{BASE_PATH}")).json()
     bob_connections = (await bob_member_client.get(f"{BASE_PATH}")).json()

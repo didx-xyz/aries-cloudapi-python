@@ -1,9 +1,10 @@
 from typing import Optional
+
 import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
-from app.models.connections import CreateInvitation
 
+from app.models.connections import AcceptInvitation, CreateInvitation
 from app.routes.connections import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
@@ -60,16 +61,32 @@ async def test_create_invitation(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "alias,use_existing_connection",
+    [
+        (None, None),
+        ("alias", False),
+        ("alias", True),
+    ],
+)
 async def test_accept_invitation(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
+    alias: Optional[str],
+    use_existing_connection: Optional[bool],
 ):
     invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = invitation_response.json()
 
+    accept_invite_json = AcceptInvitation(
+        alias=alias,
+        use_existing_connection=use_existing_connection,
+        invitation=invitation["invitation"],
+    ).model_dump()
+
     accept_response = await alice_member_client.post(
         f"{BASE_PATH}/accept-invitation",
-        json={"invitation": invitation["invitation"]},
+        json=accept_invite_json,
     )
     connection_record = accept_response.json()
 
@@ -86,6 +103,10 @@ async def test_accept_invitation(
         "connection_id", "state", "created_at", "updated_at", "invitation_key"
     )
     assert_that(connection_record).has_state("request-sent")
+
+    if alias:
+        assert_that(connection_record).contains("alias")
+        assert_that(connection_record["alias"]).is_equal_to(alias)
 
 
 @pytest.mark.anyio

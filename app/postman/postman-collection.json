@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "f8cc0009-15fc-4898-8131-a417ea972674",
-		"name": "CloudAPI-Multitenant",
+		"_postman_id": "e18d43f8-0481-4a99-aab2-0c58a8d77d2a",
+		"name": "CloudAPI",
 		"description": "\nWelcome to the Aries CloudAPI Python project.\n\nIn addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events.\n\nWebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the ability to subscribe by topic, or to any wallet.\n\nOur WebSocket endpoints are as follows:\n\n1. `/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).\n\n2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.\n\n3. `/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.\n\nFor authentication, the WebSocket headers should include `x-api-key`: `<your key>`.\n\nPlease refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.\n",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29066716"

@@ -20,7 +20,6 @@ async def test_send_credential(
     mock_tenant_auth: AcaPyAuth,
     mocker: MockerFixture,
 ):
-    assert False
     did = "did:sov:WgWxqztrNooG92RXvxSTWv"
     cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
     cred_ex = mock(CredentialExchange)

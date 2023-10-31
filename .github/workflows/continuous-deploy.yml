@@ -153,6 +153,8 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
+    outputs:
+      test_success: ${{ steps.test.outputs.test_success }}
     strategy:
       matrix:
         module: # Ignoring app/tests/e2e/issuer/did_key_bbs & app/tests/e2e/issuer/did_key_ed while functionality is fixed & app/tests/e2e/issuer/test_v2_ld.py & app/tests/e2e/issuer/did_sov/test_v2_ld.py & app/tests/e2e/test_jsonld.py
@@ -231,6 +233,11 @@ jobs:
               echo "Tests passed with teardown error"
               exit 0
           else
+              if [ "$EXIT_CODE" -ne 0 ]; then
+                echo "::set-output name=test_success::false"
+              else
+                echo "::set-output name=test_success::true"
+              fi
               exit $EXIT_CODE
           fi
       - name: Upload .coverage files as artifact
@@ -239,9 +246,18 @@ jobs:
           name: coverage-files-${{ matrix.module.id }}
           path: coverage-files/.coverage.${{ matrix.module.id }}
 
+  status-check:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Check if any test failed
+        run: exit 1
+        if: needs.test.outputs.test_success == 'false'
+
   combine-coverage:
     name: Coverage
-    needs: test
+    needs: status-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

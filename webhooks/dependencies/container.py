@@ -1,13 +1,13 @@
 from dependency_injector import containers, providers
 
-from webhooks.dependencies import redis, redis_service
+from webhooks.dependencies import redis_service
 from webhooks.dependencies.sse_manager import SseManager
 
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
     redis_pool = providers.Resource(
-        redis.init_redis_pool,
+        redis_service.init_redis_pool,
         host=config.redis_host,
         password=config.redis_password,
     )

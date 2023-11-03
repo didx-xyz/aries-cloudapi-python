@@ -1,7 +1,8 @@
 """Services module."""
 
-from typing import List, Optional
+from typing import AsyncIterator, List, Optional
 
+import aioredis
 from aioredis import Redis
 from aries_cloudcontroller import IssuerCredRevRecord, IssuerRevRegRecord, OobRecord
 from pydantic import BaseModel, ValidationError
@@ -27,6 +28,13 @@ from webhooks.models import (
 )
 
 logger = get_logger(__name__)
+
+
+async def init_redis_pool(host: str, password: str) -> AsyncIterator[Redis]:
+    pool = await aioredis.from_url(f"redis://{host}", password=password)
+    yield pool
+    pool.close()
+    await pool.wait_closed()
 
 
 class RedisService:

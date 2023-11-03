@@ -1,5 +1,8 @@
 from aries_cloudcontroller import (
     ConnRecord,
+    IssuerCredRevRecord,
+    IssuerRevRegRecord,
+    OobRecord,
     V10CredentialExchange,
     V10PresentationExchange,
     V20CredExRecord,
@@ -19,12 +22,11 @@ from shared.models.topics import (
     PresentationExchange,
     RedisItem,
 )
+from shared.models.topics.base import BasicMessage, ProblemReport
 
 
-def to_endorsement_model(item: RedisItem) -> Endorsement:
-    if item.payload.get("state"):
-        item.payload["state"] = item.payload["state"].replace("_", "-")
-    return Endorsement(**item.payload)
+def to_basic_message_model(item: RedisItem) -> BasicMessage:
+    return BasicMessage(**item.payload)
 
 
 def to_connections_model(item: RedisItem) -> Connection:
@@ -34,23 +36,29 @@ def to_connections_model(item: RedisItem) -> Connection:
     return conn_record
 
 
-def to_proof_hook_model(item: RedisItem) -> PresentationExchange:
-    # v1
-    if item.acapy_topic == "present_proof":
-        presentation_exchange = V10PresentationExchange(**item.payload)
-        presentation_exchange = presentation_record_to_model(presentation_exchange)
-    # v2
-    elif item.acapy_topic == "present_proof_v2_0":
-        presentation_exchange = V20PresExRecord(**item.payload)
-        presentation_exchange = presentation_record_to_model(presentation_exchange)
-    else:
-        topic = item.acapy_topic
-        raise Exception(f"Unsupported proof acapy topic: `{topic}`.")
-
-    return presentation_exchange
+def to_endorsement_model(item: RedisItem) -> Endorsement:
+    if item.payload.get("state"):
+        item.payload["state"] = item.payload["state"].replace("_", "-")
+    return Endorsement(**item.payload)
 
 
-def to_credential_hook_model(item: RedisItem) -> CredentialExchange:
+def to_oob_model(item: RedisItem) -> OobRecord:
+    return OobRecord(**item.payload)
+
+
+def to_revocation_model(item: RedisItem) -> IssuerRevRegRecord:
+    return IssuerRevRegRecord(**item.payload)
+
+
+def to_issuer_cred_rev_model(item: RedisItem) -> IssuerCredRevRecord:
+    return IssuerCredRevRecord(**item.payload)
+
+
+def to_problem_report_model(item: RedisItem) -> ProblemReport:
+    return ProblemReport(**item.payload)
+
+
+def to_credential_model(item: RedisItem) -> CredentialExchange:
     # v1
     if item.acapy_topic == "issue_credential":
         cred_exchange = V10CredentialExchange(**item.payload)
@@ -64,3 +72,19 @@ def to_credential_hook_model(item: RedisItem) -> CredentialExchange:
         raise Exception(f"Unsupported issue credential acapy topic: `{topic}`.")
 
     return cred_model
+
+
+def to_proof_model(item: RedisItem) -> PresentationExchange:
+    # v1
+    if item.acapy_topic == "present_proof":
+        presentation_exchange = V10PresentationExchange(**item.payload)
+        presentation_exchange = presentation_record_to_model(presentation_exchange)
+    # v2
+    elif item.acapy_topic == "present_proof_v2_0":
+        presentation_exchange = V20PresExRecord(**item.payload)
+        presentation_exchange = presentation_record_to_model(presentation_exchange)
+    else:
+        topic = item.acapy_topic
+        raise Exception(f"Unsupported proof acapy topic: `{topic}`.")
+
+    return presentation_exchange

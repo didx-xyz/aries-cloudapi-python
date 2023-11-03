@@ -47,30 +47,23 @@ class SseManager:
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
 
-    async def enqueue_sse_event(
-        self, event: TopicItem, wallet: str, topic: str
-    ) -> None:
+    async def enqueue_sse_event(self, event: TopicItem) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 
         Args:
             event: The event to enqueue.
-            wallet: The ID of the wallet to which to enqueue the event.
-            topic: The topic to which to enqueue the event.
         """
-        logger.debug(
-            "Enqueueing event for wallet `{}`: {}",
-            wallet,
-            event,
-        )
-
+        logger.debug("Enqueueing event: {}", event)
         # Add the event to the incoming events queue, with timestamp
-        await self.incoming_events.put((event, wallet, topic, time.time()))
+        await self.incoming_events.put((event, time.time()))
 
     async def _process_incoming_events(self):
         while True:
             # Wait for an event to be added to the incoming events queue
-            event, wallet, topic, timestamp = await self.incoming_events.get()
+            event, timestamp = await self.incoming_events.get()
+            wallet = event.wallet_id
+            topic = event.topic
 
             # Process the event into the per-wallet queues
             async with self.cache_locks[wallet][topic]:

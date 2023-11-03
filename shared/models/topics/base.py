@@ -1,3 +1,4 @@
+from time import time
 from typing import Any, Dict, Generic, List, Optional, TypeVar
 
 from aries_cloudcontroller import IndyProof, IndyProofRequest
@@ -137,6 +138,7 @@ class RedisItem(BaseModel):
     wallet_id: str
     origin: str
     payload: Dict[str, Any]
+    timestamp: float = time()  # set the timestamp when the object is created
 
 
 class DescriptionInfo(BaseModel):

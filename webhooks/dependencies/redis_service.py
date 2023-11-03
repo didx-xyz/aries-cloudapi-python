@@ -1,30 +1,22 @@
-"""Services module."""
-
 from typing import AsyncIterator, List, Optional
 
 import aioredis
 from aioredis import Redis
-from aries_cloudcontroller import IssuerCredRevRecord, IssuerRevRegRecord, OobRecord
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger
-from shared.models.topics import (
-    BasicMessage,
-    Connection,
-    CredentialExchange,
-    Endorsement,
-    PayloadType,
-    PresentationExchange,
-    ProblemReport,
-    RedisItem,
-    TopicItem,
-)
+from shared.models.topics import PayloadType, RedisItem, TopicItem
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import (
+    to_basic_message_model,
     to_connections_model,
-    to_credential_hook_model,
+    to_credential_model,
     to_endorsement_model,
-    to_proof_hook_model,
+    to_issuer_cred_rev_model,
+    to_oob_model,
+    to_problem_report_model,
+    to_proof_model,
+    to_revocation_model,
 )
 
 logger = get_logger(__name__)
@@ -38,48 +30,21 @@ async def init_redis_pool(host: str, password: str) -> AsyncIterator[Redis]:
 
 
 class RedisService:
+    # Define a mapping from topics to their transformer functions
+    _topic_to_transformer = {
+        "proofs": to_proof_model,
+        "credentials": to_credential_model,
+        "connections": to_connections_model,
+        "basic-messages": to_basic_message_model,
+        "endorsements": to_endorsement_model,
+        "oob": to_oob_model,
+        "revocation": to_revocation_model,
+        "issuer_cred_rev": to_issuer_cred_rev_model,
+        "problem_report": to_problem_report_model,
+    }
+
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
-
-        # Define a mapping from topics to their transformer functions
-        self._topic_to_transformer = {
-            "proofs": self._proof_hook_versioned,
-            "credentials": self._credential_hook_versioned,
-            "connections": self._version_connections,
-            "basic-messages": self._basic_messages,
-            "endorsements": self._endorsements,
-            "oob": self._oob,
-            "revocation": self._revocation,
-            "issuer_cred_rev": self._issuer_cred_rev,
-            "problem_report": self._problem_report,
-        }
-
-    def _proof_hook_versioned(self, item: RedisItem) -> PresentationExchange:
-        return to_proof_hook_model(item=item)
-
-    def _credential_hook_versioned(self, item: RedisItem) -> CredentialExchange:
-        return to_credential_hook_model(item=item)
-
-    def _version_connections(self, item: RedisItem) -> Connection:
-        return to_connections_model(item=item)
-
-    def _endorsements(self, item: RedisItem) -> Endorsement:
-        return to_endorsement_model(item=item)
-
-    def _basic_messages(self, item: RedisItem) -> BasicMessage:
-        return BasicMessage(**item.payload)
-
-    def _oob(self, item: RedisItem) -> OobRecord:
-        return OobRecord(**item.payload)
-
-    def _revocation(self, item: RedisItem) -> IssuerRevRegRecord:
-        return IssuerRevRegRecord(**item.payload)
-
-    def _issuer_cred_rev(self, item: RedisItem) -> IssuerCredRevRecord:
-        return IssuerCredRevRecord(**item.payload)
-
-    def _problem_report(self, item: RedisItem) -> ProblemReport:
-        return ProblemReport(**item.payload)
 
     def _to_item(self, data: RedisItem) -> Optional[BaseModel]:
         transformer = self._topic_to_transformer.get(data.topic)

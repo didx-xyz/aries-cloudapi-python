@@ -90,10 +90,10 @@ async def topic_root(
             f"{topic}-{wallet_id}",
             WEBHOOK_TOPIC_ALL,
         ],
-        data=webhook_event.json(),
+        data=webhook_event.model_dump_json(),
     )
 
     # Add data to redis
-    await service.add_wallet_entry(wallet_id, redis_item.json())
+    await service.add_wallet_entry(wallet_id, redis_item.model_dump_json())
 
     logger.debug("Successfully processed received webhook.")

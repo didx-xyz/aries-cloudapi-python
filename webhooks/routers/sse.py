@@ -70,8 +70,9 @@ async def sse_subscribe_wallet(
                     stop_event.set()
                     break
                 try:
-                    bound_logger.debug("Yielding SSE event: {}", event.json())
-                    yield event.json()
+                    result = event.model_dump_json()
+                    bound_logger.debug("Yielding SSE event: {}", result)
+                    yield result
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
@@ -125,8 +126,9 @@ async def sse_subscribe_wallet_topic(
                     stop_event.set()
                     break
                 try:
-                    bound_logger.debug("Yielding SSE event: {}", event.json())
-                    yield event.json()
+                    result = event.model_dump_json()
+                    bound_logger.debug("Yielding SSE event: {}", result)
+                    yield result
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
@@ -204,8 +206,9 @@ async def sse_subscribe_event_with_state(
                             continue
 
                     if "state" in payload and payload["state"] == desired_state:
-                        bound_logger.debug("Yielding SSE event: {}", event.json())
-                        yield event.json()  # Send the event
+                        result = event.model_dump_json()
+                        bound_logger.debug("Yielding SSE event: {}", result)
+                        yield result  # Send the event
                         stop_event.set()
                         break  # End the generator
                 except asyncio.QueueEmpty:
@@ -266,8 +269,9 @@ async def sse_subscribe_stream_with_fields(
                 try:
                     payload = dict(event.payload)  # to check if keys exist in payload
                     if field in payload and payload[field] == field_id:
-                        bound_logger.debug("Yielding SSE event: {}", event.json())
-                        yield event.json()  # Send the event
+                        result = event.model_dump_json()
+                        bound_logger.debug("Yielding SSE event: {}", result)
+                        yield result  # Send the event
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
@@ -336,8 +340,9 @@ async def sse_subscribe_event_with_field_and_state(
                         and payload[field] == field_id
                         and payload["state"] == desired_state
                     ):
-                        bound_logger.debug("Yielding SSE event: {}", event.json())
-                        yield event.json()  # Send the event
+                        result = event.model_dump_json()
+                        bound_logger.debug("Yielding SSE event: {}", result)
+                        yield result  # Send the event
                         stop_event.set()
                         break  # End the generator
                 except asyncio.QueueEmpty:

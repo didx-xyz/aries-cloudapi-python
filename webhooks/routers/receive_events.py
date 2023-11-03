@@ -8,7 +8,7 @@ from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.topics import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
 from webhooks.dependencies.container import Container
-from webhooks.dependencies.service import Service
+from webhooks.dependencies.redis_service import RedisService
 from webhooks.dependencies.sse_manager import SseManager
 
 logger = get_logger(__name__)
@@ -32,7 +32,7 @@ async def topic_root(
     origin: str,
     body: Dict[str, Any],
     request: Request,
-    service: Service = Depends(Provide[Container.service]),
+    redis_service: RedisService = Depends(Provide[Container.redis_service]),
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     bound_logger = logger.bind(
@@ -65,7 +65,7 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    webhook_event: TopicItem = service.transform_topic_entry(redis_item)
+    webhook_event: TopicItem = redis_service.transform_topic_entry(redis_item)
     if not webhook_event:
         # Note: Topic `revocation` not being handled properly
         bound_logger.warning(
@@ -94,6 +94,6 @@ async def topic_root(
     )
 
     # Add data to redis
-    await service.add_wallet_entry(wallet_id, redis_item.model_dump_json())
+    await redis_service.add_wallet_entry(wallet_id, redis_item.model_dump_json())
 
     logger.debug("Successfully processed received webhook.")

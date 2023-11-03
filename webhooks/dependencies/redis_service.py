@@ -29,7 +29,7 @@ from webhooks.models import (
 logger = get_logger(__name__)
 
 
-class Service:
+class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 

@@ -3,7 +3,7 @@ aries-cloudcontroller==0.9.0.post1
 dependency-injector~=4.41.0
 fastapi~=0.104.0
 fastapi_websocket_pubsub~=0.3.8
-httpx~=0.25.0
+httpx~=0.25.1
 loguru~=0.7.0
 sse-starlette~=1.6.1
 starlette>=0.27.0

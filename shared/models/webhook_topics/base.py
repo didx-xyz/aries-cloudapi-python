@@ -142,13 +142,15 @@ class ProblemReport(BaseModel):
     escalation_uri: Optional[str] = None
 
 
-class AcaPyWebhookEvent(BaseModel):
-    acapy_topic: str
-    topic: str
+class WebhookEvent(BaseModel):
     wallet_id: str
+    topic: str
     origin: str
+
+
+class AcaPyWebhookEvent(WebhookEvent):
+    acapy_topic: str
     payload: Dict[str, Any]
-    timestamp: float = time()  # set the timestamp when the object is created
 
 
 WebhookEventPayloadType = Union[
@@ -164,8 +166,5 @@ WebhookEventPayloadType = Union[
 ]
 
 
-class CloudApiWebhookEvent(BaseModel):
-    topic: str
-    wallet_id: str
-    origin: str
+class CloudApiWebhookEvent(WebhookEvent):
     payload: WebhookEventPayloadType

@@ -55,13 +55,13 @@ class SseManager:
             event: The event to enqueue.
         """
         logger.debug("Enqueueing event: {}", event)
-        # Add the event to the incoming events queue, with timestamp
-        await self.incoming_events.put((event, time.time()))
+        # Add the event to the incoming events queue
+        await self.incoming_events.put(event)
 
     async def _process_incoming_events(self):
         while True:
             # Wait for an event to be added to the incoming events queue
-            event, timestamp = await self.incoming_events.get()
+            event: CloudApiWebhookEvent = await self.incoming_events.get()
             wallet = event.wallet_id
             topic = event.topic
 
@@ -86,7 +86,7 @@ class SseManager:
                     self.lifo_cache[wallet][topic] = lifo_queue
 
                 timestamped_event: Tuple(float, CloudApiWebhookEvent) = (
-                    timestamp,
+                    time.time(),
                     event,
                 )
                 logger.debug(
@@ -112,6 +112,7 @@ class SseManager:
         Args:
             wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
+            stop_event: An asyncio.Event to signal a stop request
             duration: Timeout duration in seconds. 0 means no timeout.
         """
         client_queue = asyncio.Queue()

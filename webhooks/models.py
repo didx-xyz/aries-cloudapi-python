@@ -68,8 +68,7 @@ def to_credential_model(item: RedisItem) -> CredentialExchange:
         cred_exchange = V20CredExRecord(**item.payload)
         cred_model = credential_record_to_model_v2(cred_exchange)
     else:
-        topic = item.acapy_topic
-        raise Exception(f"Unsupported issue credential acapy topic: `{topic}`.")
+        raise Exception(f"Unsupported credential acapy topic: `{item.acapy_topic}`.")
 
     return cred_model
 
@@ -84,7 +83,6 @@ def to_proof_model(item: RedisItem) -> PresentationExchange:
         presentation_exchange = V20PresExRecord(**item.payload)
         presentation_exchange = presentation_record_to_model(presentation_exchange)
     else:
-        topic = item.acapy_topic
-        raise Exception(f"Unsupported proof acapy topic: `{topic}`.")
+        raise Exception(f"Unsupported proof acapy topic: `{item.acapy_topic}`.")
 
     return presentation_exchange

@@ -86,3 +86,17 @@ def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
         raise Exception(f"Unsupported proof acapy topic: `{event.acapy_topic}`.")
 
     return presentation_exchange
+
+
+# Define a mapping from topics to their transformer functions
+map_topic_to_transformer = {
+    "proofs": to_proof_model,
+    "credentials": to_credential_model,
+    "connections": to_connections_model,
+    "basic-messages": to_basic_message_model,
+    "endorsements": to_endorsement_model,
+    "oob": to_oob_model,
+    "revocation": to_revocation_model,
+    "issuer_cred_rev": to_issuer_cred_rev_model,
+    "problem_report": to_problem_report_model,
+}

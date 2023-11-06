@@ -11,17 +11,7 @@ from shared.models.webhook_topics import (
     PayloadType,
 )
 from shared.util.rich_parsing import parse_with_error_handling
-from webhooks.models import (
-    to_basic_message_model,
-    to_connections_model,
-    to_credential_model,
-    to_endorsement_model,
-    to_issuer_cred_rev_model,
-    to_oob_model,
-    to_problem_report_model,
-    to_proof_model,
-    to_revocation_model,
-)
+from webhooks.models import map_topic_to_transformer
 
 logger = get_logger(__name__)
 
@@ -34,24 +24,11 @@ async def init_redis_pool(host: str, password: str) -> AsyncIterator[Redis]:
 
 
 class RedisService:
-    # Define a mapping from topics to their transformer functions
-    _topic_to_transformer = {
-        "proofs": to_proof_model,
-        "credentials": to_credential_model,
-        "connections": to_connections_model,
-        "basic-messages": to_basic_message_model,
-        "endorsements": to_endorsement_model,
-        "oob": to_oob_model,
-        "revocation": to_revocation_model,
-        "issuer_cred_rev": to_issuer_cred_rev_model,
-        "problem_report": to_problem_report_model,
-    }
-
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
     def _to_item(self, data: AcaPyWebhookEvent) -> Optional[BaseModel]:
-        transformer = self._topic_to_transformer.get(data.topic)
+        transformer = map_topic_to_transformer.get(data.topic)
 
         if transformer:
             return transformer(data)

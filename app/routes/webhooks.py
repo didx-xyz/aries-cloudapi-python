@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 from app.services.webhooks import get_hooks_for_wallet, get_hooks_for_wallet_by_topic
 from shared.log_config import get_logger
-from shared.models.topics import CloudApiTopics, TopicItem
+from shared.models.topics import CloudApiTopics, CloudApiWebhookEvent
 
 logger = get_logger(__name__)
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 async def get_webhooks_for_wallet(
     # Makes sure the authentication is verified
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-) -> List[TopicItem[Any]]:
+) -> List[CloudApiWebhookEvent[Any]]:
     """
     Returns all webhooks per wallet
 
@@ -39,7 +39,7 @@ async def get_webhooks_for_wallet_by_topic(
     topic: CloudApiTopics,
     # Makes sure the authentication is verified
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-) -> List[TopicItem[Any]]:
+) -> List[CloudApiWebhookEvent[Any]]:
     """
     Returns the webhooks per wallet per topic
 

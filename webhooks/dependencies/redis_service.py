@@ -5,7 +5,7 @@ from aioredis import Redis
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger
-from shared.models.topics import PayloadType, TopicItem, WebhookEvent
+from shared.models.topics import AcaPyWebhookEvent, CloudApiWebhookEvent, PayloadType
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import (
     to_basic_message_model,
@@ -46,7 +46,7 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
-    def _to_item(self, data: WebhookEvent) -> Optional[BaseModel]:
+    def _to_item(self, data: AcaPyWebhookEvent) -> Optional[BaseModel]:
         transformer = self._topic_to_transformer.get(data.topic)
 
         if transformer:
@@ -55,15 +55,19 @@ class RedisService:
         logger.warning("No transformer for topic: `{}`", data.topic)
         return None
 
-    def _to_topic_item(self, data: WebhookEvent, payload: PayloadType) -> TopicItem:
-        return TopicItem(
+    def _to_topic_item(
+        self, data: AcaPyWebhookEvent, payload: PayloadType
+    ) -> CloudApiWebhookEvent:
+        return CloudApiWebhookEvent(
             topic=data.topic,
             wallet_id=data.wallet_id,
             origin=data.origin,
             payload=payload,
         )
 
-    def transform_topic_entry(self, data: WebhookEvent) -> List[TopicItem]:
+    def transform_topic_entry(
+        self, data: AcaPyWebhookEvent
+    ) -> List[CloudApiWebhookEvent]:
         """Transforms an entry from the redis cache into model."""
         payload = self._to_item(data=data)
 
@@ -75,12 +79,14 @@ class RedisService:
 
     def _transform_redis_entries(
         self, entries: List[str], topic: Optional[str] = None
-    ) -> List[TopicItem]:
+    ) -> List[CloudApiWebhookEvent]:
         logger.debug("Transform redis entries to model types")
-        data_list: List[TopicItem] = []
+        data_list: List[CloudApiWebhookEvent] = []
         for entry in entries:
             try:
-                data: WebhookEvent = parse_with_error_handling(WebhookEvent, entry)
+                data: AcaPyWebhookEvent = parse_with_error_handling(
+                    AcaPyWebhookEvent, entry
+                )
                 # Only take current topic
                 if topic and data.topic != topic:
                     continue
@@ -102,7 +108,7 @@ class RedisService:
         logger.debug("Returning transformed redis entries.")
         return data_list
 
-    async def get_all_by_wallet(self, wallet_id: str) -> List[TopicItem]:
+    async def get_all_by_wallet(self, wallet_id: str) -> List[CloudApiWebhookEvent]:
         bound_logger = logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by wallet id")
         entries = await self._redis.smembers(wallet_id)
@@ -111,14 +117,14 @@ class RedisService:
 
     async def get_all_for_topic_by_wallet_id(
         self, topic: str, wallet_id: str
-    ) -> List[TopicItem]:
+    ) -> List[CloudApiWebhookEvent]:
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
         bound_logger.debug("Fetching entries from redis by wallet id")
         entries = await self._redis.smembers(wallet_id)
         bound_logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries, topic)
 
-    async def add_wallet_entry(self, redis_item: WebhookEvent) -> None:
+    async def add_wallet_entry(self, redis_item: AcaPyWebhookEvent) -> None:
         wallet_id = redis_item.wallet_id
         event_json = redis_item.model_dump_json()
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})

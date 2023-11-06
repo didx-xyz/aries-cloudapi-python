@@ -11,7 +11,7 @@ from shared.constants import (
     QUEUE_CLEANUP_PERIOD,
 )
 from shared.log_config import get_logger
-from shared.models.topics import WEBHOOK_TOPIC_ALL, TopicItem
+from shared.models.topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEvent
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
 logger = get_logger(__name__)
@@ -47,7 +47,7 @@ class SseManager:
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
 
-    async def enqueue_sse_event(self, event: TopicItem) -> None:
+    async def enqueue_sse_event(self, event: CloudApiWebhookEvent) -> None:
         """
         Enqueue a SSE event to be sent to a specific wallet for a specific topic.
 
@@ -85,7 +85,10 @@ class SseManager:
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
-                timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
+                timestamped_event: Tuple(float, CloudApiWebhookEvent) = (
+                    timestamp,
+                    event,
+                )
                 logger.debug(
                     "Putting event on cache for wallet `{}`, topic `{}`: {}",
                     wallet,
@@ -121,7 +124,7 @@ class SseManager:
             )
         )
 
-        async def event_generator() -> AsyncGenerator[TopicItem, Any]:
+        async def event_generator() -> AsyncGenerator[CloudApiWebhookEvent, Any]:
             bound_logger = logger.bind(body={"wallet": wallet, "topic": topic})
             bound_logger.debug("SSE Manager: Starting event_generator")
             end_time = time.time() + duration if duration > 0 else None

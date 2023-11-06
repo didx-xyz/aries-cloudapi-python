@@ -5,6 +5,8 @@ import aioredis
 from aioredis import Redis
 
 from shared.log_config import get_logger
+from shared.models.webhook_topics.base import CloudApiWebhookEvent
+from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
 
@@ -32,9 +34,22 @@ class RedisService:
     async def get_json_webhook_events_by_wallet(self, wallet_id: str) -> List[str]:
         bound_logger = logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by wallet id")
-        entries: List[str] = await self._redis.smembers(wallet_id)
+
+        # Fetch all entries using the full range of scores
+        entries: List[bytes] = await self._redis.zrange(wallet_id, 0, -1)
+        entries_str = [entry.decode() for entry in entries]
+
         bound_logger.debug("Successfully fetched redis entries.")
-        return entries
+        return entries_str
+
+    async def get_webhook_events_by_wallet(
+        self, wallet_id: str
+    ) -> List[CloudApiWebhookEvent]:
+        entries = await self.get_json_webhook_events_by_wallet(wallet_id)
+        parsed_entries = [
+            parse_with_error_handling(CloudApiWebhookEvent, entry) for entry in entries
+        ]
+        return parsed_entries
 
     async def get_json_webhook_events_by_wallet_and_topic(
         self, wallet_id: str, topic: str
@@ -43,6 +58,14 @@ class RedisService:
         # Filter the json entry for our requested topic without deserialising
         topic_str = f'"topic":"{topic}"'
         return [entry for entry in entries if topic_str in entry]
+
+    async def get_webhook_events_by_wallet_and_topic(
+        self, wallet_id: str, topic: str
+    ) -> List[CloudApiWebhookEvent]:
+        entries = await self.get_webhook_events_by_wallet(wallet_id)
+
+        return [entry for entry in entries if topic == entry.topic]
+
     async def get_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:

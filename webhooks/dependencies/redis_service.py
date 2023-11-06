@@ -22,7 +22,7 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
-    async def add_wallet_entry(self, wallet_id: str, event_json: str) -> None:
+    async def add_webhook_event(self, wallet_id: str, event_json: str) -> None:
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
         bound_logger.debug("Write entry to redis")
 

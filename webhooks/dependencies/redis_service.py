@@ -5,13 +5,9 @@ from aioredis import Redis
 from pydantic import ValidationError
 
 from shared.log_config import get_logger
-from shared.models.webhook_topics import (
-    AcaPyWebhookEvent,
-    CloudApiWebhookEvent,
-    WebhookEventPayloadType,
-)
+from shared.models.webhook_topics import AcaPyWebhookEvent, CloudApiWebhookEvent
 from shared.util.rich_parsing import parse_with_error_handling
-from webhooks.models import map_topic_to_transformer
+from webhooks.models import acapy_to_cloudapi_event
 
 logger = get_logger(__name__)
 
@@ -27,37 +23,6 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
-    def _to_item(self, data: AcaPyWebhookEvent) -> Optional[WebhookEventPayloadType]:
-        transformer = map_topic_to_transformer.get(data.topic)
-
-        if transformer:
-            return transformer(data)
-
-        logger.warning("No transformer for topic: `{}`", data.topic)
-        return None
-
-    def _to_topic_item(
-        self, data: AcaPyWebhookEvent, payload: WebhookEventPayloadType
-    ) -> CloudApiWebhookEvent:
-        return CloudApiWebhookEvent(
-            topic=data.topic,
-            wallet_id=data.wallet_id,
-            origin=data.origin,
-            payload=payload,
-        )
-
-    def transform_topic_entry(
-        self, data: AcaPyWebhookEvent
-    ) -> Optional[CloudApiWebhookEvent]:
-        """Transforms an entry from the redis cache into model."""
-        payload = self._to_item(data=data)
-
-        # Only return payload if recognized event
-        if payload:
-            return self._to_topic_item(data=data, payload=payload)
-
-        return None  # If transformer doesn't exist, warning already logged
-
     def _transform_redis_entries(
         self, entries: List[str], topic: Optional[str] = None
     ) -> List[CloudApiWebhookEvent]:
@@ -72,7 +37,7 @@ class RedisService:
                 if topic and data.topic != topic:
                     continue
 
-                webhook = self.transform_topic_entry(data)
+                webhook = acapy_to_cloudapi_event(data)
 
                 if webhook:
                     data_list.append(webhook)

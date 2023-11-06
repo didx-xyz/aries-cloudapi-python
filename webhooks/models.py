@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from typing import Callable, Dict, Optional
 
 from aries_cloudcontroller import (
     ConnRecord,
@@ -27,6 +27,7 @@ from shared.models.webhook_topics import (
 )
 from shared.models.webhook_topics.base import (
     BasicMessage,
+    CloudApiWebhookEvent,
     ProblemReport,
     WebhookEventPayloadType,
 )
@@ -99,7 +100,7 @@ def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
 ModelTransformerFunction = Callable[[AcaPyWebhookEvent], WebhookEventPayloadType]
 
 # Define a mapping from topics to their transformer functions
-map_topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
+topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
     "proofs": to_proof_model,
     "credentials": to_credential_model,
     "connections": to_connections_model,
@@ -110,3 +111,30 @@ map_topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
     "issuer_cred_rev": to_issuer_cred_rev_model,
     "problem_report": to_problem_report_model,
 }
+
+
+def transform_webhook_payload(
+    acapy_event: AcaPyWebhookEvent,
+) -> Optional[WebhookEventPayloadType]:
+    transformer: Optional[ModelTransformerFunction] = topic_to_transformer.get(
+        acapy_event.topic
+    )
+
+    if transformer:
+        return transformer(acapy_event)
+
+
+def acapy_to_cloudapi_event(
+    acapy_event: AcaPyWebhookEvent,
+) -> Optional[CloudApiWebhookEvent]:
+    transformed_payload: Optional[WebhookEventPayloadType] = transform_webhook_payload(
+        acapy_event
+    )
+
+    if transformed_payload:
+        return CloudApiWebhookEvent(
+            topic=acapy_event.topic,
+            wallet_id=acapy_event.wallet_id,
+            origin=acapy_event.origin,
+            payload=transformed_payload,
+        )

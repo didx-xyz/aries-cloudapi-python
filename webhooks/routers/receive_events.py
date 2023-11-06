@@ -66,12 +66,12 @@ async def topic_root(
         )
         return
 
-    acapy_webhook_event: AcaPyWebhookEvent = AcaPyWebhookEvent(
+    acapy_webhook_event = AcaPyWebhookEvent(
         payload=body,
-        origin=origin,
-        topic=cloudapi_topic,
-        acapy_topic=acapy_topic,
         wallet_id=wallet_id,
+        acapy_topic=acapy_topic,
+        topic=cloudapi_topic,
+        origin=origin,
     )
 
     cloudapi_webhook_event: Optional[CloudApiWebhookEvent] = acapy_to_cloudapi_event(

@@ -18,12 +18,13 @@ router = APIRouter(prefix="/webhooks")
 @router.get(
     "/{wallet_id}",
     summary="Get all webhook events for a wallet ID",
+    response_model=List[CloudApiWebhookEvent],
 )
 @inject
 async def get_webhooks_by_wallet(
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[CloudApiWebhookEvent]:
+) -> List[str]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Fetch all webhook events for wallet")
 
@@ -39,13 +40,14 @@ async def get_webhooks_by_wallet(
 @router.get(
     "/{wallet_id}/{topic}",
     summary="Get all webhook events for a wallet ID and topic pair",
+    response_model=List[CloudApiWebhookEvent],
 )
 @inject
 async def get_webhooks_by_wallet_and_topic(
     topic: str,
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[CloudApiWebhookEvent]:
+) -> List[str]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     bound_logger.info(
         "GET request received: Fetch all webhook events for wallet and topic"

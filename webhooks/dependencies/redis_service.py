@@ -23,54 +23,20 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
-    def _transform_redis_entries(
-        self, entries: List[str], topic: Optional[str] = None
-    ) -> List[CloudApiWebhookEvent]:
-        logger.debug("Transform redis entries to model types")
-
-        data_list: List[CloudApiWebhookEvent] = []
-        for entry in entries:
-            try:
-                data: AcaPyWebhookEvent = parse_with_error_handling(
-                    AcaPyWebhookEvent, entry
-                )
-                # Only take current topic
-                if topic and data.topic != topic:
-                    continue
-
-                cloudapi_webhook_event = acapy_to_cloudapi_event(data)
-
-                if cloudapi_webhook_event:
-                    data_list.append(cloudapi_webhook_event)
-                else:
-                    logger.warning(
-                        "Could not transform the following AcaPyWebhookEvent from redis to CloudApi Event: {}",
-                        data,
-                    )
-            except ValidationError:
-                logger.error(
-                    "Validation error caught when creating formatted webhook for data entry: `{}`.",
-                    entry,
-                )
-
-        logger.debug("Returning transformed redis entries.")
-        return data_list
-
-    async def get_all_by_wallet(self, wallet_id: str) -> List[CloudApiWebhookEvent]:
+    async def get_json_webhook_events_by_wallet(self, wallet_id: str) -> List[str]:
         bound_logger = logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by wallet id")
-        entries = await self._redis.smembers(wallet_id)
+        entries: List[str] = await self._redis.smembers(wallet_id)
         bound_logger.debug("Successfully fetched redis entries.")
-        return self._transform_redis_entries(entries)
+        return entries
 
-    async def get_all_for_topic_by_wallet_id(
-        self, topic: str, wallet_id: str
-    ) -> List[CloudApiWebhookEvent]:
-        bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
-        bound_logger.debug("Fetching entries from redis by wallet id")
-        entries = await self._redis.smembers(wallet_id)
-        bound_logger.debug("Successfully fetched redis entries.")
-        return self._transform_redis_entries(entries, topic)
+    async def get_json_webhook_events_by_wallet_and_topic(
+        self, wallet_id: str, topic: str
+    ) -> List[str]:
+        entries = await self.get_json_webhook_events_by_wallet(wallet_id)
+        # Filter the json entry for our requested topic without deserialising
+        topic_str = f'"topic":"{topic}"'
+        return [entry for entry in entries if topic_str in entry]
 
     async def add_wallet_entry(self, wallet_id: str, event_json: str) -> None:
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})

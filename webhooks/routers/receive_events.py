@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request, status
@@ -15,6 +15,7 @@ from shared.models.webhook_topics import (
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.redis_service import RedisService
 from webhooks.dependencies.sse_manager import SseManager
+from webhooks.models import acapy_to_cloudapi_event
 
 logger = get_logger(__name__)
 
@@ -73,7 +74,7 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    cloudapi_webhook_event: CloudApiWebhookEvent = redis_service.transform_topic_entry(
+    cloudapi_webhook_event: Optional[CloudApiWebhookEvent] = acapy_to_cloudapi_event(
         acapy_webhook_event
     )
     if not cloudapi_webhook_event:

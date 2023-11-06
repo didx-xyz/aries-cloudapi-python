@@ -1,13 +1,9 @@
-from typing import AsyncIterator, List, Optional
+from typing import AsyncIterator, List
 
 import aioredis
 from aioredis import Redis
-from pydantic import ValidationError
 
 from shared.log_config import get_logger
-from shared.models.webhook_topics import AcaPyWebhookEvent, CloudApiWebhookEvent
-from shared.util.rich_parsing import parse_with_error_handling
-from webhooks.models import acapy_to_cloudapi_event
 
 logger = get_logger(__name__)
 

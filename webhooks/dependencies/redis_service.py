@@ -5,7 +5,7 @@ from aioredis import Redis
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger
-from shared.models.topics import PayloadType, RedisItem, TopicItem
+from shared.models.topics import PayloadType, TopicItem, WebhookEvent
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import (
     to_basic_message_model,
@@ -46,7 +46,7 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
-    def _to_item(self, data: RedisItem) -> Optional[BaseModel]:
+    def _to_item(self, data: WebhookEvent) -> Optional[BaseModel]:
         transformer = self._topic_to_transformer.get(data.topic)
 
         if transformer:
@@ -55,7 +55,7 @@ class RedisService:
         logger.warning("No transformer for topic: `{}`", data.topic)
         return None
 
-    def _to_topic_item(self, data: RedisItem, payload: PayloadType) -> TopicItem:
+    def _to_topic_item(self, data: WebhookEvent, payload: PayloadType) -> TopicItem:
         return TopicItem(
             topic=data.topic,
             wallet_id=data.wallet_id,
@@ -63,7 +63,7 @@ class RedisService:
             payload=payload,
         )
 
-    def transform_topic_entry(self, data: RedisItem) -> List[TopicItem]:
+    def transform_topic_entry(self, data: WebhookEvent) -> List[TopicItem]:
         """Transforms an entry from the redis cache into model."""
         payload = self._to_item(data=data)
 
@@ -80,7 +80,7 @@ class RedisService:
         data_list: List[TopicItem] = []
         for entry in entries:
             try:
-                data: RedisItem = parse_with_error_handling(RedisItem, entry)
+                data: WebhookEvent = parse_with_error_handling(WebhookEvent, entry)
                 # Only take current topic
                 if topic and data.topic != topic:
                     continue
@@ -118,7 +118,7 @@ class RedisService:
         bound_logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries, topic)
 
-    async def add_wallet_entry(self, redis_item: RedisItem) -> None:
+    async def add_wallet_entry(self, redis_item: WebhookEvent) -> None:
         wallet_id = redis_item.wallet_id
         event_json = redis_item.model_dump_json()
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})

@@ -2,7 +2,7 @@ from typing import AsyncIterator, List, Optional
 
 import aioredis
 from aioredis import Redis
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 from shared.log_config import get_logger
 from shared.models.webhook_topics import (
@@ -27,7 +27,7 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
-    def _to_item(self, data: AcaPyWebhookEvent) -> Optional[BaseModel]:
+    def _to_item(self, data: AcaPyWebhookEvent) -> Optional[WebhookEventPayloadType]:
         transformer = map_topic_to_transformer.get(data.topic)
 
         if transformer:
@@ -48,7 +48,7 @@ class RedisService:
 
     def transform_topic_entry(
         self, data: AcaPyWebhookEvent
-    ) -> List[CloudApiWebhookEvent]:
+    ) -> Optional[CloudApiWebhookEvent]:
         """Transforms an entry from the redis cache into model."""
         payload = self._to_item(data=data)
 

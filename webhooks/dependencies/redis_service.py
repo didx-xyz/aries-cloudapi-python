@@ -37,7 +37,7 @@ class RedisService:
 
         # Fetch all entries using the full range of scores
         entries: List[bytes] = await self._redis.zrange(wallet_id, 0, -1)
-        entries_str = [entry.decode() for entry in entries]
+        entries_str: List[str] = [entry.decode() for entry in entries]
 
         bound_logger.debug("Successfully fetched redis entries.")
         return entries_str
@@ -63,7 +63,6 @@ class RedisService:
         self, wallet_id: str, topic: str
     ) -> List[CloudApiWebhookEvent]:
         entries = await self.get_webhook_events_by_wallet(wallet_id)
-
         return [entry for entry in entries if topic == entry.topic]
 
     async def get_events_by_timestamp(

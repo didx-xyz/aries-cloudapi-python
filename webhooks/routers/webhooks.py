@@ -20,7 +20,7 @@ router = APIRouter(prefix="/webhooks")
     summary="Get all webhook events for a wallet ID",
 )
 @inject
-async def wallet_root(
+async def get_webhooks_by_wallet(
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
 ) -> List[CloudApiWebhookEvent]:
@@ -41,7 +41,7 @@ async def wallet_root(
     summary="Get all webhook events for a wallet ID and topic pair",
 )
 @inject
-async def wallet_hooks(
+async def get_webhooks_by_wallet_and_topic(
     topic: str,
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),

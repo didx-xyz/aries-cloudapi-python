@@ -125,20 +125,20 @@ class BasicMessage(BaseModel):
 PayloadType = TypeVar("PayloadType", bound=BaseModel)
 
 
-class TopicItem(BaseModel, Generic[PayloadType]):
-    topic: str
-    wallet_id: str
-    origin: str
-    payload: PayloadType
-
-
-class WebhookEvent(BaseModel):
+class AcaPyWebhookEvent(BaseModel):
     acapy_topic: str
     topic: str
     wallet_id: str
     origin: str
     payload: Dict[str, Any]
     timestamp: float = time()  # set the timestamp when the object is created
+
+
+class CloudApiWebhookEvent(BaseModel, Generic[PayloadType]):
+    topic: str
+    wallet_id: str
+    origin: str
+    payload: PayloadType
 
 
 class DescriptionInfo(BaseModel):

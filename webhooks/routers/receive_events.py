@@ -8,8 +8,8 @@ from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.topics import (
     WEBHOOK_TOPIC_ALL,
-    TopicItem,
-    WebhookEvent,
+    AcaPyWebhookEvent,
+    CloudApiWebhookEvent,
     topic_mapping,
 )
 from webhooks.dependencies.container import Container
@@ -65,7 +65,7 @@ async def topic_root(
         )
         return
 
-    webhook_event: WebhookEvent = WebhookEvent(
+    incoming_webhook_event: AcaPyWebhookEvent = AcaPyWebhookEvent(
         payload=body,
         origin=origin,
         topic=topic,
@@ -73,8 +73,10 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    webhook_event: TopicItem = redis_service.transform_topic_entry(webhook_event)
-    if not webhook_event:
+    event_payload: CloudApiWebhookEvent = redis_service.transform_topic_entry(
+        incoming_webhook_event
+    )
+    if not event_payload:
         bound_logger.warning(
             "Not publishing webhook event for topic `{}` as no transformer exists for the topic",
             topic,
@@ -82,7 +84,7 @@ async def topic_root(
         return
 
     # Enqueue the event for SSE
-    await sse_manager.enqueue_sse_event(webhook_event)
+    await sse_manager.enqueue_sse_event(event_payload)
 
     # publish the webhook to subscribers for the following topics
     #  - current wallet id
@@ -97,10 +99,10 @@ async def topic_root(
             f"{topic}-{wallet_id}",
             WEBHOOK_TOPIC_ALL,
         ],
-        data=webhook_event.model_dump_json(),
+        data=event_payload.model_dump_json(),
     )
 
     # Add data to redis
-    await redis_service.add_wallet_entry(webhook_event)
+    await redis_service.add_wallet_entry(incoming_webhook_event)
 
     logger.debug("Successfully processed received webhook.")

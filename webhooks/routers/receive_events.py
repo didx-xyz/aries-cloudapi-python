@@ -43,7 +43,7 @@ async def topic_root(
     bound_logger = logger.bind(
         body={"acapy_topic": acapy_topic, "origin": origin, "body": body}
     )
-    bound_logger.debug("Handling received event")
+    bound_logger.debug("Handling received webhook event")
 
     try:
         wallet_id = request.headers["x-wallet-id"]
@@ -57,34 +57,34 @@ async def topic_root(
         wallet_id = "admin"
 
     # Map from the acapy webhook topic to a unified cloud api topic
-    topic = topic_mapping.get(acapy_topic)
-    if not topic:
+    cloudapi_topic = topic_mapping.get(acapy_topic)
+    if not cloudapi_topic:
         bound_logger.warning(
             "Not publishing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
             acapy_topic,
         )
         return
 
-    incoming_webhook_event: AcaPyWebhookEvent = AcaPyWebhookEvent(
+    acapy_webhook_event: AcaPyWebhookEvent = AcaPyWebhookEvent(
         payload=body,
         origin=origin,
-        topic=topic,
+        topic=cloudapi_topic,
         acapy_topic=acapy_topic,
         wallet_id=wallet_id,
     )
 
-    event_payload: CloudApiWebhookEvent = redis_service.transform_topic_entry(
-        incoming_webhook_event
+    cloudapi_webhook_event: CloudApiWebhookEvent = redis_service.transform_topic_entry(
+        acapy_webhook_event
     )
-    if not event_payload:
+    if not cloudapi_webhook_event:
         bound_logger.warning(
             "Not publishing webhook event for topic `{}` as no transformer exists for the topic",
-            topic,
+            cloudapi_topic,
         )
         return
 
     # Enqueue the event for SSE
-    await sse_manager.enqueue_sse_event(event_payload)
+    await sse_manager.enqueue_sse_event(cloudapi_webhook_event)
 
     # publish the webhook to subscribers for the following topics
     #  - current wallet id
@@ -94,15 +94,15 @@ async def topic_root(
     #  - 'all' topic, which allows to subscribe to all published events
     await endpoint.publish(
         topics=[
-            topic,
+            cloudapi_topic,
             wallet_id,
-            f"{topic}-{wallet_id}",
+            f"{cloudapi_topic}-{wallet_id}",
             WEBHOOK_TOPIC_ALL,
         ],
-        data=event_payload.model_dump_json(),
+        data=cloudapi_webhook_event.model_dump_json(),
     )
 
     # Add data to redis
-    await redis_service.add_wallet_entry(incoming_webhook_event)
+    await redis_service.add_wallet_entry(acapy_webhook_event)
 
     logger.debug("Successfully processed received webhook.")

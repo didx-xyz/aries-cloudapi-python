@@ -27,6 +27,7 @@ class RedisService:
         self, entries: List[str], topic: Optional[str] = None
     ) -> List[CloudApiWebhookEvent]:
         logger.debug("Transform redis entries to model types")
+
         data_list: List[CloudApiWebhookEvent] = []
         for entry in entries:
             try:
@@ -37,19 +38,20 @@ class RedisService:
                 if topic and data.topic != topic:
                     continue
 
-                webhook = acapy_to_cloudapi_event(data)
+                cloudapi_webhook_event = acapy_to_cloudapi_event(data)
 
-                if webhook:
-                    data_list.append(webhook)
-            # Log the data failing to create webhook, skip appending
-            # anything to the list, and continue to next item in entries
+                if cloudapi_webhook_event:
+                    data_list.append(cloudapi_webhook_event)
+                else:
+                    logger.warning(
+                        "Could not transform the following AcaPyWebhookEvent from redis to CloudApi Event: {}",
+                        data,
+                    )
             except ValidationError:
-                logger.exception(
-                    "Error creating formatted webhook for data entry: `{}`.", entry
+                logger.error(
+                    "Validation error caught when creating formatted webhook for data entry: `{}`.",
+                    entry,
                 )
-            # Catch the general case if sth else/unknown occurs:
-            except Exception:
-                logger.exception("Unknown exception occurred.")
 
         logger.debug("Returning transformed redis entries.")
         return data_list

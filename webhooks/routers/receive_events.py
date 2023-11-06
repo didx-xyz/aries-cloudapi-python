@@ -93,6 +93,7 @@ async def topic_root(
     #  - topic and wallet id combined as topic-wallet_id
     #    - this allows for fine grained subscriptions (i.e. the endorser service)
     #  - 'all' topic, which allows to subscribe to all published events
+    webhook_event_json = cloudapi_webhook_event.model_dump_json()
     await endpoint.publish(
         topics=[
             cloudapi_topic,
@@ -100,10 +101,10 @@ async def topic_root(
             f"{cloudapi_topic}-{wallet_id}",
             WEBHOOK_TOPIC_ALL,
         ],
-        data=cloudapi_webhook_event.model_dump_json(),
+        data=webhook_event_json,
     )
 
     # Add data to redis
-    await redis_service.add_wallet_entry(acapy_webhook_event)
+    await redis_service.add_wallet_entry(wallet_id, webhook_event_json)
 
     logger.debug("Successfully processed received webhook.")

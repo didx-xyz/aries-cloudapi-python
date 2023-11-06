@@ -1,7 +1,7 @@
 from typing import Dict, Literal
 
 # flake8: noqa
-from shared.models.topics.base import *
+from shared.models.webhook_topics.base import *
 
 WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
 

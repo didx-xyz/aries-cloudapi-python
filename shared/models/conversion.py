@@ -14,7 +14,11 @@ from shared.models.protocol import (
     IssueCredentialProtocolVersion,
     PresentProofProtocolVersion,
 )
-from shared.models.topics import Connection, CredentialExchange, PresentationExchange
+from shared.models.webhook_topics import (
+    Connection,
+    CredentialExchange,
+    PresentationExchange,
+)
 
 
 def string_to_bool(verified: Optional[str]) -> Optional[bool]:

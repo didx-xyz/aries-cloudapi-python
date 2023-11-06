@@ -23,7 +23,7 @@ from app.util.acapy_issuer_utils import (
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from shared.log_config import get_logger
-from shared.models.topics import CredentialExchange
+from shared.models.webhook_topics import CredentialExchange
 
 logger = get_logger(__name__)
 

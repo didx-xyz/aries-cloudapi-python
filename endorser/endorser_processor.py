@@ -14,7 +14,7 @@ from shared import (
     WEBHOOKS_PUBSUB_URL,
 )
 from shared.log_config import get_logger
-from shared.models.topics import Endorsement
+from shared.models.webhook_topics import Endorsement
 from shared.util.rich_async_client import RichAsyncClient
 from shared.util.rich_parsing import parse_with_error_handling
 

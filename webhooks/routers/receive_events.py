@@ -6,7 +6,7 @@ from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared import APIRouter
 from shared.log_config import get_logger
-from shared.models.topics import (
+from shared.models.webhook_topics import (
     WEBHOOK_TOPIC_ALL,
     AcaPyWebhookEvent,
     CloudApiWebhookEvent,

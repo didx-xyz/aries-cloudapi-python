@@ -5,7 +5,11 @@ from aioredis import Redis
 from pydantic import BaseModel, ValidationError
 
 from shared.log_config import get_logger
-from shared.models.topics import AcaPyWebhookEvent, CloudApiWebhookEvent, PayloadType
+from shared.models.webhook_topics import (
+    AcaPyWebhookEvent,
+    CloudApiWebhookEvent,
+    PayloadType,
+)
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import (
     to_basic_message_model,

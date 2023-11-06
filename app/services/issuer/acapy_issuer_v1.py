@@ -16,7 +16,7 @@ from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
 from shared.models.conversion import credential_record_to_model_v1
-from shared.models.topics import CredentialExchange
+from shared.models.webhook_topics import CredentialExchange
 
 logger = get_logger(__name__)
 

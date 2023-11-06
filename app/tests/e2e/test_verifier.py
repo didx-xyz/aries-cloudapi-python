@@ -24,7 +24,7 @@ from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_asyn
 from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.topics import CredentialExchange, PresentationExchange
+from shared.models.webhook_topics import CredentialExchange, PresentationExchange
 
 VERIFIER_BASE_PATH = router.prefix
 OOB_BASE_PATH = oob_router.prefix

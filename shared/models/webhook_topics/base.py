@@ -1,7 +1,13 @@
 from time import time
 from typing import Any, Dict, List, Optional, Union
 
-from aries_cloudcontroller import IndyProof, IndyProofRequest
+from aries_cloudcontroller import (
+    IndyProof,
+    IndyProofRequest,
+    IssuerCredRevRecord,
+    IssuerRevRegRecord,
+    OobRecord,
+)
 from pydantic import BaseModel, Field
 from typing_extensions import Literal, TypedDict
 
@@ -146,11 +152,14 @@ class AcaPyWebhookEvent(BaseModel):
 
 
 WebhookEventPayloadType = Union[
-    Endorsement,
+    BasicMessage,
     Connection,
     CredentialExchange,
+    Endorsement,
+    IssuerCredRevRecord,
+    IssuerRevRegRecord,
+    OobRecord,
     PresentationExchange,
-    BasicMessage,
     ProblemReport,
 ]
 

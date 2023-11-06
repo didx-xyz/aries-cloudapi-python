@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import List
 
 from fastapi import APIRouter, Depends
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 async def get_webhooks_for_wallet(
     # Makes sure the authentication is verified
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-) -> List[CloudApiWebhookEvent[Any]]:
+) -> List[CloudApiWebhookEvent]:
     """
     Returns all webhooks per wallet
 
@@ -39,7 +39,7 @@ async def get_webhooks_for_wallet_by_topic(
     topic: CloudApiTopics,
     # Makes sure the authentication is verified
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-) -> List[CloudApiWebhookEvent[Any]]:
+) -> List[CloudApiWebhookEvent]:
     """
     Returns the webhooks per wallet per topic
 

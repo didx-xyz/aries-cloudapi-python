@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import List
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/webhooks")
 async def wallet_root(
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-):
+) -> List[CloudApiWebhookEvent]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Fetch all webhook events for wallet")
 
@@ -45,7 +45,7 @@ async def wallet_hooks(
     topic: str,
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[CloudApiWebhookEvent[Any]]:
+) -> List[CloudApiWebhookEvent]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     bound_logger.info(
         "GET request received: Fetch all webhook events for wallet and topic"

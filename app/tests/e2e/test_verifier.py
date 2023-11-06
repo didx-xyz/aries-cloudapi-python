@@ -75,7 +75,7 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "request-received", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=120,
+        max_duration=60,
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]

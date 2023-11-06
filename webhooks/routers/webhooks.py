@@ -24,11 +24,11 @@ router = APIRouter(prefix="/webhooks")
 async def get_webhooks_by_wallet(
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[str]:
+) -> List[CloudApiWebhookEvent]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Fetch all webhook events for wallet")
 
-    data = await redis_service.get_json_webhook_events_by_wallet(wallet_id)
+    data = await redis_service.get_webhook_events_by_wallet(wallet_id)
 
     if data:
         bound_logger.info("Successfully fetched webhooks events for wallet.")
@@ -47,13 +47,13 @@ async def get_webhooks_by_wallet_and_topic(
     topic: str,
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[str]:
+) -> List[CloudApiWebhookEvent]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     bound_logger.info(
         "GET request received: Fetch all webhook events for wallet and topic"
     )
 
-    data = await redis_service.get_json_webhook_events_by_wallet_and_topic(
+    data = await redis_service.get_webhook_events_by_wallet_and_topic(
         wallet_id=wallet_id, topic=topic
     )
 

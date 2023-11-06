@@ -132,7 +132,7 @@ class TopicItem(BaseModel, Generic[PayloadType]):
     payload: PayloadType
 
 
-class RedisItem(BaseModel):
+class WebhookEvent(BaseModel):
     acapy_topic: str
     topic: str
     wallet_id: str

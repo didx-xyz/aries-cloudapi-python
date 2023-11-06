@@ -6,7 +6,12 @@ from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared import APIRouter
 from shared.log_config import get_logger
-from shared.models.topics import WEBHOOK_TOPIC_ALL, RedisItem, TopicItem, topic_mapping
+from shared.models.topics import (
+    WEBHOOK_TOPIC_ALL,
+    TopicItem,
+    WebhookEvent,
+    topic_mapping,
+)
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.redis_service import RedisService
 from webhooks.dependencies.sse_manager import SseManager
@@ -57,7 +62,7 @@ async def topic_root(
         )
         return
 
-    redis_item: RedisItem = RedisItem(
+    webhook_event: WebhookEvent = WebhookEvent(
         payload=body,
         origin=origin,
         topic=topic,
@@ -65,7 +70,7 @@ async def topic_root(
         wallet_id=wallet_id,
     )
 
-    webhook_event: TopicItem = redis_service.transform_topic_entry(redis_item)
+    webhook_event: TopicItem = redis_service.transform_topic_entry(webhook_event)
     if not webhook_event:
         bound_logger.warning(
             "Not publishing webhook event for topic `{}` as no transformer exists for the topic",
@@ -93,6 +98,6 @@ async def topic_root(
     )
 
     # Add data to redis
-    await redis_service.add_wallet_entry(redis_item)
+    await redis_service.add_wallet_entry(webhook_event)
 
     logger.debug("Successfully processed received webhook.")

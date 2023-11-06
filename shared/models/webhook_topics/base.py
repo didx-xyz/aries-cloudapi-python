@@ -1,5 +1,5 @@
 from time import time
-from typing import Any, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, Union
 
 from aries_cloudcontroller import IndyProof, IndyProofRequest
 from pydantic import BaseModel, Field
@@ -24,12 +24,6 @@ class Endorsement(BaseModel):
         "transaction-resent_received",
     ]
     transaction_id: str
-
-
-class ServiceDecorator(TypedDict):
-    endpoint: str
-    recipient_keys: List[str]
-    routing_keys: Optional[List[str]]
 
 
 class Connection(BaseModel):
@@ -122,26 +116,7 @@ class BasicMessage(BaseModel):
     state: Optional[Literal["received"]] = None
 
 
-PayloadType = TypeVar("PayloadType", bound=BaseModel)
-
-
-class AcaPyWebhookEvent(BaseModel):
-    acapy_topic: str
-    topic: str
-    wallet_id: str
-    origin: str
-    payload: Dict[str, Any]
-    timestamp: float = time()  # set the timestamp when the object is created
-
-
-class CloudApiWebhookEvent(BaseModel, Generic[PayloadType]):
-    topic: str
-    wallet_id: str
-    origin: str
-    payload: PayloadType
-
-
-class DescriptionInfo(BaseModel):
+class DescriptionInfo(TypedDict):
     en: Optional[str]
     code: Optional[str]
 
@@ -159,3 +134,29 @@ class ProblemReport(BaseModel):
     noticed_time: Optional[str] = None
     tracking_uri: Optional[str] = None
     escalation_uri: Optional[str] = None
+
+
+class AcaPyWebhookEvent(BaseModel):
+    acapy_topic: str
+    topic: str
+    wallet_id: str
+    origin: str
+    payload: Dict[str, Any]
+    timestamp: float = time()  # set the timestamp when the object is created
+
+
+WebhookEventPayloadType = Union[
+    Endorsement,
+    Connection,
+    CredentialExchange,
+    PresentationExchange,
+    BasicMessage,
+    ProblemReport,
+]
+
+
+class CloudApiWebhookEvent(BaseModel):
+    topic: str
+    wallet_id: str
+    origin: str
+    payload: WebhookEventPayloadType

@@ -8,7 +8,7 @@ from shared.log_config import get_logger
 from shared.models.webhook_topics import (
     AcaPyWebhookEvent,
     CloudApiWebhookEvent,
-    PayloadType,
+    WebhookEventPayloadType,
 )
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import map_topic_to_transformer
@@ -37,7 +37,7 @@ class RedisService:
         return None
 
     def _to_topic_item(
-        self, data: AcaPyWebhookEvent, payload: PayloadType
+        self, data: AcaPyWebhookEvent, payload: WebhookEventPayloadType
     ) -> CloudApiWebhookEvent:
         return CloudApiWebhookEvent(
             topic=data.topic,

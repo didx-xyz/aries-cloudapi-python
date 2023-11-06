@@ -1,3 +1,5 @@
+from typing import Callable, Dict
+
 from aries_cloudcontroller import (
     ConnRecord,
     IssuerCredRevRecord,
@@ -17,12 +19,17 @@ from shared.models.conversion import (
 )
 from shared.models.webhook_topics import (
     AcaPyWebhookEvent,
+    CloudApiTopics,
     Connection,
     CredentialExchange,
     Endorsement,
     PresentationExchange,
 )
-from shared.models.webhook_topics.base import BasicMessage, ProblemReport
+from shared.models.webhook_topics.base import (
+    BasicMessage,
+    ProblemReport,
+    WebhookEventPayloadType,
+)
 
 
 def to_basic_message_model(event: AcaPyWebhookEvent) -> BasicMessage:
@@ -88,8 +95,11 @@ def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
     return presentation_exchange
 
 
+# Define the type of the transformer functions above
+ModelTransformerFunction = Callable[[AcaPyWebhookEvent], WebhookEventPayloadType]
+
 # Define a mapping from topics to their transformer functions
-map_topic_to_transformer = {
+map_topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
     "proofs": to_proof_model,
     "credentials": to_credential_model,
     "connections": to_connections_model,

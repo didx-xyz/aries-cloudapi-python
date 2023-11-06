@@ -72,9 +72,7 @@ class RedisService:
         bound_logger.debug("Successfully fetched redis entries.")
         return self._transform_redis_entries(entries, topic)
 
-    async def add_wallet_entry(self, redis_item: AcaPyWebhookEvent) -> None:
-        wallet_id = redis_item.wallet_id
-        event_json = redis_item.model_dump_json()
+    async def add_wallet_entry(self, wallet_id: str, event_json: str) -> None:
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
         bound_logger.debug("Write entry to redis")
         await self._redis.sadd(wallet_id, event_json)

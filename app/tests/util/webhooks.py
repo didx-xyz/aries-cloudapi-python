@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from app.event_handling.sse_listener import SseListener
 from shared import RichAsyncClient
-from shared.models.topics import CloudApiTopics
+from shared.models.webhook_topics import CloudApiTopics
 
 
 def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:

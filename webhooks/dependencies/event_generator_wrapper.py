@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any, AsyncGenerator
 
-from shared.models.topics import CloudApiWebhookEvent
+from shared.models.webhook_topics import CloudApiWebhookEvent
 
 
 class EventGeneratorWrapper:

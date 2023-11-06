@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from app.dependencies.auth import AcaPyAuthVerified, acapy_auth_verified
 from app.services.webhooks import get_hooks_for_wallet, get_hooks_for_wallet_by_topic
 from shared.log_config import get_logger
-from shared.models.topics import CloudApiTopics, CloudApiWebhookEvent
+from shared.models.webhook_topics import CloudApiTopics, CloudApiWebhookEvent
 
 logger = get_logger(__name__)
 

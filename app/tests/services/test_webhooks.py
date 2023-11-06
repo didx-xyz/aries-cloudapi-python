@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 import app.services.webhooks as whf
-from shared.models.topics import Connection
+from shared.models.webhook_topics import Connection
 
 conn_record = Connection(
     accept="auto",

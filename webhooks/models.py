@@ -15,14 +15,14 @@ from shared.models.conversion import (
     credential_record_to_model_v2,
     presentation_record_to_model,
 )
-from shared.models.topics import (
+from shared.models.webhook_topics import (
     AcaPyWebhookEvent,
     Connection,
     CredentialExchange,
     Endorsement,
     PresentationExchange,
 )
-from shared.models.topics.base import BasicMessage, ProblemReport
+from shared.models.webhook_topics.base import BasicMessage, ProblemReport
 
 
 def to_basic_message_model(event: AcaPyWebhookEvent) -> BasicMessage:

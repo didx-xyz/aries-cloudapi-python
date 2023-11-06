@@ -11,7 +11,7 @@ from shared.constants import (
     QUEUE_CLEANUP_PERIOD,
 )
 from shared.log_config import get_logger
-from shared.models.topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEvent
+from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEvent
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 
 logger = get_logger(__name__)

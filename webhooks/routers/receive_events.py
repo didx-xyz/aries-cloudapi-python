@@ -25,8 +25,6 @@ endpoint = PubSubEndpoint()
 endpoint.register_route(router, "/pubsub")
 
 
-# 'origin' helps to distinguish where a hook is from
-# eg the admin, tenant or OP agent respectively
 @router.post(
     "/{origin}/topic/{acapy_topic}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -34,8 +32,8 @@ endpoint.register_route(router, "/pubsub")
 )
 @inject
 async def topic_root(
+    origin: str,  # 'origin' helps to distinguish where a hook is from, i.e. governance or multitenant agent
     acapy_topic: str,
-    origin: str,
     body: Dict[str, Any],
     request: Request,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),

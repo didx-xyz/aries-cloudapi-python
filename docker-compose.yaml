@@ -34,6 +34,7 @@ services:
       - environments/governance-ga/aca-py-agent.default.env
     environment:
       ACAPY_AUTO_ENDORSE_TRANSACTIONS: false
+      ACAPY_ACCEPT_TAA: "[service_agreement,1.1]"
     ports:
       - 0.0.0.0:3020:3020
       - 0.0.0.0:3021:3021
@@ -208,6 +209,8 @@ services:
       dockerfile: dockerfiles/agents/Dockerfile.author.agent
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
+    environment:
+      ACAPY_ACCEPT_TAA: "[service_agreement,1.1]"
     ports:
       - 0.0.0.0:4020:3020
       - 0.0.0.0:4021:3021

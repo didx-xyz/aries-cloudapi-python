@@ -14,7 +14,6 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/webhooks")
 
 
-# Routes are duplicated with trailing slash to avoid unnecessary redirects
 @router.get(
     "/{wallet_id}",
     summary="Get all webhook events for a wallet ID",

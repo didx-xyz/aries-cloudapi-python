@@ -65,7 +65,7 @@ class RedisService:
         entries = await self.get_webhook_events_by_wallet(wallet_id)
         return [entry for entry in entries if topic == entry.topic]
 
-    async def get_events_by_timestamp(
+    async def get_json_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:
         logger.debug("Fetching entries from redis by wallet id")
@@ -73,3 +73,14 @@ class RedisService:
             wallet_id, min=start_timestamp, max=end_timestamp
         )
         return entries
+
+    async def get_events_by_timestamp(
+        self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
+    ) -> List[CloudApiWebhookEvent]:
+        entries = await self.get_json_events_by_timestamp(
+            wallet_id, start_timestamp, end_timestamp
+        )
+        parsed_entries = [
+            parse_with_error_handling(CloudApiWebhookEvent, entry) for entry in entries
+        ]
+        return parsed_entries

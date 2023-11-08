@@ -18,7 +18,24 @@ image_url_field = Field(
     None,
     examples=["https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"],
 )
-
+EXTRA_SETTINGS = Literal[
+    "ACAPY_LOG_LEVEL",
+    "ACAPY_INVITE_PUBLIC", 
+    "ACAPY_PUBLIC_INVITES",
+    "ACAPY_AUTO_ACCEPT_INVITES",
+    "ACAPY_AUTO_ACCEPT_REQUESTS",
+    "ACAPY_AUTO_PING_CONNECTION",
+    "ACAPY_MONITOR_PING",
+    "ACAPY_AUTO_RESPOND_MESSAGES",
+    "ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER",
+    "ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST",
+    "ACAPY_AUTO_VERIFY_PRESENTATION",
+    "ACAPY_NOTIFY_REVOCATION",
+    "ACAPY_AUTO_REQUEST_ENDORSEMENT",
+    "ACAPY_AUTO_WRITE_TRANSACTIONS",
+    "ACAPY_CREATE_REVOCATION_TRANSACTIONS",
+    "ACAPY_ENDORSER_ROLE"
+    ]
 
 class CreateWalletRequestWithGroups(CreateWalletRequest):
     group_id: Optional[str] = group_id_field

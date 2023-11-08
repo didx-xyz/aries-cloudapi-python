@@ -9,3 +9,9 @@ from app.routes.issuer import router as issuer_router
 
 from app.tests.util.client import get_tenant_client
 from shared import RichAsyncClient
+
+TENANTS_BASE_PATH = router.prefix
+CONNECTIONS_BASE_PATH = conn_router.prefix
+DEFINITIONS_BASE_PATH = def_router.prefix
+ISSUER_BASE_PATH = issuer_router.prefix
+

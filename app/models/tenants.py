@@ -20,7 +20,7 @@ image_url_field = Field(
 )
 EXTRA_SETTINGS = Literal[
     "ACAPY_LOG_LEVEL",
-    "ACAPY_INVITE_PUBLIC", 
+    "ACAPY_INVITE_PUBLIC",
     "ACAPY_PUBLIC_INVITES",
     "ACAPY_AUTO_ACCEPT_INVITES",
     "ACAPY_AUTO_ACCEPT_REQUESTS",
@@ -34,8 +34,9 @@ EXTRA_SETTINGS = Literal[
     "ACAPY_AUTO_REQUEST_ENDORSEMENT",
     "ACAPY_AUTO_WRITE_TRANSACTIONS",
     "ACAPY_CREATE_REVOCATION_TRANSACTIONS",
-    "ACAPY_ENDORSER_ROLE"
-    ]
+    "ACAPY_ENDORSER_ROLE",
+]
+
 
 class CreateWalletRequestWithGroups(CreateWalletRequest):
     group_id: Optional[str] = group_id_field

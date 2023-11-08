@@ -54,3 +54,28 @@ async def test_extra_settings(
     holder_client = get_tenant_client(token=holder["access_token"])
 
     print("***Onboarded***")
+
+    invitation = (
+        await issuer_client.post(CONNECTIONS_BASE_PATH + "/create-invitation")
+    ).json()
+
+    issuer_tenant_listener = SseListener(
+        topic="connections", wallet_id=issuer["wallet_id"]
+    )
+
+    invitation_response = (
+        await holder_client.post(
+            CONNECTIONS_BASE_PATH + "/accept-invitation",
+            json={"invitation": invitation["invitation"]},
+        )
+    ).json()
+
+    issuer_holder_connection_id = invitation["connection_id"]
+    holder_issuer_connection_id = invitation_response["connection_id"]
+
+    await issuer_tenant_listener.wait_for_event(
+        field="connection_id",
+        field_id=issuer_holder_connection_id,
+        desired_state="completed",
+    )
+    print("***Connection Made***")

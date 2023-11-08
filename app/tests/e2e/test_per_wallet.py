@@ -15,3 +15,8 @@ CONNECTIONS_BASE_PATH = conn_router.prefix
 DEFINITIONS_BASE_PATH = def_router.prefix
 ISSUER_BASE_PATH = issuer_router.prefix
 
+@pytest.mark.anyio
+async def test_extra_settings(
+    tenant_admin_client: RichAsyncClient,
+    schema_definition: CredentialSchema
+    ):

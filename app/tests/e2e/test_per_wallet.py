@@ -20,3 +20,37 @@ async def test_extra_settings(
     tenant_admin_client: RichAsyncClient,
     schema_definition: CredentialSchema
     ):
+    issuer_response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json={
+            "wallet_label": "local_issuer",
+            "wallet_name": "EpicGamer",
+            "roles": [
+                "issuer", "verifier"
+            ],
+            "group_id": "PerTenant",
+            "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+        },
+    )
+    assert issuer_response.status_code == 200
+    issuer = issuer_response.json()
+
+    holder_response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json={
+            "wallet_label": "local_holder",
+            "wallet_name": "EpicHolder",
+            "group_id": "PerTenant",
+            "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+            "extra_settings":{"ACAPY_LOG_LEVEL":"debug"}
+        }
+    )
+    assert holder_response.status_code == 200
+    holder = holder_response.json()
+    print("Issuer ==> ", issuer)
+    print("Holder ==> ", holder)
+
+    issuer_client = get_tenant_client(token=issuer["access_token"])
+    holder_client = get_tenant_client(token=holder["access_token"])
+
+    print("***Onboarded***")

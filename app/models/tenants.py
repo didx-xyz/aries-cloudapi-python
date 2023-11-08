@@ -18,7 +18,7 @@ image_url_field = Field(
     None,
     examples=["https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"],
 )
-EXTRA_SETTINGS = Literal[
+ExtraSettings = Literal[
     "ACAPY_LOG_LEVEL",
     "ACAPY_INVITE_PUBLIC",
     "ACAPY_PUBLIC_INVITES",
@@ -55,7 +55,7 @@ class CreateTenantRequest(BaseModel):
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
-    extra_settings: Optional[Dict[EXTRA_SETTINGS, str]] = None
+    extra_settings: Optional[Dict[ExtraSettings, str]] = None
 
 
 class UpdateTenantRequest(BaseModel):
@@ -65,7 +65,7 @@ class UpdateTenantRequest(BaseModel):
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
-    extra_settings: Optional[Dict[EXTRA_SETTINGS, str]] = None
+    extra_settings: Optional[Dict[ExtraSettings, str]] = None
 
 
 class Tenant(BaseModel):

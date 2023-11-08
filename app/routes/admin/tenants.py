@@ -87,7 +87,7 @@ async def create_tenant(
                     wallet_name=wallet_name,
                     wallet_type="askar",
                     group_id=body.group_id,
-                    extra_settings=body.extra_settings
+                    extra_settings=body.extra_settings,
                 )
             )
         except ApiException as e:
@@ -248,7 +248,7 @@ async def update_tenant(
             body=UpdateWalletRequest(
                 image_url=body.image_url,
                 label=body.wallet_label,
-                extra_settings=body.extra_settings
+                extra_settings=body.extra_settings,
             ),
         )
 

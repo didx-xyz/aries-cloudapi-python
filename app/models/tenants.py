@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Dict, List, Literal, Optional
 
 from aries_cloudcontroller import CreateWalletRequest
 from pydantic import BaseModel, Field

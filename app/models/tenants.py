@@ -54,7 +54,7 @@ class CreateTenantRequest(BaseModel):
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
-    extra_settings: Optional[Union[str, Any]] = None
+    extra_settings: Optional[Dict[EXTRA_SETTINGS, str]] = None
 
 
 class UpdateTenantRequest(BaseModel):
@@ -64,7 +64,7 @@ class UpdateTenantRequest(BaseModel):
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
-    extra_settings: Optional[Union[str, Any]] = None
+    extra_settings: Optional[Dict[EXTRA_SETTINGS, str]] = None
 
 
 class Tenant(BaseModel):

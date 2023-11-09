@@ -45,10 +45,11 @@ async def topic_root(
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
-        if origin == "governance":
-            wallet_id = origin
-        else:
-            wallet_id = "admin"
+        ## TODO: implement different wallet_id for events from governance agent
+        # if origin == "governance":
+        #     wallet_id = origin
+        # else:
+        wallet_id = "admin"
     bound_logger.trace("Wallet_id for this event: {}", wallet_id)
 
     # Map from the acapy webhook topic to a unified cloud api topic

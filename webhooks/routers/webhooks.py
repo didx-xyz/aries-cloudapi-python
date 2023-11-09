@@ -5,7 +5,7 @@ from fastapi import Depends
 
 from shared import APIRouter
 from shared.log_config import get_logger
-from shared.models.webhook_topics import CloudApiWebhookEvent
+from shared.models.webhook_topics import CloudApiWebhookEventGeneric
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.redis_service import RedisService
 
@@ -17,13 +17,13 @@ router = APIRouter(prefix="/webhooks")
 @router.get(
     "/{wallet_id}",
     summary="Get all webhook events for a wallet ID",
-    response_model=List[CloudApiWebhookEvent],
+    response_model=List[CloudApiWebhookEventGeneric],
 )
 @inject
 async def get_webhooks_by_wallet(
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[CloudApiWebhookEvent]:
+) -> List[CloudApiWebhookEventGeneric]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Fetch all webhook events for wallet")
 
@@ -39,14 +39,14 @@ async def get_webhooks_by_wallet(
 @router.get(
     "/{wallet_id}/{topic}",
     summary="Get all webhook events for a wallet ID and topic pair",
-    response_model=List[CloudApiWebhookEvent],
+    response_model=List[CloudApiWebhookEventGeneric],
 )
 @inject
 async def get_webhooks_by_wallet_and_topic(
     topic: str,
     wallet_id: str,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-) -> List[CloudApiWebhookEvent]:
+) -> List[CloudApiWebhookEventGeneric]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     bound_logger.info(
         "GET request received: Fetch all webhook events for wallet and topic"

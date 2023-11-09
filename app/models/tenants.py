@@ -39,25 +39,28 @@ ExtraSettings = Literal[
 ExtraSettings_field = Field(
     None,
     description="Accepted ACAPY config fields. The extra_settings field is optional",
-    examples=[{
-      "ACAPY_LOG_LEVEL":"str",
-      "ACAPY_INVITE_PUBLIC":"str",
-      "ACAPY_PUBLIC_INVITES":"str",
-      "ACAPY_AUTO_ACCEPT_INVITES":"str",
-      "ACAPY_AUTO_ACCEPT_REQUESTS":"str",
-      "ACAPY_AUTO_PING_CONNECTION":"str",
-      "ACAPY_MONITOR_PING":"str",
-      "ACAPY_AUTO_RESPOND_MESSAGES":"str",
-      "ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER":"str",
-      "ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST":"str",
-      "ACAPY_AUTO_VERIFY_PRESENTATION":"str",
-      "ACAPY_NOTIFY_REVOCATION":"str",
-      "ACAPY_AUTO_REQUEST_ENDORSEMENT":"str",
-      "ACAPY_AUTO_WRITE_TRANSACTIONS":"str",
-      "ACAPY_CREATE_REVOCATION_TRANSACTIONS":"str",
-      "ACAPY_ENDORSER_ROLE":"str",
-    }]    
+    examples=[
+        {
+            "ACAPY_LOG_LEVEL": "str",
+            "ACAPY_INVITE_PUBLIC": "str",
+            "ACAPY_PUBLIC_INVITES": "str",
+            "ACAPY_AUTO_ACCEPT_INVITES": "str",
+            "ACAPY_AUTO_ACCEPT_REQUESTS": "str",
+            "ACAPY_AUTO_PING_CONNECTION": "str",
+            "ACAPY_MONITOR_PING": "str",
+            "ACAPY_AUTO_RESPOND_MESSAGES": "str",
+            "ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER": "str",
+            "ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST": "str",
+            "ACAPY_AUTO_VERIFY_PRESENTATION": "str",
+            "ACAPY_NOTIFY_REVOCATION": "str",
+            "ACAPY_AUTO_REQUEST_ENDORSEMENT": "str",
+            "ACAPY_AUTO_WRITE_TRANSACTIONS": "str",
+            "ACAPY_CREATE_REVOCATION_TRANSACTIONS": "str",
+            "ACAPY_ENDORSER_ROLE": "str",
+        }
+    ],
 )
+
 
 class CreateWalletRequestWithGroups(CreateWalletRequest):
     group_id: Optional[str] = group_id_field

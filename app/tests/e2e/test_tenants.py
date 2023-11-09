@@ -536,7 +536,7 @@ async def test_extra_settings(tenant_admin_client: RichAsyncClient):
                 "image_url": "https://image.ca",
                 "wallet_label": wallet_label,
                 "roles": ["verifier"],
-                "extra_settings":{"Bad_value":"true"},
+                "extra_settings": {"Bad_value": "true"},
             },
         )
 

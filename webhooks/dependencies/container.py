@@ -11,7 +11,7 @@ class Container(containers.DeclarativeContainer):
         host=config.redis_host,
         password=config.redis_password,
     )
-    redis_service = providers.Factory(
+    redis_service = providers.Singleton(
         redis_service.RedisService,
         redis=redis_pool,
     )

@@ -46,6 +46,9 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
+        # Start background task to backfill previous events from redis, if any
+        asyncio.create_task(self._backfill_events())
+
         # Start background task to listen for new events on redis pubsub channel
         asyncio.create_task(self._listen_for_new_events())
 
@@ -85,6 +88,36 @@ class SseManager:
                     logger.exception("Exception caught while processing redis event")
 
             await asyncio.sleep(0.01)  # Prevent a busy loop
+
+    async def _backfill_events(self) -> None:
+        """
+        Backfill events from Redis that were published within the MAX_EVENT_AGE window.
+        """
+        logger.info("Start backfilling SSE queue with recent events from redis")
+        try:
+            # Calculate the minimum timestamp for backfilling
+            current_time_ns = time.time_ns()  # Current time in nanoseconds
+            min_timestamp_ns = current_time_ns - (MAX_EVENT_AGE_SECONDS * 1e9)
+            logger.debug(f"Backfilling events from timestamp_ns: {min_timestamp_ns}")
+
+            # Get all wallets to backfill events for
+            wallets = await self.redis_service.get_all_wallet_ids()
+
+            total_events_backfilled = 0
+            for wallet_id in wallets:
+                # Fetch events within the time window from Redis for each wallet
+                events = await self.redis_service.get_events_by_timestamp(
+                    wallet_id, min_timestamp_ns, "+inf"
+                )
+
+                # Enqueue the fetched events
+                for event in events:
+                    await self.incoming_events.put(event)
+                    total_events_backfilled += 1
+
+            logger.info(f"Backfilled a total of {total_events_backfilled} events.")
+        except Exception as e:
+            logger.exception("Exception caught during backfilling events: {}", e)
 
     async def _process_incoming_events(self) -> NoReturn:
         while True:

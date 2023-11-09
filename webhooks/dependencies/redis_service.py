@@ -80,6 +80,9 @@ class RedisService:
     async def get_json_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:
+        logger.debug(
+            "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
+        )
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"
         entries = await self._redis.zrangebyscore(
             wallet_key, min=start_timestamp, max=end_timestamp

@@ -82,9 +82,6 @@ async def topic_root(
         )
         return
 
-    # Enqueue the event for SSE
-    await sse_manager.enqueue_sse_event(cloudapi_webhook_event)
-
     # publish the webhook to subscribers for the following topics
     #  - current wallet id
     #  - topic of the event
@@ -102,7 +99,7 @@ async def topic_root(
         data=webhook_event_json,
     )
 
-    # Add data to redis
+    # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
     await redis_service.add_webhook_event(wallet_id, webhook_event_json)
 
     logger.debug("Successfully processed received webhook.")

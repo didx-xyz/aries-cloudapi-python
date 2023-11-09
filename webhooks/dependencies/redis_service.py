@@ -22,12 +22,20 @@ class RedisService:
     def __init__(self, redis: Redis) -> None:
         self._redis = redis
 
+        self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
+
     async def add_webhook_event(self, wallet_id: str, event_json: str) -> None:
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
         bound_logger.debug("Write entry to redis")
 
+        # get a nanosecond timestamp to identify this event
+        timestamp_ns: int = time.time_ns()
+
         # Use the current timestamp as the score for the sorted set
-        await self._redis.zadd(wallet_id, {event_json: time.time()})
+        await self._redis.zadd(wallet_id, {event_json: timestamp_ns})
+
+        # publish that a new event has been added
+        await self._redis.publish(self.sse_event_pubsub_channel, timestamp_ns)
 
         bound_logger.debug("Successfully wrote entry to redis.")
 

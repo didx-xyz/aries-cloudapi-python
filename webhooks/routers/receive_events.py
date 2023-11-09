@@ -14,7 +14,6 @@ from shared.models.webhook_topics import (
 )
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.redis_service import RedisService
-from webhooks.dependencies.sse_manager import SseManager
 from webhooks.models import acapy_to_cloudapi_event
 
 logger = get_logger(__name__)
@@ -37,7 +36,6 @@ async def topic_root(
     body: Dict[str, Any],
     request: Request,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
-    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ):
     bound_logger = logger.bind(
         body={"acapy_topic": acapy_topic, "origin": origin, "body": body}

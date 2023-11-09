@@ -60,7 +60,7 @@ class SseManager:
         """
         Listen on redis pubsub channel for new SSE events; read the event and add to queue
         """
-        pubsub = self.redis_service._redis.pubsub()
+        pubsub = self.redis_service.redis.pubsub()
 
         await pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
@@ -84,10 +84,10 @@ class SseManager:
                         await self.incoming_events.put(event)
                 except (KeyError, ValueError) as e:
                     logger.error("Could not unpack redis pubsub message: {}", e)
-                except Exception as e:
+                except Exception:
                     logger.exception("Exception caught while processing redis event")
-
-            await asyncio.sleep(0.01)  # Prevent a busy loop
+            else:
+                await asyncio.sleep(0.01)  # Prevent a busy loop if no new messages
 
     async def _backfill_events(self) -> None:
         """

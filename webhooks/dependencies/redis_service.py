@@ -30,7 +30,7 @@ class RedisService:
         Args:
             redis: A Redis client instance connected to a Redis server.
         """
-        self._redis = redis
+        self.redis = redis
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
         self.wallet_id_key = "wallet_id"  # name of pub/sub channel
@@ -51,11 +51,11 @@ class RedisService:
 
         # Use the current timestamp as the score for the sorted set
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"
-        await self._redis.zadd(wallet_key, {event_json: timestamp_ns})
+        await self.redis.zadd(wallet_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
-        await self._redis.publish(self.sse_event_pubsub_channel, broadcast_message)
+        await self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)
 
         bound_logger.trace("Successfully wrote entry to redis.")
 
@@ -74,7 +74,7 @@ class RedisService:
 
         # Fetch all entries using the full range of scores
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"
-        entries: List[bytes] = await self._redis.zrange(wallet_key, 0, -1)
+        entries: List[bytes] = await self.redis.zrange(wallet_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
         bound_logger.trace("Successfully fetched redis entries.")
@@ -150,7 +150,7 @@ class RedisService:
             "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
         )
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"
-        entries = await self._redis.zrangebyscore(
+        entries = await self.redis.zrangebyscore(
             wallet_key, min=start_timestamp, max=end_timestamp
         )
         return entries
@@ -159,7 +159,8 @@ class RedisService:
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[CloudApiWebhookEvent]:
         """
-        Retrieve all webhook events for a specified wallet ID within a timestamp range, parsed as CloudApiWebhookEvent objects.
+        Retrieve all webhook events for a specified wallet ID within a timestamp range, parsed as CloudApiWebhookEvent
+         objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -187,7 +188,7 @@ class RedisService:
 
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
-                cursor, keys = await self._redis.scan(
+                cursor, keys = await self.redis.scan(
                     cursor, match="wallet_id:*", count=1000
                 )
                 if keys:

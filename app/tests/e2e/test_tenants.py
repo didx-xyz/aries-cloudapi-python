@@ -524,3 +524,20 @@ async def test_delete_tenant(
 
     with pytest.raises(Exception):
         await tenant_admin_acapy_client.multitenancy.get_wallet(wallet_id=wallet_id)
+
+
+@pytest.mark.anyio
+async def test_extra_settings(tenant_admin_client: RichAsyncClient):
+    with pytest.raises(Exception):
+        wallet_label = uuid4().hex
+        response = await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json={
+                "image_url": "https://image.ca",
+                "wallet_label": wallet_label,
+                "roles": ["verifier"],
+                "extra_settings":{"Bad_value":"true"},
+            },
+        )
+
+        assert response.status_code == 422

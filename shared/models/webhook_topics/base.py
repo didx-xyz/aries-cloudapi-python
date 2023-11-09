@@ -1,4 +1,3 @@
-from time import time
 from typing import Any, Dict, List, Optional, Union
 
 from aries_cloudcontroller import (

@@ -47,13 +47,11 @@ async def topic_root(
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
-        bound_logger.info(
-            "No `x-wallet-id` in headers for this received event. "
-            "Defaulting wallet_id to admin"
-        )
-        # FIXME: wallet_id is admin for all admin wallets from different origins. We should make a difference on this
-        # Maybe the wallet id should be the role (governance, tenant-admin)?
-        wallet_id = "admin"
+        if origin == "governance":
+            wallet_id = origin
+        else:
+            wallet_id = "admin"
+    bound_logger.trace("Wallet_id for this event: {}", wallet_id)
 
     # Map from the acapy webhook topic to a unified cloud api topic
     cloudapi_topic = topic_mapping.get(acapy_topic)

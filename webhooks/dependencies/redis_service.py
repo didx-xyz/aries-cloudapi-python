@@ -23,6 +23,7 @@ class RedisService:
         self._redis = redis
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
+        self.wallet_id_key = "wallet_id"  # name of pub/sub channel
 
     async def add_webhook_event(self, wallet_id: str, event_json: str) -> None:
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
@@ -32,7 +33,8 @@ class RedisService:
         timestamp_ns: int = time.time_ns()
 
         # Use the current timestamp as the score for the sorted set
-        await self._redis.zadd(wallet_id, {event_json: timestamp_ns})
+        wallet_key = f"{self.wallet_id_key}:{wallet_id}"
+        await self._redis.zadd(wallet_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
@@ -45,7 +47,8 @@ class RedisService:
         bound_logger.debug("Fetching entries from redis by wallet id")
 
         # Fetch all entries using the full range of scores
-        entries: List[bytes] = await self._redis.zrange(wallet_id, 0, -1)
+        wallet_key = f"{self.wallet_id_key}:{wallet_id}"
+        entries: List[bytes] = await self._redis.zrange(wallet_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
         bound_logger.debug("Successfully fetched redis entries.")
@@ -77,9 +80,9 @@ class RedisService:
     async def get_json_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:
-        logger.debug("Fetching entries from redis by wallet id")
+        wallet_key = f"{self.wallet_id_key}:{wallet_id}"
         entries = await self._redis.zrangebyscore(
-            wallet_id, min=start_timestamp, max=end_timestamp
+            wallet_key, min=start_timestamp, max=end_timestamp
         )
         return entries
 

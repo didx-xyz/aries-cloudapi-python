@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import defaultdict as ddict
 from datetime import datetime, timedelta
-from typing import Any, AsyncGenerator, Tuple
+from typing import Any, AsyncGenerator, List, NoReturn, Tuple
 
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,
@@ -61,7 +61,7 @@ class SseManager:
         # Add the event to the incoming events queue
         await self.incoming_events.put(event)
 
-    async def _process_incoming_events(self):
+    async def _process_incoming_events(self) -> NoReturn:
         while True:
             # Wait for an event to be added to the incoming events queue
             event: CloudApiWebhookEvent = await self.incoming_events.get()
@@ -164,7 +164,7 @@ class SseManager:
 
     async def _populate_client_queue(
         self, *, wallet: str, topic: str, client_queue: asyncio.Queue
-    ):
+    ) -> NoReturn:
         logger.debug(
             "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",
             wallet,
@@ -193,8 +193,8 @@ class SseManager:
             await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
 
     async def _append_to_queue(
-        self, *, wallet: str, topic: str, client_queue: asyncio.Queue, event_log: list
-    ):
+        self, *, wallet: str, topic: str, client_queue: asyncio.Queue, event_log: List
+    ) -> List:
         queue_is_read = False
         async with self.cache_locks[wallet][topic]:
             lifo_queue_for_topic = self.lifo_cache[wallet][topic]
@@ -227,7 +227,7 @@ class SseManager:
 
         return event_log
 
-    async def _cleanup_cache(self):
+    async def _cleanup_cache(self) -> NoReturn:
         while True:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)

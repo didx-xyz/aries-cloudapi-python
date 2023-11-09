@@ -11,7 +11,7 @@ from shared.constants import (
     QUEUE_CLEANUP_PERIOD,
 )
 from shared.log_config import get_logger
-from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEvent
+from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.redis_service import RedisService
 
@@ -122,7 +122,7 @@ class SseManager:
     async def _process_incoming_events(self) -> NoReturn:
         while True:
             # Wait for an event to be added to the incoming events queue
-            event: CloudApiWebhookEvent = await self.incoming_events.get()
+            event: CloudApiWebhookEventGeneric = await self.incoming_events.get()
             wallet = event.wallet_id
             topic = event.topic
 
@@ -146,7 +146,7 @@ class SseManager:
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
-                timestamped_event: Tuple(float, CloudApiWebhookEvent) = (
+                timestamped_event: Tuple(float, CloudApiWebhookEventGeneric) = (
                     time.time(),
                     event,
                 )
@@ -186,7 +186,7 @@ class SseManager:
             )
         )
 
-        async def event_generator() -> AsyncGenerator[CloudApiWebhookEvent, Any]:
+        async def event_generator() -> AsyncGenerator[CloudApiWebhookEventGeneric, Any]:
             bound_logger = logger.bind(body={"wallet": wallet, "topic": topic})
             bound_logger.debug("SSE Manager: Starting event_generator")
             end_time = time.time() + duration if duration > 0 else None

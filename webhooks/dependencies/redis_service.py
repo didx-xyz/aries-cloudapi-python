@@ -5,7 +5,7 @@ import aioredis
 from aioredis import Redis
 
 from shared.log_config import get_logger
-from shared.models.webhook_topics.base import CloudApiWebhookEvent
+from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
@@ -82,19 +82,20 @@ class RedisService:
 
     async def get_webhook_events_by_wallet(
         self, wallet_id: str
-    ) -> List[CloudApiWebhookEvent]:
+    ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all webhook events for a specified wallet ID, parsed as CloudApiWebhookEvent objects.
+        Retrieve all webhook events for a specified wallet ID, parsed as CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
 
         Returns:
-            A list of CloudApiWebhookEvent instances.
+            A list of CloudApiWebhookEventGeneric instances.
         """
         entries = await self.get_json_webhook_events_by_wallet(wallet_id)
         parsed_entries = [
-            parse_with_error_handling(CloudApiWebhookEvent, entry) for entry in entries
+            parse_with_error_handling(CloudApiWebhookEventGeneric, entry)
+            for entry in entries
         ]
         return parsed_entries
 
@@ -118,16 +119,16 @@ class RedisService:
 
     async def get_webhook_events_by_wallet_and_topic(
         self, wallet_id: str, topic: str
-    ) -> List[CloudApiWebhookEvent]:
+    ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all webhook events for a specified wallet ID and topic, parsed as CloudApiWebhookEvent objects.
+        Retrieve all webhook events for a specified wallet ID and topic, parsed as CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
             topic: The topic to filter the events by.
 
         Returns:
-            A list of CloudApiWebhookEvent instances that match the specified topic.
+            A list of CloudApiWebhookEventGeneric instances that match the specified topic.
         """
         entries = await self.get_webhook_events_by_wallet(wallet_id)
         return [entry for entry in entries if topic == entry.topic]
@@ -157,10 +158,10 @@ class RedisService:
 
     async def get_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
-    ) -> List[CloudApiWebhookEvent]:
+    ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all webhook events for a specified wallet ID within a timestamp range, parsed as CloudApiWebhookEvent
-         objects.
+        Retrieve all webhook events for a specified wallet ID within a timestamp range, parsed as
+        CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -168,13 +169,14 @@ class RedisService:
             end_timestamp: The end of the timestamp range (defaults to "+inf" for no upper limit).
 
         Returns:
-            A list of CloudApiWebhookEvent instances that fall within the specified timestamp range.
+            A list of CloudApiWebhookEventGeneric instances that fall within the specified timestamp range.
         """
         entries = await self.get_json_events_by_timestamp(
             wallet_id, start_timestamp, end_timestamp
         )
         parsed_entries = [
-            parse_with_error_handling(CloudApiWebhookEvent, entry) for entry in entries
+            parse_with_error_handling(CloudApiWebhookEventGeneric, entry)
+            for entry in entries
         ]
         return parsed_entries
 

@@ -1,13 +1,13 @@
 import asyncio
 from typing import Any, AsyncGenerator
 
-from shared.models.webhook_topics import CloudApiWebhookEvent
+from shared.models.webhook_topics import CloudApiWebhookEventGeneric
 
 
 class EventGeneratorWrapper:
     def __init__(
         self,
-        generator: AsyncGenerator[CloudApiWebhookEvent, Any],
+        generator: AsyncGenerator[CloudApiWebhookEventGeneric, Any],
         populate_task: asyncio.Task,
     ):
         self.generator = generator

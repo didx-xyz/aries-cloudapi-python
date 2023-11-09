@@ -150,7 +150,7 @@ class SseManager:
                     time.time(),
                     event,
                 )
-                logger.debug(
+                logger.trace(
                     "Putting event on cache for wallet `{}`, topic `{}`: {}",
                     wallet,
                     topic,
@@ -223,7 +223,7 @@ class SseManager:
     async def _populate_client_queue(
         self, *, wallet: str, topic: str, client_queue: asyncio.Queue
     ) -> NoReturn:
-        logger.debug(
+        logger.trace(
             "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",
             wallet,
             topic,
@@ -328,7 +328,7 @@ async def _copy_queue(
     queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
-    logger.debug("SSE Manager: Repopulating cache")
+    logger.trace("SSE Manager: Repopulating cache")
     lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while True:
         try:
@@ -340,6 +340,6 @@ async def _copy_queue(
                 await fifo_queue.put((timestamp, item))
         except asyncio.QueueEmpty:
             break
-    logger.debug("SSE Manager: Finished repopulating cache.")
+    logger.trace("SSE Manager: Finished repopulating cache.")
 
     return lifo_queue, fifo_queue

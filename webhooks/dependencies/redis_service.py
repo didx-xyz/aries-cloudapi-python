@@ -44,7 +44,7 @@ class RedisService:
             event_json: The JSON string representation of the webhook event.
         """
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
-        bound_logger.debug("Write entry to redis")
+        bound_logger.trace("Write entry to redis")
 
         # get a nanosecond timestamp to identify this event
         timestamp_ns: int = time.time_ns()
@@ -57,7 +57,7 @@ class RedisService:
         # publish that a new event has been added
         await self._redis.publish(self.sse_event_pubsub_channel, broadcast_message)
 
-        bound_logger.debug("Successfully wrote entry to redis.")
+        bound_logger.trace("Successfully wrote entry to redis.")
 
     async def get_json_webhook_events_by_wallet(self, wallet_id: str) -> List[str]:
         """
@@ -70,14 +70,14 @@ class RedisService:
             A list of event JSON strings.
         """
         bound_logger = logger.bind(body={"wallet_id": wallet_id})
-        bound_logger.debug("Fetching entries from redis by wallet id")
+        bound_logger.trace("Fetching entries from redis by wallet id")
 
         # Fetch all entries using the full range of scores
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"
         entries: List[bytes] = await self._redis.zrange(wallet_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
-        bound_logger.debug("Successfully fetched redis entries.")
+        bound_logger.trace("Successfully fetched redis entries.")
         return entries_str
 
     async def get_webhook_events_by_wallet(
@@ -146,7 +146,7 @@ class RedisService:
         Returns:
             A list of event JSON strings that fall within the specified timestamp range.
         """
-        logger.debug(
+        logger.trace(
             "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
         )
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"

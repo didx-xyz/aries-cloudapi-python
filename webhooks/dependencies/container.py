@@ -15,7 +15,10 @@ class Container(containers.DeclarativeContainer):
         redis_service.RedisService,
         redis=redis_pool,
     )
-    sse_manager = providers.Singleton(SseManager)
+    sse_manager = providers.Singleton(
+        SseManager,
+        redis_service=redis_service,
+    )
 
 
 def get_container():

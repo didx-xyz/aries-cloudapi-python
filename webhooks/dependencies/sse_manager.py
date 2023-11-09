@@ -13,6 +13,7 @@ from shared.constants import (
 from shared.log_config import get_logger
 from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEvent
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
+from webhooks.dependencies.redis_service import RedisService
 
 logger = get_logger(__name__)
 
@@ -22,7 +23,9 @@ class SseManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self):
+    def __init__(self, redis_service: RedisService) -> None:
+        self.redis_service = redis_service
+
         # Define incoming events queue, to decouple the process of receiving events,
         # from the process of storing them in the per-wallet queues
         self.incoming_events = asyncio.Queue()

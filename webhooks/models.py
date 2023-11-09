@@ -122,6 +122,7 @@ def transform_webhook_payload(
 
     if transformer:
         return transformer(acapy_event)
+    return
 
 
 def acapy_to_cloudapi_event(
@@ -138,3 +139,4 @@ def acapy_to_cloudapi_event(
             origin=acapy_event.origin,
             payload=transformed_payload,
         )
+    return

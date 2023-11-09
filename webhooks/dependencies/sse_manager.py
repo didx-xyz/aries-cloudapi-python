@@ -46,20 +46,45 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
+        # Start background task to listen for new events on redis pubsub channel
+        asyncio.create_task(self._listen_for_new_events())
+
         # Start background tasks to process incoming events and cleanup queues
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
 
-    async def enqueue_sse_event(self, event: CloudApiWebhookEvent) -> None:
+    async def _listen_for_new_events(self) -> NoReturn:
         """
-        Enqueue a SSE event to be sent to a specific wallet for a specific topic.
+        Listen on redis pubsub channel for new SSE events; read the event and add to queue
+        """
+        pubsub = self.redis_service._redis.pubsub()
 
-        Args:
-            event: The event to enqueue.
-        """
-        logger.debug("Enqueueing event: {}", event)
-        # Add the event to the incoming events queue
-        await self.incoming_events.put(event)
+        await pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
+
+        while True:
+            message = await pubsub.get_message(ignore_subscribe_messages=True)
+            if message:
+                try:
+                    message_data = message["data"]
+                    if isinstance(message_data, bytes):
+                        message_data = message_data.decode("utf-8")
+
+                    wallet_id, timestamp_ns_str = message_data.split(":")
+                    timestamp_ns = int(timestamp_ns_str)
+
+                    # Fetch the event with the exact timestamp from the sorted set
+                    events = await self.redis_service.get_events_by_timestamp(
+                        wallet_id, timestamp_ns, timestamp_ns
+                    )
+
+                    for event in events:
+                        await self.incoming_events.put(event)
+                except (KeyError, ValueError) as e:
+                    logger.error("Could not unpack redis pubsub message: {}", e)
+                except Exception as e:
+                    logger.exception("Exception caught while processing redis event")
+
+            await asyncio.sleep(0.01)  # Prevent a busy loop
 
     async def _process_incoming_events(self) -> NoReturn:
         while True:

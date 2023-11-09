@@ -34,8 +34,9 @@ class RedisService:
         # Use the current timestamp as the score for the sorted set
         await self._redis.zadd(wallet_id, {event_json: timestamp_ns})
 
+        broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
-        await self._redis.publish(self.sse_event_pubsub_channel, timestamp_ns)
+        await self._redis.publish(self.sse_event_pubsub_channel, broadcast_message)
 
         bound_logger.debug("Successfully wrote entry to redis.")
 

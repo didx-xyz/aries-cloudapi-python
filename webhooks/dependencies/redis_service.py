@@ -96,3 +96,38 @@ class RedisService:
             parse_with_error_handling(CloudApiWebhookEvent, entry) for entry in entries
         ]
         return parsed_entries
+
+    async def get_all_wallet_ids(self) -> List[str]:
+        """
+        Fetch all wallet IDs that have events stored in Redis.
+        """
+        wallet_ids = set()
+        cursor = 0  # Starting cursor value for SCAN
+        logger.info("Starting SCAN to fetch all wallet IDs.")
+
+        try:
+            while True:  # Loop until the cursor returned by SCAN is '0'
+                cursor, keys = await self._redis.scan(
+                    cursor, match="wallet_id:*", count=1000
+                )
+                if keys:
+                    wallet_id_batch = set(
+                        key.decode("utf-8").split(":")[1] for key in keys
+                    )
+                    wallet_ids.update(wallet_id_batch)
+                    logger.debug(
+                        f"Fetched {len(wallet_id_batch)} wallet IDs from Redis. Cursor value: {cursor}"
+                    )
+                else:
+                    logger.debug("No wallet IDs found in this batch.")
+
+                if cursor == 0:  # Iteration is complete
+                    logger.info("Completed SCAN for wallet IDs.")
+                    break  # Exit the loop
+        except Exception:
+            logger.exception(
+                "An exception occurred when fetching wallet_ids from redis. Continuing..."
+            )
+
+        logger.info(f"Total wallet IDs fetched: {len(wallet_ids)}.")
+        return list(wallet_ids)

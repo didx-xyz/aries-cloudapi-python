@@ -151,10 +151,11 @@ class RedisService:
             "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
         )
         wallet_key = f"{self.wallet_id_key}:{wallet_id}"
-        entries = await self.redis.zrangebyscore(
+        entries: List[bytes] = await self.redis.zrangebyscore(
             wallet_key, min=start_timestamp, max=end_timestamp
         )
-        return entries
+        entries_str: List[str] = [entry.decode() for entry in entries]
+        return entries_str
 
     async def get_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"

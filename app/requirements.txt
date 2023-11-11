@@ -9,4 +9,4 @@ pydantic~=2.4.2
 pyjwt~=2.8.0
 PyYAML~=6.0
 typing-extensions~=4.8.0
-uvicorn[standard]~=0.23.0
+uvicorn[standard]~=0.24.0

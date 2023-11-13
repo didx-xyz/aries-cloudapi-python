@@ -1,5 +1,5 @@
+from aiohttp import ClientResponseError
 from aries_cloudcontroller import (
-    ApiException,
     Doc,
     SignRequest,
     SignResponse,
@@ -75,7 +75,7 @@ async def sign_jsonld(
                     verkey=verkey,
                 )
             )
-    except ApiException as e:
+    except ClientResponseError as e:
         logger.warning(
             "An ApiException was caught while signing jsonld. The error message is: '{}'.",
             e.reason,
@@ -125,7 +125,7 @@ async def verify_jsonld(
                     f"Failed to verify payload with error message: `{jsonld_verify_response.error}`.",
                     422,
                 )
-    except ApiException as e:
+    except ClientResponseError as e:
         logger.warning(
             "An ApiException was caught while verifying jsonld. The error message is: '{}'.",
             e.reason,

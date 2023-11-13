@@ -1,8 +1,8 @@
 from typing import Optional, Tuple
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    ApiException,
     CredentialDefinitionSendRequest,
     SchemaGetResult,
     TAAAccept,
@@ -80,7 +80,7 @@ async def accept_taa(
             "An unexpected error occurred while trying to accept TAA."
         ) from e
 
-    if isinstance(accept_taa_response, ApiException):
+    if isinstance(accept_taa_response, ClientResponseError):
         logger.warning(
             "Failed to accept TAA with ApiException. Response: `{}`.",
             accept_taa_response,
@@ -142,7 +142,7 @@ async def register_nym_on_ledger(
         )
         bound_logger.info("Successfully registered NYM on ledger.")
         return response
-    except ApiException as e:
+    except ClientResponseError as e:
         bound_logger.warning(
             "An ApiException was caught while registering NYM. The error message is: '{}'.",
             e.reason,

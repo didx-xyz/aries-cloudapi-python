@@ -1,6 +1,6 @@
 from typing import List, Optional
+from aiohttp import ClientResponseError
 
-from aries_cloudcontroller import ApiException
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -139,7 +139,7 @@ async def send_credential(
             result = await issuer.send_credential(
                 controller=aries_controller, credential=credential
             )
-        except ApiException as e:
+        except ClientResponseError as e:
             logger.warning(
                 "ApiException was caught while sending credentials, with message `{}`.",
                 e.reason,

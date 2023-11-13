@@ -1,10 +1,10 @@
 from secrets import token_urlsafe
 from typing import List, Optional
 from uuid import uuid4
+from aiohttp import ClientResponseError
 
 import base58
 from aries_cloudcontroller import (
-    ApiException,
     CreateWalletTokenRequest,
     UpdateWalletRequest,
 )
@@ -89,7 +89,7 @@ async def create_tenant(
                     group_id=body.group_id,
                 )
             )
-        except ApiException as e:
+        except ClientResponseError as e:
             bound_logger.info(
                 "Error while trying to create wallet: `{}`",
                 e.reason,

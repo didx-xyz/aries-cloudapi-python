@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import Any, Optional
 
-from aries_cloudcontroller import WalletRecordWithGroups
+# from aries_cloudcontroller import WalletRecordWithGroups
 
 from app.models.tenants import Tenant
 
 
-def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
+def tenant_from_wallet_record(wallet_record: Any) -> Tenant:
     label: str = wallet_record.settings["default_label"]
     wallet_name: str = wallet_record.settings["wallet.name"]
     image_url: Optional[str] = wallet_record.settings.get("image_url")

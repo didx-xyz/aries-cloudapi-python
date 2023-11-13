@@ -2,10 +2,10 @@ import asyncio
 import json
 import time
 from typing import List, Optional
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    ApiException,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
     SchemaGetResult,
@@ -352,7 +352,7 @@ async def create_credential_definition(
                     rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state="active"
                 )
                 credential_definition_id = active_rev_reg.result.cred_def_id
-            except ApiException as e:
+            except ClientResponseError as e:
                 bound_logger.debug(
                     "An ApiException was caught while supporting revocation. The error message is: '{}'.",
                     e.reason,
@@ -501,7 +501,7 @@ async def create_schema(
             result = await aries_controller.schema.publish_schema(
                 body=schema_send_request, create_transaction_for_endorser=False
             )
-        except ApiException as e:
+        except ClientResponseError as e:
             bound_logger.info(
                 "ApiException caught while trying to publish schema: `{}`",
                 e.reason,

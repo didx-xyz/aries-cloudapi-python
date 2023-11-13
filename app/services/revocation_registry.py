@@ -1,8 +1,8 @@
 from typing import Optional, Union
+from aiohttp import ClientResponseError
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    ApiException,
     CredRevRecordResult,
     IssuerCredRevRecord,
     IssuerRevRegRecord,
@@ -308,7 +308,7 @@ async def revoke_credential(
                 publish=auto_publish_to_ledger,
             )
         )
-    except ApiException as e:
+    except ClientResponseError as e:
         bound_logger.info(
             "An ApiException was caught while revoking credential. The error message is: '{}'.",
             e.reason,
@@ -386,7 +386,7 @@ async def get_credential_definition_id_from_exchange_id(
                 cred_ex_id=credential_exchange_id
             )
         ).credential_definition_id
-    except ApiException as err1:
+    except ClientResponseError as err1:
         bound_logger.info(
             "An ApiException was caught while getting v1 record. The error message is: '{}'",
             err1.reason,
@@ -407,7 +407,7 @@ async def get_credential_definition_id_from_exchange_id(
                     rev_reg_parts[-1],
                 ]
             )
-        except ApiException as err2:
+        except ClientResponseError as err2:
             bound_logger.info(
                 "An ApiException was caught while getting v2 record. The error message is: '{}'",
                 err2.reason,

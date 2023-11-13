@@ -1,7 +1,6 @@
 import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
-    ApiException,
     ModelSchema,
     SchemaGetResult,
     TAAAccept,

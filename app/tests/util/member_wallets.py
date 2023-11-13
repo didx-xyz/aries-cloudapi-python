@@ -43,7 +43,7 @@ async def acme_verifier() -> Generator[CreateTenantResponse, Any, None]:
         await delete_tenant(admin_client, verifier_tenant.wallet_id)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
         issuer_tenant = await create_issuer_tenant(admin_client, "faber")

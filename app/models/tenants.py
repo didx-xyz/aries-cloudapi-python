@@ -38,7 +38,7 @@ ExtraSettings = Literal[
 ]
 ExtraSettings_field = Field(
     None,
-    description="Accepted ACAPY config fields. The extra_settings field is optional",
+    description="Optional per-tenant settings to configure wallet behavior",
     examples=[
         {
             "ACAPY_LOG_LEVEL": "debug, info, warning, error, critical",

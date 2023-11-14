@@ -293,8 +293,6 @@ class SseManager:
 
     async def _cleanup_cache(self) -> NoReturn:
         while True:
-            # Wait for a while between cleanup operations
-            await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
             logger.debug("SSE Manager: Running periodic cleanup task")
 
             try:
@@ -328,6 +326,9 @@ class SseManager:
                 )
 
             logger.debug("SSE Manager: Finished cleanup task.")
+
+            # Wait for a while between cleanup operations
+            await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
 
 
 async def _copy_queue(

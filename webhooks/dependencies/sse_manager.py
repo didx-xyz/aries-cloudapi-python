@@ -46,13 +46,19 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
-        # Start background task to backfill previous events from redis, if any
+        self._start_background_tasks()
+
+    def _start_background_tasks(self) -> None:
+        """
+        Start the background tasks as part of SseManager's lifecycle
+        """
+        # backfill previous events from redis, if any
         asyncio.create_task(self._backfill_events())
 
-        # Start background task to listen for new events on redis pubsub channel
+        # listen for new events on redis pubsub channel
         asyncio.create_task(self._listen_for_new_events())
 
-        # Start background tasks to process incoming events and cleanup queues
+        # process incoming events and cleanup queues
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
 

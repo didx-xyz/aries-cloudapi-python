@@ -47,7 +47,7 @@ from app.util.acapy_verifier_utils import (
     is_verifier,
 )
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.topics import PresentationExchange
+from shared.models.webhook_topics import PresentationExchange
 
 sample_actor = Actor(
     id="abcde",

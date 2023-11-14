@@ -19,7 +19,7 @@ from app.util.acapy_verifier_utils import (
     get_verifier_by_version,
 )
 from shared.log_config import get_logger
-from shared.models.topics import PresentationExchange
+from shared.models.webhook_topics import PresentationExchange
 
 logger = get_logger(__name__)
 

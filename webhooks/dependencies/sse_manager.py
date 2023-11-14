@@ -2,7 +2,7 @@ import asyncio
 import time
 from collections import defaultdict as ddict
 from datetime import datetime, timedelta
-from typing import Any, AsyncGenerator, Tuple
+from typing import Any, AsyncGenerator, List, NoReturn, Tuple
 
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,
@@ -11,8 +11,9 @@ from shared.constants import (
     QUEUE_CLEANUP_PERIOD,
 )
 from shared.log_config import get_logger
-from shared.models.topics import WEBHOOK_TOPIC_ALL, TopicItem
+from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
+from webhooks.dependencies.redis_service import RedisService
 
 logger = get_logger(__name__)
 
@@ -22,7 +23,9 @@ class SseManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self):
+    def __init__(self, redis_service: RedisService) -> None:
+        self.redis_service = redis_service
+
         # Define incoming events queue, to decouple the process of receiving events,
         # from the process of storing them in the per-wallet queues
         self.incoming_events = asyncio.Queue()
@@ -43,34 +46,91 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
-        # Start background tasks to process incoming events and cleanup queues
+        self._start_background_tasks()
+
+    def _start_background_tasks(self) -> None:
+        """
+        Start the background tasks as part of SseManager's lifecycle
+        """
+        # backfill previous events from redis, if any
+        asyncio.create_task(self._backfill_events())
+
+        # listen for new events on redis pubsub channel
+        asyncio.create_task(self._listen_for_new_events())
+
+        # process incoming events and cleanup queues
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
 
-    async def enqueue_sse_event(
-        self, event: TopicItem, wallet: str, topic: str
-    ) -> None:
+    async def _listen_for_new_events(self) -> NoReturn:
         """
-        Enqueue a SSE event to be sent to a specific wallet for a specific topic.
-
-        Args:
-            event: The event to enqueue.
-            wallet: The ID of the wallet to which to enqueue the event.
-            topic: The topic to which to enqueue the event.
+        Listen on redis pubsub channel for new SSE events; read the event and add to queue
         """
-        logger.debug(
-            "Enqueueing event for wallet `{}`: {}",
-            wallet,
-            event,
-        )
+        pubsub = self.redis_service.redis.pubsub()
 
-        # Add the event to the incoming events queue, with timestamp
-        await self.incoming_events.put((event, wallet, topic, time.time()))
+        await pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
-    async def _process_incoming_events(self):
+        while True:
+            message = await pubsub.get_message(ignore_subscribe_messages=True)
+            if message:
+                try:
+                    message_data = message["data"]
+                    if isinstance(message_data, bytes):
+                        message_data = message_data.decode("utf-8")
+
+                    wallet_id, timestamp_ns_str = message_data.split(":")
+                    timestamp_ns = int(timestamp_ns_str)
+
+                    # Fetch the event with the exact timestamp from the sorted set
+                    events = await self.redis_service.get_events_by_timestamp(
+                        wallet_id, timestamp_ns, timestamp_ns
+                    )
+
+                    for event in events:
+                        await self.incoming_events.put(event)
+                except (KeyError, ValueError) as e:
+                    logger.error("Could not unpack redis pubsub message: {}", e)
+                except Exception:
+                    logger.exception("Exception caught while processing redis event")
+            else:
+                await asyncio.sleep(0.01)  # Prevent a busy loop if no new messages
+
+    async def _backfill_events(self) -> None:
+        """
+        Backfill events from Redis that were published within the MAX_EVENT_AGE window.
+        """
+        logger.info("Start backfilling SSE queue with recent events from redis")
+        try:
+            # Calculate the minimum timestamp for backfilling
+            current_time_ns = time.time_ns()  # Current time in nanoseconds
+            min_timestamp_ns = current_time_ns - (MAX_EVENT_AGE_SECONDS * 1e9)
+            logger.debug(f"Backfilling events from timestamp_ns: {min_timestamp_ns}")
+
+            # Get all wallets to backfill events for
+            wallets = await self.redis_service.get_all_wallet_ids()
+
+            total_events_backfilled = 0
+            for wallet_id in wallets:
+                # Fetch events within the time window from Redis for each wallet
+                events = await self.redis_service.get_events_by_timestamp(
+                    wallet_id, min_timestamp_ns, "+inf"
+                )
+
+                # Enqueue the fetched events
+                for event in events:
+                    await self.incoming_events.put(event)
+                    total_events_backfilled += 1
+
+            logger.info(f"Backfilled a total of {total_events_backfilled} events.")
+        except Exception as e:
+            logger.exception("Exception caught during backfilling events: {}", e)
+
+    async def _process_incoming_events(self) -> NoReturn:
         while True:
             # Wait for an event to be added to the incoming events queue
-            event, wallet, topic, timestamp = await self.incoming_events.get()
+            event: CloudApiWebhookEventGeneric = await self.incoming_events.get()
+            wallet = event.wallet_id
+            topic = event.topic
 
             # Process the event into the per-wallet queues
             async with self.cache_locks[wallet][topic]:
@@ -92,8 +152,11 @@ class SseManager:
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
-                timestamped_event: Tuple(float, TopicItem) = (timestamp, event)
-                logger.debug(
+                timestamped_event: Tuple(float, CloudApiWebhookEventGeneric) = (
+                    time.time(),
+                    event,
+                )
+                logger.trace(
                     "Putting event on cache for wallet `{}`, topic `{}`: {}",
                     wallet,
                     topic,
@@ -116,6 +179,7 @@ class SseManager:
         Args:
             wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
+            stop_event: An asyncio.Event to signal a stop request
             duration: Timeout duration in seconds. 0 means no timeout.
         """
         client_queue = asyncio.Queue()
@@ -128,7 +192,7 @@ class SseManager:
             )
         )
 
-        async def event_generator() -> AsyncGenerator[TopicItem, Any]:
+        async def event_generator() -> AsyncGenerator[CloudApiWebhookEventGeneric, Any]:
             bound_logger = logger.bind(body={"wallet": wallet, "topic": topic})
             bound_logger.debug("SSE Manager: Starting event_generator")
             end_time = time.time() + duration if duration > 0 else None
@@ -164,8 +228,8 @@ class SseManager:
 
     async def _populate_client_queue(
         self, *, wallet: str, topic: str, client_queue: asyncio.Queue
-    ):
-        logger.debug(
+    ) -> NoReturn:
+        logger.trace(
             "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",
             wallet,
             topic,
@@ -193,8 +257,8 @@ class SseManager:
             await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
 
     async def _append_to_queue(
-        self, *, wallet: str, topic: str, client_queue: asyncio.Queue, event_log: list
-    ):
+        self, *, wallet: str, topic: str, client_queue: asyncio.Queue, event_log: List
+    ) -> List:
         queue_is_read = False
         async with self.cache_locks[wallet][topic]:
             lifo_queue_for_topic = self.lifo_cache[wallet][topic]
@@ -227,10 +291,8 @@ class SseManager:
 
         return event_log
 
-    async def _cleanup_cache(self):
+    async def _cleanup_cache(self) -> NoReturn:
         while True:
-            # Wait for a while between cleanup operations
-            await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
             logger.debug("SSE Manager: Running periodic cleanup task")
 
             try:
@@ -265,12 +327,15 @@ class SseManager:
 
             logger.debug("SSE Manager: Finished cleanup task.")
 
+            # Wait for a while between cleanup operations
+            await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
+
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE
 ) -> Tuple[asyncio.LifoQueue, asyncio.Queue]:
     # Consuming a queue removes its content. Therefore, we create two new queues to copy one
-    logger.debug("SSE Manager: Repopulating cache")
+    logger.trace("SSE Manager: Repopulating cache")
     lifo_queue, fifo_queue = asyncio.LifoQueue(maxsize), asyncio.Queue(maxsize)
     while True:
         try:
@@ -282,6 +347,6 @@ async def _copy_queue(
                 await fifo_queue.put((timestamp, item))
         except asyncio.QueueEmpty:
             break
-    logger.debug("SSE Manager: Finished repopulating cache.")
+    logger.trace("SSE Manager: Finished repopulating cache.")
 
     return lifo_queue, fifo_queue

@@ -4,7 +4,7 @@ from httpx import HTTPError
 
 from shared import WEBHOOKS_URL
 from shared.log_config import get_logger
-from shared.models.topics import CloudApiTopics
+from shared.models.webhook_topics import CloudApiTopics
 from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)

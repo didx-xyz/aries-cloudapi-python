@@ -24,7 +24,7 @@ from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_asyn
 from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.topics import CredentialExchange, PresentationExchange
+from shared.models.webhook_topics import CredentialExchange, PresentationExchange
 
 VERIFIER_BASE_PATH = router.prefix
 OOB_BASE_PATH = oob_router.prefix
@@ -75,7 +75,7 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "request-received", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=120,
+        max_duration=60,
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]

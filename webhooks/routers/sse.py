@@ -7,7 +7,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from shared import DISCONNECT_CHECK_PERIOD, QUEUE_POLL_PERIOD, SSE_TIMEOUT, APIRouter
 from shared.log_config import get_logger
-from shared.models.topics import WEBHOOK_TOPIC_ALL
+from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL
 from webhooks.dependencies.container import Container
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.sse_manager import SseManager
@@ -66,17 +66,18 @@ async def sse_subscribe_wallet(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    bound_logger.debug("SSE event_stream: client disconnected.")
+                    bound_logger.info("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
-                    bound_logger.debug("Yielding SSE event: {}", event.json())
-                    yield event.json()
+                    result = event.model_dump_json()
+                    bound_logger.trace("Yielding SSE event: {}", result)
+                    yield result
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    bound_logger.debug("SSE event stream cancelled.")
+                    bound_logger.info("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -121,17 +122,18 @@ async def sse_subscribe_wallet_topic(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    bound_logger.debug("SSE event_stream: client disconnected.")
+                    bound_logger.info("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
-                    bound_logger.debug("Yielding SSE event: {}", event.json())
-                    yield event.json()
+                    result = event.model_dump_json()
+                    bound_logger.trace("Yielding SSE event: {}", result)
+                    yield result
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    bound_logger.debug("SSE event stream cancelled.")
+                    bound_logger.info("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -186,7 +188,7 @@ async def sse_subscribe_event_with_state(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    bound_logger.debug("SSE event_stream: client disconnected.")
+                    bound_logger.info("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
@@ -204,15 +206,16 @@ async def sse_subscribe_event_with_state(
                             continue
 
                     if "state" in payload and payload["state"] == desired_state:
-                        bound_logger.debug("Yielding SSE event: {}", event.json())
-                        yield event.json()  # Send the event
+                        result = event.model_dump_json()
+                        bound_logger.trace("Yielding SSE event: {}", result)
+                        yield result  # Send the event
                         stop_event.set()
                         break  # End the generator
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    bound_logger.debug("SSE event stream cancelled.")
+                    bound_logger.info("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -260,19 +263,20 @@ async def sse_subscribe_stream_with_fields(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    bound_logger.debug("SSE event_stream: client disconnected.")
+                    bound_logger.info("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
                     payload = dict(event.payload)  # to check if keys exist in payload
                     if field in payload and payload[field] == field_id:
-                        bound_logger.debug("Yielding SSE event: {}", event.json())
-                        yield event.json()  # Send the event
+                        result = event.model_dump_json()
+                        bound_logger.trace("Yielding SSE event: {}", result)
+                        yield result  # Send the event
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    bound_logger.debug("SSE event_stream cancelled.")
+                    bound_logger.info("SSE event stream cancelled.")
                     stop_event.set()
                     break
 
@@ -326,7 +330,7 @@ async def sse_subscribe_event_with_field_and_state(
 
             async for event in event_generator:
                 if await request.is_disconnected():
-                    bound_logger.debug("SSE event_stream: client disconnected.")
+                    bound_logger.info("SSE event_stream: client disconnected.")
                     stop_event.set()
                     break
                 try:
@@ -336,15 +340,16 @@ async def sse_subscribe_event_with_field_and_state(
                         and payload[field] == field_id
                         and payload["state"] == desired_state
                     ):
-                        bound_logger.debug("Yielding SSE event: {}", event.json())
-                        yield event.json()  # Send the event
+                        result = event.model_dump_json()
+                        bound_logger.trace("Yielding SSE event: {}", result)
+                        yield result  # Send the event
                         stop_event.set()
                         break  # End the generator
                 except asyncio.QueueEmpty:
                     await asyncio.sleep(QUEUE_POLL_PERIOD)
                 except asyncio.CancelledError:
                     # This exception is thrown when the client disconnects.
-                    bound_logger.debug("SSE event_stream cancelled.")
+                    bound_logger.info("SSE event stream cancelled.")
                     stop_event.set()
                     break
 

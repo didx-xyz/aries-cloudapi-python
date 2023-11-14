@@ -15,7 +15,7 @@ from app.tests.verifier.utils import (
     v10_presentation_exchange_records,
 )
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.topics import PresentationExchange
+from shared.models.webhook_topics import PresentationExchange
 
 
 @pytest.mark.anyio

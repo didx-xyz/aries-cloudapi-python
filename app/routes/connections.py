@@ -8,7 +8,7 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.models.connections import AcceptInvitation, CreateInvitation
 from shared.log_config import get_logger
 from shared.models.conversion import conn_record_to_connection
-from shared.models.topics import Connection
+from shared.models.webhook_topics import Connection
 
 logger = get_logger(__name__)
 

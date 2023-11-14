@@ -9,7 +9,7 @@ from app.models.oob import AcceptOobInvitation, ConnectToPublicDid, CreateOobInv
 from app.util.credentials import strip_protocol_prefix
 from shared.log_config import get_logger
 from shared.models.conversion import conn_record_to_connection
-from shared.models.topics import Connection
+from shared.models.webhook_topics import Connection
 
 logger = get_logger(__name__)
 

@@ -17,7 +17,7 @@ from app.services.verifier.acapy_verifier import Verifier
 from shared.log_config import get_logger
 from shared.models.conversion import presentation_record_to_model as record_to_model
 from shared.models.protocol import pres_id_no_version
-from shared.models.topics import PresentationExchange
+from shared.models.webhook_topics import PresentationExchange
 
 logger = get_logger(__name__)
 

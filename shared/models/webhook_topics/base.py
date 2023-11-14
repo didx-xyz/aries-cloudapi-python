@@ -1,6 +1,12 @@
-from typing import Any, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, Union
 
-from aries_cloudcontroller import IndyProof, IndyProofRequest
+from aries_cloudcontroller import (
+    IndyProof,
+    IndyProofRequest,
+    IssuerCredRevRecord,
+    IssuerRevRegRecord,
+    OobRecord,
+)
 from pydantic import BaseModel, Field
 from typing_extensions import Literal, TypedDict
 
@@ -23,12 +29,6 @@ class Endorsement(BaseModel):
         "transaction-resent_received",
     ]
     transaction_id: str
-
-
-class ServiceDecorator(TypedDict):
-    endpoint: str
-    recipient_keys: List[str]
-    routing_keys: Optional[List[str]]
 
 
 class Connection(BaseModel):
@@ -121,25 +121,7 @@ class BasicMessage(BaseModel):
     state: Optional[Literal["received"]] = None
 
 
-PayloadType = TypeVar("PayloadType", bound=BaseModel)
-
-
-class TopicItem(BaseModel, Generic[PayloadType]):
-    topic: str
-    wallet_id: str
-    origin: str
-    payload: PayloadType
-
-
-class RedisItem(BaseModel):
-    acapy_topic: str
-    topic: str
-    wallet_id: str
-    origin: str
-    payload: Dict[str, Any]
-
-
-class DescriptionInfo(BaseModel):
+class DescriptionInfo(TypedDict):
     en: Optional[str]
     code: Optional[str]
 
@@ -157,3 +139,38 @@ class ProblemReport(BaseModel):
     noticed_time: Optional[str] = None
     tracking_uri: Optional[str] = None
     escalation_uri: Optional[str] = None
+
+
+class WebhookEvent(BaseModel):
+    wallet_id: str
+    topic: str
+    origin: str
+
+
+class AcaPyWebhookEvent(WebhookEvent):
+    acapy_topic: str
+    payload: Dict[str, Any]
+
+
+WebhookEventPayloadType = Union[
+    BasicMessage,
+    Connection,
+    CredentialExchange,
+    Endorsement,
+    IssuerCredRevRecord,
+    IssuerRevRegRecord,
+    OobRecord,
+    PresentationExchange,
+    ProblemReport,
+]
+
+
+class CloudApiWebhookEvent(WebhookEvent):
+    payload: WebhookEventPayloadType
+
+
+# When reading json webhook events from redis and deserialising back into a CloudApiWebhookEvent,
+# it does not always parse to the correct WebhookEventPayloadType for the payload.
+# So, use the generic version when parsing redis events
+class CloudApiWebhookEventGeneric(WebhookEvent):
+    payload: Dict[str, Any]

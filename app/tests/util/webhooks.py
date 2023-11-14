@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from app.event_handling.sse_listener import SseListener
 from shared import RichAsyncClient
-from shared.models.topics import CloudApiTopics
+from shared.models.webhook_topics import CloudApiTopics
 
 
 def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
@@ -33,7 +33,7 @@ async def check_webhook_state(
     client: RichAsyncClient,
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]],
-    max_duration: int = 120,
+    max_duration: int = 30,
 ) -> bool:
     assert max_duration >= 0, "Poll duration cannot be negative"
 

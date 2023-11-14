@@ -14,7 +14,7 @@ from app.tests.util.mock import to_async
 from app.tests.verifier.utils import indy_pres_spec, indy_proof_request
 from app.util import acapy_verifier_utils
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.topics import PresentationExchange
+from shared.models.webhook_topics import PresentationExchange
 from shared.util.mock_agent_controller import MockContextManagedController
 
 presentation_exchange_record_1 = PresentationExchange(

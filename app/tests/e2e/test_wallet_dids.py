@@ -76,9 +76,6 @@ async def test_get_did_endpoint(governance_client: RichAsyncClient):
     assert response["did"] == did
 
 
-@pytest.mark.skip(
-    reason="When running all e2e test with faber with session scope this test makes things break(need to fix this)"
-)
 @pytest.mark.anyio
 async def test_set_public_did(
     governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient

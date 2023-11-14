@@ -79,24 +79,32 @@ async def topic_root(
         )
         return
 
-    # publish the webhook to subscribers for the following topics
-    #  - current wallet id
-    #  - topic of the event
-    #  - topic and wallet id combined as topic-wallet_id
-    #    - this allows for fine grained subscriptions (i.e. the endorser service)
-    #  - 'all' topic, which allows to subscribe to all published events
     webhook_event_json = cloudapi_webhook_event.model_dump_json()
-    await endpoint.publish(
-        topics=[
-            cloudapi_topic,
-            wallet_id,
-            f"{cloudapi_topic}-{wallet_id}",
-            WEBHOOK_TOPIC_ALL,
-        ],
-        data=webhook_event_json,
-    )
+
+    await publish_event_on_websocket(webhook_event_json, wallet_id, cloudapi_topic)
 
     # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
     await redis_service.add_webhook_event(wallet_id, webhook_event_json)
 
     logger.debug("Successfully processed received webhook.")
+
+
+async def publish_event_on_websocket(
+    event_json: str, wallet_id: str, topic: str
+) -> None:
+    """
+    Publish the webhook to websocket subscribers on the following topics:
+        - current wallet id
+        - topic of the event
+        - topic and wallet id combined as topic-wallet_id
+        - 'all' topic, which allows to subscribe to all published events
+
+    Args:
+        event_json (str): Webhook event serialized as json
+        wallet_id (str): The wallet_id for this event
+        topic (str): The cloudapi topic for the event
+    """
+
+    publish_topics = [topic, wallet_id, f"{topic}-{wallet_id}", WEBHOOK_TOPIC_ALL]
+
+    await endpoint.publish(topics=publish_topics, data=event_json)

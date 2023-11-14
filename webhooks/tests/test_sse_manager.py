@@ -16,7 +16,7 @@ from webhooks.dependencies.sse_manager import SseManager, _copy_queue
 wallet = "wallet1"
 topic = "topic1"
 test_event = CloudApiWebhookEventGeneric(
-    wallet_id=wallet, topic=topic, origin="dontcare", payload={"dont": "care"}
+    wallet_id=wallet, topic=topic, origin="multitenant", payload={"some": "data"}
 )
 
 
@@ -30,10 +30,10 @@ def redis_service_mock():
 
 
 @pytest.fixture
-async def sse_manager(redis_service_mock):
+async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-name
+    # Patch to prevent background tasks from starting automatically on init
     with patch.object(SseManager, "_start_background_tasks", return_value=None):
-        sse_manager = SseManager(redis_service_mock)
-        return sse_manager
+        return SseManager(redis_service_mock)
 
 
 @pytest.mark.anyio

@@ -10,6 +10,9 @@ from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
 from webhooks.dependencies.sse_manager import SseManager, _copy_queue
 
+# pylint: disable=protected-access
+# because we are testing protected methods
+
 wallet = "wallet1"
 topic = "topic1"
 test_event = CloudApiWebhookEventGeneric(
@@ -34,7 +37,9 @@ async def sse_manager(redis_service_mock):
 
 
 @pytest.mark.anyio
-async def test_listen_for_new_events(sse_manager, redis_service_mock):
+async def test_listen_for_new_events(
+    sse_manager, redis_service_mock  # pylint: disable=redefined-outer-name
+):
     # Configure specific mocks for this test
     pubsub_mock = redis_service_mock.redis.pubsub.return_value
     pubsub_mock.subscribe = AsyncMock()
@@ -62,7 +67,9 @@ async def test_listen_for_new_events(sse_manager, redis_service_mock):
 
 
 @pytest.mark.anyio
-async def test_backfill_events(sse_manager, redis_service_mock):
+async def test_backfill_events(
+    sse_manager, redis_service_mock  # pylint: disable=redefined-outer-name
+):
     # Configure the mock for get_all_wallet_ids and get_events_by_timestamp
     redis_service_mock.get_all_wallet_ids = AsyncMock(
         return_value=["wallet1", "wallet2"]
@@ -82,7 +89,9 @@ async def test_backfill_events(sse_manager, redis_service_mock):
 
 
 @pytest.mark.anyio
-async def test_process_incoming_events(sse_manager):
+async def test_process_incoming_events(
+    sse_manager,  # pylint: disable=redefined-outer-name
+):
     await sse_manager.incoming_events.put(test_event)
 
     try:
@@ -96,7 +105,7 @@ async def test_process_incoming_events(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_sse_event_stream(sse_manager):
+async def test_sse_event_stream(sse_manager):  # pylint: disable=redefined-outer-name
     stop_event = asyncio.Event()
     duration = 2  # seconds
 
@@ -130,7 +139,9 @@ async def test_sse_event_stream(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_populate_client_queue(sse_manager):
+async def test_populate_client_queue(
+    sse_manager,  # pylint: disable=redefined-outer-name
+):
     client_queue = asyncio.Queue()
 
     # Simulate adding an event to the LIFO cache
@@ -160,7 +171,7 @@ async def test_populate_client_queue(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_append_to_queue(sse_manager):
+async def test_append_to_queue(sse_manager):  # pylint: disable=redefined-outer-name
     client_queue = asyncio.Queue()
     event_log = []
 
@@ -179,7 +190,7 @@ async def test_append_to_queue(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_cleanup_cache(sse_manager):
+async def test_cleanup_cache(sse_manager):  # pylint: disable=redefined-outer-name
     # Add an old event to the cache
     timestamp = time.time() - (MAX_EVENT_AGE_SECONDS + 1)
     await sse_manager.lifo_cache[wallet][topic].put((timestamp, test_event))
@@ -204,7 +215,7 @@ async def test_cleanup_cache(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_copy_queue(sse_manager):
+async def test_copy_queue():
     # Create a queue with some items
     original_queue = asyncio.Queue()
     test_event2 = CloudApiWebhookEventGeneric(

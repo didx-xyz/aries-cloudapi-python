@@ -20,7 +20,7 @@ async def test_add_webhook_event():
     redis_service = RedisService(redis_client)
 
     # Call the method you want to test
-    await redis_service.add_webhook_event(wallet_id, event_json)
+    await redis_service.add_webhook_event(event_json, wallet_id)
 
     # Assert that the mocked methods were called as expected
     redis_client.zadd.assert_called_once()

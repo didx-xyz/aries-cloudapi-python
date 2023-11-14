@@ -84,7 +84,7 @@ async def topic_root(
     await publish_event_on_websocket(webhook_event_json, wallet_id, cloudapi_topic)
 
     # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
-    await redis_service.add_webhook_event(wallet_id, webhook_event_json)
+    await redis_service.add_webhook_event(webhook_event_json, wallet_id)
 
     logger.debug("Successfully processed received webhook.")
 

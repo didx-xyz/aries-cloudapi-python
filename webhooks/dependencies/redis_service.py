@@ -36,13 +36,13 @@ class RedisService:
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
         self.wallet_id_key = "wallet_id"  # name of pub/sub channel
 
-    async def add_webhook_event(self, wallet_id: str, event_json: str) -> None:
+    async def add_webhook_event(self, event_json: str, wallet_id: str) -> None:
         """
         Add a webhook event JSON string to Redis and publish a notification.
 
         Args:
-            wallet_id: The identifier of the wallet associated with the event.
             event_json: The JSON string representation of the webhook event.
+            wallet_id: The identifier of the wallet associated with the event.
         """
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
         bound_logger.trace("Write entry to redis")

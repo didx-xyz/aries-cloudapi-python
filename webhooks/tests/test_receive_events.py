@@ -24,7 +24,6 @@ dummy_event = CloudApiWebhookEvent(
 @patch("webhooks.routers.receive_events.endpoint.publish", new_callable=AsyncMock)
 def test_topic_root(mock_publish, mock_add_webhook_event, _):
     # Prepare the request payload
-
     acapy_topic = "connections"
     body = {"payload": "test"}
     headers = {"x-wallet-id": "test_wallet"}

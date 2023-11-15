@@ -100,8 +100,8 @@ async def test_process_incoming_events(
         pass  # Timeout is expected due to the infinite loop
 
     # Assertions to verify that the event is processed and added to the FIFO and LIFO caches
-    assert not sse_manager.fifo_cache["wallet1"]["topic1"].empty()
-    assert not sse_manager.lifo_cache["wallet1"]["topic1"].empty()
+    assert not sse_manager.fifo_cache[wallet][topic].empty()
+    assert not sse_manager.lifo_cache[wallet][topic].empty()
 
 
 @pytest.mark.anyio

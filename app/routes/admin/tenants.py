@@ -45,7 +45,9 @@ router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 @router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
+        acapy_auth_tenant_admin
+    ),
 ) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
@@ -163,7 +165,9 @@ async def create_tenant(
 @router.delete("/{wallet_id}")
 async def delete_tenant_by_id(
     wallet_id: str,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
+        acapy_auth_tenant_admin
+    ),
 ):
     """Delete tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
@@ -196,7 +200,9 @@ async def delete_tenant_by_id(
 @router.get("/{wallet_id}/access-token", response_model=TenantAuth)
 async def get_wallet_auth_token(
     wallet_id: str,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
+        acapy_auth_tenant_admin
+    ),
 ) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Access token for tenant")
@@ -222,7 +228,9 @@ async def get_wallet_auth_token(
 async def update_tenant(
     wallet_id: str,
     body: UpdateTenantRequest,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
+        acapy_auth_tenant_admin
+    ),
 ) -> Tenant:
     """Update tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "body": body})
@@ -250,7 +258,9 @@ async def update_tenant(
 @router.get("/{wallet_id}", response_model=Tenant)
 async def get_tenant(
     wallet_id: str,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
+        acapy_auth_tenant_admin
+    ),
 ) -> Tenant:
     """Get tenant by id."""
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
@@ -272,7 +282,9 @@ async def get_tenant(
 async def get_tenants(
     wallet_name: Optional[str] = None,
     group_id: Optional[str] = None,
-    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
+    admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
+        acapy_auth_tenant_admin
+    ),
 ) -> List[Tenant]:
     """Get all tenants, or fetch by wallet name and/or group id."""
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})

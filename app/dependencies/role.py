@@ -25,14 +25,6 @@ GOVERNANCE_AGENT_TYPE = AgentType(
     x_api_key=GOVERNANCE_AGENT_API_KEY,
 )
 
-TENANT_AGENT_TYPE = AgentType(
-    name="tenant",
-    base_url=TENANT_AGENT_URL,
-    is_multitenant=True,
-    is_admin=False,
-    x_api_key=TENANT_AGENT_API_KEY,
-)
-
 TENANT_ADMIN_AGENT_TYPE = AgentType(
     name="tenant-admin",
     base_url=TENANT_AGENT_URL,
@@ -41,11 +33,19 @@ TENANT_ADMIN_AGENT_TYPE = AgentType(
     x_api_key=TENANT_AGENT_API_KEY,
 )
 
+TENANT_AGENT_TYPE = AgentType(
+    name="tenant",
+    base_url=TENANT_AGENT_URL,
+    is_multitenant=True,
+    is_admin=False,
+    x_api_key=TENANT_AGENT_API_KEY,
+)
+
 
 class Role(Enum):
     GOVERNANCE = GOVERNANCE_AGENT_TYPE
-    TENANT = TENANT_AGENT_TYPE
     TENANT_ADMIN = TENANT_ADMIN_AGENT_TYPE
+    TENANT = TENANT_AGENT_TYPE
 
     @staticmethod
     def from_str(role: str) -> Optional["Role"]:

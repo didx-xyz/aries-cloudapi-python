@@ -6,7 +6,6 @@ from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
 
 from app.dependencies.role import Role
-from app.exceptions.cloud_api_error import CloudApiException
 from shared import ACAPY_MULTITENANT_JWT_SECRET
 
 x_api_key_scheme = APIKeyHeader(name="x-api-key")

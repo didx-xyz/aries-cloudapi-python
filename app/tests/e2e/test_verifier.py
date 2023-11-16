@@ -720,6 +720,9 @@ async def test_get_credentials_for_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
 async def test_accept_proof_request_v1_verifier_has_issuer_role(
     meld_co_issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
@@ -798,6 +801,9 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
 async def test_send_proof_request_verifier_has_issuer_role(
     meld_co_and_alice_connection: MeldCoAliceConnect,
     meld_co_client: RichAsyncClient,

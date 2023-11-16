@@ -13,7 +13,6 @@ class AgentType(NamedTuple):
     name: str
     base_url: str
     is_multitenant: bool
-    tenant_role: Optional["AgentType"]
     is_admin: bool
     x_api_key: Optional[str]
 
@@ -22,7 +21,6 @@ GOVERNANCE_AGENT_TYPE = AgentType(
     name="governance",
     base_url=GOVERNANCE_AGENT_URL,
     is_multitenant=False,
-    tenant_role=None,
     is_admin=True,
     x_api_key=GOVERNANCE_AGENT_API_KEY,
 )
@@ -31,7 +29,6 @@ TENANT_AGENT_TYPE = AgentType(
     name="tenant",
     base_url=TENANT_AGENT_URL,
     is_multitenant=True,
-    tenant_role=None,
     is_admin=False,
     x_api_key=TENANT_AGENT_API_KEY,
 )
@@ -40,7 +37,6 @@ TENANT_ADMIN_AGENT_TYPE = AgentType(
     name="tenant-admin",
     base_url=TENANT_AGENT_URL,
     is_multitenant=True,
-    tenant_role=TENANT_AGENT_TYPE,
     is_admin=True,
     x_api_key=TENANT_AGENT_API_KEY,
 )

@@ -10,7 +10,6 @@ from app.tests.util.ecosystem_connections import (
     bob_and_alice_public_did,
     faber_and_alice_connection,
     meld_co_and_alice_connection,
-    meld_co_and_alice_trust_registry_connection,
 )
 from app.tests.util.member_acapy_clients import (
     acme_acapy_client,

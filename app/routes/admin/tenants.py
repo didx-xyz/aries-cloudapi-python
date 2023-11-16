@@ -12,9 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
-    AcaPyAuth,
     AcaPyAuthVerified,
-    acapy_auth,
     acapy_auth_tenant_admin,
     tenant_api_key,
 )
@@ -47,7 +45,7 @@ router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 @router.post("", response_model=CreateTenantResponse)
 async def create_tenant(
     body: CreateTenantRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
@@ -155,7 +153,7 @@ async def create_tenant(
         created_at=wallet_response.created_at,
         image_url=body.image_url,
         updated_at=wallet_response.updated_at,
-        access_token=tenant_api_key(auth.role, wallet_response.token),
+        access_token=tenant_api_key(wallet_response.token),
         group_id=body.group_id,
     )
     bound_logger.debug("Successfully created tenant.")
@@ -198,7 +196,7 @@ async def delete_tenant_by_id(
 @router.get("/{wallet_id}/access-token", response_model=TenantAuth)
 async def get_wallet_auth_token(
     wallet_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Access token for tenant")
@@ -215,7 +213,7 @@ async def get_wallet_auth_token(
             wallet_id=wallet.wallet_id, body=CreateWalletTokenRequest()
         )
 
-    response = TenantAuth(access_token=tenant_api_key(auth.role, response.token))
+    response = TenantAuth(access_token=tenant_api_key(response.token))
     bound_logger.info("Successfully retrieved access token.")
     return response
 

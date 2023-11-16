@@ -41,7 +41,10 @@ async def onboard_issuer(
     except CloudApiException:
         bound_logger.debug("No public DID for the to-be issuer")
         issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(
-            endorser_controller, issuer_controller, issuer_wallet_id, issuer_label
+            endorser_controller=endorser_controller,
+            issuer_controller=issuer_controller,
+            issuer_wallet_id=issuer_wallet_id,
+            issuer_label=issuer_label,
         )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")
@@ -99,14 +102,17 @@ async def onboard_issuer_no_public_did(
     try:
         bound_logger.info("Creating connection with endorser")
         await create_connection_with_endorser(
-            endorser_controller,
-            issuer_controller,
-            endorser_did,
-            issuer_label,
-            bound_logger,
+            endorser_controller=endorser_controller,
+            issuer_controller=issuer_controller,
+            endorser_did=endorser_did,
+            name=issuer_label,
+            logger=bound_logger,
         )
         issuer_did = await register_issuer_did(
-            endorser_controller, issuer_controller, issuer_label, bound_logger
+            endorser_controller=endorser_controller,
+            issuer_controller=issuer_controller,
+            issuer_label=issuer_label,
+            logger=bound_logger,
         )
     except Exception as e:
         bound_logger.exception("Could not create connection with endorser.")

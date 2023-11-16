@@ -773,7 +773,7 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
 
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.to_dict(),
+        json=proof_accept.model_dump(),
     )
 
     assert await check_webhook_state(

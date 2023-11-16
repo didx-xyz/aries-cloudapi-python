@@ -56,8 +56,10 @@ async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
 @pytest.fixture(scope="function")
 async def meld_co_issuer_verifier() -> Generator[CreateTenantResponse, Any, None]:
     async with get_tenant_admin_client() as admin_client:
-        issuer_tenant = await create_issuer_and_verifier_tenant(admin_client, "meldCo")
+        issuer_and_verifier_tenant = await create_issuer_and_verifier_tenant(
+            admin_client, "meldCo"
+        )
 
-        yield issuer_tenant
+        yield issuer_and_verifier_tenant
 
-        await delete_tenant(admin_client, issuer_tenant.wallet_id)
+        await delete_tenant(admin_client, issuer_and_verifier_tenant.wallet_id)

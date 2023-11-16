@@ -9,6 +9,7 @@ from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
+from app.services.trust_registry import actors
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.ledger import create_public_did
 from app.tests.util.webhooks import check_webhook_state
@@ -168,6 +169,56 @@ async def meld_co_and_alice_connection(
     ).json()
 
     meld_co_connection_id = invitation["connection_id"]
+    alice_connection_id = invitation_response["connection_id"]
+
+    # fetch and validate
+    # both connections should be active - we have waited long enough for events to be exchanged
+    assert await check_webhook_state(
+        alice_member_client,
+        topic="connections",
+        filter_map={"state": "completed", "connection_id": alice_connection_id},
+    )
+    assert await check_webhook_state(
+        meld_co_client,
+        topic="connections",
+        filter_map={"state": "completed", "connection_id": meld_co_connection_id},
+    )
+
+    return MeldCoAliceConnect(
+        alice_connection_id=alice_connection_id,
+        meld_co_connection_id=meld_co_connection_id,
+    )
+
+
+@pytest.fixture(scope="function")
+async def meld_co_and_alice_trust_registry_connection(
+    alice_member_client: RichAsyncClient,
+    meld_co_client: RichAsyncClient,
+    meld_co_issuer_verifier: CreateTenantResponse,
+) -> MeldCoAliceConnect:
+    # get invitation as on trust registry
+    label = meld_co_issuer_verifier.wallet_label
+
+    actor_record = await actors.fetch_actor_by_name(label)
+
+    invitation = actor_record["didcomm_invitation"]
+    invitation_json = base64_to_json(invitation.split("?oob=")[1])
+    print(f"invitation_json: {invitation_json}")
+
+    # accept invitation on alice side
+    invitation_response = (
+        await alice_member_client.post(
+            f"{OOB_BASE_PATH}/accept-invitation",
+            json={"invitation": invitation_json},
+        )
+    ).json()
+
+    meld_co_listener = SseListener(
+        topic="connections", wallet_id=meld_co_issuer_verifier.wallet_id
+    )
+    payload = await meld_co_listener.wait_for_state(desired_state="completed")
+
+    meld_co_connection_id = payload["connection_id"]
     alice_connection_id = invitation_response["connection_id"]
 
     # fetch and validate

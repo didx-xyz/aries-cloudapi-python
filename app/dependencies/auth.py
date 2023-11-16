@@ -6,7 +6,6 @@ from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
 
 from app.dependencies.role import Role
-from app.exceptions.cloud_api_error import CloudApiException
 from shared import ACAPY_MULTITENANT_JWT_SECRET
 
 x_api_key_scheme = APIKeyHeader(name="x-api-key")
@@ -90,10 +89,6 @@ def verify_wallet_access(auth: AcaPyAuthVerified, wallet_id: str):
         raise HTTPException(403, "Unauthorized")
 
 
-def tenant_api_key(role: Role, tenant_token: str):
+def tenant_api_key(tenant_token: str):
     "Get the cloud api key for a tenant with specified role."
-
-    if not role.agent_type.tenant_role:
-        raise CloudApiException("Invalid role", 403)
-
-    return f"{role.agent_type.tenant_role.name}.{tenant_token}"
+    return f"tenant.{tenant_token}"

@@ -22,7 +22,9 @@ async def create_connection_with_endorser(
     name: str,
     logger: Logger,
 ):
-    invitation = await create_endorser_invitation(endorser_controller, name, logger)
+    invitation = await create_endorser_invitation(
+        endorser_controller=endorser_controller, name=name, logger=logger
+    )
     endorser_connection_id, issuer_connection_id = await wait_for_connection_completion(
         issuer_controller=issuer_controller, invitation=invitation, logger=logger
     )
@@ -97,10 +99,18 @@ async def set_endorser_roles(
     logger: Logger,
 ):
     logger.debug("Setting roles for endorser")
-    await set_endorser_role(endorser_controller, endorser_connection_id, logger)
+    await set_endorser_role(
+        endorser_controller=endorser_controller,
+        endorser_connection_id=endorser_connection_id,
+        logger=logger,
+    )
 
     logger.debug("Setting roles for author")
-    await set_author_role(issuer_controller, issuer_connection_id, logger)
+    await set_author_role(
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_connection_id,
+        logger=logger,
+    )
 
     logger.debug("Successfully set roles for connection.")
 
@@ -117,10 +127,10 @@ async def configure_endorsement(
     # to make sure the endorser info is set.
     logger.debug("Setting endorser info")
     await set_endorser_info(
-        issuer_controller,
-        issuer_connection_id,
-        endorser_did,
-        logger,
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_connection_id,
+        endorser_did=endorser_did,
+        logger=logger,
     )
     logger.debug("Successfully set endorser info.")
 

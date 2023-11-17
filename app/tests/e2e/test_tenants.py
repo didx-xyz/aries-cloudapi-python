@@ -524,3 +524,56 @@ async def test_delete_tenant(
 
     with pytest.raises(Exception):
         await tenant_admin_acapy_client.multitenancy.get_wallet(wallet_id=wallet_id)
+
+
+@pytest.mark.anyio
+async def test_extra_settings(
+    tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
+):
+    # Create tenant with custom wallet settings
+    created_tenant_response = await tenant_admin_client.post(
+        TENANTS_BASE_PATH,
+        json={
+            "wallet_label": uuid4().hex,
+            "extra_settings": {"ACAPY_AUTO_ACCEPT_INVITES": "true"},
+        },
+    )
+    assert created_tenant_response.status_code == 200
+    created_wallet_id = created_tenant_response.json()["wallet_id"]
+
+    # Fetch wallet record and assert setting got passed through
+    wallet_record = await tenant_admin_acapy_client.multitenancy.get_wallet(
+        wallet_id=created_wallet_id
+    )
+    assert wallet_record.settings["debug.auto_accept_invites"] == "true"
+
+    # Test updating a wallet setting
+    update_tenant_response = await tenant_admin_client.put(
+        f"{TENANTS_BASE_PATH}/{created_wallet_id}",
+        json={
+            "wallet_label": "new_label",
+            "extra_settings": {"ACAPY_AUTO_ACCEPT_INVITES": "false"},
+        },
+    )
+    assert update_tenant_response.status_code == 200
+
+    # Fetch updated wallet record and assert setting got updated
+    updated_wallet_record = await tenant_admin_acapy_client.multitenancy.get_wallet(
+        wallet_id=created_wallet_id
+    )
+    assert updated_wallet_record.settings["debug.auto_accept_invites"] == "false"
+
+    # Delete created tenant
+    await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{created_wallet_id}")
+
+    # Assert bad request is raised for invalid extra_settings
+    with pytest.raises(Exception):
+        bad_response = await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json={
+                "wallet_label": uuid4().hex,
+                "extra_settings": {"Bad_value": "true"},
+            },
+        )
+
+        assert bad_response.status_code == 422

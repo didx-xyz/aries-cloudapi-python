@@ -1,6 +1,6 @@
 from typing import List
 
-from aries_cloudcontroller import AcaPyClient, CreateWalletTokenRequest
+from aries_cloudcontroller import AcaPyClient, UpdateWalletRequest, WalletRecord
 from fastapi.exceptions import HTTPException
 
 from app.dependencies.acapy_clients import (
@@ -21,57 +21,75 @@ logger = get_logger(__name__)
 async def handle_tenant_update(
     admin_controller: AcaPyClient,
     wallet_id: str,
-    update: UpdateTenantRequest,
-):
+    update_request: UpdateTenantRequest,
+) -> WalletRecord:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
-    bound_logger.bind(body=update).info("Handling tenant update")
+    bound_logger.bind(body=update_request).info("Handling tenant update")
 
     bound_logger.debug("Retrieving the wallet")
     wallet = await admin_controller.multitenancy.get_wallet(wallet_id=wallet_id)
     if not wallet:
-        bound_logger.error("Bad request: Wallet not found.")
+        bound_logger.info("Bad request: Wallet not found.")
         raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
-    bound_logger.debug("Retrieving tenant from trust registry")
+    new_roles = update_request.roles
+    new_label = update_request.wallet_label
+
+    # See if this wallet belongs to an actor
     actor = await fetch_actor_by_id(wallet.wallet_id)
-    if not actor:
-        bound_logger.error(
-            "Tenant not found in trust registry. "
+    if not actor and new_roles:
+        bound_logger.info(
+            "Bad request: Tenant not found in trust registry. "
             "Holder tenants cannot be updated with new roles."
         )
-        raise HTTPException(409, "Holder tenants cannot be updated with new roles.")
-
-    updated_actor = actor.copy()
-    label = update.wallet_label
-    if label:
-        updated_actor["name"] = label
-
-    if update.roles:
-        bound_logger.info("Updating tenant roles")
-        # We only care about the added roles, as that's what needs the setup.
-        # Teardown is not required at the moment, besides from removing it from
-        # the trust registry
-        added_roles = list(set(update.roles) - set(actor["roles"]))
-
-        # We need to pose as the tenant to onboard for the specified role
-        token_response = await admin_controller.multitenancy.get_auth_token(
-            wallet_id=wallet_id, body=CreateWalletTokenRequest()
+        raise HTTPException(
+            409,
+            "Holder tenants cannot be updated with new roles. "
+            "Only existing issuers or verifiers can have their role updated.",
         )
 
-        onboard_result = await onboard_tenant(
-            tenant_label=label,
-            roles=added_roles,
-            wallet_auth_token=token_response.token,
-            wallet_id=wallet_id,
-        )
+    if actor:
+        existing_roles = actor["roles"]
+        added_roles = list(set(new_roles) - set(existing_roles))
 
-        # Remove duplicates from the role list
-        updated_actor["roles"] = list(set(update.roles))
-        updated_actor["did"] = onboard_result.did
-        updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
+        if new_label or added_roles:  # Only update actor if
+            updated_actor = actor.copy()
 
-    await update_actor(updated_actor)
+            if new_label:
+                updated_actor["name"] = new_label
+
+            if added_roles:
+                bound_logger.info("Updating tenant roles")
+                # We need to pose as the tenant to onboard for the specified role
+                token_response = await admin_controller.multitenancy.get_auth_token(
+                    wallet_id=wallet_id
+                )
+
+                onboard_result = await onboard_tenant(
+                    tenant_label=new_label,
+                    roles=added_roles,
+                    wallet_auth_token=token_response.token,
+                    wallet_id=wallet_id,
+                )
+
+                # Remove duplicates from the role list
+                updated_actor["roles"] = list(set(new_roles + existing_roles))
+                updated_actor["did"] = onboard_result.did
+                updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
+
+        await update_actor(updated_actor)
+
+    bound_logger.debug("Updating wallet")
+    wallet = await admin_controller.multitenancy.update_wallet(
+        wallet_id=wallet_id,
+        body=UpdateWalletRequest(
+            label=new_label,
+            image_url=update_request.image_url,
+            extra_settings=update_request.extra_settings,
+        ),
+    )
     bound_logger.info("Tenant update handled successfully.")
+    return wallet
 
 
 async def onboard_tenant(

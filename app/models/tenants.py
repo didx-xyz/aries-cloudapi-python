@@ -87,9 +87,9 @@ class UpdateTenantRequest(BaseModel):
         None, description=label_description, examples=label_examples
     )
     roles: Optional[List[TrustRegistryRole]] = None
-    group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
+    # TODO: add group_id to update request
 
 
 class Tenant(BaseModel):

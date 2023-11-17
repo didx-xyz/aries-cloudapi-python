@@ -3,11 +3,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import (
-    ApiException,
-    CreateWalletTokenRequest,
-    UpdateWalletRequest,
-)
+from aries_cloudcontroller import ApiException, CreateWalletTokenRequest
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -238,18 +234,8 @@ async def update_tenant(
     bound_logger.info("PUT request received: Update tenant")
 
     async with get_tenant_admin_controller() as admin_controller:
-        await handle_tenant_update(
-            admin_controller=admin_controller, wallet_id=wallet_id, update=body
-        )
-
-        bound_logger.debug("Updating wallet")
-        wallet = await admin_controller.multitenancy.update_wallet(
-            wallet_id=wallet_id,
-            body=UpdateWalletRequest(
-                image_url=body.image_url,
-                label=body.wallet_label,
-                extra_settings=body.extra_settings,
-            ),
+        wallet = await handle_tenant_update(
+            admin_controller=admin_controller, wallet_id=wallet_id, update_request=body
         )
 
     response = tenant_from_wallet_record(wallet)

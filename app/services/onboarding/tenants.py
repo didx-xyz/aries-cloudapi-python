@@ -1,6 +1,6 @@
 from typing import List
 
-from aries_cloudcontroller import AcaPyClient, CreateWalletTokenRequest
+from aries_cloudcontroller import AcaPyClient, UpdateWalletRequest, WalletRecord
 from fastapi.exceptions import HTTPException
 
 from app.dependencies.acapy_clients import (
@@ -22,7 +22,7 @@ async def handle_tenant_update(
     admin_controller: AcaPyClient,
     wallet_id: str,
     update: UpdateTenantRequest,
-):
+) -> WalletRecord:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.bind(body=update).info("Handling tenant update")
 
@@ -70,8 +70,17 @@ async def handle_tenant_update(
         updated_actor["did"] = onboard_result.did
         updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
 
-    await update_actor(updated_actor)
+    bound_logger.debug("Updating wallet")
+    wallet = await admin_controller.multitenancy.update_wallet(
+        wallet_id=wallet_id,
+        body=UpdateWalletRequest(
+            label=new_label,
+            image_url=update_request.image_url,
+            extra_settings=update_request.extra_settings,
+        ),
+    )
     bound_logger.info("Tenant update handled successfully.")
+    return wallet
 
 
 async def onboard_tenant(

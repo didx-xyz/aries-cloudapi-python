@@ -19,7 +19,7 @@ from app.routes.verifier import (
     SendProofRequest,
     router,
 )
-from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
@@ -717,3 +717,155 @@ async def test_get_credentials_for_request(
         in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
         for attr in result["cred_info"].keys()
     ]
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
+async def test_accept_proof_request_v1_verifier_has_issuer_role(
+    meld_co_issue_credential_to_alice: CredentialExchange,
+    alice_member_client: RichAsyncClient,
+    meld_co_client: RichAsyncClient,
+    meld_co_and_alice_connection: MeldCoAliceConnect,
+):
+    response = await meld_co_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
+            "protocol_version": "v1",
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+    meld_co_exchange = response.json()
+    meld_co_proof_id = meld_co_exchange["proof_id"]
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=240,
+    )
+    proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
+
+    requested_credentials = await alice_member_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
+    )
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=120,
+    )
+
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    response = await alice_member_client.post(
+        VERIFIER_BASE_PATH + "/accept-request",
+        json=proof_accept.model_dump(),
+    )
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "done", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=240,
+    )
+
+    assert await check_webhook_state(
+        client=meld_co_client,
+        filter_map={"state": "done", "proof_id": meld_co_proof_id},
+        topic="proofs",
+        max_duration=240,
+    )
+
+    result = response.json()
+
+    pres_exchange_result = PresentationExchange(**result)
+    assert isinstance(pres_exchange_result, PresentationExchange)
+    assert response.status_code == 200
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
+async def test_send_proof_request_verifier_has_issuer_role(
+    meld_co_and_alice_connection: MeldCoAliceConnect,
+    meld_co_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+):
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.wallet_id
+    )
+    response = await meld_co_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
+            "protocol_version": "v1",
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+
+    result = response.json()
+
+    assert "presentation" in result.keys()
+    assert "presentation_request" in result.keys()
+    assert "created_at" in result.keys()
+    assert "proof_id" in result.keys()
+    assert result["role"] == "verifier"
+    assert result["state"]
+
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+    alice_connection_event = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=meld_co_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
+    )
+    assert alice_connection_event["protocol_version"] == "v1"
+
+    # V2
+    response = await meld_co_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
+            "protocol_version": "v2",
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+
+    result = response.json()
+    assert "presentation" in result.keys()
+    assert "presentation_request" in result.keys()
+    assert "created_at" in result.keys()
+    assert "proof_id" in result.keys()
+    assert "v2-" in result["proof_id"]
+    assert result["role"] == "verifier"
+    assert result["state"]
+
+    time.sleep(0.5)
+    # Allow webhook event to be registered in SSE before querying. Only necessary because
+    # we are querying by connection_id, and will return previous result if we don't add short wait
+
+    alice_connection_event = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=meld_co_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
+    )
+    assert alice_connection_event["protocol_version"] == "v2"

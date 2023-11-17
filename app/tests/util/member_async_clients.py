@@ -60,3 +60,13 @@ async def acme_client(
 ) -> Generator[RichAsyncClient, Any, None]:
     async with get_tenant_client(token=acme_verifier.access_token) as acme_async_client:
         yield acme_async_client
+
+
+@pytest.fixture(scope="function")
+async def meld_co_client(
+    meld_co_issuer_verifier: CreateTenantResponse,
+) -> Generator[RichAsyncClient, Any, None]:
+    async with get_tenant_client(
+        token=meld_co_issuer_verifier.access_token
+    ) as meld_co_async_client:
+        yield meld_co_async_client

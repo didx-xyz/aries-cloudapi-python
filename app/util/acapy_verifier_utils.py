@@ -7,7 +7,7 @@ from app.exceptions.cloud_api_error import CloudApiException
 from app.models.trust_registry import Actor
 from app.models.verifier import AcceptProofRequest, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
-from app.services.trust_registry.actors import fetch_actor_by_did
+from app.services.trust_registry.actors import fetch_actor_by_did, fetch_actor_by_name
 from app.services.trust_registry.schemas import fetch_schemas
 from app.services.verifier.acapy_verifier import Verifier
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
@@ -72,7 +72,7 @@ async def assert_valid_prover(
     # Case 1: connection made with public DID
     if connection_record.their_public_did:
         public_did = f"did:sov:{connection_record.their_public_did}"
-    # Case 2: connection made with public DID
+    # Case 2: connection made without public DID
     elif connection_record.invitation_key:
         invitation_key = connection_record.invitation_key
         public_did = ed25519_verkey_to_did_key(key=invitation_key)
@@ -80,8 +80,18 @@ async def assert_valid_prover(
         raise CloudApiException("Could not determine did of the verifier.", 400)
 
     # Try get actor from TR
-    bound_logger.debug("Getting actor by DID")
-    actor = await get_actor(did=public_did)
+    try:
+        bound_logger.debug("Getting actor by DID")
+        actor = await get_actor(did=public_did)
+    except CloudApiException as e:
+        their_label = connection_record.their_label
+        if e.status_code == 404 and their_label:
+            # DID is not found on Trust Registry. May arise if verifier has public did
+            # (eg. has issuer role), but connection is made without using public did,
+            # and their did:key is not on TR. Try fetch with label instead
+            actor = await get_actor_by_name(name=their_label)
+        else:
+            raise
 
     # 2. Check actor has role verifier
     if not is_verifier(actor=actor):
@@ -161,7 +171,15 @@ async def get_actor(did: str) -> Actor:
     actor = await fetch_actor_by_did(did)
     # Verify actor was in TR
     if not actor:
-        raise CloudApiException(f"No actor with DID `{did}`.", 404)
+        raise CloudApiException(f"No verifier with DID `{did}`.", 404)
+    return actor
+
+
+async def get_actor_by_name(name: str) -> Actor:
+    actor = await fetch_actor_by_name(name)
+    # Verify actor was in TR
+    if not actor:
+        raise CloudApiException(f"No verifier with name `{name}`.", 404)
     return actor
 
 

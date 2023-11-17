@@ -12,7 +12,7 @@ DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))
 
 
 async def set_endorser_role(
-    endorser_controller: AcaPyClient, endorser_connection_id: str, logger: Logger
+    *, endorser_controller: AcaPyClient, endorser_connection_id: str, logger: Logger
 ):
     try:
         logger.debug("Setting roles for endorser on endorser-issuer connection.")
@@ -32,7 +32,7 @@ async def set_endorser_role(
 
 
 async def set_author_role(
-    issuer_controller: AcaPyClient, issuer_connection_id: str, logger: Logger
+    *, issuer_controller: AcaPyClient, issuer_connection_id: str, logger: Logger
 ):
     try:
         logger.debug("Setting roles for author on issuer-endorser connection")
@@ -52,6 +52,7 @@ async def set_author_role(
 
 
 async def set_endorser_info(
+    *,
     issuer_controller: AcaPyClient,
     issuer_connection_id: str,
     endorser_did: str,

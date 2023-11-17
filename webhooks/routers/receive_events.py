@@ -37,11 +37,6 @@ async def topic_root(
     request: Request,
     redis_service: RedisService = Depends(Provide[Container.redis_service]),
 ):
-    bound_logger = logger.bind(
-        body={"acapy_topic": acapy_topic, "origin": origin, "body": body}
-    )
-    bound_logger.debug("Handling received webhook event")
-
     try:
         wallet_id = request.headers["x-wallet-id"]
     except KeyError:
@@ -50,7 +45,16 @@ async def topic_root(
         #     wallet_id = origin
         # else:
         wallet_id = "admin"
-    bound_logger.trace("Wallet_id for this event: {}", wallet_id)
+
+    bound_logger = logger.bind(
+        body={
+            "wallet_id": wallet_id,
+            "acapy_topic": acapy_topic,
+            "origin": origin,
+            "body": body,
+        }
+    )
+    bound_logger.debug("Handling received webhook event")
 
     # Map from the acapy webhook topic to a unified cloud api topic
     cloudapi_topic = topic_mapping.get(acapy_topic)
@@ -86,7 +90,7 @@ async def topic_root(
     # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
     await redis_service.add_webhook_event(webhook_event_json, wallet_id)
 
-    logger.debug("Successfully processed received webhook.")
+    bound_logger.trace("Successfully processed received webhook.")
 
 
 async def publish_event_on_websocket(

@@ -15,30 +15,36 @@ from shared import ACAPY_ENDORSER_ALIAS
 
 
 async def create_connection_with_endorser(
+    *,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     endorser_did: Did,
     name: str,
     logger: Logger,
 ):
-    invitation = await create_endorser_invitation(endorser_controller, name, logger)
+    invitation = await create_endorser_invitation(
+        endorser_controller=endorser_controller, name=name, logger=logger
+    )
     endorser_connection_id, issuer_connection_id = await wait_for_connection_completion(
-        issuer_controller, invitation, logger
+        issuer_controller=issuer_controller, invitation=invitation, logger=logger
     )
     await set_endorser_roles(
-        endorser_controller,
-        issuer_controller,
-        endorser_connection_id,
-        issuer_connection_id,
-        logger,
+        endorser_controller=endorser_controller,
+        issuer_controller=issuer_controller,
+        endorser_connection_id=endorser_connection_id,
+        issuer_connection_id=issuer_connection_id,
+        logger=logger,
     )
     await configure_endorsement(
-        issuer_controller, issuer_connection_id, endorser_did.did, logger
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_connection_id,
+        endorser_did=endorser_did.did,
+        logger=logger,
     )
 
 
 async def create_endorser_invitation(
-    endorser_controller: AcaPyClient, name: str, logger: Logger
+    *, endorser_controller: AcaPyClient, name: str, logger: Logger
 ):
     logger.debug("Create OOB invitation on behalf of endorser")
     invitation = await endorser_controller.out_of_band.create_invitation(
@@ -54,7 +60,7 @@ async def create_endorser_invitation(
 
 
 async def wait_for_connection_completion(
-    issuer_controller: AcaPyClient, invitation: InvitationRecord, logger: Logger
+    *, issuer_controller: AcaPyClient, invitation: InvitationRecord, logger: Logger
 ) -> tuple[str, str]:
     connections_listener = create_sse_listener(topic="connections", wallet_id="admin")
 
@@ -85,6 +91,7 @@ async def wait_for_connection_completion(
 
 
 async def set_endorser_roles(
+    *,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     endorser_connection_id: str,
@@ -92,15 +99,24 @@ async def set_endorser_roles(
     logger: Logger,
 ):
     logger.debug("Setting roles for endorser")
-    await set_endorser_role(endorser_controller, endorser_connection_id, logger)
+    await set_endorser_role(
+        endorser_controller=endorser_controller,
+        endorser_connection_id=endorser_connection_id,
+        logger=logger,
+    )
 
     logger.debug("Setting roles for author")
-    await set_author_role(issuer_controller, issuer_connection_id, logger)
+    await set_author_role(
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_connection_id,
+        logger=logger,
+    )
 
     logger.debug("Successfully set roles for connection.")
 
 
 async def configure_endorsement(
+    *,
     issuer_controller: AcaPyClient,
     issuer_connection_id: str,
     endorser_did: str,
@@ -111,15 +127,16 @@ async def configure_endorsement(
     # to make sure the endorser info is set.
     logger.debug("Setting endorser info")
     await set_endorser_info(
-        issuer_controller,
-        issuer_connection_id,
-        endorser_did,
-        logger,
+        issuer_controller=issuer_controller,
+        issuer_connection_id=issuer_connection_id,
+        endorser_did=endorser_did,
+        logger=logger,
     )
     logger.debug("Successfully set endorser info.")
 
 
 async def register_issuer_did(
+    *,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
     issuer_label: str,

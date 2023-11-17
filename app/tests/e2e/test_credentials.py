@@ -13,7 +13,7 @@ from app.routes.definitions import (
     create_schema,
 )
 from app.routes.issuer import router
-from app.tests.util.ecosystem_connections import FaberAliceConnect
+from app.tests.util.ecosystem_connections import FaberAliceConnect, MeldCoAliceConnect
 from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
 from app.util.string import random_version
@@ -161,6 +161,72 @@ async def issue_credential_to_alice(
     payload = await alice_credentials_listener.wait_for_event(
         field="connection_id",
         field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
+    )
+
+    alice_credential_id = payload["credential_id"]
+
+    # send credential request - holder
+    response = await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
+    )
+
+    await alice_credentials_listener.wait_for_event(
+        field="credential_id", field_id=alice_credential_id, desired_state="done"
+    )
+
+    return response.json()
+
+
+@pytest.fixture(scope="function")
+async def meld_co_credential_definition_id(
+    schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
+    meld_co_client: RichAsyncClient,
+) -> str:
+    await register_issuer(meld_co_client, schema_definition.id)
+
+    # Support revocation false here because revocation is tested elsewhere.
+    # No revocation is a fair bit faster to run
+    definition = CreateCredentialDefinition(
+        tag="tag", schema_id=schema_definition.id, support_revocation=False
+    )
+
+    auth = acapy_auth_verified(acapy_auth(meld_co_client.headers["x-api-key"]))
+    result = await create_credential_definition(definition, auth)
+
+    return result.id
+
+
+@pytest.fixture(scope="function")
+async def meld_co_issue_credential_to_alice(
+    meld_co_client: RichAsyncClient,
+    meld_co_credential_definition_id: str,  # pylint: disable=redefined-outer-name
+    meld_co_and_alice_connection: MeldCoAliceConnect,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+) -> CredentialExchange:
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": meld_co_credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+    }
+
+    alice_credentials_listener = SseListener(
+        topic="credentials", wallet_id=alice_tenant.wallet_id
+    )
+
+    # create and send credential offer- issuer
+    await meld_co_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+
+    payload = await alice_credentials_listener.wait_for_event(
+        field="connection_id",
+        field_id=meld_co_and_alice_connection.alice_connection_id,
         desired_state="offer-received",
     )
 

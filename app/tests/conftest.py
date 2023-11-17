@@ -9,6 +9,7 @@ from app.tests.util.ecosystem_connections import (
     bob_and_alice_connection,
     bob_and_alice_public_did,
     faber_and_alice_connection,
+    meld_co_and_alice_connection,
 )
 from app.tests.util.member_acapy_clients import (
     acme_acapy_client,
@@ -16,6 +17,7 @@ from app.tests.util.member_acapy_clients import (
     bob_acapy_client,
     faber_acapy_client,
     governance_acapy_client,
+    meld_co_acapy_client,
     tenant_admin_acapy_client,
 )
 from app.tests.util.member_async_clients import (
@@ -24,6 +26,7 @@ from app.tests.util.member_async_clients import (
     bob_member_client,
     faber_client,
     governance_client,
+    meld_co_client,
     tenant_admin_client,
     unauthed_client,
 )
@@ -32,6 +35,7 @@ from app.tests.util.member_wallets import (
     alice_tenant,
     bob_tenant,
     faber_issuer,
+    meld_co_issuer_verifier,
 )
 from app.tests.util.trust_registry import (
     register_issuer_key_bbs,

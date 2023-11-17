@@ -56,8 +56,8 @@ async def create_proof_request(
                 controller=aries_controller, create_proof_request=body
             )
     except Exception as e:
-        bound_logger.exception("Failed to create presentation record.")
-        raise e
+        bound_logger.info("Could not create presentation record: {}.", e)
+        raise
 
     if result:
         bound_logger.info("Successfully created proof request.")
@@ -100,9 +100,9 @@ async def send_proof_request(
             result = await verifier.send_proof_request(
                 controller=aries_controller, send_proof_request=body
             )
-    except Exception as e:
-        bound_logger.exception("Failed to send proof request.")
-        raise e
+    except CloudApiException as e:
+        bound_logger.info("Could not send proof request: {}", e)
+        raise
 
     if result:
         bound_logger.info("Successfully sent proof request.")
@@ -157,9 +157,9 @@ async def accept_proof_request(
             result = await verifier.accept_proof_request(
                 controller=aries_controller, accept_proof_request=body
             )
-    except Exception as e:
-        bound_logger.exception("Failed to accept proof request.")
-        raise e
+    except CloudApiException as e:
+        bound_logger.info("Could not accept proof request: {}", e)
+        raise
 
     if result:
         bound_logger.info("Successfully accepted proof request.")
@@ -211,9 +211,9 @@ async def reject_proof_request(
             await verifier.reject_proof_request(
                 controller=aries_controller, reject_proof_request=body
             )
-    except Exception as e:
-        bound_logger.exception("Failed to reject request.")
-        raise e
+    except CloudApiException as e:
+        bound_logger.info("Could not reject request: {}.", e)
+        raise
 
     bound_logger.info("Successfully rejected proof request.")
 
@@ -242,9 +242,9 @@ async def get_proof_records(
             v2_records = await VerifierFacade.v2.value.get_proof_records(
                 controller=aries_controller
             )
-    except Exception as e:
-        logger.exception("Failed to get proof records.")
-        raise e
+    except CloudApiException as e:
+        logger.info("Could not fetch proof records: {}.", e)
+        raise
 
     result = v1_records + v2_records
     if result:
@@ -283,9 +283,9 @@ async def get_proof_record(
             result = await verifier.get_proof_record(
                 controller=aries_controller, proof_id=proof_id
             )
-    except Exception as e:
-        bound_logger.exception("Failed to get proof record.")
-        raise e
+    except CloudApiException as e:
+        logger.info("Could not fetch proof record: {}.", e)
+        raise
 
     if result:
         bound_logger.info("Successfully fetched proof record.")
@@ -320,9 +320,10 @@ async def delete_proof(
         async with client_from_auth(auth) as aries_controller:
             bound_logger.debug("Deleting proof record")
             await verifier.delete_proof(controller=aries_controller, proof_id=proof_id)
-    except Exception as e:
-        bound_logger.exception("Failed to delete proof record.")
-        raise e
+    except CloudApiException as e:
+        bound_logger.info("Could not delete proof record: {}.", e)
+        raise
+
     bound_logger.info("Successfully deleted proof record.")
 
 
@@ -355,8 +356,9 @@ async def get_credentials_by_proof_id(
             result = await verifier.get_credentials_by_proof_id(
                 controller=aries_controller, proof_id=proof_id
             )
-    except Exception as e:
-        bound_logger.exception("Failed to get matching credentials.")
-        raise e
+    except CloudApiException as e:
+        bound_logger.info("Could not get matching credentials: {}.", e)
+        raise
+
     bound_logger.info("Successfully fetched credentials for proof request.")
     return result

@@ -2,9 +2,12 @@ import os
 
 from fastapi import FastAPI
 
+from shared.log_config import get_logger
 from webhooks.dependencies import sse_manager
 from webhooks.dependencies.container import get_container
 from webhooks.routers import receive_events, sse, webhooks
+
+logger = get_logger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -34,4 +37,5 @@ def create_app() -> FastAPI:
     return application
 
 
+logger.info("Start webhooks server")
 app = create_app()

@@ -89,10 +89,10 @@ class CreateTenantRequest(BaseModel):
     @field_validator("wallet_label", mode="before")
     @classmethod
     def validate_wallet_label(cls, v):
-        if not re.match(rf"^[a-zA-Z0-9\s{allowable_special_chars}]+$", v):
+        if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
             raise ValueError(
-                "wallet_label may not contain certain special characters. Besides "
-                f" alphanumeric, allowable characters: {allowable_special_chars}"
+                "wallet_label may not contain certain special characters. Must be alphanumeric, may include "
+                f"spaces, and the following special characters are allowed: {allowable_special_chars}"
             )
         return v
 

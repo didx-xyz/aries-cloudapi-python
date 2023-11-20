@@ -90,7 +90,7 @@ class CreateTenantRequest(BaseModel):
     @classmethod
     def validate_wallet_label(cls, v):
         if len(v) > 100:
-            raise ValueError("wallet_label must be less than 100 characters long")
+            raise ValueError("wallet_label has a max length of 100 characters")
 
         if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
             raise ValueError(
@@ -104,7 +104,7 @@ class CreateTenantRequest(BaseModel):
     def validate_wallet_name(cls, v):
         if v:
             if len(v) > 100:
-                raise ValueError("wallet_name must be less than 100 characters long")
+                raise ValueError("wallet_name has a max length of 100 characters")
 
             if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
                 raise ValueError(

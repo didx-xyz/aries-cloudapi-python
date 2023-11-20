@@ -123,6 +123,19 @@ class UpdateTenantRequest(BaseModel):
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
     # TODO: add group_id to update request
 
+    @field_validator("wallet_label", mode="before")
+    @classmethod
+    def validate_wallet_label(cls, v):
+        if len(v) > 100:
+            raise ValueError("wallet_label must be less than 100 characters long")
+
+        if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
+            raise ValueError(
+                "wallet_label may not contain certain special characters. Must be alphanumeric, may include "
+                f"spaces, and the following special characters are allowed: {allowable_special_chars}"
+            )
+        return v
+
 
 class Tenant(BaseModel):
     wallet_id: str = Field(..., examples=["545135a4-ecbc-4400-8594-bdb74c51c88d"])

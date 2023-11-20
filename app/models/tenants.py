@@ -89,6 +89,9 @@ class CreateTenantRequest(BaseModel):
     @field_validator("wallet_label", mode="before")
     @classmethod
     def validate_wallet_label(cls, v):
+        if len(v) > 100:
+            raise ValueError("wallet_label must be less than 100 characters long")
+
         if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
             raise ValueError(
                 "wallet_label may not contain certain special characters. Must be alphanumeric, may include "

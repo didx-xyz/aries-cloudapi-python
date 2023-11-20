@@ -160,7 +160,7 @@ async def meld_co_and_alice_connection(
     meld_co_client: RichAsyncClient,
     meld_co_issuer_verifier: CreateTenantResponse,
 ) -> MeldCoAliceConnect:
-    if request.param == "trust_registry":
+    if hasattr(request, "param") and request.param == "trust_registry":
         # get invitation as on trust registry
         meldco_label = meld_co_issuer_verifier.wallet_label
 

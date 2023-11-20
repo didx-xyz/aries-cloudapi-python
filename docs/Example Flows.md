@@ -574,4 +574,154 @@ Listen to SSE until `state`: `completed`
     }
   }
 ```
+### Now Verifier can send proof request
+Once the connection is made the Verifier can send a proof request.
+
+>There are numerous optional restrictions and additional fields that can be added to the proof request, which are beyond the scope of this simple example.
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/generic/verifier/send-request' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "protocol_version": "v1",
+  "auto_verify": true,
+  "comment": "Demo",
+  "trace": true,
+  "type": "indy",
+  "indy_proof_request": {
+       "requested_attributes": { 
+           "holder surname": { "name": "surname", "restrictions":[]},
+           "holder name": { "name": "name", "restrictions": []},
+           "holder age": { "name": "age", "restrictions": []}
+        }, 
+       "requested_predicates": {}, 
+       "name": "Proof Request",  
+       "nonce": "234234",
+       "version": "1.0"  
+  },
+  "connection_id": "241796b4-b884-47af-be45-0000411db23e"
+}'
+```
+Response
+```json
+{
+  "connection_id": "241796b4-b884-47af-be45-0000411db23e",
+  "created_at": "2023-11-16T09:59:19.570591Z",
+  "error_msg": null,
+  "parent_thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+  "presentation": null,
+  "presentation_request": {
+    "name": "Proof Request",
+    "non_revoked": null,
+    "nonce": "234234",
+    "requested_attributes": {
+      "holder surname": {
+        "name": "surname",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder name": {
+        "name": "name",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder age": {
+        "name": "age",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {},
+    "version": "1.0"
+  },
+  "proof_id": "v1-2bab1407-f5c2-451c-968f-aecc29b917f1",
+  "protocol_version": "v1",
+  "role": "verifier",
+  "state": "request-sent",
+  "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+  "updated_at": "2023-11-16T09:59:19.570591Z",
+  "verified": null
+}
+```
+As Holder
+
+On holder sse
+```json
+{
+  "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
+  "topic": "proofs",
+  "origin": "multitenant",
+  "payload": {
+    "connection_id": "ab1cc0fe-d797-429c-be36-7830a79d52a1",
+    "created_at": "2023-11-16T09:59:19.612647Z",
+    "error_msg": null,
+    "parent_thread_id": null,
+    "presentation": null,
+    "presentation_request": null,
+    "proof_id": "v1-ba39fb0f-4dff-4bce-8db0-fdad3432cc7d",
+    "protocol_version": "v1",
+    "role": "prover",
+    "state": "request-received",
+    "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "updated_at": "2023-11-16T09:59:19.612647Z",
+    "verified": null
+  }
+}
+```
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8100/generic/verifier/proofs' \
+  -H 'accept: application/json'
+  -H 'x-api-key: tenant.<holder token>' \
+```
+```json
+[
+  {
+    "connection_id": "ab1cc0fe-d797-429c-be36-7830a79d52a1",
+    "created_at": "2023-11-16T09:59:19.612647Z",
+    "error_msg": null,
+    "parent_thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "presentation": null,
+    "presentation_request": {
+      "name": "Proof Request",
+      "non_revoked": null,
+      "nonce": "234234",
+      "requested_attributes": {
+        "holder surname": {
+          "name": "surname",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder name": {
+          "name": "name",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder age": {
+          "name": "age",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        }
+      },
+      "requested_predicates": {},
+      "version": "1.0"
+    },
+    "proof_id": "v1-ba39fb0f-4dff-4bce-8db0-fdad3432cc7d",
+    "protocol_version": "v1",
+    "role": "prover",
+    "state": "request-received",
+    "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "updated_at": "2023-11-16T09:59:19.612647Z",
+    "verified": null
+  }
+]
+```
 ```

@@ -86,11 +86,22 @@ async def assert_valid_prover(
     except CloudApiException as e:
         their_label = connection_record.their_label
         if e.status_code == 404 and their_label:
+            logger.info(
+                f"Actor did not found. Try fetch using `their_label` from connection: {their_label}"
+            )
             # DID is not found on Trust Registry. May arise if verifier has public did
             # (eg. has issuer role), but connection is made without using public did,
             # and their did:key is not on TR. Try fetch with label instead
             actor = await get_actor_by_name(name=their_label)
+        elif e.status_code == 500:
+            raise CloudApiException(
+                "An error occurred while asserting valid verifier. Please try again.",
+                500,
+            )
         else:
+            logger.warning(
+                f"An unexpected exception occurred while asserting valid verifier: {e}"
+            )
             raise
 
     # 2. Check actor has role verifier

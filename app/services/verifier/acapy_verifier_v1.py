@@ -5,7 +5,7 @@ from aries_cloudcontroller import (
     V10PresentationSendRequestRequest,
 )
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,

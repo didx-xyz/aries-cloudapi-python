@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from httpx import Response
 from pytest_mock import MockerFixture
 
-from app.exceptions.trust_registry_exception import TrustRegistryException
+from app.exceptions import TrustRegistryException
 from app.models.trust_registry import Actor
 from app.routes.trust_registry import (
     get_actors,

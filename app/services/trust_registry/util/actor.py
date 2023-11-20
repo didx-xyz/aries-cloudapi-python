@@ -1,4 +1,4 @@
-from app.exceptions.trust_registry_exception import TrustRegistryException
+from app.exceptions import TrustRegistryException
 from app.models.trust_registry import TrustRegistryRole
 from app.services.trust_registry.actors import fetch_actor_by_id
 from shared.constants import TRUST_REGISTRY_URL

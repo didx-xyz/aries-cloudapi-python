@@ -1,6 +1,6 @@
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.tenants import OnboardResult
 from app.services import acapy_wallet
 from app.services.onboarding.util.register_issuer_did import (

@@ -7,7 +7,7 @@ from app.dependencies.acapy_clients import (
     get_governance_controller,
     get_tenant_controller,
 )
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.models.trust_registry import TrustRegistryRole
 from app.services.onboarding.issuer import onboard_issuer

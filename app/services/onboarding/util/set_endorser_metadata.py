@@ -5,7 +5,7 @@ from typing import Callable
 
 from aries_cloudcontroller import AcaPyClient, ApiException
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 
 DEFAULT_NUM_TRIES = 1
 DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))

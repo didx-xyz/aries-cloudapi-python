@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from app.exceptions.trust_registry_exception import TrustRegistryException
+from app.exceptions import TrustRegistryException
 from app.models.trust_registry import Schema
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger

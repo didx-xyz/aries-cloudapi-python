@@ -3,7 +3,7 @@ from typing import Optional
 from aries_cloudcontroller import DID, AcaPyClient, DIDCreate
 from pydantic import BaseModel
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

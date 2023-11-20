@@ -13,7 +13,7 @@ from assertpy import assert_that
 from fastapi import HTTPException
 from mockito import verify, when
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.services.acapy_ledger import (
     accept_taa,
     get_did_endpoint,

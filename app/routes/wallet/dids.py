@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.wallet import SetDidEndpointRequest
 from app.services import acapy_wallet
 from shared.log_config import get_logger

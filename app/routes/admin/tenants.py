@@ -12,8 +12,7 @@ from app.dependencies.auth import (
     acapy_auth_tenant_admin,
     tenant_api_key,
 )
-from app.exceptions.cloud_api_error import CloudApiException
-from app.exceptions.trust_registry_exception import TrustRegistryException
+from app.exceptions import CloudApiException, TrustRegistryException
 from app.models.tenants import (
     CreateTenantRequest,
     CreateTenantResponse,

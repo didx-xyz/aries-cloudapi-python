@@ -1,13 +1,16 @@
+import re
 from typing import Dict, List, Literal, Optional
 
 from aries_cloudcontroller import CreateWalletRequest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.trust_registry import TrustRegistryRole
 
+allowable_special_chars = ".!@$*()~_-"
 # Deduplicate some descriptions and field definitions
 label_description = "A required alias for the tenant, publicized to other agents when forming a connection. "
-"If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique."
+"If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique. "
+f"Allowable special characters: {allowable_special_chars}"
 label_examples = ["Tenant Label"]
 group_id_field = Field(
     None,
@@ -80,6 +83,15 @@ class CreateTenantRequest(BaseModel):
     group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
+
+    @field_validator("wallet_label", mode="before")
+    def validate_wallet_label(cls, v):
+        if not re.match(rf"^[a-zA-Z0-9\s{allowable_special_chars}]+$", v):
+            raise ValueError(
+                "wallet_label may not contain certain special characters. Besides "
+                f" alphanumeric, allowable characters: {allowable_special_chars}"
+            )
+        return v
 
 
 class UpdateTenantRequest(BaseModel):

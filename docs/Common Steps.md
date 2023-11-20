@@ -2,26 +2,30 @@
 
 This document will guide you through some common flows and interactions. Please read it carefully, and feel free to open an issue if further questions arise or you spot a mistake.
 
-> **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at [http://localhost:8000/docs](http://localhost:8000/docs) under a vanilla setup. If you find any datatype unclear from the document below, try finding it in SwaggerUI before opening an issue. This document describes only some basic flows and interactions; not every possible flow or interaction can be covered. Thus, learning to consult the SwaggerUI as a reference and solving issues independently is beneficial.
+> **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at [http://localhost:8100/docs](http://localhost:8100/docs) under a vanilla setup. If you find any datatype unclear from the document below, try finding it in SwaggerUI before opening an issue. This document describes only some basic flows and interactions; not every possible flow or interaction can be covered. Thus, learning to consult the SwaggerUI as a reference and solving issues independently is beneficial.
 
 It is also recommended to set up a webhook listener (refer to our [Webhooks doc](./Webhooks.md)). This will significantly aid in understanding the activities occurring in the ACA-Py instances in the background.
 
 ## Creating Wallets
 
-The admin "wallet" is already configured as it is not a subwallet on a multi-tenant agent. To create subwallets for tenants, you have to use the member admin role. The permissions and routing to the correct ACA-Py instance are handled by the CloudAPI under the hood. You need to provide two things:
+The admin "wallet" is already configured as it is not a subwallet on a multi-tenant agent. To create subwallets for tenants, you have to use the tenant admin role. The permissions and routing to the correct ACA-Py instance are handled by the CloudAPI under the hood. You need to provide two things:
 
-1. Authorization in the header: `{"x-api-key": "member-admin.MEMBER_ACAPY_API_KEY"}`, where `member-admin` is a fixed term representing the role, and `MEMBER_ACAPY_API_KEY` is the auth token you must know and provide. _Note: This auth string is separated by a dot, so keep that in there._
+1. Authorization in the header: `{"x-api-key": "tenant-admin.APIKEY"}`, where `tenant-admin` is a fixed term representing the role, and `APIKEY` is the auth token you must know and provide. _Note: This auth string is separated by a dot, so keep that in there._
 2. The wallet payload (body) of the wallet you want to create, e.g.,
 
    ```json
    {
-     "image_url": "https://yoma.africa/images/sample.png",
-     "name": "governance",
-     "roles": ["issuer"]
+    "wallet_label": "Demo Issuer",
+    "wallet_name": "Faber",
+    "roles": [
+      "issuer"
+    ],
+    "group_id": "API demo",
+    "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
    }
    ```
 
-Send this to the `/admin/tenants` endpoint (under standard spin up this will be [http://localhost:8000](http://localhost:8000)). You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, navigate to the [Swagger docs](http://localhost:8000/docs) by adding `/docs` to the CloudAPI main endpoint. This will also update the trust registry by writing an entry to the `actors` field about the wallet and its associated roles.
+Send this to the `/admin/tenants` endpoint (under standard spin up this will be [http://localhost:8100](http://localhost:8100)). You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, navigate to the [Swagger docs](http://localhost:8000/docs) by adding `/docs` to the CloudAPI main endpoint. This will also update the trust registry by writing an entry to the `actors` field about the wallet and its associated roles.
 
 If you wish to later update entities roles, you will have to do that also via the tenants API, which will handle interacting with the trust registry (see also the Swagger for `update tenant`).
 
@@ -54,19 +58,20 @@ To create schemas and effectively write them to the ledger as well as registerin
 1. Register a schema (see above)
 2. Register an issuer (see above)
    1. In other words, create a wallet passing "issuer" as a role
-3. Create a connection between the issuer and prospect holder
+3. Issuer creates credential definition
+4. Create a connection between the issuer and prospect holder
 
    1. Create an invitation using either the issuer or the holder using the `/connections` endpoint of the CloudAPI. Here, you will also need to authenticate via the header, e.g., using
 
       ```json
-      { "x-api-key": "member.WALLET_TOKEN" }
+      { "x-api-key": "tenant.WALLET_TOKEN" }
       ```
 
       where the `WALLET_TOKEN` is the bearer token you get from the create wallet response for a tenant wallet.
 
    2. Copy the content `invitation` field from the create invitation response and use it as the payload in the `accept-invitation` endpoint, and post to the CloudAPI using the other entity. To illustrate, if you used the issuer to create the invitation, use the holder for this call and vice versa. Again, register using the headers appropriately.
 
-4. Issue a credential from issuer to prospect holder
+5. Issue a credential from issuer to prospect holder
 
    1. Create and send a credential authenticating with the issuer. The credential has the form:
 
@@ -85,9 +90,9 @@ To create schemas and effectively write them to the ledger as well as registerin
 
    This should correspond to a schema you created previously, and the `connection_id` is the ID of the connection you created in the previous step. If you're unsure what that ID is, you can always run a GET request against the `connections` endpoint to find it.
 
-5. Accept and store the credential in the holder wallet
-6. Using the holder (authenticating with the holder auth header), issue a GET request against the `/generic/issuer/credentials` endpoint, providing the connection ID of the connection established above. _Note: The connection IDs are unique for each entity, so the connection between the issuer and the holder is one connection with two separate connection IDs - one for the issuer and one for the holder._ This will provide you with a credential record that should be in the state of being offered. Providing the connection ID again, you can now use the holder to store the credential by posting to `/generic/issuer/credentials/{credential_id}/store`
-7. (Optional) Repeat the GETting of your credential records using the holder and check whether the credential is actually stored. You can also check this via the webhooks.
+6. Accept and store the credential in the holder wallet
+7. Using the holder (authenticating with the holder auth header), issue a GET request against the `/generic/issuer/credentials` endpoint, providing the connection ID of the connection established above. _Note: The connection IDs are unique for each entity, so the connection between the issuer and the holder is one connection with two separate connection IDs - one for the issuer and one for the holder._ This will provide you with a credential record that should be in the state of being offered. Providing the connection ID again, you can now use the holder to store the credential by posting to `/generic/issuer/credentials/{credential_id}/store`
+8. (Optional) Get yor credentials from your wallet (`wallet/credentials`) check whether the credential is actually stored. You can also check this via the webhooks/sse.
 
 ## Verifying a Credential
 

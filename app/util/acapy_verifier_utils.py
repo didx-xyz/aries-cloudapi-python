@@ -3,7 +3,7 @@ from typing import List, Optional, Set, Union
 
 from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.trust_registry import Actor
 from app.models.verifier import AcceptProofRequest, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
@@ -13,6 +13,7 @@ from app.services.verifier.acapy_verifier import Verifier
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.util.did import ed25519_verkey_to_did_key
+from app.util.tenants import get_wallet_label_from_controller
 from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -86,11 +87,22 @@ async def assert_valid_prover(
     except CloudApiException as e:
         their_label = connection_record.their_label
         if e.status_code == 404 and their_label:
+            logger.info(
+                f"Actor did not found. Try fetch using `their_label` from connection: {their_label}"
+            )
             # DID is not found on Trust Registry. May arise if verifier has public did
             # (eg. has issuer role), but connection is made without using public did,
             # and their did:key is not on TR. Try fetch with label instead
             actor = await get_actor_by_name(name=their_label)
+        elif e.status_code == 500:
+            raise CloudApiException(
+                "An error occurred while asserting valid verifier. Please try again.",
+                500,
+            ) from e
         else:
+            logger.warning(
+                f"An unexpected exception occurred while asserting valid verifier: {e}"
+            )
             raise
 
     # 2. Check actor has role verifier
@@ -144,8 +156,29 @@ async def assert_valid_verifier(
         public_did = ed25519_verkey_to_did_key(invitation_key)
 
     # Try get actor from TR
-    bound_logger.debug("Getting actor by DID")
-    actor = await get_actor(did=public_did)
+    try:
+        bound_logger.debug("Getting actor by DID")
+        actor = await get_actor(did=public_did)
+    except CloudApiException as e:
+        if e.status_code == 404:
+            # DID is not found on Trust Registry. May arise if verifier has no public did, and
+            # connection is made without using OOB invite from Trust Registry
+            try:
+                wallet_label = await get_wallet_label_from_controller(aries_controller)
+            except (IndexError, KeyError):
+                logger.error("Could not read wallet_label from client's controller")
+                raise e
+            actor = await get_actor_by_name(name=wallet_label)
+        elif e.status_code == 500:
+            raise CloudApiException(
+                "An error occurred while asserting valid verifier. Please try again.",
+                500,
+            ) from e
+        else:
+            logger.warning(
+                f"An unexpected exception occurred while asserting valid verifier: {e}"
+            )
+            raise
 
     # 2. Check actor has role verifier, raise exception otherwise
     if not is_verifier(actor=actor):

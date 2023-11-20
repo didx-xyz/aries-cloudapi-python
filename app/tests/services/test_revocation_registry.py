@@ -17,7 +17,7 @@ from aries_cloudcontroller import (
 from mockito import when
 
 import app.services.revocation_registry as rg
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.tests.util.mock import to_async
 
 cred_def_id = "VagGATdBsVdBeFKeoYPe7H:3:CL:141:5d211963-3478-4de4-b8b6-9072759a71c8"

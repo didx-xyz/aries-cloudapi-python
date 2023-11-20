@@ -12,7 +12,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
 from app.event_handling.websocket_manager import WebsocketManager
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.routes import (
     connections,
     definitions,

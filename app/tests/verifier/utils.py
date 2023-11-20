@@ -31,7 +31,7 @@ from assertpy import assert_that
 from httpx import Response
 from mockito import mock, when
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.trust_registry import Actor
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
 from app.services.verifier.acapy_verifier import Verifier

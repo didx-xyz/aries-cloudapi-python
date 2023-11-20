@@ -74,30 +74,70 @@ class AcmeAliceConnect:
 
 @pytest.fixture(scope="function")
 async def acme_and_alice_connection(
-    alice_member_client: RichAsyncClient, acme_verifier: CreateTenantResponse
+    request,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    acme_client: RichAsyncClient,
+    acme_verifier: CreateTenantResponse,
 ) -> AcmeAliceConnect:
-    acme_actor = await fetch_actor_by_id(acme_verifier.wallet_id)
-    assert acme_actor["didcomm_invitation"]
+    if hasattr(request, "param") and request.param == "trust_registry":
+        acme_actor = await fetch_actor_by_id(acme_verifier.wallet_id)
+        assert acme_actor["didcomm_invitation"]
 
-    invitation_json = base64_to_json(acme_actor["didcomm_invitation"].split("?oob=")[1])
+        invitation = acme_actor["didcomm_invitation"]
+        invitation_json = base64_to_json(invitation.split("?oob=")[1])
 
-    acme_listener = SseListener(topic="connections", wallet_id=acme_verifier.wallet_id)
+        # accept invitation on alice side
+        invitation_response = (
+            await alice_member_client.post(
+                f"{OOB_BASE_PATH}/accept-invitation",
+                json={"invitation": invitation_json},
+            )
+        ).json()
 
-    # accept invitation on alice side
-    invitation_response = (
-        await alice_member_client.post(
-            f"{OOB_BASE_PATH}/accept-invitation",
-            json={"invitation": invitation_json},
+        acme_listener = SseListener(
+            topic="connections", wallet_id=acme_verifier.wallet_id
         )
-    ).json()
 
-    payload = await acme_listener.wait_for_state(desired_state="completed")
+        alice_label = alice_tenant.wallet_label
+        payload = await acme_listener.wait_for_event(
+            field="their_label", field_id=alice_label, desired_state="completed"
+        )
 
-    acme_connection_id = payload["connection_id"]
-    alice_connection_id = invitation_response["connection_id"]
+        alice_connection_id = invitation_response["connection_id"]
+        acme_connection_id = payload["connection_id"]
+    else:
+        # create invitation on acme side
+        invitation = (
+            await acme_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
+        ).json()
+
+        # accept invitation on alice side
+        invitation_response = (
+            await alice_member_client.post(
+                f"{CONNECTIONS_BASE_PATH}/accept-invitation",
+                json={"invitation": invitation["invitation"]},
+            )
+        ).json()
+
+        alice_connection_id = invitation_response["connection_id"]
+        acme_connection_id = invitation["connection_id"]
+
+    # fetch and validate - both connections should be active before continuing
+    assert await check_webhook_state(
+        alice_member_client,
+        topic="connections",
+        filter_map={"state": "completed", "connection_id": alice_connection_id},
+    )
+    assert await check_webhook_state(
+        acme_client,
+        topic="connections",
+        filter_map={"state": "completed", "connection_id": acme_connection_id},
+    )
 
     return AcmeAliceConnect(
-        alice_connection_id=alice_connection_id, acme_connection_id=acme_connection_id
+        alice_connection_id=alice_connection_id,
+        acme_connection_id=acme_connection_id,
     )
 
 
@@ -160,7 +200,7 @@ async def meld_co_and_alice_connection(
     meld_co_client: RichAsyncClient,
     meld_co_issuer_verifier: CreateTenantResponse,
 ) -> MeldCoAliceConnect:
-    if request.param == "trust_registry":
+    if hasattr(request, "param") and request.param == "trust_registry":
         # get invitation as on trust registry
         meldco_label = meld_co_issuer_verifier.wallet_label
 
@@ -188,7 +228,7 @@ async def meld_co_and_alice_connection(
         meld_co_connection_id = payload["connection_id"]
         alice_connection_id = invitation_response["connection_id"]
     else:
-        # create invitation on faber side
+        # create invitation on meld_co side
         invitation = (
             await meld_co_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
         ).json()

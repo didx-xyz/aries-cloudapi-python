@@ -15,7 +15,7 @@ from aries_cloudcontroller import (
 
 from app.dependencies.acapy_clients import get_governance_controller
 from app.event_handling.sse_listener import SseListener
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

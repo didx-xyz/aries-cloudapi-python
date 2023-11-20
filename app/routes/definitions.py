@@ -22,8 +22,7 @@ from app.dependencies.auth import (
     acapy_auth_verified,
 )
 from app.event_handling.sse_listener import SseListener
-from app.exceptions.cloud_api_error import CloudApiException
-from app.exceptions.trust_registry_exception import TrustRegistryException
+from app.exceptions import CloudApiException, TrustRegistryException
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,

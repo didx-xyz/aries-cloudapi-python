@@ -3,7 +3,7 @@ from logging import Logger
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 
 from app.event_handling.sse_listener import SseListener
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.services import acapy_ledger, acapy_wallet
 from app.services.acapy_wallet import Did
 from app.services.onboarding.util.set_endorser_metadata import (

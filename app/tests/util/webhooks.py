@@ -1,21 +1,9 @@
-import base64
-import json
 from typing import Dict, Optional
 
 from app.event_handling.sse_listener import SseListener
+from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
 from shared.models.webhook_topics import CloudApiTopics
-
-
-def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
-    # Add padding if required
-    # b64 needs lengths divisible by 4
-    if len(jwt) % 4 != 0:
-        n_missing = 4 - (len(jwt) % 4)
-        jwt = jwt + (n_missing * "=")
-
-    wallet = json.loads(base64.b64decode(jwt))
-    return wallet["wallet_id"]
 
 
 def get_wallet_id_from_async_client(client: RichAsyncClient) -> str:

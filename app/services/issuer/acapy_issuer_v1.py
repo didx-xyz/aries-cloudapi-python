@@ -10,7 +10,7 @@ from aries_cloudcontroller import (
     V10CredentialStoreRequest,
 )
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.models.issuer import CredentialBase, CredentialType, CredentialWithConnection
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version

@@ -2,7 +2,7 @@ import pytest
 from aries_cloudcontroller import DID, AcaPyClient, DIDResult
 from mockito import when
 
-from app.exceptions.cloud_api_error import CloudApiException
+from app.exceptions import CloudApiException
 from app.services import acapy_wallet
 from app.tests.util.mock import to_async
 

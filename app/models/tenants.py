@@ -1,13 +1,18 @@
+import re
 from typing import Dict, List, Literal, Optional
 
 from aries_cloudcontroller import CreateWalletRequest
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.models.trust_registry import TrustRegistryRole
 
 # Deduplicate some descriptions and field definitions
-label_description = "A required alias for the tenant, publicized to other agents when forming a connection. "
-"If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique."
+allowable_special_chars = ".!@$*()~_-"  # the dash character must be at the end, otherwise it defines a regex range
+label_description = (
+    "A required alias for the tenant, publicized to other agents when forming a connection. "
+    "If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique. "
+    f"Allowable special characters: {allowable_special_chars}"
+)
 label_examples = ["Tenant Label"]
 group_id_field = Field(
     None,
@@ -81,6 +86,34 @@ class CreateTenantRequest(BaseModel):
     image_url: Optional[str] = image_url_field
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
 
+    @field_validator("wallet_label", mode="before")
+    @classmethod
+    def validate_wallet_label(cls, v):
+        if len(v) > 100:
+            raise ValueError("wallet_label has a max length of 100 characters")
+
+        if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
+            raise ValueError(
+                "wallet_label may not contain certain special characters. Must be alphanumeric, may include "
+                f"spaces, and the following special characters are allowed: {allowable_special_chars}"
+            )
+        return v
+
+    @field_validator("wallet_name", mode="before")
+    @classmethod
+    def validate_wallet_name(cls, v):
+        if v:
+            if len(v) > 100:
+                raise ValueError("wallet_name has a max length of 100 characters")
+
+            if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
+                raise ValueError(
+                    "wallet_name may not contain certain special characters. Must be alphanumeric, may include "
+                    f"spaces, and the following special characters are allowed: {allowable_special_chars}"
+                )
+
+        return v
+
 
 class UpdateTenantRequest(BaseModel):
     wallet_label: Optional[str] = Field(
@@ -90,6 +123,19 @@ class UpdateTenantRequest(BaseModel):
     image_url: Optional[str] = image_url_field
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
     # TODO: add group_id to update request
+
+    @field_validator("wallet_label", mode="before")
+    @classmethod
+    def validate_wallet_label(cls, v):
+        if len(v) > 100:
+            raise ValueError("wallet_label must be less than 100 characters long")
+
+        if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
+            raise ValueError(
+                "wallet_label may not contain certain special characters. Must be alphanumeric, may include "
+                f"spaces, and the following special characters are allowed: {allowable_special_chars}"
+            )
+        return v
 
 
 class Tenant(BaseModel):

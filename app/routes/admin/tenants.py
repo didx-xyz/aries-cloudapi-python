@@ -52,22 +52,22 @@ async def create_tenant(
     wallet_label = body.wallet_label
     wallet_name = body.wallet_name or uuid4().hex
 
-    if roles:
-        bound_logger.info("Create tenant with roles. Assert name is unique")
-        try:
-            actor_name_exists = await assert_actor_name(wallet_label)
-        except TrustRegistryException:
-            raise CloudApiException(
-                "An error occurred when trying to register actor. Please try again"
-            )
+    bound_logger.info("Assert that requested label is not used in trust registry")
+    try:
+        actor_name_exists = await assert_actor_name(wallet_label)
+    except TrustRegistryException:
+        raise CloudApiException(
+            "An error occurred when trying to register actor. Please try again"
+        )
 
-        if actor_name_exists:
-            bound_logger.info("Actor name already exists; can't create wallet")
-            raise HTTPException(
-                409,
-                f"Can't create Tenant. Actor with label `{wallet_label}` already exists.",
-            )
-        bound_logger.info("Actor name is unique")
+    if actor_name_exists:
+        bound_logger.info("Actor name already exists; can't create wallet")
+        raise HTTPException(
+            409,
+            f"Can't create Tenant. The label `{wallet_label}` may not "
+            "be re-used because it exists on the trust registry.",
+        )
+    bound_logger.debug("Actor name is unique")
 
     wallet_response = None
     async with get_tenant_admin_controller() as admin_controller:

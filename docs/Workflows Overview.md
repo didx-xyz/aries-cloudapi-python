@@ -2,19 +2,19 @@
 
 ## First Steps
 
-After spinning up the containers following the [Quick Start Guide](./Quick%20Start%20Guide.md), you are ready to rumble. Navigating to the [Swagger UI](http://localhost:8000/docs/) provides a good overview of the intended functionalities.
+After spinning up the containers following the [Quick Start Guide](./Quick%20Start%20Guide.md), you are ready to rumble. Navigating to the [Swagger UI](http://localhost:8100/docs/) provides a good overview of the intended functionalities.
 
-You'll see that there are `generic` endpoints for common actions, wallet-specific actions, and admin actions. Additionally, you'll find the trust registry and webhooks being exposed. These are the intended ways of client interactions with these two services.
+You'll see that there are `generic` endpoints for common actions, wallet-specific actions, and admin actions. Additionally, you'll find the trust registry, webhooks and sse being exposed. These are the intended ways of client interactions with these two services.
 
-> NOTE: Regardless of the multitude of containers and mechanisms running, [The CloudAPI](http://localhost:8000) and its [SwaggerUI](http://localhost:8000/docs) are the main interaction points intended between clients and the stack. This should be the only endpoint clients should (and have to) interact with. There is no need (and no intention to allow that) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+> NOTE: Regardless of the multitude of containers and mechanisms running, [The CloudAPI](http://localhost:8100) and its [SwaggerUI](http://localhost:8100/docs) are the main interaction points intended between clients and the stack. This should be the only endpoint clients should (and have to) interact with. There is no need (and no intention to allow that) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
 
 ### Trust Registry
 
 As a client, you can retrieve the trust registry (and NOT alter it). That is intentional and all a consumer/client should and is able to do. Altering the trust registry is baked into admin actions and only possible with an admin role.
 
-> NOTE: The Trust Registry GET API endpoint is not protected.
+> NOTE: The Trust Registry GET API endpoints are not protected.
 
-### Webhooks
+### Webhooks/SSE
 
 A client can subscribe to the webhooks via the CloudAPI (as opposed to directly via the webhooks container). This requires only targeting the `/webhooks` endpoint and optionally targeting the `/webhooks/{topic}` sub-route by suffixing a topic. Using the auth mechanism (see section below), the app automatically extracts the required info about the wallet (i.e., the wallet id and JWT) and retrieves only the associated webhooks with a particular wallet. Failing to authenticate will return a 403 HTTP Error.
 
@@ -115,7 +115,7 @@ For admin roles, pass the admin password as the second part of `{role}.{key/toke
 
 ## Creating Schemas
 
-Using the admin role(s), you can create and register schemas. Successful schema creation will automatically write it to the ledger.
+Using the governance role, you can create and register schemas. Successful schema creation will automatically write it to the ledger.
 
 The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed for use.
 
@@ -136,7 +136,7 @@ Then:
 
 - Register an issuer (on the trust registry) via the governance agent.
 
-The registered issuer can now issue a credential related to a schema on the trust registry.
+The registered issuer can now create a credential definition and issue a credential related to a schema on the trust registry.
 
 Now:
 
@@ -151,6 +151,7 @@ Hooray🥳 🎉. What has happened? We have:
 - Registered a schema on the ledger (via the governance admin)
 - Created (a wallet for) an issuer and future holder using the admin agent
 - Registered an issuer (for a schema)
+- Issuer created credential definition
 - Created a connection between an issuer and a prospective holder (using connections/invitations API)
 - Proposed a credential to a prospective holder from an issuer
 - Accepted and stored an offered credential

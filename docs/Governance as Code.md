@@ -163,33 +163,145 @@ To query entries in the Trust Registry, adhere to the following steps:
 
    > NOTE: The Trust Registry is currently public and accessible to anyone on the internet
 
-3. Generate a new schema by issuing a `GET` request to the API endpoint `/trust-registry/`.
-4. The following is an example of a successful response to writing a credential definition:
+3. The trust-registry has 5 GET end-points:
+    - `GET`  `/trust-registry/schemas`
+     - Will return all schemas on the trust registry
 
-```json
-{
-  "actors": [
+     Response
+    ```json
+    [
+      {
+        "did": "GXK1Ubc58DvZDe48zPYdcf",
+        "name": "Proof of Person",
+        "version": "0.1.0",
+        "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Person:0.1.0"
+      },
+      {
+        "did": "GXK1Ubc58DvZDe48zPYdcf",
+        "name": "Proof of Address",
+        "version": "0.1.0",
+        "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Address:0.1.0"
+      },
+      {
+        "did": "GXK1Ubc58DvZDe48zPYdcf",
+        "name": "Proof of Medical Aid",
+        "version": "0.1.0",
+        "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Medical Aid:0.1.0"
+      },
+      {
+        "did": "GXK1Ubc58DvZDe48zPYdcf",
+        "name": "Proof of Bank Account",
+        "version": "0.1.0",
+        "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Bank Account:0.1.0"
+      }
+    ]
+    ```
+    - `Get` `/trust-registry/schemas/{schema_id}`
+      - Will return the schema based on id passed
+      
+     Response
+    ```json
     {
-      "id": "35376e4c-ea29-4500-a0ad-10f750dda13e",
-      "name": "Issuer",
-      "roles": ["issuer"],
-      "did": "did:sov:EfFA6wi7fcZNWzRuHeQqaj",
-      "didcomm_invitation": null
-    },
-    {
-      "id": "1990c935-b51e-4463-8447-a0af31e44e42",
-      "name": "Verifier",
-      "roles": ["verifier"],
-      "did": "did:key:z6Mkp7xg3iTDHa9gqhx3y7kjWTBCAGYpSQR4W2Ddgbk6jT3P",
-      "didcomm_invitation": "http://localhost:4020?oob=eyJAdHlwZSI6ICJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9vdXQtb2YtYmFuZC8xLjAvaW52aXRhdGlvbiIsICJAaWQiOiAiNTgwYmQyMDctNmM2MC00M2Q0LWI4M2EtMTliMTE3YTMzNWI5IiwgInNlcnZpY2VzIjogW3siaWQiOiAiI2lubGluZSIsICJ0eXBlIjogImRpZC1jb21tdW5pY2F0aW9uIiwgInJlY2lwaWVudEtleXMiOiBbImRpZDprZXk6ejZNa3A3eGczaVRESGE5Z3FoeDN5N2tqV1RCQ0FHWXBTUVI0VzJEZGdiazZqVDNQIl0sICJzZXJ2aWNlRW5kcG9pbnQiOiAiaHR0cDovL3NzaS5kaWR4LmNvLnphOjQwMjAifV0sICJoYW5kc2hha2VfcHJvdG9jb2xzIjogWyJkaWQ6c292OkJ6Q2JzTlloTXJqSGlxWkRUVUFTSGc7c3BlYy9kaWRleGNoYW5nZS8xLjAiXSwgImxhYmVsIjogIlZlcmlmaWVyIn0="
+      "did": "GXK1Ubc58DvZDe48zPYdcf",
+      "name": "Proof of Bank Account",
+      "version": "0.1.0",
+      "id": "GXK1Ubc58DvZDe48zPYdcf:2:Proof of Bank Account:0.1.0"
     }
-  ],
-  "schemas": [
-    "SHYDM4P2P5LiRz44nNZa9f:2:test schema:1.0",
-    "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0",
-    "PWmeoVrsLE2pu1idEwWFRW:2:test_schema:0.3.0",
-    "PWmeoVrsLE2pu1idEwWFRW:2:DIDx_Member:0.1.0",
-    "JPqFhPEM4UiR2ZNK9CM4NA:2:test_schema:0.3.0"
-  ]
-}
-```
+    ```
+
+    - `GET` `/trust-registry/actors`
+      - Will return all actors on the trust registry
+      - Optionally one of the following query parameters can be passed to get a specific actor:
+        > NOTE: Only one of these can be passed at any time
+        - `actor_did`
+        - `actor_id`
+        - `actor_name`
+     
+     Response
+    ```json
+    [
+      {
+        "id": "9bdbc626-1499-48e2-a5db-878d347e290b",
+        "name": "didxissuer@didx.co.za",
+        "roles": [
+          "issuer"
+        ],
+        "did": "did:sov:J1Sg8UHXyuyBCUUpRY3EeZ",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1...Y29tbS5vcmcvZGlkZXhjaGFuZ2UvMS4wIl19"
+      },
+      {
+        "id": "fe523496-e0b5-4aea-a038-6ed6cbd686b8",
+        "name": "didxverifier@didx.co.za",
+        "roles": [
+          "verifier"
+        ],
+        "did": "did:key:z6MkkUK3zRys1WezsaoAtXZtAJrhP7dh5qxbpJMe6cbDcW3s",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW...jb21tLm9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
+      },
+      {
+        "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
+        "name": "Absa Issuer & Verifier",
+        "roles": [
+          "issuer",
+          "verifier"
+        ],
+        "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3Jn...odHRovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
+      }
+    ]
+    ```
+    - `GET` `/trust-registry/actors/issuers`
+       - Will return all actors with `issuer` as a role
+
+     Response
+    ```json
+    [
+      {
+        "id": "9bdbc626-1499-48e2-a5db-878d347e290b",
+        "name": "didxissuer@didx.co.za",
+        "roles": [
+          "issuer"
+        ],
+        "did": "did:sov:J1Sg8UHXyuyBCUUpRY3EeZ",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZ...hjaGFuZ2UvMS4wIl19"
+      },
+      {
+        "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
+        "name": "Absa Issuer & Verifier",
+        "roles": [
+          "issuer",
+          "verifier"
+        ],
+        "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJo2RpZGNvbW0ub3JnL291dC1vZi1iYW5zIjogWyJodHRwc...ovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
+      }
+    ]
+    ```
+
+    - `GET` `/trust-registry/actors/verifiers`
+      - Will return all actors with `verifier` as a role
+
+     Response
+    ```json
+    [
+      {
+        "id": "fe523496-e0b5-4aea-a038-6ed6cbd686b8",
+        "name": "didxverifier@didx.co.za",
+        "roles": [
+          "verifier"
+        ],
+        "did": "did:key:z6MkkUK3zRys1WezsaoAtXZtAJrhP7dh5qxbpJMe6cbDcW3s",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9...9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
+      },
+      {
+        "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
+        "name": "Absa Issuer & Verifier",
+        "roles": [
+          "issuer",
+          "verifier"
+        ],
+        "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
+        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHbW0ub3JnL291dC1vZi1iYWyJodHRwcz...ovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
+      }
+    ]
+    ```

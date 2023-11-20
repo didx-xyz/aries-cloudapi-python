@@ -102,14 +102,15 @@ class CreateTenantRequest(BaseModel):
     @field_validator("wallet_name", mode="before")
     @classmethod
     def validate_wallet_name(cls, v):
-        if len(v) > 100:
-            raise ValueError("wallet_name must be less than 100 characters long")
+        if v:
+            if len(v) > 100:
+                raise ValueError("wallet_name must be less than 100 characters long")
 
-        if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
-            raise ValueError(
-                "wallet_name may not contain certain special characters. Must be alphanumeric, may include "
-                f"spaces, and the following special characters are allowed: {allowable_special_chars}"
-            )
+            if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
+                raise ValueError(
+                    "wallet_name may not contain certain special characters. Must be alphanumeric, may include "
+                    f"spaces, and the following special characters are allowed: {allowable_special_chars}"
+                )
 
         return v
 

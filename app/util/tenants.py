@@ -2,8 +2,9 @@ import base64
 import json
 from typing import Optional
 
-from aries_cloudcontroller import WalletRecordWithGroups
+from aries_cloudcontroller import AcaPyClient, WalletRecordWithGroups
 
+from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.models.tenants import Tenant
 
 
@@ -36,3 +37,13 @@ def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
     wallet = json.loads(base64.b64decode(jwt))
     return wallet["wallet_id"]
 
+
+async def get_wallet_label_from_controller(aries_controller: AcaPyClient) -> str:
+    controller_token = aries_controller.tenant_jwt.split(".")[1]
+    controller_wallet_id = get_wallet_id_from_b64encoded_jwt(controller_token)
+    async with get_tenant_admin_controller() as admin_controller:
+        controller_wallet_record = await admin_controller.multitenancy.get_wallet(
+            controller_wallet_id
+        )
+    controller_label = controller_wallet_record.settings["default_label"]
+    return controller_label

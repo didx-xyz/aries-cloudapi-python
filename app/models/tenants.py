@@ -6,11 +6,13 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.models.trust_registry import TrustRegistryRole
 
-allowable_special_chars = ".!@$*()~_-"
 # Deduplicate some descriptions and field definitions
-label_description = "A required alias for the tenant, publicized to other agents when forming a connection. "
-"If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique. "
-f"Allowable special characters: {allowable_special_chars}"
+allowable_special_chars = ".!@$*()~_-"  # the dash character must be at the end, otherwise it defines a regex range
+label_description = (
+    "A required alias for the tenant, publicized to other agents when forming a connection. "
+    "If the tenant is an issuer or verifier, this label will be displayed on the trust registry and must be unique. "
+    f"Allowable special characters: {allowable_special_chars}"
+)
 label_examples = ["Tenant Label"]
 group_id_field = Field(
     None,

@@ -85,6 +85,7 @@ class CreateTenantRequest(BaseModel):
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
 
     @field_validator("wallet_label", mode="before")
+    @classmethod
     def validate_wallet_label(cls, v):
         if not re.match(rf"^[a-zA-Z0-9\s{allowable_special_chars}]+$", v):
             raise ValueError(

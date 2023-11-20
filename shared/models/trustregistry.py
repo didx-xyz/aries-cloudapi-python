@@ -31,8 +31,8 @@ class Schema(BaseModel):
     version: str = Field(default=None)
     id: str = Field(default=None)
 
-    # pylint: disable=no-self-argument
     @model_validator(mode="before")
+    @classmethod
     def validate_and_set_values(cls, values: Union[dict, "Schema"]):
         # pydantic v2 removed safe way to get key, because `values` can be a dict or this type
         if not isinstance(values, dict):

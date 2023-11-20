@@ -188,7 +188,7 @@ async def meld_co_and_alice_connection(
         meld_co_connection_id = payload["connection_id"]
         alice_connection_id = invitation_response["connection_id"]
     else:
-        # create invitation on faber side
+        # create invitation on meld_co side
         invitation = (
             await meld_co_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
         ).json()

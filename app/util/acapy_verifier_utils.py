@@ -98,7 +98,7 @@ async def assert_valid_prover(
             raise CloudApiException(
                 "An error occurred while asserting valid verifier. Please try again.",
                 500,
-            )
+            ) from e
         else:
             logger.warning(
                 f"An unexpected exception occurred while asserting valid verifier: {e}"
@@ -173,7 +173,7 @@ async def assert_valid_verifier(
             raise CloudApiException(
                 "An error occurred while asserting valid verifier. Please try again.",
                 500,
-            )
+            ) from e
         else:
             logger.warning(
                 f"An unexpected exception occurred while asserting valid verifier: {e}"

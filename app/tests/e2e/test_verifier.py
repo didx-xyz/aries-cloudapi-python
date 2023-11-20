@@ -41,6 +41,9 @@ def create_send_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
 async def test_accept_proof_request_v1(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
@@ -304,6 +307,9 @@ async def test_accept_proof_request_oob_v2(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
 async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
@@ -389,6 +395,9 @@ async def test_accept_proof_request_v2(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
+)
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,

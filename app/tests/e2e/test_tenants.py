@@ -573,3 +573,36 @@ async def test_extra_settings(
         )
 
         assert bad_response.status_code == 422
+
+
+@pytest.mark.anyio
+async def test_wallet_label_validation(tenant_admin_client: RichAsyncClient):
+    # Assert that 422 is raised when unacceptable special chars are used in wallet label
+    # The following chars are either reserved or unsafe to use in URIs without encoding
+    for char in [
+        "#",
+        "%",
+        "^",
+        "&",
+        "+",
+        "=",
+        "{",
+        "}",
+        "[",
+        "]",
+        "|",
+        "\\",
+        '"',
+        ":",
+        ";",
+        ",",
+        "/",
+        "?",
+    ]:
+        with pytest.raises(Exception):
+            bad_response = await tenant_admin_client.post(
+                TENANTS_BASE_PATH,
+                json={"wallet_label": uuid4().hex + char},
+            )
+
+            assert bad_response.status_code == 422

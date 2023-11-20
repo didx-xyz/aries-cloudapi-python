@@ -1,3 +1,5 @@
+import base64
+import json
 from typing import Optional
 
 from aries_cloudcontroller import WalletRecordWithGroups
@@ -22,3 +24,15 @@ def tenant_from_wallet_record(wallet_record: WalletRecordWithGroups) -> Tenant:
         image_url=image_url,
         group_id=group_id,
     )
+
+
+def get_wallet_id_from_b64encoded_jwt(jwt: str) -> str:
+    # Add padding if required
+    # b64 needs lengths divisible by 4
+    if len(jwt) % 4 != 0:
+        n_missing = 4 - (len(jwt) % 4)
+        jwt = jwt + (n_missing * "=")
+
+    wallet = json.loads(base64.b64decode(jwt))
+    return wallet["wallet_id"]
+

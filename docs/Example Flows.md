@@ -108,3 +108,58 @@ Response
   "group_id": "API demo"
 }
 ```
+## 2: Create Schema
+Only the `Governance` role can create Schemas.
+
+>NOTE: See the `x-api-key` used to create schemas
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/generic/definitions/schemas' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: governance.adminApiKey' \
+  -d '{
+  "name": "Person",
+  "version": "0.1.0",
+  "attribute_names": [
+    "Name","Surname","Age"
+  ]
+}'
+```
+Response
+```json
+{
+  "id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0",
+  "name": "Person",
+  "version": "0.1.0",
+  "attribute_names": [
+    "Surname",
+    "Age",
+    "Name"
+  ]
+}
+```
+
+## 3: Create Credential Definition
+Once a schema has been created by die governance agent, the `Issuer` can create a `credential definition`. He will use the credential definition as his unique refernce to the schema.  
+```bash 
+curl -X 'POST' \
+  'http://localhost:8100/generic/definitions/credentials' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant.<Issuer token>' \
+  -d '{
+  "tag": "Demo Person",
+  "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0",
+  "support_revocation": false
+}'
+```
+Response
+```json
+{
+  "id": "QrHj82kaE61jnB5451zvvG:3:CL:12:Demo Person",
+  "tag": "Demo Person",
+  "schema_id": "FS9J6WZ6KVxwy5eGH32CgM:2:Person:0.1.0"
+}
+```
+```

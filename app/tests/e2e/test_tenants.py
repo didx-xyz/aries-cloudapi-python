@@ -194,19 +194,15 @@ async def test_create_tenant_issuer(
     assert_that(tenant).has_updated_at(wallet.updated_at)
     assert_that(wallet.settings["wallet.name"]).is_length(32)
 
+    # Assert that wallet_label cannot be re-used by plain tenants
     with pytest.raises(HTTPException) as http_error:
         await tenant_admin_client.post(
             TENANTS_BASE_PATH,
-            json={
-                "image_url": "https://image.ca",
-                "wallet_label": wallet_label,
-                "roles": ["issuer"],
-                "group_id": group_id,
-            },
+            json={"wallet_label": wallet_label},
         )
 
         assert http_error.status_code == 409
-        assert "Can't create Tenant. Actor with name:" in http_error.json()["details"]
+        assert "Can't create Tenant." in http_error.json()["details"]
 
 
 @pytest.mark.anyio

@@ -10,5 +10,6 @@
 6. [Governance as Code](Governance%20as%20Code.md)
 7. [Common Steps](Common%20Steps.md)
 8. [Workflows Overview](Workflows%20Overview.md)
+9. [Example Flows](./Example%20Flows.md)
 9. [Webhooks](Webhooks.md)
 10. [Trust Registry](Trust%20Registry.md)

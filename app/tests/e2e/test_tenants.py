@@ -576,8 +576,8 @@ async def test_extra_settings(
 
 
 @pytest.mark.anyio
-async def test_wallet_label_validation(tenant_admin_client: RichAsyncClient):
-    # Assert that 422 is raised when unacceptable special chars are used in wallet label
+async def test_create_tenant_validation(tenant_admin_client: RichAsyncClient):
+    # Assert that 422 is raised when unacceptable special chars are used in wallet label or name
     # The following chars are either reserved or unsafe to use in URIs without encoding
     for char in [
         "#",
@@ -599,10 +599,45 @@ async def test_wallet_label_validation(tenant_admin_client: RichAsyncClient):
         "/",
         "?",
     ]:
+        # Assert bad requests for wallet label
         with pytest.raises(Exception):
-            bad_response = await tenant_admin_client.post(
+            bad_label_response = await tenant_admin_client.post(
                 TENANTS_BASE_PATH,
                 json={"wallet_label": uuid4().hex + char},
             )
 
-            assert bad_response.status_code == 422
+            assert bad_label_response.status_code == 422
+            assert "wallet_label" in bad_label_response.json()
+
+        # Assert bad requests for wallet name
+        with pytest.raises(Exception):
+            bad_name_response = await tenant_admin_client.post(
+                TENANTS_BASE_PATH,
+                json={"wallet_label": uuid4().hex, "wallet_name": char},
+            )
+
+            assert bad_name_response.status_code == 422
+            assert "wallet_name" in bad_label_response.json()
+
+    # Lastly, assert very long strings (> 100 chars) aren't allowed
+    very_long_string = 101 * "a"
+
+    # for wallet label
+    with pytest.raises(Exception):
+        bad_label_response = await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json={"wallet_label": very_long_string},
+        )
+
+        assert bad_label_response.status_code == 422
+        assert "wallet_label" in bad_label_response.json()
+
+    # for wallet name
+    with pytest.raises(Exception):
+        bad_name_response = await tenant_admin_client.post(
+            TENANTS_BASE_PATH,
+            json={"wallet_label": uuid4().hex, "wallet_name": very_long_string},
+        )
+
+        assert bad_name_response.status_code == 422
+        assert "wallet_name" in bad_label_response.json()

@@ -155,7 +155,7 @@ async def test_verify_jsonld(
         )
 
     assert_that(exc.value.status_code).is_equal_to(422)
-    assert_that(exc.value.detail).contains("Failed to verify payload with")
+    assert_that(exc.value.detail).contains("Failed to verify payload")
 
     # Success
     jsonld_verify.public_did = None

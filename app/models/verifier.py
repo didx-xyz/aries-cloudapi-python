@@ -4,8 +4,8 @@ from typing import Optional
 from aries_cloudcontroller import (
     DIFPresSpec,
     DIFProofRequest,
-    IndyPresSpec,
     IndyProofRequest,
+    V10PresentationSendRequest,
 )
 from pydantic import BaseModel, ValidationInfo, field_validator
 
@@ -63,7 +63,7 @@ class ProofId(BaseModel):
 
 class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
-    indy_presentation_spec: Optional[IndyPresSpec] = None
+    indy_presentation_spec: Optional[V10PresentationSendRequest] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
 
     @field_validator("indy_presentation_spec", mode="before")

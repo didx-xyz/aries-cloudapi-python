@@ -10,7 +10,6 @@ from aries_cloudcontroller import (
     IndyPresAttrSpec,
     IndyPresPredSpec,
     IndyPresPreview,
-    IndyPresSpec,
     IndyProof,
     IndyProofProof,
     IndyProofReqAttrSpec,
@@ -21,6 +20,7 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedPred,
     V10PresentationExchange,
     V10PresentationProposalRequest,
+    V10PresentationSendRequest,
     V20Pres,
     V20PresExRecord,
     V20PresExRecordByFormat,
@@ -157,7 +157,7 @@ v20_presentation_exchange_records = [
 ]
 
 
-indy_pres_spec = IndyPresSpec(
+indy_pres_spec = V10PresentationSendRequest(
     requested_attributes={
         "0_string_uuid": IndyRequestedCredsRequestedAttr(cred_id="0_string_uuid")
     },
@@ -230,7 +230,7 @@ async def test_get_schema_ids(mock_agent_controller: AcaPyClient):
         schema_id="NR6Y28AiZ893utPSfoQRrz:2:another_schema:0.3"
     )
 
-    presentation = IndyPresSpec(
+    presentation = V10PresentationSendRequest(
         self_attested_attributes={},
         requested_attributes={
             "group_name": IndyRequestedCredsRequestedAttr(
@@ -325,7 +325,7 @@ async def test_assert_valid_prover_invitation_key(mock_agent_controller: AcaPyCl
         invitation_key="H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV",
     )
 
-    presentation = IndyPresSpec(
+    presentation = V10PresentationSendRequest(
         self_attested_attributes={},
         requested_attributes={
             "group_name": IndyRequestedCredsRequestedAttr(
@@ -388,7 +388,7 @@ async def test_assert_valid_prover_public_did(mock_agent_controller: AcaPyClient
         connection_id=pres_exchange.connection_id, their_public_did="did:sov:123"
     )
 
-    presentation = IndyPresSpec(
+    presentation = V10PresentationSendRequest(
         self_attested_attributes={},
         requested_attributes={
             "group_name": IndyRequestedCredsRequestedAttr(

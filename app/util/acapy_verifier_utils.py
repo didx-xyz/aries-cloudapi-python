@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Set, Union
 
-from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
+from aries_cloudcontroller import AcaPyClient, ConnRecord, V10PresentationSendRequest
 
 from app.exceptions import CloudApiException
 from app.models.trust_registry import Actor
@@ -217,7 +217,7 @@ async def get_actor_by_name(name: str) -> Actor:
 
 
 async def get_schema_ids(
-    aries_controller: AcaPyClient, presentation: IndyPresSpec
+    aries_controller: AcaPyClient, presentation: V10PresentationSendRequest
 ) -> List[str]:
     """Get schema ids from credentials that will be revealed in the presentation"""
     bound_logger = logger.bind(body=presentation)

@@ -104,7 +104,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         json={
             "tag": random_string(5),
             "schema_id": schema_id,
-            "support_revocation": True,
+            # "support_revocation": True,
         },
     )
 

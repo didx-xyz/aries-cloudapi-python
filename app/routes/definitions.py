@@ -225,7 +225,7 @@ async def create_credential_definition(
         result = await aries_controller.credential_definition.publish_cred_def(
             body=CredentialDefinitionSendRequest(
                 schema_id=credential_definition.schema_id,
-                support_revocation=credential_definition.support_revocation,
+                # support_revocation=credential_definition.support_revocation,
                 tag=credential_definition.tag,
             )
         )
@@ -286,9 +286,11 @@ async def create_credential_definition(
             raise CloudApiException(
                 "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def."
             )
-        # Temporary workaround for "Not issuer of credential definition" error PR #469
-        time.sleep(1)
-        if credential_definition.support_revocation:
+
+        support_revocation = False  # TODO: re-add support for revocation
+        if support_revocation:
+            # Temporary workaround for "Not issuer of credential definition" error PR #469
+            time.sleep(1)
             bound_logger.debug("Supporting revocation. Creating revocation registry")
             try:
                 # Create a revocation registry and publish it on the ledger

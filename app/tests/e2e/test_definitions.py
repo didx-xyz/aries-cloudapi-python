@@ -29,7 +29,7 @@ async def test_create_credential_definition(mock_governance_auth: AcaPyAuthVerif
     schema_id = schema_result["id"]
 
     credential_definition = CreateCredentialDefinition(
-        schema_id=schema_id, tag=random_string(5), support_revocation=True
+        schema_id=schema_id, tag=random_string(5), support_revocation=False
     )
 
     # when
@@ -131,7 +131,7 @@ async def test_create_credential_definition_issuer_tenant(
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id,
         tag=random_string(5),
-        support_revocation=True,
+        support_revocation=False,
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))

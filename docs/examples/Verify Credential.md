@@ -1,0 +1,1097 @@
+## 5: Verify Issued Credential
+### Create connection between Verifier and Holder
+Again we first create a `connection` between the `Verifier` and `Holder`.
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/generic/connections/create-invitation' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "alias": "Verifier <> Holder",
+  "multi_use": false,
+  "use_public_did": false
+}'
+```
+Response
+```json
+{
+  "connection_id": "30f0c10e-b8d6-4609-8a13-fca96b2ff00f",
+  "invitation": {
+    "@id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+    "@type": "https://didcomm.org/connections/1.0/invitation",
+    "did": null,
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "label": "Demo Verifier",
+    "recipientKeys": [
+      "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ"
+    ],
+    "routingKeys": null,
+    "serviceEndpoint": "http://governance-multitenant-agent:3020"
+  },
+  "invitation_url": "http://governance-multitenant-agent:3020?c_i=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL2Nvbm5lY3Rpb25zLzEuMC9pbnZpdGF0aW9uIiwgIkBpZCI6ICI0YTY4ZWQ0Yi02YTg2LTQ1ZTItOTVlOS1hNzZlZGNkOTNiYzQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHA6Ly9nb3Zlcm5hbmNlLW11bHRpdGVuYW50LWFnZW50OjMwMjAiLCAiaW1hZ2VVcmwiOiAiaHR0cHM6Ly91cGxvYWQud2lraW1lZGlhLm9yZy93aWtpcGVkaWEvY29tbW9ucy83LzcwL0V4YW1wbGUucG5nIiwgInJlY2lwaWVudEtleXMiOiBbIkNuM3JIdWZYYTk0eENVS29TR3NlWGluRlNuNm9OQmI1NDNuMTVORTZtTHpKIl0sICJsYWJlbCI6ICJEZW1vIFZlcmlmaWVyIn0="
+}
+```
+The `Holder` `accepts` the invitation
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/generic/connections/accept-invitation' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "alias": "Holder <> Verifier",
+  "use_existing_connection": false,
+  "invitation": {
+    "@id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+    "@type": "https://didcomm.org/connections/1.0/invitation",
+    "did": null,
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "label": "Demo Verifier",
+    "recipientKeys": [
+      "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ"
+    ],
+    "routingKeys": null,
+    "serviceEndpoint": "http://governance-multitenant-agent:3020"
+  }
+}'
+```
+Response
+```json
+{
+  "alias": "Holder <> Verifier",
+  "connection_id": "bc8f43aa-5c02-401d-86a0-45d6d08f94b8",
+  "connection_protocol": "connections/1.0",
+  "created_at": "2023-11-20T10:06:01.683789Z",
+  "error_msg": null,
+  "invitation_key": "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ",
+  "invitation_mode": "once",
+  "invitation_msg_id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+  "my_did": "CnjLLG4U5RPbrYHG4cTMWw",
+  "state": "request-sent",
+  "their_did": null,
+  "their_label": "Demo Verifier",
+  "their_public_did": null,
+  "their_role": "inviter",
+  "updated_at": "2023-11-20T10:06:01.721340Z"
+}
+```
+Listen to SSE until `state`: `completed`
+```json
+  {
+    "wallet_id": "7bb24cc8-2e56-4326-9020-7870ad67b257",
+    "topic": "connections",
+    "origin": "multitenant",
+    "payload": {
+      "alias": "Holder <> Verifier",
+      "connection_id": "bc8f43aa-5c02-401d-86a0-45d6d08f94b8",
+      "connection_protocol": "connections/1.0",
+      "created_at": "2023-11-20T10:06:01.683789Z",
+      "error_msg": null,
+      "invitation_key": "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ",
+      "invitation_mode": "once",
+      "invitation_msg_id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
+      "my_did": "CnjLLG4U5RPbrYHG4cTMWw",
+      "state": "completed",
+      "their_did": "2guow2rkGp9wESxZPEWPSJ",
+      "their_label": "Demo Verifier",
+      "their_public_did": null,
+      "their_role": "inviter",
+      "updated_at": "2023-11-20T10:06:01.922033Z"
+    }
+  }
+```
+
+***
+
+### Sending proof request
+Once the connection is made the Verifier can send a proof request.
+
+>There are optional restrictions and additional fields that can be added to the proof request, which are beyond the scope of this simple example.
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/generic/verifier/send-request' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "protocol_version": "v1",
+  "auto_verify": true,
+  "comment": "Demo",
+  "trace": true,
+  "type": "indy",
+  "indy_proof_request": {
+       "requested_attributes": { 
+           "surname": { "name": "Surname", "restrictions":[]},
+           "name": { "name": "Name", "restrictions": []},
+           "age": { "name": "Age", "restrictions": []}
+        }, 
+       "requested_predicates": {}   
+  },
+  "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40"
+}'
+```
+Response
+```json
+{
+  "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
+  "created_at": "2023-11-22T10:12:20.755226Z",
+  "error_msg": null,
+  "parent_thread_id": "ce5b5597-d3fa-437b-a857-0927694cc4b9",
+  "presentation": null,
+  "presentation_request": {
+    "name": null,
+    "non_revoked": null,
+    "nonce": "1040329690360437135931695",
+    "requested_attributes": {
+      "surname": {
+        "name": "Surname",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "name": {
+        "name": "Name",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "age": {
+        "name": "Age",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {},
+    "version": null
+  },
+  "proof_id": "v1-57c1bf16-1fc3-4506-b672-8b11580c4920",
+  "protocol_version": "v1",
+  "role": "verifier",
+  "state": "request-sent",
+  "thread_id": "ce5b5597-d3fa-437b-a857-0927694cc4b9",
+  "updated_at": "2023-11-22T10:12:20.755226Z",
+  "verified": null
+}
+```
+
+### Holder responds to proof request
+
+On holder sse we can see on topic `proofs` we have received a request.
+
+```json
+{
+  "wallet_id": "4e0c70fb-f2ad-4f59-81f3-93d8df9b977a",
+  "topic": "proofs",
+  "origin": "multitenant",
+  "payload": {
+    "connection_id": "ab1cc0fe-d797-429c-be36-7830a79d52a1",
+    "created_at": "2023-11-16T09:59:19.612647Z",
+    "error_msg": null,
+    "parent_thread_id": null,
+    "presentation": null,
+    "presentation_request": null,
+    "proof_id": "v1-ba39fb0f-4dff-4bce-8db0-fdad3432cc7d",
+    "protocol_version": "v1",
+    "role": "prover",
+    "state": "request-received",
+    "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "updated_at": "2023-11-16T09:59:19.612647Z",
+    "verified": null
+  }
+}
+```
+
+Holder can `GET` the proof request
+```bash
+curl -X 'GET' \
+  'http://localhost:8100/generic/verifier/proofs' \
+  -H 'accept: application/json'
+  -H 'x-api-key: tenant.<holder token>' \
+```
+Response
+
+```json
+[
+  {
+    "connection_id": "ab1cc0fe-d797-429c-be36-7830a79d52a1",
+    "created_at": "2023-11-16T09:59:19.612647Z",
+    "error_msg": null,
+    "parent_thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "presentation": null,
+    "presentation_request": {
+      "name": "Proof Request",
+      "non_revoked": null,
+      "nonce": "234234",
+      "requested_attributes": {
+        "holder surname": {
+          "name": "surname",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder name": {
+          "name": "name",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder age": {
+          "name": "age",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        }
+      },
+      "requested_predicates": {},
+      "version": "1.0"
+    },
+    "proof_id": "v1-ba39fb0f-4dff-4bce-8db0-fdad3432cc7d",
+    "protocol_version": "v1",
+    "role": "prover",
+    "state": "request-received",
+    "thread_id": "aea706fd-5492-4ed7-ab1c-1bb9ff309926",
+    "updated_at": "2023-11-16T09:59:19.612647Z",
+    "verified": null
+  }
+]
+```
+
+The Holder can now check which credentials match the fields that are requested in the proof request by using the `proof_id` and making the following call.
+>NOTE: If the call is successful but returns an empty list `[]` it means the credentials of the `Holder` don't have the requested fields.
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8100/generic/verifier/proofs/v1-93e29a31-5eab-4091-9d1d-f27220f445fd/credentials' \
+  -H 'accept: application/json'
+```
+Response
+
+>NOTE: This response is a list. Each object in this list corresponds to a credential, matching the requested attributes. In this case, the response has only one object, meaning all the requested attributes are found in one credential.
+
+```json
+[
+  {
+    "cred_info": {
+      "attrs": {
+        "Age": "25",
+        "Surname": "Holder",
+        "Name": "Alice"
+      },
+      "cred_def_id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+      "cred_rev_id": null,
+      "referent": "10e6b03f-2b60-431a-9634-731594423120",
+      "rev_reg_id": null,
+      "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0"
+    },
+    "interval": null,
+    "presentation_referents": [
+      "name",
+      "age",
+      "surname"
+    ]
+  }
+]
+```
+We can now use the `referent` (the referent is the credential id) from the response above to respond to the proof request.
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/generic/verifier/accept-request' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "proof_id": "v1-614a1035-c855-417d-8a8e-0c824bb6ab0f",
+  "type": "indy",
+  "indy_presentation_spec": {
+    "requested_attributes": {
+      "holder surname": {
+        "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+        "revealed": true
+      },
+      "holder name": {
+        "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+        "revealed": true
+      },
+      "holder age": {
+        "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+        "revealed": true
+      }
+    },
+    "requested_predicates": {},
+    "self_attested_attributes": {},
+    "trace": true
+  },
+  "dif_presentation_spec": {}
+}'
+```
+<details>
+<summary>Click to see Response</summary>
+
+```json
+{
+  "connection_id": "43264326-57a7-4ef4-aa65-906dd9c15961",
+  "created_at": "2023-11-22T06:11:46.956062Z",
+  "error_msg": null,
+  "parent_thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+  "presentation": {
+    "identifiers": [
+      {
+        "cred_def_id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+        "rev_reg_id": null,
+        "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+        "timestamp": null
+      }
+    ],
+    "proof": {
+      "aggregated_proof": {
+        "c_hash": "3219322627487542487718476352817657516298296911958347169452423884069641575597",
+        "c_list": [
+          [
+            2,
+            221,
+            130,
+            248,
+            96,
+            145,
+            3,
+            19,
+            86,
+            111,
+            75,
+            202,
+            101,
+            190,
+            166,
+            101,
+            222,
+            83,
+            181,
+            133,
+            88,
+            134,
+            152,
+            205,
+            154,
+            157,
+            121,
+            159,
+            222,
+            242,
+            106,
+            13,
+            230,
+            195,
+            11,
+            190,
+            135,
+            220,
+            247,
+            176,
+            99,
+            219,
+            111,
+            54,
+            194,
+            20,
+            58,
+            24,
+            18,
+            180,
+            166,
+            137,
+            86,
+            52,
+            160,
+            181,
+            69,
+            122,
+            169,
+            189,
+            227,
+            26,
+            112,
+            88,
+            87,
+            212,
+            121,
+            114,
+            104,
+            224,
+            34,
+            88,
+            198,
+            62,
+            41,
+            104,
+            72,
+            28,
+            230,
+            183,
+            105,
+            72,
+            19,
+            179,
+            71,
+            70,
+            185,
+            14,
+            189,
+            35,
+            240,
+            30,
+            19,
+            18,
+            74,
+            28,
+            209,
+            155,
+            210,
+            245,
+            5,
+            182,
+            236,
+            88,
+            148,
+            92,
+            113,
+            94,
+            112,
+            157,
+            120,
+            124,
+            176,
+            145,
+            130,
+            191,
+            158,
+            172,
+            209,
+            155,
+            196,
+            182,
+            254,
+            161,
+            142,
+            151,
+            57,
+            64,
+            217,
+            197,
+            251,
+            26,
+            217,
+            6,
+            157,
+            20,
+            184,
+            229,
+            204,
+            71,
+            239,
+            224,
+            97,
+            192,
+            7,
+            32,
+            139,
+            179,
+            45,
+            56,
+            104,
+            242,
+            27,
+            108,
+            105,
+            16,
+            195,
+            38,
+            206,
+            6,
+            229,
+            23,
+            217,
+            93,
+            229,
+            145,
+            43,
+            162,
+            184,
+            83,
+            236,
+            224,
+            151,
+            14,
+            246,
+            88,
+            28,
+            175,
+            194,
+            128,
+            55,
+            146,
+            182,
+            15,
+            51,
+            142,
+            192,
+            45,
+            66,
+            176,
+            5,
+            118,
+            162,
+            182,
+            127,
+            210,
+            138,
+            22,
+            71,
+            33,
+            199,
+            251,
+            156,
+            205,
+            134,
+            223,
+            129,
+            100,
+            39,
+            138,
+            82,
+            216,
+            211,
+            161,
+            239,
+            132,
+            143,
+            245,
+            78,
+            110,
+            123,
+            31,
+            28,
+            20,
+            81,
+            24,
+            34,
+            164,
+            92,
+            191,
+            161,
+            155,
+            95,
+            37,
+            236,
+            241,
+            104,
+            31,
+            44,
+            32,
+            228,
+            112,
+            54,
+            137,
+            185,
+            45,
+            50,
+            128,
+            165,
+            17,
+            146,
+            173,
+            76,
+            207,
+            139,
+            188,
+            86
+          ]
+        ]
+      },
+      "proofs": [
+        {
+          "non_revoc_proof": null,
+          "primary_proof": {
+            "eq_proof": {
+              "a_prime": "92597261364394573165798933206533873274818813554675314388834609214520451243506734698448096207402731652789469725195145055105917971057920264989928171704522593743252490178690283437784743905012499904700894606906309427641583319756548276546373363945895559868229969308193292457397634314963761281537966097120145941689340239003846353279523031397561117824074885969998755774047375812117254015086086327641691631120274066141962922583569022418346548630437011398158732791806960405413425149859143261920638335398685180692831937170597199293158031064440427622938387179103372469977953757491023725678740519541874103809504689969056992443478",
+              "e": "139576114533144843765365485948672911754849479730454517268626172894808349120628232687844627250894901901444419162131196679546301249539186633",
+              "m": {
+                "master_secret": "11313878836652481093538491067066716917618918684986781677498100291327327294712565037265903104959502395823470316356815769103872584855373351459316875965607907885085480933955585212797"
+              },
+              "m2": "952796644814158263417921756778160668714670444093582103230277746011454225674086840766136694107772192040583625936692866408375991485556061508383679795285000351226246569376146219242630438812649357759667630589508432501406050167017790749794444543599980358242279673248021181430812778630233649859519876366094469234209525680800853320283617463718889125432471297559749914110901257600837546947472966754606287389925566071725445074651890679508526477419133936301519649141358488640498744383401260212460107065963366910858604508009842501065020264048734554519574085388170068243167282829426541287800353133878852127155791851098224388627337960618814575934368630255728403929538146075801694428284852702031675884215430539738867869842932739395881015416494982",
+              "revealed_attrs": {
+                "age": "25",
+                "name": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+                "surname": "108415864455171922802944099373800995974825385451497756533671241088029831060565"
+              },
+              "v": "1331026966953582785818338353799288282359786234079889219431593960408605538608223451755924755941140336740631622725165696550196656519010633325918956440778724270881127808546929502694355203343479965644938083460073494635204543868677044622670671592867142359550682889892999731792559550932885565619210172247612076523614186116158117077869537796193004281519312365483295141707223894330237519321312733202277572686673864415154671586378882830756918791801718207494310622268272278885926398323574974198739648105160879188702329611740167270487253885545365999324184190465536096302659565389426137436577608051202160797859204222565906224333217588419204486716667105343422005890994186746160712671250037431283753324069665045377057217272415847371226643170876309035001514787888414116747404925496536930439560688063684489273903666992639751700736443038628066074240185641486264355047388062907076057441778218408650717621429494453115195844551924893907149670"
+            },
+            "ge_proofs": []
+          }
+        }
+      ]
+    },
+    "requested_proof": {
+      "predicates": {},
+      "revealed_attr_groups": null,
+      "revealed_attrs": {
+        "holder surname": {
+          "encoded": "108415864455171922802944099373800995974825385451497756533671241088029831060565",
+          "raw": "Holder",
+          "sub_proof_index": 0
+        },
+        "holder name": {
+          "encoded": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+          "raw": "Alice",
+          "sub_proof_index": 0
+        },
+        "holder age": {
+          "encoded": "25",
+          "raw": "25",
+          "sub_proof_index": 0
+        }
+      },
+      "self_attested_attrs": {},
+      "unrevealed_attrs": {}
+    }
+  },
+  "presentation_request": {
+    "name": "Proof Request",
+    "non_revoked": null,
+    "nonce": "234234",
+    "requested_attributes": {
+      "holder surname": {
+        "name": "surname",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder name": {
+        "name": "name",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      },
+      "holder age": {
+        "name": "age",
+        "names": null,
+        "non_revoked": null,
+        "restrictions": []
+      }
+    },
+    "requested_predicates": {},
+    "version": "1.0"
+  },
+  "proof_id": "v1-614a1035-c855-417d-8a8e-0c824bb6ab0f",
+  "protocol_version": "v1",
+  "role": "prover",
+  "state": "presentation-sent",
+  "thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+  "updated_at": "2023-11-22T06:28:01.553809Z",
+  "verified": null
+}
+```
+</details>
+
+Once again, we wait for the exchange to be completed by listening to SSE. 
+Here is an example event for the topic `proofs` at the `done` state.
+
+```json
+  {
+    "wallet_id": "92893658-fe2d-4f2d-8268-a60a601945a9",
+    "topic": "proofs",
+    "origin": "multitenant",
+    "payload": {
+      "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
+      "created_at": "2023-11-22T06:11:46.897536Z",
+      "error_msg": null,
+      "parent_thread_id": null,
+      "presentation": null,
+      "presentation_request": null,
+      "proof_id": "v1-e83d3d75-9eb1-4d54-a321-7d0d5c5d286e",
+      "protocol_version": "v1",
+      "role": "verifier",
+      "state": "done",
+      "thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+      "updated_at": "2023-11-22T06:28:01.704464Z",
+      "verified": true
+    }
+  }
+```
+
+Verifier can get the proof with all it's data by making the following call:
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8100/generic/verifier/proofs' \
+  -H 'accept: application/json'
+```
+
+<details>
+<summary> Click to see Response </summary>
+
+```json
+[
+  {
+    "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
+    "created_at": "2023-11-22T06:11:46.897536Z",
+    "error_msg": null,
+    "parent_thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+    "presentation": {
+      "identifiers": [
+        {
+          "cred_def_id": "2hPti9M3aQqsRCy8N6jrDB:3:CL:10:Demo Person",
+          "rev_reg_id": null,
+          "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
+          "timestamp": null
+        }
+      ],
+      "proof": {
+        "aggregated_proof": {
+          "c_hash": "3219322627487542487718476352817657516298296911958347169452423884069641575597",
+          "c_list": [
+            [
+              2,
+              221,
+              130,
+              248,
+              96,
+              145,
+              3,
+              19,
+              86,
+              111,
+              75,
+              202,
+              101,
+              190,
+              166,
+              101,
+              222,
+              83,
+              181,
+              133,
+              88,
+              134,
+              152,
+              205,
+              154,
+              157,
+              121,
+              159,
+              222,
+              242,
+              106,
+              13,
+              230,
+              195,
+              11,
+              190,
+              135,
+              220,
+              247,
+              176,
+              99,
+              219,
+              111,
+              54,
+              194,
+              20,
+              58,
+              24,
+              18,
+              180,
+              166,
+              137,
+              86,
+              52,
+              160,
+              181,
+              69,
+              122,
+              169,
+              189,
+              227,
+              26,
+              112,
+              88,
+              87,
+              212,
+              121,
+              114,
+              104,
+              224,
+              34,
+              88,
+              198,
+              62,
+              41,
+              104,
+              72,
+              28,
+              230,
+              183,
+              105,
+              72,
+              19,
+              179,
+              71,
+              70,
+              185,
+              14,
+              189,
+              35,
+              240,
+              30,
+              19,
+              18,
+              74,
+              28,
+              209,
+              155,
+              210,
+              245,
+              5,
+              182,
+              236,
+              88,
+              148,
+              92,
+              113,
+              94,
+              112,
+              157,
+              120,
+              124,
+              176,
+              145,
+              130,
+              191,
+              158,
+              172,
+              209,
+              155,
+              196,
+              182,
+              254,
+              161,
+              142,
+              151,
+              57,
+              64,
+              217,
+              197,
+              251,
+              26,
+              217,
+              6,
+              157,
+              20,
+              184,
+              229,
+              204,
+              71,
+              239,
+              224,
+              97,
+              192,
+              7,
+              32,
+              139,
+              179,
+              45,
+              56,
+              104,
+              242,
+              27,
+              108,
+              105,
+              16,
+              195,
+              38,
+              206,
+              6,
+              229,
+              23,
+              217,
+              93,
+              229,
+              145,
+              43,
+              162,
+              184,
+              83,
+              236,
+              224,
+              151,
+              14,
+              246,
+              88,
+              28,
+              175,
+              194,
+              128,
+              55,
+              146,
+              182,
+              15,
+              51,
+              142,
+              192,
+              45,
+              66,
+              176,
+              5,
+              118,
+              162,
+              182,
+              127,
+              210,
+              138,
+              22,
+              71,
+              33,
+              199,
+              251,
+              156,
+              205,
+              134,
+              223,
+              129,
+              100,
+              39,
+              138,
+              82,
+              216,
+              211,
+              161,
+              239,
+              132,
+              143,
+              245,
+              78,
+              110,
+              123,
+              31,
+              28,
+              20,
+              81,
+              24,
+              34,
+              164,
+              92,
+              191,
+              161,
+              155,
+              95,
+              37,
+              236,
+              241,
+              104,
+              31,
+              44,
+              32,
+              228,
+              112,
+              54,
+              137,
+              185,
+              45,
+              50,
+              128,
+              165,
+              17,
+              146,
+              173,
+              76,
+              207,
+              139,
+              188,
+              86
+            ]
+          ]
+        },
+        "proofs": [
+          {
+            "non_revoc_proof": null,
+            "primary_proof": {
+              "eq_proof": {
+                "a_prime": "92597261364394573165798933206533873274818813554675314388834609214520451243506734698448096207402731652789469725195145055105917971057920264989928171704522593743252490178690283437784743905012499904700894606906309427641583319756548276546373363945895559868229969308193292457397634314963761281537966097120145941689340239003846353279523031397561117824074885969998755774047375812117254015086086327641691631120274066141962922583569022418346548630437011398158732791806960405413425149859143261920638335398685180692831937170597199293158031064440427622938387179103372469977953757491023725678740519541874103809504689969056992443478",
+                "e": "139576114533144843765365485948672911754849479730454517268626172894808349120628232687844627250894901901444419162131196679546301249539186633",
+                "m": {
+                  "master_secret": "11313878836652481093538491067066716917618918684986781677498100291327327294712565037265903104959502395823470316356815769103872584855373351459316875965607907885085480933955585212797"
+                },
+                "m2": "952796644814158263417921756778160668714670444093582103230277746011454225674086840766136694107772192040583625936692866408375991485556061508383679795285000351226246569376146219242630438812649357759667630589508432501406050167017790749794444543599980358242279673248021181430812778630233649859519876366094469234209525680800853320283617463718889125432471297559749914110901257600837546947472966754606287389925566071725445074651890679508526477419133936301519649141358488640498744383401260212460107065963366910858604508009842501065020264048734554519574085388170068243167282829426541287800353133878852127155791851098224388627337960618814575934368630255728403929538146075801694428284852702031675884215430539738867869842932739395881015416494982",
+                "revealed_attrs": {
+                  "age": "25",
+                  "name": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+                  "surname": "108415864455171922802944099373800995974825385451497756533671241088029831060565"
+                },
+                "v": "1331026966953582785818338353799288282359786234079889219431593960408605538608223451755924755941140336740631622725165696550196656519010633325918956440778724270881127808546929502694355203343479965644938083460073494635204543868677044622670671592867142359550682889892999731792559550932885565619210172247612076523614186116158117077869537796193004281519312365483295141707223894330237519321312733202277572686673864415154671586378882830756918791801718207494310622268272278885926398323574974198739648105160879188702329611740167270487253885545365999324184190465536096302659565389426137436577608051202160797859204222565906224333217588419204486716667105343422005890994186746160712671250037431283753324069665045377057217272415847371226643170876309035001514787888414116747404925496536930439560688063684489273903666992639751700736443038628066074240185641486264355047388062907076057441778218408650717621429494453115195844551924893907149670"
+              },
+              "ge_proofs": []
+            }
+          }
+        ]
+      },
+      "requested_proof": {
+        "predicates": {},
+        "revealed_attr_groups": null,
+        "revealed_attrs": {
+          "holder surname": {
+            "encoded": "108415864455171922802944099373800995974825385451497756533671241088029831060565",
+            "raw": "Holder",
+            "sub_proof_index": 0
+          },
+          "holder name": {
+            "encoded": "27034640024117331033063128044004318218486816931520886405535659934417438781507",
+            "raw": "Alice",
+            "sub_proof_index": 0
+          },
+          "holder age": {
+            "encoded": "25",
+            "raw": "25",
+            "sub_proof_index": 0
+          }
+        },
+        "self_attested_attrs": {},
+        "unrevealed_attrs": {}
+      }
+    },
+    "presentation_request": {
+      "name": "Proof Request",
+      "non_revoked": null,
+      "nonce": "234234",
+      "requested_attributes": {
+        "holder surname": {
+          "name": "surname",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder name": {
+          "name": "name",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        },
+        "holder age": {
+          "name": "age",
+          "names": null,
+          "non_revoked": null,
+          "restrictions": []
+        }
+      },
+      "requested_predicates": {},
+      "version": "1.0"
+    },
+    "proof_id": "v1-e83d3d75-9eb1-4d54-a321-7d0d5c5d286e",
+    "protocol_version": "v1",
+    "role": "verifier",
+    "state": "done",
+    "thread_id": "13a9375e-c124-445d-9242-d77ee54cf47f",
+    "updated_at": "2023-11-22T06:28:01.704464Z",
+    "verified": true
+  }
+]
+```
+
+</details>

@@ -163,7 +163,7 @@ To query entries in the Trust Registry, adhere to the following steps:
 
    > NOTE: The Trust Registry is currently public and accessible to anyone on the internet
 
-3. The trust-registry has 5 GET end-points:
+3. The trust-registry has 5 GET endpoints:
     - `GET`  `/trust-registry/schemas`
      - Will return all schemas on the trust registry
 

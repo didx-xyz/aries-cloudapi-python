@@ -1,6 +1,6 @@
 ## 4: Issuing a Credential
 
-Now that the Issuer has a credential definition, he can start issuing credentials. However in order to do that, he firts needs to create a connection to the holder. There are multiple ways to create connections. We will use the `/generic/connections/` end-points in these examples.
+Now that the Issuer has a credential definition, he can start issuing credentials. However in order to do that, he firts needs to create a connection to the holder. There are multiple ways to create connections. We will use the `/generic/connections/` endpoints in these examples.
 
 ### Create connection between Issuer and Holder
 

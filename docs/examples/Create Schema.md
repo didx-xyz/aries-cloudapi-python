@@ -29,3 +29,4 @@ Response
   ]
 }
 ```
+[Create Credential Definition](Credential%20definition.md)

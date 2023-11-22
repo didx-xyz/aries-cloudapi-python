@@ -310,3 +310,4 @@ Response
   ]
 }
 ```
+[Verify Credential](./Verify%20Credential.md)

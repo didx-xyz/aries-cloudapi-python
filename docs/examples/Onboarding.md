@@ -95,3 +95,5 @@ Response
   "group_id": "API demo"
 }
 ```
+
+[Create Credential Schema](Create%20Schema.md)

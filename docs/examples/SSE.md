@@ -1,23 +1,26 @@
 ## 6: Server Sent Events
-There are five different end-points to listen to server sent events (sse) on.
+
+There are five different endpoints for listening to server-sent events (SSE).
+
 - `GET` `/sse/{wallet_id}`
 - `GET` `/sse/{wallet_id}/{topic}`
 - `GET` `/sse/{wallet_id}/{topic}/{desired_state}`
 - `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}`
 - `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
 
+The `field` and `field_id` in the endpoints above refer to any fields in the events, excluding `wallet_id`, `topic`, or `state`, along with their corresponding IDs. i.e. You can pass `connection_id` and the ID of the connection if you only want to see events on a specific connection.
+
 Topics:
- - basic-messages
  - connections
  - proofs 
  - credentials
- - endorsements 
  - oob 
  - revocation 
+ - endorsements 
  - issuer_cred_rev
  - problem_report
+ - basic-messages
 
-TODO: Explain the fields and their ids
 
 Here is example Javascript implementation
 

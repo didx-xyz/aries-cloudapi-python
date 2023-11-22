@@ -1,0 +1,97 @@
+## 1: Onboarding Tenants
+
+When onboarding users, also refered to as tenants, you need to use the `tenant-admin` role.  Below, you will find the curl commands used to create an `Issuer`, `Verifier` and a `Holder`. If you are using the [swagger doc](http://localhost:8100/docs) to do the onboarding, just use the JSON in the field marked with `-d` in the curl commands. 
+
+The only difference between an `Issuer`, `Verifier` and `Holder` is the roles given to them when created. A tenant can have both the issuer and verifier role and a `Holder` is just a tenant without a role.
+
+>NOTE: See the `x-api-key` used for the tenant creation 
+
+### Onboard Issuer
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/admin/tenants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant-admin.adminApiKey' \
+  -d '{
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "roles": [
+    "issuer"
+  ],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+```
+Response
+
+```json
+{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiJkZWEwYTlmYi0wODhkLTQ2ODktYmM5Yy04YTFiYWI5MDYxNzAiLCJpYXQiOjE3MDA2MzE4NzN9.7Pwb5Q6BKHA6N9luJH1uDiHdgSZXPWwvdV4O0xZeqFQ",
+  "wallet_label": "Demo Issuer",
+  "wallet_name": "Faber",
+  "created_at": "2023-11-20T09:49:45.809544Z",
+  "updated_at": "2023-11-20T09:49:45.841851Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+```
+### Onboard Verifier
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/admin/tenants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant-admin.adminApiKey' \
+  -d '{
+  "wallet_label": "Demo Verifier",
+  "wallet_name": "Acme",
+  "roles": [
+    "verifier"
+  ],
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+```
+Response
+```json
+{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiI5Mjg5MzY1OC1mZTJkLTRmMmQtODI2OC1hNjBhNjAxOTQ1YTkiLCJpYXQiOjE3MDA2MzE2MTd9.E5USXOEmKlpZelGzwGs7VxZWfQzvOBPADB2r95pyuWA",
+  "wallet_id": "92893658-fe2d-4f2d-8268-a60a601945a9",
+  "wallet_label": "Demo Verifier",
+  "wallet_name": "Acme",
+  "created_at": "2023-11-22T05:40:16.606565Z",
+  "updated_at": "2023-11-22T05:40:16.630619Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+```
+### Onboard Holder
+```bash
+curl -X 'POST' \
+  'http://localhost:8100/admin/tenants' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'x-api-key: tenant-admin.adminApiKey' \
+  -d '{
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "group_id": "API demo",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+}'
+```
+Response
+```json
+{
+  "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIyMjcxZjdmMi03MzU5LTRkMDgtYWI2Ni0xMWI2NjFlZDA5ZjQiLCJpYXQiOjE3MDA2MzE2OTN9.uKfcvq06KSlLHlGkH9zaXHcFA3V2WzNvxRVbyNgjXNc",
+  "wallet_id": "2271f7f2-7359-4d08-ab66-11b661ed09f4",
+  "wallet_label": "Demo Holder",
+  "wallet_name": "Alice",
+  "created_at": "2023-11-22T05:41:32.662976Z",
+  "updated_at": "2023-11-22T05:41:32.707778Z",
+  "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+  "group_id": "API demo"
+}
+```

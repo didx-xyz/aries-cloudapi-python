@@ -12,6 +12,7 @@ from aries_cloudcontroller import (
 )
 
 from app.exceptions import CloudApiException
+from app.util.caching import cache
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -200,6 +201,7 @@ async def write_credential_def(
     return write_cred_response.credential_definition_id
 
 
+@cache.cache(expire=60 * 60 * 24)  # 24 hour caching
 async def schema_id_from_credential_definition_id(
     controller: AcaPyClient, credential_definition_id: str
 ):

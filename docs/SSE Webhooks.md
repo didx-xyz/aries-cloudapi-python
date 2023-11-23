@@ -1,3 +1,55 @@
+# Server Sent Events
+
+There are five different endpoints for listening to server-sent events (SSE).
+
+- `GET` `/sse/{wallet_id}`
+- `GET` `/sse/{wallet_id}/{topic}`
+- `GET` `/sse/{wallet_id}/{topic}/{desired_state}`
+- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}`
+- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
+
+The `field` and `field_id` in the endpoints above refer to any fields in the events, excluding `wallet_id`, `topic`, or `state`, along with their corresponding IDs. i.e. You can pass `connection_id` and the ID of the connection if you only want to see events on a specific connection.
+
+Topics:
+ - basic-messages
+ - connections
+ - proofs
+ - credentials
+ - endorsements
+ - oob
+ - revocation
+ - issuer_cred_rev
+ - problem_report
+
+
+Here is example Javascript implementation
+
+```js
+const EventSource = require('eventsource');
+url = "http://localhost:8100/sse/<wallet_id>"
+
+const headers = {
+    'x-api-key':"tenant.<tenant/wallet_token>",
+  };
+const eventSource = new EventSource(url,{headers});
+// Event listener for incoming server-sent events
+eventSource.onmessage = (event) => {
+  const eventData = JSON.parse(event.data);
+  // log event
+  console.log("EVENT ==> ", eventData)
+};
+
+// Event listener for handling errors
+eventSource.onerror = (error) => {
+  console.error('EventSource error:', error);
+  // You can add error handling logic here if needed
+};
+
+console.log("<==============>")
+```
+
+***
+
 # Webhooks
 
 The webhooks container serves as both a relay and storage for the webhooks, enabling hooks to be retrieved at a later time. Furthermore, the webhooks container processes the webhooks in two distinct ways.
@@ -8,25 +60,21 @@ Secondly, the webhooks are stored by topic and wallet ID. Consequently, the hook
 
 There are also two ways to retrieve webhook data. The first method is the classic HTTP request, potentially used multiple times to create a polling system. Find the HTTP endpoints via the [webhooks SwaggerUI](http://localhost:3010/docs) and create your own polling mechanism. Alternatively, you can subscribe via the PubSub mechanism (underlying Websockets) at the [/pubsub endpoint](http://localhost:3010/pubsub) by specifying one or more topics. A brief example of how to do this in Python using the [`fastapi_websocket_pubsub`](https://github.com/permitio/fastapi_websocket_pubsub) package can be found in `webhooks/clients.example.py`.
 
-**_NOTE_**: The webhooks container is **NOT** intended to be directly exposed to the world wide web, especially not via pubsub/websocket as there is NO authentication mechanism in place. Exposing the websocket will leave anyone on the internet able to read any webhook.
+>**_NOTE_**: The webhooks container is **NOT** intended to be directly exposed to the world wide web, especially not via pubsub/websocket as there is NO authentication mechanism in place. Exposing the websocket will leave anyone on the internet able to read any webhook.
 
 Valid topics are:
 
 ```python
 topics = Literal[
+    "basic-messages",
     "connections",
-    "issue_credential",
-    "forward",
-    "ping",
+    "proofs",
+    "credentials",
+    "endorsements",
     "oob",
-    "basicmessages",
+    "revocation",
     "issuer_cred_rev",
-    "issue_credential_v2_0",
-    "issue_credential_v2_0_indy",
-    "issue_credential_v2_0_dif",
-    "present_proof",
-    "present_proof_v2_0",
-    "revocation_registry",
+    "problem_report",
 ]
 ```
 

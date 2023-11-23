@@ -119,17 +119,14 @@ class VerifierV2(Verifier):
         cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
         if accept_proof_request.type == ProofRequestType.INDY:
-            v10_pres_spec = accept_proof_request.indy_presentation_spec
-            indy_pres_spec = IndyPresSpec(
-                requested_attributes=v10_pres_spec.requested_attributes,
-                requested_predicates=v10_pres_spec.requested_predicates,
-                self_attested_attributes=v10_pres_spec.self_attested_attributes,
-                trace=v10_pres_spec.trace,
+            presentation_spec = V20PresSpecByFormatRequest(
+                indy=accept_proof_request.indy_presentation_spec,
+                auto_remove=accept_proof_request.auto_remove,
             )
-            presentation_spec = V20PresSpecByFormatRequest(indy=indy_pres_spec)
         elif accept_proof_request.type == ProofRequestType.LD_PROOF:
             presentation_spec = V20PresSpecByFormatRequest(
-                dif=accept_proof_request.dif_presentation_spec
+                dif=accept_proof_request.dif_presentation_spec,
+                auto_remove=accept_proof_request.auto_remove,
             )
         else:
             raise CloudApiException(

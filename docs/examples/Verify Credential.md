@@ -1,111 +1,11 @@
-## 5: Verify Issued Credential
-### Create connection between Verifier and Holder
-Again we first create a `connection` between the `Verifier` and `Holder`.
-```bash
-curl -X 'POST' \
-  'http://localhost:8100/generic/connections/create-invitation' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "alias": "Verifier <> Holder",
-  "multi_use": false,
-  "use_public_did": false
-}'
-```
-Response
-```json
-{
-  "connection_id": "30f0c10e-b8d6-4609-8a13-fca96b2ff00f",
-  "invitation": {
-    "@id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
-    "@type": "https://didcomm.org/connections/1.0/invitation",
-    "did": null,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
-    "label": "Demo Verifier",
-    "recipientKeys": [
-      "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ"
-    ],
-    "routingKeys": null,
-    "serviceEndpoint": "http://governance-multitenant-agent:3020"
-  },
-  "invitation_url": "http://governance-multitenant-agent:3020?c_i=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL2Nvbm5lY3Rpb25zLzEuMC9pbnZpdGF0aW9uIiwgIkBpZCI6ICI0YTY4ZWQ0Yi02YTg2LTQ1ZTItOTVlOS1hNzZlZGNkOTNiYzQiLCAic2VydmljZUVuZHBvaW50IjogImh0dHA6Ly9nb3Zlcm5hbmNlLW11bHRpdGVuYW50LWFnZW50OjMwMjAiLCAiaW1hZ2VVcmwiOiAiaHR0cHM6Ly91cGxvYWQud2lraW1lZGlhLm9yZy93aWtpcGVkaWEvY29tbW9ucy83LzcwL0V4YW1wbGUucG5nIiwgInJlY2lwaWVudEtleXMiOiBbIkNuM3JIdWZYYTk0eENVS29TR3NlWGluRlNuNm9OQmI1NDNuMTVORTZtTHpKIl0sICJsYWJlbCI6ICJEZW1vIFZlcmlmaWVyIn0="
-}
-```
-The `Holder` `accepts` the invitation
-```bash
-curl -X 'POST' \
-  'http://localhost:8100/generic/connections/accept-invitation' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{
-  "alias": "Holder <> Verifier",
-  "use_existing_connection": false,
-  "invitation": {
-    "@id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
-    "@type": "https://didcomm.org/connections/1.0/invitation",
-    "did": null,
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
-    "label": "Demo Verifier",
-    "recipientKeys": [
-      "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ"
-    ],
-    "routingKeys": null,
-    "serviceEndpoint": "http://governance-multitenant-agent:3020"
-  }
-}'
-```
-Response
-```json
-{
-  "alias": "Holder <> Verifier",
-  "connection_id": "bc8f43aa-5c02-401d-86a0-45d6d08f94b8",
-  "connection_protocol": "connections/1.0",
-  "created_at": "2023-11-20T10:06:01.683789Z",
-  "error_msg": null,
-  "invitation_key": "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ",
-  "invitation_mode": "once",
-  "invitation_msg_id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
-  "my_did": "CnjLLG4U5RPbrYHG4cTMWw",
-  "state": "request-sent",
-  "their_did": null,
-  "their_label": "Demo Verifier",
-  "their_public_did": null,
-  "their_role": "inviter",
-  "updated_at": "2023-11-20T10:06:01.721340Z"
-}
-```
-Listen to SSE until `state`: `completed`
-```json
-  {
-    "wallet_id": "7bb24cc8-2e56-4326-9020-7870ad67b257",
-    "topic": "connections",
-    "origin": "multitenant",
-    "payload": {
-      "alias": "Holder <> Verifier",
-      "connection_id": "bc8f43aa-5c02-401d-86a0-45d6d08f94b8",
-      "connection_protocol": "connections/1.0",
-      "created_at": "2023-11-20T10:06:01.683789Z",
-      "error_msg": null,
-      "invitation_key": "Cn3rHufXa94xCUKoSGseXinFSn6oNBb543n15NE6mLzJ",
-      "invitation_mode": "once",
-      "invitation_msg_id": "4a68ed4b-6a86-45e2-95e9-a76edcd93bc4",
-      "my_did": "CnjLLG4U5RPbrYHG4cTMWw",
-      "state": "completed",
-      "their_did": "2guow2rkGp9wESxZPEWPSJ",
-      "their_label": "Demo Verifier",
-      "their_public_did": null,
-      "their_role": "inviter",
-      "updated_at": "2023-11-20T10:06:01.922033Z"
-    }
-  }
-```
-
-***
+## 7: Verify Issued Credential
 
 ### Sending proof request
+
 Once the connection is made the Verifier can send a proof request.
 
 >There are optional restrictions and additional fields that can be added to the proof request, which are beyond the scope of this simple example.
+
 ```bash
 curl -X 'POST' \
   'http://localhost:8100/generic/verifier/send-request' \
@@ -128,7 +28,9 @@ curl -X 'POST' \
   "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40"
 }'
 ```
+
 Response
+
 ```json
 {
   "connection_id": "5ef9f4e0-9f98-4e43-aef7-de11da2ccd40",
@@ -291,6 +193,7 @@ Response
   }
 ]
 ```
+
 We can now use the `referent` (the referent is the credential id) from the response above to respond to the proof request.
 
 ```bash
@@ -1095,6 +998,3 @@ curl -X 'GET' \
 ```
 
 </details>
-
-
-[SSE Example](./SSE.md)

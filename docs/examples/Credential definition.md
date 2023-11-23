@@ -20,4 +20,4 @@ Response
   "schema_id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0"
 }
 ```
-[Issue Credential](Issue%20Credential.md)
+[Create Connection](Create%20Connection.md)

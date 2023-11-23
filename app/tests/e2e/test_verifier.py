@@ -3,8 +3,8 @@ import time
 import pytest
 from aries_cloudcontroller import (
     AttachmentDef,
+    IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
-    V10PresentationSendRequest,
 )
 from assertpy import assert_that
 
@@ -88,7 +88,7 @@ async def test_accept_proof_request_v1(
 
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        indy_presentation_spec=V10PresentationSendRequest(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -188,7 +188,7 @@ async def test_accept_proof_request_oob_v1(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        indy_presentation_spec=V10PresentationSendRequest(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -279,7 +279,7 @@ async def test_accept_proof_request_oob_v2(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        indy_presentation_spec=V10PresentationSendRequest(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -364,7 +364,7 @@ async def test_accept_proof_request_v2(
     )
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        indy_presentation_spec=V10PresentationSendRequest(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},
@@ -776,7 +776,7 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
 
     proof_accept = AcceptProofRequest(
         proof_id=alice_proof_id,
-        indy_presentation_spec=V10PresentationSendRequest(
+        indy_presentation_spec=IndyPresSpec(
             requested_attributes={"0_speed_uuid": indy_request_attrs},
             requested_predicates={},
             self_attested_attributes={},

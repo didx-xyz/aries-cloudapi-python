@@ -1,5 +1,5 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, V10PresentationSendRequest
+from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 from pydantic import ValidationError
 
@@ -78,7 +78,7 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
         accept_proof_request=AcceptProofRequest(
             protocol_version="v2",
             proof_id="v2-abcd",
-            indy_presentation_spec=V10PresentationSendRequest(
+            indy_presentation_spec=IndyPresSpec(
                 requested_predicates={},
                 requested_attributes={},
                 self_attested_attributes={},

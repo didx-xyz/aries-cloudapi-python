@@ -1,5 +1,5 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, V10PresentationSendRequest
+from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 
 from app.routes.verifier import (
@@ -76,7 +76,7 @@ async def test_accept_proof_request(mock_agent_controller: AcaPyClient):
         mock_agent_controller,
         accept_proof_request=AcceptProofRequest(
             proof_id="v1-123",
-            indy_presentation_spec=V10PresentationSendRequest(
+            indy_presentation_spec=IndyPresSpec(
                 requested_attributes={},
                 requested_predicates={},
                 self_attested_attributes={},

@@ -1,4 +1,4 @@
-aries-cloudcontroller==0.10.1b1
+aries-cloudcontroller==0.10.1b2
 fastapi_websocket_pubsub~=0.3.8
 httpx~=0.25.1
 loguru~=0.7.0

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
@@ -22,6 +22,10 @@ class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
+    auto_remove_exchange_record: Optional[bool] = Field(
+        default=None,
+        description="Whether to remove the credential exchange record on completion",
+    )
 
     @field_validator("indy_credential_detail", mode="before")
     @classmethod

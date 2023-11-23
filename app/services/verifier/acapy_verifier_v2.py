@@ -121,12 +121,12 @@ class VerifierV2(Verifier):
         if accept_proof_request.type == ProofRequestType.INDY:
             presentation_spec = V20PresSpecByFormatRequest(
                 indy=accept_proof_request.indy_presentation_spec,
-                auto_remove=accept_proof_request.auto_remove,
+                auto_remove=accept_proof_request.auto_remove_exchange_record,
             )
         elif accept_proof_request.type == ProofRequestType.LD_PROOF:
             presentation_spec = V20PresSpecByFormatRequest(
                 dif=accept_proof_request.dif_presentation_spec,
-                auto_remove=accept_proof_request.auto_remove,
+                auto_remove=accept_proof_request.auto_remove_exchange_record,
             )
         else:
             raise CloudApiException(

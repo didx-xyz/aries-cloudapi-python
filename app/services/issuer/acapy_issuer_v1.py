@@ -6,6 +6,7 @@ from aries_cloudcontroller import (
     CredentialPreview,
     V10CredentialConnFreeOfferRequest,
     V10CredentialExchange,
+    V10CredentialExchangeAutoRemoveRequest,
     V10CredentialProposalRequestMand,
     V10CredentialStoreRequest,
 )
@@ -77,7 +78,10 @@ class IssuerV1(Issuer):
 
     @classmethod
     async def request_credential(
-        cls, controller: AcaPyClient, credential_exchange_id: str
+        cls,
+        controller: AcaPyClient,
+        credential_exchange_id: str,
+        auto_remove: Optional[bool] = None,
     ):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
@@ -87,7 +91,8 @@ class IssuerV1(Issuer):
 
         bound_logger.debug("Sending v1 credential request")
         record = await controller.issue_credential_v1_0.send_request(
-            cred_ex_id=credential_exchange_id
+            cred_ex_id=credential_exchange_id,
+            body=V10CredentialExchangeAutoRemoveRequest(auto_remove=auto_remove),
         )
 
         bound_logger.debug("Returning v1 send request result as CredentialExchange.")

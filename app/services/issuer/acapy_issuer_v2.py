@@ -99,7 +99,10 @@ class IssuerV2(Issuer):
 
     @classmethod
     async def request_credential(
-        cls, controller: AcaPyClient, credential_exchange_id: str
+        cls,
+        controller: AcaPyClient,
+        credential_exchange_id: str,
+        auto_remove: Optional[bool] = None,
     ):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
@@ -109,7 +112,8 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Sending v2 credential request")
         record = await controller.issue_credential_v2_0.send_request(
-            cred_ex_id=credential_exchange_id, body=V20CredRequestRequest()
+            cred_ex_id=credential_exchange_id,
+            body=V20CredRequestRequest(auto_remove=auto_remove),
         )
 
         bound_logger.debug("Returning v2 send request result as CredentialExchange.")

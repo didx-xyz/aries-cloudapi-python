@@ -55,7 +55,10 @@ class Issuer(ABC):
     @classmethod
     @abstractmethod
     async def request_credential(
-        cls, controller: AcaPyClient, credential_exchange_id: str
+        cls,
+        controller: AcaPyClient,
+        credential_exchange_id: str,
+        auto_remove: Optional[bool],
     ) -> CredentialExchange:
         """
         Request credential
@@ -64,8 +67,10 @@ class Issuer(ABC):
         -----------
         controller: AcaPyClient
             The aries_cloudcontroller object
-        credential_exchange_id:
+        credential_exchange_id: str
             The credential_exchange_id of the exchange
+        auto_remove: Optional[bool]
+            Whether to override environment setting for auto-deleting cred ex records
 
         Returns:
         --------

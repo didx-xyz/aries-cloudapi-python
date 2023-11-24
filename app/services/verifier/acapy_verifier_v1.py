@@ -116,7 +116,6 @@ class VerifierV1(Verifier):
             bound_logger.debug("Send v1 proof presentation")
             indy_pres_spec = accept_proof_request.indy_presentation_spec
             v10_pres_send_req = V10PresentationSendRequest(
-                auto_remove=accept_proof_request.auto_remove_exchange_record,
                 requested_attributes=indy_pres_spec.requested_attributes,
                 requested_predicates=indy_pres_spec.requested_predicates,
                 self_attested_attributes=indy_pres_spec.self_attested_attributes,

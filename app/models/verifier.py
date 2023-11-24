@@ -50,7 +50,10 @@ class ProofRequestMetadata(BaseModel):
 
 
 class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):
-    pass
+    auto_remove_exchange_record: Optional[bool] = Field(
+        default=None,
+        description="Whether to remove the presentation exchange record on completion",
+    )
 
 
 class SendProofRequest(CreateProofRequest):

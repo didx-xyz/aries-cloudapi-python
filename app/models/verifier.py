@@ -7,7 +7,7 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyProofRequest,
 )
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, ValidationInfo, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion
 

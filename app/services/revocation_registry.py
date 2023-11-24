@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -162,7 +162,7 @@ async def publish_revocation_registry_on_ledger(
         Exception: When the revocation registry could not be published.
 
     Returns:
-        result TxnOrRevRegResult: The transaction record or the Revocation Register Result.
+        result TransactionRecord: The transaction record or the Revocation Register Result.
     """
     bound_logger = logger.bind(
         body={
@@ -366,7 +366,7 @@ async def endorser_revoke():
 
 async def get_credential_definition_id_from_exchange_id(
     controller: AcaPyClient, credential_exchange_id: str
-) -> Union[str, None]:
+) -> Optional[str]:
     """
         Get the credential definition id from the credential exchange id.
 
@@ -375,7 +375,7 @@ async def get_credential_definition_id_from_exchange_id(
         credential_exchange_id (RevokeRequest): The credential exchange ID.
 
     Returns:
-        credential_definition_id (Union[str,None]): The credential definition ID or None.
+        credential_definition_id (Optional[str]): The credential definition ID or None.
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("Fetching credential definition id from exchange id")

@@ -2,6 +2,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     V10PresentationCreateRequestRequest,
     V10PresentationProblemReportRequest,
+    V10PresentationSendRequest,
     V10PresentationSendRequestRequest,
 )
 
@@ -113,8 +114,16 @@ class VerifierV1(Verifier):
 
         try:
             bound_logger.debug("Send v1 proof presentation")
+            indy_pres_spec = accept_proof_request.indy_presentation_spec
+            v10_pres_send_req = V10PresentationSendRequest(
+                requested_attributes=indy_pres_spec.requested_attributes,
+                requested_predicates=indy_pres_spec.requested_predicates,
+                self_attested_attributes=indy_pres_spec.self_attested_attributes,
+                trace=indy_pres_spec.trace,
+            )
             presentation_record = await controller.present_proof_v1_0.send_presentation(
-                pres_ex_id=proof_id, body=accept_proof_request.indy_presentation_spec
+                pres_ex_id=proof_id,
+                body=v10_pres_send_req,
             )
             result = record_to_model(presentation_record)
         except Exception as e:

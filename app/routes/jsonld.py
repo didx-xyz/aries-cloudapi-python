@@ -80,7 +80,10 @@ async def sign_jsonld(
             "An ApiException was caught while signing jsonld. The error message is: '{}'.",
             e.reason,
         )
-        raise CloudApiException("Failed to sign payload.") from e
+        raise CloudApiException(
+            f"Failed to sign payload: {e.reason}.",
+            e.status,
+        ) from e
 
     if result:
         bound_logger.info("Successfully signed JsonLD.")
@@ -130,6 +133,9 @@ async def verify_jsonld(
             "An ApiException was caught while verifying jsonld. The error message is: '{}'.",
             e.reason,
         )
-        raise CloudApiException("Failed to verify payload.") from e
+        raise CloudApiException(
+            f"Failed to verify payload: {e.reason}.",
+            e.status,
+        ) from e
 
     bound_logger.info("Successfully verified JsonLD.")

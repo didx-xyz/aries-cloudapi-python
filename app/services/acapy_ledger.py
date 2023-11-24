@@ -154,6 +154,7 @@ async def register_nym_on_ledger(
 async def accept_taa_if_required(aries_controller: AcaPyClient):
     taa_response, mechanism = await get_taa(aries_controller)
 
+    # TODO: The following is broken:
     if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
         await accept_taa(
             aries_controller,

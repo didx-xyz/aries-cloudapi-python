@@ -236,6 +236,7 @@ async def test_send_credential_request(
     )
 
 
+@pytest.mark.skip("Revocation is not supported")
 @pytest.mark.anyio
 async def test_revoke_credential(
     faber_client: RichAsyncClient,

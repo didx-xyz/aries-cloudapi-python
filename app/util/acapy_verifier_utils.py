@@ -5,7 +5,7 @@ from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
 
 from app.exceptions import CloudApiException
 from app.models.trust_registry import Actor
-from app.models.verifier import AcceptProofRequest, SendProofRequest
+from app.models.verifier import AcceptProofRequest, ProofRequestType, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
 from app.services.trust_registry.actors import fetch_actor_by_did, fetch_actor_by_name
 from app.services.trust_registry.schemas import fetch_schemas
@@ -109,18 +109,19 @@ async def assert_valid_prover(
     if not is_verifier(actor=actor):
         raise CloudApiException("Actor is missing required role 'verifier'.", 403)
 
-    # Get schema ids
-    bound_logger.debug("Getting schema ids from presentation")
-    schema_ids = await get_schema_ids(
-        aries_controller=aries_controller,
-        presentation=presentation.indy_presentation_spec,
-    )
-
-    # Verify the schemas are actually in the list from TR
-    if not await are_valid_schemas(schema_ids=schema_ids):
-        raise CloudApiException(
-            "Presentation is using schemas not registered in trust registry.", 403
+    if presentation.type == ProofRequestType.INDY:
+        # Get schema ids
+        bound_logger.debug("Getting schema ids from presentation for Indy presentation")
+        schema_ids = await get_schema_ids(
+            aries_controller=aries_controller,
+            presentation=presentation.indy_presentation_spec,
         )
+
+        # Verify the schemas are actually in the list from TR
+        if not await are_valid_schemas(schema_ids=schema_ids):
+            raise CloudApiException(
+                "Presentation is using schemas not registered in trust registry.", 403
+            )
     bound_logger.debug("Prover is valid.")
 
 

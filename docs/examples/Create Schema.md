@@ -1,7 +1,9 @@
-## 2: Create Schema
+# 2: Create Schema
+
 Only the `Governance` role can create Schemas.
 
 >NOTE: See the `x-api-key` used to create schemas
+
 ```bash
 curl -X 'POST' \
   'http://localhost:8100/generic/definitions/schemas' \
@@ -16,7 +18,9 @@ curl -X 'POST' \
   ]
 }'
 ```
+
 Response
+
 ```json
 {
   "id": "QpSW24YVf61A3sAWxArfF6:2:Person:0.1.0",
@@ -29,4 +33,5 @@ Response
   ]
 }
 ```
-[Create Credential Definition](Credential%20definition.md)
+
+[Create Credential Definition](Create%20Credential%20Definition.md)

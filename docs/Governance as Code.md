@@ -164,10 +164,11 @@ To query entries in the Trust Registry, adhere to the following steps:
    > NOTE: The Trust Registry is currently public and accessible to anyone on the internet
 
 3. The trust-registry has 5 GET endpoints:
-    - `GET`  `/trust-registry/schemas`
+   - `GET`  `/trust-registry/schemas`
      - Will return all schemas on the trust registry
 
      Response
+
     ```json
     [
       {
@@ -196,10 +197,12 @@ To query entries in the Trust Registry, adhere to the following steps:
       }
     ]
     ```
-    - `Get` `/trust-registry/schemas/{schema_id}`
-      - Will return the schema based on id passed
-      
+
+   - `Get` `/trust-registry/schemas/{schema_id}`
+     - Will return the schema based on id passed
+
      Response
+
     ```json
     {
       "did": "GXK1Ubc58DvZDe48zPYdcf",
@@ -216,8 +219,9 @@ To query entries in the Trust Registry, adhere to the following steps:
         - `actor_did`
         - `actor_id`
         - `actor_name`
-     
+
      Response
+
     ```json
     [
       {
@@ -250,10 +254,12 @@ To query entries in the Trust Registry, adhere to the following steps:
       }
     ]
     ```
-    - `GET` `/trust-registry/actors/issuers`
-       - Will return all actors with `issuer` as a role
+
+   - `GET` `/trust-registry/actors/issuers`
+     - Will return all actors with `issuer` as a role
 
      Response
+
     ```json
     [
       {
@@ -282,6 +288,7 @@ To query entries in the Trust Registry, adhere to the following steps:
       - Will return all actors with `verifier` as a role
 
      Response
+
     ```json
     [
       {

@@ -1,6 +1,6 @@
-## 5: Issuing a Credential
+# 5: Issuing a Credential
 
-### Now the Issuer issues credentials
+## Now the Issuer issues credentials
 
 Now that a connection has been made between the `Issuer` and the `Holder`, the `Issuer` can send the credential to the `Holder` using the `connection_id` from the `Issuer's` perspective.
 
@@ -26,6 +26,7 @@ curl -X 'POST' \
   "protocol_version": "v1"
 }'
 ```
+
 Response
 
 ```json
@@ -50,7 +51,8 @@ Response
   "updated_at": "2023-11-20T09:59:29.820002Z"
 }
 ```
-### Holder requests credential
+
+## Holder requests credential
 
 Now the `Holder` needs to respond to the credential sent to him/her. Below the `Holder` is getting all it's connections. We are doing this to get the `connection_id` of the connection to the issuer. This `connection_id` can also be gotten from the `SSE events`.
 
@@ -60,7 +62,9 @@ curl -X 'GET' \
   -H 'accept: application/json'
   -H 'x-api-key: tenant.<Holder token>'
 ```
+
 Response
+
 ```json
 [
   {
@@ -91,7 +95,9 @@ curl -X 'GET' \
   -H 'accept: application/json'
   -H 'x-api-key: tenant.<Holder token>'
 ```
+
 Response
+
 ```json
 [
   {
@@ -116,7 +122,9 @@ Response
   }
 ]
 ```
+
 The `Holder` can now requests the credential with `credential_id` from the response above
+
 ```bash
 curl -X 'POST' \
   'http://localhost:8100/generic/issuer/credentials/v1-c492cec7-2f2d-4d5f-b839-b57dcd8f8eee/request' \
@@ -124,7 +132,9 @@ curl -X 'POST' \
   -H 'x-api-key: tenant.<Holder token>'
   -d ''
 ```
-Response 
+
+Response
+
 ```json
 {
   "attributes": {
@@ -149,6 +159,7 @@ Response
 ```
 
 Now we listen on SSE and wait for `state` to be `done` on the `topic`: `credentials`  
+
 ```json
   {
     "wallet_id": "7bb24cc8-2e56-4326-9020-7870ad67b257",
@@ -181,7 +192,9 @@ curl -X 'GET' \
   -H 'accept: application/json'
   -H 'x-api-key: tenant.<Holder token>'
 ```
+
 Response
+
 ```json
 {
   "results": [
@@ -200,4 +213,5 @@ Response
   ]
 }
 ```
-[6: Create connection with Verifier](./Create%20Connection.md#6-create-connection-between-verifier-and-holder)
+
+[6: Create connection with Verifier](./Create%20Connection.md)

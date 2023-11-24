@@ -11,5 +11,5 @@
 7. [Common Steps](Common%20Steps.md)
 8. [Workflows Overview](Workflows%20Overview.md)
 9. [Example Flows](./Example%20Flows.md)
-9. [Webhooks](./SSE%20Webhooks.md)
-10. [Trust Registry](Trust%20Registry.md)
+10. [Webhooks](./SSE%20Webhooks.md)
+11. [Trust Registry](Trust%20Registry.md)

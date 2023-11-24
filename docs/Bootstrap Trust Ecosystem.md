@@ -92,6 +92,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
       ```json
       {}
       ```
+
       with a `200` respose code.
 
 ## 5. Set Public DID

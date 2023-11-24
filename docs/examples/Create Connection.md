@@ -1,4 +1,4 @@
-## 4: Create Connection
+# 4: Create Connection
 
 Now that the Issuer has a credential definition, he can start issuing credentials. However in order to do that, he firts needs to create a connection to the holder. There are multiple ways to create connections. We will use the `/generic/connections/` endpoints in these examples.
 

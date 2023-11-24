@@ -11,4 +11,3 @@ This document will guide you through an end to end flow:
 5. [Issuing a credential to a Holder.](./examples/Issue%20Credential.md)
 6. [Create Connection between Verifier and Holder](./examples/Create%20Connection.md#6-create-connection-between-verifier-and-holder)
 7. [The Verifier doing a proof request against the Holder's Credential.](./examples/Verify%20Credential.md)
-

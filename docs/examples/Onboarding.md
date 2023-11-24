@@ -1,12 +1,12 @@
-## 1: Onboarding Tenants
+# 1: Onboarding Tenants
 
-When onboarding users, also refered to as tenants, you need to use the `tenant-admin` role.  Below, you will find the curl commands used to create an `Issuer`, `Verifier` and a `Holder`. If you are using the [swagger doc](http://localhost:8100/docs) to do the onboarding, just use the JSON in the field marked with `-d` in the curl commands. 
+When onboarding users, also refered to as tenants, you need to use the `tenant-admin` role.  Below, you will find the curl commands used to create an `Issuer`, `Verifier` and a `Holder`. If you are using the [swagger doc](http://localhost:8100/docs) to do the onboarding, just use the JSON in the field marked with `-d` in the curl commands.
 
 The only difference between an `Issuer`, `Verifier` and `Holder` is the roles given to them when created. A tenant can have both the issuer and verifier role and a `Holder` is just a tenant without a role.
 
->NOTE: See the `x-api-key` used for the tenant creation 
+>NOTE: See the `x-api-key` used for the tenant creation
 
-### Onboard Issuer
+## Onboard Issuer
 
 ```bash
 curl -X 'POST' \
@@ -24,6 +24,7 @@ curl -X 'POST' \
   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
 }'
 ```
+
 Response
 
 ```json
@@ -37,7 +38,8 @@ Response
   "group_id": "API demo"
 }
 ```
-### Onboard Verifier
+
+## Onboard Verifier
 
 ```bash
 curl -X 'POST' \
@@ -55,7 +57,9 @@ curl -X 'POST' \
   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
 }'
 ```
+
 Response
+
 ```json
 {
   "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiI5Mjg5MzY1OC1mZTJkLTRmMmQtODI2OC1hNjBhNjAxOTQ1YTkiLCJpYXQiOjE3MDA2MzE2MTd9.E5USXOEmKlpZelGzwGs7VxZWfQzvOBPADB2r95pyuWA",
@@ -68,7 +72,9 @@ Response
   "group_id": "API demo"
 }
 ```
-### Onboard Holder
+
+## Onboard Holder
+
 ```bash
 curl -X 'POST' \
   'http://localhost:8100/admin/tenants' \
@@ -82,7 +88,9 @@ curl -X 'POST' \
   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
 }'
 ```
+
 Response
+
 ```json
 {
   "access_token": "tenant.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIyMjcxZjdmMi03MzU5LTRkMDgtYWI2Ni0xMWI2NjFlZDA5ZjQiLCJpYXQiOjE3MDA2MzE2OTN9.uKfcvq06KSlLHlGkH9zaXHcFA3V2WzNvxRVbyNgjXNc",

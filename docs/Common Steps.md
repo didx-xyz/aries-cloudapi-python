@@ -25,7 +25,7 @@ The admin "wallet" is already configured as it is not a subwallet on a multi-ten
    }
    ```
 
-Send this to the `/admin/tenants` endpoint (under standard spin up this will be [http://localhost:8100](http://localhost:8100)). You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, navigate to the [Swagger docs](http://localhost:8000/docs) by adding `/docs` to the CloudAPI main endpoint. This will also update the trust registry by writing an entry to the `actors` field about the wallet and its associated roles.
+Send this to the `/admin/tenants` endpoint (under standard spin up this will be [http://localhost:8100](http://localhost:8100)). You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, navigate to the [Swagger docs](http://localhost:8100/docs) by adding `/docs` to the CloudAPI main endpoint. This will also update the trust registry by writing an entry to the `actors` field about the wallet and its associated roles.
 
 If you wish to later update entities roles, you will have to do that also via the tenants API, which will handle interacting with the trust registry (see also the Swagger for `update tenant`).
 

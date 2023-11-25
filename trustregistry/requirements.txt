@@ -1,5 +1,5 @@
 fastapi~=0.104.1
-httpx~=0.25.1
+httpx~=0.25.2
 loguru~=0.7.0
 psycopg2-binary~=2.9.6
 pydantic~=2.5.1

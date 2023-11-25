@@ -1,6 +1,6 @@
 aries-cloudcontroller==0.10.1b2
 fastapi_websocket_pubsub~=0.3.8
-httpx~=0.25.1
+httpx~=0.25.2
 loguru~=0.7.0
 pydantic~=2.5.1
 typing-extensions~=4.8.0

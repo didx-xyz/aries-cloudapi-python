@@ -313,7 +313,9 @@ async def revoke_credential(
             "An ApiException was caught while revoking credential. The error message is: '{}'.",
             e.reason,
         )
-        raise CloudApiException("Failed to revoke credential.", 400) from e
+        raise CloudApiException(
+            f"Failed to revoke credential: {e.reason}.", e.status
+        ) from e
 
     if not auto_publish_to_ledger:
         try:

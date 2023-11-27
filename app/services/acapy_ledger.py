@@ -148,7 +148,9 @@ async def register_nym_on_ledger(
             e.reason,
         )
         # if not nym_response.success:
-        raise CloudApiException("Error registering NYM on ledger.") from e
+        raise CloudApiException(
+            f"Error registering NYM on ledger: {e.reason}.", e.status
+        ) from e
 
 
 async def accept_taa_if_required(aries_controller: AcaPyClient):

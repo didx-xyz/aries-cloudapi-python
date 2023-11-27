@@ -141,11 +141,11 @@ async def send_credential(
             )
         except ApiException as e:
             logger.warning(
-                "ApiException was caught while sending credentials, with message `{}`.",
+                "An ApiException was caught while sending credentials, with message `{}`.",
                 e.reason,
             )
             raise CloudApiException(
-                f"Failed to create or send credential: {e}", 500
+                f"Failed to create or send credential: {e.reason}", e.status
             ) from e
 
     if result:

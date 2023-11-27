@@ -107,7 +107,7 @@ async def connect_to_public_did(
 
     Returns:
     ---
-    ConnRecord
+    Connection
         The connection record
     """
     bound_logger = logger.bind(body=body)

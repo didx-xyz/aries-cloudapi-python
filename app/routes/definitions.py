@@ -210,6 +210,8 @@ async def create_credential_definition(
     bound_logger = logger.bind(body=credential_definition)
     bound_logger.info("POST request received: Create credential definition")
 
+    support_revocation = credential_definition.support_revocation
+
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
         bound_logger.debug("Asserting client has public DID")
@@ -225,7 +227,7 @@ async def create_credential_definition(
         result = await aries_controller.credential_definition.publish_cred_def(
             body=CredentialDefinitionSendRequest(
                 schema_id=credential_definition.schema_id,
-                # support_revocation=credential_definition.support_revocation,
+                support_revocation=support_revocation,
                 tag=credential_definition.tag,
             )
         )
@@ -287,7 +289,6 @@ async def create_credential_definition(
                 "Missing both `credential_definition_id` and `transaction_id` from response after publishing cred def."
             )
 
-        support_revocation = False  # TODO: re-add support for revocation
         if support_revocation:
             # Temporary workaround for "Not issuer of credential definition" error PR #469
             time.sleep(1)

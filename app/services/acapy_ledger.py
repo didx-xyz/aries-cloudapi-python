@@ -165,44 +165,6 @@ async def accept_taa_if_required(aries_controller: AcaPyClient):
         )
 
 
-async def write_credential_def(
-    controller: AcaPyClient, schema_id: str, support_revocation: bool = False
-) -> str:
-    """
-    Writes Credential Definition to the ledger
-
-    Parameters:
-    ----------
-    controller (AcaPyClient): The aries_cloudcontroller object
-
-    schema_id (str): The schema identifier
-
-    support_revocation (bool): Whether to support revocation.
-        Default is False
-
-    Returns:
-    -------
-    write_cred_response :dict
-    """
-    bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("Writing credential definition to the ledger")
-
-    write_cred_response = await controller.credential_definition.publish_cred_def(
-        body=CredentialDefinitionSendRequest(
-            schema_id=schema_id, tag="default", support_revocation=support_revocation
-        )
-    )
-    if not write_cred_response.credential_definition_id:
-        bound_logger.warning(
-            "Response from `publish_cred_def` did not contain 'credential_definition_id'."
-        )
-        raise CloudApiException(
-            "Something went wrong. Could not write credential definition to the ledger."
-        )
-    bound_logger.info("Successfully published credential definition.")
-    return write_cred_response.credential_definition_id
-
-
 async def schema_id_from_credential_definition_id(
     controller: AcaPyClient, credential_definition_id: str
 ):

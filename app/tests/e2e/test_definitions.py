@@ -123,15 +123,17 @@ async def test_get_credential_definition(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("support_revocation", [False, True])
 async def test_create_credential_definition_issuer_tenant(
     schema_definition: CredentialSchema,
     faber_acapy_client: AcaPyClient,
     faber_client: RichAsyncClient,
+    support_revocation: bool,
 ):
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_definition.id,
         tag=random_string(5),
-        support_revocation=False,
+        support_revocation=support_revocation,
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
@@ -147,3 +149,16 @@ async def test_create_credential_definition_issuer_tenant(
         f"{faber_public_did.did}:3:CL:{schema.var_schema.seq_no}:{credential_definition.tag}"
     )
     assert_that(result).has_tag(credential_definition.tag)
+
+    if support_revocation:
+        cred_def_id = result["id"]
+        # Assert that revocation registry was created
+        rev_reg_result = (
+            await faber_acapy_client.revocation.get_active_registry_for_cred_def(
+                cred_def_id=cred_def_id
+            )
+        )
+        issuer_rev_reg_record = rev_reg_result.result
+        assert issuer_rev_reg_record
+        assert cred_def_id == issuer_rev_reg_record.cred_def_id
+        assert issuer_rev_reg_record.issuer_did == faber_public_did.did

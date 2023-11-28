@@ -6,8 +6,7 @@ from pydantic import BaseModel, Field
 class CreateCredentialDefinition(BaseModel):
     tag: str = Field(..., examples=["default"])
     schema_id: str = Field(..., examples=["CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3"])
-    # support_revocation: bool = Field(default=False)
-    # TODO: Re-add revocation support
+    support_revocation: bool = Field(default=False)
     revocation_registry_size: int = Field(default=32767)
 
 

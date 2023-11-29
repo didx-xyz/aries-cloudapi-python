@@ -206,7 +206,7 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/agents/Dockerfile.author.agent
-    ## To run a forked version of the agent use commented out code below
+    # # To run a forked version of the agent use commented out code below
     #   context: https://github.com/didx-xyz/aries-cloudagent-python.git#add-logging-for-interop-debug
     #   dockerfile: docker/Dockerfile
     # user: root
@@ -214,7 +214,7 @@ services:
     #   - sh
     #   - -c
     #   - |
-    #     pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.4.2
+    #     pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.5.4
     #     aca-py start \
     #       -it http "0.0.0.0" "3020" \
     #       -e http://governance-multitenant-agent:3020 \

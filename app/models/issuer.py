@@ -22,8 +22,8 @@ class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
-    auto_remove_exchange_record: Optional[bool] = Field(
-        default=None,
+    auto_remove_exchange_record: bool = Field(
+        default=True,
         description="Whether to remove the credential exchange record on completion",
     )
 

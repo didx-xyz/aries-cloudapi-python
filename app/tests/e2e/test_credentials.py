@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional
 
 import pytest
 
@@ -240,3 +241,69 @@ async def meld_co_issue_credential_to_alice(
     )
 
     return response.json()
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("auto_remove_for_faber", [None, False, True])
+async def test_issue_credential_with_auto_remove(
+    faber_client: RichAsyncClient,
+    credential_definition_id: str,
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    auto_remove_for_faber: Optional[bool],
+) -> CredentialExchange:
+    credential = {
+        "protocol_version": "v1",
+        "connection_id": faber_and_alice_connection.faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+        "auto_remove_exchange_record": auto_remove_for_faber,
+    }
+
+    alice_credentials_listener = SseListener(
+        topic="credentials", wallet_id=alice_tenant.wallet_id
+    )
+
+    # create and send credential offer- issuer
+    await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential,
+    )
+
+    payload = await alice_credentials_listener.wait_for_event(
+        field="connection_id",
+        field_id=faber_and_alice_connection.alice_connection_id,
+        desired_state="offer-received",
+    )
+
+    alice_credential_id = payload["credential_id"]
+
+    # send credential request - holder
+    await alice_member_client.post(
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request",
+    )
+
+    await alice_credentials_listener.wait_for_event(
+        field="credential_id", field_id=alice_credential_id, desired_state="done"
+    )
+
+    # get exchange records from faber side:
+    faber_cred_ex_recs = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
+
+    # get exchange records from alice side -- should be empty regardless
+    alice_cred_ex_recs = (
+        await alice_member_client.get(f"{CREDENTIALS_BASE_PATH}")
+    ).json()
+
+    # faber requesting auto_remove only removes their cred ex recs
+    # Alice cred ex recs should be empty regardless
+    assert len(alice_cred_ex_recs) == 0
+
+    if auto_remove_for_faber is None or auto_remove_for_faber is True:
+        assert len(faber_cred_ex_recs) == 0  # default before is remove records
+
+    if auto_remove_for_faber is False:
+        assert len(faber_cred_ex_recs) == 1  # Auto Remove = False, should be 1 record

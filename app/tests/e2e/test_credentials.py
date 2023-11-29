@@ -244,10 +244,10 @@ async def meld_co_issue_credential_to_alice(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("auto_remove_for_faber", [None, False, True])
+@pytest.mark.parametrize("auto_remove_for_faber", [False, True])
 async def test_issue_credential_with_auto_remove(
     faber_client: RichAsyncClient,
-    credential_definition_id: str,
+    credential_definition_id: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,

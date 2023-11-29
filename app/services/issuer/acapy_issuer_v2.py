@@ -114,7 +114,7 @@ class IssuerV2(Issuer):
 
         bound_logger.debug("Sending v2 credential request")
         record = await controller.issue_credential_v2_0.send_request(
-            cred_ex_id=credential_exchange_id,
+            cred_ex_id=credential_exchange_id, body=V20CredRequestRequest()
         )
 
         bound_logger.debug("Returning v2 send request result as CredentialExchange.")

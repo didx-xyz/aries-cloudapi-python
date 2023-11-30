@@ -31,7 +31,7 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
             Actor(
                 id=f"test-actor-{rand}",
                 name=f"Test Actor-{rand}",
-                roles=["issuer", "verifier"],
+                roles=["issuer"],
                 did=f"did:sov:{did}",
                 didcomm_invitation=None,
             )

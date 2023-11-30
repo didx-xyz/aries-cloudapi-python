@@ -17,7 +17,9 @@ from shared import RichAsyncClient
 
 
 @pytest.mark.anyio
-async def test_create_credential_definition(mock_governance_auth: AcaPyAuthVerified):
+async def test_create_credential_definition(
+    governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
+):
     # given
     schema = CreateSchema(
         name=random_string(15), version="0.1", attribute_names=["average"]
@@ -28,6 +30,7 @@ async def test_create_credential_definition(mock_governance_auth: AcaPyAuthVerif
     ).model_dump()
     schema_id = schema_result["id"]
 
+    await register_issuer(governance_client, schema_id)
     credential_definition = CreateCredentialDefinition(
         schema_id=schema_id, tag=random_string(5), support_revocation=False
     )

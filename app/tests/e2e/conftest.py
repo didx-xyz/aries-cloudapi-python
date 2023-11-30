@@ -40,20 +40,4 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
 
     did = response.did
 
-    gov_id = f"test-governance-id-{random_string(3)}"
-    if not await fetch_actor_by_id(gov_id):
-        logger.info("Registering actor for governance controller")
-        await register_actor(
-            Actor(
-                id=gov_id,
-                name=f"test-governance-actor-{random_string(3)}",
-                roles=["issuer", "verifier"],
-                did=f"did:sov:{did}",
-            )
-        )
-
     yield did
-
-    logger.info("Removing governance actor in test teardown")
-    await remove_actor_by_id(gov_id)
-    logger.info("Successfully removed governance actor in teardown.")

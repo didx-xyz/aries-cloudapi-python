@@ -120,6 +120,13 @@ async def test_create_tenant_member_w_wallet_name(
     assert http_error.value.status_code == 409
     assert "already exists" in http_error.value.detail
 
+    # Delete created tenant
+    delete_response = await tenant_admin_client.delete(
+        f"{TENANTS_BASE_PATH}/{wallet.wallet_id}"
+    )
+
+    assert delete_response.status_code == 200
+
 
 @pytest.mark.anyio
 async def test_create_tenant_issuer(

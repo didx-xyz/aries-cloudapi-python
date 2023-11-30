@@ -294,6 +294,7 @@ jobs:
     permissions:
       id-token: write # Required to authenticate with AWS
       contents: read # Required to clone this repository
+      checks: write # Required for action-junit-report
     runs-on: ubuntu-latest
 
     if: github.actor != 'dependabot[bot]'
@@ -445,7 +446,6 @@ jobs:
 
       - name: Helmfile pytest
         id: pytest
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -463,7 +463,6 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pytest
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         run: |
           while true; do
             # Get the job status
@@ -482,7 +481,6 @@ jobs:
           NAMESPACE: dev-cloudapi
 
       - name: Copy k8s pytest results
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         run: |
           # Create a temporary pod with the PVC mounted
           kubectl run $POD_NAME --image=$CONTAINER_IMAGE --restart=Never --command -- sleep 3600 \

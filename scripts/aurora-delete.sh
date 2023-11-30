@@ -106,7 +106,7 @@ drop_db_function() {
   for DB in $DB_LIST; do
     (
       log "Dropping database: $DB"
-      PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d postgres -c "DROP DATABASE \"${DB}\""
+      PGPASSWORD="${DB_PASSWORD}" psql -h "${DB_HOST}" -p "${DB_PORT}" -U "${DB_USER}" -d postgres -c "DROP DATABASE \"${DB}\" WITH (FORCE)"
     )
   done
   log "$STEP: done"

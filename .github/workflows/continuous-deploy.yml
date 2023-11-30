@@ -320,6 +320,7 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
+          ref: capi/persistence
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools
@@ -441,6 +442,98 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Helmfile pytest
+        id: pytest
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        uses: helmfile/helmfile-action@v1.5.0
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-capi-test.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }}
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Wait for pytest
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        run: |
+          while true; do
+            # Get the job status
+            STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
+
+            if [ "$STATUS" == "True" ]; then
+                echo "Job $JOB_NAME completed successfully."
+                break
+            else
+                echo "Waiting for job to complete..."
+                sleep 10
+            fi
+          done
+        env:
+          JOB_NAME: cloudapi-pytest
+          NAMESPACE: dev-cloudapi
+
+      - name: Copy k8s pytest results
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        run: |
+          # Create a temporary pod with the PVC mounted
+          kubectl run $POD_NAME --image=$CONTAINER_IMAGE --restart=Never --command -- sleep 3600 \
+            --overrides='
+          {
+            "apiVersion": "v1",
+            "spec": {
+              "volumes": [{
+                "name": "my-volume",
+                "persistentVolumeClaim": {
+                  "claimName": "'$PVC_NAME'"
+                }
+              }],
+              "containers": [{
+                "name": "'$POD_NAME'",
+                "image": "'$CONTAINER_IMAGE'",
+                "volumeMounts": [{
+                  "mountPath": "'$MOUNT_PATH'",
+                  "name": "my-volume"
+                }]
+              }]
+            }
+          }'
+
+          # Wait for the pod to be ready
+          echo "Waiting for pod to be ready..."
+          kubectl wait --for=condition=ready pod/$POD_NAME --timeout=60s
+
+          # Copy the file from the pod to your local system
+          echo "Copying file from pod..."
+          kubectl cp $POD_NAME:$MOUNT_PATH/$OUTPUT_FILE $LOCAL_PATH
+
+          # Clean up: delete the temporary pod
+          echo "Cleaning up..."
+          kubectl delete pod $POD_NAME
+
+          echo "Done!"
+        env:
+          PVC_NAME: cloudapi-pytest
+          POD_NAME: pytest-results
+          CONTAINER_IMAGE: busybox
+          MOUNT_PATH: /mnt
+          LOCAL_PATH: ./
+          OUTPUT_FILE: test_output.xml
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: './test_output.xml'
+          fail_on_failure: true
 
       - name: Output
         id: updated_deployments

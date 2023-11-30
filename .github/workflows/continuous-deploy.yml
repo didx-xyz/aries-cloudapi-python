@@ -345,7 +345,7 @@ jobs:
           version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile Diff
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -364,7 +364,7 @@ jobs:
 
       - name: Helmfile Destroy
         id: destroy_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -380,7 +380,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pods to terminate
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         run: |
           while true; do
             terminating_pods_count=$(kubectl -n dev-cloudapi get pods --field-selector=status.phase!=Running,status.phase!=Succeeded -o jsonpath='{.items[*].metadata.name}')
@@ -395,7 +395,7 @@ jobs:
 
       - name: Drop DBs
         id: drop_dbs
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -412,14 +412,14 @@ jobs:
           bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -c
 
       - name: List Elasticache Redis
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
 
       - name: Clean Elasticache Redis
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
@@ -427,7 +427,7 @@ jobs:
 
       - name: Helmfile Apply
         id: update_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -444,7 +444,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
-      - name: Helmfile pytest
+      - name: Helmfile apply pytest
         id: pytest
         uses: helmfile/helmfile-action@v1.5.0
         with:
@@ -532,6 +532,20 @@ jobs:
         with:
           report_paths: './test_output.xml'
           fail_on_failure: true
+
+      - name: Helmfile destroy pytest
+        uses: helmfile/helmfile-action@v1.5.0
+        with:
+          helmfile-args: |
+            destroy \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-capi-test.yaml
+          helm-plugins: |
+            https://github.com/databus23/helm-diff
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Output
         id: updated_deployments

@@ -881,47 +881,104 @@ async def test_send_proof_request_verifier_has_issuer_role(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("save_exchange_record", [False, True])
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
-async def test_send_proof_request_with_save_exchange_record(
-    acme_and_alice_connection: AcmeAliceConnect,
-    acme_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
+@pytest.mark.parametrize("acme_save_exchange_record", [False, True])
+@pytest.mark.parametrize("alice_save_exchange_record", [False, True])
+async def test_saving_of_presentation_exchange_records(
+    issue_credential_to_alice: CredentialExchange,
     alice_member_client: RichAsyncClient,
-    save_exchange_record: bool,
+    acme_client: RichAsyncClient,
+    acme_and_alice_connection: AcmeAliceConnect,
     protocol_version: str,
+    acme_save_exchange_record: bool,
+    alice_save_exchange_record: bool,
 ):
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
-    await acme_client.post(
+    response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
             "protocol_version": protocol_version,
             "indy_proof_request": indy_proof_request.to_dict(),
+            "save_exchange_record": acme_save_exchange_record,
         },
     )
+    acme_exchange = response.json()
+    acme_proof_id = acme_exchange["proof_id"]
 
-    alice_connection_event = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=240,
     )
-    assert alice_connection_event["protocol_version"] == protocol_version
+    proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
 
-    # get exchange records from faber side:
-    acme_pres_ex_recs = (await acme_client.get(f"{VERIFIER_BASE_PATH}")).json()
+    requested_credentials = await alice_member_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
+    )
 
-    # get exchange records from alice side -- should be empty regardless
-    alice_pres_ex_recs = (await alice_member_client.get(f"{VERIFIER_BASE_PATH}")).json()
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=60,
+    )
 
-    # faber requesting auto_remove only removes their cred ex recs
-    # Alice cred ex recs should be empty regardless
-    assert len(alice_pres_ex_recs) == 0
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
 
-    if save_exchange_record is False:
-        assert len(acme_pres_ex_recs) == 0  # default is to remove records
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+        save_exchange_record=alice_save_exchange_record,
+    )
 
-    if save_exchange_record is True:
+    response = await alice_member_client.post(
+        VERIFIER_BASE_PATH + "/accept-request",
+        json=proof_accept.model_dump(),
+    )
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "done", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=240,
+    )
+
+    assert await check_webhook_state(
+        client=acme_client,
+        filter_map={"state": "done", "proof_id": acme_proof_id},
+        topic="proofs",
+        max_duration=240,
+    )
+
+    result = response.json()
+
+    pres_exchange_result = PresentationExchange(**result)
+    assert isinstance(pres_exchange_result, PresentationExchange)
+    assert response.status_code == 200
+
+    # After proof request is complete, get exchange records from faber side:
+    acme_pres_ex_recs = (await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")).json()
+
+    # get exchange records from alice side
+    alice_pres_ex_recs = (
+        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    ).json()
+
+    if alice_save_exchange_record:
+        assert len(alice_pres_ex_recs) == 1  # Save record is True, should be 1 record
+    else:
+        assert len(alice_pres_ex_recs) == 0  # default is to remove records
+
+    if acme_save_exchange_record:
         assert len(acme_pres_ex_recs) == 1  # Save record is True, should be 1 record
+    else:
+        assert len(acme_pres_ex_recs) == 0  # default is to remove records

@@ -1,5 +1,4 @@
 import asyncio
-from typing import Optional
 
 import pytest
 
@@ -302,8 +301,7 @@ async def test_issue_credential_with_save_exchange_record(
     # Alice cred ex recs should be empty regardless
     assert len(alice_cred_ex_recs) == 0
 
-    if save_exchange_record is False:
-        assert len(faber_cred_ex_recs) == 0  # default is to remove records
-
-    if save_exchange_record is True:
+    if save_exchange_record:
         assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record
+    else:
+        assert len(faber_cred_ex_recs) == 0  # default is to remove records

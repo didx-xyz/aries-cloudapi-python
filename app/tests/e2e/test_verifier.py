@@ -878,3 +878,50 @@ async def test_send_proof_request_verifier_has_issuer_role(
         desired_state="request-received",
     )
     assert alice_connection_event["protocol_version"] == "v2"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("save_exchange_record", [False, True])
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_send_proof_request_with_save_exchange_record(
+    acme_and_alice_connection: AcmeAliceConnect,
+    acme_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    alice_member_client: RichAsyncClient,
+    save_exchange_record: bool,
+    protocol_version: str,
+):
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.wallet_id
+    )
+    await acme_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "connection_id": acme_and_alice_connection.acme_connection_id,
+            "protocol_version": protocol_version,
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+
+    alice_connection_event = await alice_proofs_listener.wait_for_event(
+        field="connection_id",
+        field_id=acme_and_alice_connection.alice_connection_id,
+        desired_state="request-received",
+    )
+    assert alice_connection_event["protocol_version"] == protocol_version
+
+    # get exchange records from faber side:
+    acme_pres_ex_recs = (await acme_client.get(f"{VERIFIER_BASE_PATH}")).json()
+
+    # get exchange records from alice side -- should be empty regardless
+    alice_pres_ex_recs = (await alice_member_client.get(f"{VERIFIER_BASE_PATH}")).json()
+
+    # faber requesting auto_remove only removes their cred ex recs
+    # Alice cred ex recs should be empty regardless
+    assert len(alice_pres_ex_recs) == 0
+
+    if save_exchange_record is False:
+        assert len(acme_pres_ex_recs) == 0  # default is to remove records
+
+    if save_exchange_record is True:
+        assert len(acme_pres_ex_recs) == 1  # Save record is True, should be 1 record

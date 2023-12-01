@@ -39,11 +39,12 @@ class VerifierV1(Verifier):
         bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v1 proof request")
 
+        auto_remove = not create_proof_request.save_exchange_record
         try:
             presentation_exchange = (
                 await controller.present_proof_v1_0.create_proof_request(
                     body=V10PresentationCreateRequestRequest(
-                        auto_remove=create_proof_request.auto_remove_exchange_record,
+                        auto_remove=auto_remove,
                         proof_request=create_proof_request.indy_proof_request,
                         auto_verify=create_proof_request.auto_verify,
                         comment=create_proof_request.comment,
@@ -74,12 +75,13 @@ class VerifierV1(Verifier):
             )
 
         bound_logger = logger.bind(body=send_proof_request)
+        auto_remove = not send_proof_request.save_exchange_record
         try:
             bound_logger.debug("Send free v1 presentation request")
             presentation_exchange = (
                 await controller.present_proof_v1_0.send_request_free(
                     body=V10PresentationSendRequestRequest(
-                        auto_remove=send_proof_request.auto_remove_exchange_record,
+                        auto_remove=auto_remove,
                         connection_id=send_proof_request.connection_id,
                         proof_request=send_proof_request.indy_proof_request,
                         auto_verify=send_proof_request.auto_verify,

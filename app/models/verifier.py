@@ -7,7 +7,7 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyProofRequest,
 )
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -50,8 +50,8 @@ class ProofRequestMetadata(BaseModel):
 
 
 class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):
-    auto_remove_exchange_record: Optional[bool] = Field(
-        default=None,
+    save_exchange_record: bool = Field(
+        default=False,
         description="Whether to remove the presentation exchange record on completion",
     )
 

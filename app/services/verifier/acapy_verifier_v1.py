@@ -116,10 +116,12 @@ class VerifierV1(Verifier):
         bound_logger = logger.bind(body=accept_proof_request)
         proof_id = pres_id_no_version(proof_id=accept_proof_request.proof_id)
 
+        auto_remove = not accept_proof_request.save_exchange_record
         try:
             bound_logger.debug("Send v1 proof presentation")
             indy_pres_spec = accept_proof_request.indy_presentation_spec
             v10_pres_send_req = V10PresentationSendRequest(
+                auto_remove=auto_remove,
                 requested_attributes=indy_pres_spec.requested_attributes,
                 requested_predicates=indy_pres_spec.requested_predicates,
                 self_attested_attributes=indy_pres_spec.self_attested_attributes,

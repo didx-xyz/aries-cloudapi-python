@@ -68,6 +68,10 @@ class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
+    save_exchange_record: bool = Field(
+        default=False,
+        description="Whether to remove the presentation exchange record on completion",
+    )
 
     @field_validator("indy_presentation_spec", mode="before")
     @classmethod

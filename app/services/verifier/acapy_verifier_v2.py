@@ -119,13 +119,15 @@ class VerifierV2(Verifier):
     async def accept_proof_request(
         cls, controller: AcaPyClient, accept_proof_request: AcceptProofRequest
     ) -> PresentationExchange:
+        auto_remove = not accept_proof_request.save_exchange_record
         if accept_proof_request.type == ProofRequestType.INDY:
             presentation_spec = V20PresSpecByFormatRequest(
-                indy=accept_proof_request.indy_presentation_spec
+                auto_remove=auto_remove,
+                indy=accept_proof_request.indy_presentation_spec,
             )
         elif accept_proof_request.type == ProofRequestType.LD_PROOF:
             presentation_spec = V20PresSpecByFormatRequest(
-                dif=accept_proof_request.dif_presentation_spec
+                auto_remove=auto_remove, dif=accept_proof_request.dif_presentation_spec
             )
         else:
             raise CloudApiException(

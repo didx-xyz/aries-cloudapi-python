@@ -22,9 +22,9 @@ class CredentialBase(BaseModel):
     type: CredentialType = CredentialType.INDY
     indy_credential_detail: Optional[IndyCredential] = None
     ld_credential_detail: Optional[LDProofVCDetail] = None
-    auto_remove_exchange_record: bool = Field(
-        default=True,
-        description="Whether to remove the credential exchange record on completion",
+    save_exchange_record: bool = Field(
+        default=False,
+        description="Whether an exchange record should be saved on completion",
     )
 
     @field_validator("indy_credential_detail", mode="before")

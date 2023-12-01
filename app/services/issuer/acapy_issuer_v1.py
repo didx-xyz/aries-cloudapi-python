@@ -42,7 +42,7 @@ class IssuerV1(Issuer):
         bound_logger.debug("Issue v1 credential (automated)")
         record = await controller.issue_credential_v1_0.issue_credential_automated(
             body=V10CredentialProposalRequestMand(
-                auto_remove=credential.auto_remove_exchange_record,
+                auto_remove=credential.save_exchange_record,
                 connection_id=credential.connection_id,
                 credential_proposal=credential_preview,
                 cred_def_id=credential.indy_credential_detail.credential_definition_id,
@@ -69,7 +69,7 @@ class IssuerV1(Issuer):
         bound_logger.debug("Creating v1 credential offer")
         record = await controller.issue_credential_v1_0.create_offer(
             body=V10CredentialConnFreeOfferRequest(
-                auto_remove=credential.auto_remove_exchange_record,
+                auto_remove=credential.save_exchange_record,
                 credential_preview=credential_preview,
                 cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )

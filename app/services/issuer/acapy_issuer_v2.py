@@ -53,7 +53,7 @@ class IssuerV2(Issuer):
         bound_logger.debug("Issue v2 credential (automated)")
         record = await controller.issue_credential_v2_0.issue_credential_automated(
             body=V20CredExFree(
-                auto_remove=credential.auto_remove_exchange_record,
+                auto_remove=credential.save_exchange_record,
                 connection_id=credential.connection_id,
                 filter=cred_filter,
                 credential_preview=credential_preview,
@@ -90,7 +90,7 @@ class IssuerV2(Issuer):
         record = (
             await controller.issue_credential_v2_0.issue_credential20_create_offer_post(
                 body=V20CredOfferConnFreeRequest(
-                    auto_remove=credential.auto_remove_exchange_record,
+                    auto_remove=credential.save_exchange_record,
                     credential_preview=credential_preview,
                     filter=cred_filter,
                 )

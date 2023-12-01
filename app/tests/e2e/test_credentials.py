@@ -244,14 +244,14 @@ async def meld_co_issue_credential_to_alice(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("auto_remove_for_faber", [False, True])
-async def test_issue_credential_with_auto_remove(
+@pytest.mark.parametrize("save_exchange_record", [False, True])
+async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
-    auto_remove_for_faber: Optional[bool],
+    save_exchange_record: bool,
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
@@ -260,7 +260,7 @@ async def test_issue_credential_with_auto_remove(
             "credential_definition_id": credential_definition_id,
             "attributes": {"speed": "10"},
         },
-        "auto_remove_exchange_record": auto_remove_for_faber,
+        "save_exchange_record": save_exchange_record,
     }
 
     alice_credentials_listener = SseListener(
@@ -302,8 +302,8 @@ async def test_issue_credential_with_auto_remove(
     # Alice cred ex recs should be empty regardless
     assert len(alice_cred_ex_recs) == 0
 
-    if auto_remove_for_faber is None or auto_remove_for_faber is True:
-        assert len(faber_cred_ex_recs) == 0  # default before is remove records
+    if save_exchange_record is False:
+        assert len(faber_cred_ex_recs) == 0  # default is to remove records
 
-    if auto_remove_for_faber is False:
-        assert len(faber_cred_ex_recs) == 1  # Auto Remove = False, should be 1 record
+    if save_exchange_record is True:
+        assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record

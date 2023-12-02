@@ -7,7 +7,7 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyProofRequest,
 )
-from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -50,7 +50,10 @@ class ProofRequestMetadata(BaseModel):
 
 
 class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):
-    pass
+    save_exchange_record: bool = Field(
+        default=False,
+        description="Whether to remove the presentation exchange record on completion",
+    )
 
 
 class SendProofRequest(CreateProofRequest):
@@ -65,6 +68,10 @@ class AcceptProofRequest(ProofId):
     type: ProofRequestType = ProofRequestType.INDY
     indy_presentation_spec: Optional[IndyPresSpec] = None
     dif_presentation_spec: Optional[DIFPresSpec] = None
+    save_exchange_record: bool = Field(
+        default=False,
+        description="Whether to remove the presentation exchange record on completion",
+    )
 
     @field_validator("indy_presentation_spec", mode="before")
     @classmethod

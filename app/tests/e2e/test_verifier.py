@@ -878,3 +878,107 @@ async def test_send_proof_request_verifier_has_issuer_role(
         desired_state="request-received",
     )
     assert alice_connection_event["protocol_version"] == "v2"
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("acme_save_exchange_record", [False, True])
+@pytest.mark.parametrize("alice_save_exchange_record", [False, True])
+async def test_saving_of_presentation_exchange_records(
+    issue_credential_to_alice: CredentialExchange,
+    alice_member_client: RichAsyncClient,
+    acme_client: RichAsyncClient,
+    acme_and_alice_connection: AcmeAliceConnect,
+    protocol_version: str,
+    acme_save_exchange_record: bool,
+    alice_save_exchange_record: bool,
+):
+    response = await acme_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "connection_id": acme_and_alice_connection.acme_connection_id,
+            "protocol_version": protocol_version,
+            "indy_proof_request": indy_proof_request.to_dict(),
+            "save_exchange_record": acme_save_exchange_record,
+        },
+    )
+    acme_exchange = response.json()
+    acme_proof_id = acme_exchange["proof_id"]
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received"},
+        topic="proofs",
+        max_duration=240,
+    )
+    proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
+    alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
+
+    requested_credentials = await alice_member_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
+    )
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "request-received", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=60,
+    )
+
+    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+        save_exchange_record=alice_save_exchange_record,
+    )
+
+    response = await alice_member_client.post(
+        VERIFIER_BASE_PATH + "/accept-request",
+        json=proof_accept.model_dump(),
+    )
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        filter_map={"state": "done", "proof_id": alice_proof_id},
+        topic="proofs",
+        max_duration=240,
+    )
+
+    assert await check_webhook_state(
+        client=acme_client,
+        filter_map={"state": "done", "proof_id": acme_proof_id},
+        topic="proofs",
+        max_duration=240,
+    )
+
+    result = response.json()
+
+    pres_exchange_result = PresentationExchange(**result)
+    assert isinstance(pres_exchange_result, PresentationExchange)
+    assert response.status_code == 200
+
+    # After proof request is complete, get exchange records from faber side:
+    acme_pres_ex_recs = (await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")).json()
+
+    # get exchange records from alice side
+    alice_pres_ex_recs = (
+        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    ).json()
+
+    if alice_save_exchange_record:
+        assert len(alice_pres_ex_recs) == 1  # Save record is True, should be 1 record
+    else:
+        assert len(alice_pres_ex_recs) == 0  # default is to remove records
+
+    if acme_save_exchange_record:
+        assert len(acme_pres_ex_recs) == 1  # Save record is True, should be 1 record
+    else:
+        assert len(acme_pres_ex_recs) == 0  # default is to remove records

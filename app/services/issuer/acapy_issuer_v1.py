@@ -6,6 +6,7 @@ from aries_cloudcontroller import (
     CredentialPreview,
     V10CredentialConnFreeOfferRequest,
     V10CredentialExchange,
+    V10CredentialExchangeAutoRemoveRequest,
     V10CredentialProposalRequestMand,
     V10CredentialStoreRequest,
 )
@@ -39,8 +40,10 @@ class IssuerV1(Issuer):
         )
 
         bound_logger.debug("Issue v1 credential (automated)")
+        auto_remove = not credential.save_exchange_record
         record = await controller.issue_credential_v1_0.issue_credential_automated(
             body=V10CredentialProposalRequestMand(
+                auto_remove=auto_remove,
                 connection_id=credential.connection_id,
                 credential_proposal=credential_preview,
                 cred_def_id=credential.indy_credential_detail.credential_definition_id,
@@ -65,8 +68,10 @@ class IssuerV1(Issuer):
         )
 
         bound_logger.debug("Creating v1 credential offer")
+        auto_remove = not credential.save_exchange_record
         record = await controller.issue_credential_v1_0.create_offer(
             body=V10CredentialConnFreeOfferRequest(
+                auto_remove=auto_remove,
                 credential_preview=credential_preview,
                 cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
@@ -77,7 +82,9 @@ class IssuerV1(Issuer):
 
     @classmethod
     async def request_credential(
-        cls, controller: AcaPyClient, credential_exchange_id: str
+        cls,
+        controller: AcaPyClient,
+        credential_exchange_id: str,
     ):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
@@ -87,7 +94,7 @@ class IssuerV1(Issuer):
 
         bound_logger.debug("Sending v1 credential request")
         record = await controller.issue_credential_v1_0.send_request(
-            cred_ex_id=credential_exchange_id
+            cred_ex_id=credential_exchange_id,
         )
 
         bound_logger.debug("Returning v1 send request result as CredentialExchange.")

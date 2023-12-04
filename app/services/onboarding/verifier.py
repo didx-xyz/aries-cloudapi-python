@@ -61,7 +61,10 @@ async def onboard_verifier(*, verifier_controller: AcaPyClient, verifier_label: 
                     and "recipientKeys" in service
                     and len(service["recipientKeys"]) > 0
                 ):
-                    onboarding_result["did"] = service["recipientKeys"][0]
+                    did = service["recipientKeys"][0]
+                    if "#" in did:
+                        did = did.split("#")[0]
+                    onboarding_result["did"] = did
                 else:
                     raise KeyError(
                         f"RecipientKeys not present in the invitation service: `{service}`."

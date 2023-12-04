@@ -85,6 +85,7 @@ class IssuerV1(Issuer):
         cls,
         controller: AcaPyClient,
         credential_exchange_id: str,
+        save_exchange_record: bool = False,
     ):
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
@@ -95,6 +96,9 @@ class IssuerV1(Issuer):
         bound_logger.debug("Sending v1 credential request")
         record = await controller.issue_credential_v1_0.send_request(
             cred_ex_id=credential_exchange_id,
+            body=V10CredentialExchangeAutoRemoveRequest(
+                auto_remove=not save_exchange_record
+            ),
         )
 
         bound_logger.debug("Returning v1 send request result as CredentialExchange.")

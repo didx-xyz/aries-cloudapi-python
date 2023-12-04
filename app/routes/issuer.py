@@ -273,6 +273,7 @@ async def revoke_credential(
 @router.post("/{credential_id}/request", response_model=CredentialExchange)
 async def request_credential(
     credential_id: str,
+    save_exchange_record: bool = False,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
@@ -315,7 +316,9 @@ async def request_credential(
 
         bound_logger.debug("Requesting credential")
         result = await issuer.request_credential(
-            controller=aries_controller, credential_exchange_id=credential_id
+            controller=aries_controller,
+            credential_exchange_id=credential_id,
+            save_exchange_record=save_exchange_record,
         )
 
     if result:

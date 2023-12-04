@@ -58,6 +58,7 @@ class Issuer(ABC):
         cls,
         controller: AcaPyClient,
         credential_exchange_id: str,
+        save_exchange_record: bool = False,
     ) -> CredentialExchange:
         """
         Request credential

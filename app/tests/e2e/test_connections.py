@@ -239,7 +239,7 @@ async def test_bob_and_alice_connect(
 @pytest.mark.anyio
 async def test_accept_use_public_did(
     faber_client: RichAsyncClient,  # issuer has public did
-    bob_member_client: RichAsyncClient,
+    meld_co_client: RichAsyncClient,  # also has public did
     alias: Optional[str],
     multi_use: Optional[bool],
     use_public_did: Optional[bool],
@@ -267,14 +267,14 @@ async def test_accept_use_public_did(
         invitation=invitation["invitation"],
     ).model_dump()
 
-    accept_response = await bob_member_client.post(
+    accept_response = await meld_co_client.post(
         f"{BASE_PATH}/accept-invitation",
         json=accept_invite_json,
     )
     connection_record = accept_response.json()
 
     assert await check_webhook_state(
-        client=bob_member_client,
+        client=meld_co_client,
         topic="connections",
         filter_map={
             "state": "completed",

@@ -243,14 +243,16 @@ async def meld_co_issue_credential_to_alice(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("save_exchange_record", [False, True])
+@pytest.mark.parametrize("save_exchange_record_faber", [False, True])
+@pytest.mark.parametrize("save_exchange_record_alice", [False, True])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
-    save_exchange_record: bool,
+    save_exchange_record_faber: bool,
+    save_exchange_record_alice: bool,
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
@@ -259,7 +261,7 @@ async def test_issue_credential_with_save_exchange_record(
             "credential_definition_id": credential_definition_id,
             "attributes": {"speed": "10"},
         },
-        "save_exchange_record": save_exchange_record,
+        "save_exchange_record": save_exchange_record_faber,
     }
 
     alice_credentials_listener = SseListener(
@@ -281,8 +283,9 @@ async def test_issue_credential_with_save_exchange_record(
     alice_credential_id = payload["credential_id"]
 
     # send credential request - holder
+    params = {"save_exchange_record": save_exchange_record_alice}
     await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request",
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", params=params
     )
 
     await alice_credentials_listener.wait_for_event(
@@ -297,11 +300,12 @@ async def test_issue_credential_with_save_exchange_record(
         await alice_member_client.get(f"{CREDENTIALS_BASE_PATH}")
     ).json()
 
-    # faber requesting auto_remove only removes their cred ex recs
-    # Alice cred ex recs should be empty regardless
-    assert len(alice_cred_ex_recs) == 0
+    if save_exchange_record_alice:
+        assert len(alice_cred_ex_recs) == 1  # Save record is True, should be 1 record
+    else:
+        assert len(alice_cred_ex_recs) == 0  # default is to remove records
 
-    if save_exchange_record:
+    if save_exchange_record_faber:
         assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record
     else:
         assert len(faber_cred_ex_recs) == 0  # default is to remove records

@@ -349,7 +349,7 @@ jobs:
           version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile Diff
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true'
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -431,7 +431,7 @@ jobs:
 
       - name: Helmfile Apply
         id: update_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true' || github.event.inputs.run-tests == 'true'
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true' || github.event.inputs.run-tests == 'true'
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -449,7 +449,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile apply pytest
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
         id: pytest
         uses: helmfile/helmfile-action@v1.5.0
         with:
@@ -468,7 +468,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pytest and print logs
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
         run: |
           while true; do
             # Check if the job is complete or failed
@@ -500,7 +500,7 @@ jobs:
 
 
       - name: Copy k8s pytest results
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
         run: |
           echo "apiVersion: v1
           kind: Pod

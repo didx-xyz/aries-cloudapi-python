@@ -14,6 +14,7 @@ from shared.log_config import get_logger
 from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.redis_service import RedisService
+from webhooks.dependencies.websocket import publish_event_on_websocket
 
 logger = get_logger(__name__)
 
@@ -87,7 +88,16 @@ class SseManager:
                     )
 
                     for event in events:
+                        # Add event to SSE queue for processing
                         await self.incoming_events.put(event)
+
+                        # Also publish event to websocket
+                        # Doing it here makes websockets stateless as well
+                        await publish_event_on_websocket(
+                            event_json=event.model_dump_json(),
+                            wallet_id=wallet_id,
+                            topic=event.topic,
+                        )
                 except (KeyError, ValueError) as e:
                     logger.error("Could not unpack redis pubsub message: {}", e)
                 except Exception:

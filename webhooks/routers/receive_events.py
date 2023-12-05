@@ -2,12 +2,10 @@ from typing import Any, Dict, Optional
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, Request, status
-from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.webhook_topics import (
-    WEBHOOK_TOPIC_ALL,
     AcaPyWebhookEvent,
     CloudApiWebhookEvent,
     topic_mapping,
@@ -19,9 +17,6 @@ from webhooks.models import acapy_to_cloudapi_event
 logger = get_logger(__name__)
 
 router = APIRouter()
-
-endpoint = PubSubEndpoint()
-endpoint.register_route(router, "/pubsub")
 
 
 @router.post(
@@ -85,30 +80,7 @@ async def topic_root(
 
     webhook_event_json = cloudapi_webhook_event.model_dump_json()
 
-    await publish_event_on_websocket(webhook_event_json, wallet_id, cloudapi_topic)
-
     # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
     await redis_service.add_webhook_event(webhook_event_json, wallet_id)
 
     bound_logger.trace("Successfully processed received webhook.")
-
-
-async def publish_event_on_websocket(
-    event_json: str, wallet_id: str, topic: str
-) -> None:
-    """
-    Publish the webhook to websocket subscribers on the following topics:
-        - current wallet id
-        - topic of the event
-        - topic and wallet id combined as topic-wallet_id
-        - 'all' topic, which allows to subscribe to all published events
-
-    Args:
-        event_json (str): Webhook event serialized as json
-        wallet_id (str): The wallet_id for this event
-        topic (str): The cloudapi topic for the event
-    """
-
-    publish_topics = [topic, wallet_id, f"{topic}-{wallet_id}", WEBHOOK_TOPIC_ALL]
-
-    await endpoint.publish(topics=publish_topics, data=event_json)

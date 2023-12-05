@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 
 from shared.log_config import get_logger
-from webhooks.dependencies import sse_manager
+from webhooks.dependencies import sse_manager, websocket
 from webhooks.dependencies.container import get_container
 from webhooks.routers import receive_events, sse, webhooks
 
@@ -33,6 +33,7 @@ def create_app() -> FastAPI:
     application.include_router(receive_events.router)
     application.include_router(webhooks.router)
     application.include_router(sse.router)
+    application.include_router(websocket.router)
 
     return application
 

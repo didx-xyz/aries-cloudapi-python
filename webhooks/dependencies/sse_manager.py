@@ -83,20 +83,25 @@ class SseManager:
                     timestamp_ns = int(timestamp_ns_str)
 
                     # Fetch the event with the exact timestamp from the sorted set
-                    events = await self.redis_service.get_events_by_timestamp(
+                    json_events = await self.redis_service.get_json_events_by_timestamp(
                         wallet_id, timestamp_ns, timestamp_ns
                     )
 
-                    for event in events:
+                    for json_event in json_events:
+                        parsed_event = CloudApiWebhookEventGeneric.model_validate_json(
+                            json_event
+                        )
+                        topic = parsed_event.topic
+
                         # Add event to SSE queue for processing
-                        await self.incoming_events.put(event)
+                        await self.incoming_events.put(parsed_event)
 
                         # Also publish event to websocket
                         # Doing it here makes websockets stateless as well
                         await publish_event_on_websocket(
-                            event_json=event.model_dump_json(),
+                            event_json=json_event,
                             wallet_id=wallet_id,
-                            topic=event.topic,
+                            topic=topic,
                         )
                 except (KeyError, ValueError) as e:
                     logger.error("Could not unpack redis pubsub message: {}", e)

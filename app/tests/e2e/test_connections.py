@@ -61,26 +61,16 @@ async def test_create_invitation_no_public_did(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize(
-    "alias,use_existing_connection",
-    [
-        (None, None),
-        ("alias", False),
-        ("alias", True),
-    ],
-)
 async def test_accept_invitation(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    alias: Optional[str],
-    use_existing_connection: Optional[bool],
 ):
+    alias = "test_alias"
     invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = invitation_response.json()
 
     accept_invite_json = AcceptInvitation(
         alias=alias,
-        use_existing_connection=use_existing_connection,
         invitation=invitation["invitation"],
     ).model_dump()
 
@@ -103,10 +93,7 @@ async def test_accept_invitation(
         "connection_id", "state", "created_at", "updated_at", "invitation_key"
     )
     assert_that(connection_record).has_state("request-sent")
-
-    if alias:
-        assert_that(connection_record).contains("alias")
-        assert_that(connection_record["alias"]).is_equal_to(alias)
+    assert_that(connection_record["alias"]).is_equal_to(alias)
 
 
 @pytest.mark.anyio

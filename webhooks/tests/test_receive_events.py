@@ -21,8 +21,7 @@ dummy_event = CloudApiWebhookEvent(
     "webhooks.dependencies.redis_service.RedisService.add_webhook_event",
     new_callable=AsyncMock,
 )
-@patch("webhooks.routers.receive_events.endpoint.publish", new_callable=AsyncMock)
-def test_topic_root(mock_publish, mock_add_webhook_event, _):
+def test_topic_root(mock_add_webhook_event, _):
     # Prepare the request payload
     acapy_topic = "connections"
     body = {"payload": "test"}
@@ -34,6 +33,5 @@ def test_topic_root(mock_publish, mock_add_webhook_event, _):
     # Verify the response
     assert response.status_code == 204
 
-    # Verify that the Redis service and endpoint publish were called
+    # Verify that the Redis service was called
     mock_add_webhook_event.assert_awaited_once()
-    mock_publish.assert_awaited_once()

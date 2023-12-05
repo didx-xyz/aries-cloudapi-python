@@ -32,10 +32,10 @@ def get_token(client):
 
 @pytest.fixture(scope="function")
 async def alice_acapy_client(
-    alice_member_client: RichAsyncClient,
+    bob_member_client: RichAsyncClient,
 ) -> Generator[AcaPyClient, Any, None]:
     async with get_tenant_acapy_client(
-        token=get_token(alice_member_client)
+        token=get_token(bob_member_client)
     ) as acapy_client:
         yield acapy_client
 

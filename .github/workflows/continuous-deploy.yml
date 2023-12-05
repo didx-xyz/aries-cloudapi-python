@@ -3,8 +3,8 @@ name: CICD
 on:
   workflow_dispatch:
     inputs:
-      run-update-deployments:
-        description: "Run Update Deployments step manually"
+      run-reset-deployments:
+        description: "Reset deployment: Clean start"
         required: false
         default: true
         type: boolean
@@ -326,17 +326,6 @@ jobs:
           path: charts
           ref: capi/persistence
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-          cache: pip
-
-      - name: Install test dependencies.
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools
 
@@ -359,7 +348,7 @@ jobs:
           version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile Diff
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -378,7 +367,7 @@ jobs:
 
       - name: Helmfile Destroy
         id: destroy_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        if: github.event.inputs.run-reset-deployments
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -394,7 +383,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pods to terminate
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        if: github.event.inputs.run-reset-deployments
         run: |
           while true; do
             terminating_pods_count=$(kubectl -n dev-cloudapi get pods --field-selector=status.phase!=Running,status.phase!=Succeeded -o jsonpath='{.items[*].metadata.name}')
@@ -409,7 +398,7 @@ jobs:
 
       - name: Drop DBs
         id: drop_dbs
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        if: github.event.inputs.run-reset-deployments
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_HOST: ${{ secrets.DB_HOST }}
@@ -426,14 +415,14 @@ jobs:
           bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -c
 
       - name: List Elasticache Redis
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
 
       - name: Clean Elasticache Redis
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        if: github.event.inputs.run-reset-deployments
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
@@ -441,7 +430,7 @@ jobs:
 
       - name: Helmfile Apply
         id: update_deployments
-        if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-update-deployments
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments && github.event.inputs.run-tests ) || github.event.inputs.run-tests
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -459,6 +448,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile apply pytest
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments && github.event.inputs.run-tests ) || github.event.inputs.run-tests
         id: pytest
         uses: helmfile/helmfile-action@v1.5.0
         with:
@@ -477,6 +467,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Wait for pytest
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments && github.event.inputs.run-tests ) || github.event.inputs.run-tests
         run: |
           while true; do
             # Check if the job is complete or failed
@@ -497,6 +488,7 @@ jobs:
 
 
       - name: Copy k8s pytest results
+        if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments && github.event.inputs.run-tests ) || github.event.inputs.run-tests
         run: |
           echo "apiVersion: v1
           kind: Pod

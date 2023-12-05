@@ -465,11 +465,12 @@ jobs:
       - name: Wait for pytest
         run: |
           while true; do
-            # Get the job status
-            STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
+            # Check if the job is complete or failed
+            COMPLETION_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}')
+            FAILURE_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}')
 
-            if [ "$STATUS" == "True" ]; then
-                echo "Job $JOB_NAME completed successfully."
+            if [ "$COMPLETION_STATUS" == "1" ] || [ "$FAILURE_STATUS" == "1" ]; then
+                echo "Job $JOB_NAME has completed."
                 break
             else
                 echo "Waiting for job to complete..."
@@ -479,6 +480,7 @@ jobs:
         env:
           JOB_NAME: cloudapi-pytest
           NAMESPACE: dev-cloudapi
+
 
       - name: Copy k8s pytest results
         run: |

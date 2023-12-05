@@ -33,7 +33,7 @@ async def test_get_actors():
     async with RichAsyncClient() as client:
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
-    assert response.status_code == 200
+    assert response.status_code == 201
 
 
 @pytest.mark.anyio

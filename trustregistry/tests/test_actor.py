@@ -33,12 +33,11 @@ async def test_get_actors():
     async with RichAsyncClient() as client:
         response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
 
-    assert response.status_code == 201
+    assert response.status_code == 200
 
 
 @pytest.mark.anyio
 async def test_register_actor():
-    [][2]
     payload = json.dumps(new_actor)
     name_payload = generate_actor()
     name_payload["name"] = new_actor["name"]

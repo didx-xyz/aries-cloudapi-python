@@ -295,6 +295,7 @@ jobs:
       id-token: write # Required to authenticate with AWS
       contents: read # Required to clone this repository
       checks: write # Required for action-junit-report
+      pull-requests: write # Required to comment on PRs for Pytest coverage comment
     runs-on: ubuntu-latest
 
     if: github.actor != 'dependabot[bot]'

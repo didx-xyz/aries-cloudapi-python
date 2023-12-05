@@ -4,6 +4,8 @@ from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, List, NoReturn, Tuple
 
+from pydantic import ValidationError
+
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,
     MAX_EVENT_AGE_SECONDS,
@@ -88,21 +90,31 @@ class SseManager:
                     )
 
                     for json_event in json_events:
-                        parsed_event = CloudApiWebhookEventGeneric.model_validate_json(
-                            json_event
-                        )
-                        topic = parsed_event.topic
+                        try:
+                            parsed_event = (
+                                CloudApiWebhookEventGeneric.model_validate_json(
+                                    json_event
+                                )
+                            )
+                            topic = parsed_event.topic
 
-                        # Add event to SSE queue for processing
-                        await self.incoming_events.put(parsed_event)
+                            # Add event to SSE queue for processing
+                            await self.incoming_events.put(parsed_event)
 
-                        # Also publish event to websocket
-                        # Doing it here makes websockets stateless as well
-                        await publish_event_on_websocket(
-                            event_json=json_event,
-                            wallet_id=wallet_id,
-                            topic=topic,
-                        )
+                            # Also publish event to websocket
+                            # Doing it here makes websockets stateless as well
+                            await publish_event_on_websocket(
+                                event_json=json_event,
+                                wallet_id=wallet_id,
+                                topic=topic,
+                            )
+                        except ValidationError as e:
+                            error_message = (
+                                "Could not parse json event retreived from redis "
+                                f"into a `CloudApiWebhookEventGeneric`. Error: `{str(e)}`."
+                            )
+                            logger.error(error_message)
+
                 except (KeyError, ValueError) as e:
                     logger.error("Could not unpack redis pubsub message: {}", e)
                 except Exception:

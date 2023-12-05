@@ -12,5 +12,4 @@ class CreateInvitation(BaseModel):
 
 class AcceptInvitation(BaseModel):
     alias: Optional[str] = None
-    use_existing_connection: Optional[bool] = None
     invitation: ReceiveInvitationRequest

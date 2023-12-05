@@ -1,7 +1,11 @@
+import time
+from typing import Optional
+
 import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
 
+from app.models.connections import AcceptInvitation, CreateInvitation
 from app.routes.connections import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
@@ -11,17 +15,50 @@ BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio
-async def test_create_invitation(
-    bob_member_client: RichAsyncClient,
+@pytest.mark.parametrize(
+    "alias,multi_use,use_public_did",
+    [
+        (None, None, None),
+        ("alias", False, False),
+        ("alias", True, False),
+        ("alias", False, True),
+        ("alias", True, True),
+    ],
+)
+async def test_create_invitation_no_public_did(
+    bob_member_client: RichAsyncClient,  # bob has no public did
+    alias: Optional[str],
+    multi_use: Optional[bool],
+    use_public_did: Optional[bool],
 ):
-    response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
-    invitation = response.json()
+    invite_json = CreateInvitation(
+        alias=alias, multi_use=multi_use, use_public_did=use_public_did
+    ).model_dump()
 
-    assert_that(invitation["connection_id"]).is_not_empty()
-    assert_that(invitation["invitation"]).is_instance_of(dict).contains(
-        "@id", "@type", "recipientKeys", "serviceEndpoint"
-    )
-    assert_that(invitation["invitation_url"]).matches(r"^https?://")
+    if use_public_did:
+        with pytest.raises(HTTPException) as exc_info:
+            # regular holders cannot `use_public_did` as they do not have a public did
+            await bob_member_client.post(
+                f"{BASE_PATH}/create-invitation", json=invite_json
+            )
+        assert exc_info.value.status_code == 400
+        assert (
+            exc_info.value.detail
+            == """{"detail":"Cannot create public invitation with no public DID."}"""
+        )
+    else:
+        response = await bob_member_client.post(
+            f"{BASE_PATH}/create-invitation", json=invite_json
+        )
+        assert response.status_code == 200
+
+        invitation = response.json()
+
+        assert_that(invitation["connection_id"]).is_not_empty()
+        assert_that(invitation["invitation"]).is_instance_of(dict).contains(
+            "@id", "@type", "recipientKeys", "serviceEndpoint"
+        )
+        assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
 
 @pytest.mark.anyio
@@ -29,12 +66,18 @@ async def test_accept_invitation(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
 ):
+    alias = "test_alias"
     invitation_response = await bob_member_client.post(f"{BASE_PATH}/create-invitation")
     invitation = invitation_response.json()
 
+    accept_invite_json = AcceptInvitation(
+        alias=alias,
+        invitation=invitation["invitation"],
+    ).model_dump()
+
     accept_response = await alice_member_client.post(
         f"{BASE_PATH}/accept-invitation",
-        json={"invitation": invitation["invitation"]},
+        json=accept_invite_json,
     )
     connection_record = accept_response.json()
 
@@ -51,13 +94,14 @@ async def test_accept_invitation(
         "connection_id", "state", "created_at", "updated_at", "invitation_key"
     )
     assert_that(connection_record).has_state("request-sent")
+    assert_that(connection_record["alias"]).is_equal_to(alias)
 
 
 @pytest.mark.anyio
 async def test_get_connections(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
     alice_connections = (await alice_member_client.get(f"{BASE_PATH}")).json()
     bob_connections = (await bob_member_client.get(f"{BASE_PATH}")).json()
@@ -136,3 +180,105 @@ async def test_bob_and_alice_connect(
 
     assert "completed" in alice_connection["state"]
     assert "completed" in bob_connection["state"]
+
+
+@pytest.mark.parametrize(
+    "alias,multi_use,use_public_did",
+    [
+        ("alias", False, True),
+        ("alias", True, True),
+    ],
+)
+@pytest.mark.anyio
+async def test_accept_use_public_did(
+    faber_client: RichAsyncClient,  # issuer has public did
+    meld_co_client: RichAsyncClient,  # also has public did
+    alias: Optional[str],
+    multi_use: Optional[bool],
+    use_public_did: Optional[bool],
+):
+    invite_json = CreateInvitation(
+        alias=alias, multi_use=multi_use, use_public_did=use_public_did
+    ).model_dump()
+
+    response = await faber_client.post(
+        f"{BASE_PATH}/create-invitation", json=invite_json
+    )
+    assert response.status_code == 200
+
+    invitation = response.json()
+    assert_that(invitation["connection_id"]).is_not_empty()
+    assert_that(invitation["invitation"]).is_instance_of(dict).contains(
+        "@id", "@type", "recipientKeys", "serviceEndpoint"
+    )
+    assert_that(invitation["invitation_url"]).matches(r"^https?://")
+
+    accept_invite_json = AcceptInvitation(
+        alias=alias,
+        invitation=invitation["invitation"],
+    ).model_dump()
+
+    accept_response = await meld_co_client.post(
+        f"{BASE_PATH}/accept-invitation",
+        json=accept_invite_json,
+    )
+    connection_record = accept_response.json()
+
+    assert await check_webhook_state(
+        client=meld_co_client,
+        topic="connections",
+        filter_map={
+            "state": "completed",
+            "connection_id": connection_record["connection_id"],
+        },
+    )
+
+    assert_that(connection_record).contains(
+        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+    )
+    assert_that(connection_record).has_state("request-sent")
+
+
+@pytest.mark.anyio
+async def test_accept_use_public_did_between_issuer_and_holder(
+    faber_client: RichAsyncClient,  # issuer has public did
+    alice_member_client: RichAsyncClient,  # no public did
+):
+    time.sleep(5)  # sleep to allow ledger op to register public did ...
+    invite_json = CreateInvitation(use_public_did=True).model_dump()
+
+    response = await faber_client.post(
+        f"{BASE_PATH}/create-invitation", json=invite_json
+    )
+    assert response.status_code == 200
+
+    invitation = response.json()
+    assert_that(invitation["connection_id"]).is_not_empty()
+    assert_that(invitation["invitation"]).is_instance_of(dict).contains(
+        "@id", "@type", "recipientKeys", "serviceEndpoint"
+    )
+    assert_that(invitation["invitation_url"]).matches(r"^https?://")
+
+    accept_invite_json = AcceptInvitation(
+        invitation=invitation["invitation"]
+    ).model_dump()
+
+    accept_response = await alice_member_client.post(
+        f"{BASE_PATH}/accept-invitation",
+        json=accept_invite_json,
+    )
+    connection_record = accept_response.json()
+
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="connections",
+        filter_map={
+            "state": "completed",
+            "connection_id": connection_record["connection_id"],
+        },
+    )
+
+    assert_that(connection_record).contains(
+        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+    )
+    assert_that(connection_record).has_state("request-sent")

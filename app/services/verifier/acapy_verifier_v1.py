@@ -1,5 +1,6 @@
 from aries_cloudcontroller import (
     AcaPyClient,
+    IndyPresSpec,
     V10PresentationCreateRequestRequest,
     V10PresentationProblemReportRequest,
     V10PresentationSendRequest,

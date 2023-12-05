@@ -50,7 +50,7 @@ async def accept_invitation(
 
     Parameters:
     ------------
-    invitation: ReceiveInvitationRequest
+    invitation: AcceptInvitation
         the invitation object obtained from create_invitation.
     """
     bound_logger = logger.bind(body=body)

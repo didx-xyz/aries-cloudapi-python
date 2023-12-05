@@ -534,6 +534,7 @@ jobs:
         with:
           report_paths: './test_output.xml'
           fail_on_failure: true
+          detailed_summary: true
 
       - name: Helmfile destroy pytest
         uses: helmfile/helmfile-action@v1.5.0

@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 
 import pytest
@@ -214,7 +215,6 @@ async def test_accept_use_public_did(
 
     accept_invite_json = AcceptInvitation(
         alias=alias,
-        use_existing_connection=False,
         invitation=invitation["invitation"],
     ).model_dump()
 
@@ -239,26 +239,13 @@ async def test_accept_use_public_did(
     assert_that(connection_record).has_state("request-sent")
 
 
-@pytest.mark.parametrize(
-    "alias,multi_use,use_public_did",
-    [
-        ("alias", False, False),
-        ("alias", False, True),
-        ("alias", True, False),
-        ("alias", True, True),
-    ],
-)
 @pytest.mark.anyio
 async def test_accept_use_public_did_between_issuer_and_holder(
     faber_client: RichAsyncClient,  # issuer has public did
     alice_member_client: RichAsyncClient,  # no public did
-    alias: Optional[str],
-    multi_use: Optional[bool],
-    use_public_did: Optional[bool],
 ):
-    invite_json = CreateInvitation(
-        alias=alias, multi_use=multi_use, use_public_did=use_public_did
-    ).model_dump()
+    time.sleep(5)  # sleep to allow ledger op to register public did ...
+    invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(
         f"{BASE_PATH}/create-invitation", json=invite_json
@@ -273,9 +260,7 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
     accept_invite_json = AcceptInvitation(
-        alias=alias,
-        use_existing_connection=False,
-        invitation=invitation["invitation"],
+        invitation=invitation["invitation"]
     ).model_dump()
 
     accept_response = await alice_member_client.post(

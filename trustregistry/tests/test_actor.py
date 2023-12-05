@@ -38,6 +38,7 @@ async def test_get_actors():
 
 @pytest.mark.anyio
 async def test_register_actor():
+    [][2]
     payload = json.dumps(new_actor)
     name_payload = generate_actor()
     name_payload["name"] = new_actor["name"]

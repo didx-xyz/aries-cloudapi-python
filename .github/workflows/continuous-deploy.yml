@@ -303,6 +303,8 @@ jobs:
       TAILSCALE_VERSION: 1.50.1
       HELMFILE_VERSION: v0.157.0
       HELM_VERSION: v3.13.1
+      OUTPUT_FILE: test_output.xml
+      COVERAGE_FILE: test_coverage.txt
 
     concurrency:
       group: cicd-deploy
@@ -322,6 +324,17 @@ jobs:
           token: ${{ secrets.PAT }}
           path: charts
           ref: capi/persistence
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          cache: pip
+
+      - name: Install test dependencies.
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools
@@ -512,6 +525,7 @@ jobs:
           # Copy the file from the pod to your local system
           echo "Copying file from pod..."
           kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$OUTPUT_FILE $LOCAL_PATH/$OUTPUT_FILE
+          kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$COVERAGE_FILE $LOCAL_PATH/$COVERAGE_FILE
 
           # Clean up: delete the temporary pod
           echo "Cleaning up..."
@@ -524,7 +538,6 @@ jobs:
           CONTAINER_IMAGE: busybox
           MOUNT_PATH: /mnt
           LOCAL_PATH: ./
-          OUTPUT_FILE: test_output.xml
           NAMESPACE: dev-cloudapi
 
 
@@ -535,6 +548,12 @@ jobs:
           report_paths: './test_output.xml'
           fail_on_failure: true
           detailed_summary: true
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./test_coverage.txt
+          junitxml-path: ./test_output.xml
 
       - name: Helmfile destroy pytest
         uses: helmfile/helmfile-action@v1.5.0

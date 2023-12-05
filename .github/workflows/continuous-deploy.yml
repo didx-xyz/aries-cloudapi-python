@@ -550,6 +550,7 @@ jobs:
           detailed_summary: true
 
       - name: Pytest coverage comment
+        if: success() || failure() # always run even if the previous step fails
         uses: MishaKav/pytest-coverage-comment@main
         with:
           pytest-coverage-path: ./test_coverage.txt

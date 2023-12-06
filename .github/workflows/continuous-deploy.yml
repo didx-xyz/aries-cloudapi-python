@@ -558,6 +558,7 @@ jobs:
         with:
           pytest-coverage-path: ./test_coverage.txt
           junitxml-path: ./test_output.xml
+          create-new-comment: true
 
       - name: Helmfile destroy pytest
         uses: helmfile/helmfile-action@v1.5.0

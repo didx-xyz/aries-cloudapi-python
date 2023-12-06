@@ -1,12 +1,12 @@
 import pytest
 from fastapi import HTTPException
 
-from app.routes import webhooks
+from app.routes.webhooks import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
 from shared.models.webhook_topics import Connection
 
-BASE_PATH = webhooks.router.prefix
+BASE_PATH = router.prefix
 
 
 @pytest.mark.anyio

@@ -205,36 +205,38 @@ async def create_offer(
     return result
 
 
-@router.delete("/{credential_id}", status_code=204)
-async def remove_credential(
-    credential_id: str,
+@router.delete("/{credential_exchange_id}", status_code=204)
+async def remove_credential_exchange_record(
+    credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
-        Remove a credential.
+        Remove a credential exchange record.
 
     Parameters:
     -----------
-        credential_id: str
-            credential identifier
+        credential_exchange_id: str
+            credential exchange record identifier
 
     Returns:
     --------
         payload: None
         status_code: 204
     """
-    bound_logger = logger.bind(body={"credential_id": credential_id})
-    bound_logger.info("DELETE request received: Remove credential by id")
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
+    bound_logger.info(
+        "DELETE request received: Remove credential exchange record by id"
+    )
 
-    issuer = issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_exchange_id)
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Deleting credential")
-        await issuer.delete_credential(
-            controller=aries_controller, credential_exchange_id=credential_id
+        await issuer.delete_credential_exchange_record(
+            controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    bound_logger.info("Successfully deleted credential by id.")
+    bound_logger.info("Successfully deleted credential exchange record.")
 
 
 @router.post("/revoke", status_code=204)

@@ -303,5 +303,7 @@ async def test_issue_credential_with_save_exchange_record(
 
     if save_exchange_record:
         assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record
+        cred_ex_id = faber_cred_ex_recs[0]["credential_id"]
+        await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")  # Clean up
     else:
         assert len(faber_cred_ex_recs) == 0  # default is to remove records

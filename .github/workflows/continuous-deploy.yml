@@ -324,7 +324,6 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
-          ref: capi/persistence
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools

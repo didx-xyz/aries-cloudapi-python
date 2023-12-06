@@ -176,7 +176,7 @@ async def issue_credential_to_alice(
     return response.json()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def meld_co_credential_definition_id(
     schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
     meld_co_client: RichAsyncClient,

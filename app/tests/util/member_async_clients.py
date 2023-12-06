@@ -62,7 +62,7 @@ async def acme_client(
         yield acme_async_client
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 async def meld_co_client(
     meld_co_issuer_verifier: CreateTenantResponse,
 ) -> Generator[RichAsyncClient, Any, None]:

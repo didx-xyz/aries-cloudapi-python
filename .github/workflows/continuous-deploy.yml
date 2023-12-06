@@ -315,7 +315,6 @@ jobs:
       output: ${{ steps.updated_deployments.outputs.success }}
 
     steps:
-
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -497,7 +496,6 @@ jobs:
         env:
           JOB_NAME: cloudapi-pytest
           NAMESPACE: dev-cloudapi
-
 
       - name: Copy k8s pytest results
         # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'

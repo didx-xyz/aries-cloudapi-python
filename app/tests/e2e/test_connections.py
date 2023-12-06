@@ -197,9 +197,7 @@ async def test_accept_use_public_did(
     multi_use: Optional[bool],
     use_public_did: Optional[bool],
 ):
-    invite_json = CreateInvitation(
-        alias=alias, multi_use=multi_use, use_public_did=use_public_did
-    ).model_dump()
+    time.sleep(5)  # sleep to allow ledger op to register public did ...
 
     response = await faber_client.post(
         f"{BASE_PATH}/create-invitation", json=invite_json
@@ -244,7 +242,7 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     faber_client: RichAsyncClient,  # issuer has public did
     alice_member_client: RichAsyncClient,  # no public did
 ):
-    time.sleep(5)  # sleep to allow ledger op to register public did ...
+    time.sleep(10)  # sleep to allow ledger op to register public did ...
     invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(

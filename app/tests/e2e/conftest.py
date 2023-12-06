@@ -35,8 +35,15 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
 
     try:
         response = await get_public_did(governance_acapy_client)
-    except CloudApiException:
-        response = await create_public_did(governance_acapy_client, set_public=True)
+    except CloudApiException as e:
+        if e.status_code == 404:
+            # Did not found, create and publish
+            response = await create_public_did(governance_acapy_client, set_public=True)
+        else:
+            logger.error(
+                f"Something went wrong when fetching public did for governance: {e}"
+            )
+            raise e
 
     did = response.did
 

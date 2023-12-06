@@ -4,6 +4,8 @@ from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, List, NoReturn, Tuple
 
+from pydantic import ValidationError
+
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,
     MAX_EVENT_AGE_SECONDS,
@@ -14,6 +16,7 @@ from shared.log_config import get_logger
 from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
 from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.dependencies.redis_service import RedisService
+from webhooks.dependencies.websocket import publish_event_on_websocket
 
 logger = get_logger(__name__)
 
@@ -82,12 +85,36 @@ class SseManager:
                     timestamp_ns = int(timestamp_ns_str)
 
                     # Fetch the event with the exact timestamp from the sorted set
-                    events = await self.redis_service.get_events_by_timestamp(
+                    json_events = await self.redis_service.get_json_events_by_timestamp(
                         wallet_id, timestamp_ns, timestamp_ns
                     )
 
-                    for event in events:
-                        await self.incoming_events.put(event)
+                    for json_event in json_events:
+                        try:
+                            parsed_event = (
+                                CloudApiWebhookEventGeneric.model_validate_json(
+                                    json_event
+                                )
+                            )
+                            topic = parsed_event.topic
+
+                            # Add event to SSE queue for processing
+                            await self.incoming_events.put(parsed_event)
+
+                            # Also publish event to websocket
+                            # Doing it here makes websockets stateless as well
+                            await publish_event_on_websocket(
+                                event_json=json_event,
+                                wallet_id=wallet_id,
+                                topic=topic,
+                            )
+                        except ValidationError as e:
+                            error_message = (
+                                "Could not parse json event retreived from redis "
+                                f"into a `CloudApiWebhookEventGeneric`. Error: `{str(e)}`."
+                            )
+                            logger.error(error_message)
+
                 except (KeyError, ValueError) as e:
                     logger.error("Could not unpack redis pubsub message: {}", e)
                 except Exception:

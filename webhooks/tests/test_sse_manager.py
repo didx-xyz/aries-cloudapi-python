@@ -25,7 +25,7 @@ def redis_service_mock():
     # Setup RedisService mock
     redis_service = MagicMock()
     redis_service.redis.pubsub.return_value = AsyncMock()
-    redis_service.get_events_by_timestamp = AsyncMock(return_value=[MagicMock()])
+    redis_service.get_json_events_by_timestamp = AsyncMock(return_value=[MagicMock()])
     return redis_service
 
 
@@ -37,8 +37,15 @@ async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-na
 
 
 @pytest.mark.anyio
+@patch("webhooks.dependencies.websocket.endpoint.publish", new_callable=AsyncMock)
+@patch(
+    "shared.models.webhook_topics.base.CloudApiWebhookEventGeneric.model_validate_json"
+)
 async def test_listen_for_new_events(
-    sse_manager, redis_service_mock  # pylint: disable=redefined-outer-name
+    mock_model_validate_json,
+    mock_publish,
+    sse_manager,  # pylint: disable=redefined-outer-name
+    redis_service_mock,  # pylint: disable=redefined-outer-name
 ):
     # Configure specific mocks for this test
     pubsub_mock = redis_service_mock.redis.pubsub.return_value
@@ -48,6 +55,11 @@ async def test_listen_for_new_events(
             [{"data": b"wallet1:123456789"}],  # First message
             repeat(None),  # Keep returning None indefinitely
         )
+    )
+
+    # Mock for CloudApiWebhookEventGeneric.model_validate_json
+    mock_model_validate_json.return_value = CloudApiWebhookEventGeneric(
+        wallet_id="test_wallet", topic="test_topic", origin="abc", payload={}
     )
 
     # Use asyncio.wait_for to prevent the test from hanging indefinitely
@@ -61,7 +73,9 @@ async def test_listen_for_new_events(
         sse_manager.redis_service.sse_event_pubsub_channel
     )
     assert pubsub_mock.get_message.call_count >= 1
-    redis_service_mock.get_events_by_timestamp.assert_called_once()
+    redis_service_mock.get_json_events_by_timestamp.assert_called_once()
+    # Check if websocket publish was called
+    mock_publish.assert_awaited_once()
     # Check if the event was added to the incoming_events queue
     assert not sse_manager.incoming_events.empty()
 

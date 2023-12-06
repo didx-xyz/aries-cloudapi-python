@@ -64,7 +64,7 @@ def mock_context_managed_controller():
     return MockContextManagedController
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def mock_governance_auth():
     auth = mock(AcaPyAuthVerified)
     auth.role = Role.GOVERNANCE

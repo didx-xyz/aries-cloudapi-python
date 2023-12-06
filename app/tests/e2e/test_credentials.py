@@ -289,9 +289,6 @@ async def test_issue_credential_with_save_exchange_record(
         field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
 
-    # get exchange records from faber side:
-    faber_cred_ex_recs = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
-
     # get exchange records from alice side -- should be empty regardless
     alice_cred_ex_recs = (
         await alice_member_client.get(f"{CREDENTIALS_BASE_PATH}")
@@ -300,6 +297,9 @@ async def test_issue_credential_with_save_exchange_record(
     # faber requesting auto_remove only removes their cred ex recs
     # Alice cred ex recs should be empty regardless
     assert len(alice_cred_ex_recs) == 0
+
+    # get exchange records from faber side:
+    faber_cred_ex_recs = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
 
     if save_exchange_record:
         assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record

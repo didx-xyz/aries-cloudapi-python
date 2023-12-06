@@ -1,11 +1,16 @@
+import unittest
+
 import pytest
-from aries_cloudcontroller import AcaPyClient
+from aiohttp import RequestInfo
+from aries_cloudcontroller import AcaPyClient, ApiException
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
 
 import app.routes.issuer as test_module
 from app.dependencies.auth import AcaPyAuth
-from app.models.issuer import IndyCredential
+from app.exceptions import CloudApiException
+from app.models.issuer import CredentialWithProtocol, IndyCredential, RevokeCredential
+from app.services import revocation_registry
 from app.services.issuer.acapy_issuer_v1 import IssuerV1
 from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
@@ -58,6 +63,19 @@ async def test_send_credential(
     )
     verify(test_module).assert_public_did(mock_agent_controller)
     verify(test_module).assert_valid_issuer(did, "schema_id")
+
+    request_info = mock(RequestInfo)
+    request_info.real_url = "www.real.co.za"
+
+    when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
+    when(test_module).assert_public_did(...).thenReturn(to_async(did))
+    when(test_module).schema_id_from_credential_definition_id(
+        mock_agent_controller, cred_def_id
+    ).thenReturn(to_async("schema_id"))
+    when(IssuerV1).send_credential(...).thenRaise(ApiException())
+
+    with pytest.raises(CloudApiException):
+        await test_module.send_credential(credential, mock_tenant_auth)
 
 
 @pytest.mark.anyio
@@ -186,6 +204,7 @@ async def test_request_credential(
 
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
+    ld_record = mock(CredentialExchange)
 
     v1_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
     v1_record.schema_id = "schema_id1"
@@ -194,6 +213,9 @@ async def test_request_credential(
     v2_record.credential_definition_id = "WgWxqztrNooG92RXvxSTWv:other:parts"
     v2_record.schema_id = "schema_id2"
     v2_record.type = "indy"
+
+    ld_record.type = "ld_proof"
+    ld_record.did = "did:sov:WgWxqztrNooG92RXvxSTWv"
 
     with when(IssuerV1).request_credential(...).thenReturn(to_async(v1_record)), when(
         test_module
@@ -228,6 +250,22 @@ async def test_request_credential(
         verify(test_module).assert_valid_issuer(
             "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id2"
         )
+
+    with when(IssuerV2).request_credential(...).thenReturn(to_async(ld_record)), when(
+        IssuerV2
+    ).get_record(...).thenReturn(to_async(ld_record)), when(
+        test_module
+    ).assert_valid_issuer(
+        ...
+    ).thenReturn(
+        to_async(True)
+    ):
+        await test_module.request_credential("v2-credential_id", mock_tenant_auth)
+
+        verify(IssuerV2).request_credential(
+            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+        )
+        verify(test_module).assert_valid_issuer("did:sov:WgWxqztrNooG92RXvxSTWv", None)
 
 
 @pytest.mark.anyio
@@ -281,4 +319,78 @@ async def test_store_credential(
     )
     verify(IssuerV2).store_credential(
         controller=mock_agent_controller, credential_exchange_id="v2-credential_id2"
+    )
+
+
+@pytest.mark.anyio
+@unittest.mock.patch(
+    "app.services.acapy_wallet.assert_public_did", return_value="did:sov:123456879"
+)
+async def test_create_offer(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+    v1_credential = mock(CredentialWithProtocol)
+    v2_credential = mock(CredentialWithProtocol)
+
+    v1_credential.protocol_version = IssueCredentialProtocolVersion.v1
+    v2_credential.protocol_version = IssueCredentialProtocolVersion.v2
+
+    v1_credential.type = "Indy"
+    v2_credential.type = "Indy"
+
+    v1_record = mock(CredentialExchange)
+    v2_record = mock(CredentialExchange)
+
+    when(IssuerV1).create_offer(...).thenReturn(to_async(v1_record))
+    when(IssuerV2).create_offer(...).thenReturn(to_async(v2_record))
+
+    when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
+    await test_module.create_offer(v1_credential, mock_tenant_auth)
+
+    when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
+    await test_module.create_offer(v2_credential, mock_tenant_auth)
+
+    verify(IssuerV1).create_offer(
+        controller=mock_agent_controller, credential=v1_credential
+    )
+    verify(IssuerV2).create_offer(
+        controller=mock_agent_controller, credential=v2_credential
+    )
+
+
+@pytest.mark.anyio
+async def test_revoke_credential(
+    mock_agent_controller: AcaPyClient,
+    mock_context_managed_controller: MockContextManagedController,
+    mock_tenant_auth: AcaPyAuth,
+    mocker: MockerFixture,
+):
+    mocker.patch.object(
+        test_module,
+        "client_from_auth",
+        return_value=mock_context_managed_controller(mock_agent_controller),
+    )
+
+    revoke_credential = mock(RevokeCredential)
+    revoke_credential.credential_exchange_id = "random_cred_ex_id"
+    revoke_credential.credential_definition_id = "some_random_cred_def_id"
+    revoke_credential.auto_publish_on_ledger = True
+    status_code = 204
+
+    when(revocation_registry).revoke_credential(...).thenReturn(to_async(status_code))
+    await test_module.revoke_credential(body=revoke_credential, auth=mock_tenant_auth)
+
+    verify(revocation_registry).revoke_credential(
+        controller=mock_agent_controller,
+        credential_definition_id=revoke_credential.credential_definition_id,
+        credential_exchange_id=revoke_credential.credential_exchange_id,
+        auto_publish_to_ledger=revoke_credential.auto_publish_on_ledger,
     )

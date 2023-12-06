@@ -1,7 +1,7 @@
 #!/bin/bash
 nr=1
 
-# Use the provided loop count argument or set a default value of 100
+# Use the provided loop count argument or set a default value of 10
 if [ $# -eq 0 ]; then
     echo "using default loop value: 10"
     loop_count=10

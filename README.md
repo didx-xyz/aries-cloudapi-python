@@ -82,7 +82,9 @@ pytest app/tests/e2e/test_verifier.py::test_accept_proof_request_oob_v1 --log-cl
 ```bash
 ./manage up
 ```
+
 In another terminal:
+
 ```bash
 ./manage up pytest
 ```

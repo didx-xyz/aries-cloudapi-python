@@ -12,7 +12,7 @@ BASE_PATH = router.prefix
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
     result = (await alice_member_client.get(BASE_PATH + "/connections")).json()
 
@@ -26,7 +26,7 @@ async def test_get_webhooks_for_wallet_by_topic(
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
     result = (await alice_member_client.get(BASE_PATH)).json()
 
@@ -40,7 +40,7 @@ async def test_get_webhooks_for_wallet(
 @pytest.mark.anyio
 async def test_get_webhooks_for_wallet_by_topic_tenant_error(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
     alice_member_client.headers.pop("x-api-key")
 

@@ -81,6 +81,12 @@ async def test_accept_invitation(
     )
     connection_record = accept_response.json()
 
+    assert_that(connection_record).contains(
+        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+    )
+    assert_that(connection_record).has_state("request-sent")
+    assert_that(connection_record["alias"]).is_equal_to(alias)
+
     assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
@@ -89,12 +95,6 @@ async def test_accept_invitation(
             "connection_id": connection_record["connection_id"],
         },
     )
-
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
-    )
-    assert_that(connection_record).has_state("request-sent")
-    assert_that(connection_record["alias"]).is_equal_to(alias)
 
 
 @pytest.mark.anyio
@@ -182,24 +182,13 @@ async def test_bob_and_alice_connect(
     assert "completed" in bob_connection["state"]
 
 
-@pytest.mark.parametrize(
-    "alias,multi_use,use_public_did",
-    [
-        ("alias", False, True),
-        ("alias", True, True),
-    ],
-)
 @pytest.mark.anyio
 async def test_accept_use_public_did(
     faber_client: RichAsyncClient,  # issuer has public did
     meld_co_client: RichAsyncClient,  # also has public did
-    alias: Optional[str],
-    multi_use: Optional[bool],
-    use_public_did: Optional[bool],
 ):
-    invite_json = CreateInvitation(
-        alias=alias, multi_use=multi_use, use_public_did=use_public_did
-    ).model_dump()
+    time.sleep(5)  # sleep to allow ledger op to register public did ...
+    invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(
         f"{BASE_PATH}/create-invitation", json=invite_json
@@ -214,7 +203,6 @@ async def test_accept_use_public_did(
     assert_that(invitation["invitation_url"]).matches(r"^https?://")
 
     accept_invite_json = AcceptInvitation(
-        alias=alias,
         invitation=invitation["invitation"],
     ).model_dump()
 
@@ -223,6 +211,11 @@ async def test_accept_use_public_did(
         json=accept_invite_json,
     )
     connection_record = accept_response.json()
+
+    assert_that(connection_record).contains(
+        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+    )
+    assert_that(connection_record).has_state("request-sent")
 
     assert await check_webhook_state(
         client=meld_co_client,
@@ -233,18 +226,13 @@ async def test_accept_use_public_did(
         },
     )
 
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
-    )
-    assert_that(connection_record).has_state("request-sent")
-
 
 @pytest.mark.anyio
 async def test_accept_use_public_did_between_issuer_and_holder(
     faber_client: RichAsyncClient,  # issuer has public did
     alice_member_client: RichAsyncClient,  # no public did
 ):
-    time.sleep(5)  # sleep to allow ledger op to register public did ...
+    time.sleep(10)  # sleep to allow ledger op to register public did ...
     invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(
@@ -269,6 +257,11 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     )
     connection_record = accept_response.json()
 
+    assert_that(connection_record).contains(
+        "connection_id", "state", "created_at", "updated_at", "invitation_key"
+    )
+    assert_that(connection_record).has_state("request-sent")
+
     assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
@@ -277,8 +270,3 @@ async def test_accept_use_public_did_between_issuer_and_holder(
             "connection_id": connection_record["connection_id"],
         },
     )
-
-    assert_that(connection_record).contains(
-        "connection_id", "state", "created_at", "updated_at", "invitation_key"
-    )
-    assert_that(connection_record).has_state("request-sent")

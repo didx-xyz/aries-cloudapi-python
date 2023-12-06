@@ -125,7 +125,7 @@ async def test_delete_credential_exchange_with_credential(
     when(mock_agent_controller.credentials).delete_record(
         credential_id=with_credential_id.credential_id
     ).thenReturn(to_async())
-    await IssuerV1.delete_credential(
+    await IssuerV1.delete_credential_exchange_record(
         mock_agent_controller,
         credential_exchange_id=with_credential_id.credential_exchange_id,
     )
@@ -142,7 +142,7 @@ async def test_delete_credential_exchange_without_credential(
     when(mock_agent_controller.issue_credential_v1_0).delete_record(
         cred_ex_id=without_credential_id.credential_exchange_id
     ).thenReturn(to_async())
-    await IssuerV1.delete_credential(
+    await IssuerV1.delete_credential_exchange_record(
         mock_agent_controller,
         credential_exchange_id=without_credential_id.credential_exchange_id,
     )

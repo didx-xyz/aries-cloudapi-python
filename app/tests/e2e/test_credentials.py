@@ -244,6 +244,7 @@ async def meld_co_issue_credential_to_alice(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("save_exchange_record", [False, True])
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
     credential_definition_id: str,  # pylint: disable=redefined-outer-name
@@ -251,9 +252,10 @@ async def test_issue_credential_with_save_exchange_record(
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
     save_exchange_record: bool,
+    protocol_version: str,
 ) -> CredentialExchange:
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": protocol_version,
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -303,5 +305,7 @@ async def test_issue_credential_with_save_exchange_record(
 
     if save_exchange_record:
         assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record
+        cred_ex_id = faber_cred_ex_recs[0]["credential_id"]
+        await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")  # Clean up
     else:
         assert len(faber_cred_ex_recs) == 0  # default is to remove records

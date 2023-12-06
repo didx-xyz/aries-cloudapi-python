@@ -160,7 +160,7 @@ async def test_get_credential(
 
 
 @pytest.mark.anyio
-async def test_remove_credential(
+async def test_remove_credential_exchange_record(
     mock_agent_controller: AcaPyClient,
     mock_context_managed_controller: MockContextManagedController,
     mock_tenant_auth: AcaPyAuth,
@@ -175,16 +175,24 @@ async def test_remove_credential(
     v1_record = mock(CredentialExchange)
     v2_record = mock(CredentialExchange)
 
-    with when(IssuerV1).delete_credential(...).thenReturn(to_async(v1_record)):
-        await test_module.remove_credential("v1-credential_id", mock_tenant_auth)
+    with when(IssuerV1).delete_credential_exchange_record(...).thenReturn(
+        to_async(v1_record)
+    ):
+        await test_module.remove_credential_exchange_record(
+            "v1-credential_id", mock_tenant_auth
+        )
 
-        verify(IssuerV1).delete_credential(
+        verify(IssuerV1).delete_credential_exchange_record(
             controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
         )
-    with when(IssuerV2).delete_credential(...).thenReturn(to_async(v2_record)):
-        await test_module.remove_credential("v2-credential_id", mock_tenant_auth)
+    with when(IssuerV2).delete_credential_exchange_record(...).thenReturn(
+        to_async(v2_record)
+    ):
+        await test_module.remove_credential_exchange_record(
+            "v2-credential_id", mock_tenant_auth
+        )
 
-        verify(IssuerV2).delete_credential(
+        verify(IssuerV2).delete_credential_exchange_record(
             controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
         )
 

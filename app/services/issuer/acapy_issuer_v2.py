@@ -146,7 +146,7 @@ class IssuerV2(Issuer):
         return cls.__record_to_model(record.cred_ex_record)
 
     @classmethod
-    async def delete_credential(
+    async def delete_credential_exchange_record(
         cls, controller: AcaPyClient, credential_exchange_id: str
     ):
         bound_logger = logger.bind(

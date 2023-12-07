@@ -4,7 +4,7 @@ repos:
       hooks:
           - id: black
             stages: [push]
-            language_version: python3.9
+            language_version: python3
 
     - repo: https://github.com/asottile/blacken-docs
       rev: 1.15.0
@@ -12,7 +12,7 @@ repos:
           - id: blacken-docs
             stages: [push]
             additional_dependencies: [black==23.10.1]
-            language_version: python3.9
+            language_version: python3
             files: '\.(rst|md|markdown|py|tex)$'
 
     - repo: https://github.com/PyCQA/isort

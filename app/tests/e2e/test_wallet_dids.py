@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 import pytest
@@ -18,6 +19,10 @@ from app.tests.util.ledger import create_public_did, post_to_ledger
 from shared import RichAsyncClient
 
 WALLET_BASE_PATH = router.prefix
+
+# The setting public did test should be skipped in prod.
+# SKIP_SET_PUBLIC_DID env var is configured in capi_test charts
+skip_set_public_did = os.getenv("SKIP_SET_PUBLIC_DID") is not None
 
 
 async def create_did_mock(governance_client: RichAsyncClient):
@@ -76,6 +81,10 @@ async def test_get_did_endpoint(governance_client: RichAsyncClient):
     assert response["did"] == did
 
 
+@pytest.mark.skipif(
+    skip_set_public_did,
+    reason="Avoid creating additional did for governance from different seed",
+)
 @pytest.mark.anyio
 async def test_set_public_did(
     governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient

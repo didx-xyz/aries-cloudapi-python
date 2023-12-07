@@ -14,17 +14,17 @@ logger = get_logger(__name__)
 
 
 class LedgerRequestSovrin(BaseModel):
-    network: str = Field(None)
-    did: str = Field(None)
-    verkey: str = Field(None)
-    payment_address: str = Field(None, alias="paymentaddr")
+    network: Optional[str] = Field(None)
+    did: Optional[str] = Field(None)
+    verkey: Optional[str] = Field(None)
+    payment_address: Optional[str] = Field(None, alias="paymentaddr")
 
 
 class LedgerRequestVon(BaseModel):
-    did: str = Field(None)
-    seed: str = Field(None)
-    verkey: str = Field(None)
-    role: str = Field(None)
+    did: Optional[str] = Field(None)
+    seed: Optional[str] = Field(None)
+    verkey: Optional[str] = Field(None)
+    role: Optional[str] = Field(None)
 
 
 async def post_to_ledger(
@@ -37,7 +37,7 @@ async def post_to_ledger(
             verkey=verkey,
         )
     elif LEDGER_TYPE == "von":
-        payload = LedgerRequestVon(did=did, seed="null", verkey=verkey, role=role)
+        payload = LedgerRequestVon(did=did, verkey=verkey, role=role)
     else:
         raise HTTPException(
             status_code=501,

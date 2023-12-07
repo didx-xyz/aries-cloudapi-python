@@ -21,8 +21,10 @@ from shared import RichAsyncClient
 WALLET_BASE_PATH = router.prefix
 
 # The setting public did test should be skipped in prod. This can be identified by the
-# existence of the seed env var. Writing a did with different seed causes conflicts
-skip_set_public_did = os.getenv("ACAPY_WALLET_SEED") is not None
+# existence of the seed env var, or using .com address in acapy endpoint.
+skip_set_public_did = os.getenv("ACAPY_WALLET_SEED") is not None or ".co" in os.getenv(
+    "ACAPY_ENDPOINT", ""
+)
 
 
 async def create_did_mock(governance_client: RichAsyncClient):

@@ -49,7 +49,7 @@ async def schema_definition_alt(
     return schema_definition_result
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -68,7 +68,7 @@ async def credential_definition_id(
     return result.id
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -176,7 +176,7 @@ async def issue_credential_to_alice(
     return response.json()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def meld_co_credential_definition_id(
     schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
     meld_co_client: RichAsyncClient,

@@ -347,7 +347,7 @@ jobs:
           version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile Diff
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true'
+        if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -414,7 +414,7 @@ jobs:
           bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -c
 
       - name: List Elasticache Redis
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true'
+        if: github.event.inputs.run-reset-deployments == 'true'
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
@@ -463,6 +463,14 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
+      - name: Create values file
+        run: |
+          echo 'env:' > ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          echo '  ACAPY_WALLET_STORAGE_CONFIG: |-' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          echo '    ${{ secrets.ACAPY_WALLET_STORAGE_CONFIG }}' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          pwd
+          ls -la
+
       - name: Helmfile Patch Proxy # Always patch agents with proxy.
         id: patch_proxy
         uses: helmfile/helmfile-action@v1.5.0
@@ -475,7 +483,8 @@ jobs:
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
               --selector app=governance-ga-agent \
               --selector app=governance-multitenant-agent \
-              --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }}
+              --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
+              --values acapy-wallet-storage-config.yaml
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets

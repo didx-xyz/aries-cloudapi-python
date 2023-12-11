@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 
@@ -49,7 +50,7 @@ async def schema_definition_alt(
     return schema_definition_result
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def credential_definition_id(
     schema_definition: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -68,7 +69,7 @@ async def credential_definition_id(
     return result.id
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def credential_definition_id_revocable(
     schema_definition_alt: CredentialSchema,
     faber_client: RichAsyncClient,
@@ -176,7 +177,7 @@ async def issue_credential_to_alice(
     return response.json()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def meld_co_credential_definition_id(
     schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
     meld_co_client: RichAsyncClient,
@@ -290,6 +291,8 @@ async def test_issue_credential_with_save_exchange_record(
     await alice_credentials_listener.wait_for_event(
         field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
+
+    time.sleep(0.5)  # short sleep before fetching cred ex records; allow them to update
 
     # get exchange records from alice side -- should be empty regardless
     alice_cred_ex_recs = (

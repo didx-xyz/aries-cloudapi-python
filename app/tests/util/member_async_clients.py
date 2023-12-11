@@ -18,7 +18,7 @@ async def unauthed_client() -> RichAsyncClient:
         yield client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def governance_client() -> Generator[RichAsyncClient, Any, None]:
     async with get_governance_client() as gov_async_client:
         yield gov_async_client
@@ -46,7 +46,7 @@ async def bob_member_client(
         yield bob_async_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def faber_client(
     faber_issuer: CreateTenantResponse,
 ) -> Generator[RichAsyncClient, Any, None]:
@@ -62,7 +62,7 @@ async def acme_client(
         yield acme_async_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def meld_co_client(
     meld_co_issuer_verifier: CreateTenantResponse,
 ) -> Generator[RichAsyncClient, Any, None]:

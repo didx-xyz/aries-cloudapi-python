@@ -50,7 +50,7 @@ async def bob_acapy_client(
         yield acapy_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def faber_acapy_client(
     faber_client: RichAsyncClient,
 ) -> Generator[AcaPyClient, Any, None]:
@@ -66,7 +66,7 @@ async def acme_acapy_client(
         yield acapy_client
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def meld_co_acapy_client(
     meld_co_client: RichAsyncClient,
 ) -> Generator[AcaPyClient, Any, None]:

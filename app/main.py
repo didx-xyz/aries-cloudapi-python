@@ -1,6 +1,7 @@
 import io
 import os
 import traceback
+from contextlib import asynccontextmanager
 from distutils.util import strtobool
 
 import pydantic
@@ -36,6 +37,15 @@ PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
 logger = get_logger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
 debug = not prod
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Startup logic occurs before yield
+    yield
+    # Shutdown logic occurs after yield
+    logger.info("Calling WebsocketManager shutdown")
+    await WebsocketManager.disconnect_all()
 
 
 def create_app() -> FastAPI:
@@ -78,6 +88,7 @@ For authentication, the WebSocket headers should include `x-api-key`: `<your key
 Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
 """,
         version=PROJECT_VERSION,
+        lifespan=lifespan,
     )
 
     for route in routes:
@@ -90,13 +101,6 @@ Please refer to our API documentation for more details about our authentication 
 app = create_app()
 
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Calling WebsocketManager shutdown")
-    await WebsocketManager.disconnect_all()
-
-
-# add endpoints
 # additional yaml version of openapi.json
 @app.get("/openapi.yaml", include_in_schema=False)
 def read_openapi_yaml() -> Response:

@@ -6,6 +6,8 @@ from loguru import logger
 
 STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
+ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
+DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
 
 # Create a mapping of module name to color
 color_map = {
@@ -65,25 +67,31 @@ def get_logger(name: str):
     formatter = formatter_builder(color)
 
     # Log to stdout
-    logger_.add(sys.stdout, level=STDOUT_LOG_LEVEL, format=formatter, colorize=True)
+    logger_.add(
+        sys.stdout,
+        level=STDOUT_LOG_LEVEL,
+        format=formatter,
+        colorize=not DISABLE_COLORIZE_LOGS,
+    )
 
     # Log to a file
-    try:
-        logger_.add(
-            get_log_file_path(main_module_name),
-            rotation="00:00",  # new file is created at midnight
-            retention="7 days",  # keep logs for up to 7 days
-            enqueue=True,  # asynchronous
-            level=FILE_LOG_LEVEL,
-            format=formatter,
-        )
-    except PermissionError:
-        logger_.warning(
-            "Permission error caught when trying to create log file. "
-            "Continuing without file logging for `{}` in `{}`",
-            name,
-            main_module_name,
-        )
+    if ENABLE_FILE_LOGGING:
+        try:
+            logger_.add(
+                get_log_file_path(main_module_name),
+                rotation="00:00",  # new file is created at midnight
+                retention="7 days",  # keep logs for up to 7 days
+                enqueue=True,  # asynchronous
+                level=FILE_LOG_LEVEL,
+                format=formatter,
+            )
+        except PermissionError:
+            logger_.warning(
+                "Permission error caught when trying to create log file. "
+                "Continuing without file logging for `{}` in `{}`",
+                name,
+                main_module_name,
+            )
 
     # Configure email notifications
     # logger_.add(

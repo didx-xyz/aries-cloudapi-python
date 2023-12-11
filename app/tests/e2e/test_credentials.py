@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 import pytest
 
@@ -290,6 +291,8 @@ async def test_issue_credential_with_save_exchange_record(
     await alice_credentials_listener.wait_for_event(
         field="credential_id", field_id=alice_credential_id, desired_state="done"
     )
+
+    time.sleep(0.5)  # short sleep before fetching cred ex records; allow them to update
 
     # get exchange records from alice side -- should be empty regardless
     alice_cred_ex_recs = (

@@ -428,8 +428,7 @@ jobs:
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
       - name: Helmfile Apply
-        id: update_deployments
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true' || github.event.inputs.run-tests == 'true'
+        if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -438,6 +437,46 @@ jobs:
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }}
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Helmfile Apply (Exclude Agents)
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-tests == 'true'
+        uses: helmfile/helmfile-action@v1.5.0
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --selector app!=governance-ga-agent,app!=governance-multitenant-agent
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Helmfile Patch Proxy
+        id: patch_proxy
+        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true' || github.event.inputs.run-tests == 'true'
+        uses: helmfile/helmfile-action@v1.5.0
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --selector app=governance-ga-agent,app=governance-multitenant-agent \
+              --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }}
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -575,7 +614,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
-      - name: Output
-        id: updated_deployments
-        if: steps.update_deployments.outcome == 'success'
-        run: echo "success=true" >> "$GITHUB_OUTPUT"
+      # - name: Output
+      #   id: updated_deployments
+      #   if: steps.update_deployments.outcome == 'success'
+      #   run: echo "success=true" >> "$GITHUB_OUTPUT"

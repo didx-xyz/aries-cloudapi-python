@@ -38,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
 
     concurrency:
-      group: cicd-build-${{ matrix.image }}}
+      group: cicd-build-${{ matrix.image }}
       cancel-in-progress: false
 
     outputs:

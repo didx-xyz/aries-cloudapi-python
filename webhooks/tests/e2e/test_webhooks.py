@@ -1,4 +1,5 @@
 import pytest
+import asyncio
 
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
@@ -38,3 +39,8 @@ async def test_connection_webhooks(
         assert '"topic":"connections"' in response_text
         assert f'"connection_id":"{alice_connection_id}"' in response_text
         assert f'"wallet_id":"{alice_wallet_id}"' in response_text
+
+
+@pytest.mark.anyio
+async def test_sleep():
+    await asyncio.sleep(30)

@@ -18,15 +18,17 @@ OOB_BASE_PATH = oob_router.prefix
 
 
 @pytest.mark.anyio
-async def test_send_credential_oob_v1(
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_send_credential_oob(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
+    protocol_version: str,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": protocol_version,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
             "attributes": {"speed": "10"},
@@ -50,7 +52,7 @@ async def test_send_credential_oob_v1(
     data = response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_protocol_version(protocol_version)
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
@@ -88,15 +90,17 @@ async def test_send_credential_oob_v1(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_send_credential(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
+    protocol_version: str,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": protocol_version,
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -121,7 +125,7 @@ async def test_send_credential(
     data = response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_protocol_version(protocol_version)
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
@@ -136,13 +140,15 @@ async def test_send_credential(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_create_offer(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
+    protocol_version: str,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": protocol_version,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
             "attributes": {"speed": "10"},
@@ -157,7 +163,7 @@ async def test_create_offer(
     data = response.json()
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
-    assert_that(data).has_protocol_version("v1")
+    assert_that(data).has_protocol_version(protocol_version)
     assert_that(data).has_attributes({"speed": "10"})
     assert_that(data).has_schema_id(schema_definition.id)
 
@@ -172,14 +178,16 @@ async def test_create_offer(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_send_credential_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     credential_definition_id: str,
+    protocol_version: str,
 ):
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": protocol_version,
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
@@ -192,7 +200,7 @@ async def test_send_credential_request(
         json=credential,
     )
     credential_exchange = response.json()
-    assert credential_exchange["protocol_version"] == "v1"
+    assert credential_exchange["protocol_version"] == protocol_version
 
     assert await check_webhook_state(
         client=faber_client,
@@ -237,17 +245,19 @@ async def test_send_credential_request(
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_revoke_credential(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
+    protocol_version: str,
 ):
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     credential = {
-        "protocol_version": "v1",
+        "protocol_version": protocol_version,
         "connection_id": faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id_revocable,

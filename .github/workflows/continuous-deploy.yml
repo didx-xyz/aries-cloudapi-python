@@ -306,6 +306,7 @@ jobs:
       HELM_VERSION: v3.13.1
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
+      PYTEST_COMPLETIONS: 10
 
     concurrency:
       group: cicd-deploy
@@ -505,7 +506,7 @@ jobs:
               -f ./charts/helmfiles/aries-capi-test.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --set completions=10
+              --set completions=${{ env.PYTEST_COMPLETIONS }}
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -522,7 +523,7 @@ jobs:
             COMPLETION_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}')
             FAILURE_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}')
 
-            if [ "$COMPLETION_STATUS" == "1" ] || [ "$FAILURE_STATUS" == "1" ]; then
+            if [ "$COMPLETION_STATUS" == "${{ env.PYTEST_COMPLETIONS }}" ] || [ "$FAILURE_STATUS" == "1" ]; then
                 echo "Job $JOB_NAME has completed."
                 break
             else

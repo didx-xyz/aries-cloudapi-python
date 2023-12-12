@@ -23,7 +23,8 @@ router = APIRouter(
 lookback_time_field = Query(
     default=MAX_EVENT_AGE_SECONDS,
     description=(
-        f"Duration in seconds to lookback in time to include past events (default is the max event age stored in SSE: {MAX_EVENT_AGE_SECONDS} seconds). "
+        "Duration in seconds to lookback in time to include past events "
+        f"(default is the max event age stored in SSE: {MAX_EVENT_AGE_SECONDS} seconds). "
         "Setting to 0 means only events after connection is established will be returned"
     ),
 )

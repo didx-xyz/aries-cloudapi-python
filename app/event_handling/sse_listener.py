@@ -28,7 +28,9 @@ class SseListener:
         self.wallet_id = wallet_id
         self.topic = topic
 
-    async def wait_for_state(self, desired_state, timeout: int = 60) -> Dict[str, Any]:
+    async def wait_for_state(
+        self, desired_state, timeout: int = 60, lookback_time=1
+    ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
         """
@@ -36,7 +38,9 @@ class SseListener:
 
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:
-            async with client.stream("GET", url) as response:
+            async with client.stream(
+                "GET", url, params={"lookback_time": lookback_time}
+            ) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
                         data = json.loads(line[6:])
@@ -49,7 +53,7 @@ class SseListener:
         raise SseListenerTimeout("Event with request state was not returned by server.")
 
     async def wait_for_event(
-        self, field, field_id, desired_state, timeout: int = 60
+        self, field, field_id, desired_state, timeout: int = 60, lookback_time=1
     ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
@@ -58,7 +62,9 @@ class SseListener:
 
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:
-            async with client.stream("GET", url) as response:
+            async with client.stream(
+                "GET", url, params={"lookback_time": lookback_time}
+            ) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
                         data = json.loads(line[6:])

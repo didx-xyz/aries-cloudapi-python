@@ -9,8 +9,6 @@ import app.services.trust_registry.actors as trust_registry
 from app.dependencies.acapy_clients import get_tenant_controller
 from app.routes.admin.tenants import router
 from app.services import acapy_wallet
-from app.tests.util.client import get_tenant_client
-from app.tests.util.webhooks import check_webhook_state
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
 
@@ -150,51 +148,39 @@ async def test_create_tenant_issuer(
     tenant = response.json()
     wallet_id = tenant["wallet_id"]
 
-    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
-        wallet_id=wallet_id
-    )
-
-    acapy_token: str = tenant["access_token"].split(".", 1)[1]
     actor = await trust_registry.fetch_actor_by_id(wallet_id)
+    if not actor:
+        raise Exception("Missing actor")
 
     endorser_did = await acapy_wallet.get_public_did(governance_acapy_client)
 
+    acapy_token: str = tenant["access_token"].split(".", 1)[1]
     async with get_tenant_controller(acapy_token) as tenant_controller:
         public_did = await acapy_wallet.get_public_did(tenant_controller)
 
         connections = await tenant_controller.connection.get_connections()
 
-        connections = [
-            connection
-            for connection in connections.results
-            if connection.their_public_did == endorser_did.did
-        ]
+    connections = [
+        connection
+        for connection in connections.results
+        if connection.their_public_did == endorser_did.did
+    ]
 
-    if not actor:
-        raise Exception("Missing actor")
+    endorser_connection = connections[0]
 
-    connection = connections[0]
-
-    async with get_tenant_client(token=tenant["access_token"]) as client:
-        # Wait for connection to be completed
-        assert await check_webhook_state(
-            client=client,
-            topic="connections",
-            filter_map={
-                "state": "completed",
-                "connection_id": connection.connection_id,
-            },
-        )
+    # Connection with endorser
+    assert_that(endorser_connection).has_state("active")
+    assert_that(endorser_connection).has_their_public_did(endorser_did.did)
 
     # Actor
     assert_that(actor).has_name(tenant["wallet_label"])
     assert_that(actor).has_did(f"did:sov:{public_did.did}")
     assert_that(actor).has_roles(["issuer"])
 
-    # Connection with endorser
-    assert_that(connection).has_their_public_did(endorser_did.did)
-
     # Tenant
+    wallet = await tenant_admin_acapy_client.multitenancy.get_wallet(
+        wallet_id=wallet_id
+    )
     assert_that(tenant).has_wallet_id(wallet.wallet_id)
     assert_that(tenant).has_wallet_label(wallet_label)
     assert_that(tenant).has_created_at(wallet.created_at)
@@ -360,18 +346,8 @@ async def test_update_tenant_verifier_to_issuer(
 
     endorser_connection = connections[0]
 
-    async with get_tenant_client(token=verifier_tenant["access_token"]) as client:
-        # Wait for connection to be completed
-        assert await check_webhook_state(
-            client=client,
-            topic="connections",
-            filter_map={
-                "state": "completed",
-                "connection_id": endorser_connection.connection_id,
-            },
-        )
-
     # Connection invitation
+    assert_that(endorser_connection).has_state("active")
     assert_that(endorser_connection).has_their_public_did(endorser_did.did)
 
     assert new_actor

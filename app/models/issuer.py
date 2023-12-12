@@ -24,7 +24,7 @@ class CredentialBase(BaseModel):
     ld_credential_detail: Optional[LDProofVCDetail] = None
     save_exchange_record: bool = Field(
         default=False,
-        description="Whether an exchange record should be saved on completion",
+        description="Whether the credential exchange record should be saved on completion",
     )
 
     @field_validator("indy_credential_detail", mode="before")

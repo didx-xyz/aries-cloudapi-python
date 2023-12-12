@@ -198,6 +198,7 @@ class SseManager:
         wallet: str,
         topic: str,
         stop_event: asyncio.Event,
+        lookback_time: int = MAX_EVENT_AGE_SECONDS,
         duration: int = 0,
     ) -> EventGeneratorWrapper:
         """
@@ -207,6 +208,7 @@ class SseManager:
             wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
             stop_event: An asyncio.Event to signal a stop request
+            lookback_time: Duration (s) to look back for older events. 0 means from now
             duration: Timeout duration in seconds. 0 means no timeout.
         """
         client_queue = asyncio.Queue()
@@ -216,6 +218,7 @@ class SseManager:
                 wallet=wallet,
                 topic=topic,
                 client_queue=client_queue,
+                lookback_time=lookback_time,
             )
         )
 
@@ -254,7 +257,12 @@ class SseManager:
         )
 
     async def _populate_client_queue(
-        self, *, wallet: str, topic: str, client_queue: asyncio.Queue
+        self,
+        *,
+        wallet: str,
+        topic: str,
+        client_queue: asyncio.Queue,
+        lookback_time: int = MAX_EVENT_AGE_SECONDS,
     ) -> NoReturn:
         logger.trace(
             "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",
@@ -263,6 +271,8 @@ class SseManager:
         )
         event_log = []  # to keep track of events already added for this client queue
 
+        now = time.time()
+        since_timestamp = now - lookback_time
         while True:
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():
@@ -271,6 +281,7 @@ class SseManager:
                         topic=topic_key,
                         client_queue=client_queue,
                         event_log=event_log,
+                        since_timestamp=since_timestamp,
                     )
             else:
                 event_log = await self._append_to_queue(
@@ -278,13 +289,20 @@ class SseManager:
                     topic=topic,
                     client_queue=client_queue,
                     event_log=event_log,
+                    since_timestamp=since_timestamp,
                 )
 
             # Sleep for a short duration to allow sufficient release of concurrency locks
             await asyncio.sleep(CLIENT_QUEUE_POLL_PERIOD)
 
     async def _append_to_queue(
-        self, *, wallet: str, topic: str, client_queue: asyncio.Queue, event_log: List
+        self,
+        *,
+        wallet: str,
+        topic: str,
+        client_queue: asyncio.Queue,
+        event_log: List,
+        since_timestamp: float = 0,
     ) -> List:
         queue_is_read = False
         async with self.cache_locks[wallet][topic]:
@@ -296,7 +314,8 @@ class SseManager:
                     if (timestamp, event) not in event_log:
                         self._cache_last_accessed[wallet][topic] = datetime.now()
                         event_log += ((timestamp, event),)
-                        client_queue.put_nowait(event)
+                        if timestamp >= since_timestamp:
+                            client_queue.put_nowait(event)
             except asyncio.QueueEmpty:
                 # No event on lifo_queue, so we can continue
                 pass

@@ -52,7 +52,7 @@ class ProofRequestMetadata(BaseModel):
 class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):
     save_exchange_record: bool = Field(
         default=False,
-        description="Whether to remove the presentation exchange record on completion",
+        description="Whether the presentation exchange record should be saved on completion",
     )
 
 
@@ -70,7 +70,7 @@ class AcceptProofRequest(ProofId):
     dif_presentation_spec: Optional[DIFPresSpec] = None
     save_exchange_record: bool = Field(
         default=False,
-        description="Whether to remove the presentation exchange record on completion",
+        description="Whether the presentation exchange record should be saved on completion",
     )
 
     @field_validator("indy_presentation_spec", mode="before")

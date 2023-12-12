@@ -37,7 +37,7 @@ async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-na
 
 
 @pytest.mark.anyio
-@patch("webhooks.dependencies.websocket.endpoint.publish", new_callable=AsyncMock)
+@patch("webhooks.routers.websocket.endpoint.publish", new_callable=AsyncMock)
 @patch(
     "shared.models.webhook_topics.base.CloudApiWebhookEventGeneric.model_validate_json"
 )

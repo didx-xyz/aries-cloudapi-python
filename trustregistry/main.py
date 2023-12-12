@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from sqlalchemy import inspect
@@ -16,22 +17,8 @@ OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
 
 
-def create_app():
-    application = FastAPI(
-        title=OPENAPI_NAME,
-        version=PROJECT_VERSION,
-        description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",
-    )
-    application.include_router(registry_actors.router)
-    application.include_router(registry_schemas.router)
-    return application
-
-
-app = create_app()
-
-
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(_: FastAPI):
     db.Base.metadata.create_all(bind=engine)
     engine.dispose()
 
@@ -40,6 +27,24 @@ async def startup_event():
         inspector = inspect(connection)
         table_names = inspector.get_table_names()
         logger.debug("TrustRegistry tables created: `{}`", table_names)
+    # start-up logic is before the yield
+    yield
+    # shutdown logic after
+
+
+def create_app():
+    application = FastAPI(
+        title=OPENAPI_NAME,
+        version=PROJECT_VERSION,
+        description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",
+        lifespan=lifespan,
+    )
+    application.include_router(registry_actors.router)
+    application.include_router(registry_schemas.router)
+    return application
+
+
+app = create_app()
 
 
 @app.get("/")

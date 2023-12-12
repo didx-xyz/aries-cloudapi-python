@@ -437,8 +437,7 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --set replicaCount=1
+              --set image.registry=ghcr.io/${{ github.repository_owner }}
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -456,8 +455,7 @@ jobs:
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --selector app!=governance-ga-agent,app!=governance-multitenant-agent \
-              --set replicaCount=1
+              --selector app!=governance-ga-agent,app!=governance-multitenant-agent
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -487,8 +485,7 @@ jobs:
               --selector app=governance-ga-agent \
               --selector app=governance-multitenant-agent \
               --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
-              --values acapy-wallet-storage-config.yaml \
-              --set replicaCount=1
+              --values acapy-wallet-storage-config.yaml
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -519,19 +516,29 @@ jobs:
       - name: Wait for pytest and print logs
         # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
         run: |
-          # Start tailing logs in background
-          kubectl logs -f -n $NAMESPACE --selector=job-name=$JOB_NAME > job_logs.txt 2>&1 & LOG_PID=$!
+          while true; do
+            # Check if the job is complete or failed
+            COMPLETION_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}')
+            FAILURE_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}')
 
-          # Wait for job completion or failure
-          kubectl wait --for=condition=complete --timeout=900s job/$JOB_NAME -n $NAMESPACE || \
-          kubectl wait --for=condition=failed --timeout=900s job/$JOB_NAME -n $NAMESPACE
+            if [ "$COMPLETION_STATUS" == "1" ] || [ "$FAILURE_STATUS" == "1" ]; then
+                echo "Job $JOB_NAME has completed."
+                break
+            else
+                echo "Waiting for job to complete..."
+                sleep 10
+            fi
+          done
 
-          # Kill the background logging process
-          kill $LOG_PID
+          # Get all pods for the job
+          pods=$(kubectl get pods -n $NAMESPACE --selector=job-name=$JOB_NAME -o jsonpath='{.items[*].metadata.name}')
 
-          # Optionally, print the logs
-          echo "Job logs:"
-          cat job_logs.txt
+          # Loop through the pods and get logs
+          for pod in $pods
+          do
+              echo "Logs for Pod: $pod"
+              kubectl logs -n $NAMESPACE $pod
+          done
 
         env:
           JOB_NAME: cloudapi-pytest

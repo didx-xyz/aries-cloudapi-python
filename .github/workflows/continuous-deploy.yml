@@ -325,7 +325,6 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
-          ref: single-rep-tails
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools
@@ -438,7 +437,8 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }}
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --set replicaCount=1
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -456,7 +456,8 @@ jobs:
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --selector app!=governance-ga-agent,app!=governance-multitenant-agent
+              --selector app!=governance-ga-agent,app!=governance-multitenant-agent \
+              --set replicaCount=1
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -486,7 +487,8 @@ jobs:
               --selector app=governance-ga-agent \
               --selector app=governance-multitenant-agent \
               --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
-              --values acapy-wallet-storage-config.yaml
+              --values acapy-wallet-storage-config.yaml \
+              --set replicaCount=1
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -624,8 +626,3 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      # - name: Output
-      #   id: updated_deployments
-      #   if: steps.update_deployments.outcome == 'success'
-      #   run: echo "success=true" >> "$GITHUB_OUTPUT"

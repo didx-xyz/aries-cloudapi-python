@@ -300,6 +300,7 @@ jobs:
       checks: write # Required for action-junit-report
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     env:
       TAILSCALE_VERSION: 1.50.1
@@ -583,17 +584,20 @@ jobs:
           kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$OUTPUT_FILE $LOCAL_PATH/$OUTPUT_FILE
           kubectl -n $NAMESPACE cp $POD_NAME:$MOUNT_PATH/$COVERAGE_FILE $LOCAL_PATH/$COVERAGE_FILE
 
-          # Clean up: delete the temporary pod
-          echo "Cleaning up..."
-          kubectl -n $NAMESPACE delete pod $POD_NAME
-
-          echo "Done!"
         env:
           PVC_NAME: cloudapi-pytest
           POD_NAME: pytest-results
           CONTAINER_IMAGE: busybox
           MOUNT_PATH: /mnt
           LOCAL_PATH: ./
+          NAMESPACE: dev-cloudapi
+
+      - name: Delete pytest results
+        if: success() || failure() # always run even if the previous step fails
+        run: |
+          kubectl -n $NAMESPACE delete pod $POD_NAME
+        env:
+          POD_NAME: pytest-results
           NAMESPACE: dev-cloudapi
 
 

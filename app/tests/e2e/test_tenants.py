@@ -169,7 +169,7 @@ async def test_create_tenant_issuer(
     endorser_connection = connections[0]
 
     # Connection with endorser
-    assert_that(endorser_connection).has_state("completed")
+    assert_that(endorser_connection).has_state("active")
     assert_that(endorser_connection).has_their_public_did(endorser_did.did)
 
     # Actor
@@ -347,7 +347,7 @@ async def test_update_tenant_verifier_to_issuer(
     endorser_connection = connections[0]
 
     # Connection invitation
-    assert_that(endorser_connection).has_state("completed")
+    assert_that(endorser_connection).has_state("active")
     assert_that(endorser_connection).has_their_public_did(endorser_did.did)
 
     assert new_actor

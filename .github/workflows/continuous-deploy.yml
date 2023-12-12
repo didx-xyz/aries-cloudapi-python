@@ -519,29 +519,19 @@ jobs:
       - name: Wait for pytest and print logs
         # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
         run: |
-          while true; do
-            # Check if the job is complete or failed
-            COMPLETION_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}')
-            FAILURE_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}')
+          # Start tailing logs in background
+          kubectl logs -f -n $NAMESPACE --selector=job-name=$JOB_NAME > job_logs.txt 2>&1 & LOG_PID=$!
 
-            if [ "$COMPLETION_STATUS" == "1" ] || [ "$FAILURE_STATUS" == "1" ]; then
-                echo "Job $JOB_NAME has completed."
-                break
-            else
-                echo "Waiting for job to complete..."
-                sleep 10
-            fi
-          done
+          # Wait for job completion or failure
+          kubectl wait --for=condition=complete --timeout=900s job/$JOB_NAME -n $NAMESPACE || \
+          kubectl wait --for=condition=failed --timeout=900s job/$JOB_NAME -n $NAMESPACE
 
-          # Get all pods for the job
-          pods=$(kubectl get pods -n $NAMESPACE --selector=job-name=$JOB_NAME -o jsonpath='{.items[*].metadata.name}')
+          # Kill the background logging process
+          kill $LOG_PID
 
-          # Loop through the pods and get logs
-          for pod in $pods
-          do
-              echo "Logs for Pod: $pod"
-              kubectl logs -n $NAMESPACE $pod
-          done
+          # Optionally, print the logs
+          echo "Job logs:"
+          cat job_logs.txt
 
         env:
           JOB_NAME: cloudapi-pytest

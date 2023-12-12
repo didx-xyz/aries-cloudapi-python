@@ -306,6 +306,7 @@ jobs:
       HELM_VERSION: v3.13.1
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
+      PYTEST_COMPLETIONS: 10
 
     concurrency:
       group: cicd-deploy
@@ -347,7 +348,7 @@ jobs:
           version: ${{ env.TAILSCALE_VERSION }}
 
       - name: Helmfile Diff
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true'
+        if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -414,7 +415,7 @@ jobs:
           bash ./scripts/aurora-delete.sh -o $TRUST_REGISTRY_DB_OWNER -c
 
       - name: List Elasticache Redis
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true'
+        if: github.event.inputs.run-reset-deployments == 'true'
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
@@ -427,9 +428,8 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
-      - name: Helmfile Apply
-        id: update_deployments
-        # if: github.event.review.state == 'approved' || github.event_name == 'push' || github.event.inputs.run-reset-deployments == 'true' || github.event.inputs.run-tests == 'true'
+      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
+        if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.5.0
         with:
           helmfile-args: |
@@ -437,7 +437,58 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }}
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --set replicaCount=1
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Helmfile Apply (Exclude Agents) # Always exclude agents and apply (zero diff if resetting deployments)
+        uses: helmfile/helmfile-action@v1.5.0
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --selector app!=governance-ga-agent,app!=governance-multitenant-agent \
+              --set replicaCount=1
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+
+      - name: Create values file
+        run: |
+          echo 'env:' > ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          echo '  ACAPY_WALLET_STORAGE_CONFIG: |-' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          echo '    ${{ secrets.ACAPY_WALLET_STORAGE_CONFIG }}' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          pwd
+          ls -la
+
+      - name: Helmfile Patch Proxy # Always patch agents with proxy.
+        id: patch_proxy
+        uses: helmfile/helmfile-action@v1.5.0
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --set image.tag=${{ env.IMAGE_TAG }} \
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --selector app=governance-ga-agent \
+              --selector app=governance-multitenant-agent \
+              --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
+              --values acapy-wallet-storage-config.yaml \
+              --set replicaCount=1
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -456,7 +507,8 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-capi-test.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }}
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --set completions=${{ env.PYTEST_COMPLETIONS }}
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -473,7 +525,7 @@ jobs:
             COMPLETION_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.succeeded}')
             FAILURE_STATUS=$(kubectl get job $JOB_NAME -n $NAMESPACE -o jsonpath='{.status.failed}')
 
-            if [ "$COMPLETION_STATUS" == "1" ] || [ "$FAILURE_STATUS" == "1" ]; then
+            if [ "$COMPLETION_STATUS" == "${{ env.PYTEST_COMPLETIONS }}" ] || [ "$FAILURE_STATUS" == "1" ]; then
                 echo "Job $JOB_NAME has completed."
                 break
             else
@@ -574,8 +626,3 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      - name: Output
-        id: updated_deployments
-        if: steps.update_deployments.outcome == 'success'
-        run: echo "success=true" >> "$GITHUB_OUTPUT"

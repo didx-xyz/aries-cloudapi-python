@@ -504,7 +504,8 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-capi-test.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }}
+              --set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --set completions=10
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets

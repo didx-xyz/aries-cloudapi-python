@@ -306,7 +306,7 @@ jobs:
       HELM_VERSION: v3.13.1
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
-      PYTEST_COMPLETIONS: 10
+      PYTEST_COMPLETIONS: 1
 
     concurrency:
       group: cicd-deploy

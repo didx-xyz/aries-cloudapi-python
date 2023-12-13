@@ -7,14 +7,7 @@
 1. [First Step and Overview](#first-steps)
 2. [Cloud API Roles](#cloudapi-roles)
 3. [Workflows and Roles Overview](#workflows-and-roles-overview)
-4. [Workflows Overview](Workflows%20Overview.md)
-5. [Bootstrap a Trust Ecosystem using Aries Cloud API](./Bootstrap%20Trust%20Ecosystem.md)
-6. [Governance as Code](./Governance%20as%20Code.md)
-7. [Common Steps](./Common%20Steps.md)
-8. [Webhooks](./Webhooks.md)
-9. [Trust Registry](Trust%20Registry.md)
-10. [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
-11. [Quick Start Guide](Quick%20Start%20Guide.md)
+4. [Further Reading](#further-reading)
 
 ## First Steps
 
@@ -164,3 +157,13 @@ Now that we have an entity holding a credential (having a stored credential in t
 #### User management/Creating wallets
 
 Using the admin role(s), you can create wallets for tenant or eco-system partners. These are all sub wallets. Successful creation returns the wallet creation response, including the wallet id and JWT for authentication.
+
+## Further Reading
+
+- [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
+- [Bootstrap a Trust Ecosystem using Aries Cloud API](./Bootstrap%20Trust%20Ecosystem.md)
+- [Quick Start Guide](Quick%20Start%20Guide.md)
+- [Common Steps](./Common%20Steps.md)
+- [Governance as Code](./Governance%20as%20Code.md)
+- [Trust Registry](Trust%20Registry.md)
+- [Webhooks](./Webhooks.md)

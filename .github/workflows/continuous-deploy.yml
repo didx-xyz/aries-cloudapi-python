@@ -30,8 +30,8 @@ on:
 
 jobs:
   build:
-    if: github.event.pull_request.draft == false
-    name: Build images and push to GHCR
+    if: ${{ !github.event.pull_request.draft }}
+    name: Build GHCR
     permissions:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io

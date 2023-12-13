@@ -30,6 +30,8 @@ from app.services.trust_registry.actors import (
 )
 from app.services.trust_registry.util.actor import assert_actor_name
 from app.util.tenants import tenant_from_wallet_record
+from app.util.wallet_map import ClientWalletMap, Container
+from dependency_injector.wiring import Provide, inject
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -38,11 +40,13 @@ router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
 
 
 @router.post("", response_model=CreateTenantResponse)
+@inject
 async def create_tenant(
     body: CreateTenantRequest,
     admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
         acapy_auth_tenant_admin
     ),
+    client_wallet_map: ClientWalletMap = Depends(Provide[Container.redis_service])
 ) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)
@@ -154,6 +158,10 @@ async def create_tenant(
         access_token=tenant_api_key(wallet_response.token),
         group_id=body.group_id,
     )
+
+    bound_logger.debug("Add to client wallet map")
+    await client_wallet_map.add_wallet_map(response.wallet_id, body.group_id)
+
     bound_logger.debug("Successfully created tenant.")
     return response
 

@@ -135,7 +135,7 @@ To create credential definitions through the `Transaction Endorser Protocol` for
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` role
 3. Create a new schema with a `POST` to the API endpoint `/generic/definitions/credentials` using the request body illustrated in the example below.
 
-   > NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry
+   >NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry
 
    ```json
    {
@@ -161,7 +161,7 @@ To query entries in the Trust Registry, adhere to the following steps:
 1. Access the API through [Governance Cloud API](http://localhost:8100/docs)
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` role
 
-   > NOTE: The Trust Registry is currently public and accessible to anyone on the internet
+   >NOTE: The Trust Registry is currently public and accessible to anyone on the internet
 
 3. The trust-registry has 5 GET endpoints:
    - `GET`  `/trust-registry/schemas`
@@ -215,7 +215,7 @@ To query entries in the Trust Registry, adhere to the following steps:
     - `GET` `/trust-registry/actors`
       - Will return all actors on the trust registry
       - Optionally one of the following query parameters can be passed to get a specific actor:
-        > NOTE: Only one of these can be passed at any time
+        >NOTE: Only one of these can be passed at any time
         - `actor_did`
         - `actor_id`
         - `actor_name`

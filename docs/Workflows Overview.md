@@ -6,7 +6,7 @@ After spinning up the containers following the [Quick Start Guide](./Quick%20Sta
 
 You'll see that there are `generic` endpoints for common actions, wallet-specific actions, and admin actions. Additionally, you'll find the trust registry, webhooks and sse being exposed. These are the intended ways of client interactions with these two services.
 
-> NOTE: Regardless of the multitude of containers and mechanisms running, [The CloudAPI](http://localhost:8100) and its [SwaggerUI](http://localhost:8100/docs) are the main interaction points intended between clients and the stack. This should be the only endpoint clients should (and have to) interact with. There is no need (and no intention to allow that) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+> NOTE: Regardless of the multitude of containers and mechanisms running, [The CloudAPI](http://localhost:8100) and its [Swagger UI](http://localhost:8100/docs) are the main interaction points intended between clients and the stack. This should be the only endpoint clients should (and have to) interact with. There is no need (and no intention to allow that) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
 
 ### Trust Registry
 

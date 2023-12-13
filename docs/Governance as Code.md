@@ -244,7 +244,7 @@ To query entries in the Trust Registry, adhere to the following steps:
       },
       {
         "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
-        "name": "Absa Issuer & Verifier",
+        "name": "Bank Issuer & Verifier",
         "roles": [
           "issuer",
           "verifier"
@@ -273,7 +273,7 @@ To query entries in the Trust Registry, adhere to the following steps:
       },
       {
         "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
-        "name": "Absa Issuer & Verifier",
+        "name": "Bank Issuer & Verifier",
         "roles": [
           "issuer",
           "verifier"
@@ -302,7 +302,7 @@ To query entries in the Trust Registry, adhere to the following steps:
       },
       {
         "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
-        "name": "Absa Issuer & Verifier",
+        "name": "Bank Issuer & Verifier",
         "roles": [
           "issuer",
           "verifier"

@@ -117,7 +117,7 @@ Authentication header example `'x-api-key: tenant.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUz
 
 Using the admin role(s) you can create and register schemas. Successful schema creation will automatically write it to the ledger.
 
-The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed foruse.
+The ledger is also a useful place to look at what schemas you have at your disposal. In fact, this should be the preferred way because schemas can exist on the ledger but have been invalidated on the trust registry. This will be checked by the CloudAPI and only valid schemas are allowed for use.
 
 #### Credentials
 

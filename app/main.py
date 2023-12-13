@@ -81,6 +81,22 @@ elif ROLE == "tenant":
         webhooks,
         sse,
     ]
+elif ROLE == "test":
+    routes = [
+        tenants,
+        connections,
+        definitions,
+        issuer,
+        jsonld,
+        messaging,
+        oob,
+        trust_registry,
+        verifier,
+        wallet_credentials,
+        wallet_dids,
+        webhooks,
+        sse,
+    ]
 elif ROLE == "trust-registry":
     routes = [
         trust_registry

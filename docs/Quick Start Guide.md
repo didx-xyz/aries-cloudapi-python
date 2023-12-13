@@ -44,9 +44,9 @@ This guide provides a simple walkthrough for starting, managing, and stopping a 
 
 Once the project is running, you'll have access to several services via Swagger interfaces. These can be found at the following URLs:
 
-- [ACA-Py CloudAPI Admin](http://localhost:8000/docs)
+- [ACA-Py CloudAPI Admin](http://localhost:8100/docs)
 - [ACA-Py Governance Agent Admin](http://localhost:3021)
-- [ACA-Py CloudAPI Multitenant](http://localhost:8000/docs)
+- [ACA-Py CloudAPI Multitenant](http://localhost:8100/docs)
 - [ACA-Py Multitenant Agent Admin](http://localhost:4021)
 - [Webhooks](http://localhost:3010/docs)
 - [Trust Registry](http://localhost:8001/docs)
@@ -55,6 +55,6 @@ Once the project is running, you'll have access to several services via Swagger 
 
 Each Docker container's environment parameters can be adjusted via its respective `.env` file, located in a correspondingly named sub-folder within the `environments` directory. For example, if you want to change the `auto-provision` setting for the ACA-Py multitenant instance from `true` to `false`, adjust the `ACAPY_AUTO_PROVISION` value in `environments/governance-multitenant/aca-py-agent.default.env`.
 
-Remember to stop and restart the affected containers after making changes. However, be careful when changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml` file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or `ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the values withing the `docker-compose.yaml` to reflect these changes.
+Remember to stop and restart the affected containers after making changes. However, be careful when changing settings like port numbers. These changes will also need to be reflected in the `docker-compose.yaml` file to ensure that other services are aware of the changes. For instance, if you change `ACAPY_ENDPOINT` or `ACAPY_WEBHOOK_URL` in an env file of e.g. the multitenant container, you will also want to look to change the values within the `docker-compose.yaml` to reflect these changes.
 
-The [Workflows](Workflows%20Overview.md) and [Common Steps](Common%20Steps.md) documents can help you understand how to use the project's infrastructure once it's up and running.
+The [Common Steps](Common%20Steps.md) document can help you understand how to use the project's infrastructure once it's up and running.

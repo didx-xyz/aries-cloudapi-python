@@ -4,7 +4,7 @@ As a client, you can retrieve the trust registry but not alter it. This design i
 
 >NOTE: The Trust Registry GET API endpoint is not protected and should not be publicly accessible.
 
-The [trust registry](http://localhost:8001/docs) serves as a gatekeeper interface for interactions, maintaining the truth states about actors, their respective roles as issuers and/or verifiers, and schemas.
+The [Trust Registry](http://localhost:8001/docs) serves as a gatekeeper interface for interactions, maintaining the truth states about actors, their respective roles as issuers and/or verifiers, and schemas.
 
 The [Swagger docs](http://localhost:8001/docs) are divided into three main sections:
 

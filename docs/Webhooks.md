@@ -2,7 +2,7 @@
 
 The webhooks container serves as both a relay and storage for the webhooks, enabling hooks to be retrieved at a later time. Furthermore, the webhooks container processes the webhooks in two distinct ways.
 
-Firstly, the hooks are converted into a shared format, which is shared with the cloud API. This standardization is beneficial as the information and its format in both the hooks and the CloudAPI are the same. This consistency allows for easier client implementation as it only needs to anticipate a single data structure from the two endpoints.
+Firstly, the hooks are converted into a shared format, which is shared with the CloudAPI. This standardization is beneficial as the information and its format in both the hooks and the CloudAPI are the same. This consistency allows for easier client implementation as it only needs to anticipate a single data structure from two endpoints, even if it's using v1 or v2 protocols.
 
 Secondly, the webhooks are stored by topic and wallet ID. Consequently, the hooks can be retrieved in these two ways - per wallet or per wallet per topic (but not per topic - a choice made to reduce the data footprint).
 
@@ -75,7 +75,7 @@ or
 wscat -c ws://127.0.0.1:3010 -x '{"request": {"method": "subscribe", "arguments": {"topics": ["proofs", "endorsements", "oob", "out_of_band", "connections", "basic-messages", "credentials"]}}}' -w 99999
 ```
 
-How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (_NOTE:_ You might have to change the URI according to your setup of the webhooks relay). Both examples do pretty much the same. However, [Wscat](https://github.com/websockets/wscat) is written in JavaScript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint, the `exec:` parameter and `-x` flag mean execute. Execute, in this case, refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet.
+How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (_NOTE:_ You might have to change the URI according to your setup of the webhooks relay). Both examples do pretty much the same. However, [wscat](https://github.com/websockets/wscat) is written in JavaScript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint, the `exec:` parameter and `-x` flag mean execute. Execute, in this case, refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet.
 
 ## Server Sent Events
 
@@ -87,21 +87,13 @@ There are five different endpoints for listening to server-sent events (SSE).
 - `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}`
 - `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
 
-The `field` and `field_id` in the endpoints above refer to any fields in the events, excluding `wallet_id`, `topic`, or `state`, along with their corresponding IDs. i.e. You can pass `connection_id` and the ID of the connection if you only want to see events on a specific connection.
+Valid topics are same as noted above.
 
-Topics:
+The `field` and `field_id` in the endpoints above serve as filters, and refers to any field in the webhook event payload (excluding `wallet_id` and `topic`). The name of the field of interest is passed in `{field}`, and the corresponding ID or text that one wants to wait for is passed as `{field_id}`. i.e., you can pass `connection_id` as `{field}`, and the ID of the connection you want to see the events for as `{field_id}`. This will return only webhook events that match the specified filter.
 
-- basic-messages
-- connections
-- proofs
-- credentials
-- endorsements
-- oob
-- revocation
-- issuer_cred_rev
-- problem_report
+The routes that specify a `{desired_state}` will keep the stream open until a single webhook event matches the specified filters, and then return that event. The endpoints that don't specify a `{desired_state}`, will keep the stream open and return all events matching the topic and optional field/field_id filters.
 
-Here is example Javascript implementation
+Here is an example Javascript implementation
 
 ```js
 const EventSource = require('eventsource');
@@ -126,5 +118,3 @@ eventSource.onerror = (error) => {
 
 console.log("<==============>")
 ```
-
-***

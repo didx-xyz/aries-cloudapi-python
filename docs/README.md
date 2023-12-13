@@ -11,7 +11,7 @@
 5. [Bootstrap a Trust Ecosystem using Aries Cloud API](./Bootstrap%20Trust%20Ecosystem.md)
 6. [Governance as Code](./Governance%20as%20Code.md)
 7. [Common Steps](./Common%20Steps.md)
-8. [Webhooks](./SSE%20Webhooks.md)
+8. [Webhooks](./Webhooks.md)
 9. [Trust Registry](Trust%20Registry.md)
 10. [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
 11. [Quick Start Guide](Quick%20Start%20Guide.md)

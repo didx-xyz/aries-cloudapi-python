@@ -29,7 +29,7 @@ If you experience any issues while running the project, feel free to reach out b
 
 ## Docs
 
-You can find more detailed documentation in the [`./docs` folder](docs/README.md). The `intro` and `workflow` sections will be most useful.
+You can find more detailed documentation in the [`./docs` folder](docs/README.md). The `Quick Start`, `Common Steps` and `Example Flows` will be most useful.
 
 ## Contributing
 

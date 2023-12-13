@@ -136,7 +136,6 @@ async def test_accept_proof_request_oob_v1(
     # Create the proof request against aca-py
     create_proof_request = CreateProofRequest(
         indy_proof_request=indy_proof_request,
-        auto_verify=True,
         comment="some comment",
         protocol_version=PresentProofProtocolVersion.v1.value,
     )

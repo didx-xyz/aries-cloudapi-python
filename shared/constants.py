@@ -12,7 +12,7 @@ GOVERNANCE_FASTAPI_ENDPOINT = os.getenv("GOVERNANCE_FASTAPI_ENDPOINT", f"{url}:8
 GOVERNANCE_ACAPY_API_KEY = os.getenv("GOVERNANCE_ACAPY_API_KEY", adminApiKey)
 
 TENANT_FASTAPI_ENDPOINT = os.getenv("TENANT_FASTAPI_ENDPOINT", f"{url}:8300") #governance-tenant-web
-TENANT_ADMIN_FASTAPI_ENDPOINT = os.getenv("TENANT_ADMIN_FASTAPI_ENDPOINT", f"{url}:8100") #governance-multitenant-web
+TENANT_ADMIN_FASTAPI_ENDPOINT = os.getenv("TENANT_ADMIN_FASTAPI_ENDPOINT", f"{url}:8100") #governance-multitenant-web ###
 TENANT_ACAPY_API_KEY = os.getenv("TENANT_ACAPY_API_KEY", adminApiKey)
 
 TENANT_AGENT_URL = os.getenv("ACAPY_TENANT_AGENT_URL", f"{url}:4021")

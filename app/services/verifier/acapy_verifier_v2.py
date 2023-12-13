@@ -53,7 +53,7 @@ class VerifierV2(Verifier):
                 body=V20PresCreateRequestRequest(
                     auto_remove=auto_remove,
                     presentation_request=presentation_request,
-                    auto_verify=create_proof_request.auto_verify,
+                    auto_verify=True,
                     comment=create_proof_request.comment,
                     trace=create_proof_request.trace,
                 )
@@ -96,7 +96,7 @@ class VerifierV2(Verifier):
                         auto_remove=auto_remove,
                         connection_id=send_proof_request.connection_id,
                         presentation_request=presentation_request,
-                        auto_verify=send_proof_request.auto_verify,
+                        auto_verify=True,
                         comment=send_proof_request.comment,
                         trace=send_proof_request.trace,
                     )

@@ -47,7 +47,7 @@ class VerifierV1(Verifier):
                     body=V10PresentationCreateRequestRequest(
                         auto_remove=auto_remove,
                         proof_request=create_proof_request.indy_proof_request,
-                        auto_verify=create_proof_request.auto_verify,
+                        auto_verify=True,
                         comment=create_proof_request.comment,
                         trace=create_proof_request.trace,
                     )
@@ -85,7 +85,7 @@ class VerifierV1(Verifier):
                         auto_remove=auto_remove,
                         connection_id=send_proof_request.connection_id,
                         proof_request=send_proof_request.indy_proof_request,
-                        auto_verify=send_proof_request.auto_verify,
+                        auto_verify=True,
                         comment=send_proof_request.comment,
                         trace=send_proof_request.trace,
                     )

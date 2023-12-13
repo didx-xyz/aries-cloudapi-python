@@ -56,7 +56,7 @@ jobs:
             governance-multitenant-web,
             governance-ga-web,
             governance-tenant-web,
-            governance-trustregistry-web,
+            governance-trust-registry-web,
             governance-webhooks-web,
             governance-multitenant-agent,
             governance-endorser,
@@ -78,7 +78,7 @@ jobs:
           - image: governance-tenant-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
-          - image: governance-trustregistry-web
+          - image: governance-trust-registry-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
           - image: governance-webhooks-web

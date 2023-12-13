@@ -11,7 +11,8 @@ GOVERNANCE_AGENT_API_KEY = os.getenv("ACAPY_GOVERNANCE_AGENT_API_KEY", adminApiK
 GOVERNANCE_FASTAPI_ENDPOINT = os.getenv("GOVERNANCE_FASTAPI_ENDPOINT", f"{url}:8200") #governance-ga-web
 GOVERNANCE_ACAPY_API_KEY = os.getenv("GOVERNANCE_ACAPY_API_KEY", adminApiKey)
 
-TENANT_FASTAPI_ENDPOINT = os.getenv("TENANT_FASTAPI_ENDPOINT", f"{url}:8100")
+TENANT_FASTAPI_ENDPOINT = os.getenv("TENANT_FASTAPI_ENDPOINT", f"{url}:8300") #governance-tenant-web
+TENANT_ADMIN_FASTAPI_ENDPOINT = os.getenv("TENANT_ADMIN_FASTAPI_ENDPOINT", f"{url}:8100") #governance-multitenant-web
 TENANT_ACAPY_API_KEY = os.getenv("TENANT_ACAPY_API_KEY", adminApiKey)
 
 TENANT_AGENT_URL = os.getenv("ACAPY_TENANT_AGENT_URL", f"{url}:4021")
@@ -25,7 +26,7 @@ WEBHOOKS_PUBSUB_URL = os.getenv("WEBHOOKS_PUBSUB_URL", f"ws://{host}:3010/pubsub
 ACAPY_MULTITENANT_JWT_SECRET = os.getenv("ACAPY_MULTITENANT_JWT_SECRET", "jwtSecret")
 ACAPY_ENDORSER_ALIAS = os.getenv("ACAPY_ENDORSER_ALIAS", "endorser")
 
-CLOUDAPI_URL = os.getenv("CLOUDAPI_URL", f"{url}:8100")
+CLOUDAPI_URL = os.getenv("CLOUDAPI_URL", f"{url}:8300") #tmp for testing: pointing to ROLE=test that includes trustregistry endpoint
 ACAPY_TAILS_SERVER_BASE_URL = os.getenv("ACAPY_TAILS_SERVER_BASE_URL", f"{url}:6543")
 
 # For testing ledger

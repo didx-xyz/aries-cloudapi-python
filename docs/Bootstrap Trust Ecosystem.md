@@ -4,8 +4,7 @@
 
 1. `git clone https://github.com/didx-xyz/aries-cloudapi-python.git`
 2. OPTIONAL: Customise environment variables located [here](https://github.com/didx-xyz/aries-cloudapi-python/tree/development/environments)
-3. Start up docker instances
-   1. Follow the [Quick Start Guide](./Quick%20Start%20Guide.md)
+3. Start up docker instances by following the [Quick Start Guide](./Quick%20Start%20Guide.md)
 
 ## 2. Generate a New DID
 

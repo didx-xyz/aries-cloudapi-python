@@ -395,7 +395,7 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "/home/indy/indy_healthcheck.sh" ]
       interval: 15s
-      timeout: 5s
+      timeout: 10s
       retries: 10
       start_period: 30s
   tails-server:

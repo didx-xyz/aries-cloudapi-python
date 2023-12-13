@@ -86,7 +86,7 @@ Authentication header example `'x-api-key: tenant-admin.adminApiKey'`
 
 #### Tenant Role (Trust Ecosystem Issuers, Verifiers, and Holders)
 
-Authentication header example `'x-api-key: tenant.eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ3YWxsZXRfaWQiOiIxZGZlOTFlNy0yNTE0LTRmYzMtODg0ZC1kYTQwOWJlODcwODMifQ.qLstLxdbnfwFSZjBNJX3GXko-ZYTMVOpOZWgmfJ1x3g'`
+Authentication header example `'x-api-key: tenant.ey..'`
 
 - tenant
   - is:

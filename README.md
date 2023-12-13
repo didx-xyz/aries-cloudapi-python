@@ -3,13 +3,13 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/ceca5ac566f74a3a8bfb3095074117ad)](https://www.codacy.com/gh/didx-xyz/aries-cloudapi-python/dashboard?utm_source=github.com&utm_medium=referral&utm_content=didx-xyz/aries-cloudapi-python&utm_campaign=Badge_Coverage)
 
-## WIP
+## Work In Progress
 
-:warning: This project is currently under initial development. Please do not use this in production.
+:construction: This project is currently under development. Please do not use this in production.
 
 ## Overview
 
-This project essentially comprises a [FastAPI](https://fastapi.tiangolo.com/) application built around the [Hyperledger Aries stack](https://github.com/hyperledger/), primarily tailored for [YOMA](https://yoma.africa)-specific use cases. The FastAPI app serves as a wrapper around common workflows, facilitating real-life applications of the stack. It acts as a form of middleware or interface for client applications (e.g., a mobile app) and the backend stack, using [Aries CloudController](https://github.com/didx-xyz/aries-cloudcontroller-python) and [ACA-Py](https://github.com/hyperledger/aries-cloudagent-python). The aim is to streamline a client's workflow by providing convenient API endpoints for common workflows, such as creating wallets, managing connections, credentials, proofs, and workflows. Multiple API calls to the AriesCloudAgent can often be condensed into a single call via this API. For example, creating a wallet, which involves writing to the ledger, awaiting the result, accepting a TAA, creating a DID, and finally creating the wallet itself, can be done in a single call. Convenient, isn't it?
+This project essentially comprises a [FastAPI](https://fastapi.tiangolo.com/) application built around the [Hyperledger Aries stack](https://github.com/hyperledger/), primarily tailored for [Yoma](https://yoma.africa)-specific use cases. The FastAPI app serves as a wrapper around common workflows, facilitating real-life applications of the stack. It acts as a form of middleware or interface for client applications (e.g., a mobile app) and the backend stack, using [Aries CloudController](https://github.com/didx-xyz/aries-cloudcontroller-python) and [ACA-Py](https://github.com/hyperledger/aries-cloudagent-python). The aim is to streamline a client's workflow by providing convenient API endpoints for common workflows, such as creating wallets, managing connections, credentials, proofs, and workflows. Multiple API calls to the AriesCloudAgent can often be condensed into a single call via this API. For example, creating a wallet, which involves writing to the ledger, awaiting the result, accepting a TAA, creating a DID, and finally creating the wallet itself, can be done in a single call. Convenient, isn't it?
 
 ## How to Run It
 
@@ -33,7 +33,7 @@ You can find more detailed documentation in the [`./docs` folder](docs/README.md
 
 ## Contributing
 
-While this project is primarily developed to meet the needs of [YOMA](https://yoma.africa), it is an open-source project that can be used for other Hyperledger Aries projects as well. We welcome contributions from everyone. Feel free to engage in discussions, create a PR against a ticket, or open an issue yourself, following the GitHub guidelines.
+While this project was primarily developed to meet the needs of [Yoma](https://yoma.africa), it is an open-source project that can be used for other Hyperledger Aries projects as well. We welcome contributions from everyone. Feel free to engage in discussions, create a PR against a ticket, or open an issue yourself, following the GitHub guidelines.
 
 ## Running Tests
 

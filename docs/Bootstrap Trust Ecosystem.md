@@ -87,13 +87,7 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
       }
       ```
 
-      The JSON response should be:
-
-      ```json
-      {}
-      ```
-
-      with a `200` respose code.
+      This should yield an empty JSON response with a `200` status code.
 
 ## 5. Set Public DID
 

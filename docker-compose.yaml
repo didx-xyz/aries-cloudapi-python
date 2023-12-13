@@ -128,6 +128,8 @@ services:
       - host
     env_file:
       - environments/governance-multitenant/fastapi.default.env
+    environment:
+      - REDIS_HOST=mt-redis
   governance-webhooks-web:
     image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
     container_name: governance-webhooks-web
@@ -169,11 +171,21 @@ services:
     ports:
       - 0.0.0.0:6379:6379
     volumes:
-      - $PWD/data:/data
+      - $PWD/data/wh-redis:/data
     networks:
       - host
     env_file:
       - environments/webhooks/redis.env
+  mt-redis:
+    image: redis:latest
+    container_name: mt-redis
+    restart: always
+    ports:
+      - 0.0.0.0:6381:6379
+    volumes:
+      - $PWD/data/mt-redis:/data
+    networks:
+      - host
   governance-multitenant-wallets-db:
     image: postgres:15
     container_name: governance-multitenant-wallets-db

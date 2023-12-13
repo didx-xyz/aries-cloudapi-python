@@ -1,6 +1,8 @@
 aiohttp~=3.9.0
+aioredis~=2.0.1
 aries-cloudcontroller==0.11.0
 base58~=2.1.1
+dependency-injector~=4.41.0
 fastapi~=0.104.1
 fastapi_websocket_pubsub~=0.3.8
 httpx~=0.25.1

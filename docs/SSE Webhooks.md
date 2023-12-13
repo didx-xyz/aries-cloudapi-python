@@ -1,55 +1,3 @@
-# Server Sent Events
-
-There are five different endpoints for listening to server-sent events (SSE).
-
-- `GET` `/sse/{wallet_id}`
-- `GET` `/sse/{wallet_id}/{topic}`
-- `GET` `/sse/{wallet_id}/{topic}/{desired_state}`
-- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}`
-- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
-
-The `field` and `field_id` in the endpoints above refer to any fields in the events, excluding `wallet_id`, `topic`, or `state`, along with their corresponding IDs. i.e. You can pass `connection_id` and the ID of the connection if you only want to see events on a specific connection.
-
-Topics:
-
-- basic-messages
-- connections
-- proofs
-- credentials
-- endorsements
-- oob
-- revocation
-- issuer_cred_rev
-- problem_report
-
-Here is example Javascript implementation
-
-```js
-const EventSource = require('eventsource');
-url = "http://localhost:8100/sse/<wallet_id>"
-
-const headers = {
-    'x-api-key':"tenant.<tenant/wallet_token>",
-  };
-const eventSource = new EventSource(url,{headers});
-// Event listener for incoming server-sent events
-eventSource.onmessage = (event) => {
-  const eventData = JSON.parse(event.data);
-  // log event
-  console.log("EVENT ==> ", eventData)
-};
-
-// Event listener for handling errors
-eventSource.onerror = (error) => {
-  console.error('EventSource error:', error);
-  // You can add error handling logic here if needed
-};
-
-console.log("<==============>")
-```
-
-***
-
 # Webhooks
 
 The webhooks container serves as both a relay and storage for the webhooks, enabling hooks to be retrieved at a later time. Furthermore, the webhooks container processes the webhooks in two distinct ways.
@@ -128,3 +76,55 @@ wscat -c ws://127.0.0.1:3010 -x '{"request": {"method": "subscribe", "arguments"
 ```
 
 How this works is that either procedure instantiates a client connecting to the websocket endpoint exposed via the webhooks container (_NOTE:_ You might have to change the URI according to your setup of the webhooks relay). Both examples do pretty much the same. However, [Wscat](https://github.com/websockets/wscat) is written in JavaScript whereas [websocat](https://github.com/vi/websocat) is implemented in Rust. Both examples are given to illustrate that it really does not matter what language one wishes to implement a listener in. After having established a connection to the exposed endpoint, the `exec:` parameter and `-x` flag mean execute. Execute, in this case, refers to sending the JSON payload to the webhooks relay. It requests the endpoint to add the connection as a subscriber to the topics array of the arguments key. You can pass any arguments supported by the webhooks relay (see above). Passing an empty array under topics means 'end the subscription'. By adding the `wallet_id` in the header is the way to only receive hooks for a specific wallet.
+
+## Server Sent Events
+
+There are five different endpoints for listening to server-sent events (SSE).
+
+- `GET` `/sse/{wallet_id}`
+- `GET` `/sse/{wallet_id}/{topic}`
+- `GET` `/sse/{wallet_id}/{topic}/{desired_state}`
+- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}`
+- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
+
+The `field` and `field_id` in the endpoints above refer to any fields in the events, excluding `wallet_id`, `topic`, or `state`, along with their corresponding IDs. i.e. You can pass `connection_id` and the ID of the connection if you only want to see events on a specific connection.
+
+Topics:
+
+- basic-messages
+- connections
+- proofs
+- credentials
+- endorsements
+- oob
+- revocation
+- issuer_cred_rev
+- problem_report
+
+Here is example Javascript implementation
+
+```js
+const EventSource = require('eventsource');
+url = "http://localhost:8100/sse/<wallet_id>"
+
+const headers = {
+    'x-api-key':"tenant.<tenant/wallet_token>",
+  };
+const eventSource = new EventSource(url,{headers});
+// Event listener for incoming server-sent events
+eventSource.onmessage = (event) => {
+  const eventData = JSON.parse(event.data);
+  // log event
+  console.log("EVENT ==> ", eventData)
+};
+
+// Event listener for handling errors
+eventSource.onerror = (error) => {
+  console.error('EventSource error:', error);
+  // You can add error handling logic here if needed
+};
+
+console.log("<==============>")
+```
+
+***

@@ -161,9 +161,10 @@ Using the admin role(s), you can create wallets for tenant or eco-system partner
 ## Further Reading
 
 - [Aries Cloud API Architecture Overview](Aries%20Cloud%20API%20Architecture.md)
-- [Bootstrap a Trust Ecosystem using Aries Cloud API](./Bootstrap%20Trust%20Ecosystem.md)
 - [Quick Start Guide](Quick%20Start%20Guide.md)
+- [Bootstrap the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)
 - [Common Steps](./Common%20Steps.md)
+- [Example Flows](./Example%20Flows.md)
 - [Governance as Code](./Governance%20as%20Code.md)
 - [Trust Registry](Trust%20Registry.md)
 - [Webhooks](./Webhooks.md)

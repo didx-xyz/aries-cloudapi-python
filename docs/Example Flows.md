@@ -2,7 +2,7 @@
 
 This document will guide you through an end to end flow:
 
- >Please be aware that it is assumed at this point that your ecosystem has been [bootstrapped](./Bootstrap%20Trust%20Ecosystem.md) with an endorser.
+>Please be aware that it is assumed at this point that your ecosystem has been [bootstrapped](./Bootstrap%20Trust%20Ecosystem.md) with an endorser.
 
 1. [Onboarding an Issuer, Verifier and a Holder.](./examples/Onboarding.md)
 2. [Creating a Credential Schema.](./examples/Create%20Schema.md)

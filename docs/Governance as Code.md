@@ -131,8 +131,8 @@ Credential definitions are expected to be created by all **_Issuers_** within th
 
 To create credential definitions through the `Transaction Endorser Protocol` for trust ecosystem _issuers_, follow the steps below:
 
-1. Access the API through [Governance Cloud API](http://localhost:8100/docs)
-2. Authenticate as an Issuer using `tenant.`+`JWTKey` role
+1. Access the [Cloud API Swagger UI](http://localhost:8100/docs)
+2. Authenticate as an Issuer using `tenant.`+`JWTKey` x-api-key
 3. Create a new schema with a `POST` to the API endpoint `/generic/definitions/credentials` using the request body illustrated in the example below.
 
    >NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry
@@ -158,16 +158,15 @@ To create credential definitions through the `Transaction Endorser Protocol` for
 
 To query entries in the Trust Registry, adhere to the following steps:
 
-1. Access the API through [Governance Cloud API](http://localhost:8100/docs)
+1. Access the [Cloud API Swagger UI](http://localhost:8100/docs)
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` role
 
    >NOTE: The Trust Registry is currently public and accessible to anyone on the internet
 
 3. The trust-registry has 5 GET endpoints:
-   - `GET`  `/trust-registry/schemas`
-     - Will return all schemas on the trust registry
+   - `GET`  `/trust-registry/schemas` will return all schemas on the trust registry
 
-     Response
+     Response:
 
     ```json
     [
@@ -198,10 +197,9 @@ To query entries in the Trust Registry, adhere to the following steps:
     ]
     ```
 
-   - `Get` `/trust-registry/schemas/{schema_id}`
-     - Will return the schema based on id passed
+   - `GET` `/trust-registry/schemas/{schema_id}` will return the schema based on id passed
 
-     Response
+     Response:
 
     ```json
     {
@@ -212,15 +210,13 @@ To query entries in the Trust Registry, adhere to the following steps:
     }
     ```
 
-    - `GET` `/trust-registry/actors`
-      - Will return all actors on the trust registry
-      - Optionally one of the following query parameters can be passed to get a specific actor:
-        >NOTE: Only one of these can be passed at any time
-        - `actor_did`
-        - `actor_id`
-        - `actor_name`
+   - `GET` `/trust-registry/actors` will return all actors on the trust registry
+   - Optionally one of the following query parameters can be passed to get a specific actor:
+     - `actor_did`
+     - `actor_id`
+     - `actor_name`
 
-     Response
+     Response:
 
     ```json
     [
@@ -255,60 +251,5 @@ To query entries in the Trust Registry, adhere to the following steps:
     ]
     ```
 
-   - `GET` `/trust-registry/actors/issuers`
-     - Will return all actors with `issuer` as a role
-
-     Response
-
-    ```json
-    [
-      {
-        "id": "9bdbc626-1499-48e2-a5db-878d347e290b",
-        "name": "didxissuer@didx.co.za",
-        "roles": [
-          "issuer"
-        ],
-        "did": "did:sov:J1Sg8UHXyuyBCUUpRY3EeZ",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZ...hjaGFuZ2UvMS4wIl19"
-      },
-      {
-        "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
-        "name": "Bank Issuer & Verifier",
-        "roles": [
-          "issuer",
-          "verifier"
-        ],
-        "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJo2RpZGNvbW0ub3JnL291dC1vZi1iYW5zIjogWyJodHRwc...ovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
-      }
-    ]
-    ```
-
-    - `GET` `/trust-registry/actors/verifiers`
-      - Will return all actors with `verifier` as a role
-
-     Response
-
-    ```json
-    [
-      {
-        "id": "fe523496-e0b5-4aea-a038-6ed6cbd686b8",
-        "name": "didxverifier@didx.co.za",
-        "roles": [
-          "verifier"
-        ],
-        "did": "did:key:z6MkkUK3zRys1WezsaoAtXZtAJrhP7dh5qxbpJMe6cbDcW3s",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzEuMS9...9yZy9kaWRleGNoYW5nZS8xLjAiXX0="
-      },
-      {
-        "id": "cf058a03-1f88-4fa9-97dc-96a9cabf8d3e",
-        "name": "Bank Issuer & Verifier",
-        "roles": [
-          "issuer",
-          "verifier"
-        ],
-        "did": "did:sov:UhJ5C8hgSiNzpoAYwVcnW9",
-        "didcomm_invitation": "http://localhost:8100?oob=eyJAdHlwZSI6ICJodHbW0ub3JnL291dC1vZi1iYWyJodHRwcz...ovL2RpZGNvbW0ub3JnL2RpZGV4Y2hhbmdlLzEuMCJdfQ=="
-      }
-    ]
-    ```
+   - `GET` `/trust-registry/actors/issuers` will return all actors with `issuer` as a role
+   - `GET` `/trust-registry/actors/verifiers` will return all actors with `verifier` as a role

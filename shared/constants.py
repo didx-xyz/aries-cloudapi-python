@@ -19,6 +19,8 @@ TENANT_AGENT_URL = os.getenv("ACAPY_TENANT_AGENT_URL", f"{url}:4021")
 TENANT_AGENT_API_KEY = os.getenv("ACAPY_TENANT_AGENT_API_KEY", adminApiKey)
 
 TRUST_REGISTRY_URL = os.getenv("TRUST_REGISTRY_URL", f"{url}:8001")
+TRUST_REGISTRY_FASTAPI_ENDPOINT = os.getenv("TRUST_REGISTRY_FASTAPI_ENDPOINT", f"{url}:8400") #governance-trust-registry
+
 
 WEBHOOKS_URL = os.getenv("WEBHOOKS_URL", f"{url}:3010")
 WEBHOOKS_PUBSUB_URL = os.getenv("WEBHOOKS_PUBSUB_URL", f"ws://{host}:3010/pubsub")

@@ -1,8 +1,8 @@
-# Common Flows
+# Common Steps
 
-This document will guide you through some common flows and interactions. Please read it carefully, and feel free to open an issue if further questions arise or you spot a mistake.
+This document will guide you through some common steps and interactions. Please read it carefully, and feel free to open an issue if further questions arise or if you spot a mistake.
 
-> **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at [http://localhost:8100/docs](http://localhost:8100/docs) under a vanilla setup. If you find any datatype unclear from the document below, try finding it in Swagger UI before opening an issue. This document describes only some basic flows and interactions; not every possible flow or interaction can be covered. Thus, learning to consult the Swagger UI as a reference and solving issues independently is beneficial.
+>**Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at [http://localhost:8100/docs](http://localhost:8100/docs) under a vanilla setup. If you find any model to be unclear from the document below, try finding it in Swagger UI before opening an issue. This document describes only some basic steps; more detailed workflows can be found [here](./Example%20Flows.md).
 
 It is also recommended to set up a webhook listener (refer to our [Webhooks doc](./Webhooks.md)). This will significantly aid in understanding the activities occurring in the ACA-Py instances in the background.
 
@@ -25,9 +25,11 @@ The admin "wallet" is already configured as it is not a subwallet on a multi-ten
    }
    ```
 
-Send this to the `/admin/tenants` endpoint (under standard spin up this will be [http://localhost:8100](http://localhost:8100)). You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, navigate to the [Swagger docs](http://localhost:8100/docs) by adding `/docs` to the CloudAPI main endpoint. This will also update the trust registry by writing an entry to the `actors` field about the wallet and its associated roles.
+Send this to the `/admin/tenants` endpoint. You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, consult the [Swagger docs](http://localhost:8100/docs).
 
-If you wish to later update entities roles, you will have to do that also via the tenants API, which will handle interacting with the trust registry (see also the Swagger for `update tenant`).
+Creating a tenant with roles will update the trust registry by writing an entry for an `actor`, including wallet details and its associated roles.
+
+If you wish to later update entities roles, you will have to do that again via the tenants admin API, which will handle interacting with the trust registry (see also the Swagger for `update tenant`).
 
 ## Creating Schemas
 
@@ -39,25 +41,24 @@ To create schemas and effectively write them to the ledger as well as registerin
    { "x-api-key": "governance.ADMIN_API_KEY" }
    ```
 
-   Replace the `ADMIN_API_KEY` with the actual API key. Keep the dot and understand that `governance` is a keyword known to the CloudAPI as a role. It will resolve the correct endpoint and available actions based on the role and provided token.
+   Replace the `ADMIN_API_KEY` with the actual API key. Keep the dot and recall that `governance` is a keyword known to the CloudAPI as a role. It will resolve the correct endpoint and available actions based on the role and provided token.
 
-2. Provide the information about the schema, e.g. :
+2. Provide the information about the schema, e.g.:
 
    ```json
    {
      "name": "yourAwesomeSchemaName",
-     "version": "4.2.0",
+     "version": "1.3.7",
      "attributes": ["skill", "age"]
    }
    ```
 
-   Note that you will need to have a public DID to do so (if your agent lacks one, you can use the governance role and create one, providing the same auth header as described in this step; see SWAGGER). Run the request with the header from 1. and the payload from 2. against the CloudAPI URL and endpoint `/admin/governance/schemas/` (POST method). Upon success, the created schema will be returned.
+   Note that you will need to have a public DID to do so (if your agent lacks one, you can use the governance role to create one: see [Bootstrapping the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)). Run the request with the header from 1. and the payload from 2. against the CloudAPI URL and endpoint `/admin/governance/schemas/` (POST method). Upon success, the created schema will be returned.
 
 ## Issuing a Credential
 
 1. Register a schema (see above)
-2. Register an issuer (see above)
-   1. In other words, create a wallet passing "issuer" as a role
+2. Register an issuer (create a wallet passing "issuer" as a role - see above)
 3. Issuer creates credential definition
 4. Create a connection between the issuer and prospect holder
 
@@ -172,6 +173,6 @@ To create schemas and effectively write them to the ledger as well as registerin
    }
    ```
 
-7. (Optional) Look through 1. prover's and 2. verifier's webhooks and see that the presentation is acknowledged. Alternatively, GET the proof records and check the `state` field.
+7. (Optional) Look through the prover and verifier's webhooks and see that the presentation is acknowledged. Alternatively, GET the proof records and check the `state` field.
 
-_Note: There are multiple flows this "dance" can be "danced". For further details, you may want to refer to the corresponding [official Aries-RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)._
+_Note: There are multiple flows to this "dance". For further details, you may want to refer to the [official Aries-RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)._

@@ -32,3 +32,26 @@ class ClientWalletMap:
             return await self.redis.get(wallet_id)
         except Exception as e:
             raise e
+
+
+class Container(containers.DeclarativeContainer):
+    config = providers.Configuration()
+
+    redis_pool = providers.Resource(
+        init_wallet_map_redis_pool,
+        host=config.redis_host,
+        password=config.redis_password,
+    )
+
+    redis_service = providers.Singleton(
+        ClientWalletMap,
+        redis=redis_pool,
+    )
+
+
+def get_container() -> Container:
+    configured_container = Container()
+    # Load configuration from environment variables with defaults
+    configured_container.config.redis_host.from_env("REDIS_HOST", "localhost")
+    configured_container.config.redis_password.from_env("REDIS_PASSWORD", "")
+    return configured_container

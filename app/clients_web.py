@@ -77,3 +77,19 @@ async def on_events(data, topic):
     #     and event.topic == "issuer_cred_rev"
     # ):
     #     print(f"issuer_cred_rev ==> \n {event} \n")
+
+
+async def main():
+    """
+    # You can also register it using the commented code below
+    async def on_data(data, topic):
+        print(f"{topic}:\n", data)
+
+    [client.subscribe(topic, on_data) for topic in topics]
+    """
+    # Create a client and subscribe to topics
+    client = PubSubClient(["ALL_WEBHOOKS"], callback=on_events)
+
+    client.start_client(f"ws://{URL}:{PORT}/pubsub")
+    print(f"Started on: ws://{URL}:{PORT}/pubsub \n")
+    await client.wait_until_done()

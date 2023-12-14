@@ -177,3 +177,17 @@ async def convert_proof_event(event: Event, redis: Redis):
     }
 
     await push_event_to_lago(lago_event)
+
+
+async def convert_issue_event(event: Event, redis: Redis):
+    # convert event to lago_event
+
+    group_id = await redis.get(event.wallet_id)
+
+    lago_event = {
+        "transaction_id": event.payload["thread_id"],
+        "external_customer_id": group_id,
+        "code": "issue_done",
+    }
+
+    await push_event_to_lago(lago_event)

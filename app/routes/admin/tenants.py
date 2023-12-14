@@ -4,6 +4,7 @@ from uuid import uuid4
 
 import base58
 from aries_cloudcontroller import ApiException, CreateWalletTokenRequest
+from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -31,7 +32,6 @@ from app.services.trust_registry.actors import (
 from app.services.trust_registry.util.actor import assert_actor_name
 from app.util.tenants import tenant_from_wallet_record
 from app.util.wallet_map import ClientWalletMap, Container
-from dependency_injector.wiring import Provide, inject
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -46,7 +46,7 @@ async def create_tenant(
     admin_auth: AcaPyAuthVerified = Depends(  # pylint: disable=unused-argument
         acapy_auth_tenant_admin
     ),
-    client_wallet_map: ClientWalletMap = Depends(Provide[Container.redis_service])
+    client_wallet_map: ClientWalletMap = Depends(Provide[Container.redis_service]),
 ) -> CreateTenantResponse:
     """Create a new tenant."""
     bound_logger = logger.bind(body=body)

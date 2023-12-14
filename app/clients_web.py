@@ -1,19 +1,18 @@
 import asyncio
+import json
 import os
 import sys
-import json
+from typing import Any, Dict
+
 import aioredis
 from aioredis import Redis
-from httpx import AsyncClient, HTTPStatusError
-
-from typing import Any, Dict
-from pydantic import BaseModel
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
-from shared.util.rich_parsing import parse_with_error_handling
+from fastapi_websocket_pubsub import PubSubClient
+from httpx import AsyncClient, HTTPStatusError
+from pydantic import BaseModel
 
 from shared.constants import GOVERNANCE_AGENT_API_KEY, GOVERNANCE_AGENT_URL
-
-from fastapi_websocket_pubsub import PubSubClient
+from shared.util.rich_parsing import parse_with_error_handling
 
 LAGO_URL = "http://localhost:3000/api/v1/events"
 LAGO_API_KEY = "cb131628-c605-49bd-8aa3-93fe0289e1a3"
@@ -110,7 +109,7 @@ async def get_transaction(event: Event, redis: Redis):
 
         attachment: Dict = transaction.messages_attach[0]
 
-        #print(f"Attachment ==> \n {attachment} \n")
+        # print(f"Attachment ==> \n {attachment} \n")
 
         if "data" not in attachment:
             raise GetTransactionError("No Data in attachment")
@@ -195,7 +194,7 @@ async def convert_issue_event(event: Event, redis: Redis):
 
 async def push_event_to_lago(lago_event: LagoEvent):
     headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
-    #print(f"LAGO_EVENT ===> \n {lago_event} \n")
+    # print(f"LAGO_EVENT ===> \n {lago_event} \n")
     try:
         async with AsyncClient() as client:
             lago_response = await client.post(

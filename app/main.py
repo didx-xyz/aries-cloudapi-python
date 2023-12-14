@@ -29,8 +29,8 @@ from app.routes import (
 from app.routes.admin import tenants
 from app.routes.wallet import credentials as wallet_credentials
 from app.routes.wallet import dids as wallet_dids
-from shared.log_config import get_logger
 from app.util.wallet_map import get_container
+from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")

@@ -1,9 +1,9 @@
 import os
-import aioredis
-
-from dependency_injector import containers, providers
 from typing import AsyncIterator
+
+import aioredis
 from aioredis import Redis
+from dependency_injector import containers, providers
 
 MT_REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")

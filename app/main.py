@@ -119,8 +119,7 @@ def create_app() -> FastAPI:
     #     webhooks,
     #     sse,
     # ]
-
-    if (ROLE == "governance" or ROLE == "tenant" or ROLE == "*"):
+    if ROLE in ('governance', 'tenant', '*'):
         application = FastAPI(
             debug=debug,
             title=OPENAPI_NAME,

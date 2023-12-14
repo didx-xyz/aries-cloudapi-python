@@ -191,3 +191,20 @@ async def convert_issue_event(event: Event, redis: Redis):
     }
 
     await push_event_to_lago(lago_event)
+
+
+async def push_event_to_lago(lago_event: LagoEvent):
+    headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
+    #print(f"LAGO_EVENT ===> \n {lago_event} \n")
+    try:
+        async with AsyncClient() as client:
+            lago_response = await client.post(
+                url=LAGO_URL, headers=headers, json={"event": lago_event}
+            )
+            lago_response.raise_for_status()
+    except HTTPStatusError as e:
+        print(f"ERROR ==> \n {e} \n")
+        raise e
+
+
+asyncio.run(main())

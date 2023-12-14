@@ -93,3 +93,73 @@ async def main():
     client.start_client(f"ws://{URL}:{PORT}/pubsub")
     print(f"Started on: ws://{URL}:{PORT}/pubsub \n")
     await client.wait_until_done()
+
+
+async def get_transaction(event: Event, redis: Redis):
+    async with AcaPyClient(
+        base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
+    ) as acapy_client:
+        transaction: TransactionRecord = (
+            await acapy_client.endorse_transaction.get_transaction(
+                tran_id=event.payload["transaction_id"]
+            )
+        )
+
+        if not transaction.messages_attach:
+            raise GetTransactionError("No Attachment in Transaction")
+
+        attachment: Dict = transaction.messages_attach[0]
+
+        #print(f"Attachment ==> \n {attachment} \n")
+
+        if "data" not in attachment:
+            raise GetTransactionError("No Data in attachment")
+
+        if not isinstance(attachment["data"], dict) or "json" not in attachment["data"]:
+            raise GetTransactionError("No Json in Attachment[Data]")
+
+        json_payload = attachment["data"]["json"]
+
+        if isinstance(json_payload, str):
+            try:
+                json_payload = json.loads(json_payload)
+            except json.JSONDecodeError:
+                raise
+
+            related_did = f"did:sov:{json_payload['identifier']}"
+
+            try:
+                async with AsyncClient() as client:
+                    while True:
+                        actor_response = await client.get(
+                            url=f"http://localhost:8100/trust-registry/actors?actor_did={related_did}"
+                        )
+
+                        if actor_response.status_code != 404:
+                            break
+                    actor_response.raise_for_status()
+                    actor = (actor_response.json())[0]
+
+            except Exception as e:
+                print(f"Get actor error {e}")
+                raise e
+
+            group_id = await redis.get(actor["id"])
+
+            if json_payload["operation"]["type"] == "100":
+                lago_event = {
+                    "transaction_id": event.payload["transaction_id"],
+                    "external_customer_id": group_id,
+                    "code": "attrib",
+                }
+
+                await push_event_to_lago(lago_event)
+
+            elif json_payload["operation"]["type"] == "102":
+                lago_event = {
+                    "transaction_id": event.payload["transaction_id"],
+                    "external_customer_id": group_id,
+                    "code": "cred_def",
+                }
+
+                await push_event_to_lago(lago_event)

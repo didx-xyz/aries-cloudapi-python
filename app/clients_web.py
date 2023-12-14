@@ -42,3 +42,38 @@ class GetTransactionError(Exception):
 sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
 
 
+async def on_events(data, topic):
+    redis = await aioredis.from_url("redis://localhost:6381", decode_responses=True)
+    event: Event = parse_with_error_handling(Event, data)
+    print(f"\n {event.topic} \n")
+
+    if (
+        event.origin == "governance"
+        and event.topic == "endorsements"
+        and event.payload["state"] == "transaction-acked"
+    ):
+        await get_transaction(event, redis)
+    elif (
+        event.origin == "multitenant"
+        and event.topic == "proofs"
+        and event.payload["role"] == "verifier"
+        and event.payload["state"] == "done"
+    ):
+        await convert_proof_event(event, redis)
+    elif (
+        event.origin == "multitenant"
+        and event.topic == "credentials"
+        and event.payload["role"] == "issuer"
+        and event.payload["state"] == "done"
+    ):
+        await convert_issue_event(event, redis)
+    # elif (
+    #     event.origin == "multitenant"
+    #     and event.topic == "revocation"
+    # ):
+    #     print(f"Revocation ==> \n {event} \n")
+    # elif(
+    #     event.origin == "multitenant"
+    #     and event.topic == "issuer_cred_rev"
+    # ):
+    #     print(f"issuer_cred_rev ==> \n {event} \n")

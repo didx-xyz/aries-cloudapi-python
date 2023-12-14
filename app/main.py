@@ -48,6 +48,7 @@ async def lifespan(_: FastAPI):
     logger.info("Calling WebsocketManager shutdown")
     await WebsocketManager.disconnect_all()
 
+
 if ROLE == "governance":
     routes = [
         # tenants,
@@ -64,9 +65,7 @@ if ROLE == "governance":
         sse,
     ]
 elif ROLE == "tenant-admin":
-    routes = [
-        tenants
-    ]
+    routes = [tenants]
 elif ROLE == "tenant":
     routes = [
         connections,
@@ -82,9 +81,7 @@ elif ROLE == "tenant":
         sse,
     ]
 elif ROLE == "trust-registry":
-    routes = [
-        trust_registry
-    ]
+    routes = [trust_registry]
 elif ROLE == "*":
     routes = [
         tenants,
@@ -119,7 +116,7 @@ def create_app() -> FastAPI:
     #     webhooks,
     #     sse,
     # ]
-    if ROLE in ('governance', 'tenant', '*'):
+    if ROLE in ("governance", "tenant", "*"):
         application = FastAPI(
             debug=debug,
             title=OPENAPI_NAME,
@@ -142,9 +139,9 @@ For authentication, the WebSocket headers should include `x-api-key`: `<your key
 
 Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
 """,
-        version=PROJECT_VERSION,
-        lifespan=lifespan,
-    )
+            version=PROJECT_VERSION,
+            lifespan=lifespan,
+        )
 
         for route in routes:
             # Routes will appear in the openapi docs with the same order as defined in `routes`
@@ -166,6 +163,7 @@ Welcome to the Aries CloudAPI Python project.
             application.include_router(route.router)
 
         return application
+
 
 app = create_app()
 

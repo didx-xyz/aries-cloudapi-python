@@ -37,3 +37,8 @@ class LagoEvent(BaseModel):
 
 class GetTransactionError(Exception):
     """Raise when unable to get endorsement transaction"""
+
+
+sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
+
+

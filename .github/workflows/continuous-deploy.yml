@@ -302,9 +302,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TAILSCALE_VERSION: 1.50.1
-      HELMFILE_VERSION: v0.157.0
-      HELM_VERSION: v3.13.1
+      TAILSCALE_VERSION: 1.56.1
+      HELMFILE_VERSION: v0.159.0
+      HELM_VERSION: v3.13.3
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
       PYTEST_COMPLETIONS: 1

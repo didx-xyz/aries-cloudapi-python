@@ -288,7 +288,7 @@ jobs:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
   deploy:
-    if: github.triggering_actor != 'dependabot[bot]' && github.event.pull_request.draft == false
+    if: github.actor != 'dependabot[bot]' && github.event.pull_request.draft == false
     name: Deploy to EKS
     environment:
       name: dev

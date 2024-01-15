@@ -160,7 +160,7 @@ async def create_tenant(
     )
 
     bound_logger.debug("Add to client wallet map")
-    await client_wallet_map.add_wallet_map(response.wallet_id, body.group_id)
+    await client_wallet_map.add_wallet_map(response.wallet_id, body.group_id if body.group_id else "Not set")
 
     bound_logger.debug("Successfully created tenant.")
     return response

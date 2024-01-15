@@ -1,5 +1,5 @@
 aioredis~=2.0.1
-aries-cloudcontroller==0.11.0
+aries-cloudcontroller==0.11.0.post0
 dependency-injector~=4.41.0
 fastapi~=0.109.0
 fastapi_websocket_pubsub~=0.3.8
@@ -8,5 +8,5 @@ loguru~=0.7.0
 pydantic~=2.5.1
 sse-starlette~=1.8.2
 starlette>=0.27.0
-typing-extensions~=4.8.0
+typing-extensions~=4.9.0
 uvicorn[standard]~=0.24.0

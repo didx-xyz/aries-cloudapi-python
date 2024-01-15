@@ -1,5 +1,5 @@
 aiohttp~=3.9.0
-aries-cloudcontroller==0.11.0
+aries-cloudcontroller==0.11.0.post0
 base58~=2.1.1
 fastapi~=0.109.0
 fastapi_websocket_pubsub~=0.3.8
@@ -8,5 +8,5 @@ loguru~=0.7.0
 pydantic~=2.5.1
 pyjwt~=2.8.0
 PyYAML~=6.0
-typing-extensions~=4.8.0
+typing-extensions~=4.9.0
 uvicorn[standard]~=0.24.0

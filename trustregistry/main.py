@@ -15,6 +15,7 @@ logger = get_logger(__name__)
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
+ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 
 @asynccontextmanager
@@ -34,6 +35,7 @@ async def lifespan(_: FastAPI):
 
 def create_app():
     application = FastAPI(
+        root_path=ROOT_PATH,
         title=OPENAPI_NAME,
         version=PROJECT_VERSION,
         description="Welcome to the OpenAPI interface to the Aries CloudAPI trust registry",

@@ -99,6 +99,8 @@ elif ROLE == "*":
         sse,
     ]
 
+ROOT_PATH = os.getenv("ROOT_PATH", "")
+
 
 def create_app() -> FastAPI:
     # routes = [
@@ -118,6 +120,7 @@ def create_app() -> FastAPI:
     # ]
     if ROLE in ("governance", "tenant", "*"):
         application = FastAPI(
+            root_path=ROOT_PATH,
             debug=debug,
             title=OPENAPI_NAME,
             description="""
@@ -150,6 +153,7 @@ Please refer to our API documentation for more details about our authentication 
         return application
     else:
         application = FastAPI(
+            root_path=ROOT_PATH,
             debug=debug,
             title=OPENAPI_NAME,
             description="""

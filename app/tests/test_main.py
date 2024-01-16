@@ -11,6 +11,6 @@ def test_create_app():
 
         # Verifying that all routes are included
         routes = [route.path for route in app.routes]
-        expected_routes = ["/openapi.json", "/admin/tenants"]
+        expected_routes = ["/openapi.json", "/tenants"]
         for route in expected_routes:
             assert route in routes

@@ -81,6 +81,13 @@ async def on_events(data, topic):
     ):
         #print(f"issuer_cred_rev ==> \n {event} \n")
         await convert_issuer_cred_rev_issue_event(event, redis)
+    elif(
+        event.origin == "multitenant"
+        and event.topic == "issuer_cred_rev"
+        and event.payload["state"] == "revoked"
+    ):
+        #print(f"issuer_cred_rev ==> \n {event} \n")
+        await convert_issuer_cred_rev_revoked_event(event, redis)
 
 
 async def main():

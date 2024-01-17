@@ -217,6 +217,19 @@ async def convert_revocation_event(event: Event, redis: Redis):
 
     await push_event_to_lago(lago_event)
 
+
+async def convert_issuer_cred_rev_issue_event(event: Event, redis: Redis):
+    # convert event to lago_event
+
+    group_id = await redis.get(event.wallet_id)
+
+    lago_event = {
+        "transaction_id": event.payload["record_id"],
+        "external_customer_id": group_id,
+        "code": "issuer_cred_rev_issued",
+    }
+
+    await push_event_to_lago(lago_event)
 async def push_event_to_lago(lago_event: LagoEvent):
     headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
     # print(f"LAGO_EVENT ===> \n {lago_event} \n")

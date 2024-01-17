@@ -71,22 +71,22 @@ async def on_events(data, topic):
         and event.topic == "revocation"
         and event.payload["state"] == "posted"
     ):
-        #this happens when a cred_def is created with revocation enabled
-        #print(f"Revocation ==> \n {event} \n")
+        # this happens when a cred_def is created with revocation enabled
+        # print(f"Revocation ==> \n {event} \n")
         await convert_revocation_event(event, redis)
-    elif(
+    elif (
         event.origin == "multitenant"
         and event.topic == "issuer_cred_rev"
         and event.payload["state"] == "issued"
     ):
-        #print(f"issuer_cred_rev ==> \n {event} \n")
+        # print(f"issuer_cred_rev ==> \n {event} \n")
         await convert_issuer_cred_rev_issue_event(event, redis)
-    elif(
+    elif (
         event.origin == "multitenant"
         and event.topic == "issuer_cred_rev"
         and event.payload["state"] == "revoked"
     ):
-        #print(f"issuer_cred_rev ==> \n {event} \n")
+        # print(f"issuer_cred_rev ==> \n {event} \n")
         await convert_issuer_cred_rev_revoked_event(event, redis)
 
 

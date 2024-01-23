@@ -33,7 +33,32 @@ from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 ROLE = os.getenv("ROLE", "*")
+ROOT_PATH = os.getenv("ROOT_PATH", "")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
+
+cloud_api_docs_description = """
+Welcome to the Aries CloudAPI Python project.
+
+In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events.
+
+WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the ability to subscribe by topic, or to any wallet.
+
+Our WebSocket endpoints are as follows:
+
+1. `/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
+
+2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
+
+3. `/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
+
+For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
+
+Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
+"""
+
+default_docs_description = """
+Welcome to the Aries CloudAPI Python project.
+"""
 
 logger = get_logger(__name__)
 prod = strtobool(os.environ.get("prod", "True"))
@@ -99,74 +124,29 @@ elif ROLE == "*":
         sse,
     ]
 
-ROOT_PATH = os.getenv("ROOT_PATH", "")
+
+def cloud_api_description(role):
+    if role in ("governance", "tenant", "*"):
+        return cloud_api_docs_description
+    else:
+        return default_docs_description
 
 
 def create_app() -> FastAPI:
-    # routes = [
-    #     tenants,
-    #     connections,
-    #     definitions,
-    #     issuer,
-    #     jsonld,
-    #     messaging,
-    #     oob,
-    #     trust_registry,
-    #     verifier,
-    #     wallet_credentials,
-    #     wallet_dids,
-    #     webhooks,
-    #     sse,
-    # ]
-    if ROLE in ("governance", "tenant", "*"):
-        application = FastAPI(
-            root_path=ROOT_PATH,
-            debug=debug,
-            title=OPENAPI_NAME,
-            description="""
-Welcome to the Aries CloudAPI Python project.
+    application = FastAPI(
+        root_path=ROOT_PATH,
+        debug=debug,
+        title=OPENAPI_NAME,
+        description=cloud_api_description(ROLE),
+        version=PROJECT_VERSION,
+        lifespan=lifespan,
+    )
 
-In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events.
+    for route in routes:
+        # Routes will appear in the openapi docs with the same order as defined in `routes`
+        application.include_router(route.router)
 
-WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the ability to subscribe by topic, or to any wallet.
-
-Our WebSocket endpoints are as follows:
-
-1. `/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
-
-2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
-
-3. `/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
-
-For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
-
-Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
-""",
-            version=PROJECT_VERSION,
-            lifespan=lifespan,
-        )
-
-        for route in routes:
-            # Routes will appear in the openapi docs with the same order as defined in `routes`
-            application.include_router(route.router)
-
-        return application
-    else:
-        application = FastAPI(
-            root_path=ROOT_PATH,
-            debug=debug,
-            title=OPENAPI_NAME,
-            description="""
-Welcome to the Aries CloudAPI Python project.
-        """,
-            version=PROJECT_VERSION,
-        )
-
-        for route in routes:
-            # Routes will appear in the openapi docs with the same order as defined in `routes`
-            application.include_router(route.router)
-
-        return application
+    return application
 
 
 app = create_app()

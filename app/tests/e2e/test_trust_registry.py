@@ -15,9 +15,9 @@ CLOUDAPI_TRUST_REGISTRY_PATH = router.prefix
 async def test_get_schemas(
     schema_definition: CredentialSchema,  # pylint: disable=unused-argument
     schema_definition_alt: CredentialSchema,  # pylint: disable=unused-argument
-    unauthed_client: RichAsyncClient,
+    trust_registry_client: RichAsyncClient,
 ):
-    schemas_response = await unauthed_client.get(
+    schemas_response = await trust_registry_client.get(
         f"{CLOUDAPI_TRUST_REGISTRY_PATH}/schemas"
     )
 
@@ -28,9 +28,9 @@ async def test_get_schemas(
 
 @pytest.mark.anyio
 async def test_get_schema_by_id(
-    schema_definition: CredentialSchema, unauthed_client: RichAsyncClient
+    schema_definition: CredentialSchema, trust_registry_client: RichAsyncClient
 ):
-    schema_response = await unauthed_client.get(
+    schema_response = await trust_registry_client.get(
         f"{CLOUDAPI_TRUST_REGISTRY_PATH}/schemas/{schema_definition.id}"
     )
 
@@ -39,7 +39,7 @@ async def test_get_schema_by_id(
     assert_that(schema).contains("did", "name", "version", "id")
 
     with pytest.raises(HTTPException) as exc:
-        schema_response = await unauthed_client.get(
+        schema_response = await trust_registry_client.get(
             f"{CLOUDAPI_TRUST_REGISTRY_PATH}/schemas/bad_schema_id"
         )
 
@@ -50,14 +50,16 @@ async def test_get_schema_by_id(
 async def test_get_actors(
     faber_issuer: CreateTenantResponse,
     faber_acapy_client: AcaPyClient,
-    unauthed_client: RichAsyncClient,
+    trust_registry_client: RichAsyncClient,
 ):
-    all_actors = await unauthed_client.get(f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors")
+    all_actors = await trust_registry_client.get(
+        f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors"
+    )
     assert all_actors.status_code == 200
     actors = all_actors.json()
     assert_that(actors[0]).contains("id", "name", "roles", "did", "didcomm_invitation")
 
-    actors_by_id = await unauthed_client.get(
+    actors_by_id = await trust_registry_client.get(
         f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_id={faber_issuer.wallet_id}"
     )
     assert actors_by_id.status_code == 200
@@ -71,7 +73,7 @@ async def test_get_actors(
     assert actor_name == faber_issuer.wallet_label
     assert_that(actor).contains("id", "name", "roles", "did", "didcomm_invitation")
 
-    actors_by_did = await unauthed_client.get(
+    actors_by_did = await trust_registry_client.get(
         f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_did={actor_did}"
     )
     assert actors_by_did.status_code == 200
@@ -79,7 +81,7 @@ async def test_get_actors(
         "id", "name", "roles", "did", "didcomm_invitation"
     )
 
-    actors_by_name = await unauthed_client.get(
+    actors_by_name = await trust_registry_client.get(
         f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_name={faber_issuer.wallet_label}"
     )
     assert actors_by_name.status_code == 200
@@ -89,27 +91,27 @@ async def test_get_actors(
 
 
 @pytest.mark.anyio
-async def test_get_actors_x(unauthed_client: RichAsyncClient):
+async def test_get_actors_x(trust_registry_client: RichAsyncClient):
     with pytest.raises(HTTPException) as exc:
-        await unauthed_client.get(
+        await trust_registry_client.get(
             f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_name=Bad_actor_name"
         )
     assert exc.value.status_code == 404
 
     with pytest.raises(HTTPException) as exc:
-        await unauthed_client.get(
+        await trust_registry_client.get(
             f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_id=Bad_actor_id"
         )
     assert exc.value.status_code == 404
 
     with pytest.raises(HTTPException) as exc:
-        await unauthed_client.get(
+        await trust_registry_client.get(
             f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_did=Bad_actor_did"
         )
     assert exc.value.status_code == 404
 
     with pytest.raises(HTTPException) as exc:
-        await unauthed_client.get(
+        await trust_registry_client.get(
             f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors?actor_did=Bad&actor_id=Request"
         )
     assert exc.value.status_code == 400
@@ -118,18 +120,20 @@ async def test_get_actors_x(unauthed_client: RichAsyncClient):
 @pytest.mark.anyio
 async def test_get_issuers(
     faber_issuer: CreateTenantResponse,  # pylint: disable=unused-argument
-    unauthed_client: RichAsyncClient,
+    trust_registry_client: RichAsyncClient,
 ):
-    actors = await unauthed_client.get(f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors/issuers")
+    actors = await trust_registry_client.get(
+        f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors/issuers"
+    )
     assert actors.status_code == 200
 
 
 @pytest.mark.anyio
 async def test_get_verifiers(
     acme_verifier: CreateTenantResponse,  # pylint: disable=unused-argument
-    unauthed_client: RichAsyncClient,
+    trust_registry_client: RichAsyncClient,
 ):
-    actors = await unauthed_client.get(
+    actors = await trust_registry_client.get(
         f"{CLOUDAPI_TRUST_REGISTRY_PATH}/actors/verifiers"
     )
     assert actors.status_code == 200

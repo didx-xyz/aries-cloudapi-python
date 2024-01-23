@@ -13,7 +13,7 @@ from shared.constants import TRUST_REGISTRY_FASTAPI_ENDPOINT
 
 
 @pytest.fixture
-async def unauthed_client() -> RichAsyncClient:
+async def trust_registry_client() -> RichAsyncClient:
     async with RichAsyncClient(base_url=TRUST_REGISTRY_FASTAPI_ENDPOINT) as client:
         yield client
 

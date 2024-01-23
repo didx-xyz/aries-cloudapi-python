@@ -34,7 +34,7 @@ from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/admin/tenants", tags=["admin: tenants"])
+router = APIRouter(prefix="/tenants", tags=["admin: tenants"])
 
 
 @router.post("", response_model=CreateTenantResponse)

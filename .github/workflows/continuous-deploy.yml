@@ -30,8 +30,8 @@ on:
 
 jobs:
   build:
-    if: github.event.pull_request.draft == false
-    name: Build images and push to GHCR
+    if: ${{ !github.event.pull_request.draft }}
+    name: Build GHCR
     permissions:
       id-token: write # This is required for requesting the JWT
       packages: write # To push to GHCR.io
@@ -54,6 +54,9 @@ jobs:
             governance-ga-agent,
             governance-trust-registry,
             governance-multitenant-web,
+            governance-ga-web,
+            governance-tenant-web,
+            governance-trust-registry-web,
             governance-webhooks-web,
             governance-multitenant-agent,
             governance-endorser,
@@ -67,6 +70,15 @@ jobs:
             context: .
             file: dockerfiles/trustregistry/Dockerfile
           - image: governance-multitenant-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+          - image: governance-ga-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+          - image: governance-tenant-web
+            context: .
+            file: dockerfiles/fastapi/Dockerfile
+          - image: governance-trust-registry-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
           - image: governance-webhooks-web

@@ -33,42 +33,10 @@ from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
+ROLE = os.getenv("ROLE", "*")
+ROOT_PATH = os.getenv("ROOT_PATH", "")
 
-logger = get_logger(__name__)
-prod = strtobool(os.environ.get("prod", "True"))
-debug = not prod
-
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    # Startup logic occurs before yield
-    yield
-    # Shutdown logic occurs after yield
-    logger.info("Calling WebsocketManager shutdown")
-    await WebsocketManager.disconnect_all()
-
-
-def create_app() -> FastAPI:
-    routes = [
-        tenants,
-        connections,
-        definitions,
-        issuer,
-        jsonld,
-        messaging,
-        oob,
-        trust_registry,
-        verifier,
-        wallet_credentials,
-        wallet_dids,
-        webhooks,
-        sse,
-    ]
-
-    application = FastAPI(
-        debug=debug,
-        title=OPENAPI_NAME,
-        description="""
+cloud_api_docs_description = """
 Welcome to the Aries CloudAPI Python project.
 
 In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events.
@@ -86,12 +54,74 @@ Our WebSocket endpoints are as follows:
 For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
 
 Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
-""",
+"""
+
+default_docs_description = """
+Welcome to the Aries CloudAPI Python project.
+"""
+
+logger = get_logger(__name__)
+prod = strtobool(os.environ.get("prod", "True"))
+debug = not prod
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Startup logic occurs before yield
+    yield
+    # Shutdown logic occurs after yield
+    logger.info("Calling WebsocketManager shutdown")
+    await WebsocketManager.disconnect_all()
+
+
+trust_registry_routes = [trust_registry]
+tenant_admin_routes = [tenants]
+tenant_routes = [
+    connections,
+    definitions,
+    issuer,
+    jsonld,
+    messaging,
+    oob,
+    verifier,
+    wallet_credentials,
+    wallet_dids,
+    webhooks,
+    sse,
+]
+
+
+def routes_for_role(role: str) -> list:
+    if role in ("governance", "tenant"):
+        return tenant_routes
+    elif ROLE == "tenant-admin":
+        return tenant_admin_routes
+    elif ROLE == "trust-registry":
+        return trust_registry_routes
+    elif ROLE == "*":
+        return tenant_admin_routes + tenant_routes + trust_registry_routes
+    else:
+        return []
+
+
+def cloud_api_description(role: str) -> str:
+    if role in ("governance", "tenant", "*"):
+        return cloud_api_docs_description
+    else:
+        return default_docs_description
+
+
+def create_app() -> FastAPI:
+    application = FastAPI(
+        root_path=ROOT_PATH,
+        title=OPENAPI_NAME,
         version=PROJECT_VERSION,
+        description=cloud_api_description(ROLE),
         lifespan=lifespan,
+        debug=debug,
     )
 
-    for route in routes:
+    for route in routes_for_role(ROLE):
         # Routes will appear in the openapi docs with the same order as defined in `routes`
         application.include_router(route.router)
 

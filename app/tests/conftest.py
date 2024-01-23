@@ -28,7 +28,7 @@ from app.tests.util.member_async_clients import (
     governance_client,
     meld_co_client,
     tenant_admin_client,
-    unauthed_client,
+    trust_registry_client,
 )
 from app.tests.util.member_wallets import (
     acme_verifier,

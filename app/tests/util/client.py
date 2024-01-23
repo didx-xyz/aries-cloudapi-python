@@ -8,6 +8,7 @@ from shared import (
     GOVERNANCE_AGENT_URL,
     GOVERNANCE_FASTAPI_ENDPOINT,
     TENANT_ACAPY_API_KEY,
+    TENANT_ADMIN_FASTAPI_ENDPOINT,
     TENANT_AGENT_URL,
     TENANT_FASTAPI_ENDPOINT,
     TEST_CLIENT_TIMEOUT,
@@ -43,7 +44,7 @@ def get_governance_acapy_client() -> AcaPyClient:
 def get_tenant_admin_client(*, app: Optional[Any] = None) -> RichAsyncClient:
     settings = get_common_settings(f"tenant-admin.{TENANT_ACAPY_API_KEY}", app)
     return RichAsyncClient(
-        base_url=TENANT_FASTAPI_ENDPOINT, name="Tenant Admin", **settings
+        base_url=TENANT_ADMIN_FASTAPI_ENDPOINT, name="Tenant Admin", **settings
     )
 
 

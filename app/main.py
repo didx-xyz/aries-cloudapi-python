@@ -32,9 +32,9 @@ from app.routes.wallet import dids as wallet_dids
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
 ROLE = os.getenv("ROLE", "*")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
 
 cloud_api_docs_description = """
 Welcome to the Aries CloudAPI Python project.
@@ -74,58 +74,37 @@ async def lifespan(_: FastAPI):
     await WebsocketManager.disconnect_all()
 
 
-if ROLE == "governance":
-    routes = [
-        # tenants,
-        connections,
-        definitions,
-        issuer,
-        jsonld,
-        messaging,
-        oob,
-        verifier,
-        wallet_credentials,
-        wallet_dids,
-        webhooks,
-        sse,
-    ]
-elif ROLE == "tenant-admin":
-    routes = [tenants]
-elif ROLE == "tenant":
-    routes = [
-        connections,
-        definitions,
-        issuer,
-        jsonld,
-        messaging,
-        oob,
-        verifier,
-        wallet_credentials,
-        wallet_dids,
-        webhooks,
-        sse,
-    ]
-elif ROLE == "trust-registry":
-    routes = [trust_registry]
-elif ROLE == "*":
-    routes = [
-        tenants,
-        connections,
-        definitions,
-        issuer,
-        jsonld,
-        messaging,
-        oob,
-        trust_registry,
-        verifier,
-        wallet_credentials,
-        wallet_dids,
-        webhooks,
-        sse,
-    ]
+trust_registry_routes = [trust_registry]
+tenant_admin_routes = [tenants]
+tenant_routes = [
+    connections,
+    definitions,
+    issuer,
+    jsonld,
+    messaging,
+    oob,
+    verifier,
+    wallet_credentials,
+    wallet_dids,
+    webhooks,
+    sse,
+]
 
 
-def cloud_api_description(role):
+def routes_for_role(role: str) -> list:
+    if role in ("governance", "tenant"):
+        return tenant_routes
+    elif ROLE == "tenant-admin":
+        return tenant_admin_routes
+    elif ROLE == "trust-registry":
+        return trust_registry_routes
+    elif ROLE == "*":
+        return tenant_admin_routes + tenant_routes + trust_registry_routes
+    else:
+        return []
+
+
+def cloud_api_description(role: str) -> str:
     if role in ("governance", "tenant", "*"):
         return cloud_api_docs_description
     else:
@@ -135,14 +114,14 @@ def cloud_api_description(role):
 def create_app() -> FastAPI:
     application = FastAPI(
         root_path=ROOT_PATH,
-        debug=debug,
         title=OPENAPI_NAME,
-        description=cloud_api_description(ROLE),
         version=PROJECT_VERSION,
+        description=cloud_api_description(ROLE),
         lifespan=lifespan,
+        debug=debug,
     )
 
-    for route in routes:
+    for route in routes_for_role(ROLE):
         # Routes will appear in the openapi docs with the same order as defined in `routes`
         application.include_router(route.router)
 

@@ -360,23 +360,23 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: ${{ env.TAILSCALE_VERSION }}
 
-      - name: Helmfile Diff
-        if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.6.3
-        with:
-          helmfile-args: |
-            diff \
-              --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-              --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }}
-          helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
-          helmfile-version: ${{ env.HELMFILE_VERSION }}
-          helm-version: ${{ env.HELM_VERSION }}
-        env:
-          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+      # - name: Helmfile Diff
+      #   if: github.event.inputs.run-reset-deployments == 'true'
+      #   uses: helmfile/helmfile-action@v1.6.3
+      #   with:
+      #     helmfile-args: |
+      #       diff \
+      #         --environment ${{ vars.ENVIRONMENT }} \
+      #         -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+      #         --set image.tag=${{ env.IMAGE_TAG }} \
+      #         --set image.registry=ghcr.io/${{ github.repository_owner }}
+      #     helm-plugins: |
+      #       https://github.com/databus23/helm-diff,
+      #       https://github.com/jkroepke/helm-secrets
+      #     helmfile-version: ${{ env.HELMFILE_VERSION }}
+      #     helm-version: ${{ env.HELM_VERSION }}
+      #   env:
+      #     IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile Destroy
         id: destroy_deployments
@@ -384,7 +384,7 @@ jobs:
         uses: helmfile/helmfile-action@v1.6.3
         with:
           helmfile-args: |
-            destroy --deleteWait \
+            destroy \
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml
           helm-plugins: |
@@ -394,20 +394,6 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-
-      - name: Wait for pods to terminate
-        if: github.event.inputs.run-reset-deployments == 'true'
-        run: |
-          while true; do
-            terminating_pods_count=$(kubectl -n dev-cloudapi get pods --field-selector=status.phase!=Running,status.phase!=Succeeded -o jsonpath='{.items[*].metadata.name}')
-            if [ -z "$terminating_pods_count" ]; then
-              echo "All pods terminated"
-              break
-            else
-              echo "Waiting for pods to terminate"
-              sleep 10
-            fi
-          done
 
       - name: Drop DBs
         id: drop_dbs
@@ -450,8 +436,7 @@ jobs:
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --set replicaCount=2
+              --set image.registry=ghcr.io/${{ github.repository_owner }}
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -469,8 +454,7 @@ jobs:
               -f ./charts/helmfiles/aries-cloudapi-python.yaml \
               --set image.tag=${{ env.IMAGE_TAG }} \
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
-              --selector app!=governance-ga-agent,app!=governance-multitenant-agent \
-              --set replicaCount=2
+              --selector app!=governance-ga-agent,app!=governance-multitenant-agent
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -500,8 +484,7 @@ jobs:
               --selector app=governance-ga-agent \
               --selector app=governance-multitenant-agent \
               --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
-              --values acapy-wallet-storage-config.yaml \
-              --set replicaCount=2
+              --values acapy-wallet-storage-config.yaml
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets

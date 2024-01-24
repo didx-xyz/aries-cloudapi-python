@@ -402,7 +402,7 @@ jobs:
         uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
-            destroy --deleteWait \
+            destroy \
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-cloudapi-python.yaml
           helm-plugins: |
@@ -502,8 +502,7 @@ jobs:
               --selector app=governance-ga-agent \
               --selector app=governance-multitenant-agent \
               --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
-              --values acapy-wallet-storage-config.yaml \
-              --set replicaCount=2
+              --values acapy-wallet-storage-config.yaml
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets

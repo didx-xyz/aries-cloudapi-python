@@ -303,7 +303,7 @@ jobs:
 
     env:
       TAILSCALE_VERSION: 1.58.2
-      HELMFILE_VERSION: v0.160.0
+      HELMFILE_VERSION: v0.161.0
       HELM_VERSION: v3.14.0
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt

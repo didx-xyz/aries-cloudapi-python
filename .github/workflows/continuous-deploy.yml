@@ -302,7 +302,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TAILSCALE_VERSION: 1.56.1
+      TAILSCALE_VERSION: 1.58.2
       HELMFILE_VERSION: v0.160.0
       HELM_VERSION: v3.14.0
       OUTPUT_FILE: test_output.xml

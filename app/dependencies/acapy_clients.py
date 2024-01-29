@@ -7,17 +7,17 @@ from app.dependencies.auth import AcaPyAuth, AcaPyAuthVerified
 from app.dependencies.role import Role
 
 
-def get_governance_controller() -> AcaPyClient:
+def get_governance_controller(auth: AcaPyAuthVerified) -> AcaPyClient:
     return AcaPyClient(
         base_url=Role.GOVERNANCE.agent_type.base_url,
-        api_key=Role.GOVERNANCE.agent_type.x_api_key,
+        api_key=auth.token,
     )
 
 
-def get_tenant_admin_controller() -> AcaPyClient:
+def get_tenant_admin_controller(auth: AcaPyAuthVerified) -> AcaPyClient:
     return AcaPyClient(
         base_url=Role.TENANT_ADMIN.agent_type.base_url,
-        api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
+        api_key=auth.token,
     )
 
 

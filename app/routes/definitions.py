@@ -320,9 +320,11 @@ async def create_credential_definition(
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,
                     revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
-                    connection_id=endorser_connection.results[0].connection_id
-                    if has_connections
-                    else None,
+                    connection_id=(
+                        endorser_connection.results[0].connection_id
+                        if has_connections
+                        else None
+                    ),
                     create_transaction_for_endorser=has_connections,
                 )
                 if has_connections:

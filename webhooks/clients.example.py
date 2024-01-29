@@ -1,6 +1,7 @@
 """
 Example ws client connecting to all topics for acapy
 """
+
 import asyncio
 import os
 import sys

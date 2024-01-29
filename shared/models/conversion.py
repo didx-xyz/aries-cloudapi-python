@@ -90,9 +90,11 @@ def presentation_record_to_model(
             connection_id=record.connection_id,
             created_at=record.created_at,
             error_msg=record.error_msg,
-            parent_thread_id=record.presentation_request_dict.id
-            if record.presentation_request_dict
-            else None,
+            parent_thread_id=(
+                record.presentation_request_dict.id
+                if record.presentation_request_dict
+                else None
+            ),
             presentation=record.presentation,
             presentation_request=record.presentation_request,
             proof_id="v1-" + str(record.presentation_exchange_id),
@@ -192,9 +194,11 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
         created_at=record.created_at,
         credential_definition_id=credential_definition_id,
         credential_id=f"v2-{record.cred_ex_id}",
-        did=record.by_format.cred_offer["ld_proof"]["credential"]["issuer"]
-        if record.by_format and "ld_proof" in record.by_format.cred_offer
-        else None,
+        did=(
+            record.by_format.cred_offer["ld_proof"]["credential"]["issuer"]
+            if record.by_format and "ld_proof" in record.by_format.cred_offer
+            else None
+        ),
         error_msg=record.error_msg,
         protocol_version=IssueCredentialProtocolVersion.v2,
         role=record.role,
@@ -202,9 +206,9 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
         state=record.state,
         thread_id=record.thread_id,
         updated_at=record.updated_at,
-        type=list(record.by_format.cred_offer.keys())[0]
-        if record.by_format
-        else "indy",
+        type=(
+            list(record.by_format.cred_offer.keys())[0] if record.by_format else "indy"
+        ),
     )
 
 

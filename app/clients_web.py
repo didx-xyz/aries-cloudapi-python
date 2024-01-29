@@ -44,7 +44,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
 async def on_events(data, topic):
     redis = await aioredis.from_url("redis://localhost:6381", decode_responses=True)
     event: Event = parse_with_error_handling(Event, data)
-    #print(f"\n {event.topic} ===>\n {event}")
+    # print(f"\n {event.topic} ===>\n {event}")
 
     if (
         event.origin == "governance"

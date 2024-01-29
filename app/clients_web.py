@@ -44,7 +44,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.basename(__file__), "..")))
 async def on_events(data, topic):
     redis = await aioredis.from_url("redis://localhost:6381", decode_responses=True)
     event: Event = parse_with_error_handling(Event, data)
-    print(f"\n {event.topic} \n")
+    #print(f"\n {event.topic} ===>\n {event}")
 
     if (
         event.origin == "governance"
@@ -79,6 +79,7 @@ async def on_events(data, topic):
         and event.topic == "issuer_cred_rev"
         and event.payload["state"] == "issued"
     ):
+        # This is when a cred is issued with revocation enabled
         # print(f"issuer_cred_rev ==> \n {event} \n")
         await convert_issuer_cred_rev_issue_event(event, redis)
     elif (
@@ -86,6 +87,7 @@ async def on_events(data, topic):
         and event.topic == "issuer_cred_rev"
         and event.payload["state"] == "revoked"
     ):
+        # This is when a cred is revoked
         # print(f"issuer_cred_rev ==> \n {event} \n")
         await convert_issuer_cred_rev_revoked_event(event, redis)
 

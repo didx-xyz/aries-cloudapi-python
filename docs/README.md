@@ -37,19 +37,22 @@ Authentication is handled by the CloudAPI, and from a client perspective it's ke
 
 This means the header has the format `'x-api-key: {role}.{key/token}`, which would look like, e.g., `'x-api-key: governance.adminApiKey'` or `'x-api-key: tenant.ey..'` (JWT token).
 
-The first part, `role`, specifies the role on the surface and targets the correct endpoints and authentication mechanisms under the hood. The CloudAPI knows how to interpret the roles and will produce the correct target URLs for e.g., ACA-Py (`tenant` targets the multitenant agent) with the correct header expected by the ACA-Py agent. Internally, `tenant` results in a `Bearer {TOKEN}` header against the multitenant agent whereas `tenant-admin` as role results in an `x-api-key` header for the multitenant agent (hence targeting the admin interface of the same multitenant agent). You may have noticed that this mechanism also chooses which ACA-Py instance to target without having to know or specify the URL the agent resides under.
+The first part, `role`, specifies the role on the surface and targets the correct endpoints and authentication mechanisms under the hood. CloudAPI knows how to interpret the roles and will produce the correct target URLs for the ACA-Py agent (`tenant` and `tenant-admin` target the multitenant agent, and `governance` targets the governance agent) with the correct headers expected by the agent.
 
-The `governance` and `-admin` suffixed roles are admin roles. The rest are non-admin roles meaning non-admin roles have no exposure to the ACA-Py admin tasks nor any documented endpoints prefixed `admin:` in the CloudAPI.
+For admin roles, pass the agent API key as the second part of `{role}.{key}`:
 
-For admin roles, pass the admin password as the second part of `{role}.{key}`. For tenant (non-admin role) pass the wallets JWT as the second part of `{role}.{token}`.
+- The `governance` role requires the Governance Agent API Key (which was used in starting up the governance agent) as the right-hand side token in the `x-api-key` header (in order to authenticate access to the governance agent).
+- The `tenant-admin` role requires the Multitenant Agent API Key (which was used in starting up the multitenant agent) as the right-hand side token in the `x-api-key` header (in order to target the admin interface of the multitenant agent).
 
-Currently, there are three options for `role`:
+Requests for the `tenant` role require the wallet JWT as the token in `{role}.{token}`. These requests will internally obtain a `Bearer {TOKEN}` header passed to the multitenant agent.
+
+The definitions and capabilities of the three roles are as follows:
 
 ### CloudAPI Roles
 
 #### Governance Role
 
-Authentication header example: `'x-api-key: governance.adminApiKey'`
+Authentication header: `'x-api-key: governance.<GOVERNANCE AGENT API KEY>'`
 
 - governance
   - is:
@@ -66,7 +69,7 @@ Authentication header example: `'x-api-key: governance.adminApiKey'`
 
 #### Tenant Administration Role
 
-Authentication header example: `'x-api-key: tenant-admin.adminApiKey'`
+Authentication header: `'x-api-key: tenant-admin.<MULTITENANT AGENT API KEY>'`
 
 - tenant-admin
   - is:
@@ -77,7 +80,7 @@ Authentication header example: `'x-api-key: tenant-admin.adminApiKey'`
 
 #### Tenant Role (Trust Ecosystem Issuers, Verifiers, and Holders)
 
-Authentication header example: `'x-api-key: tenant.ey..'`
+Authentication header: `'x-api-key: tenant.<TENANT JWT>'`
 
 - tenant
   - is:

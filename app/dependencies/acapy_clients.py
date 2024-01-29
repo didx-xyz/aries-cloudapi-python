@@ -7,7 +7,15 @@ from app.dependencies.auth import AcaPyAuth, AcaPyAuthVerified
 from app.dependencies.role import Role
 
 
-def get_governance_controller(auth: AcaPyAuthVerified) -> AcaPyClient:
+# todo: remove this default by migrating relevant methods to endorser service
+GOVERNANCE_AUTHED = AcaPyAuthVerified(
+    role=Role.GOVERNANCE, token=Role.GOVERNANCE.agent_type.x_api_key, wallet_id="admin"
+)
+
+
+def get_governance_controller(
+    auth: AcaPyAuthVerified = GOVERNANCE_AUTHED,
+) -> AcaPyClient:
     return AcaPyClient(
         base_url=Role.GOVERNANCE.agent_type.base_url,
         api_key=auth.token,

@@ -56,7 +56,7 @@ jobs:
             governance-multitenant-web,
             governance-ga-web,
             governance-tenant-web,
-            governance-trust-registry-web,
+            governance-public-web,
             governance-webhooks-web,
             governance-multitenant-agent,
             governance-endorser,
@@ -78,7 +78,7 @@ jobs:
           - image: governance-tenant-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
-          - image: governance-trust-registry-web
+          - image: governance-public-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
           - image: governance-webhooks-web
@@ -338,6 +338,7 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
+          ref: standardise-roles
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools

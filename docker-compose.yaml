@@ -209,7 +209,7 @@ services:
       - governance-multitenant
       - host
     env_file:
-      - environments/governance-trust-registry/fastapi.default.env
+      - environments/governance-public/fastapi.default.env
   governance-webhooks-web:
     image: ${REGISTRY:-local}/governance-webhooks-web:${IMAGE_TAG:-latest}
     container_name: governance-webhooks-web

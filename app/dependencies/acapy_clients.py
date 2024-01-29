@@ -6,9 +6,15 @@ from fastapi import HTTPException
 from app.dependencies.auth import AcaPyAuth, AcaPyAuthVerified
 from app.dependencies.role import Role
 
-# todo: remove this default by migrating relevant methods to endorser service
+# todo: remove these defaults by migrating relevant methods to endorser service
+# and refactoring methods using tenant-admin internally
 GOVERNANCE_AUTHED = AcaPyAuthVerified(
     role=Role.GOVERNANCE, token=Role.GOVERNANCE.agent_type.x_api_key, wallet_id="admin"
+)
+TENANT_ADMIN_AUTHED = AcaPyAuthVerified(
+    role=Role.TENANT_ADMIN,
+    token=Role.TENANT_ADMIN.agent_type.x_api_key,
+    wallet_id="admin",
 )
 
 
@@ -21,7 +27,9 @@ def get_governance_controller(
     )
 
 
-def get_tenant_admin_controller(auth: AcaPyAuthVerified) -> AcaPyClient:
+def get_tenant_admin_controller(
+    auth: AcaPyAuthVerified = TENANT_ADMIN_AUTHED,
+) -> AcaPyClient:
     return AcaPyClient(
         base_url=Role.TENANT_ADMIN.agent_type.base_url,
         api_key=auth.token,

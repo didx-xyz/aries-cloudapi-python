@@ -344,6 +344,7 @@ async def create_credential_definition(
                             "Timeout occurred while waiting to retrieve transaction record for endorser.",
                             504,
                         )
+                    # todo: Post to the endorser service the transaction id to be endorsed
                     async with get_governance_controller() as endorser_controller:
                         await endorser_controller.endorse_transaction.endorse_transaction(
                             tran_id=txn_record["transaction_id"]
@@ -477,7 +478,7 @@ async def get_schema(
 async def create_schema(
     schema: CreateSchema,
     # Only governance can create schemas
-    governance_auth: AcaPyClient = Depends(acapy_auth_governance),
+    governance_auth: AcaPyAuthVerified = Depends(acapy_auth_governance),
 ) -> CredentialSchema:
     """
         Create a new schema.
@@ -499,7 +500,7 @@ async def create_schema(
         schema_name=schema.name,
         schema_version=schema.version,
     )
-    async with get_governance_controller() as aries_controller:
+    async with get_governance_controller(governance_auth) as aries_controller:
         try:
             bound_logger.info("Publishing schema as governance")
             result = await aries_controller.schema.publish_schema(

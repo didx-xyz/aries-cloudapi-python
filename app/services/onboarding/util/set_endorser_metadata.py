@@ -11,6 +11,7 @@ DEFAULT_NUM_TRIES = 1
 DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))
 
 
+# todo: Migrate to endorser service
 async def set_endorser_role(
     *, endorser_controller: AcaPyClient, endorser_connection_id: str, logger: Logger
 ):

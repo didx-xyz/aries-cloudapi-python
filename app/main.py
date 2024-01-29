@@ -96,7 +96,7 @@ def routes_for_role(role: str) -> list:
         return tenant_routes
     elif ROLE == "tenant-admin":
         return tenant_admin_routes
-    elif ROLE == "trust-registry":
+    elif ROLE == "public":
         return trust_registry_routes
     elif ROLE == "*":
         return tenant_admin_routes + tenant_routes + trust_registry_routes

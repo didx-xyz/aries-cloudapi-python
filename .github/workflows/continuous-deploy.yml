@@ -332,25 +332,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Determine branch
-        id: set_branch
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const { GITHUB_TOKEN } = process.env;
-            const { context } = require('@actions/github');
-            const github = require('@actions/github').getOctokit(GITHUB_TOKEN);
-            const branch = context.ref.replace('refs/heads/', '');
-            try {
-              await github.rest.repos.getBranch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                branch: branch,
-              });
-              return branch;
-            } catch (error) {
-              return 'master';
-            }
+      # - name: Determine branch
+      #   id: set_branch
+      #   uses: actions/github-script@v5
+      #   with:
+      #     script: |
+      #       const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+      #       const octokit = require('@actions/github').getOctokit(GITHUB_TOKEN);
+      #       const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
+      #       try {
+      #         await octokit.rest.repos.getBranch({
+      #           owner: process.env.GITHUB_REPOSITORY_OWNER,
+      #           repo: (process.env.GITHUB_REPOSITORY).split('/')[1],
+      #           branch: branchName,
+      #         });
+      #         return branchName;
+      #       } catch (error) {
+      #         return 'master';
+      #       }
 
       - name: Checkout Charts
         uses: actions/checkout@v4
@@ -358,8 +357,7 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
-          ref: ${{ steps.set_branch.outputs.result }}
-
+          # ref: ${{ steps.set_branch.outputs.result }}
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools

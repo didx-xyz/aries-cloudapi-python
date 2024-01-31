@@ -256,6 +256,14 @@ services:
       - host
     env_file:
       - environments/webhooks/redis.env
+  redis-cache:
+    image: redis:latest
+    container_name: redis-cache
+    restart: always
+    ports:
+      - 0.0.0.0:6380:6379
+    networks:
+      - host
   governance-multitenant-wallets-db:
     image: postgres:15
     container_name: governance-multitenant-wallets-db
@@ -313,6 +321,8 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
+      redis-cache:
+        condition: service_started
     networks:
       - governance-multitenant
       - governance-ga

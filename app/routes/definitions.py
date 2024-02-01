@@ -369,6 +369,7 @@ async def create_credential_definition(
                         
                         bound_logger.debug("Endorse rev_reg_entry")
                         listener = SseListener(topic="endorsements", wallet_id="admin")
+                        #TODO move endorsement to endoser service
                         try:
                             bound_logger.debug(
                                 "Waiting for endorsements event in `request-received` state"

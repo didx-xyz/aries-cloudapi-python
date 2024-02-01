@@ -369,6 +369,35 @@ async def create_credential_definition(
                         
                         bound_logger.debug("Endorse rev_reg_entry")
                         listener = SseListener(topic="endorsements", wallet_id="admin")
+                        try:
+                            bound_logger.debug(
+                                "Waiting for endorsements event in `request-received` state"
+                            )
+                            txn_record = await listener.wait_for_state(
+                                desired_state="request-received"
+                            )
+                        except TimeoutError as e:
+                            bound_logger.error(
+                                "Waiting for an endorsement event has timed out."
+                            )
+                            raise CloudApiException(
+                                "Timeout occurred while waiting to retrieve transaction record for endorser.",
+                                504,
+                            ) from e
+                        async with get_governance_controller() as endorser_controller:
+                            bound_logger.info(
+                                "Endorsing what is presumed to be a rev_reg_entry transaction"
+                            )
+                            await endorser_controller.endorse_transaction.endorse_transaction(
+                                tran_id=txn_record["transaction_id"]
+                            )
+                        bound_logger.info("Successfully endorsed transaction of revocation registry entry.")
+                except CloudApiException as e:
+                    bound_logger.error(
+                        f"Error writing first accum value to ledger: {e}"
+                    )
+                    raise e
+
             except ApiException as e:
                 bound_logger.debug(
                     "An ApiException was caught while supporting revocation. The error message is: '{}'.",

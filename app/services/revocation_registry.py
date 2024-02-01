@@ -354,6 +354,39 @@ async def publish_pending_revocations(
     bound_logger.info("Successfully published pending revocations.")
 
 
+async def clear_pending_revocations(
+    controller: AcaPyClient, purge: ClearPendingRevocationsRequest
+) -> PublishRevocations:
+    """
+        Clear pending revocations
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        purge (ClearPendingRevocationsRequest): The revocation registry ID.
+
+    Raises:
+        Exception: When the pending revocations could not be cleared
+
+    """
+    bound_logger = logger.bind(body=purge)
+
+    try:
+        result = await controller.revocation.clear_pending_revocations(
+            body=ClearPendingRevocationsRequest(purge=purge)
+        )
+    except ApiException as e:
+        bound_logger.exception(
+            "An ApiException was caught while clearing pending revocations. The error message is: '{}'.",
+            e.reason,
+        )
+        raise CloudApiException(
+            f"Failed to clear pending revocations: {e.reason}.", e.status
+        ) from e
+    bound_logger.warning("The result of clearing pending revocations is: '{}'.", result)
+    bound_logger.info("Successfully cleared pending revocations.")
+    return result
+
+
 async def endorser_revoke():
     listener = SseListener(topic="endorsements", wallet_id="admin")
     try:

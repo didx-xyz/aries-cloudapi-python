@@ -274,6 +274,42 @@ async def revoke_credential(
     bound_logger.info("Successfully revoked credential.")
 
 
+@router.post("/publish-revocations", status_code=204)
+async def publish_revocations(
+    body: PublishRevocations,
+    auth: AcaPyAuth = Depends(acapy_auth),
+):
+    """
+        Write batch of pending revocations to ledger.
+
+        If no credential exchange id is provided, all pending revocations
+        for the given revocation registry id will be published.
+
+        If no revocation registry id is provided, all pending revocations
+        will be published.
+
+    Parameters:
+    -----------
+        revocation_registry_id: [credential_exchange_id: str]
+            A map of revocation registry ids to credential exchange ids.    
+
+    Returns:
+    --------
+        payload: None
+        status_code: 204
+    """
+    bound_logger = logger.bind(body=body.rrid2crid)
+    bound_logger.info("POST request received: Publish revocations")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Publishing revocations")
+        await revocation_registry.publish_pending_revocations(
+            controller=aries_controller,
+            rrid22crid=body.rrid2crid,
+        )
+
+    bound_logger.info("Successfully published revocations.")
+
 @router.post("/{credential_id}/request", response_model=CredentialExchange)
 async def request_credential(
     credential_id: str,

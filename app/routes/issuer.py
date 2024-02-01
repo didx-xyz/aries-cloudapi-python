@@ -375,7 +375,8 @@ async def get_credential_revocation_record(
     Raises:
     -------
         CloudApiException: 400
-            If credential_exchange_id is not provided BOTH the credential_revocation_id and revocation_registry_id MUST be provided.
+            If credential_exchange_id is not provided BOTH the credential_revocation_id 
+            and revocation_registry_id MUST be provided.
     """
     bound_logger = logger.bind(
         body={
@@ -389,7 +390,8 @@ async def get_credential_revocation_record(
         credential_revocation_id is None or revocation_registry_id is None
     ):
         raise CloudApiException(
-            "If credential_exchange_id is not provided BOTH the credential_revocation_id and revocation_registry_id MUST be provided.",
+            "If credential_exchange_id is not provided BOTH the credential_revocation_id and \
+                  revocation_registry_id MUST be provided.",
             400,
         )
     bound_logger.info("GET request received: Get credential revocation record by id")

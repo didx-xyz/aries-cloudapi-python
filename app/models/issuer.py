@@ -78,5 +78,6 @@ class PublishRevocations(BaseModel):
 class ClearPendingRevocationsRequest(BaseModel):
     purge: Optional[Dict[str, List[str]]] = Field(
         description="A map of revocation registry ids to credential exchange ids to clear pending revocations for.\
-          If not provided, all pending revocations will be clearedor if empty list provided clears all pending revocations for registry id.",
+          If not provided, all pending revocations will be cleared or if empty list provided clears all pending \
+              revocations for registry id.",
     )

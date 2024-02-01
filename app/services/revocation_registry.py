@@ -319,33 +319,6 @@ async def revoke_credential(
             f"Failed to revoke credential: {e.reason}.", e.status
         ) from e
 
-    if not auto_publish_to_ledger:
-        try:
-            rev_reg_record = await get_active_revocation_registry_for_credential(
-                controller=controller,
-                credential_definition_id=credential_definition_id,
-            )
-
-            await publish_revocation_entry_to_ledger(
-                controller=controller,
-                revocation_registry_id=rev_reg_record.revoc_reg_id,
-                create_transaction_for_endorser=True,
-            )
-        except CloudApiException as e:
-            if e.status_code == 400:
-                bound_logger.info(
-                    "Bad request: Cannot publish revocation entry to ledger: {}",
-                    e.detail,
-                )
-            else:
-                bound_logger.error(e.detail)
-            raise e
-        except Exception as e:
-            bound_logger.exception("Exception caught when revoking credential.")
-            raise e
-
-        await endorser_revoke()
-
     bound_logger.info("Successfully revoked credential.")
 
 

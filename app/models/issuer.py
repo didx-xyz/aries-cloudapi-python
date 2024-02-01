@@ -70,11 +70,13 @@ class RevokeCredential(BaseModel):
 
 class PublishRevocations(BaseModel):
     rrid2crid: Dict[str, Optional[List[str]]] = Field(
-        description="A map of revocation registry ids to credential exchange ids. The credential exchange ids are optional if you want to publish all for a given revocation registry id.",
+        description="A map of revocation registry ids to credential exchange ids. \
+        The credential exchange ids are optional if you want to publish all for a given revocation registry id.",
     )
 
 
 class ClearPendingRevocationsRequest(BaseModel):
-    purge: Optional[Dict[str,List[str]]] = Field(
-        description="A map of revocation registry ids to credential exchange ids to clear pending revocations for. If not provided, all pending revocations will be clearedor if empty list provided clears all pending revocations for registry id.",
+    purge: Optional[Dict[str, List[str]]] = Field(
+        description="A map of revocation registry ids to credential exchange ids to clear pending revocations for.\
+          If not provided, all pending revocations will be clearedor if empty list provided clears all pending revocations for registry id.",
     )

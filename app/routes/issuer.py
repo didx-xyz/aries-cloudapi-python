@@ -291,7 +291,7 @@ async def publish_revocations(
     Parameters:
     -----------
         revocation_registry_id: [credential_exchange_id: str]
-            A map of revocation registry ids to credential exchange ids.    
+            A map of revocation registry ids to credential exchange ids.
 
     Returns:
     --------
@@ -346,6 +346,7 @@ async def clear_pending_revocations(
 
     bound_logger.info("Successfully cleared pending revocations.")
     return result
+
 
 @router.get("/revocation/record", response_model=IssuerCredRevRecord)
 async def get_credential_revocation_record(

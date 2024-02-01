@@ -75,7 +75,10 @@ async def lifespan(_: FastAPI):
 
 
 trust_registry_routes = [trust_registry]
-tenant_admin_routes = [tenants]
+tenant_admin_routes = [
+    tenants,
+    sse,
+]
 tenant_routes = [
     connections,
     definitions,

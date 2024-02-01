@@ -1,14 +1,16 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import ApiException
+from aries_cloudcontroller import ApiException, IssuerCredRevRecord
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions import CloudApiException
 from app.models.issuer import (
+    ClearPendingRevocationsRequest,
     CreateOffer,
     CredentialType,
+    PublishRevocations,
     RevokeCredential,
     SendCredential,
 )

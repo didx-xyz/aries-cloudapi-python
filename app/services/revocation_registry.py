@@ -387,6 +387,63 @@ async def clear_pending_revocations(
     return result
 
 
+async def get_credential_revocation_record(
+    controller: AcaPyClient,
+    credential_exchange_id: str,
+    credential_revocation_id: str,
+    revocation_registry_id: str,
+) -> IssuerCredRevRecord:
+    """
+        Get the revocation status for a credential
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        credential_exchange_id (str): The credential exchange ID.
+        credential_revocation_id (str): The credential revocation ID.
+        revocation_registry_id (str): The revocation registry ID.
+
+    Raises:
+        Exception: When failed to get revocation status.
+
+    """
+    bound_logger = logger.bind(
+        body={
+            "credential_exchange_id": credential_exchange_id,
+            "credential_revocation_id": credential_revocation_id,
+            "revocation_registry_id": revocation_registry_id,
+        }
+    )
+    bound_logger.info("Fetching the revocation status for a credential exchange")
+
+    try:
+        result = await controller.revocation.get_revocation_status(
+            cred_ex_id=credential_exchange_id if credential_exchange_id else None,
+            cred_rev_id=credential_revocation_id if credential_revocation_id else None,
+            rev_reg_id=revocation_registry_id if revocation_registry_id else None,
+        )
+    except ApiException as e:
+        bound_logger.exception(
+            "An ApiException was caught while getting revocation status. The error message is: '{}'.",
+            e.reason,
+        )
+        raise CloudApiException(
+            f"Failed to get revocation status: {e.reason}.", e.status
+        ) from e
+
+    if not isinstance(result, CredRevRecordResult):
+        bound_logger.error(
+            "Unexpected type returned from get_revocation_status: `{}`.", result
+        )
+        raise CloudApiException(
+            f"Error retrieving revocation status for credential exchange ID `{credential_exchange_id}`."
+        )
+    else:
+        result = result.result
+
+    bound_logger.info("Successfully retrieved revocation status.")
+    return result
+
+
 async def endorser_revoke():
     listener = SseListener(topic="endorsements", wallet_id="admin")
     try:

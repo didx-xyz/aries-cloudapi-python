@@ -311,7 +311,7 @@ async def revoke_credential(
             )
         )
     except ApiException as e:
-        bound_logger.info(
+        bound_logger.exception(
             "An ApiException was caught while revoking credential. The error message is: '{}'.",
             e.reason,
         )

@@ -56,7 +56,7 @@ jobs:
             governance-multitenant-web,
             governance-ga-web,
             governance-tenant-web,
-            governance-trust-registry-web,
+            governance-public-web,
             governance-webhooks-web,
             governance-multitenant-agent,
             governance-endorser,
@@ -78,7 +78,7 @@ jobs:
           - image: governance-tenant-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
-          - image: governance-trust-registry-web
+          - image: governance-public-web
             context: .
             file: dockerfiles/fastapi/Dockerfile
           - image: governance-webhooks-web
@@ -332,12 +332,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # - name: Determine branch
+      #   id: set_branch
+      #   uses: actions/github-script@v5
+      #   with:
+      #     script: |
+      #       const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+      #       const octokit = require('@actions/github').getOctokit(GITHUB_TOKEN);
+      #       const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
+      #       try {
+      #         await octokit.rest.repos.getBranch({
+      #           owner: process.env.GITHUB_REPOSITORY_OWNER,
+      #           repo: (process.env.GITHUB_REPOSITORY).split('/')[1],
+      #           branch: branchName,
+      #         });
+      #         return branchName;
+      #       } catch (error) {
+      #         return 'master';
+      #       }
+
       - name: Checkout Charts
         uses: actions/checkout@v4
         with:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
+          # ref: ${{ steps.set_branch.outputs.result }} #
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools

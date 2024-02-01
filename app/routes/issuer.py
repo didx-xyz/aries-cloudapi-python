@@ -310,6 +310,42 @@ async def publish_revocations(
 
     bound_logger.info("Successfully published revocations.")
 
+
+@router.post("/clear-pending-revocations", response_model=PublishRevocations)
+async def clear_pending_revocations(
+    body: ClearPendingRevocationsRequest,
+    auth: AcaPyAuth = Depends(acapy_auth),
+):
+    """
+        Clear pending revocations.
+
+        If no revocation registry id is provided, all pending revocations
+        will be cleared.
+
+        If no credential revocation id is provided, all pending revocations
+        for the given revocation registry id will be cleared.
+
+    Parameters:
+    -----------
+        revocation_registry_id: [credential_revocation_id: str]
+            A map of revocation registry ids to credential revocation ids.
+
+    Returns:
+    --------
+        payload: PublishRevocations
+            The still pending revocations
+    """
+    bound_logger = logger.bind(body=body.purge)
+    bound_logger.info("POST request received: Clear pending revocations")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Clearing pending revocations")
+        result = await revocation_registry.clear_pending_revocations(
+            controller=aries_controller, purge=body.purge
+        )
+
+    bound_logger.info("Successfully cleared pending revocations.")
+    return result
 @router.post("/{credential_id}/request", response_model=CredentialExchange)
 async def request_credential(
     credential_id: str,

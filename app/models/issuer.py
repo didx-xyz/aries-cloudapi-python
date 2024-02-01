@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
 from pydantic import BaseModel, Field, ValidationInfo, field_validator

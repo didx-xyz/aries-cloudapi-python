@@ -322,7 +322,38 @@ async def revoke_credential(
     bound_logger.info("Successfully revoked credential.")
 
 
-# todo: Migrate to endorser service
+async def publish_pending_revocations(
+    controller: AcaPyClient, rrid22crid: PublishRevocations
+):
+    """
+        Publish pending revocations
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        rrid22crid (PublishRevocations): The revocation registry ID.
+
+    Raises:
+        Exception: When the pending revocations could not be published
+
+    """
+    bound_logger = logger.bind(body=rrid22crid)
+
+    try:
+        await controller.revocation.publish_revocations(
+            body=PublishRevocations(rrid2crid=rrid22crid)
+        )
+    except ApiException as e:
+        bound_logger.exception(
+            "An ApiException was caught while publishing pending revocations. The error message is: '{}'.",
+            e.reason,
+        )
+        raise CloudApiException(
+            f"Failed to publish pending revocations: {e.reason}.", e.status
+        ) from e
+
+    bound_logger.info("Successfully published pending revocations.")
+
+
 async def endorser_revoke():
     listener = SseListener(topic="endorsements", wallet_id="admin")
     try:

@@ -357,6 +357,18 @@ async def create_credential_definition(
                     rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state="active"
                 )
                 credential_definition_id = active_rev_reg.result.cred_def_id
+                try:
+                    async with client_from_auth(auth) as aries_controller:
+                        bound_logger.debug("Writing firts accum value to ledger (rev_reg_entry)")
+                        
+                        await aries_controller.revocation.publish_rev_reg_entry(
+                            rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                            conn_id=endorser_connection.results[0].connection_id,
+                            create_transaction_for_endorser=True,
+                        )
+                        
+                        bound_logger.debug("Endorse rev_reg_entry")
+                        listener = SseListener(topic="endorsements", wallet_id="admin")
             except ApiException as e:
                 bound_logger.debug(
                     "An ApiException was caught while supporting revocation. The error message is: '{}'.",

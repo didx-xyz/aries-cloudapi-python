@@ -3,7 +3,9 @@ from typing import Optional
 from aries_cloudcontroller import (
     AcaPyClient,
     ApiException,
+    ClearPendingRevocationsRequest,
     CredRevRecordResult,
+    PublishRevocations,
     IssuerCredRevRecord,
     IssuerRevRegRecord,
     RevokeRequest,

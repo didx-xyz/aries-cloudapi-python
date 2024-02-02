@@ -69,7 +69,7 @@ class RevokeCredential(BaseModel):
 
 
 class PublishRevocations(BaseModel):
-    rrid2crid: Dict[str, Optional[List[str]]] = Field(
+    revocationRegistryCredentialMap: Dict[str, Optional[List[str]]] = Field(
         description="A map of revocation registry ids to credential exchange ids. \
         The credential exchange ids are optional if you want to publish all for a given revocation registry id.",
     )

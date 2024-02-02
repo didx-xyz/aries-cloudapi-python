@@ -382,7 +382,7 @@ async def clear_pending_revocations(
         raise CloudApiException(
             f"Failed to clear pending revocations: {e.reason}.", e.status
         ) from e
-    bound_logger.warning("The result of clearing pending revocations is: '{}'.", result)
+
     bound_logger.info("Successfully cleared pending revocations.")
     return result
 

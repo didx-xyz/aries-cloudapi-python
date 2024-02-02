@@ -25,6 +25,7 @@ from app.routes import (
     trust_registry,
     verifier,
     webhooks,
+    websocket_endpoint,
 )
 from app.routes.admin import tenants
 from app.routes.wallet import credentials as wallet_credentials
@@ -74,11 +75,10 @@ async def lifespan(_: FastAPI):
     await WebsocketManager.disconnect_all()
 
 
+webhook_routes = [webhooks, sse, websocket_endpoint]
+
 trust_registry_routes = [trust_registry]
-tenant_admin_routes = [
-    tenants,
-    sse,
-]
+tenant_admin_routes = [tenants] + webhook_routes
 tenant_routes = [
     connections,
     definitions,
@@ -89,9 +89,7 @@ tenant_routes = [
     verifier,
     wallet_credentials,
     wallet_dids,
-    webhooks,
-    sse,
-]
+] + webhook_routes
 
 
 def routes_for_role(role: str) -> list:

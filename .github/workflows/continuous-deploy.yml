@@ -357,7 +357,7 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
-          # ref: ${{ steps.set_branch.outputs.result }} #
+          # ref: ${{ steps.set_branch.outputs.result }}
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools

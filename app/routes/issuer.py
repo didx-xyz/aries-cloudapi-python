@@ -340,12 +340,12 @@ async def clear_pending_revocations(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Clearing pending revocations")
-        result = await revocation_registry.clear_pending_revocations(
+        purge_response = await revocation_registry.clear_pending_revocations(
             controller=aries_controller, purge=body.purge
         )
-    result = PublishRevocations(revocationRegistryCredentialMap=result.rrid2crid)
+    purge_response = PublishRevocations(revocationRegistryCredentialMap=purge_response.rrid2crid)
     bound_logger.info("Successfully cleared pending revocations.")
-    return result
+    return purge_response
 
 
 @router.get("/revocation/record", response_model=IssuerCredRevRecord)
@@ -398,18 +398,18 @@ async def get_credential_revocation_record(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential revocation record")
-        result = await revocation_registry.get_credential_revocation_record(
+        revocation_record = await revocation_registry.get_credential_revocation_record(
             controller=aries_controller,
             credential_exchange_id=credential_exchange_id,
             credential_revocation_id=credential_revocation_id,
             revocation_registry_id=revocation_registry_id,
         )
 
-    if result:
+    if revocation_record:
         bound_logger.info("Successfully fetched credential revocation record.")
     else:
         bound_logger.info("No credential revocation record returned.")
-    return result
+    return revocation_record
 
 
 @router.post("/{credential_id}/request", response_model=CredentialExchange)

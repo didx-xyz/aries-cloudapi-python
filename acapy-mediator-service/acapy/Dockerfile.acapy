@@ -1,0 +1,24 @@
+FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.10.4
+
+USER root
+
+RUN mkdir -p /acapy-mediator
+WORKDIR /acapy-mediator
+
+ADD https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 /usr/bin/jq
+RUN chmod +x /usr/bin/jq
+
+USER $user
+
+# Copy the necessary files from the mediator sub-folder
+COPY acapy/start.sh start.sh
+COPY acapy/configs configs
+
+# Copy and install plugins
+COPY acapy/plugins plugins
+RUN pip3 install --no-cache-dir -e plugins/firebase_push_notifications
+
+RUN chmod +x start.sh && \
+  aca-py --version > ./acapy-version.txt
+
+ENTRYPOINT ["bash", "./start.sh"]

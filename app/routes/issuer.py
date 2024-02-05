@@ -282,16 +282,16 @@ async def publish_revocations(
     """
         Write batch of pending revocations to ledger.
 
-        If no credential exchange id is provided, all pending revocations
-        for the given revocation registry id will be published.
-
         If no revocation registry id is provided, all pending revocations
         will be published.
 
+        If no credential revocation id is provided, all pending revocations
+        for the given revocation registry id will be published.
+
     Parameters:
     -----------
-        revocation_registry_id: [credential_exchange_id: str]
-            A map of revocation registry ids to credential exchange ids.
+        publish_request: Dict[str, List[str]]
+            A map of revocation registry ids to a list of credential revocation ids.
 
     Returns:
     --------
@@ -327,8 +327,8 @@ async def clear_pending_revocations(
 
     Parameters:
     -----------
-        revocation_registry_id: [credential_revocation_id: str]
-            A map of revocation registry ids to credential revocation ids.
+        purge_pending_request: Dict[str, List[str]]
+            A map of revocation registry ids to a list of credential revocation ids.
 
     Returns:
     --------

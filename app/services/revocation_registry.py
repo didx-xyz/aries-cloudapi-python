@@ -337,6 +337,9 @@ async def publish_pending_revocations(
 
     """
     bound_logger = logger.bind(body=rrid2crid)
+    
+    bound_logger.info("Validating revocation registry ids")
+    await validate_rev_reg_ids(controller=controller, request=rrid2crid)
 
     try:
         await controller.revocation.publish_revocations(
@@ -369,6 +372,9 @@ async def clear_pending_revocations(
 
     """
     bound_logger = logger.bind(body=purge)
+
+    bound_logger.info("Validating revocation registry ids")
+    await validate_rev_reg_ids(controller=controller, request=purge)
 
     try:
         result = await controller.revocation.clear_pending_revocations(

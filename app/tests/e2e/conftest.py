@@ -16,6 +16,7 @@ from app.tests.e2e.test_credentials import (  # noqa: F401
     credential_definition_id_revocable,
     credential_exchange_id,
     issue_credential_to_alice,
+    issue_revocable_credentials_to_alice_and_revoke,
     meld_co_credential_definition_id,
     meld_co_issue_credential_to_alice,
     schema_definition,

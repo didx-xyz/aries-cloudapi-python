@@ -517,7 +517,7 @@ async def validate_rev_reg_ids(controller: AcaPyClient, request: dict):
 
     Args:
         controller (AcaPyClient): aca-py client
-        request (dict): The request body.
+        request (dict): A map of revocation registry ids to a list of credential revocation ids
 
     Raises:
         Exception: When the revocation registry ids are invalid.

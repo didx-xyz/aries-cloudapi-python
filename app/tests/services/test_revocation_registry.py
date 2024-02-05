@@ -322,8 +322,6 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         create_transaction_for_endorser=False,
     ).thenRaise(ApiException())
 
-    when(rg).endorser_revoke().thenReturn(to_async(None))
-
     revoke_credential_result = await rg.revoke_credential(
         controller=mock_agent_controller,
         credential_definition_id=cred_def_id,

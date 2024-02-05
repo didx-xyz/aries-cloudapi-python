@@ -303,6 +303,8 @@ services:
     #       --wallet-type askar --auto-promote-author-did --plugin acapy_wallet_groups_plugin
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
+    environment:
+      ACAPY_ENDPOINT: http://${LOCAL_HOSTNAME}.skunk-hydra.ts.net:4020
     ports:
       - 0.0.0.0:4020:3020
       - 0.0.0.0:4021:3021
@@ -337,7 +339,7 @@ services:
       dockerfile: Dockerfile
     command: "bash -c './scripts/start_webserver.sh'"
     environment:
-      - DOCKERHOST=${DOCKERHOST}
+      - DOCKERHOST=${LOCAL_HOSTNAME}.skunk-hydra.ts.net
       - MAX_FETCH=50000
       - RESYNC_TIME=120
       - REGISTER_NEW_DIDS=True
@@ -383,7 +385,7 @@ services:
       - 0.0.0.0:9707:9707
       - 0.0.0.0:9708:9708
     environment:
-      - DOCKERHOST=${DOCKERHOST}
+      - DOCKERHOST=${LOCAL_HOSTNAME}.skunk-hydra.ts.net
       - LOG_LEVEL=WARNING
     volumes:
       - nodes-data:/home/indy/ledger
@@ -540,44 +542,14 @@ services:
       start_period: 5s
       retries: 5
 
-  mediator-controller:
-    image: node:fermium
-    # restart: unless-stopped
-    profiles:
-      - donotstart
-    environment:
-      - PORT=${MEDIATOR_CONTROLLER_PORT:-3010}
-      - CONTROLLER_ADMIN_API_KEY=${MEDIATOR_CONTROLLER_ADMIN_API_KEY}
-      - MEDIATOR_ADMIN_URL=${MEDIATOR_AGENT_ADMIN_URL-http://mediator:3002}
-      - MEDIATOR_ADMIN_API_KEY=${MEDIATOR_AGENT_ADMIN_API_KEY}
-      - MEDIATOR_ALIAS=${MEDIATOR_ALIAS}
-      - LOG_LEVEL=${LOG_LEVEL}
-    volumes:
-      - ./acapy-mediator-service/acapy/controller:/usr/src/controller:z
-      - mediator-controller-data:/usr/src/controller/node_modules:z
-    # ports: # Uncomment to access controller outside of containers
-    #   - ${MEDIATOR_CONTROLLER_PORT:-3010}:${MEDIATOR_CONTROLLER_PORT:-3010}
-    networks:
-      - mediator-network
-    working_dir: /usr/src/controller
-    entrypoint: /bin/bash
-    command: ["-c", "npm install; npm run dev"]
-    healthcheck:
-      test: /bin/bash -c "</dev/tcp/mediator-controller/3010"
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   mediator:
     build:
-      context: ./acapy-mediator-service
+      context: https://github.com/hyperledger/aries-mediator-service.git#521dd31e8e8f809955fa56d9e3724d9842ef4463
       dockerfile: acapy/Dockerfile.acapy
     depends_on:
       # mediator-controller:
       #   condition: service_healthy
       db:
-        condition: service_healthy
-      ngrok:
         condition: service_healthy
     restart: unless-stopped
     environment:
@@ -604,12 +576,14 @@ services:
       - FIREBASE_NOTIFICATION_TITLE=${FIREBASE_NOTIFICATION_TITLE}
       - FIREBASE_NOTIFICATION_BODY=${FIREBASE_NOTIFICATION_BODY}
       - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
-    # ports: # Uncomment to access mediator outside of containers
-    #   - ${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}:${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}
-    #   - ${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}:${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}
-    #   - ${MEDIATOR_AGENT_WS_IN_PORT:-3001}:${MEDIATOR_AGENT_WS_IN_PORT:-3001}
+      # - MEDIATOR_URL=${LOCAL_HOSTNAME}.skunk-hydra.ts.net
+    ports: # Uncomment to access mediator outside of containers
+      - ${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}:${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}
+      - ${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}:${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}
+      - ${MEDIATOR_AGENT_WS_IN_PORT:-3001}:${MEDIATOR_AGENT_WS_IN_PORT:-3001}
     networks:
       - mediator-network
+      - host
     healthcheck:
       test: /bin/bash -c "</dev/tcp/mediator/3000"
       interval: 5s

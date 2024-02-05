@@ -316,15 +316,16 @@ async def create_credential_definition(
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
                 has_connections = len(endorser_connection.results) > 0
+                endorser_connection_id = (
+                    endorser_connection.results[0].connection_id
+                    if has_connections
+                    else None
+                )
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,
                     revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
-                    connection_id=(
-                        endorser_connection.results[0].connection_id
-                        if has_connections
-                        else None
-                    ),
+                    connection_id=endorser_connection_id,
                     create_transaction_for_endorser=has_connections,
                 )
                 if has_connections:
@@ -365,7 +366,7 @@ async def create_credential_definition(
 
                         await aries_controller.revocation.publish_rev_reg_entry(
                             rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
-                            conn_id=endorser_connection.results[0].connection_id,
+                            conn_id=endorser_connection_id,
                             create_transaction_for_endorser=True,
                         )
 

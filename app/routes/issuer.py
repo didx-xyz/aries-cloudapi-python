@@ -276,7 +276,7 @@ async def revoke_credential(
 
 @router.post("/publish-revocations", status_code=204)
 async def publish_revocations(
-    body: PublishRevocations,
+    publish_request: PublishRevocations,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
@@ -313,7 +313,7 @@ async def publish_revocations(
 
 @router.post("/clear-pending-revocations", response_model=PublishRevocations)
 async def clear_pending_revocations(
-    body: ClearPendingRevocationsRequest,
+    purge_pending_request: ClearPendingRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """

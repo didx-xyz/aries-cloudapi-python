@@ -361,7 +361,9 @@ async def create_credential_definition(
                 try:
                     async with client_from_auth(auth) as aries_controller:
                         bound_logger.debug(
-                            "Writing firts accum value to ledger (rev_reg_entry)"
+                            "Publishing rev reg entry for: rev_reg_id: {} and conn_id: {}",
+                            revoc_reg_creation_result.revoc_reg_id,
+                            endorser_connection_id,
                         )
 
                         await aries_controller.revocation.publish_rev_reg_entry(

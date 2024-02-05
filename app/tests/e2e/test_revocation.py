@@ -1,9 +1,9 @@
+import pytest
+from assertpy import assert_that
 from fastapi import HTTPException
 
-import pytest
-from shared import RichAsyncClient
-from assertpy import assert_that
 from app.routes.issuer import router
+from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = router.prefix
 

@@ -509,3 +509,50 @@ async def get_credential_definition_id_from_exchange_id(
         "Successfully obtained cred definition id from the cred exchange id."
     )
     return credential_definition_id
+
+
+async def validate_rev_reg_ids(
+    controller: AcaPyClient, request: dict
+):
+    """
+        Validate revocation registry ids
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        request (dict): The request body.
+
+    Raises:
+        Exception: When the revocation registry ids are invalid.
+
+    """
+    bound_logger = logger.bind(body=request)
+    bound_logger.info("Validating revocation registry ids")
+    rev_reg_id_list = list(request.keys())
+
+    if len(rev_reg_id_list) > 0:
+        try:
+            for key in rev_reg_id_list:
+                result_count = (
+                    await controller.revocation.get_registry_issued_credentials_count(
+                        rev_reg_id=key
+                    )
+                )
+                bound_logger.debug(result_count)
+        except ApiException as e:
+
+            if e.status == 404:
+                bound_logger.info(
+                    "The rev_reg_id does not exist '{}'.",
+                    e.reason,
+                )
+                raise CloudApiException(
+                    f"The rev_reg_id does not exist: {e.reason}.", e.status
+                ) from e
+            else:
+                bound_logger.error(
+                    "An ApiException was caught while validating rev_reg_id. The error message is: '{}'.",
+                    e.reason,
+                )
+                raise CloudApiException(f"{e.reason}.", e.status) from e
+
+    bound_logger.info("Successfully validated revocation registry ids.")

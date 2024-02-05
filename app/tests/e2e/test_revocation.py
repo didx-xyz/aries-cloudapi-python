@@ -79,3 +79,41 @@ async def test_clear_pending_revokes_no_map(
         ).json()
 
         assert rev_record["state"] == "issued"
+
+
+@pytest.mark.anyio
+async def test_clear_pending_revokes_bad_payload(
+    faber_client: RichAsyncClient,
+):
+    with pytest.raises(HTTPException) as exc:
+
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
+            json={"revocation_registry_credential_map": "bad"},
+        )
+
+    assert_that(exc.value.status_code).is_equal_to(422)
+
+    with pytest.raises(HTTPException) as exc:
+
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
+            json={"revocation_registry_credential_map": {"bad": "bad"}},
+        )
+
+    assert_that(exc.value.status_code).is_equal_to(422)
+
+    with pytest.raises(HTTPException) as exc:
+
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
+            json={
+                "revocation_registry_credential_map": {
+                    "WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0": [
+                        "bad"
+                    ]
+                }
+            },
+        )
+
+    assert_that(exc.value.status_code).is_equal_to(404)

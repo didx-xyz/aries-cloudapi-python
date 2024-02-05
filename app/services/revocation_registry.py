@@ -444,25 +444,6 @@ async def get_credential_revocation_record(
     return result
 
 
-async def endorser_revoke():
-    listener = SseListener(topic="endorsements", wallet_id="admin")
-    try:
-        logger.debug("Waiting for endorsements event in `request-received` state")
-        txn_record = await listener.wait_for_state(desired_state="request-received")
-    except TimeoutError as e:
-        logger.error("Waiting for an endorsement event has timed out.")
-        raise CloudApiException(
-            "Timeout occurred while waiting to retrieve transaction record for endorser.",
-            504,
-        ) from e
-    async with get_governance_controller() as endorser_controller:
-        logger.info("Endorsing what is presumed to be a revocation transaction")
-        await endorser_controller.endorse_transaction.endorse_transaction(
-            tran_id=txn_record["transaction_id"]
-        )
-    logger.info("Successfully endorsed transaction of revocation.")
-
-
 async def get_credential_definition_id_from_exchange_id(
     controller: AcaPyClient, credential_exchange_id: str
 ) -> Optional[str]:

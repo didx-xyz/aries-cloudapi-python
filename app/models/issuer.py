@@ -90,3 +90,11 @@ class ClearPendingRevocationsRequest(BaseModel):
             "all registry IDs."
         ),
     )
+
+
+class ClearPendingRevocationsResult(BaseModel):
+    revocation_registry_credential_map: Dict[str, List[str]] = Field(
+        description=(
+            "The resulting revocations that are still pending after a clear-pending request has been completed."
+        ),
+    )

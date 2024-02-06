@@ -18,6 +18,7 @@ from aries_cloudcontroller import (
 from app.dependencies.acapy_clients import get_governance_controller
 from app.event_handling.sse_listener import SseListener
 from app.exceptions import CloudApiException
+from app.models.issuer import ClearPendingRevocationsResult
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -363,7 +364,7 @@ async def publish_pending_revocations(
 
 async def clear_pending_revocations(
     controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
-) -> PublishRevocations:
+) -> ClearPendingRevocationsResult:
     """
         Clear pending revocations
 
@@ -375,6 +376,8 @@ async def clear_pending_revocations(
     Raises:
         Exception: When the pending revocations could not be cleared
 
+    Returns:
+        ClearPendingRevocationsResult: The outstanding revocations after completing the clear request.
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
@@ -385,7 +388,7 @@ async def clear_pending_revocations(
     )
 
     try:
-        result = await controller.revocation.clear_pending_revocations(
+        clear_result = await controller.revocation.clear_pending_revocations(
             body=ClearPendingRevocationsRequest(
                 purge=revocation_registry_credential_map
             )
@@ -399,6 +402,9 @@ async def clear_pending_revocations(
             f"Failed to clear pending revocations: {e.reason}.", e.status
         ) from e
 
+    result = ClearPendingRevocationsResult(
+        revocation_registry_credential_map=clear_result.rrid2crid
+    )
     bound_logger.info("Successfully cleared pending revocations.")
     return result
 

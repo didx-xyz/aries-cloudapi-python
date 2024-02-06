@@ -8,6 +8,7 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions import CloudApiException
 from app.models.issuer import (
     ClearPendingRevocationsRequest,
+    ClearPendingRevocationsResult,
     CreateOffer,
     CredentialType,
     PublishRevocationsRequest,
@@ -315,11 +316,11 @@ async def publish_revocations(
     bound_logger.info("Successfully published revocations.")
 
 
-@router.post("/clear-pending-revocations", response_model=PublishRevocationsRequest)
+@router.post("/clear-pending-revocations", response_model=ClearPendingRevocationsResult)
 async def clear_pending_revocations(
     clear_pending_request: ClearPendingRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-) -> PublishRevocationsRequest:
+) -> ClearPendingRevocationsResult:
     """
         Clear pending revocations.
 
@@ -340,7 +341,7 @@ async def clear_pending_revocations(
 
     Returns:
     --------
-        payload: PublishRevocationsRequest
+        payload: ClearPendingRevocationsResult
             The revocations that are still pending after the clear request is performed
     """
     bound_logger = logger.bind(body=clear_pending_request)
@@ -348,14 +349,10 @@ async def clear_pending_revocations(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Clearing pending revocations")
-        purge_response = await revocation_registry.clear_pending_revocations(
+        response = await revocation_registry.clear_pending_revocations(
             controller=aries_controller,
-            purge=clear_pending_request.revocation_registry_credential_map,
+            revocation_registry_credential_map=clear_pending_request.revocation_registry_credential_map,
         )
-
-    response = PublishRevocationsRequest(
-        revocation_registry_credential_map=purge_response.rrid2crid
-    )
 
     bound_logger.info("Successfully cleared pending revocations.")
     return response

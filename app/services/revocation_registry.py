@@ -423,9 +423,9 @@ async def get_credential_revocation_record(
 
     try:
         result = await controller.revocation.get_revocation_status(
-            cred_ex_id=credential_exchange_id if credential_exchange_id else None,
-            cred_rev_id=credential_revocation_id if credential_revocation_id else None,
-            rev_reg_id=revocation_registry_id if revocation_registry_id else None,
+            cred_ex_id=credential_exchange_id,
+            cred_rev_id=credential_revocation_id,
+            rev_reg_id=revocation_registry_id,
         )
     except ApiException as e:
         bound_logger.info(

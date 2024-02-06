@@ -71,20 +71,20 @@ class RevokeCredential(BaseModel):
 class PublishRevocations(BaseModel):
     revocation_registry_credential_map: Dict[str, List[str]] = Field(
         default={},
-        description="A map of revocation registry IDs to lists of credential revocation IDs \
-            that should be published. "
-        "Providing an empty list for a registry ID publishes all pending revocations for that ID. "
-        "An empty dictionary signifies that the action should be applied to all pending revocations \
-            across all registry IDs.",
+        description=(
+            "A map of revocation registry IDs to lists of credential revocation IDs that should be published. "
+            "Providing an empty list for a registry ID publishes all pending revocations for that ID. "
+            "An empty dictionary signifies that the action should be applied to all pending revocations across all registry IDs.",
+        ),
     )
 
 
 class ClearPendingRevocationsRequest(BaseModel):
     revocation_registry_credential_map: Dict[str, List[str]] = Field(
         default={},
-        description="A map of revocation registry IDs to lists of credential revocation IDs for which \
-            pending revocations should be cleared. "
-        "Providing an empty list for a registry ID clears all pending revocations for that ID. "
-        "An empty dictionary signifies that the action should be applied to clear all pending revocations \
-            across all registry IDs.",
+        description=(
+            "A map of revocation registry IDs to lists of credential revocation IDs for which pending revocations should be cleared. "
+            "Providing an empty list for a registry ID clears all pending revocations for that ID. "
+            "An empty dictionary signifies that the action should be applied to clear all pending revocations across all registry IDs."
+        ),
     )

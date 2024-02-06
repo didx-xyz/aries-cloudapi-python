@@ -374,7 +374,7 @@ async def clear_pending_revocations(
     bound_logger = logger.bind(body=purge)
 
     bound_logger.info("Validating revocation registry ids")
-    await validate_rev_reg_ids(controller=controller, request=purge)
+    await validate_rev_reg_ids(controller=controller, revocation_registry_credential_map=purge)
 
     try:
         result = await controller.revocation.clear_pending_revocations(

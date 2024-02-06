@@ -310,7 +310,7 @@ async def publish_revocations(
         bound_logger.debug("Publishing revocations")
         await revocation_registry.publish_pending_revocations(
             controller=aries_controller,
-            publish_request=publish_request.revocation_registry_credential_map,
+            revocation_registry_credential_map=publish_request.revocation_registry_credential_map,
         )
 
     bound_logger.info("Successfully published revocations.")

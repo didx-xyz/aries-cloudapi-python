@@ -223,20 +223,18 @@ async def create_credential_definition(
 
         if support_revocation:
             endorser_connection = await aries_controller.connection.get_connections(
-                    alias=ACAPY_ENDORSER_ALIAS
-                )
+                alias=ACAPY_ENDORSER_ALIAS
+            )
             has_connections = len(endorser_connection.results) > 0
-            endorser_connection_id = (
-                    endorser_connection.results[0].connection_id
-                    if has_connections
-                    else None
-                )
+
             if not has_connections:
                 bound_logger.debug("No endorser connection found")
                 raise CloudApiException(
                     "No endorser connection found.",
                     500,
                 )
+
+            endorser_connection_id = endorser_connection.results[0].connection_id
 
         listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
 
@@ -325,12 +323,12 @@ async def create_credential_definition(
                     ),
                 )
                 bound_logger.debug("Fetching connection with endorser")
-                
+
                 # NOTE: Special case - the endorser registers a cred def itself that
                 # supports revocation so there is no endorser connection.
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
-                
+
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,

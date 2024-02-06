@@ -347,6 +347,7 @@ async def revoke_credential(
     bound_logger.info("Successfully revoked credential.")
 
 
+# todo: Migrate to endorser service
 async def endorser_revoke():
     listener = SseListener(topic="endorsements", wallet_id="admin")
     try:

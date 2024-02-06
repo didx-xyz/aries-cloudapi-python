@@ -1,8 +1,8 @@
-# Yoma Security Policy
+# DIDx Security Policy
 
 ## Reporting a Security Bug
 
-If you think you have discovered a security issue in any of the Yoma projects, we'd love to
+If you think you have discovered a security issue in any of the DIDx projects, we'd love to
 hear from you. We will take all security bugs seriously and if confirmed upon investigation we will
 patch it within a reasonable amount of time and release a public security announcement discussing the
 bug and credit the discoverer.
@@ -13,7 +13,7 @@ Security bugs can be reported via email. The process is as follows:
 
 (email) Content: Description of the bug + how to reproduce the bug
 
-Email Yoma at: [tech at yoma dot world](mailto:tech@yoma.world).
+Email DIDx at: [info at didx dot co.za](mailto:info@didx.co.za).
 
 *Note. It is not necessary to include the type of bug if you are not sure how to classify it.*
 *A detailed description will be adequate.*

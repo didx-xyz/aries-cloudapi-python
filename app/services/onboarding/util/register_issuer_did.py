@@ -43,6 +43,7 @@ async def create_connection_with_endorser(
     )
 
 
+# todo: Migrate to endorser service
 async def create_endorser_invitation(
     *, endorser_controller: AcaPyClient, name: str, logger: Logger
 ):

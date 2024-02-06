@@ -166,7 +166,7 @@ async def get_w3c_credential(
 async def delete_w3c_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """Remove a specific W3C credential from the wallet by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.info("DELETE request received: Remove specific W3C credential by ID")

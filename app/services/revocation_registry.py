@@ -395,9 +395,9 @@ async def clear_pending_revocations(
 
 async def get_credential_revocation_record(
     controller: AcaPyClient,
-    credential_exchange_id: str,
-    credential_revocation_id: str,
-    revocation_registry_id: str,
+    credential_exchange_id: Optional[str] = None,
+    credential_revocation_id: Optional[str] = None,
+    revocation_registry_id: Optional[str] = None,
 ) -> IssuerCredRevRecord:
     """
         Get the revocation status for a credential

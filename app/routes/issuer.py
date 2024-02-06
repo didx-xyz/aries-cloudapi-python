@@ -331,8 +331,12 @@ async def clear_pending_revocations(
 
     Parameters:
     -----------
-        purge_pending_request: Dict[str, List[str]]
-            A map of revocation registry ids to a list of credential revocation ids.
+        purge_pending_request: ClearPendingRevocationsRequest
+            An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map
+            is a dictionary where each key is a revocation registry ID and its value is a list of credential
+            revocation IDs to be cleared. Providing an empty list for a registry ID instructs the system to
+            clear all pending revocations for that ID. An empty dictionary signifies that all pending
+            revocations across all registry IDs should be cleared.
 
     Returns:
     --------

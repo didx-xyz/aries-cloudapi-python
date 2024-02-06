@@ -443,8 +443,8 @@ async def get_credential_revocation_record(
         raise CloudApiException(
             f"Error retrieving revocation status for credential exchange ID `{credential_exchange_id}`."
         )
-    else:
-        result = result.result
+
+    result = result.result
 
     bound_logger.info("Successfully retrieved revocation status.")
     return result

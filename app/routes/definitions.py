@@ -221,6 +221,23 @@ async def create_credential_definition(
         bound_logger.debug("Asserting client is a valid issuer")
         await assert_valid_issuer(public_did, credential_definition.schema_id)
 
+        if support_revocation:
+            endorser_connection = await aries_controller.connection.get_connections(
+                    alias=ACAPY_ENDORSER_ALIAS
+                )
+            has_connections = len(endorser_connection.results) > 0
+            endorser_connection_id = (
+                    endorser_connection.results[0].connection_id
+                    if has_connections
+                    else None
+                )
+            if not has_connections:
+                bound_logger.debug("No endorser connection found")
+                raise CloudApiException(
+                    "No endorser connection found.",
+                    500,
+                )
+
         listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
 
         bound_logger.debug("Publishing credential definition")

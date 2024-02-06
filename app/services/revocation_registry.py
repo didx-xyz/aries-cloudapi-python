@@ -523,9 +523,9 @@ async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_cred
         Exception: When the revocation registry ids are invalid.
 
     """
-    bound_logger = logger.bind(body=request)
+    bound_logger = logger.bind(body=revocation_registry_credential_map)
     bound_logger.info("Validating revocation registry ids")
-    rev_reg_id_list = list(request.keys())
+    rev_reg_id_list = list(revocation_registry_credential_map.keys())
 
     if len(rev_reg_id_list) > 0:
         try:

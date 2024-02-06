@@ -309,7 +309,7 @@ async def publish_revocations(
         bound_logger.debug("Publishing revocations")
         await revocation_registry.publish_pending_revocations(
             controller=aries_controller,
-            rrid2crid=publish_request.revocation_registry_credential_map,
+            publish_request=publish_request.revocation_registry_credential_map,
         )
 
     bound_logger.info("Successfully published revocations.")
@@ -367,7 +367,7 @@ async def get_credential_revocation_record(
     credential_revocation_id: Optional[str] = None,
     revocation_registry_id: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> IssuerCredRevRecord:
     """
         Get a credential revocation record.
 
@@ -382,7 +382,7 @@ async def get_credential_revocation_record(
 
     Returns:
     --------
-        payload: CredentialRevocationRecordResult
+        payload: IssuerCredRevRecord
             The credential revocation record
 
     Raises:

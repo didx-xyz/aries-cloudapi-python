@@ -290,8 +290,12 @@ async def publish_revocations(
 
     Parameters:
     -----------
-        publish_request: Dict[str, List[str]]
-            A map of revocation registry ids to a list of credential revocation ids.
+        publish_request: PublishRevocations
+            An instance of `PublishRevocations` containing a `revocation_registry_credential_map`. This map
+            is a dictionary where each key is a revocation registry ID and its value is a list of credential
+            revocation IDs to be published. Providing an empty list for a registry ID instructs the system to
+            publish all pending revocations for that ID. An empty dictionary signifies that all pending
+            revocations across all registry IDs should be published.
 
     Returns:
     --------

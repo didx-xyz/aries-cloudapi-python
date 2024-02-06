@@ -543,24 +543,24 @@ async def validate_rev_reg_ids(
     if not rev_reg_id_list:
         return
 
-    for key in rev_reg_id_list:
+    for rev_reg_id in rev_reg_id_list:
         try:
             pending_pub = (
-                await controller.revocation.get_registry(rev_reg_id=key)
+                await controller.revocation.get_registry(rev_reg_id=rev_reg_id)
             ).result.pending_pub
 
             bound_logger.debug(pending_pub)
-            pending = revocation_registry_credential_map[key]
+            pending = revocation_registry_credential_map[rev_reg_id]
 
             for cred_rev_id in pending:
                 if cred_rev_id not in pending_pub:
                     bound_logger.error(
                         "The cred_rev_id: '{}' is not pending publication for rev_reg_id: '{}'.",
                         cred_rev_id,
-                        key,
+                        rev_reg_id,
                     )
                     raise CloudApiException(
-                        f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {key}.",
+                        f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {rev_reg_id}.",
                         404,
                     )
         except ApiException as e:

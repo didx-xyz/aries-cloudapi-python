@@ -398,6 +398,7 @@ async def get_credential_revocation_record(
             "revocation_registry_id": revocation_registry_id,
         }
     )
+    bound_logger.info("GET request received: Get credential revocation record by id")
 
     if credential_exchange_id is None and (
         credential_revocation_id is None or revocation_registry_id is None
@@ -407,7 +408,6 @@ async def get_credential_revocation_record(
                   revocation_registry_id MUST be provided.",
             400,
         )
-    bound_logger.info("GET request received: Get credential revocation record by id")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential revocation record")

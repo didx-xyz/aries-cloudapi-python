@@ -545,38 +545,44 @@ async def validate_rev_reg_ids(
 
     for rev_reg_id in rev_reg_id_list:
         try:
-            pending_pub = (
-                await controller.revocation.get_registry(rev_reg_id=rev_reg_id)
-            ).result.pending_pub
+            rev_reg_result = await controller.revocation.get_registry(
+                rev_reg_id=rev_reg_id
+            )
+            if rev_reg_result.result is None:
+                message = f"Bad request: Failed to retrieve revocation registry '{rev_reg_id}'."
+                bound_logger.info(message)
+                raise CloudApiException(message, status_code=404)
 
-            bound_logger.debug(pending_pub)
-            pending = revocation_registry_credential_map[rev_reg_id]
+            pending_pub = rev_reg_result.result.pending_pub
 
-            for cred_rev_id in pending:
+            if pending_pub is None:
+                message = f"Bad request: No pending publications found for revocation registry '{rev_reg_id}'."
+                bound_logger.info(message)
+                raise CloudApiException(message, status_code=404)
+
+            bound_logger.debug(
+                f"Got the following pending publications for revocation registry '{rev_reg_id}': {pending_pub}"
+            )
+            requested_cred_rev_ids = revocation_registry_credential_map[rev_reg_id]
+
+            for cred_rev_id in requested_cred_rev_ids:
                 if cred_rev_id not in pending_pub:
-                    bound_logger.error(
-                        "The cred_rev_id: '{}' is not pending publication for rev_reg_id: '{}'.",
-                        cred_rev_id,
-                        rev_reg_id,
-                    )
-                    raise CloudApiException(
-                        f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {rev_reg_id}.",
-                        404,
-                    )
+                    message = f"Bad request: the cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: '{rev_reg_id}'."
+                    bound_logger.info(message)
+                    raise CloudApiException(message, 404)
         except ApiException as e:
             if e.status == 404:
-                bound_logger.info(
-                    "The rev_reg_id does not exist '{}'.",
-                    e.reason,
-                )
-                raise CloudApiException(
-                    f"The rev_reg_id does not exist: {e.reason}.", e.status
-                ) from e
+                message = f"The rev_reg_id `{rev_reg_id}` does not exist: '{e.reason}'."
+                bound_logger.info(message)
+                raise CloudApiException(message, e.status) from e
             else:
                 bound_logger.error(
                     "An ApiException was caught while validating rev_reg_id. The error message is: '{}'.",
                     e.reason,
                 )
-                raise CloudApiException(f"{e.reason}.", e.status) from e
+                raise CloudApiException(
+                    f"An error occurred while validating requested revocation registry credential map: '{e.reason}'.",
+                    e.status,
+                ) from e
 
     bound_logger.info("Successfully validated revocation registry ids.")

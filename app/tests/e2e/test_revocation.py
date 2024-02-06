@@ -245,9 +245,7 @@ async def test_publish_revocations_bad_payload(
             f"{CREDENTIALS_BASE_PATH}/publish-revocations",
             json={
                 "revocation_registry_credential_map": {
-                    "WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0": [
-                        "bad"
-                    ]
+                    "WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0": []
                 }
             },
         )

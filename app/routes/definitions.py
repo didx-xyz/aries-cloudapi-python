@@ -325,19 +325,12 @@ async def create_credential_definition(
                     ),
                 )
                 bound_logger.debug("Fetching connection with endorser")
-                endorser_connection = await aries_controller.connection.get_connections(
-                    alias=ACAPY_ENDORSER_ALIAS
-                )
+                
                 # NOTE: Special case - the endorser registers a cred def itself that
                 # supports revocation so there is no endorser connection.
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
-                has_connections = len(endorser_connection.results) > 0
-                endorser_connection_id = (
-                    endorser_connection.results[0].connection_id
-                    if has_connections
-                    else None
-                )
+                
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,
@@ -386,10 +379,9 @@ async def create_credential_definition(
                         await aries_controller.revocation.publish_rev_reg_entry(
                             rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
                             conn_id=endorser_connection_id,
-                            create_transaction_for_endorser=True,
+                            create_transaction_for_endorser=has_connections,
                         )
 
-                        bound_logger.debug("Endorse rev_reg_entry")
                         listener = SseListener(topic="endorsements", wallet_id="admin")
                         # TODO move endorsement to endoser service
                         try:

@@ -202,10 +202,10 @@ async def test_publish_one_revocation(
     ).json()
 
     rev_reg_id = response["rev_reg_id"]
-
+    cred_rev_id = response["cred_rev_id"]
     await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/publish-revocations",
-        json={"revocation_registry_credential_map": {rev_reg_id: ["1"]}},
+        json={"revocation_registry_credential_map": {rev_reg_id: [cred_rev_id]}},
     )
 
     for cred in issue_revocable_credentials_to_alice_and_revoke:
@@ -217,8 +217,8 @@ async def test_publish_one_revocation(
                 + cred["credential_id"][3:]
             )
         ).json()
-        print(rev_record)
-        if rev_record["cred_rev_id"] == "1":
+
+        if rev_record["cred_rev_id"] == cred_rev_id:
             assert rev_record["state"] == "revoked"
         else:
             assert rev_record["state"] == "issued"

@@ -302,7 +302,7 @@ async def publish_revocations(
         payload: None
         status_code: 204
     """
-    bound_logger = logger.bind(body=publish_request.revocation_registry_credential_map)
+    bound_logger = logger.bind(body=publish_request)
     bound_logger.info("POST request received: Publish revocations")
 
     async with client_from_auth(auth) as aries_controller:

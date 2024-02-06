@@ -317,7 +317,7 @@ async def publish_revocations(
 
 @router.post("/clear-pending-revocations", response_model=PublishRevocations)
 async def clear_pending_revocations(
-    purge_pending_request: ClearPendingRevocationsRequest,
+    clear_pending_request: ClearPendingRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PublishRevocations:
     """
@@ -331,7 +331,7 @@ async def clear_pending_revocations(
 
     Parameters:
     -----------
-        purge_pending_request: ClearPendingRevocationsRequest
+        clear_pending_request: ClearPendingRevocationsRequest
             An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map
             is a dictionary where each key is a revocation registry ID and its value is a list of credential
             revocation IDs to be cleared. Providing an empty list for a registry ID instructs the system to
@@ -343,14 +343,14 @@ async def clear_pending_revocations(
         payload: PublishRevocations
             The still pending revocations
     """
-    bound_logger = logger.bind(body=purge_pending_request)
+    bound_logger = logger.bind(body=clear_pending_request)
     bound_logger.info("POST request received: Clear pending revocations")
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Clearing pending revocations")
         purge_response = await revocation_registry.clear_pending_revocations(
             controller=aries_controller,
-            purge=purge_pending_request.revocation_registry_credential_map,
+            purge=clear_pending_request.revocation_registry_credential_map,
         )
 
     response = PublishRevocations(

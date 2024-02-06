@@ -547,7 +547,8 @@ async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_cred
                                 key,
                             )
                             raise CloudApiException(
-                                f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {key}."
+                                f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {key}.",
+                                404,
                             )
         except ApiException as e:
 

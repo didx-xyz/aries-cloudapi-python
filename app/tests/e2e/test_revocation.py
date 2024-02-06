@@ -12,12 +12,14 @@ CREDENTIALS_BASE_PATH = router.prefix
 async def test_clear_pending_revokes(
     faber_client: RichAsyncClient, issue_revocable_credentials_to_alice_and_revoke: list
 ):
-
+    faber_cred_ex_id = issue_revocable_credentials_to_alice_and_revoke[0][
+        "credential_id"
+    ][3:]
     response = (
         await faber_client.get(
             f"{CREDENTIALS_BASE_PATH}/revocation/record"
             + "?credential_exchange_id="
-            + issue_revocable_credentials_to_alice_and_revoke[0]["credential_id"][3:]
+            + faber_cred_ex_id
         )
     ).json()
 
@@ -123,12 +125,14 @@ async def test_clear_pending_revokes_bad_payload(
 async def test_publish_all_revocations_for_rev_reg_id(
     faber_client: RichAsyncClient, issue_revocable_credentials_to_alice_and_revoke: list
 ):
-
+    faber_cred_ex_id = issue_revocable_credentials_to_alice_and_revoke[0][
+        "credential_id"
+    ][3:]
     response = (
         await faber_client.get(
             f"{CREDENTIALS_BASE_PATH}/revocation/record"
             + "?credential_exchange_id="
-            + issue_revocable_credentials_to_alice_and_revoke[0]["credential_id"][3:]
+            + faber_cred_ex_id
         )
     ).json()
 
@@ -179,12 +183,14 @@ async def test_publish_all_revocations_no_payload(
 async def test_publish_one_revocation(
     faber_client: RichAsyncClient, issue_revocable_credentials_to_alice_and_revoke: list
 ):
-
+    faber_cred_ex_id = issue_revocable_credentials_to_alice_and_revoke[0][
+        "credential_id"
+    ][3:]
     response = (
         await faber_client.get(
             f"{CREDENTIALS_BASE_PATH}/revocation/record"
             + "?credential_exchange_id="
-            + issue_revocable_credentials_to_alice_and_revoke[0]["credential_id"][3:]
+            + faber_cred_ex_id
         )
     ).json()
 

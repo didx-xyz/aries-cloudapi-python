@@ -511,13 +511,13 @@ async def get_credential_definition_id_from_exchange_id(
     return credential_definition_id
 
 
-async def validate_rev_reg_ids(controller: AcaPyClient, request: dict):
+async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]) -> None:
     """
         Validate revocation registry ids
 
     Args:
         controller (AcaPyClient): aca-py client
-        request (dict): A map of revocation registry ids to a list of credential revocation ids
+        revocation_registry_credential_map: Dict[str, List[str]]: A map of revocation registry ids to a list of credential revocation ids
 
     Raises:
         Exception: When the revocation registry ids are invalid.

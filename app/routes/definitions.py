@@ -228,10 +228,15 @@ async def create_credential_definition(
             has_connections = len(endorser_connection.results) > 0
 
             if not has_connections:
-                bound_logger.debug("No endorser connection found")
+                bound_logger.error(
+                    "Failed to create credential definition supporting revocation: no endorser connection found. "
+                    "Issuer attempted to create a credential definition with support for revocation but does not "
+                    "have an active connection with an endorser, which is required for this operation."
+                )
+
                 raise CloudApiException(
-                    "No endorser connection found.",
-                    500,
+                    "Credential definition creation failed: An active endorser connection is required "
+                    "to support revocation. Please establish a connection with an endorser and try again."
                 )
 
             endorser_connection_id = endorser_connection.results[0].connection_id

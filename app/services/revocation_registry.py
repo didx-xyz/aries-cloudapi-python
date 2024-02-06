@@ -311,7 +311,7 @@ async def revoke_credential(
             )
         )
     except ApiException as e:
-        bound_logger.info(
+        bound_logger.warning(
             "An ApiException was caught while revoking credential. The error message is: '{}'.",
             e.reason,
         )
@@ -350,7 +350,7 @@ async def publish_pending_revocations(
             body=PublishRevocations(rrid2crid=revocation_registry_credential_map)
         )
     except ApiException as e:
-        bound_logger.info(
+        bound_logger.warning(
             "An ApiException was caught while publishing pending revocations. The error message is: '{}'.",
             e.reason,
         )
@@ -391,7 +391,7 @@ async def clear_pending_revocations(
             )
         )
     except ApiException as e:
-        bound_logger.info(
+        bound_logger.warning(
             "An ApiException was caught while clearing pending revocations. The error message is: '{}'.",
             e.reason,
         )
@@ -438,7 +438,7 @@ async def get_credential_revocation_record(
             rev_reg_id=revocation_registry_id,
         )
     except ApiException as e:
-        bound_logger.info(
+        bound_logger.warning(
             "An ApiException was caught while getting revocation status. The error message is: '{}'.",
             e.reason,
         )

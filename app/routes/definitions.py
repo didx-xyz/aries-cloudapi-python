@@ -4,7 +4,6 @@ import time
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    AcaPyClient,
     ApiException,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,

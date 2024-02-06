@@ -2,7 +2,6 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 
 from app.exceptions import CloudApiException
-from app.models.trust_registry import Actor
 from app.services.acapy_wallet import get_public_did
 from app.services.trust_registry.actors import (
     fetch_actor_by_id,
@@ -23,7 +22,6 @@ from app.tests.e2e.test_credentials import (  # noqa: F401
     schema_definition_alt,
 )
 from app.tests.util.ledger import create_public_did
-from app.util.string import random_string
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

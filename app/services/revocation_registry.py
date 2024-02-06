@@ -15,8 +15,6 @@ from aries_cloudcontroller import (
     TxnOrRevRegResult,
 )
 
-from app.dependencies.acapy_clients import get_governance_controller
-from app.event_handling.sse_listener import SseListener
 from app.exceptions import CloudApiException
 from app.models.issuer import ClearPendingRevocationsResult
 from shared.log_config import get_logger

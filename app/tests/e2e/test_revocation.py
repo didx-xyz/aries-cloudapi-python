@@ -55,6 +55,15 @@ async def test_clear_pending_revokes(
 
         assert rev_record["state"] == "issued"
 
+    # Test for cred_rev_id not pending
+    with pytest.raises(HTTPException) as exc:
+
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
+            json={"revocation_registry_credential_map": {rev_reg_id: ["1"]}},
+        )
+    assert_that(exc.value.status_code).is_equal_to(500)
+
 
 @pytest.mark.anyio
 async def test_clear_pending_revokes_no_map(

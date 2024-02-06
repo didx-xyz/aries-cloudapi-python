@@ -536,7 +536,7 @@ async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_cred
                 ).result.pending_pub
 
                 bound_logger.debug(pending_pub)
-                pending = request[key]
+                pending = revocation_registry_credential_map[key]
 
                 if len(pending) > 0:
                     for cred_rev_id in pending:

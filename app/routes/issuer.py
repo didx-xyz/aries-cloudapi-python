@@ -211,7 +211,7 @@ async def create_offer(
 async def remove_credential_exchange_record(
     credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """
         Remove a credential exchange record.
 
@@ -245,7 +245,7 @@ async def remove_credential_exchange_record(
 async def revoke_credential(
     body: RevokeCredential,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """
         Revoke a credential.
 
@@ -278,7 +278,7 @@ async def revoke_credential(
 async def publish_revocations(
     publish_request: PublishRevocations,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """
         Write batch of pending revocations to ledger.
 
@@ -315,7 +315,7 @@ async def publish_revocations(
 async def clear_pending_revocations(
     purge_pending_request: ClearPendingRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> PublishRevocations:
     """
         Clear pending revocations.
 

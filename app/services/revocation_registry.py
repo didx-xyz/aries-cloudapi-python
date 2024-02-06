@@ -538,7 +538,10 @@ async def validate_rev_reg_ids(
 
             for cred_rev_id in requested_cred_rev_ids:
                 if cred_rev_id not in pending_pub:
-                    message = f"Bad request: the cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: '{rev_reg_id}'."
+                    message = (
+                        f"Bad request: the cred_rev_id: '{cred_rev_id}' "
+                        f"is not pending publication for rev_reg_id: '{rev_reg_id}'."
+                    )
                     bound_logger.info(message)
                     raise CloudApiException(message, 404)
         except ApiException as e:

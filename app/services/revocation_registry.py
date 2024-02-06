@@ -323,27 +323,27 @@ async def revoke_credential(
 
 
 async def publish_pending_revocations(
-    controller: AcaPyClient, rrid2crid: PublishRevocations
-):
+    controller: AcaPyClient, publish_request: PublishRevocations
+) -> None:
     """
         Publish pending revocations
 
     Args:
         controller (AcaPyClient): aca-py client
-        rrid2crid (PublishRevocations): The revocation registry ID.
+        publish_request (PublishRevocations): The revocation registry ID.
 
     Raises:
         Exception: When the pending revocations could not be published
 
     """
-    bound_logger = logger.bind(body=rrid2crid)
+    bound_logger = logger.bind(body=publish_request)
 
     bound_logger.info("Validating revocation registry ids")
-    await validate_rev_reg_ids(controller=controller, request=rrid2crid)
+    await validate_rev_reg_ids(controller=controller, revocation_registry_credential_map=publish_request)
 
     try:
         await controller.revocation.publish_revocations(
-            body=PublishRevocations(rrid2crid=rrid2crid)
+            body=PublishRevocations(rrid2crid=publish_request)
         )
     except ApiException as e:
         bound_logger.info(

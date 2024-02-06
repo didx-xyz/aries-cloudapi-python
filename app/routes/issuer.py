@@ -10,7 +10,7 @@ from app.models.issuer import (
     ClearPendingRevocationsRequest,
     CreateOffer,
     CredentialType,
-    PublishRevocations,
+    PublishRevocationsRequest,
     RevokeCredential,
     SendCredential,
 )
@@ -276,7 +276,7 @@ async def revoke_credential(
 
 @router.post("/publish-revocations", status_code=204)
 async def publish_revocations(
-    publish_request: PublishRevocations,
+    publish_request: PublishRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> None:
     """
@@ -290,8 +290,8 @@ async def publish_revocations(
 
     Parameters:
     -----------
-        publish_request: PublishRevocations
-            An instance of `PublishRevocations` containing a `revocation_registry_credential_map`. This map
+        publish_request: PublishRevocationsRequest
+            An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map
             is a dictionary where each key is a revocation registry ID and its value is a list of credential
             revocation IDs to be published. Providing an empty list for a registry ID instructs the system to
             publish all pending revocations for that ID. An empty dictionary signifies that all pending
@@ -315,11 +315,11 @@ async def publish_revocations(
     bound_logger.info("Successfully published revocations.")
 
 
-@router.post("/clear-pending-revocations", response_model=PublishRevocations)
+@router.post("/clear-pending-revocations", response_model=PublishRevocationsRequest)
 async def clear_pending_revocations(
     clear_pending_request: ClearPendingRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-) -> PublishRevocations:
+) -> PublishRevocationsRequest:
     """
         Clear pending revocations.
 
@@ -340,8 +340,8 @@ async def clear_pending_revocations(
 
     Returns:
     --------
-        payload: PublishRevocations
-            The still pending revocations
+        payload: PublishRevocationsRequest
+            The revocations that are still pending after the clear request is performed
     """
     bound_logger = logger.bind(body=clear_pending_request)
     bound_logger.info("POST request received: Clear pending revocations")
@@ -353,7 +353,7 @@ async def clear_pending_revocations(
             purge=clear_pending_request.revocation_registry_credential_map,
         )
 
-    response = PublishRevocations(
+    response = PublishRevocationsRequest(
         revocation_registry_credential_map=purge_response.rrid2crid
     )
 

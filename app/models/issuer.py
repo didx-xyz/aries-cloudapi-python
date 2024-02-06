@@ -68,7 +68,7 @@ class RevokeCredential(BaseModel):
     auto_publish_on_ledger: Optional[bool] = False
 
 
-class PublishRevocations(BaseModel):
+class PublishRevocationsRequest(BaseModel):
     revocation_registry_credential_map: Dict[str, List[str]] = Field(
         default={},
         description=(

@@ -323,29 +323,31 @@ async def revoke_credential(
 
 
 async def publish_pending_revocations(
-    controller: AcaPyClient, publish_request: PublishRevocations
+    controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
 ) -> None:
     """
         Publish pending revocations
 
     Args:
         controller (AcaPyClient): aca-py client
-        publish_request (PublishRevocations): The revocation registry ID.
+        revocation_registry_credential_map (Dict[str, List[str]]): A dictionary where each key is a
+            revocation registry ID and its value is a list of credential revocation IDs to be cleared.
 
     Raises:
         Exception: When the pending revocations could not be published
 
     """
-    bound_logger = logger.bind(body=publish_request)
+    bound_logger = logger.bind(body=revocation_registry_credential_map)
 
     bound_logger.info("Validating revocation registry ids")
     await validate_rev_reg_ids(
-        controller=controller, revocation_registry_credential_map=publish_request
+        controller=controller,
+        revocation_registry_credential_map=revocation_registry_credential_map,
     )
 
     try:
         await controller.revocation.publish_revocations(
-            body=PublishRevocations(rrid2crid=publish_request)
+            body=PublishRevocations(rrid2crid=revocation_registry_credential_map)
         )
     except ApiException as e:
         bound_logger.info(
@@ -360,29 +362,33 @@ async def publish_pending_revocations(
 
 
 async def clear_pending_revocations(
-    controller: AcaPyClient, purge: ClearPendingRevocationsRequest
+    controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
 ) -> PublishRevocations:
     """
         Clear pending revocations
 
     Args:
         controller (AcaPyClient): aca-py client
-        purge (ClearPendingRevocationsRequest): The revocation registry ID.
+        revocation_registry_credential_map (Dict[str, List[str]]): A dictionary where each key is a
+            revocation registry ID and its value is a list of credential revocation IDs to be cleared.
 
     Raises:
         Exception: When the pending revocations could not be cleared
 
     """
-    bound_logger = logger.bind(body=purge)
+    bound_logger = logger.bind(body=revocation_registry_credential_map)
 
     bound_logger.info("Validating revocation registry ids")
     await validate_rev_reg_ids(
-        controller=controller, revocation_registry_credential_map=purge
+        controller=controller,
+        revocation_registry_credential_map=revocation_registry_credential_map,
     )
 
     try:
         result = await controller.revocation.clear_pending_revocations(
-            body=ClearPendingRevocationsRequest(purge=purge)
+            body=ClearPendingRevocationsRequest(
+                purge=revocation_registry_credential_map
+            )
         )
     except ApiException as e:
         bound_logger.info(
@@ -523,7 +529,8 @@ async def validate_rev_reg_ids(
 
     Args:
         controller (AcaPyClient): aca-py client
-        revocation_registry_credential_map: Dict[str, List[str]]: A map of revocation registry ids to a list of credential revocation ids
+        revocation_registry_credential_map (Dict[str, List[str]]): A dictionary where each key is a
+            revocation registry ID and its value is a list of credential revocation IDs to be cleared.
 
     Raises:
         Exception: When the revocation registry ids are invalid.

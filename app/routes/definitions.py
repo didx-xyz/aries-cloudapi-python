@@ -339,32 +339,27 @@ async def create_credential_definition(
                     controller=aries_controller,
                     revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
                     connection_id=endorser_connection_id,
-                    create_transaction_for_endorser=has_connections,
+                    create_transaction_for_endorser=True,
                 )
-                if has_connections:
-                    bound_logger.debug(
-                        "Issuer has connection with endorser. "
-                        "Await transaction to be in state `request-received`"
+
+                bound_logger.debug(
+                    "Await endorsement transaction to be in state `request-received`"
+                )
+                admin_listener = SseListener(topic="endorsements", wallet_id="admin")
+                try:
+                    txn_record = await admin_listener.wait_for_state(
+                        desired_state="request-received"
                     )
-                    admin_listener = SseListener(
-                        topic="endorsements", wallet_id="admin"
+                except TimeoutError:
+                    raise CloudApiException(
+                        "Timeout occurred while waiting to retrieve transaction record for endorser.",
+                        504,
                     )
-                    try:
-                        txn_record = await admin_listener.wait_for_state(
-                            desired_state="request-received"
-                        )
-                    except TimeoutError:
-                        raise CloudApiException(
-                            "Timeout occurred while waiting to retrieve transaction record for endorser.",
-                            504,
-                        )
-                    # todo: Post to the endorser service the transaction id to be endorsed
-                    async with get_governance_controller() as endorser_controller:
-                        await endorser_controller.endorse_transaction.endorse_transaction(
-                            tran_id=txn_record["transaction_id"]
-                        )
-                else:
-                    bound_logger.debug("Issuer has no connection with endorser")
+                # todo: Post to the endorser service the transaction id to be endorsed
+                async with get_governance_controller() as endorser_controller:
+                    await endorser_controller.endorse_transaction.endorse_transaction(
+                        tran_id=txn_record["transaction_id"]
+                    )
 
                 bound_logger.debug("Setting registry state to `active`")
                 active_rev_reg = await aries_controller.revocation.set_registry_state(
@@ -382,11 +377,11 @@ async def create_credential_definition(
                         await aries_controller.revocation.publish_rev_reg_entry(
                             rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
                             conn_id=endorser_connection_id,
-                            create_transaction_for_endorser=has_connections,
+                            create_transaction_for_endorser=True,
                         )
 
                         listener = SseListener(topic="endorsements", wallet_id="admin")
-                        # TODO move endorsement to endoser service
+                        # TODO move endorsement to endorser service
                         try:
                             bound_logger.debug(
                                 "Waiting for endorsements event in `request-received` state"

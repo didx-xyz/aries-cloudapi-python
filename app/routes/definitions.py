@@ -349,11 +349,11 @@ async def create_credential_definition(
                     txn_record = await admin_listener.wait_for_state(
                         desired_state="request-received"
                     )
-                except TimeoutError:
+                except TimeoutError as e:
                     raise CloudApiException(
                         "Timeout occurred while waiting to retrieve transaction record for endorser.",
                         504,
-                    )
+                    ) from e
 
                 # todo: Post to the endorser service the transaction id to be endorsed
                 async with get_governance_controller() as endorser_controller:

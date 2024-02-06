@@ -530,12 +530,24 @@ async def validate_rev_reg_ids(controller: AcaPyClient, request: dict):
     if len(rev_reg_id_list) > 0:
         try:
             for key in rev_reg_id_list:
-                result_count = (
-                    await controller.revocation.get_registry_issued_credentials_count(
-                        rev_reg_id=key
-                    )
-                )
-                bound_logger.debug(result_count)
+                pending_pub = (
+                    await controller.revocation.get_registry(rev_reg_id=key)
+                ).result.pending_pub
+
+                bound_logger.debug(pending_pub)
+                pending = request[key]
+
+                if len(pending) > 0:
+                    for cred_rev_id in pending:
+                        if cred_rev_id not in pending_pub:
+                            bound_logger.error(
+                                "The cred_rev_id: '{}' is not pending publication for rev_reg_id: '{}'.",
+                                cred_rev_id,
+                                key,
+                            )
+                            raise CloudApiException(
+                                f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {key}."
+                            )
         except ApiException as e:
 
             if e.status == 404:

@@ -337,6 +337,8 @@ async def publish_pending_revocations(
     Raises:
         Exception: When the pending revocations could not be published
 
+    Returns:
+        result (None): Successful execution returns None.
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
@@ -427,6 +429,8 @@ async def get_credential_revocation_record(
     Raises:
         Exception: When failed to get revocation status.
 
+    Returns:
+        IssuerCredRevRecord: The requested credential revocation record.
     """
     bound_logger = logger.bind(
         body={

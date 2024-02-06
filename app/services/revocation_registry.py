@@ -527,7 +527,8 @@ async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_cred
     bound_logger.info("Validating revocation registry ids")
     rev_reg_id_list = list(revocation_registry_credential_map.keys())
 
-    if len(rev_reg_id_list) > 0:
+    if not rev_reg_id_list: return
+    else:
         try:
             for key in rev_reg_id_list:
                 pending_pub = (

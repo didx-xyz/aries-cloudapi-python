@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,

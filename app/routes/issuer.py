@@ -343,9 +343,7 @@ async def clear_pending_revocations(
         payload: PublishRevocations
             The still pending revocations
     """
-    bound_logger = logger.bind(
-        body=purge_pending_request.revocation_registry_credential_map
-    )
+    bound_logger = logger.bind(body=purge_pending_request)
     bound_logger.info("POST request received: Clear pending revocations")
 
     async with client_from_auth(auth) as aries_controller:

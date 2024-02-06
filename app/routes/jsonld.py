@@ -96,7 +96,7 @@ async def sign_jsonld(
 async def verify_jsonld(
     body: JsonLdVerifyRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """
     Verify a JSON-LD structure
     """

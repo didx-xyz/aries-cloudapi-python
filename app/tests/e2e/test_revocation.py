@@ -223,6 +223,16 @@ async def test_publish_one_revocation(
         else:
             assert rev_record["state"] == "issued"
 
+    # Test for cred_rev_id not pending
+    with pytest.raises(HTTPException) as exc:
+
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/publish-revocations",
+            json={"revocation_registry_credential_map": {rev_reg_id: [cred_rev_id]}},
+        )
+
+    assert_that(exc.value.status_code).is_equal_to(500)
+
 
 @pytest.mark.anyio
 async def test_publish_revocations_bad_payload(

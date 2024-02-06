@@ -319,7 +319,7 @@ async def issue_revocable_credentials_to_alice_and_revoke(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
-    credential_definition_id_revocable: str, # pylint: disable=redefined-outer-name
+    credential_definition_id_revocable: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
 ):
     faber_conn_id = faber_and_alice_connection.faber_connection_id

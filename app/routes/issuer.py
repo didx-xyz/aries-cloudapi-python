@@ -353,12 +353,12 @@ async def clear_pending_revocations(
             purge=purge_pending_request.revocation_registry_credential_map,
         )
 
-    purge_response = PublishRevocations(
+    response = PublishRevocations(
         revocation_registry_credential_map=purge_response.rrid2crid
     )
 
     bound_logger.info("Successfully cleared pending revocations.")
-    return purge_response
+    return response
 
 
 @router.get("/revocation/record", response_model=IssuerCredRevRecord)

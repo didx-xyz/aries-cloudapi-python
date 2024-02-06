@@ -339,7 +339,9 @@ async def publish_pending_revocations(
     bound_logger = logger.bind(body=publish_request)
 
     bound_logger.info("Validating revocation registry ids")
-    await validate_rev_reg_ids(controller=controller, revocation_registry_credential_map=publish_request)
+    await validate_rev_reg_ids(
+        controller=controller, revocation_registry_credential_map=publish_request
+    )
 
     try:
         await controller.revocation.publish_revocations(
@@ -374,7 +376,9 @@ async def clear_pending_revocations(
     bound_logger = logger.bind(body=purge)
 
     bound_logger.info("Validating revocation registry ids")
-    await validate_rev_reg_ids(controller=controller, revocation_registry_credential_map=purge)
+    await validate_rev_reg_ids(
+        controller=controller, revocation_registry_credential_map=purge
+    )
 
     try:
         result = await controller.revocation.clear_pending_revocations(
@@ -511,7 +515,9 @@ async def get_credential_definition_id_from_exchange_id(
     return credential_definition_id
 
 
-async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]) -> None:
+async def validate_rev_reg_ids(
+    controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
+) -> None:
     """
         Validate revocation registry ids
 
@@ -527,7 +533,8 @@ async def validate_rev_reg_ids(controller: AcaPyClient, revocation_registry_cred
     bound_logger.info("Validating revocation registry ids")
     rev_reg_id_list = list(revocation_registry_credential_map.keys())
 
-    if not rev_reg_id_list: return
+    if not rev_reg_id_list:
+        return
     else:
         try:
             for key in rev_reg_id_list:

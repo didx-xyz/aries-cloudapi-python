@@ -542,30 +542,28 @@ async def validate_rev_reg_ids(
 
     if not rev_reg_id_list:
         return
-    else:
+
+    for key in rev_reg_id_list:
         try:
-            for key in rev_reg_id_list:
-                pending_pub = (
-                    await controller.revocation.get_registry(rev_reg_id=key)
-                ).result.pending_pub
+            pending_pub = (
+                await controller.revocation.get_registry(rev_reg_id=key)
+            ).result.pending_pub
 
-                bound_logger.debug(pending_pub)
-                pending = revocation_registry_credential_map[key]
+            bound_logger.debug(pending_pub)
+            pending = revocation_registry_credential_map[key]
 
-                if len(pending) > 0:
-                    for cred_rev_id in pending:
-                        if cred_rev_id not in pending_pub:
-                            bound_logger.error(
-                                "The cred_rev_id: '{}' is not pending publication for rev_reg_id: '{}'.",
-                                cred_rev_id,
-                                key,
-                            )
-                            raise CloudApiException(
-                                f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {key}.",
-                                404,
-                            )
+            for cred_rev_id in pending:
+                if cred_rev_id not in pending_pub:
+                    bound_logger.error(
+                        "The cred_rev_id: '{}' is not pending publication for rev_reg_id: '{}'.",
+                        cred_rev_id,
+                        key,
+                    )
+                    raise CloudApiException(
+                        f"The cred_rev_id: '{cred_rev_id}' is not pending publication for rev_reg_id: {key}.",
+                        404,
+                    )
         except ApiException as e:
-
             if e.status == 404:
                 bound_logger.info(
                     "The rev_reg_id does not exist '{}'.",

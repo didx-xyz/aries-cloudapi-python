@@ -120,9 +120,7 @@ async def test_clear_pending_revokes_bad_payload(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
             json={
                 "revocation_registry_credential_map": {
-                    "WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0": [
-                        "bad"
-                    ]
+                    "WgWxqztrNooG92RXvxSTWv:4:WgWxqztrNooG92RXvxSTWv:3:CL:20:tag:CL_ACCUM:0": []
                 }
             },
         )

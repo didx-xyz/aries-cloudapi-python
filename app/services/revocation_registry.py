@@ -106,43 +106,6 @@ async def get_active_revocation_registry_for_credential(
     return result.result
 
 
-async def get_credential_revocation_status(
-    controller: AcaPyClient, credential_exchange_id: str
-) -> IssuerCredRevRecord:
-    """
-        Get the revocation status for a credential
-
-    Args:
-        controller (AcaPyClient): aca-py client
-        credential_exchange_id (str): The credential exchange ID.
-
-    Raises:
-        Exception: When the active revocation registry cannot be retrieved.
-
-    Returns:
-        IssuerCredRevRecord: The revocation registry record.
-    """
-    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("Fetching the revocation status for a credential exchange")
-
-    result = await controller.revocation.get_revocation_status(
-        cred_ex_id=credential_exchange_id
-    )
-
-    if not isinstance(result, CredRevRecordResult):
-        bound_logger.error(
-            "Unexpected type returned from get_revocation_status: `{}`.", result
-        )
-        raise CloudApiException(
-            f"Error retrieving revocation status for credential exchange ID `{credential_exchange_id}`."
-        )
-    else:
-        result = result.result
-
-    bound_logger.info("Successfully retrieved revocation status.")
-    return result
-
-
 async def publish_revocation_registry_on_ledger(
     controller: AcaPyClient,
     revocation_registry_id: str,

@@ -34,6 +34,7 @@ services:
       - environments/governance-ga/aca-py-agent.default.env
     environment:
       ACAPY_AUTO_ENDORSE_TRANSACTIONS: false
+      # ACAPY_ENDPOINT: http://${LOCAL_HOSTNAME}.skunk-hydra.ts.net:3020
     ports:
       - 0.0.0.0:3020:3020
       - 0.0.0.0:3021:3021
@@ -91,7 +92,7 @@ services:
       - POSTGRES_PASSWORD=trustregistry
       - PGUSER=trustregistry
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -304,6 +305,7 @@ services:
     env_file:
       - environments/governance-multitenant/aca-py-agent.default.env
     environment:
+      AGENT_ENDPOINT: http://${LOCAL_HOSTNAME}.skunk-hydra.ts.net:4020
       ACAPY_ENDPOINT: http://${LOCAL_HOSTNAME}.skunk-hydra.ts.net:4020
     ports:
       - 0.0.0.0:4020:3020
@@ -508,7 +510,8 @@ services:
     hostname: caddy
     networks:
       - mediator-network
-    ports: # Uncomment to access caddy outside of containers
+    ports:
+      # Uncomment to access caddy outside of containers
       - 2015:2015
     #   - 2019:2019
     volumes:
@@ -549,6 +552,8 @@ services:
     depends_on:
       # mediator-controller:
       #   condition: service_healthy
+      ngrok:
+        condition: service_healthy
       db:
         condition: service_healthy
     restart: unless-stopped
@@ -577,7 +582,8 @@ services:
       - FIREBASE_NOTIFICATION_BODY=${FIREBASE_NOTIFICATION_BODY}
       - FIREBASE_SERVICE_ACCOUNT=${FIREBASE_SERVICE_ACCOUNT}
       # - MEDIATOR_URL=${LOCAL_HOSTNAME}.skunk-hydra.ts.net
-    ports: # Uncomment to access mediator outside of containers
+    ports:
+      # Uncomment to access mediator outside of containers
       - ${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}:${MEDIATOR_AGENT_HTTP_ADMIN_PORT:-3002}
       - ${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}:${MEDIATOR_AGENT_HTTP_IN_PORT:-3000}
       - ${MEDIATOR_AGENT_WS_IN_PORT:-3001}:${MEDIATOR_AGENT_WS_IN_PORT:-3001}

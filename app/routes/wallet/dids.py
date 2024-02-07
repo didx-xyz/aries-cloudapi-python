@@ -95,7 +95,7 @@ async def set_public_did(
 async def rotate_keypair(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("PATCH request received: Rotate keypair for DID")
     async with client_from_auth(auth) as aries_controller:
@@ -126,7 +126,7 @@ async def set_did_endpoint(
     did: str,
     body: SetDidEndpointRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """Update Endpoint in wallet and on ledger if posted to it."""
 
     # "Endpoint" type is for making connections using public indy DIDs

@@ -312,3 +312,70 @@ async def test_issue_credential_with_save_exchange_record(
         await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")  # Clean up
     else:
         assert len(faber_cred_ex_recs) == 0  # default is to remove records
+
+
+@pytest.fixture(scope="function")
+async def issue_revocable_credentials_to_alice_and_revoke(
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    credential_definition_id_revocable: str,  # pylint: disable=redefined-outer-name
+    faber_and_alice_connection: FaberAliceConnect,
+):
+    faber_conn_id = faber_and_alice_connection.faber_connection_id
+    alice_conn_id = faber_and_alice_connection.alice_connection_id
+
+    for i in range(3):
+        credential = {
+            "protocol_version": "v1",
+            "connection_id": faber_conn_id,
+            "save_exchange_record": True,
+            "indy_credential_detail": {
+                "credential_definition_id": credential_definition_id_revocable,
+                "attributes": {"speed": str(i)},
+            },
+        }
+
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+
+    alice_cred_ex_response = await alice_member_client.get(
+        CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
+    )
+
+    while len(alice_cred_ex_response.json()) != 3:
+        print("not 3 credentials yet")
+        alice_cred_ex_response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
+        )
+
+    for cred in alice_cred_ex_response.json():
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
+        )
+        # add sse listener to wait for credential state "done" for each credential
+        listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
+        await listener.wait_for_event(
+            field="credential_id", field_id=cred["credential_id"], desired_state="done"
+        )
+
+    cred_ex_response = await faber_client.get(
+        CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
+    )
+
+    cred_ex_response = cred_ex_response.json()
+    assert len(cred_ex_response) == 3
+
+    # revoke all credentials in list
+    for cred in cred_ex_response:
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/revoke",
+            json={
+                "credential_definition_id": credential_definition_id_revocable,
+                "credential_exchange_id": cred["credential_id"][3:],
+            },
+        )
+
+    return cred_ex_response

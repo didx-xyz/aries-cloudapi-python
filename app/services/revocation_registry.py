@@ -1,11 +1,13 @@
-from typing import Optional
+from typing import Dict, List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
     ApiException,
+    ClearPendingRevocationsRequest,
     CredRevRecordResult,
     IssuerCredRevRecord,
     IssuerRevRegRecord,
+    PublishRevocations,
     RevokeRequest,
     RevRegCreateRequest,
     RevRegResult,
@@ -13,9 +15,8 @@ from aries_cloudcontroller import (
     TxnOrRevRegResult,
 )
 
-from app.dependencies.acapy_clients import get_governance_controller
-from app.event_handling.sse_listener import SseListener
 from app.exceptions import CloudApiException
+from app.models.issuer import ClearPendingRevocationsResult
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -103,43 +104,6 @@ async def get_active_revocation_registry_for_credential(
         "Successfully retrieved revocation registry for credential definition."
     )
     return result.result
-
-
-async def get_credential_revocation_status(
-    controller: AcaPyClient, credential_exchange_id: str
-) -> IssuerCredRevRecord:
-    """
-        Get the revocation status for a credential
-
-    Args:
-        controller (AcaPyClient): aca-py client
-        credential_exchange_id (str): The credential exchange ID.
-
-    Raises:
-        Exception: When the active revocation registry cannot be retrieved.
-
-    Returns:
-        IssuerCredRevRecord: The revocation registry record.
-    """
-    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("Fetching the revocation status for a credential exchange")
-
-    result = await controller.revocation.get_revocation_status(
-        cred_ex_id=credential_exchange_id
-    )
-
-    if not isinstance(result, CredRevRecordResult):
-        bound_logger.error(
-            "Unexpected type returned from get_revocation_status: `{}`.", result
-        )
-        raise CloudApiException(
-            f"Error retrieving revocation status for credential exchange ID `{credential_exchange_id}`."
-        )
-    else:
-        result = result.result
-
-    bound_logger.info("Successfully retrieved revocation status.")
-    return result
 
 
 async def publish_revocation_registry_on_ledger(
@@ -309,7 +273,7 @@ async def revoke_credential(
             )
         )
     except ApiException as e:
-        bound_logger.info(
+        bound_logger.warning(
             "An ApiException was caught while revoking credential. The error message is: '{}'.",
             e.reason,
         )
@@ -317,54 +281,154 @@ async def revoke_credential(
             f"Failed to revoke credential: {e.reason}.", e.status
         ) from e
 
-    if not auto_publish_to_ledger:
-        try:
-            rev_reg_record = await get_active_revocation_registry_for_credential(
-                controller=controller,
-                credential_definition_id=credential_definition_id,
-            )
-
-            await publish_revocation_entry_to_ledger(
-                controller=controller,
-                revocation_registry_id=rev_reg_record.revoc_reg_id,
-                create_transaction_for_endorser=True,
-            )
-        except CloudApiException as e:
-            if e.status_code == 400:
-                bound_logger.info(
-                    "Bad request: Cannot publish revocation entry to ledger: {}",
-                    e.detail,
-                )
-            else:
-                bound_logger.error(e.detail)
-            raise e
-        except Exception as e:
-            bound_logger.exception("Exception caught when revoking credential.")
-            raise e
-
-        await endorser_revoke()
-
     bound_logger.info("Successfully revoked credential.")
 
 
-# todo: Migrate to endorser service
-async def endorser_revoke():
-    listener = SseListener(topic="endorsements", wallet_id="admin")
+async def publish_pending_revocations(
+    controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
+) -> None:
+    """
+        Publish pending revocations
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        revocation_registry_credential_map (Dict[str, List[str]]): A dictionary where each key is a
+            revocation registry ID and its value is a list of credential revocation IDs to be cleared.
+
+    Raises:
+        Exception: When the pending revocations could not be published
+
+    Returns:
+        result (None): Successful execution returns None.
+    """
+    bound_logger = logger.bind(body=revocation_registry_credential_map)
+
+    bound_logger.info("Validating revocation registry ids")
+    await validate_rev_reg_ids(
+        controller=controller,
+        revocation_registry_credential_map=revocation_registry_credential_map,
+    )
+
     try:
-        logger.debug("Waiting for endorsements event in `request-received` state")
-        txn_record = await listener.wait_for_state(desired_state="request-received")
-    except TimeoutError as e:
-        logger.error("Waiting for an endorsement event has timed out.")
-        raise CloudApiException(
-            "Timeout occurred while waiting to retrieve transaction record for endorser.",
-            504,
-        ) from e
-    async with get_governance_controller() as endorser_controller:
-        logger.info("Endorsing what is presumed to be a revocation transaction")
-        await endorser_controller.endorse_transaction.endorse_transaction(
-            tran_id=txn_record["transaction_id"]
+        await controller.revocation.publish_revocations(
+            body=PublishRevocations(rrid2crid=revocation_registry_credential_map)
         )
-    logger.info("Successfully endorsed transaction of revocation.")
+    except ApiException as e:
+        bound_logger.warning(
+            "An ApiException was caught while publishing pending revocations. The error message is: '{}'.",
+            e.reason,
+        )
+        raise CloudApiException(
+            f"Failed to publish pending revocations: {e.reason}.", e.status
+        ) from e
+
+    bound_logger.info("Successfully published pending revocations.")
+
+
+async def clear_pending_revocations(
+    controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
+) -> ClearPendingRevocationsResult:
+    """
+        Clear pending revocations
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        revocation_registry_credential_map (Dict[str, List[str]]): A dictionary where each key is a
+            revocation registry ID and its value is a list of credential revocation IDs to be cleared.
+
+    Raises:
+        Exception: When the pending revocations could not be cleared
+
+    Returns:
+        ClearPendingRevocationsResult: The outstanding revocations after completing the clear request.
+    """
+    bound_logger = logger.bind(body=revocation_registry_credential_map)
+
+    bound_logger.info("Validating revocation registry ids")
+    await validate_rev_reg_ids(
+        controller=controller,
+        revocation_registry_credential_map=revocation_registry_credential_map,
+    )
+
+    try:
+        clear_result = await controller.revocation.clear_pending_revocations(
+            body=ClearPendingRevocationsRequest(
+                purge=revocation_registry_credential_map
+            )
+        )
+    except ApiException as e:
+        bound_logger.warning(
+            "An ApiException was caught while clearing pending revocations. The error message is: '{}'.",
+            e.reason,
+        )
+        raise CloudApiException(
+            f"Failed to clear pending revocations: {e.reason}.", e.status
+        ) from e
+
+    result = ClearPendingRevocationsResult(
+        revocation_registry_credential_map=clear_result.rrid2crid
+    )
+    bound_logger.info("Successfully cleared pending revocations.")
+    return result
+
+
+async def get_credential_revocation_record(
+    controller: AcaPyClient,
+    credential_exchange_id: Optional[str] = None,
+    credential_revocation_id: Optional[str] = None,
+    revocation_registry_id: Optional[str] = None,
+) -> IssuerCredRevRecord:
+    """
+        Get the revocation status for a credential
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        credential_exchange_id (str): The credential exchange ID.
+        credential_revocation_id (str): The credential revocation ID.
+        revocation_registry_id (str): The revocation registry ID.
+
+    Raises:
+        Exception: When failed to get revocation status.
+
+    Returns:
+        IssuerCredRevRecord: The requested credential revocation record.
+    """
+    bound_logger = logger.bind(
+        body={
+            "credential_exchange_id": credential_exchange_id,
+            "credential_revocation_id": credential_revocation_id,
+            "revocation_registry_id": revocation_registry_id,
+        }
+    )
+    bound_logger.info("Fetching the revocation status for a credential exchange")
+
+    try:
+        result = await controller.revocation.get_revocation_status(
+            cred_ex_id=credential_exchange_id,
+            cred_rev_id=credential_revocation_id,
+            rev_reg_id=revocation_registry_id,
+        )
+    except ApiException as e:
+        bound_logger.warning(
+            "An ApiException was caught while getting revocation status. The error message is: '{}'.",
+            e.reason,
+        )
+        raise CloudApiException(
+            f"Failed to get revocation status: {e.reason}.", e.status
+        ) from e
+
+    if not isinstance(result, CredRevRecordResult):
+        bound_logger.error(
+            "Unexpected type returned from get_revocation_status: `{}`.", result
+        )
+        raise CloudApiException(
+            f"Error retrieving revocation status for credential exchange ID `{credential_exchange_id}`."
+        )
+
+    result = result.result
+
+    bound_logger.info("Successfully retrieved revocation status.")
+    return result
 
 
 async def get_credential_definition_id_from_exchange_id(
@@ -426,3 +490,73 @@ async def get_credential_definition_id_from_exchange_id(
         "Successfully obtained cred definition id from the cred exchange id."
     )
     return credential_definition_id
+
+
+async def validate_rev_reg_ids(
+    controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
+) -> None:
+    """
+        Validate revocation registry ids
+
+    Args:
+        controller (AcaPyClient): aca-py client
+        revocation_registry_credential_map (Dict[str, List[str]]): A dictionary where each key is a
+            revocation registry ID and its value is a list of credential revocation IDs to be cleared.
+
+    Raises:
+        Exception: When the revocation registry ids are invalid.
+
+    """
+    bound_logger = logger.bind(body=revocation_registry_credential_map)
+    bound_logger.info("Validating revocation registry ids")
+    rev_reg_id_list = list(revocation_registry_credential_map.keys())
+
+    if not rev_reg_id_list:
+        return
+
+    for rev_reg_id in rev_reg_id_list:
+        try:
+            rev_reg_result = await controller.revocation.get_registry(
+                rev_reg_id=rev_reg_id
+            )
+            if rev_reg_result.result is None:
+                message = f"Bad request: Failed to retrieve revocation registry '{rev_reg_id}'."
+                bound_logger.info(message)
+                raise CloudApiException(message, status_code=404)
+
+            pending_pub = rev_reg_result.result.pending_pub
+
+            if pending_pub is None:
+                message = f"Bad request: No pending publications found for revocation registry '{rev_reg_id}'."
+                bound_logger.info(message)
+                raise CloudApiException(message, status_code=404)
+
+            bound_logger.debug(
+                f"Got the following pending publications for revocation registry '{rev_reg_id}': {pending_pub}"
+            )
+            requested_cred_rev_ids = revocation_registry_credential_map[rev_reg_id]
+
+            for cred_rev_id in requested_cred_rev_ids:
+                if cred_rev_id not in pending_pub:
+                    message = (
+                        f"Bad request: the cred_rev_id: '{cred_rev_id}' "
+                        f"is not pending publication for rev_reg_id: '{rev_reg_id}'."
+                    )
+                    bound_logger.info(message)
+                    raise CloudApiException(message, 404)
+        except ApiException as e:
+            if e.status == 404:
+                message = f"The rev_reg_id `{rev_reg_id}` does not exist: '{e.reason}'."
+                bound_logger.info(message)
+                raise CloudApiException(message, e.status) from e
+            else:
+                bound_logger.error(
+                    "An ApiException was caught while validating rev_reg_id. The error message is: '{}'.",
+                    e.reason,
+                )
+                raise CloudApiException(
+                    f"An error occurred while validating requested revocation registry credential map: '{e.reason}'.",
+                    e.status,
+                ) from e
+
+    bound_logger.info("Successfully validated revocation registry ids.")

@@ -4,7 +4,6 @@ import time
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    AcaPyClient,
     ApiException,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
@@ -221,6 +220,26 @@ async def create_credential_definition(
         bound_logger.debug("Asserting client is a valid issuer")
         await assert_valid_issuer(public_did, credential_definition.schema_id)
 
+        if support_revocation:
+            endorser_connection = await aries_controller.connection.get_connections(
+                alias=ACAPY_ENDORSER_ALIAS
+            )
+            has_connections = len(endorser_connection.results) > 0
+
+            if not has_connections:
+                bound_logger.error(
+                    "Failed to create credential definition supporting revocation: no endorser connection found. "
+                    "Issuer attempted to create a credential definition with support for revocation but does not "
+                    "have an active connection with an endorser, which is required for this operation."
+                )
+
+                raise CloudApiException(
+                    "Credential definition creation failed: An active endorser connection is required "
+                    "to support revocation. Please establish a connection with an endorser and try again."
+                )
+
+            endorser_connection_id = endorser_connection.results[0].connection_id
+
         listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
 
         bound_logger.debug("Publishing credential definition")
@@ -308,61 +327,97 @@ async def create_credential_definition(
                     ),
                 )
                 bound_logger.debug("Fetching connection with endorser")
-                endorser_connection = await aries_controller.connection.get_connections(
-                    alias=ACAPY_ENDORSER_ALIAS
-                )
+
                 # NOTE: Special case - the endorser registers a cred def itself that
                 # supports revocation so there is no endorser connection.
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
-                has_connections = len(endorser_connection.results) > 0
+
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,
                     revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
-                    connection_id=(
-                        endorser_connection.results[0].connection_id
-                        if has_connections
-                        else None
-                    ),
-                    create_transaction_for_endorser=has_connections,
+                    connection_id=endorser_connection_id,
+                    create_transaction_for_endorser=True,
                 )
-                if has_connections:
-                    bound_logger.debug(
-                        "Issuer has connection with endorser. "
-                        "Await transaction to be in state `request-received`"
+
+                bound_logger.debug(
+                    "Await endorsement transaction to be in state `request-received`"
+                )
+                admin_listener = SseListener(topic="endorsements", wallet_id="admin")
+                try:
+                    txn_record = await admin_listener.wait_for_state(
+                        desired_state="request-received"
                     )
-                    admin_listener = SseListener(
-                        topic="endorsements", wallet_id="admin"
+                except TimeoutError as e:
+                    raise CloudApiException(
+                        "Timeout occurred while waiting to retrieve transaction record for endorser.",
+                        504,
+                    ) from e
+
+                # todo: Post to the endorser service the transaction id to be endorsed
+                async with get_governance_controller() as endorser_controller:
+                    await endorser_controller.endorse_transaction.endorse_transaction(
+                        tran_id=txn_record["transaction_id"]
+                    )
+
+                    bound_logger.debug("Setting registry state to `active`")
+                    active_rev_reg = (
+                        await aries_controller.revocation.set_registry_state(
+                            rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                            state="active",
+                        )
+                    )
+                    credential_definition_id = active_rev_reg.result.cred_def_id
+
+                    bound_logger.debug(
+                        "Publishing rev reg entry for: rev_reg_id: {} and conn_id: {}",
+                        revoc_reg_creation_result.revoc_reg_id,
+                        endorser_connection_id,
+                    )
+
+                    await aries_controller.revocation.publish_rev_reg_entry(
+                        rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                        conn_id=endorser_connection_id,
+                        create_transaction_for_endorser=True,
+                    )
+
+                    listener = SseListener(topic="endorsements", wallet_id="admin")
+                    # TODO move endorsement to endorser service
+                    bound_logger.debug(
+                        "Waiting for endorsements event in `request-received` state"
                     )
                     try:
-                        txn_record = await admin_listener.wait_for_state(
+                        txn_record = await listener.wait_for_state(
                             desired_state="request-received"
                         )
-                    except TimeoutError:
+                    except TimeoutError as e:
+                        bound_logger.error(
+                            "Waiting for an endorsement event has timed out."
+                        )
                         raise CloudApiException(
                             "Timeout occurred while waiting to retrieve transaction record for endorser.",
                             504,
-                        )
-                    # todo: Post to the endorser service the transaction id to be endorsed
-                    async with get_governance_controller() as endorser_controller:
-                        await endorser_controller.endorse_transaction.endorse_transaction(
-                            tran_id=txn_record["transaction_id"]
-                        )
-                else:
-                    bound_logger.debug("Issuer has no connection with endorser")
+                        ) from e
 
-                bound_logger.debug("Setting registry state to `active`")
-                active_rev_reg = await aries_controller.revocation.set_registry_state(
-                    rev_reg_id=revoc_reg_creation_result.revoc_reg_id, state="active"
+                    bound_logger.info(
+                        "Endorsing what is presumed to be a rev_reg_entry transaction"
+                    )
+                    await endorser_controller.endorse_transaction.endorse_transaction(
+                        tran_id=txn_record["transaction_id"]
+                    )
+                bound_logger.info(
+                    "Successfully endorsed transaction of revocation registry entry."
                 )
-                credential_definition_id = active_rev_reg.result.cred_def_id
+            except CloudApiException as e:
+                bound_logger.error(f"Error writing first accum value to ledger: {e}")
+                raise
             except ApiException as e:
-                bound_logger.debug(
+                bound_logger.error(
                     "An ApiException was caught while supporting revocation. The error message is: '{}'.",
                     e.reason,
                 )
-                raise e
+                raise
 
     # ACA-Py only returns the id after creating a credential definition
     # We want consistent return types across all endpoints, so retrieving the credential

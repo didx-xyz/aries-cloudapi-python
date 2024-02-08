@@ -358,6 +358,7 @@ jobs:
           token: ${{ secrets.PAT }}
           path: charts
           # ref: ${{ steps.set_branch.outputs.result }}
+          ref: ha
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools

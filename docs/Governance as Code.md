@@ -6,7 +6,7 @@ Schemas are used to define attributes related to credentials. To define schemas 
 
 1. Access the API through the [Governance Cloud API](http://localhost:8100/docs).
 2. Authenticate with `governance.` + `APIKEY` role.
-3. Generate a new schema with a `POST` to the following API endpoint: `/generic/definitions/schemas`.
+3. Generate a new schema with a `POST` to the following API endpoint: `/v1/definitions/schemas`.
 
 An example of a successful response to generate a DID:
 
@@ -133,7 +133,7 @@ To create credential definitions through the `Transaction Endorser Protocol` for
 
 1. Access the [Cloud API Swagger UI](http://localhost:8100/docs)
 2. Authenticate as an Issuer using `tenant.`+`JWTKey` x-api-key
-3. Create a new schema with a `POST` to the API endpoint `/generic/definitions/credentials` using the request body illustrated in the example below.
+3. Create a new schema with a `POST` to the API endpoint `/v1/definitions/credentials` using the request body illustrated in the example below.
 
    >NOTE: The schema ID should already exist in the ledger and be accessible in the Trust Registry
 

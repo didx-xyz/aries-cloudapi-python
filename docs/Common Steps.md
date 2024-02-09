@@ -92,7 +92,7 @@ To create schemas and effectively write them to the ledger as well as registerin
    This should correspond to a schema you created previously, and the `connection_id` is the ID of the connection you created in the previous step. If you're unsure what that ID is, you can always run a GET request against the `connections` endpoint to find it.
 
 6. Accept and store the credential in the holder wallet
-7. Using the holder (authenticating with the holder auth header), issue a GET request against the `/generic/issuer/credentials` endpoint, providing the connection ID of the connection established above. _Note: The connection IDs are unique for each entity, so the connection between the issuer and the holder is one connection with two separate connection IDs - one for the issuer and one for the holder._ This will provide you with a credential record that should be in the state of being offered. Providing the connection ID again, you can now use the holder to store the credential by posting to `/generic/issuer/credentials/{credential_id}/store`
+7. Using the holder (authenticating with the holder auth header), issue a GET request against the `/v1/issuer/credentials` endpoint, providing the connection ID of the connection established above. _Note: The connection IDs are unique for each entity, so the connection between the issuer and the holder is one connection with two separate connection IDs - one for the issuer and one for the holder._ This will provide you with a credential record that should be in the state of being offered. Providing the connection ID again, you can now use the holder to store the credential by posting to `/v1/issuer/credentials/{credential_id}/store`
 8. (Optional) Get yor credentials from your wallet (`wallet/credentials`) check whether the credential is actually stored. You can also check this via the webhooks/sse.
 
 ## Verifying a Credential
@@ -101,7 +101,7 @@ To create schemas and effectively write them to the ledger as well as registerin
 2. Register an entity as a verifier (verifier)
    1. In other words, create or update a wallet, passing the role "verifier"
 3. Create a connection between 1. prover and 2. verifier the same way as in **Issuing a Credential**
-4. Create a proof request (`/generic/verifier/create-request`) using the verifier and send it to the prover. Consult the Swagger `verifier` endpoints. POST to `/generic/verifier/send-request` with a payload of the following form, replacing the values accordingly (and ensuring they can be covered by the previously created schema and issued credential):
+4. Create a proof request (`/v1/verifier/create-request`) using the verifier and send it to the prover. Consult the Swagger `verifier` endpoints. POST to `/v1/verifier/send-request` with a payload of the following form, replacing the values accordingly (and ensuring they can be covered by the previously created schema and issued credential):
 
    ```json
    {
@@ -140,11 +140,11 @@ To create schemas and effectively write them to the ledger as well as registerin
 
 5. Send the proof request.
 
-   1. From the prover, get the proof records using `/generic/verifier/proofs` and create a proof request you want to send, just as above (same payload format and endpoint).
+   1. From the prover, get the proof records using `/v1/verifier/proofs` and create a proof request you want to send, just as above (same payload format and endpoint).
 
 6. Accept the proof request.
 
-   1. From the verifier, you can now accept (or reject; see `/generic/verifier/reject-request` on Swagger for payload) by POSTing to `/generic/verifier/send-request`, adjusting the payload to:
+   1. From the verifier, you can now accept (or reject; see `/v1/verifier/reject-request` on Swagger for payload) by POSTing to `/v1/verifier/send-request`, adjusting the payload to:
 
    ```json
    {

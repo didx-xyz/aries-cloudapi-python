@@ -15,7 +15,7 @@ from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/generic/jsonld", tags=["jsonld"])
+router = APIRouter(prefix="/v1/jsonld", tags=["jsonld"])
 
 
 @router.post("/sign", response_model=SignResponse)

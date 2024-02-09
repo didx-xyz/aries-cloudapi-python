@@ -9,7 +9,7 @@ from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/trust-registry", tags=["trust-registry"])
+router = APIRouter(prefix="/v1/trust-registry", tags=["trust-registry"])
 
 
 @router.get("/schemas", response_model=List[Schema])

@@ -13,7 +13,7 @@ from shared.models.webhook_topics import Connection
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/generic/oob", tags=["out-of-band"])
+router = APIRouter(prefix="/v1/oob", tags=["out-of-band"])
 
 
 @router.post("/create-invitation", response_model=InvitationRecord)

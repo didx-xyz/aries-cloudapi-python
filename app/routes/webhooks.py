@@ -9,7 +9,7 @@ from shared.models.webhook_topics import CloudApiTopics, CloudApiWebhookEventGen
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/webhooks", tags=["webhooks"])
+router = APIRouter(prefix="/v1/webhooks", tags=["webhooks"])
 
 
 @router.get("")

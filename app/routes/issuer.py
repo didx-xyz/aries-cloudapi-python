@@ -30,7 +30,7 @@ from shared.models.webhook_topics import CredentialExchange
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/generic/issuer/credentials", tags=["issuer"])
+router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 
 
 @router.get("", response_model=List[CredentialExchange])

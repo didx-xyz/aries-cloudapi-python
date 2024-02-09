@@ -17,7 +17,7 @@ from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/sse", tags=["sse"])
+router = APIRouter(prefix="/v1/sse", tags=["sse"])
 
 
 @router.get(

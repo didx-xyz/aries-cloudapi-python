@@ -12,7 +12,7 @@ from shared.models.webhook_topics import Connection
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/generic/connections", tags=["connections"])
+router = APIRouter(prefix="/v1/connections", tags=["connections"])
 
 
 @router.post("/create-invitation", response_model=InvitationResult)

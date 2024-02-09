@@ -97,7 +97,7 @@ Here is an example Javascript implementation
 
 ```js
 const EventSource = require('eventsource');
-url = "http://localhost:8100/sse/<wallet_id>"
+url = "http://localhost:8100/v1/sse/<wallet_id>"
 
 const headers = {
     'x-api-key':"tenant.<tenant/wallet_token>",

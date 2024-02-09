@@ -45,7 +45,7 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(
-    prefix="/generic/definitions",
+    prefix="/v1/definitions",
     tags=["definitions"],
 )
 

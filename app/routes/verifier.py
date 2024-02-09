@@ -23,7 +23,7 @@ from shared.models.webhook_topics import PresentationExchange
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/generic/verifier", tags=["verifier"])
+router = APIRouter(prefix="/v1/verifier", tags=["verifier"])
 
 
 @router.post("/create-request", response_model=PresentationExchange)

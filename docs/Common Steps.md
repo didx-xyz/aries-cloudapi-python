@@ -3,12 +3,13 @@
 This document will guide you through some common steps and interactions. Please read it carefully, and feel free to open an issue if further questions arise or if you spot a mistake.
 
 >**Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at:
+>
 > * CloudAPI-Multitenant-Admin -> [http://localhost:8100/docs](http://localhost:8100/docs)
 > * CloudAPI-Governance -> [http://localhost:8200/docs](http://localhost:8200/docs)
 > * CloudAPI-Tenant -> [http://localhost:8300/docs](http://localhost:8300/docs)
 > * CloudAPI-Public (trust registry) -> [http://localhost:8400/docs](http://localhost:8400/docs)
-> 
->  under a vanilla setup. If you find any model to be unclear from the document below, try finding it in Swagger  UI before opening an issue. This document describes only some basic steps; more detailed workflows can be found [here](./Example%20Flows.md).
+>
+> under a vanilla setup. If you find any model to be unclear from the document below, try finding it in Swagger UI before opening an issue. This document describes only some basic steps; more detailed workflows can be found [here](./Example%20Flows.md).
 
 It is also recommended to set up a webhook listener (refer to our [Webhooks doc](./Webhooks.md)). This will significantly aid in understanding the activities occurring in the ACA-Py instances in the background.
 

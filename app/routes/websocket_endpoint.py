@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
-@router.websocket("/ws/topic/{topic}")
+@router.websocket("/v1/ws/topic/{topic}")
 async def websocket_endpoint_topic(
     websocket: WebSocket,
     topic: str,
@@ -18,7 +18,7 @@ async def websocket_endpoint_topic(
     await handle_websocket(websocket, wallet_id="", topic=topic, auth=auth)
 
 
-@router.websocket("/ws/{wallet_id}")
+@router.websocket("/v1/ws/{wallet_id}")
 async def websocket_endpoint_wallet(
     websocket: WebSocket,
     wallet_id: str,
@@ -28,7 +28,7 @@ async def websocket_endpoint_wallet(
     await handle_websocket(websocket, wallet_id=wallet_id, topic="", auth=auth)
 
 
-@router.websocket("/ws/{wallet_id}/{topic}")
+@router.websocket("/v1/ws/{wallet_id}/{topic}")
 async def websocket_endpoint_wallet_topic(
     websocket: WebSocket,
     wallet_id: str,

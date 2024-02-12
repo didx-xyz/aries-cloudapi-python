@@ -11,9 +11,16 @@
 
 ## First Steps
 
-After spinning up the containers following the [Quick Start Guide](Quick%20Start%20Guide.md), you are ready to rumble. Navigating to the [Swagger UI](http://localhost:8100/docs/) provides a good overview of the intended functionalities. You'll see that there are `generic` endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and webhooks endpoints.
+After spinning up the containers following the [Quick Start Guide](Quick%20Start%20Guide.md), you are ready to rumble. Navigating to the **Swagger UI** :
 
->NOTE: Regardless of the multitude of containers and mechanisms running, [CloudAPI](http://localhost:8100) and its [Swagger UI](http://localhost:8100/docs) are the main interaction points intended between clients and the stack. This should be the only endpoint clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
+- [CloudAPI-Multitenant-Admin](http://localhost:8100/docs)
+- [CloudAPI-Governance](http://localhost:8200/docs)
+- [CloudAPI-Tenant](http://localhost:8300/docs)
+- [CloudAPI-Public](http://localhost:8400/docs)
+
+ provides a good overview of the intended functionalities. You'll see that there are `generic` endpoints for common actions, wallet specific actions, and admin actions. On top of that, you'll find trust registry and webhooks endpoints.
+
+>NOTE: Regardless of the multitude of containers and mechanisms running in **CloudAPI**, its aforementioned Swagger UI's are the main interaction points intended between clients and the stack. This should be the only endpoints clients should interact with. There is no need (and no intention to allow) for clients to directly interact with the webhooks or trust registry container. For a production deployment or a close-to-production/smoke-testing deployment, you are well advised to only expose this endpoint to clients and leave all other endpoints unexposed to the outside world.
 
 ### Using the Swagger UI
 

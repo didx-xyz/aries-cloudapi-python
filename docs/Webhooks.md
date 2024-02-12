@@ -81,11 +81,11 @@ How this works is that either procedure instantiates a client connecting to the 
 
 There are five different endpoints for listening to server-sent events (SSE).
 
-- `GET` `/sse/{wallet_id}`
-- `GET` `/sse/{wallet_id}/{topic}`
-- `GET` `/sse/{wallet_id}/{topic}/{desired_state}`
-- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}`
-- `GET` `/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
+- `GET` `/v1/sse/{wallet_id}`
+- `GET` `/v1/sse/{wallet_id}/{topic}`
+- `GET` `/v1/sse/{wallet_id}/{topic}/{desired_state}`
+- `GET` `/v1/sse/{wallet_id}/{topic}/{field}/{field_id}`
+- `GET` `/v1/sse/{wallet_id}/{topic}/{field}/{field_id}/{desired_state}`
 
 Valid topics are same as noted above.
 

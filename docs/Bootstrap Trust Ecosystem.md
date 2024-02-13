@@ -8,9 +8,9 @@
 
 ## 2. Generate a New DID
 
-1. Access the API through [Governance Cloud API](http://localhost:8100/docs)
+1. Access the API through [CloudAPI-Governance](http://localhost:8200/docs)
 2. Authenticate with `governance.`+`APIKEY` role
-3. Generate a new DID with a `POST` to the following API endpoint: `/wallet/dids/`
+3. Generate a new DID with a `POST` to the following API endpoint: `/v1/wallet/dids/`
 4. An example successful response to generate a DID would look like this:
 
    ```json
@@ -90,8 +90,8 @@ Verkey: BUxNgHYEYm5bsTEpjo9Dkgr5zGA4feeiuiq32HfqyCKg
 
 ## 5. Set Public DID
 
-1. Go to the [Governance Cloud API](http://localhost:8100/docs)
-2. Execute the PUT endpoint to set a Public DID: `/wallet/dids/public?did=`
+1. Go to the [CloudAPI-Governance](http://localhost:8200/docs)
+2. Execute the PUT endpoint to set a Public DID: `/v1/wallet/dids/public?did=`
 3. Use the DID that you anchored to the ledger in step 3
 4. A successful response should look like this. You can also query the Public DID Endpoint `/wallet/dids/public` of the Governance Agent to confirm that the public DID is now set:
 

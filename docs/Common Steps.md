@@ -2,7 +2,14 @@
 
 This document will guide you through some common steps and interactions. Please read it carefully, and feel free to open an issue if further questions arise or if you spot a mistake.
 
->**Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at [http://localhost:8100/docs](http://localhost:8100/docs) under a vanilla setup. If you find any model to be unclear from the document below, try finding it in Swagger UI before opening an issue. This document describes only some basic steps; more detailed workflows can be found [here](./Example%20Flows.md).
+>**Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at:
+>
+> * CloudAPI-Multitenant-Admin -> [http://localhost:8100/docs](http://localhost:8100/docs)
+> * CloudAPI-Governance -> [http://localhost:8200/docs](http://localhost:8200/docs)
+> * CloudAPI-Tenant -> [http://localhost:8300/docs](http://localhost:8300/docs)
+> * CloudAPI-Public (trust registry) -> [http://localhost:8400/docs](http://localhost:8400/docs)
+>
+> under a vanilla setup. If you find any model to be unclear from the document below, try finding it in Swagger UI before opening an issue. This document describes only some basic steps; more detailed workflows can be found [here](./Example%20Flows.md).
 
 It is also recommended to set up a webhook listener (refer to our [Webhooks doc](./Webhooks.md)). This will significantly aid in understanding the activities occurring in the ACA-Py instances in the background.
 
@@ -25,7 +32,7 @@ The admin "wallet" is already configured as it is not a subwallet on a multi-ten
    }
    ```
 
-Send this to the `/admin/tenants` endpoint. You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, consult the [Swagger docs](http://localhost:8100/docs).
+Send this to the `/tenant-admin/v1/admin/tenants` endpoint. You can omit the roles field altogether or pass "issuer" and/or "verifier". All payloads are documented in Swagger, so if in doubt, consult the [CloudAPI-Multitenant-Admin](http://localhost:8100/docs).
 
 Creating a tenant with roles will update the trust registry by writing an entry for an `actor`, including wallet details and its associated roles.
 
@@ -53,7 +60,7 @@ To create schemas and effectively write them to the ledger as well as registerin
    }
    ```
 
-   Note that you will need to have a public DID to do so (if your agent lacks one, you can use the governance role to create one: see [Bootstrapping the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)). Run the request with the header from 1. and the payload from 2. against the CloudAPI URL and endpoint `/admin/governance/schemas/` (POST method). Upon success, the created schema will be returned.
+   Note that you will need to have a public DID to do so (if your agent lacks one, you can use the governance role to create one: see [Bootstrapping the Trust Ecosystem](./Bootstrap%20Trust%20Ecosystem.md)). Run the request with the header from 1. and the payload from 2. against the [CloudAPI-Governance URL](http://localhost:8200/docs) and endpoint `/v1/definitions/schemas` (POST method). Upon success, the created schema will be returned.
 
 ## Issuing a Credential
 
@@ -62,7 +69,7 @@ To create schemas and effectively write them to the ledger as well as registerin
 3. Issuer creates credential definition
 4. Create a connection between the issuer and prospect holder
 
-   1. Create an invitation using either the issuer or the holder using the `/connections` endpoint of the CloudAPI. Here, you will also need to authenticate via the header, e.g., using
+   1. Create an invitation using either the issuer or the holder using the `/v1/connections/create-invitation` endpoint of the [CloudAPI-Tenant URL](http://localhost:8300/docs). Here, you will also need to authenticate via the header, e.g., using
 
       ```json
       { "x-api-key": "tenant.WALLET_TOKEN" }

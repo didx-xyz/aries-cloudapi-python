@@ -46,11 +46,11 @@ WebSocket endpoints are authenticated. This means that only users with valid aut
 
 Our WebSocket endpoints are as follows:
 
-1. `/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
+1. `/v1/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
 
-2. `/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
+2. `/v1/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
 
-3. `/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
+3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
 
 For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
 

@@ -44,9 +44,11 @@ This guide provides a simple walkthrough for starting, managing, and stopping a 
 
 Once the project is running, you'll have access to several services via Swagger interfaces. These can be found at the following URLs:
 
-- [ACA-Py CloudAPI Admin](http://localhost:8100/docs)
+- [CloudAPI-Multitenant-Admin](http://localhost:8100/docs)
+- [CloudAPI-Governance](http://localhost:8200/docs)
+- [CloudAPI-Tenant](http://localhost:8300/docs)
+- [CloudAPI-Public](http://localhost:8400/docs)
 - [ACA-Py Governance Agent Admin](http://localhost:3021)
-- [ACA-Py CloudAPI Multitenant](http://localhost:8100/docs)
 - [ACA-Py Multitenant Agent Admin](http://localhost:4021)
 - [Webhooks](http://localhost:3010/docs)
 - [Trust Registry](http://localhost:8001/docs)

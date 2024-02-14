@@ -270,16 +270,18 @@ async def test_revoke_credential(
 
     alice_credential_id = payload["credential_id"]
 
+    wait_for_event_task = asyncio.create_task(
+        alice_credentials_listener.wait_for_event(
+            field="credential_id",
+            field_id=alice_credential_id,
+            desired_state="done",
+        )
+    )
     # send credential request: holder
     response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
-
-    await alice_credentials_listener.wait_for_event(
-        field="credential_id",
-        field_id=alice_credential_id,
-        desired_state="done",
-    )
+    await wait_for_event_task
 
     cred_id = cred_id_no_version(faber_credential_id)
 

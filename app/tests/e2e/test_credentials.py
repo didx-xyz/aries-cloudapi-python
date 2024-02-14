@@ -350,16 +350,19 @@ async def issue_revocable_credentials_to_alice_and_revoke(
         alice_cred_ex_response = await alice_member_client.get(
             CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
         )
+    listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
 
     for cred in alice_cred_ex_response.json():
+        wait_for_event_task = asyncio.create_task( 
+            listener.wait_for_event(
+                field="credential_id", field_id=cred["credential_id"], desired_state="done"
+            )
+        )
         await alice_member_client.post(
             f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
         )
         # add sse listener to wait for credential state "done" for each credential
-        listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
-        await listener.wait_for_event(
-            field="credential_id", field_id=cred["credential_id"], desired_state="done"
-        )
+        await wait_for_event_task
 
     cred_ex_response = await faber_client.get(
         CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id

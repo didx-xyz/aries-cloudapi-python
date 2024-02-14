@@ -353,9 +353,11 @@ async def issue_revocable_credentials_to_alice_and_revoke(
     listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
 
     for cred in alice_cred_ex_response.json():
-        wait_for_event_task = asyncio.create_task( 
+        wait_for_event_task = asyncio.create_task(
             listener.wait_for_event(
-                field="credential_id", field_id=cred["credential_id"], desired_state="done"
+                field="credential_id",
+                field_id=cred["credential_id"],
+                desired_state="done",
             )
         )
         await alice_member_client.post(

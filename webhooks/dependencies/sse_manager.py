@@ -67,7 +67,9 @@ class SseManager:
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
 
-    async def _listen_for_new_events(self, max_retries=5) -> NoReturn:
+    async def _listen_for_new_events(
+        self, max_retries=5, retry_duration=0.33
+    ) -> NoReturn:
         """
         Listen on redis pubsub channel for new SSE events; read the event and add to queue.
         Terminates after exceeding max_retries connection attempts.
@@ -90,14 +92,15 @@ class SseManager:
                     else:
                         await asyncio.sleep(0.01)  # Prevent a busy loop if no message
             except aioredis.ConnectionError as e:
+                logger.error(f"ConnectionError detected: {e}.")
+            except Exception as e:  # General exception catch
+                logger.exception(f"Unexpected error: {e}.")
+            finally:
                 retry_count += 1
-                logger.error(
-                    f"ConnectionError detected: {e}. Attempt #{retry_count} to reconnect..."
+                logger.warning(
+                    f"Attempt #{retry_count} to reconnect in {retry_duration}s ..."
                 )
-                await asyncio.sleep(0.5)  # Wait a bit before retrying
-            except Exception as e:
-                logger.exception(f"Unexpected error: {e}. Attempting to recover...")
-                await asyncio.sleep(0.5)  # General exception catch
+                await asyncio.sleep(retry_duration)  # Wait a bit before retrying
 
         # If the loop exits due to retry limit exceeded
         logger.critical(

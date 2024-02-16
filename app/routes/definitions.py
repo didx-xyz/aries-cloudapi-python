@@ -347,6 +347,9 @@ async def create_credential_definition(
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
 
+                # Allow time for record to be updated with new tails file uri
+                await asyncio.sleep(1)
+
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,

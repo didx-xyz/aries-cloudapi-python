@@ -4,6 +4,7 @@ import time
 from typing import List, Optional
 
 from aries_cloudcontroller import (
+    AcaPyClient,
     ApiException,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
@@ -39,6 +40,7 @@ from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
+from app.util.retry_method import coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from shared.log_config import get_logger
 
@@ -347,8 +349,26 @@ async def create_credential_definition(
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
 
-                # Allow time for record to be updated with new tails file uri
-                await asyncio.sleep(1)
+                # We must allow time for record to be updated with new tails file uri
+                # Therefore, define coroutine that will be retried until expected value is returned
+                async def get_rev_reg_record_tails_uri(
+                    controller: AcaPyClient, reg_id: str
+                ):
+                    fetched_record = await controller.revocation.get_registry(reg_id)
+                    return fetched_record.result.tails_public_uri
+
+                # Wait until the registry record has been updated in AcaPyStorage
+                if not await coroutine_with_retry_until_value(
+                    coroutine_func=get_rev_reg_record_tails_uri,
+                    args=(aries_controller, rev_reg_id),
+                    expected_value=tails_public_uri,
+                    logger=logger,
+                    max_attempts=20,
+                    retry_delay=0.5,  # maximum 10 seconds duration
+                ):
+                    raise CloudApiException(
+                        "Could not set the Tails public URI for revocation registry. Please try again."
+                    )
 
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(

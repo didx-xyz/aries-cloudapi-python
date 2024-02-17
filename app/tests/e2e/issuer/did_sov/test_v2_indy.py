@@ -277,6 +277,7 @@ async def test_revoke_credential(
             desired_state="done",
         )
     )
+    await asyncio.sleep(2)
     # send credential request: holder
     response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}

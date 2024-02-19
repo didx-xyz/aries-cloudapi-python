@@ -334,6 +334,10 @@ async def create_credential_definition(
                     rev_reg_id=rev_reg_id,
                     body=update_tails_file_uri_request,
                 )
+                print("#199 ############################################")
+                print("#199 Updating revocation registry")
+                print(f"#199 {ACAPY_TAILS_SERVER_BASE_URL}/{revoc_reg_creation_result.revoc_reg_id}")
+                print("#199 ############################################")
                 bound_logger.debug("Fetching connection with endorser")
 
                 # NOTE: Special case - the endorser registers a cred def itself that

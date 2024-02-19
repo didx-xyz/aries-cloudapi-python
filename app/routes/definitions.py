@@ -344,7 +344,7 @@ async def create_credential_definition(
                 )
                 print("#199 ############################################")
                 print("#199 Updating revocation registry")
-                print(f"#199 {ACAPY_TAILS_SERVER_BASE_URL}/{revoc_reg_creation_result.revoc_reg_id}")
+                print(f"#199 {tails_public_uri}")
                 print("#199 ############################################")
                 bound_logger.debug("Fetching connection with endorser")
 

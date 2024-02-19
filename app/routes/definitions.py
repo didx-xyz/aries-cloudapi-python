@@ -323,7 +323,7 @@ async def create_credential_definition(
                 )
 
                 rev_reg_id = revoc_reg_creation_result.revoc_reg_id
-                tails_public_uri = f"http://tails-server:6543/{rev_reg_id}"
+                tails_public_uri = f"{ACAPY_TAILS_SERVER_BASE_URL}/{rev_reg_id}"
 
                 update_tails_file_uri_request = RevRegUpdateTailsFileUri(
                     tails_public_uri=tails_public_uri

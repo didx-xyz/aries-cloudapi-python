@@ -450,7 +450,7 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
-      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
+      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments. #
         if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.7.0
         with:

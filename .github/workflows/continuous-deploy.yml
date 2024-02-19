@@ -85,7 +85,9 @@ jobs:
             context: .
             file: dockerfiles/webhooks/Dockerfile
           - image: governance-multitenant-agent
-            context: .
+            context: https://github.com/didx-xyz/aries-cloudagent-python.git#check-storage-debug
+            dockerfile: docker/Dockerfile
+            # context: .
             file: dockerfiles/agents/Dockerfile.author.agent
           - image: ledger-browser
             context: https://github.com/bcgov/von-network.git#main

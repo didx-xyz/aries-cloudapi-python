@@ -330,6 +330,14 @@ async def create_credential_definition(
                 )
 
                 bound_logger.debug("Updating revocation registry")
+
+                print("#199 XXXXXXX############################################")
+                print("#199 Updating revocation registry")
+                print(f"#199 {tails_public_uri}")
+                print(f"{rev_reg_id}")
+                print(f"{update_tails_file_uri_request}")
+                print("#199 XXXXXXXX############################################")
+
                 await aries_controller.revocation.update_registry(
                     rev_reg_id=rev_reg_id,
                     body=update_tails_file_uri_request,

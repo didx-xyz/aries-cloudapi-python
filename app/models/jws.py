@@ -4,13 +4,13 @@ from pydantic import BaseModel, Field
 
 
 class JWSCreateRequest(BaseModel):
-    did: str = Field(
-        ..., examples=["did:key:z6MkjCjxuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq"]
+    did: Optional[str] = Field(
+        None, examples=["did:key:z6MkjCjxuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq"]
     )
     headers: Dict = Field(default={})
     payload: Dict = Field(default={})
-    verification_method: str = Field(
-        ...,
+    verification_method: Optional[str] = Field(
+        None,
         description="Information used for proof verification",
         examples=[
             "did:key:z6MkjCjxuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq#z6MkjCj"

@@ -1,6 +1,8 @@
 FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.11.0
 
 USER root
+# install redis-events plugin
+RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-02-21#subdirectory=redis_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
@@ -8,4 +10,5 @@ RUN chmod +x ./startup.sh
 USER aries
 
 ENTRYPOINT [ "./startup.sh" ]
-CMD [ "--wallet-type", "askar" ]
+CMD [ "--wallet-type", "askar", \
+  "--plugin", "redis_events.v1_0.redis_queue.events", "--plugin-config-value", "redis_queue.connection.connection_url=\"redis://redis-cache:6379/0\"" ]

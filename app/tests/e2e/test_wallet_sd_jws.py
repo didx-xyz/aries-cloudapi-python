@@ -70,7 +70,7 @@ async def test_sign_and_verify_sdjws_success(alice_member_client: RichAsyncClien
         "/v1/wallet/sd-jws/verify", json=sign_response.json()
     )
     assert verify_response.status_code == 200
-    assert verify_response.json()["valid"] == True
+    assert verify_response.json()["valid"] is True
 
 
 @pytest.mark.anyio

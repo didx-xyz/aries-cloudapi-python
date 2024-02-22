@@ -5,9 +5,6 @@ USER root
 # Install wallet group id plugin
 RUN pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.6.2
 
-# Install caching to redis plugin
-RUN pip3 install git+https://github.com/Indicio-tech/aries-acapy-cache-redis.git@0.1.0
-
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
 

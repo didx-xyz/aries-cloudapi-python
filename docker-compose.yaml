@@ -44,19 +44,16 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
+      redis-cluster-configure:
+        condition: service_started
     networks:
       - governance-ga
       - host
+      - redis-cluster-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://localhost:3021/status/ready"
-        ]
+      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -256,6 +253,60 @@ services:
       - host
     env_file:
       - environments/webhooks/redis.env
+
+  redis-node-1:
+    image: redis:latest
+    container_name: redis-node-1
+    command: redis-server /usr/local/etc/redis/redis-cluster.conf
+    volumes:
+      - ./environments/redis_conf:/usr/local/etc/redis
+    ports:
+      - 0.0.0.0:7001:6379
+    networks:
+      - redis-cluster-network
+
+  redis-node-2:
+    image: redis:latest
+    container_name: redis-node-2
+    command: redis-server /usr/local/etc/redis/redis-cluster.conf
+    volumes:
+      - ./environments/redis_conf:/usr/local/etc/redis
+    ports:
+      - 0.0.0.0:7002:6379
+    networks:
+      - redis-cluster-network
+
+  redis-node-3:
+    image: redis:latest
+    container_name: redis-node-3
+    command: redis-server /usr/local/etc/redis/redis-cluster.conf
+    volumes:
+      - ./environments/redis_conf:/usr/local/etc/redis
+    ports:
+      - 0.0.0.0:7003:6379
+    networks:
+      - redis-cluster-network
+
+  redis-cluster-configure:
+    image: redis:latest
+    command: /usr/local/etc/redis/redis-cluster-create.sh
+    networks:
+      - redis-cluster-network
+    depends_on:
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+    volumes:
+      - ./environments/redis_conf:/usr/local/etc/redis
+
+  redis-cache:
+    image: redis:latest
+    container_name: redis-cache
+    restart: always
+    ports:
+      - 0.0.0.0:6380:6379
+    networks:
+      - host
   governance-multitenant-wallets-db:
     image: postgres:15
     container_name: governance-multitenant-wallets-db
@@ -313,18 +364,17 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
+      redis-cache:
+        condition: service_started
+      redis-cluster-configure:
+        condition: service_started
     networks:
       - governance-multitenant
       - governance-ga
       - host
+      - redis-cluster-network
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://localhost:3021/status/ready"
-        ]
+      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -358,7 +408,7 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://ledger-browser:8000" ]
+      test: ["CMD", "curl", "-f", "http://ledger-browser:8000"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -393,7 +443,7 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: [ "CMD-SHELL", "/home/indy/indy_healthcheck.sh" ]
+      test: ["CMD-SHELL", "/home/indy/indy_healthcheck.sh"]
       interval: 30s
       timeout: 15s
       retries: 10
@@ -511,3 +561,6 @@ networks:
   governance-multitenant:
   governance-ga:
   host:
+  redis-cluster-network:
+    name: redis-cluster-network
+    driver: bridge

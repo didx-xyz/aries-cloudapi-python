@@ -44,6 +44,8 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
+      redis-cache:
+        condition: service_started
     networks:
       - governance-ga
       - host

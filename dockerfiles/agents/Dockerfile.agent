@@ -2,14 +2,10 @@ FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.11.0
 
 USER root
 
-# Install caching to redis plugin
-RUN pip3 install git+https://github.com/Indicio-tech/aries-acapy-cache-redis.git@0.1.0
-
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
 
 USER aries
 
 ENTRYPOINT [ "./startup.sh" ]
-CMD [ "--wallet-type", "askar", \
-    "--plugin", "acapy_cache_redis.v0_1", "--plugin-config-value", "redis_cache.connection=\"redis://redis-cache:6379/0\"" ]
+CMD [ "--wallet-type", "askar" ]

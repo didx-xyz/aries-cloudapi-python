@@ -260,59 +260,51 @@ services:
     env_file:
       - environments/webhooks/redis.env
 
-  redis-node-1:
+  redis-cluster:
     image: redis:latest
-    container_name: redis-node-1
-    command: redis-server /usr/local/etc/redis/redis-cluster.conf
-    volumes:
-      - ./environments/redis_conf:/usr/local/etc/redis
-    ports:
-      - 0.0.0.0:7001:6379
+    container_name: cluster
+    command: redis-cli --cluster create 172.28.0.101:6377 172.28.0.102:6378 172.28.0.103:6379 --cluster-replicas 1 --cluster-yes
     networks:
-      - redis-cluster-network
-
-  redis-node-2:
-    image: redis:latest
-    container_name: redis-node-2
-    command: redis-server /usr/local/etc/redis/redis-cluster.conf
-    volumes:
-      - ./environments/redis_conf:/usr/local/etc/redis
-    ports:
-      - 0.0.0.0:7002:6379
-    networks:
-      - redis-cluster-network
-
-  redis-node-3:
-    image: redis:latest
-    container_name: redis-node-3
-    command: redis-server /usr/local/etc/redis/redis-cluster.conf
-    volumes:
-      - ./environments/redis_conf:/usr/local/etc/redis
-    ports:
-      - 0.0.0.0:7003:6379
-    networks:
-      - redis-cluster-network
-
-  redis-cluster-configure:
-    image: redis:latest
-    command: /usr/local/etc/redis/redis-cluster-create.sh
-    networks:
-      - redis-cluster-network
+      acapy_default:
+        ipv4_address: 172.28.0.107
     depends_on:
       - redis-node-1
       - redis-node-2
       - redis-node-3
-    volumes:
-      - ./environments/redis_conf:/usr/local/etc/redis
-
-  redis-cache:
+  redis-node-1:
     image: redis:latest
-    container_name: redis-cache
-    restart: always
+    container_name: node1
+    command: ["redis-server", "/conf/redis.conf", "--port 6377"]
     ports:
-      - 0.0.0.0:6380:6379
+      - 6377:6377
+    volumes:
+      - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
-      - host
+      acapy_default:
+        ipv4_address: 172.28.0.101
+  redis-node-2:
+    image: redis:latest
+    container_name: node2
+    command: ["redis-server", "/conf/redis.conf", "--port 6378"]
+    ports:
+      - 6378:6378
+    volumes:
+      - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
+    networks:
+      acapy_default:
+        ipv4_address: 172.28.0.102
+  redis-node-3:
+    image: redis:latest
+    container_name: node3
+    command: ["redis-server", "/conf/redis.conf", "--port 6379"]
+    ports:
+      - 6379:6379
+    volumes:
+      - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
+    networks:
+      acapy_default:
+        ipv4_address: 172.28.0.103
+
   governance-multitenant-wallets-db:
     image: postgres:15
     container_name: governance-multitenant-wallets-db

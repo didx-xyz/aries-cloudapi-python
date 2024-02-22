@@ -44,7 +44,7 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
-      redis-cluster-configure:
+      redis-cluster:
         condition: service_started
     networks:
       - governance-ga
@@ -265,7 +265,7 @@ services:
     container_name: cluster
     command: redis-cli --cluster create 172.28.0.101:6377 172.28.0.102:6378 172.28.0.103:6379 --cluster-replicas 1 --cluster-yes
     networks:
-      acapy_default:
+      redis-cluster-network:
         ipv4_address: 172.28.0.107
     depends_on:
       - redis-node-1
@@ -280,7 +280,7 @@ services:
     volumes:
       - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
-      acapy_default:
+      redis-cluster-network:
         ipv4_address: 172.28.0.101
   redis-node-2:
     image: redis:latest
@@ -291,7 +291,7 @@ services:
     volumes:
       - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
-      acapy_default:
+      redis-cluster-network:
         ipv4_address: 172.28.0.102
   redis-node-3:
     image: redis:latest
@@ -302,7 +302,7 @@ services:
     volumes:
       - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
-      acapy_default:
+      redis-cluster-network:
         ipv4_address: 172.28.0.103
 
   governance-multitenant-wallets-db:
@@ -362,9 +362,7 @@ services:
         condition: service_healthy
       ledger-browser:
         condition: service_healthy
-      redis-cache:
-        condition: service_started
-      redis-cluster-configure:
+      redis-cluster:
         condition: service_started
     networks:
       - governance-multitenant

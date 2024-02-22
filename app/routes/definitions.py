@@ -4,7 +4,6 @@ import time
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    AcaPyClient,
     ApiException,
     CredentialDefinitionSendRequest,
     RevRegUpdateTailsFileUri,
@@ -40,7 +39,6 @@ from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
-from app.util.retry_method import coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
 from shared.log_config import get_logger
 

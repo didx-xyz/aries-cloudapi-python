@@ -32,17 +32,30 @@ async def create_proof_request(
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> PresentationExchange:
     """
-    Create proof request.
+    Creates a presentation request that is not bound to any specific proposal or connection.
 
-    Parameters:
-    -----------
+    This endpoint facilitates the creation of a standalone presentation request. The generated request is
+    not directly associated with any holder or connection at the time of creation, making it available for
+    use in various contexts, such as submitting over the Out-Of-Band (OOB) protocol. This allows the
+    presentation request to be utilized by any holder who can fulfil the criteria specified within it.
+
+    Notably, the creation of a presentation request is not limited to verifiers. Any participant, including
+    holders, can generate a request. This facilitates diverse interactions within the ecosystem, such as a
+    holder creating a presentation request to engage with another holder. The flexibility of the approach
+    supports a wide range of use cases, from traditional verification processes to peer exchanges and more.
+
+    ### Parameters:
     body: CreateProofRequest
         The proof request object
 
-    Returns:
-    --------
+    ### Returns:
     presentation_exchange: PresentationExchange
         The presentation exchange record
+
+    ### Note
+    For a detailed technical specification and informative diagrams related to the present proof process,
+    refer to the [v1 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)
+    and/or the [v2 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2).
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create proof request")
@@ -83,6 +96,11 @@ async def send_proof_request(
     --------
     presentation_exchange: PresentationExchange
         The presentation exchange record
+
+    ### Note
+    For a detailed technical specification and informative diagrams related to the present proof process,
+    refer to the [v1 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof)
+    and/or the [v2 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2).
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Send proof request")
@@ -218,7 +236,11 @@ async def reject_proof_request(
     bound_logger.info("Successfully rejected proof request.")
 
 
-@router.get("/proofs", response_model=List[PresentationExchange])
+@router.get(
+    "/proofs",
+    response_model=List[PresentationExchange],
+    summary="Get Proof Exchange Records",
+)
 async def get_proof_records(
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[PresentationExchange]:
@@ -254,7 +276,11 @@ async def get_proof_records(
     return result
 
 
-@router.get("/proofs/{proof_id}", response_model=PresentationExchange)
+@router.get(
+    "/proofs/{proof_id}",
+    response_model=PresentationExchange,
+    summary="Get Proof Exchange Record",
+)
 async def get_proof_record(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -294,7 +320,9 @@ async def get_proof_record(
     return result
 
 
-@router.delete("/proofs/{proof_id}", status_code=204)
+@router.delete(
+    "/proofs/{proof_id}", status_code=204, summary="Delete Proof Exchange Record"
+)
 async def delete_proof(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
@@ -327,7 +355,11 @@ async def delete_proof(
     bound_logger.info("Successfully deleted proof record.")
 
 
-@router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
+@router.get(
+    "/proofs/{proof_id}/credentials",
+    response_model=List[IndyCredPrecis],
+    summary="Get Matching Credentials by Proof ID",
+)
 async def get_credentials_by_proof_id(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),

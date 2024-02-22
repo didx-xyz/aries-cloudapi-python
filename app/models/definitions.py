@@ -8,9 +8,9 @@ class CreateCredentialDefinition(BaseModel):
     schema_id: str = Field(..., examples=["CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3"])
     support_revocation: bool = Field(default=False)
     revocation_registry_size: int = Field(
-        default=1000,
-        description="If revocation is supported: the maximum number of revocations to be "
-        "stored by the registry. Maximum value of 32767.",
+        default=32767,
+        description="If revocation is supported, the maximum number of revocations to be "
+        "stored by the registry. Default value is equal to the maximum: 32767.",
     )
 
 

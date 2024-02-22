@@ -331,48 +331,16 @@ async def create_credential_definition(
 
                 bound_logger.debug("Updating revocation registry")
 
-                print("#199 XXXXXXX############################################")
-                print("#199 Updating revocation registry")
-                print(f"#199 {tails_public_uri}")
-                print(f"{rev_reg_id}")
-                print(f"{update_tails_file_uri_request}")
-                print("#199 XXXXXXXX############################################")
-
                 await aries_controller.revocation.update_registry(
                     rev_reg_id=rev_reg_id,
                     body=update_tails_file_uri_request,
                 )
-                print("#199 ############################################")
-                print("#199 Updating revocation registry")
-                print(f"#199 {tails_public_uri}")
-                print("#199 ############################################")
                 bound_logger.debug("Fetching connection with endorser")
 
                 # NOTE: Special case - the endorser registers a cred def itself that
                 # supports revocation so there is no endorser connection.
                 # Otherwise onboarding should have created an endorser connection
                 # for tenants so this fails correctly
-
-                # We must allow time for record to be updated with new tails file uri
-                # Therefore, define coroutine that will be retried until expected value is returned
-                async def get_rev_reg_record_tails_uri(
-                    controller: AcaPyClient, reg_id: str
-                ):
-                    fetched_record = await controller.revocation.get_registry(reg_id)
-                    return fetched_record.result.tails_public_uri
-
-                # Wait until the registry record has been updated in AcaPyStorage
-                if not await coroutine_with_retry_until_value(
-                    coroutine_func=get_rev_reg_record_tails_uri,
-                    args=(aries_controller, rev_reg_id),
-                    expected_value=tails_public_uri,
-                    logger=logger,
-                    max_attempts=20,
-                    retry_delay=0.5,  # maximum 10 seconds duration
-                ):
-                    raise CloudApiException(
-                        "Could not set the Tails public URI for revocation registry. Please try again."
-                    )
 
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(

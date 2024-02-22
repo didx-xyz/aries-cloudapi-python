@@ -85,10 +85,8 @@ jobs:
             context: .
             file: dockerfiles/webhooks/Dockerfile
           - image: governance-multitenant-agent
-            context: https://github.com/didx-xyz/aries-cloudagent-python.git#check-storage-debug
-            file: docker/Dockerfile
-            # context: .
-            # file: dockerfiles/agents/Dockerfile.author.agent
+            context: .
+            file: dockerfiles/agents/Dockerfile.author.agent
           - image: ledger-browser
             context: https://github.com/bcgov/von-network.git#main
             file: Dockerfile
@@ -447,7 +445,7 @@ jobs:
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
         run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
 
-      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments. #
+      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
         uses: helmfile/helmfile-action@v1.8.0
         with:

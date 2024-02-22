@@ -415,20 +415,6 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
-      - name: Wait for pods to terminate
-        if: github.event.inputs.run-reset-deployments == 'true'
-        run: |
-          while true; do
-            terminating_pods_count=$(kubectl -n dev-cloudapi get pods --field-selector=status.phase!=Running,status.phase!=Succeeded -o jsonpath='{.items[*].metadata.name}')
-            if [ -z "$terminating_pods_count" ]; then
-              echo "All pods terminated"
-              break
-            else
-              echo "Waiting for pods to terminate"
-              sleep 10
-            fi
-          done
-
       - name: Drop DBs
         id: drop_dbs
         if: github.event.inputs.run-reset-deployments == 'true'

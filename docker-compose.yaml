@@ -230,8 +230,6 @@ services:
       - host
     env_file:
       - environments/webhooks/fastapi.webhooks.env
-    environment:
-      - REDIS_HOST=wh-redis
   governance-endorser:
     image: ${REGISTRY:-local}/governance-endorser:${IMAGE_TAG:-latest}
     container_name: governance-endorser
@@ -247,33 +245,21 @@ services:
       - host
     env_file:
       - environments/endorser/endorser.env
-  wh-redis:
-    image: redis:latest
-    container_name: wh-redis
-    restart: always
-    ports:
-      - 0.0.0.0:6379:6379
-    volumes:
-      - $PWD/data:/data
-    networks:
-      - host
-    env_file:
-      - environments/webhooks/redis.env
 
   redis-cluster:
     image: redis:latest
-    container_name: cluster
-    command: redis-cli --cluster create 172.28.0.101:6377 172.28.0.102:6378 172.28.0.103:6379 --cluster-replicas 1 --cluster-yes
+    container_name: redis-cluster
+    command: redis-cli --cluster create 172.29.0.101:6377 172.29.0.102:6378 172.29.0.103:6379 --cluster-replicas 1 --cluster-yes
     networks:
       redis-cluster-network:
-        ipv4_address: 172.28.0.107
+        ipv4_address: 172.29.0.107
     depends_on:
       - redis-node-1
       - redis-node-2
       - redis-node-3
   redis-node-1:
     image: redis:latest
-    container_name: node1
+    container_name: redis-node-1
     command: ["redis-server", "/conf/redis.conf", "--port 6377"]
     ports:
       - 6377:6377
@@ -281,10 +267,10 @@ services:
       - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
-        ipv4_address: 172.28.0.101
+        ipv4_address: 172.29.0.101
   redis-node-2:
     image: redis:latest
-    container_name: node2
+    container_name: redis-node-2
     command: ["redis-server", "/conf/redis.conf", "--port 6378"]
     ports:
       - 6378:6378
@@ -292,10 +278,10 @@ services:
       - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
-        ipv4_address: 172.28.0.102
+        ipv4_address: 172.29.0.102
   redis-node-3:
     image: redis:latest
-    container_name: node3
+    container_name: redis-node-3
     command: ["redis-server", "/conf/redis.conf", "--port 6379"]
     ports:
       - 6379:6379
@@ -303,7 +289,7 @@ services:
       - ./environments/redis_conf/redis-cluster.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
-        ipv4_address: 172.28.0.103
+        ipv4_address: 172.29.0.103
 
   governance-multitenant-wallets-db:
     image: postgres:15
@@ -495,7 +481,6 @@ services:
       TENANT_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
       TENANT_ACAPY_API_KEY: adminApiKey
       LEDGER_REGISTRATION_URL: http://ledger-browser:8000/register
-      REDIS_HOST: wh-redis
     volumes:
       - ./logs/containerized-tests:/tests/outputs
       - ./scripts/test_runner.sh:/tests/test_runner.sh
@@ -530,7 +515,6 @@ services:
       TENANT_FASTAPI_ENDPOINT: http://governance-multitenant-web:8000
       TENANT_ACAPY_API_KEY: adminApiKey
       LEDGER_REGISTRATION_URL: http://ledger-browser:8000/register
-      REDIS_HOST: wh-redis
     volumes:
       - ./logs/containerized-tests:/tests/outputs
       - ./scripts/test_runner.sh:/tests/test_runner.sh
@@ -566,3 +550,8 @@ networks:
   redis-cluster-network:
     name: redis-cluster-network
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.29.0.0/24
+          gateway: 172.29.0.1

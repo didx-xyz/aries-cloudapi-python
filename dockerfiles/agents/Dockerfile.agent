@@ -11,4 +11,4 @@ USER aries
 
 ENTRYPOINT [ "./startup.sh" ]
 CMD [ "--wallet-type", "askar", \
-  "--plugin", "redis_events.v1_0.redis_queue.events", "--plugin-config-value", "redis_queue.connection.connection_url=\"redis://redis-node-1:6379/0\""]
+  "--plugin", "redis_events.v1_0.redis_queue.events", "--plugin-config-value", "redis_queue.connection.connection_url=\"redis://172.29.0.101:6377\""]

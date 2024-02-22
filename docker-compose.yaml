@@ -53,7 +53,13 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3021/status/ready"
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -374,7 +380,13 @@ services:
       - host
       - redis-cluster-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3021/status/ready"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:3021/status/ready"
+        ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -408,7 +420,7 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://ledger-browser:8000"]
+      test: [ "CMD", "curl", "-f", "http://ledger-browser:8000" ]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -443,7 +455,7 @@ services:
       - governance-ga
       - host
     healthcheck:
-      test: ["CMD-SHELL", "/home/indy/indy_healthcheck.sh"]
+      test: [ "CMD-SHELL", "/home/indy/indy_healthcheck.sh" ]
       interval: 30s
       timeout: 15s
       retries: 10

@@ -124,7 +124,14 @@ async def send_credential(
 
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
-        public_did = await assert_public_did(aries_controller)
+        try:
+            public_did = await assert_public_did(aries_controller)
+        except CloudApiException as e:
+            bound_logger.warning(f"Asserting agent has public DID failed: {e}")
+            raise CloudApiException(
+                "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
+                403,
+            ) from e
 
         schema_id = None
         if credential.type == CredentialType.INDY:
@@ -182,7 +189,14 @@ async def create_offer(
 
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
-        public_did = await assert_public_did(aries_controller)
+        try:
+            public_did = await assert_public_did(aries_controller)
+        except CloudApiException as e:
+            bound_logger.warning(f"Asserting agent has public DID failed: {e}")
+            raise CloudApiException(
+                "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
+                403,
+            ) from e
 
         schema_id = None
         if credential.type == CredentialType.INDY:

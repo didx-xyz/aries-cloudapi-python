@@ -214,7 +214,14 @@ async def create_credential_definition(
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
         bound_logger.debug("Asserting client has public DID")
-        public_did = await acapy_wallet.assert_public_did(aries_controller)
+        try:
+            public_did = await acapy_wallet.assert_public_did(aries_controller)
+        except CloudApiException as e:
+            bound_logger.warning(f"Asserting public DID failed: {e}")
+            raise CloudApiException(
+                "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
+                403,
+            ) from e
 
         # Make sure we are allowed to issue this schema according to trust registry rules
         bound_logger.debug("Asserting client is a valid issuer")

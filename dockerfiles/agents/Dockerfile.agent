@@ -2,12 +2,10 @@ FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.11.0
 
 USER root
 
-RUN pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.6.2
-
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
 
 USER aries
 
 ENTRYPOINT [ "./startup.sh" ]
-CMD [ "--wallet-type", "askar", "--plugin", "acapy_wallet_groups_plugin" ]
+CMD [ "--wallet-type", "askar" ]

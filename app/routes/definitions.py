@@ -214,7 +214,14 @@ async def create_credential_definition(
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
         bound_logger.debug("Asserting client has public DID")
-        public_did = await acapy_wallet.assert_public_did(aries_controller)
+        try:
+            public_did = await acapy_wallet.assert_public_did(aries_controller)
+        except CloudApiException as e:
+            bound_logger.warning(f"Asserting public DID failed: {e}")
+            raise CloudApiException(
+                "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
+                403,
+            ) from e
 
         # Make sure we are allowed to issue this schema according to trust registry rules
         bound_logger.debug("Asserting client is a valid issuer")
@@ -319,12 +326,19 @@ async def create_credential_definition(
                     credential_definition_id=credential_definition_id,
                     max_cred_num=credential_definition.revocation_registry_size,
                 )
+
+                rev_reg_id = revoc_reg_creation_result.revoc_reg_id
+                tails_public_uri = f"{ACAPY_TAILS_SERVER_BASE_URL}/{rev_reg_id}"
+
+                update_tails_file_uri_request = RevRegUpdateTailsFileUri(
+                    tails_public_uri=tails_public_uri
+                )
+
                 bound_logger.debug("Updating revocation registry")
+
                 await aries_controller.revocation.update_registry(
-                    rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
-                    body=RevRegUpdateTailsFileUri(
-                        tails_public_uri=f"{ACAPY_TAILS_SERVER_BASE_URL}/{revoc_reg_creation_result.revoc_reg_id}"
-                    ),
+                    rev_reg_id=rev_reg_id,
+                    body=update_tails_file_uri_request,
                 )
                 bound_logger.debug("Fetching connection with endorser")
 
@@ -336,7 +350,7 @@ async def create_credential_definition(
                 bound_logger.debug("Publish revocation registry")
                 await publish_revocation_registry_on_ledger(
                     controller=aries_controller,
-                    revocation_registry_id=revoc_reg_creation_result.revoc_reg_id,
+                    revocation_registry_id=rev_reg_id,
                     connection_id=endorser_connection_id,
                     create_transaction_for_endorser=True,
                 )
@@ -364,7 +378,7 @@ async def create_credential_definition(
                     bound_logger.debug("Setting registry state to `active`")
                     active_rev_reg = (
                         await aries_controller.revocation.set_registry_state(
-                            rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                            rev_reg_id=rev_reg_id,
                             state="active",
                         )
                     )
@@ -372,12 +386,12 @@ async def create_credential_definition(
 
                     bound_logger.debug(
                         "Publishing rev reg entry for: rev_reg_id: {} and conn_id: {}",
-                        revoc_reg_creation_result.revoc_reg_id,
+                        rev_reg_id,
                         endorser_connection_id,
                     )
 
                     await aries_controller.revocation.publish_rev_reg_entry(
-                        rev_reg_id=revoc_reg_creation_result.revoc_reg_id,
+                        rev_reg_id=rev_reg_id,
                         conn_id=endorser_connection_id,
                         create_transaction_for_endorser=True,
                     )

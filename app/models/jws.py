@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class JWSCreateRequest(BaseModel):
@@ -17,6 +17,16 @@ class JWSCreateRequest(BaseModel):
             "xuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq"
         ],
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_at_least_one_field_is_populated(cls, values):
+        did, verification_method = values.get("did"), values.get("verification_method")
+        if not did and not verification_method:
+            raise ValueError(
+                "At least one of `did` or `verification_method` must be populated."
+            )
+        return values
 
 
 class JWSCreateResponse(BaseModel):

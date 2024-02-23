@@ -30,6 +30,8 @@ from app.routes import (
 from app.routes.admin import tenants
 from app.routes.wallet import credentials as wallet_credentials
 from app.routes.wallet import dids as wallet_dids
+from app.routes.wallet import jws as wallet_jws
+from app.routes.wallet import sd_jws as wallet_sd_jws
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
@@ -89,6 +91,8 @@ tenant_routes = [
     verifier,
     wallet_credentials,
     wallet_dids,
+    wallet_jws,
+    wallet_sd_jws,
 ] + webhook_routes
 
 

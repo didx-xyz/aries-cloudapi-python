@@ -1,6 +1,7 @@
 import pytest
 from aries_cloudcontroller import DIDCreate
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 from app.models.sd_jws import SDJWSCreateRequest
 from shared.util.rich_async_client import RichAsyncClient
@@ -31,18 +32,18 @@ async def test_sign_sdjws_success(alice_member_client: RichAsyncClient):
 
 @pytest.mark.anyio
 async def test_sign_sdjws_x(alice_member_client: RichAsyncClient):
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(ValidationError):
         # Requires at least one of did or verification method
-        x_request_payload = SDJWSCreateRequest(
+        SDJWSCreateRequest(
             did=None,
             headers={},
             payload={"example": "payload"},
             verification_method=None,
         )
-        await alice_member_client.post(
-            "/v1/wallet/sd-jws/sign", json=x_request_payload.model_dump()
-        )
-    assert exc_info.value.status_code == 400
+
+    with pytest.raises(HTTPException) as exc_info:
+        await alice_member_client.post("/v1/wallet/sd-jws/sign", json={})
+    assert exc_info.value.status_code == 422
 
 
 @pytest.mark.anyio

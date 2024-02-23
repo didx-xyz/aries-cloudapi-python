@@ -335,6 +335,7 @@ async def create_credential_definition(
                 )
 
                 bound_logger.debug("Updating revocation registry")
+
                 await aries_controller.revocation.update_registry(
                     rev_reg_id=rev_reg_id,
                     body=update_tails_file_uri_request,

@@ -57,7 +57,7 @@ async def sign_sd_jws(
     response_model=SDJWSVerifyResponse,
     summary="Verify SD-JWS",
     description="""
-Verify Select Disclosure for JWS (SD-JWS / SD-JWT)
+Verify Select Disclosure for JWS (SD-JWS)
 
 See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
 """,

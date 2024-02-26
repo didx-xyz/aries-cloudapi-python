@@ -266,25 +266,6 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         body=RevokeRequest(cred_ex_id=cred_id, publish=False)
     ).thenReturn(to_async({}))
 
-    when(mock_agent_controller.revocation).get_active_registry_for_cred_def(
-        cred_def_id=cred_def_id
-    ).thenReturn(
-        to_async(
-            RevRegResult(
-                result=IssuerRevRegRecord(
-                    cred_def_id=cred_def_id,
-                    revoc_reg_id=revocation_registry_id,
-                    max_cred_num=max_cred_num,
-                )
-            )
-        )
-    )
-    when(mock_agent_controller.revocation).publish_rev_reg_entry(
-        rev_reg_id=revocation_registry_id,
-        conn_id=None,
-        create_transaction_for_endorser=False,
-    ).thenRaise(ApiException())
-
     revoke_credential_result = await rg.revoke_credential(
         controller=mock_agent_controller,
         credential_definition_id=cred_def_id,

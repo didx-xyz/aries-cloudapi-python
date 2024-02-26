@@ -1,6 +1,6 @@
 import os
 import time
-from typing import AsyncIterator, List
+from typing import AsyncIterator, List, Optional
 
 from redis.cluster import ClusterNode, RedisCluster
 
@@ -64,6 +64,34 @@ class RedisService:
             wallet_id: The relevant wallet id
         """
         return f"{self.cloudapi_redis_prefix}:{wallet_id}"
+
+    async def lindex(self, key: str, n: int = 0) -> Optional[str]:
+        """
+        Asynchronously fetches the element at index `n` from a list at `key`.
+
+        Args:
+            key: The Redis key of the list.
+            n: The index of the element to fetch from the list.
+
+        Returns:
+            The element at the specified index in the list, or None if the index is out of range.
+        """
+        return await self.redis.lindex(key, index=n)
+
+    def set_lock(self, key: str, px: int = 500) -> Optional[bool]:
+        """
+        Attempts to acquire a distributed lock by setting a key in Redis with an expiration time,
+        if and only if the key does not already exist.
+
+        Args:
+            key: The key to set for the lock.
+            px: Expiration time of the lock in miliseconds.
+
+        Returns:
+            A boolean indicating the lock was successfully acquired, or
+            None if the key already exists and the lock could not be acquired.
+        """
+        return self.redis.set(key, px=px, nx=True)
 
     async def add_cloudapi_webhook_event(self, event_json: str, wallet_id: str) -> None:
         """

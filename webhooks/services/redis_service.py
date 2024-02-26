@@ -52,10 +52,18 @@ class RedisService:
         self.redis = redis
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
-        self.redis_prefix = "cloudapi_event"  # redis prefix, prepended before wallet_id
 
-    def get_redis_key(self, wallet_id: str) -> str:
-        return f"{self.redis_prefix}:{wallet_id}"
+        self.acapy_redis_prefix = "acapy_record_*"  # redis prefix, ACA-Py events
+        self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
+
+    def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:
+        """
+        Define redis prefix for cloudapi (transformed) webhook events
+
+        Args:
+            wallet_id: The relevant wallet id
+        """
+        return f"{self.cloudapi_redis_prefix}:{wallet_id}"
 
     async def add_webhook_event(self, event_json: str, wallet_id: str) -> None:
         """
@@ -72,7 +80,7 @@ class RedisService:
         timestamp_ns: int = time.time_ns()
 
         # Use the current timestamp as the score for the sorted set
-        wallet_key = self.get_redis_key(wallet_id)
+        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
         await self.redis.zadd(wallet_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
@@ -95,7 +103,7 @@ class RedisService:
         bound_logger.trace("Fetching entries from redis by wallet id")
 
         # Fetch all entries using the full range of scores
-        wallet_key = self.get_redis_key(wallet_id)
+        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
         entries: List[bytes] = await self.redis.zrange(wallet_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
@@ -172,7 +180,7 @@ class RedisService:
         logger.trace(
             "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
         )
-        wallet_key = self.get_redis_key(wallet_id)
+        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
         entries: List[bytes] = await self.redis.zrangebyscore(
             wallet_key, min=start_timestamp, max=end_timestamp
         )

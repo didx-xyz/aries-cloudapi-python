@@ -1,3 +1,4 @@
+import os
 import time
 from typing import AsyncIterator, List
 
@@ -10,6 +11,17 @@ from shared.util.rich_parsing import parse_with_error_handling
 logger = get_logger(__name__)
 
 
+class RedisConfig:
+    MAX_CONNECTIONS = 20000
+    PASSWORD = os.getenv("REDIS_PASSWORD", None)
+
+
+REDIS_CONNECTION_PARAMS = {
+    "max_connections": RedisConfig.MAX_CONNECTIONS,
+    "password": RedisConfig.PASSWORD,
+}
+
+
 async def init_redis_cluster_pool(
     nodes: List[ClusterNode],
 ) -> AsyncIterator[RedisCluster]:
@@ -18,7 +30,7 @@ async def init_redis_cluster_pool(
 
     :param nodes: List of nodes from which initial bootstrapping can be done
     """
-    cluster = RedisCluster(startup_nodes=nodes)
+    cluster = RedisCluster(startup_nodes=nodes, **REDIS_CONNECTION_PARAMS)
 
     yield cluster
 

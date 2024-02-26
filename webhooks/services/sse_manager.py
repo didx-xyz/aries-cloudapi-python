@@ -5,8 +5,8 @@ from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Dict, List, NoReturn, Tuple
 
-import aioredis
 from pydantic import ValidationError
+from redis import asyncio as aioredis
 
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,

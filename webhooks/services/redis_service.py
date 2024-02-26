@@ -1,8 +1,8 @@
 import time
 from typing import AsyncIterator, List
 
-import aioredis
-from aioredis import Redis
+from redis import asyncio as aioredis
+from redis.asyncio import Redis
 
 from shared.log_config import get_logger
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric

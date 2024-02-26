@@ -208,7 +208,7 @@ class SseManager:
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
-                timestamped_event: Tuple(float, CloudApiWebhookEventGeneric) = (
+                timestamped_event: Tuple(float, CloudApiWebhookEventGeneric) = (  # type: ignore
                     time.time(),
                     event,
                 )

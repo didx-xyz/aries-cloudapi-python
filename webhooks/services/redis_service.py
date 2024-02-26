@@ -58,16 +58,16 @@ class RedisService:
 
     def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:
         """
-        Define redis prefix for cloudapi (transformed) webhook events
+        Define redis prefix for CloudAPI (transformed) webhook events
 
         Args:
             wallet_id: The relevant wallet id
         """
         return f"{self.cloudapi_redis_prefix}:{wallet_id}"
 
-    async def add_webhook_event(self, event_json: str, wallet_id: str) -> None:
+    async def add_cloudapi_webhook_event(self, event_json: str, wallet_id: str) -> None:
         """
-        Add a webhook event JSON string to Redis and publish a notification.
+        Add a CloudAPI webhook event JSON string to Redis and publish a notification.
 
         Args:
             event_json: The JSON string representation of the webhook event.
@@ -89,9 +89,9 @@ class RedisService:
 
         bound_logger.trace("Successfully wrote entry to redis.")
 
-    async def get_json_webhook_events_by_wallet(self, wallet_id: str) -> List[str]:
+    async def get_json_cloudapi_events_by_wallet(self, wallet_id: str) -> List[str]:
         """
-        Retrieve all webhook event JSON strings for a specified wallet ID.
+        Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -110,11 +110,12 @@ class RedisService:
         bound_logger.trace("Successfully fetched redis entries.")
         return entries_str
 
-    async def get_webhook_events_by_wallet(
+    async def get_cloudapi_events_by_wallet(
         self, wallet_id: str
     ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all webhook events for a specified wallet ID, parsed as CloudApiWebhookEventGeneric objects.
+        Retrieve all CloudAPI webhook events for a specified wallet ID,
+        parsed as CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -122,18 +123,18 @@ class RedisService:
         Returns:
             A list of CloudApiWebhookEventGeneric instances.
         """
-        entries = await self.get_json_webhook_events_by_wallet(wallet_id)
+        entries = await self.get_json_cloudapi_events_by_wallet(wallet_id)
         parsed_entries = [
             parse_with_error_handling(CloudApiWebhookEventGeneric, entry)
             for entry in entries
         ]
         return parsed_entries
 
-    async def get_json_webhook_events_by_wallet_and_topic(
+    async def get_json_cloudapi_events_by_wallet_and_topic(
         self, wallet_id: str, topic: str
     ) -> List[str]:
         """
-        Retrieve all webhook event JSON strings for a specified wallet ID and topic.
+        Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID and topic.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -142,16 +143,17 @@ class RedisService:
         Returns:
             A list of event JSON strings that match the specified topic.
         """
-        entries = await self.get_json_webhook_events_by_wallet(wallet_id)
+        entries = await self.get_json_cloudapi_events_by_wallet(wallet_id)
         # Filter the json entry for our requested topic without deserialising
         topic_str = f'"topic":"{topic}"'
         return [entry for entry in entries if topic_str in entry]
 
-    async def get_webhook_events_by_wallet_and_topic(
+    async def get_cloudapi_events_by_wallet_and_topic(
         self, wallet_id: str, topic: str
     ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all webhook events for a specified wallet ID and topic, parsed as CloudApiWebhookEventGeneric objects.
+        Retrieve all CloudAPI webhook events for a specified wallet ID and topic,
+        parsed as CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -160,14 +162,14 @@ class RedisService:
         Returns:
             A list of CloudApiWebhookEventGeneric instances that match the specified topic.
         """
-        entries = await self.get_webhook_events_by_wallet(wallet_id)
+        entries = await self.get_cloudapi_events_by_wallet(wallet_id)
         return [entry for entry in entries if topic == entry.topic]
 
-    async def get_json_events_by_timestamp(
+    async def get_json_cloudapi_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:
         """
-        Retrieve all webhook event JSON strings for a specified wallet ID within a timestamp range.
+        Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID within a timestamp range.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -187,12 +189,12 @@ class RedisService:
         entries_str: List[str] = [entry.decode() for entry in entries]
         return entries_str
 
-    async def get_events_by_timestamp(
+    async def get_cloudapi_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all webhook events for a specified wallet ID within a timestamp range, parsed as
-        CloudApiWebhookEventGeneric objects.
+        Retrieve all CloudAPI webhook events for a specified wallet ID within a timestamp range,
+        parsed as CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
@@ -202,7 +204,7 @@ class RedisService:
         Returns:
             A list of CloudApiWebhookEventGeneric instances that fall within the specified timestamp range.
         """
-        entries = await self.get_json_events_by_timestamp(
+        entries = await self.get_json_cloudapi_events_by_timestamp(
             wallet_id, start_timestamp, end_timestamp
         )
         parsed_entries = [
@@ -211,9 +213,9 @@ class RedisService:
         ]
         return parsed_entries
 
-    async def get_all_wallet_ids(self) -> List[str]:
+    async def get_all_cloudapi_wallet_ids(self) -> List[str]:
         """
-        Fetch all wallet IDs that have events stored in Redis.
+        Fetch all wallet IDs that have CloudAPI webhook events stored in Redis.
         """
         wallet_ids = set()
         cursor = 0  # Starting cursor value for SCAN

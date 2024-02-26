@@ -25,7 +25,9 @@ def redis_service_mock():
     # Setup RedisService mock
     redis_service = MagicMock()
     redis_service.redis.pubsub.return_value = AsyncMock()
-    redis_service.get_json_events_by_timestamp = AsyncMock(return_value=[MagicMock()])
+    redis_service.get_json_cloudapi_events_by_timestamp = AsyncMock(
+        return_value=[MagicMock()]
+    )
     return redis_service
 
 
@@ -73,7 +75,7 @@ async def test_listen_for_new_events(
         sse_manager.redis_service.sse_event_pubsub_channel
     )
     assert pubsub_mock.get_message.call_count >= 1
-    redis_service_mock.get_json_events_by_timestamp.assert_called_once()
+    redis_service_mock.get_json_cloudapi_events_by_timestamp.assert_called_once()
     # Check if websocket publish was called
     mock_publish.assert_awaited_once()
     # Check if the event was added to the incoming_events queue
@@ -85,19 +87,21 @@ async def test_backfill_events(
     sse_manager, redis_service_mock  # pylint: disable=redefined-outer-name
 ):
     # Configure the mock for get_all_wallet_ids and get_events_by_timestamp
-    redis_service_mock.get_all_wallet_ids = AsyncMock(
+    redis_service_mock.get_all_cloudapi_wallet_ids = AsyncMock(
         return_value=["wallet1", "wallet2"]
     )
     mock_event = MagicMock()  # Mocked event object
-    redis_service_mock.get_events_by_timestamp = AsyncMock(return_value=[mock_event])
+    redis_service_mock.get_cloudapi_events_by_timestamp = AsyncMock(
+        return_value=[mock_event]
+    )
 
     # Call the _backfill_events method
     await sse_manager._backfill_events()
 
     # Assertions to check if the events are fetched and added to the queue correctly
-    assert redis_service_mock.get_all_wallet_ids.call_count == 1
+    assert redis_service_mock.get_all_cloudapi_wallet_ids.call_count == 1
     assert (
-        redis_service_mock.get_events_by_timestamp.call_count == 2
+        redis_service_mock.get_cloudapi_events_by_timestamp.call_count == 2
     )  # Called for each wallet
     assert sse_manager.incoming_events.qsize() == 2  # One event for each wallet
 

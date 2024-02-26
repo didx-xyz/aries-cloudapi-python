@@ -3,9 +3,9 @@ import os
 from fastapi import FastAPI
 
 from shared.log_config import get_logger
-from webhooks.dependencies import sse_manager
-from webhooks.dependencies.container import get_container
-from webhooks.routers import sse, webhooks, websocket
+from webhooks.services import sse_manager
+from webhooks.services.dependency_injection.container import get_container
+from webhooks.web.routers import sse, webhooks, websocket
 
 logger = get_logger(__name__)
 

@@ -1,5 +1,5 @@
-from webhooks.main import create_app
-from webhooks.routers import receive_events, sse, webhooks, websocket
+from webhooks.web.main import create_app
+from webhooks.web.routers import sse, webhooks, websocket
 
 
 def test_create_app():
@@ -12,7 +12,7 @@ def test_create_app():
     routes = [route.path for route in app.routes]
 
     # Get expected routes from all the routers
-    routers = [receive_events, sse, webhooks, websocket]
+    routers = [sse, webhooks, websocket]
     nested_list = [m.router.routes for m in routers]
     flattened_routers_list = [item for sublist in nested_list for item in sublist]
     expected_routes = [r.path for r in flattened_routers_list]

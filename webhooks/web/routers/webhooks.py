@@ -6,8 +6,8 @@ from fastapi import Depends
 from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.webhook_topics import CloudApiWebhookEventGeneric
-from webhooks.dependencies.container import Container
-from webhooks.dependencies.redis_service import RedisService
+from webhooks.services.dependency_injection.container import Container
+from webhooks.services.redis_service import RedisService
 
 logger = get_logger(__name__)
 

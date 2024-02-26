@@ -1,7 +1,7 @@
 from dependency_injector import containers, providers
 
-from webhooks.dependencies.redis_service import RedisService, init_redis_pool
-from webhooks.dependencies.sse_manager import SseManager
+from webhooks.services.redis_service import RedisService, init_redis_pool
+from webhooks.services.sse_manager import SseManager
 
 
 class Container(containers.DeclarativeContainer):

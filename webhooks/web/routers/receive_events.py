@@ -10,9 +10,9 @@ from shared.models.webhook_topics import (
     CloudApiWebhookEvent,
     topic_mapping,
 )
-from webhooks.dependencies.container import Container
-from webhooks.dependencies.redis_service import RedisService
 from webhooks.models import acapy_to_cloudapi_event
+from webhooks.services.dependency_injection.container import Container
+from webhooks.services.redis_service import RedisService
 
 logger = get_logger(__name__)
 

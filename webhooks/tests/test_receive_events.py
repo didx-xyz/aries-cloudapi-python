@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 
 from shared.models.webhook_topics.base import CloudApiWebhookEvent
-from webhooks.main import app
+from webhooks.web.main import app
 
 client = TestClient(app)
 
@@ -18,7 +18,7 @@ dummy_event = CloudApiWebhookEvent(
     return_value=dummy_event,
 )
 @patch(
-    "webhooks.dependencies.redis_service.RedisService.add_webhook_event",
+    "webhooks.services.redis_service.RedisService.add_webhook_event",
     new_callable=AsyncMock,
 )
 def test_topic_root(mock_add_webhook_event, _):

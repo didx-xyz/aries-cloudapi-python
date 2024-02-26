@@ -8,7 +8,7 @@ import pytest
 
 from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
-from webhooks.dependencies.sse_manager import SseManager, _copy_queue
+from webhooks.services.sse_manager import SseManager, _copy_queue
 
 # pylint: disable=protected-access
 # because we are testing protected methods
@@ -37,7 +37,7 @@ async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-na
 
 
 @pytest.mark.anyio
-@patch("webhooks.routers.websocket.endpoint.publish", new_callable=AsyncMock)
+@patch("webhooks.web.routers.websocket.endpoint.publish", new_callable=AsyncMock)
 @patch(
     "shared.models.webhook_topics.base.CloudApiWebhookEventGeneric.model_validate_json"
 )

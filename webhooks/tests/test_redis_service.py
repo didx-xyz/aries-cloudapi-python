@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
-from webhooks.dependencies.redis_service import RedisService
+from webhooks.services.redis_service import RedisService
 
 wallet_id = "test_wallet"
 topic = "test_topic"

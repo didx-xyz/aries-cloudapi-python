@@ -222,7 +222,7 @@ class RedisService:
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
                 cursor, keys = await self.redis.scan(
-                    cursor, match="wallet_id:*", count=1000
+                    cursor, match=f"{self.cloudapi_redis_prefix}:*", count=1000
                 )
                 if keys:
                     wallet_id_batch = set(

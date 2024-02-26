@@ -1,8 +1,7 @@
 import time
 from typing import AsyncIterator, List
 
-from redis import asyncio as aioredis
-from redis.asyncio import Redis
+from redis.cluster import ClusterNode, RedisCluster
 
 from shared.log_config import get_logger
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
@@ -11,12 +10,19 @@ from shared.util.rich_parsing import parse_with_error_handling
 logger = get_logger(__name__)
 
 
-async def init_redis_pool(host: str, password: str) -> AsyncIterator[Redis]:
-    pool = await aioredis.from_url(f"redis://{host}", password=password)
+async def init_redis_cluster_pool(
+    nodes: List[ClusterNode],
+) -> AsyncIterator[RedisCluster]:
+    """
+    Initialize a connection pool to the Redis Cluster.
 
-    yield pool
+    :param nodes: List of nodes from which initial bootstrapping can be done
+    """
+    cluster = RedisCluster(startup_nodes=nodes)
 
-    await pool.close()
+    yield cluster
+
+    await cluster.close()
 
 
 class RedisService:
@@ -24,12 +30,12 @@ class RedisService:
     A service for interacting with Redis to store and retrieve webhook events.
     """
 
-    def __init__(self, redis: Redis) -> None:
+    def __init__(self, redis: RedisCluster) -> None:
         """
-        Initialize the RedisService with a Redis client instance.
+        Initialize the RedisService with a Redis cluster instance.
 
         Args:
-            redis: A Redis client instance connected to a Redis server.
+            redis: A Redis client instance connected to a Redis cluster server.
         """
         self.redis = redis
 

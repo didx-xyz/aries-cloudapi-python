@@ -1,7 +1,25 @@
-from dependency_injector import containers, providers
+from typing import List
 
-from webhooks.services.redis_service import RedisService, init_redis_pool
+from dependency_injector import containers, providers
+from redis.cluster import ClusterNode
+
+from webhooks.services.redis_service import RedisService, init_redis_cluster_pool
 from webhooks.services.sse_manager import SseManager
+
+
+def parse_redis_nodes(env_var_value: str) -> List[ClusterNode]:
+    """
+    Parses the REDIS_NODES environment variable to a list of ClusterNode.
+
+    :param env_var_value: The value of the REDIS_NODES environment variable.
+    :return: A list of ClusterNode definitions.
+    """
+    nodes = []
+    # We assume environment variable REDIS_NODES is like "host1:port1,host2:port2"
+    for node_str in env_var_value.split(","):
+        host, port = node_str.split(":")
+        nodes.append(ClusterNode(host=host, port=int(port)))
+    return nodes
 
 
 class Container(containers.DeclarativeContainer):
@@ -16,17 +34,18 @@ class Container(containers.DeclarativeContainer):
     # Configuration provider for environment variables and other settings
     config = providers.Configuration()
 
+    nodes: List[ClusterNode] = parse_redis_nodes(config.nodes)
+
     # Resource provider for the Redis connection pool
-    redis_pool = providers.Resource(
-        init_redis_pool,
-        host=config.redis_host,
-        password=config.redis_password,
+    redis_cluster = providers.Resource(
+        init_redis_cluster_pool,
+        nodes=nodes,
     )
 
     # Singleton provider for the RedisService
     redis_service = providers.Singleton(
         RedisService,
-        redis=redis_pool,
+        redis=redis_cluster,
     )
 
     # Singleton provider for the SseManager
@@ -40,14 +59,14 @@ def get_container() -> Container:
     """
     Creates and configures the dependency injection container for the application.
 
-    This function configures the Redis host and password. It prepares the container
-    to be wired into the application modules, enabling dependency injection throughout the app.
+    This function configures the Redis nodes. It prepares the container to be wired
+    into the application modules, enabling dependency injection throughout the app.
 
     Returns:
         An instance of the configured Container.
     """
     configured_container = Container()
-    # Load configuration from environment variables with defaults
-    configured_container.config.redis_host.from_env("REDIS_HOST", "localhost")
-    configured_container.config.redis_password.from_env("REDIS_PASSWORD", "")
+
+    configured_container.config.redis_nodes.from_env("REDIS_NODES", "localhost:6379")
+
     return configured_container

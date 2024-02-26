@@ -135,7 +135,9 @@ async def test_get_json_events_by_timestamp():
 
     assert events == json_entries
     redis_client.zrangebyscore.assert_called_once_with(
-        f"wallet_id:{wallet_id}", min=start_timestamp, max=end_timestamp
+        f"{redis_service.cloudapi_redis_prefix}:{wallet_id}",
+        min=start_timestamp,
+        max=end_timestamp,
     )
 
 
@@ -167,11 +169,11 @@ async def test_get_all_wallet_ids():
         (
             1,
             [
-                f"wallet_id:{wallet_id}".encode()
+                f"cloudapi_event:{wallet_id}".encode()
                 for wallet_id in expected_wallet_ids[:2]
             ],
         ),
-        (0, [f"wallet_id:{expected_wallet_ids[2]}".encode()]),
+        (0, [f"cloudapi_event:{expected_wallet_ids[2]}".encode()]),
     ]
 
     redis_client = AsyncMock()

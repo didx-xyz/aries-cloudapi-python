@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Dict, List, NoReturn, Tuple
 
 from pydantic import ValidationError
-from redis import asyncio as aioredis
+from redis import ConnectionError
 
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,
@@ -91,7 +91,7 @@ class SseManager:
                         await self._process_redis_event(message)
                     else:
                         await asyncio.sleep(0.01)  # Prevent a busy loop if no message
-            except aioredis.ConnectionError as e:
+            except ConnectionError as e:
                 logger.error(f"ConnectionError detected: {e}.")
             except Exception as e:  # General exception catch
                 logger.exception(f"Unexpected error: {e}.")

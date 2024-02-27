@@ -41,14 +41,14 @@ class AcapyEventsProcessor:
         asyncio.create_task(self._notification_listener())
         asyncio.create_task(self._process_incoming_events())
 
-    def _rpush_notification_handler(self, msg):
+    def _rpush_notification_handler(self, msg) -> None:
         """
         Processing handler for when rpush notifications are received
         """
         logger.trace(f"Received rpush notification: {msg}")
         self._new_event_notification.set()
 
-    async def _notification_listener(self):
+    async def _notification_listener(self) -> None:
         """
         Listens for keyspace notifications from Redis and sets an event to resume processing.
         """
@@ -137,7 +137,7 @@ class AcapyEventsProcessor:
                 f"Event {list_key} is currently being processed by another instance."
             )
 
-    def _process_list_events(self, list_key):
+    def _process_list_events(self, list_key) -> None:
         try:
             while True:  # Keep processing until no elements are left
                 # Read 0th index of list:
@@ -161,7 +161,7 @@ class AcapyEventsProcessor:
         except Exception as e:
             logger.error(f"Could not load event data ({event_data}): {e}")
 
-    def _process_event(self, event_json: str) -> bool:
+    def _process_event(self, event_json: str) -> None:
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
 
         wallet_id = event.metadata.x_wallet_id or "admin"

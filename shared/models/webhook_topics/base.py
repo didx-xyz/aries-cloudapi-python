@@ -141,6 +141,23 @@ class ProblemReport(BaseModel):
     escalation_uri: Optional[str] = None
 
 
+class AcaPyRedisEventPayload(BaseModel):
+    wallet_id: str
+    state: str
+    topic: str
+    category: str
+    payload: Dict[str, Any]
+
+
+class WebhookEventMetadata(BaseModel):
+    x_wallet_id: Optional[str] = Field(None, alias="x-wallet-id")
+
+
+class AcaPyRedisEvent(BaseModel):
+    payload: AcaPyRedisEventPayload
+    metadata: Optional[WebhookEventMetadata] = None
+
+
 class WebhookEvent(BaseModel):
     wallet_id: str
     topic: str

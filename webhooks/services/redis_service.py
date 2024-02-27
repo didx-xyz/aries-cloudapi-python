@@ -30,10 +30,13 @@ async def init_redis_cluster_pool(
 
     :param nodes: List of nodes from which initial bootstrapping can be done
     """
+    logger.info("Initialising Redis Cluster")
     cluster = RedisCluster(startup_nodes=nodes, **REDIS_CONNECTION_PARAMS)
 
+    logger.info("Connected to Redis Cluster")
     yield cluster
 
+    logger.info("Closing Redis connection")
     await cluster.close()
 
 

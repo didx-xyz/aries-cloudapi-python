@@ -129,7 +129,7 @@ class AcapyEventsProcessor:
                 # Read 0th index of list:
                 event_data = self.redis_service.lindex(list_key)
                 if event_data:
-                    self._process_event(event_data)
+                    self._process_event(event_data.decode())
 
                     # Cleanup: remove the element from the list and delete the lock if successfully processed
                     if self.redis_service.pop_first_list_element(list_key):

@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
-class AcapyEventsProcessor:
+class AcaPyEventsProcessor:
     """
     Class to process ACA-Py webhook events that the plugin writes to redis.
     """
@@ -36,7 +36,7 @@ class AcapyEventsProcessor:
 
     def _start_background_tasks(self) -> None:
         """
-        Start the background tasks as part of AcapyEventsProcessor's lifecycle
+        Start the background tasks as part of AcaPyEventsProcessor's lifecycle
         """
         asyncio.create_task(self._notification_listener())
         asyncio.create_task(self._process_incoming_events())

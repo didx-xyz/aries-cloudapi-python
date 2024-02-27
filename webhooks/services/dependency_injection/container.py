@@ -4,7 +4,7 @@ from typing import List
 from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
-from webhooks.services.acapy_events_processor import AcapyEventsProcessor
+from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 from webhooks.services.redis_service import RedisService, init_redis_cluster_pool
 from webhooks.services.sse_manager import SseManager
 
@@ -55,7 +55,7 @@ class Container(containers.DeclarativeContainer):
 
     # Singleton provider for the ACA-Py Redis events processor
     acapy_events_processor = providers.Singleton(
-        AcapyEventsProcessor,
+        AcaPyEventsProcessor,
         redis_service=redis_service,
     )
 

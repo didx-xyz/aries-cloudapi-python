@@ -82,13 +82,13 @@ class SseManager:
             try:
                 pubsub = self.redis_service.redis.pubsub()
 
-                await pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
+                pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
                 # Reset retry_count upon successful connection
                 retry_count = 0
 
                 while True:
-                    message = await pubsub.get_message(ignore_subscribe_messages=True)
+                    message = pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
                         await self._process_redis_event(message)
                     else:
@@ -120,10 +120,8 @@ class SseManager:
             timestamp_ns = int(timestamp_ns_str)
 
             # Fetch the event with the exact timestamp from the sorted set
-            json_events = (
-                await self.redis_service.get_json_cloudapi_events_by_timestamp(
-                    wallet_id, timestamp_ns, timestamp_ns
-                )
+            json_events = self.redis_service.get_json_cloudapi_events_by_timestamp(
+                wallet_id, timestamp_ns, timestamp_ns
             )
 
             for json_event in json_events:
@@ -167,12 +165,12 @@ class SseManager:
             logger.debug(f"Backfilling events from timestamp_ns: {min_timestamp_ns}")
 
             # Get all wallets to backfill events for
-            wallets = await self.redis_service.get_all_cloudapi_wallet_ids()
+            wallets = self.redis_service.get_all_cloudapi_wallet_ids()
 
             total_events_backfilled = 0
             for wallet_id in wallets:
                 # Fetch events within the time window from Redis for each wallet
-                events = await self.redis_service.get_cloudapi_events_by_timestamp(
+                events = self.redis_service.get_cloudapi_events_by_timestamp(
                     wallet_id, min_timestamp_ns, "+inf"
                 )
 

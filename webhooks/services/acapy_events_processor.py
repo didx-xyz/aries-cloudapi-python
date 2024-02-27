@@ -62,8 +62,9 @@ class AcapyEventsProcessor:
                 else:
                     logger.trace("No ACA-Py event keys found in this batch.")
 
-                if cursor == 0:  # Iteration is complete
-                    logger.trace(
+                # Cluster scan returns dict of {node: cursor_value}
+                if cursor == 0 or all(c == 0 for c in cursor.values()):
+                    logger.debug(
                         f"Completed SCAN for ACA-Py event keys, fetched {len(collected_keys)} total."
                     )
                     break  # Exit the loop

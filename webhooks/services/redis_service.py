@@ -295,7 +295,7 @@ class RedisService:
                 else:
                     logger.debug("No wallet IDs found in this batch.")
 
-                if cursor == 0:  # Iteration is complete
+                if cursor == 0 or all(c == 0 for c in cursor.values()):
                     logger.info("Completed SCAN for wallet IDs.")
                     break  # Exit the loop
         except Exception:

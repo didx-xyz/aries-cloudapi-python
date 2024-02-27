@@ -74,7 +74,7 @@ class AcapyEventsProcessor:
     def _scan_acapy_event_keys(self) -> Set[str]:
         collected_keys = set()
         cursor = 0  # Starting cursor value for SCAN
-        logger.trace("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
+        logger.debug("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
 
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
@@ -84,11 +84,11 @@ class AcapyEventsProcessor:
                 if keys:
                     keys_batch = set(key.decode("utf-8") for key in keys)
                     collected_keys.update(keys_batch)
-                    logger.trace(
+                    logger.debug(
                         f"Fetched {len(keys_batch)} ACA-Py event keys from Redis. Cursor value: {cursor}"
                     )
                 else:
-                    logger.trace("No ACA-Py event keys found in this batch.")
+                    logger.debug("No ACA-Py event keys found in this batch.")
 
                 # Cluster scan returns dict of {node: cursor_value}
                 if cursor == 0 or all(c == 0 for c in cursor.values()):
@@ -108,12 +108,12 @@ class AcapyEventsProcessor:
         Attempt to process an event, acquiring a lock to ensure it's processed once.
         """
         lock_key = f"lock:{list_key}"
-        if self.redis_service.set_lock(lock_key, px=200):  # Lock for 200 ms
+        if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
             self._process_list_events(list_key)
 
             # Delete lock after processing list, whether it completed or errored:
             if self.redis_service.delete_key(lock_key):
-                logger.trace(f"Deleted lock key: {lock_key}")
+                logger.debug(f"Deleted lock key: {lock_key}")
             else:
                 logger.warning(
                     f"Could not delete lock key: {lock_key}. Perhaps it expired?"
@@ -133,19 +133,19 @@ class AcapyEventsProcessor:
 
                     # Cleanup: remove the element from the list and delete the lock if successfully processed
                     if self.redis_service.pop_first_list_element(list_key):
-                        logger.trace(f"Removed processed element from list: {list_key}")
+                        logger.debug(f"Removed processed element from list: {list_key}")
                     else:
                         logger.warning(
                             f"Tried to pop list element from: {list_key}, but already removed from list?"
                         )
                 else:
                     # If no data is found, the list is empty, exit the loop
-                    logger.trace(
+                    logger.debug(
                         f"No more data found for event key: {list_key}, exiting."
                     )
                     break
         except Exception as e:
-            logger.error(f"Could not load event data: {e}")
+            logger.error(f"Could not load event data ({event_data}): {e}")
 
     def _process_event(self, event_json: str) -> bool:
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
@@ -167,7 +167,7 @@ class AcapyEventsProcessor:
                 "payload": payload,
             }
         )
-        bound_logger.trace("Processing ACA-Py Redis webhook event")
+        bound_logger.debug("Processing ACA-Py Redis webhook event")
 
         # Map from the acapy webhook topic to a unified cloud api topic
         cloudapi_topic = topic_mapping.get(acapy_topic)
@@ -201,4 +201,4 @@ class AcapyEventsProcessor:
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(webhook_event_json, wallet_id)
 
-        bound_logger.trace("Successfully processed ACA-Py Redis webhook event.")
+        bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")

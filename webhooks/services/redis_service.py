@@ -65,9 +65,9 @@ class RedisService:
         """
         return f"{self.cloudapi_redis_prefix}:{wallet_id}"
 
-    async def lindex(self, key: str, n: int = 0) -> Optional[str]:
+    def lindex(self, key: str, n: int = 0) -> Optional[str]:
         """
-        Asynchronously fetches the element at index `n` from a list at `key`.
+        Fetch the element at index `n` from a list at `key`.
 
         Args:
             key: The Redis key of the list.
@@ -76,7 +76,7 @@ class RedisService:
         Returns:
             The element at the specified index in the list, or None if the index is out of range.
         """
-        return await self.redis.lindex(key, index=n)
+        return self.redis.lindex(key, index=n)
 
     def set_lock(self, key: str, px: int = 500) -> Optional[bool]:
         """
@@ -120,7 +120,7 @@ class RedisService:
         # Using LPOP to remove and return the first element of the list
         return self.redis.lpop(key)
 
-    async def add_cloudapi_webhook_event(self, event_json: str, wallet_id: str) -> None:
+    def add_cloudapi_webhook_event(self, event_json: str, wallet_id: str) -> None:
         """
         Add a CloudAPI webhook event JSON string to Redis and publish a notification.
 
@@ -136,15 +136,15 @@ class RedisService:
 
         # Use the current timestamp as the score for the sorted set
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        await self.redis.zadd(wallet_key, {event_json: timestamp_ns})
+        self.redis.zadd(wallet_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
-        await self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)
+        self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)
 
         bound_logger.trace("Successfully wrote entry to redis.")
 
-    async def get_json_cloudapi_events_by_wallet(self, wallet_id: str) -> List[str]:
+    def get_json_cloudapi_events_by_wallet(self, wallet_id: str) -> List[str]:
         """
         Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID.
 
@@ -159,13 +159,13 @@ class RedisService:
 
         # Fetch all entries using the full range of scores
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        entries: List[bytes] = await self.redis.zrange(wallet_key, 0, -1)
+        entries: List[bytes] = self.redis.zrange(wallet_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
         bound_logger.trace("Successfully fetched redis entries.")
         return entries_str
 
-    async def get_cloudapi_events_by_wallet(
+    def get_cloudapi_events_by_wallet(
         self, wallet_id: str
     ) -> List[CloudApiWebhookEventGeneric]:
         """
@@ -178,14 +178,14 @@ class RedisService:
         Returns:
             A list of CloudApiWebhookEventGeneric instances.
         """
-        entries = await self.get_json_cloudapi_events_by_wallet(wallet_id)
+        entries = self.get_json_cloudapi_events_by_wallet(wallet_id)
         parsed_entries = [
             parse_with_error_handling(CloudApiWebhookEventGeneric, entry)
             for entry in entries
         ]
         return parsed_entries
 
-    async def get_json_cloudapi_events_by_wallet_and_topic(
+    def get_json_cloudapi_events_by_wallet_and_topic(
         self, wallet_id: str, topic: str
     ) -> List[str]:
         """
@@ -198,12 +198,12 @@ class RedisService:
         Returns:
             A list of event JSON strings that match the specified topic.
         """
-        entries = await self.get_json_cloudapi_events_by_wallet(wallet_id)
+        entries = self.get_json_cloudapi_events_by_wallet(wallet_id)
         # Filter the json entry for our requested topic without deserialising
         topic_str = f'"topic":"{topic}"'
         return [entry for entry in entries if topic_str in entry]
 
-    async def get_cloudapi_events_by_wallet_and_topic(
+    def get_cloudapi_events_by_wallet_and_topic(
         self, wallet_id: str, topic: str
     ) -> List[CloudApiWebhookEventGeneric]:
         """
@@ -217,10 +217,10 @@ class RedisService:
         Returns:
             A list of CloudApiWebhookEventGeneric instances that match the specified topic.
         """
-        entries = await self.get_cloudapi_events_by_wallet(wallet_id)
+        entries = self.get_cloudapi_events_by_wallet(wallet_id)
         return [entry for entry in entries if topic == entry.topic]
 
-    async def get_json_cloudapi_events_by_timestamp(
+    def get_json_cloudapi_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:
         """
@@ -238,13 +238,13 @@ class RedisService:
             "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
         )
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        entries: List[bytes] = await self.redis.zrangebyscore(
+        entries: List[bytes] = self.redis.zrangebyscore(
             wallet_key, min=start_timestamp, max=end_timestamp
         )
         entries_str: List[str] = [entry.decode() for entry in entries]
         return entries_str
 
-    async def get_cloudapi_events_by_timestamp(
+    def get_cloudapi_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[CloudApiWebhookEventGeneric]:
         """
@@ -259,7 +259,7 @@ class RedisService:
         Returns:
             A list of CloudApiWebhookEventGeneric instances that fall within the specified timestamp range.
         """
-        entries = await self.get_json_cloudapi_events_by_timestamp(
+        entries = self.get_json_cloudapi_events_by_timestamp(
             wallet_id, start_timestamp, end_timestamp
         )
         parsed_entries = [
@@ -268,7 +268,7 @@ class RedisService:
         ]
         return parsed_entries
 
-    async def get_all_cloudapi_wallet_ids(self) -> List[str]:
+    def get_all_cloudapi_wallet_ids(self) -> List[str]:
         """
         Fetch all wallet IDs that have CloudAPI webhook events stored in Redis.
         """
@@ -278,7 +278,7 @@ class RedisService:
 
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
-                cursor, keys = await self.redis.scan(
+                cursor, keys = self.redis.scan(
                     cursor, match=f"{self.cloudapi_redis_prefix}:*", count=1000
                 )
                 if keys:

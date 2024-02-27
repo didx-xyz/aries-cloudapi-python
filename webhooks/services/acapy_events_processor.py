@@ -60,7 +60,7 @@ class AcapyEventsProcessor:
         pubsub.psubscribe(**{notification_pattern: self._rpush_notification_handler})
         pubsub.run_in_thread(sleep_time=0.01)
 
-        logger.info(f"Notification listener subscribed to redis keyspace notifications")
+        logger.info("Notification listener subscribed to redis keyspace notifications")
 
     async def _process_incoming_events(self) -> NoReturn:
         """
@@ -69,7 +69,8 @@ class AcapyEventsProcessor:
         logger.info("Starting ACA-Py Events Processor")
 
         attempts_without_events = 0
-        max_attempts_without_events = 5
+        max_attempts_without_events = 1000
+        sleep_duration = 0.02
 
         while True:
             try:
@@ -88,10 +89,11 @@ class AcapyEventsProcessor:
                             "Waiting for keyspace notification..."
                         )
                         await self._new_event_notification.wait()
+                        logger.info("Keyspace notification triggered")
                         self._new_event_notification.clear()  # Reset the event for the next wait
                         attempts_without_events = 0  # Reset the counter
                     else:
-                        await asyncio.sleep(0.05)  # Short sleep to prevent a busy loop
+                        await asyncio.sleep(sleep_duration)  # prevent a busy loop
             except Exception:
                 logger.exception(
                     "Something went wrong while processing incoming events. Continuing..."

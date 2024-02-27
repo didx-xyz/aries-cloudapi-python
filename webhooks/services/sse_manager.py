@@ -57,6 +57,7 @@ class SseManager:
         """
         Start the background tasks as part of SseManager's lifecycle
         """
+        logger.info("Starting SSE Manager background tasks")
         # backfill previous events from redis, if any
         asyncio.create_task(self._backfill_events())
 
@@ -66,6 +67,7 @@ class SseManager:
         # process incoming events and cleanup queues
         asyncio.create_task(self._process_incoming_events())
         asyncio.create_task(self._cleanup_cache())
+        logger.info("SSE Manager background tasks started")
 
     async def _listen_for_new_events(
         self, max_retries=5, retry_duration=0.33

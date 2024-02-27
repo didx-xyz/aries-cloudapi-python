@@ -30,7 +30,7 @@ async def init_redis_cluster_pool(
 
     :param nodes: List of nodes from which initial bootstrapping can be done
     """
-    logger.info("Initialising Redis Cluster")
+    logger.info(f"Initialising Redis Cluster with nodes: {nodes}")
     cluster = RedisCluster(startup_nodes=nodes, **REDIS_CONNECTION_PARAMS)
 
     logger.info("Connected to Redis Cluster")
@@ -56,8 +56,10 @@ class RedisService:
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
-        self.acapy_redis_prefix = "acapy_record_*"  # redis prefix, ACA-Py events
+        self.acapy_redis_prefix = "acapy-record-*"  # redis prefix, ACA-Py events
         self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
+
+        logger.info("RedisService initialised")
 
     def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:
         """

@@ -91,7 +91,34 @@ class RedisService:
             A boolean indicating the lock was successfully acquired, or
             None if the key already exists and the lock could not be acquired.
         """
-        return self.redis.set(key, px=px, nx=True)
+        return self.redis.set(key, value="1", px=px, nx=True)
+
+    def delete_key(self, key: str) -> bool:
+        """
+        Deletes a key from Redis.
+
+        Parameters:
+        - key: str - The key to delete.
+
+        Returns:
+        - bool: True if the key was deleted, False otherwise.
+        """
+        # Deleting the key and returning True if the command was successful
+        return self.redis.delete(key) == 1
+
+    def pop_first_list_element(self, key: str):
+        """
+        Pops the first element from a list in Redis.
+
+        Parameters:
+        - key: str - The Redis key of the list.
+
+        Returns:
+        - The value of the first element if the list exists and is not empty,
+          None otherwise.
+        """
+        # Using LPOP to remove and return the first element of the list
+        return self.redis.lpop(key)
 
     async def add_cloudapi_webhook_event(self, event_json: str, wallet_id: str) -> None:
         """

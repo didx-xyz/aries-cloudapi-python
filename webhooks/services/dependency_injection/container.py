@@ -3,6 +3,7 @@ from typing import List
 from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
+from webhooks.services.acapy_events_processor import AcapyEventsProcessor
 from webhooks.services.redis_service import RedisService, init_redis_cluster_pool
 from webhooks.services.sse_manager import SseManager
 
@@ -16,7 +17,9 @@ def parse_redis_nodes(env_var_value: str) -> List[ClusterNode]:
     """
     nodes = []
     # We assume environment variable REDIS_NODES is like "host1:port1,host2:port2"
-    for node_str in env_var_value.split(","):
+    for node_str in (
+        env_var_value.split(",") if "," in env_var_value else [env_var_value]
+    ):
         host, port = node_str.split(":")
         nodes.append(ClusterNode(host=host, port=int(port)))
     return nodes
@@ -46,6 +49,12 @@ class Container(containers.DeclarativeContainer):
     redis_service = providers.Singleton(
         RedisService,
         redis=redis_cluster,
+    )
+
+    # Singleton provider for the ACA-Py Redis events processor
+    acapy_events_processor = providers.Singleton(
+        AcapyEventsProcessor,
+        redis_service=redis_service,
     )
 
     # Singleton provider for the SseManager

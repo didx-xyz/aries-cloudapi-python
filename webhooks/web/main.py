@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -10,12 +11,29 @@ from webhooks.web.routers import sse, webhooks, websocket
 logger = get_logger(__name__)
 
 
-def create_app() -> FastAPI:
+@asynccontextmanager
+async def app_lifespan(_: FastAPI):
+    logger.info("Webhooks Service startup")
+
+    # Initialize the container
     container = get_container()
     container.wire(
         modules=[__name__, acapy_events_processor, sse, sse_manager, webhooks]
     )
 
+    # Start singleton services
+    container.redis_service()
+    container.acapy_events_processor()
+    container.sse_manager()
+
+    logger.info("Webhooks Services started")
+
+    yield
+
+    logger.info("Shutdown Webhooks services")
+
+
+def create_app() -> FastAPI:
     OPENAPI_NAME = os.getenv(
         "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"
     )
@@ -30,6 +48,7 @@ def create_app() -> FastAPI:
         as well as handling Server-Sent Events (SSE) for real-time communication with clients.
         """,
         version=PROJECT_VERSION,
+        lifespan=app_lifespan,
     )
 
     application.include_router(webhooks.router)

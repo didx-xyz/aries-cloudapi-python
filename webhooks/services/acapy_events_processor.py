@@ -63,13 +63,39 @@ class AcapyEventsProcessor:
         logger.info(f"Notification listener subscribed to redis keyspace notifications")
 
     async def _process_incoming_events(self) -> NoReturn:
+        """
+        Processing handler for incoming ACA-Py redis webhooks events
+        """
         logger.info("Starting ACA-Py Events Processor")
+
+        attempts_without_events = 0
+        max_attempts_without_events = 5
+
         while True:
-            batch_event_keys = self._scan_acapy_event_keys()
-            for list_key in batch_event_keys:  # the keys are of LIST type
-                self._attempt_process_list_events(list_key)
-            await asyncio.sleep(1)  # sleep to prevent busy loop
-            # here we can sleep until keyspace notification
+            try:
+                batch_event_keys = self._scan_acapy_event_keys()
+                if batch_event_keys:
+                    attempts_without_events = 0  # Reset the counter
+                    for list_key in batch_event_keys:  # the keys are of LIST type
+                        self._attempt_process_list_events(list_key)
+
+                else:
+                    attempts_without_events += 1
+                    if attempts_without_events >= max_attempts_without_events:
+                        # Wait for a keyspace notification before continuing
+                        logger.info(
+                            f"Scan has returned no keys {max_attempts_without_events} times in a row. "
+                            "Waiting for keyspace notification..."
+                        )
+                        await self._new_event_notification.wait()
+                        self._new_event_notification.clear()  # Reset the event for the next wait
+                        attempts_without_events = 0  # Reset the counter
+                    else:
+                        await asyncio.sleep(0.05)  # Short sleep to prevent a busy loop
+            except Exception:
+                logger.exception(
+                    "Something went wrong while processing incoming events. Continuing..."
+                )
 
     def _scan_acapy_event_keys(self) -> Set[str]:
         collected_keys = set()

@@ -246,6 +246,9 @@ services:
       - governance-multitenant
       - governance-ga
       - host
+      - redis-cluster-network
+    depends_on:
+      - redis-cluster
     env_file:
       - environments/endorser/endorser.env
 

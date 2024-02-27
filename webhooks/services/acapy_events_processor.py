@@ -150,12 +150,11 @@ class AcapyEventsProcessor:
     def _process_event(self, event_json: str) -> bool:
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
 
-        wallet_id = event.metadata.x_wallet_id
+        wallet_id = event.metadata.x_wallet_id or "admin"
+        origin = "multitenant" if event.metadata.x_wallet_id else "governance"
 
         acapy_topic = event.payload.category
         # I think category is the original acapy_topic. `topic` seems transformed
-
-        origin = "multitenant"  # todo
 
         payload = event.payload.payload
 

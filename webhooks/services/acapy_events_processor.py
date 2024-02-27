@@ -26,13 +26,41 @@ class AcapyEventsProcessor:
     def __init__(self, redis_service: RedisService) -> None:
         self.redis_service = redis_service
 
+        # Redis prefix for acapy events:
+        self.acapy_redis_prefix = self.redis_service.acapy_redis_prefix
+
+        # Event for indicating redis keyspace notifications
+        self._new_event_notification = asyncio.Event()
+
         self._start_background_tasks()
 
     def _start_background_tasks(self) -> None:
         """
         Start the background tasks as part of AcapyEventsProcessor's lifecycle
         """
+        asyncio.create_task(self._notification_listener())
         asyncio.create_task(self._process_incoming_events())
+
+    def _rpush_notification_handler(self, msg):
+        """
+        Processing handler for when rpush notifications are received
+        """
+        logger.trace(f"Received rpush notification: {msg}")
+        self._new_event_notification.set()
+
+    async def _notification_listener(self):
+        """
+        Listens for keyspace notifications from Redis and sets an event to resume processing.
+        """
+        # Example subscription pattern for keyspace notifications. Adjust as necessary.
+        pubsub = self.redis_service.redis.pubsub()
+
+        # Subscribe this pubsub channel to the notification pattern (rpush represents ACA-Py writing to list types)
+        notification_pattern = "__keyevent@0__:rpush"
+        pubsub.psubscribe(**{notification_pattern: self._rpush_notification_handler})
+        pubsub.run_in_thread(sleep_time=0.01)
+
+        logger.info(f"Notification listener subscribed to redis keyspace notifications")
 
     async def _process_incoming_events(self) -> NoReturn:
         logger.info("Starting ACA-Py Events Processor")

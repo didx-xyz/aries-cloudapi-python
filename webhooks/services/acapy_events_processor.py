@@ -73,29 +73,17 @@ class AcapyEventsProcessor:
 
     def _scan_acapy_event_keys(self) -> Set[str]:
         collected_keys = set()
-        cursor = 0  # Starting cursor value for SCAN
         logger.debug("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
 
         try:
-            while True:  # Loop until the cursor returned by SCAN is '0'
-                cursor, keys = self.redis_service.redis.scan(
-                    cursor, match=self.redis_service.acapy_redis_prefix, count=1000
-                )
-                if keys:
-                    keys_batch = set(key.decode("utf-8") for key in keys)
-                    collected_keys.update(keys_batch)
-                    logger.debug(
-                        f"Fetched {len(keys_batch)} ACA-Py event keys from Redis. Cursor value: {cursor}"
-                    )
-                else:
-                    logger.debug("No ACA-Py event keys found in this batch.")
-
-                # Cluster scan returns dict of {node: cursor_value}
-                if cursor == 0 or all(c == 0 for c in cursor.values()):
-                    logger.debug(
-                        f"Completed SCAN for ACA-Py event keys, fetched {len(collected_keys)} total."
-                    )
-                    break  # Exit the loop
+            _, keys = self.redis_service.redis.scan(
+                cursor=0, match=self.acapy_redis_prefix, count=10000
+            )
+            if keys:
+                collected_keys = set(key.decode("utf-8") for key in keys)
+                logger.debug(f"Fetched {len(collected_keys)} event keys from Redis")
+            else:
+                logger.debug("No ACA-Py event keys found in this batch.")
         except Exception:
             logger.exception(
                 "An exception occurred when fetching ACA-Py event keys from redis. Continuing..."

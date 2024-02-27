@@ -8,6 +8,8 @@ from shared.models.webhook_topics import (
     CloudApiWebhookEvent,
     topic_mapping,
 )
+from shared.models.webhook_topics.base import AcaPyRedisEvent
+from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import acapy_to_cloudapi_event
 from webhooks.services.redis_service import RedisService
 
@@ -24,40 +26,32 @@ class AcapyEventsProcessor:
     def __init__(self, redis_service: RedisService) -> None:
         self.redis_service = redis_service
 
-        self.scanned_keys = asyncio.Queue()
-
         self._start_background_tasks()
 
     def _start_background_tasks(self) -> None:
         """
         Start the background tasks as part of AcapyEventsProcessor's lifecycle
         """
-        # process incoming events and cleanup queues
         asyncio.create_task(self._process_incoming_events())
 
     async def _process_incoming_events(self) -> NoReturn:
+        logger.info("Starting ACA-Py Events Processor")
         while True:
-            # Scan redis for keys, otherwise wait for keyspace notification event if no keys present
-            # try:
-            #     wallet_id = request.headers["x-wallet-id"]
-            # except KeyError:
-            #     ## TODO: implement different wallet_id for events from governance agent
-            #     # if origin == "governance":
-            #     #     wallet_id = origin
-            #     # else:
-            #     wallet_id = "admin"
+            batch_event_keys = self._scan_acapy_event_keys()
+            for list_key in batch_event_keys:  # the keys are of LIST type
+                self._attempt_process_list_events(list_key)
+            await asyncio.sleep(1)  # sleep to prevent busy loop
+            # here we can sleep until keyspace notification
 
-            self._process_event(acapy_topic, wallet_id, origin, event)
-
-    async def _scan_acapy_event_keys(self) -> Set[str]:
+    def _scan_acapy_event_keys(self) -> Set[str]:
         collected_keys = set()
         cursor = 0  # Starting cursor value for SCAN
         logger.trace("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
 
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
-                cursor, keys = await self.redis.scan(
-                    cursor, match=f"{self.cloudapi_redis_prefix}:*", count=1000
+                cursor, keys = self.redis_service.redis.scan(
+                    cursor, match=self.redis_service.acapy_redis_prefix, count=1000
                 )
                 if keys:
                     keys_batch = set(key.decode("utf-8") for key in keys)
@@ -69,7 +63,7 @@ class AcapyEventsProcessor:
                     logger.trace("No ACA-Py event keys found in this batch.")
 
                 if cursor == 0:  # Iteration is complete
-                    logger.info(
+                    logger.trace(
                         f"Completed SCAN for ACA-Py event keys, fetched {len(collected_keys)} total."
                     )
                     break  # Exit the loop
@@ -80,29 +74,83 @@ class AcapyEventsProcessor:
 
         return collected_keys
 
-    async def _process_event(self, acapy_topic, wallet_id, origin, event):
+    def _attempt_process_list_events(self, list_key: str) -> None:
+        """
+        Attempt to process an event, acquiring a lock to ensure it's processed once.
+        """
+        lock_key = f"lock:{list_key}"
+        if self.redis_service.set_lock(lock_key, px=200):  # Lock for 200 ms
+            self._process_list_events(list_key)
+
+            # Delete lock after processing list, whether it completed or errored:
+            if self.redis_service.delete_key(lock_key):
+                logger.trace(f"Deleted lock key: {lock_key}")
+            else:
+                logger.warning(
+                    f"Could not delete lock key: {lock_key}. Perhaps it expired?"
+                )
+        else:
+            logger.debug(
+                f"Event {list_key} is currently being processed by another instance."
+            )
+
+    def _process_list_events(self, list_key):
+        try:
+            while True:  # Keep processing until no elements are left
+                # Read 0th index of list:
+                event_data = self.redis_service.lindex(list_key)
+                if event_data:
+                    self._process_event(event_data)
+
+                    # Cleanup: remove the element from the list and delete the lock if successfully processed
+                    if self.redis_service.pop_first_list_element(list_key):
+                        logger.trace(f"Removed processed element from list: {list_key}")
+                    else:
+                        logger.warning(
+                            f"Tried to pop list element from: {list_key}, but already removed from list?"
+                        )
+                else:
+                    # If no data is found, the list is empty, exit the loop
+                    logger.trace(
+                        f"No more data found for event key: {list_key}, exiting."
+                    )
+                    break
+        except Exception as e:
+            logger.error(f"Could not load event data: {e}")
+
+    def _process_event(self, event_json: str) -> bool:
+        event = parse_with_error_handling(AcaPyRedisEvent, event_json)
+
+        wallet_id = event.metadata.x_wallet_id
+
+        acapy_topic = event.payload.category
+        # I think category is the original acapy_topic. `topic` seems transformed
+
+        origin = "multitenant"  # todo
+
+        payload = event.payload.payload
 
         bound_logger = logger.bind(
             body={
                 "wallet_id": wallet_id,
                 "acapy_topic": acapy_topic,
                 "origin": origin,
-                "body": event,
+                "payload": payload,
             }
         )
-        bound_logger.trace("Handling received webhook event")
+        bound_logger.trace("Processing ACA-Py Redis webhook event")
 
         # Map from the acapy webhook topic to a unified cloud api topic
         cloudapi_topic = topic_mapping.get(acapy_topic)
         if not cloudapi_topic:
             bound_logger.warning(
-                "Not publishing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
+                "Not processing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
                 acapy_topic,
             )
             return
 
         acapy_webhook_event = AcaPyWebhookEvent(
-            payload=event,
+            payload=payload,
             wallet_id=wallet_id,
             acapy_topic=acapy_topic,
             topic=cloudapi_topic,
@@ -114,7 +162,7 @@ class AcapyEventsProcessor:
         )
         if not cloudapi_webhook_event:
             bound_logger.warning(
-                "Not publishing webhook event for topic `{}` as no transformer exists for the topic",
+                "Not processing webhook event for topic `{}` as no transformer exists for the topic",
                 cloudapi_topic,
             )
             return
@@ -122,8 +170,6 @@ class AcapyEventsProcessor:
         webhook_event_json = cloudapi_webhook_event.model_dump_json()
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
-        await self.redis_service.add_cloudapi_webhook_event(
-            webhook_event_json, wallet_id
-        )
+        self.redis_service.add_cloudapi_webhook_event(webhook_event_json, wallet_id)
 
-        bound_logger.trace("Successfully processed received webhook.")
+        bound_logger.trace("Successfully processed ACA-Py Redis webhook event.")

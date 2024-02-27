@@ -228,6 +228,9 @@ services:
       - governance-multitenant
       - governance-ga
       - host
+      - redis-cluster-network
+    depends_on:
+      - redis-cluster
     env_file:
       - environments/webhooks/fastapi.webhooks.env
   governance-endorser:

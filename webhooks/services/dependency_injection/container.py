@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from dependency_injector import containers, providers
@@ -37,7 +38,8 @@ class Container(containers.DeclarativeContainer):
     # Configuration provider for environment variables and other settings
     config = providers.Configuration()
 
-    nodes: List[ClusterNode] = parse_redis_nodes(config.nodes)
+    redis_nodes = os.getenv("REDIS_NODES", "localhost:6379")
+    nodes: List[ClusterNode] = parse_redis_nodes(redis_nodes)
 
     # Resource provider for the Redis connection pool
     redis_cluster = providers.Resource(
@@ -66,16 +68,9 @@ class Container(containers.DeclarativeContainer):
 
 def get_container() -> Container:
     """
-    Creates and configures the dependency injection container for the application.
-
-    This function configures the Redis nodes. It prepares the container to be wired
-    into the application modules, enabling dependency injection throughout the app.
+    Creates a configured instance of the dependency injection container for the application.
 
     Returns:
         An instance of the configured Container.
     """
-    configured_container = Container()
-
-    configured_container.config.redis_nodes.from_env("REDIS_NODES", "localhost:6379")
-
-    return configured_container
+    return Container()

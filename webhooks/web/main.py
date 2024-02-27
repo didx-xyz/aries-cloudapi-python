@@ -3,7 +3,7 @@ import os
 from fastapi import FastAPI
 
 from shared.log_config import get_logger
-from webhooks.services import sse_manager
+from webhooks.services import acapy_events_processor, sse_manager
 from webhooks.services.dependency_injection.container import get_container
 from webhooks.web.routers import sse, webhooks, websocket
 
@@ -12,7 +12,9 @@ logger = get_logger(__name__)
 
 def create_app() -> FastAPI:
     container = get_container()
-    container.wire(modules=[__name__, sse, sse_manager, webhooks])
+    container.wire(
+        modules=[__name__, acapy_events_processor, sse, sse_manager, webhooks]
+    )
 
     OPENAPI_NAME = os.getenv(
         "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"

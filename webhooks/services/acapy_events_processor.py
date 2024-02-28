@@ -101,7 +101,7 @@ class AcaPyEventsProcessor:
 
     def _scan_acapy_event_keys(self) -> Set[str]:
         collected_keys = set()
-        logger.debug("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
+        logger.trace("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
 
         try:
             _, keys = self.redis_service.redis.scan(
@@ -111,7 +111,7 @@ class AcaPyEventsProcessor:
                 collected_keys = set(key.decode("utf-8") for key in keys)
                 logger.debug(f"Fetched {len(collected_keys)} event keys from Redis")
             else:
-                logger.debug("No ACA-Py event keys found in this batch.")
+                logger.trace("No ACA-Py event keys found in this batch.")
         except Exception:
             logger.exception(
                 "An exception occurred when fetching ACA-Py event keys from redis. Continuing..."

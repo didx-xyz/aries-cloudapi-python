@@ -26,8 +26,6 @@ async def app_lifespan(_: FastAPI):
     container.acapy_events_processor()
     container.sse_manager()
 
-    logger.info("Webhooks Services started")
-
     yield
 
     logger.info("Shutdown Webhooks services")

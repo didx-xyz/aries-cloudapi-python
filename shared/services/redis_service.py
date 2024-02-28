@@ -5,8 +5,6 @@ from redis.cluster import ClusterNode, RedisCluster
 
 from shared.log_config import get_logger
 
-logger = get_logger(__name__)
-
 
 class RedisConfig:
     MAX_CONNECTIONS = 20000
@@ -20,7 +18,7 @@ REDIS_CONNECTION_PARAMS = {
 
 
 async def init_redis_cluster_pool(
-    nodes: List[ClusterNode],
+    nodes: List[ClusterNode], logger=get_logger(__name__)
 ) -> AsyncIterator[RedisCluster]:
     """
     Initialize a connection pool to the Redis Cluster.
@@ -42,7 +40,7 @@ class RedisService:
     A service for interacting with Redis.
     """
 
-    def __init__(self, redis: RedisCluster) -> None:
+    def __init__(self, redis: RedisCluster, logger=get_logger(__name__)) -> None:
         """
         Initialize the RedisService with a Redis cluster instance.
 
@@ -53,7 +51,8 @@ class RedisService:
 
         self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
 
-        logger.info("RedisService initialised")
+        self.logger = logger
+        self.logger.info("RedisService initialised")
 
     def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:
         """
@@ -77,6 +76,7 @@ class RedisService:
             A boolean indicating the lock was successfully acquired, or
             None if the key already exists and the lock could not be acquired.
         """
+        self.logger.trace(f"Setting lock for key: {key}; timeout: {px} milliseconds")
         return self.redis.set(key, value="1", px=px, nx=True)
 
     def delete_key(self, key: str) -> bool:
@@ -89,6 +89,7 @@ class RedisService:
         Returns:
         - bool: True if the key was deleted, False otherwise.
         """
+        self.logger.trace(f"Deleting key: {key}")
         # Deleting the key and returning True if the command was successful
         return self.redis.delete(key) == 1
 
@@ -103,6 +104,7 @@ class RedisService:
         Returns:
             The element at the specified index in the list, or None if the index is out of range.
         """
+        self.logger.trace(f"Reading {n} index from {key}")
         return self.redis.lindex(key, index=n)
 
     def pop_first_list_element(self, key: str):
@@ -116,5 +118,6 @@ class RedisService:
         - The value of the first element if the list exists and is not empty,
           None otherwise.
         """
+        self.logger.trace(f"Pop first element from list: {key}")
         # Using LPOP to remove and return the first element of the list
         return self.redis.lpop(key)

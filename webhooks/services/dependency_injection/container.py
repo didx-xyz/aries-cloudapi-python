@@ -4,6 +4,7 @@ from typing import List
 from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
+from shared.log_config import get_logger
 from shared.services.redis_service import init_redis_cluster_pool
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 from webhooks.services.sse_manager import SseManager
@@ -46,6 +47,7 @@ class Container(containers.DeclarativeContainer):
     redis_cluster = providers.Resource(
         init_redis_cluster_pool,
         nodes=nodes,
+        logger=get_logger(__name__),
     )
 
     # Singleton provider for the WebhooksRedisService

@@ -8,8 +8,6 @@ from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
 from shared.services.redis_service import RedisService
 from shared.util.rich_parsing import parse_with_error_handling
 
-logger = get_logger(__name__)
-
 
 class WebhooksRedisService(RedisService):
     """
@@ -23,13 +21,14 @@ class WebhooksRedisService(RedisService):
         Args:
             redis: A Redis client instance connected to a Redis cluster server.
         """
-        super().__init__(redis)
+        logger = get_logger(__name__)
+        super().__init__(redis=redis, logger=logger)
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
         self.acapy_redis_prefix = "acapy-record-*"  # redis prefix, ACA-Py events
 
-        logger.info("WebhooksRedisService initialised")
+        self.logger.info("WebhooksRedisService initialised")
 
     def add_cloudapi_webhook_event(
         self,
@@ -44,7 +43,9 @@ class WebhooksRedisService(RedisService):
             event_json: The JSON string representation of the webhook event.
             wallet_id: The identifier of the wallet associated with the event.
         """
-        bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
+        bound_logger = self.logger.bind(
+            body={"wallet_id": wallet_id, "event": event_json}
+        )
         bound_logger.trace("Write entry to redis")
 
         # Use the current timestamp as the score for the sorted set
@@ -67,7 +68,7 @@ class WebhooksRedisService(RedisService):
         Returns:
             A list of event JSON strings.
         """
-        bound_logger = logger.bind(body={"wallet_id": wallet_id})
+        bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.trace("Fetching entries from redis by wallet id")
 
         # Fetch all entries using the full range of scores
@@ -147,7 +148,7 @@ class WebhooksRedisService(RedisService):
         Returns:
             A list of event JSON strings that fall within the specified timestamp range.
         """
-        logger.trace(
+        self.logger.trace(
             "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
         )
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
@@ -187,7 +188,7 @@ class WebhooksRedisService(RedisService):
         """
         wallet_ids = set()
         cursor = 0  # Starting cursor value for SCAN
-        logger.info("Starting SCAN to fetch all wallet IDs.")
+        self.logger.info("Starting SCAN to fetch all wallet IDs.")
 
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
@@ -199,19 +200,19 @@ class WebhooksRedisService(RedisService):
                         key.decode("utf-8").split(":")[1] for key in keys
                     )
                     wallet_ids.update(wallet_id_batch)
-                    logger.debug(
+                    self.logger.debug(
                         f"Fetched {len(wallet_id_batch)} wallet IDs from Redis. Cursor value: {cursor}"
                     )
                 else:
-                    logger.debug("No wallet IDs found in this batch.")
+                    self.logger.debug("No wallet IDs found in this batch.")
 
                 if cursor == 0 or all(c == 0 for c in cursor.values()):
-                    logger.info("Completed SCAN for wallet IDs.")
+                    self.logger.info("Completed SCAN for wallet IDs.")
                     break  # Exit the loop
         except Exception:
-            logger.exception(
+            self.logger.exception(
                 "An exception occurred when fetching wallet_ids from redis. Continuing..."
             )
 
-        logger.info(f"Total wallet IDs fetched: {len(wallet_ids)}.")
+        self.logger.info(f"Total wallet IDs fetched: {len(wallet_ids)}.")
         return list(wallet_ids)

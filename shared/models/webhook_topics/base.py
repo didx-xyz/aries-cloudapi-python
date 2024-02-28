@@ -145,7 +145,7 @@ class AcaPyRedisEventPayload(BaseModel):
     wallet_id: str
     state: str
     topic: str
-    category: str
+    category: Optional[str] = None
     payload: Dict[str, Any]
 
 

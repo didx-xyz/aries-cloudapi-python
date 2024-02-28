@@ -197,7 +197,7 @@ class AcaPyEventsProcessor:
         wallet_id = event.metadata.x_wallet_id or "admin"
         origin = "multitenant" if event.metadata.x_wallet_id else "governance"
 
-        acapy_topic = event.payload.category
+        acapy_topic = event.payload.category or event.payload.topic
         # I think category is the original acapy_topic. `topic` seems transformed
 
         payload = event.payload.payload

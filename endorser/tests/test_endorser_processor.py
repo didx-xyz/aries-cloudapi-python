@@ -336,7 +336,7 @@ async def test_process_endorsement_event():
     data = json.dumps(
         {
             "origin": "governance",
-            "wallet_id": "admin",
+            "wallet_id": "governance",
             "payload": {"transaction_id": "tran-id", "state": "request-received"},
         }
     )

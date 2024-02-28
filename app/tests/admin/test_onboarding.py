@@ -57,12 +57,12 @@ async def test_onboard_issuer_public_did_exists(
 
     # Mock event listeners
     when(register_issuer_did).create_sse_listener(
-        topic="connections", wallet_id="admin"
-    ).thenReturn(MockSseListener(topic="connections", wallet_id="admin"))
+        topic="connections", wallet_id="governance"
+    ).thenReturn(MockSseListener(topic="connections", wallet_id="governance"))
     when(register_issuer_did).create_sse_listener(
-        topic="endorsements", wallet_id="admin"
+        topic="endorsements", wallet_id="governance"
     ).thenReturn(
-        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
+        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="governance")
     )
 
     invitation_url = "https://invitation.com/"
@@ -105,13 +105,15 @@ async def test_onboard_issuer_no_public_did(
 
     # Mock event listeners
     when(register_issuer_did).create_sse_listener(
-        topic="connections", wallet_id="admin"
+        topic="connections", wallet_id="governance"
     ).thenReturn(
-        MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
+        MockListenerEndorserConnectionId(topic="connections", wallet_id="governance")
     )
     when(register_issuer_did).create_sse_listener(
-        topic="endorsements", wallet_id="admin"
-    ).thenReturn(MockListenerRequestReceived(topic="endorsements", wallet_id="admin"))
+        topic="endorsements", wallet_id="governance"
+    ).thenReturn(
+        MockListenerRequestReceived(topic="endorsements", wallet_id="governance")
+    )
 
     # Mock responses
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(

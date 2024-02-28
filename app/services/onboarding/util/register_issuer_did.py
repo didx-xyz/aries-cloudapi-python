@@ -63,7 +63,9 @@ async def create_endorser_invitation(
 async def wait_for_connection_completion(
     *, issuer_controller: AcaPyClient, invitation: InvitationRecord, logger: Logger
 ) -> tuple[str, str]:
-    connections_listener = create_sse_listener(topic="connections", wallet_id="admin")
+    connections_listener = create_sse_listener(
+        topic="connections", wallet_id="governance"
+    )
 
     logger.debug("Receive invitation from endorser on behalf of issuer")
     connection_record = await issuer_controller.out_of_band.receive_invitation(
@@ -164,7 +166,9 @@ async def register_issuer_did(
         create_transaction_for_endorser=True,
     )
 
-    endorsements_listener = create_sse_listener(topic="endorsements", wallet_id="admin")
+    endorsements_listener = create_sse_listener(
+        topic="endorsements", wallet_id="governance"
+    )
 
     try:
         logger.debug("Waiting for endorsement request received")

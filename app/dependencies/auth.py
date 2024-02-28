@@ -52,7 +52,7 @@ def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
         if auth.token != auth.role.agent_type.x_api_key:
             raise HTTPException(403, "Unauthorized")
 
-        wallet_id = "admin"
+        wallet_id = "governance" if auth.role == Role.GOVERNANCE else "admin"
     else:
         try:
             # Decode JWT
@@ -72,7 +72,9 @@ def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
 
 def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
     if auth.role == Role.GOVERNANCE:
-        return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
+        return AcaPyAuthVerified(
+            role=auth.role, token=auth.token, wallet_id="governance"
+        )
     else:
         raise HTTPException(403, "Unauthorized")
 

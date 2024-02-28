@@ -9,7 +9,9 @@ from app.dependencies.role import Role
 # todo: remove these defaults by migrating relevant methods to endorser service
 # and refactoring methods using tenant-admin internally
 GOVERNANCE_AUTHED = AcaPyAuthVerified(
-    role=Role.GOVERNANCE, token=Role.GOVERNANCE.agent_type.x_api_key, wallet_id="admin"
+    role=Role.GOVERNANCE,
+    token=Role.GOVERNANCE.agent_type.x_api_key,
+    wallet_id="governance",
 )
 TENANT_ADMIN_AUTHED = AcaPyAuthVerified(
     role=Role.TENANT_ADMIN,

@@ -69,7 +69,7 @@ def mock_governance_auth():
     auth = mock(AcaPyAuthVerified)
     auth.role = Role.GOVERNANCE
     auth.token = GOVERNANCE_AGENT_API_KEY
-    auth.wallet_id = "admin"
+    auth.wallet_id = "governance"
     return auth
 
 

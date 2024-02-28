@@ -358,9 +358,11 @@ async def create_credential_definition(
                 bound_logger.debug(
                     "Await endorsement transaction to be in state `request-received`"
                 )
-                admin_listener = SseListener(topic="endorsements", wallet_id="admin")
+                endorser_listener = SseListener(
+                    topic="endorsements", wallet_id="governance"
+                )
                 try:
-                    txn_record = await admin_listener.wait_for_state(
+                    txn_record = await endorser_listener.wait_for_state(
                         desired_state="request-received"
                     )
                 except TimeoutError as e:
@@ -396,7 +398,7 @@ async def create_credential_definition(
                         create_transaction_for_endorser=True,
                     )
 
-                    listener = SseListener(topic="endorsements", wallet_id="admin")
+                    listener = SseListener(topic="endorsements", wallet_id="governance")
                     # TODO move endorsement to endorser service
                     bound_logger.debug(
                         "Waiting for endorsements event in `request-received` state"

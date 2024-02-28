@@ -352,7 +352,6 @@ async def alice_bob_connect_multi(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="connections",
-        max_duration=60,
     )
 
     bob_connection_id = multi_use_invite["multi_use_invitation"]["connection_id"]
@@ -368,13 +367,11 @@ async def alice_bob_connect_multi(
         client=alice_member_client,
         filter_map={"state": "completed"},
         topic="connections",
-        max_duration=60,
     )
     assert await check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "completed"},
         topic="connections",
-        max_duration=60,
     )
 
     return BobAliceConnect(

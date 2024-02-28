@@ -63,6 +63,20 @@ class RedisService:
         """
         return f"{self.cloudapi_redis_prefix}:{wallet_id}"
 
+    def set(self, key: str, value: str) -> Optional[bool]:
+        """
+        Set a key and value on redis
+
+        Args:
+            key: The key to set.
+            value: The value to set.
+
+        Returns:
+            A boolean indicating that the value was successfully set.
+        """
+        self.logger.trace(f"Setting key: {key}, with value: {value}")
+        return self.redis.set(key, value=value)
+
     def set_lock(self, key: str, px: int = 500) -> Optional[bool]:
         """
         Attempts to acquire a distributed lock by setting a key in Redis with an expiration time,

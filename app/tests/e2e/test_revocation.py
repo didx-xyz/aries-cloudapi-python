@@ -44,7 +44,6 @@ async def test_clear_pending_revokes(
     assert clear_revoke_response == {}
 
     for cred in issue_revocable_credentials_to_alice_and_revoke:
-
         rev_record = (
             await faber_client.get(
                 f"{CREDENTIALS_BASE_PATH}/revocation/record"
@@ -57,7 +56,6 @@ async def test_clear_pending_revokes(
 
     # Test for cred_rev_id not pending
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
             json={"revocation_registry_credential_map": {rev_reg_id: ["1"]}},
@@ -69,7 +67,6 @@ async def test_clear_pending_revokes(
 async def test_clear_pending_revokes_no_map(
     faber_client: RichAsyncClient, issue_revocable_credentials_to_alice_and_revoke: list
 ):
-
     clear_revoke_response = (
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
@@ -80,7 +77,6 @@ async def test_clear_pending_revokes_no_map(
     assert clear_revoke_response == {}
 
     for cred in issue_revocable_credentials_to_alice_and_revoke:
-
         rev_record = (
             await faber_client.get(
                 f"{CREDENTIALS_BASE_PATH}/revocation/record"
@@ -97,7 +93,6 @@ async def test_clear_pending_revokes_bad_payload(
     faber_client: RichAsyncClient,
 ):
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
             json={"revocation_registry_credential_map": "bad"},
@@ -106,7 +101,6 @@ async def test_clear_pending_revokes_bad_payload(
     assert_that(exc.value.status_code).is_equal_to(422)
 
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
             json={"revocation_registry_credential_map": {"bad": "bad"}},
@@ -115,7 +109,6 @@ async def test_clear_pending_revokes_bad_payload(
     assert_that(exc.value.status_code).is_equal_to(422)
 
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
             json={
@@ -151,7 +144,6 @@ async def test_publish_all_revocations_for_rev_reg_id(
     )
 
     for cred in issue_revocable_credentials_to_alice_and_revoke:
-
         rev_record = (
             await faber_client.get(
                 f"{CREDENTIALS_BASE_PATH}/revocation/record"
@@ -167,14 +159,12 @@ async def test_publish_all_revocations_for_rev_reg_id(
 async def test_publish_all_revocations_no_payload(
     faber_client: RichAsyncClient, issue_revocable_credentials_to_alice_and_revoke: list
 ):
-
     await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/publish-revocations",
         json={"revocation_registry_credential_map": {}},
     )
 
     for cred in issue_revocable_credentials_to_alice_and_revoke:
-
         rev_record = (
             await faber_client.get(
                 f"{CREDENTIALS_BASE_PATH}/revocation/record"
@@ -209,7 +199,6 @@ async def test_publish_one_revocation(
     )
 
     for cred in issue_revocable_credentials_to_alice_and_revoke:
-
         rev_record = (
             await faber_client.get(
                 f"{CREDENTIALS_BASE_PATH}/revocation/record"
@@ -225,7 +214,6 @@ async def test_publish_one_revocation(
 
     # Test for cred_rev_id not pending
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/publish-revocations",
             json={"revocation_registry_credential_map": {rev_reg_id: [cred_rev_id]}},
@@ -239,7 +227,6 @@ async def test_publish_revocations_bad_payload(
     faber_client: RichAsyncClient,
 ):
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/publish-revocations",
             json={"revocation_registry_credential_map": "bad"},
@@ -248,7 +235,6 @@ async def test_publish_revocations_bad_payload(
     assert_that(exc.value.status_code).is_equal_to(422)
 
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/publish-revocations",
             json={"revocation_registry_credential_map": {"bad": "bad"}},
@@ -257,7 +243,6 @@ async def test_publish_revocations_bad_payload(
     assert_that(exc.value.status_code).is_equal_to(422)
 
     with pytest.raises(HTTPException) as exc:
-
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/publish-revocations",
             json={

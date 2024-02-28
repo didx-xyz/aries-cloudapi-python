@@ -31,7 +31,12 @@ class WebhooksRedisService(RedisService):
 
         logger.info("WebhooksRedisService initialised")
 
-    def add_cloudapi_webhook_event(self, event_json: str, wallet_id: str) -> None:
+    def add_cloudapi_webhook_event(
+        self,
+        event_json: str,
+        wallet_id: str,
+        timestamp_ns=time.time_ns(),  # todo: this timestamp should be from webhook event metadata
+    ) -> None:
         """
         Add a CloudAPI webhook event JSON string to Redis and publish a notification.
 
@@ -41,9 +46,6 @@ class WebhooksRedisService(RedisService):
         """
         bound_logger = logger.bind(body={"wallet_id": wallet_id, "event": event_json})
         bound_logger.trace("Write entry to redis")
-
-        # get a nanosecond timestamp to identify this event
-        timestamp_ns: int = time.time_ns()
 
         # Use the current timestamp as the score for the sorted set
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)

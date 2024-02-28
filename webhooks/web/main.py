@@ -31,6 +31,7 @@ async def app_lifespan(_: FastAPI):
     yield
 
     logger.info("Shutdown Webhooks services")
+    # Todo: graceful shutdown of SSE Manager and AcaPyEventsProcessor
 
 
 def create_app() -> FastAPI:

@@ -55,6 +55,7 @@ class WebhooksRedisService(RedisService):
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
+        bound_logger.trace(f"Publishing message on pubsub channel: {broadcast_message}")
         self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)
 
         bound_logger.trace("Successfully wrote entry to redis.")
@@ -149,14 +150,14 @@ class WebhooksRedisService(RedisService):
         Returns:
             A list of event JSON strings that fall within the specified timestamp range.
         """
-        self.logger.trace(
-            "Fetching entries from redis by timestamp for wallet id: {}", wallet_id
-        )
+        bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
+        bound_logger.debug("Fetching entries from redis by timestamp for wallet")
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
         entries: List[bytes] = self.redis.zrangebyscore(
             wallet_key, min=start_timestamp, max=end_timestamp
         )
         entries_str: List[str] = [entry.decode() for entry in entries]
+        bound_logger.trace("Fetched entries: {}", entries_str)
         return entries_str
 
     def get_cloudapi_events_by_timestamp(

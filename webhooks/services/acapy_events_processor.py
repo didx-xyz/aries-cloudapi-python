@@ -4,10 +4,7 @@ from uuid import uuid4
 
 from shared import APIRouter
 from shared.log_config import get_logger
-from shared.models.webhook_topics import (
-    AcaPyWebhookEvent,
-    topic_mapping,
-)
+from shared.models.webhook_topics import AcaPyWebhookEvent, topic_mapping
 from shared.models.webhook_topics.base import AcaPyRedisEvent
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import acapy_to_cloudapi_event

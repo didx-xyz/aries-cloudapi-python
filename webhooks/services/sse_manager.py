@@ -93,6 +93,7 @@ class SseManager:
                 while True:
                     message = pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
+                        logger.trace(f"Got pubsub message: {message}")
                         await self._process_redis_event(message)
                     else:
                         await asyncio.sleep(0.01)  # Prevent a busy loop if no message
@@ -135,6 +136,7 @@ class SseManager:
                     topic = parsed_event.topic
 
                     # Add event to SSE queue for processing
+                    logger.trace(f"Put parsed event on events queue: {parsed_event}")
                     await self.incoming_events.put(parsed_event)
 
                     # Also publish event to websocket

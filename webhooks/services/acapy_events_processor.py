@@ -194,11 +194,19 @@ class AcaPyEventsProcessor:
         """
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
 
-        wallet_id = event.metadata.x_wallet_id or "admin"
-        origin = "multitenant" if event.metadata.x_wallet_id else "governance"
+        metadata_time_ns = event.metadata.time_ns
+        metadata_origin = event.metadata.origin
+
+        if metadata_origin:
+            origin = metadata_origin.lower()
+        else:
+            logger.warning(f"webhook event has unknown origin: {event}")
+            origin = "unknown"
+
+        wallet_id = event.metadata.x_wallet_id or origin
 
         acapy_topic = event.payload.category or event.payload.topic
-        # I think category is the original acapy_topic. `topic` seems transformed
+        # category is the original acapy_topic as we used to received over http
 
         payload = event.payload.payload
 

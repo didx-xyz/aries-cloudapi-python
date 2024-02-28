@@ -1,12 +1,11 @@
 import asyncio
+from typing import NoReturn, Set
 from uuid import uuid4
-from typing import NoReturn, Optional, Set
 
 from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.webhook_topics import (
     AcaPyWebhookEvent,
-    CloudApiWebhookEvent,
     topic_mapping,
 )
 from shared.models.webhook_topics.base import AcaPyRedisEvent
@@ -101,6 +100,12 @@ class AcaPyEventsProcessor:
                 )
 
     def _scan_acapy_event_keys(self) -> Set[str]:
+        """
+        Scans Redis for keys matching the ACA-Py event prefix and returns a set of these keys.
+
+        Returns:
+            A set of Redis keys that match the ACA-Py event prefix.
+        """
         collected_keys = set()
         logger.trace("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
 
@@ -122,7 +127,11 @@ class AcaPyEventsProcessor:
 
     def _attempt_process_list_events(self, list_key: str) -> None:
         """
-        Attempt to process an event, acquiring a lock to ensure it's processed once.
+        Attempts to process a list-based event in Redis, ensuring that only one instance processes
+        the event at a time by acquiring a lock.
+
+        Args:
+            list_key: The Redis key of the list to process.
         """
         lock_key = f"lock:{list_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
@@ -145,6 +154,16 @@ class AcaPyEventsProcessor:
             )
 
     def _process_list_events(self, list_key) -> None:
+        """
+        Processes all events in a Redis list until the list is empty. Each event is processed individually,
+        and upon successful processing, it's removed from the list.
+
+        Args:
+            list_key: The Redis key of the list to process.
+
+        Returns:
+            An exception if an error occurs during event processing; otherwise, returns None.
+        """
         try:
             while True:  # Keep processing until no elements are left
                 # Read 0th index of list:
@@ -170,6 +189,12 @@ class AcaPyEventsProcessor:
             raise
 
     def _process_event(self, event_json: str) -> None:
+        """
+        Processes an individual ACA-Py event, transforming it to our CloudAPI format and saving/broadcasting to redis
+
+        Args:
+            event_json: The JSON string representation of the ACA-Py event.
+        """
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
 
         wallet_id = event.metadata.x_wallet_id or "admin"
@@ -206,9 +231,7 @@ class AcaPyEventsProcessor:
             origin=origin,
         )
 
-        cloudapi_webhook_event: Optional[CloudApiWebhookEvent] = (
-            acapy_to_cloudapi_event(acapy_webhook_event)
-        )
+        cloudapi_webhook_event = acapy_to_cloudapi_event(acapy_webhook_event)
         if not cloudapi_webhook_event:
             bound_logger.warning(
                 f"Not processing webhook event for topic `{cloudapi_topic}` as no transformer exists for the topic",

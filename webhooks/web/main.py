@@ -23,8 +23,8 @@ async def app_lifespan(_: FastAPI):
 
     # Start singleton services
     container.redis_service()
-    container.acapy_events_processor()
     container.sse_manager()
+    container.acapy_events_processor()  # should start after SSE Manager is listening
 
     yield
 

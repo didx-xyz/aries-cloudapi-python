@@ -18,13 +18,14 @@ REDIS_CONNECTION_PARAMS = {
 
 
 async def init_redis_cluster_pool(
-    nodes: List[ClusterNode], logger=get_logger(__name__)
+    nodes: List[ClusterNode], logger_name: str
 ) -> AsyncIterator[RedisCluster]:
     """
     Initialize a connection pool to the Redis Cluster.
 
     :param nodes: List of nodes from which initial bootstrapping can be done
     """
+    logger = get_logger(logger_name)
     logger.info(f"Initialising Redis Cluster with nodes: {nodes}")
     cluster = RedisCluster(startup_nodes=nodes, **REDIS_CONNECTION_PARAMS)
 
@@ -40,7 +41,7 @@ class RedisService:
     A service for interacting with Redis.
     """
 
-    def __init__(self, redis: RedisCluster, logger=get_logger(__name__)) -> None:
+    def __init__(self, redis: RedisCluster, logger_name: str = "redis") -> None:
         """
         Initialize the RedisService with a Redis cluster instance.
 
@@ -51,7 +52,7 @@ class RedisService:
 
         self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
 
-        self.logger = logger
+        self.logger = get_logger(logger_name)
         self.logger.info("RedisService initialised")
 
     def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:

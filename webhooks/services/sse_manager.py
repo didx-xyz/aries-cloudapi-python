@@ -80,13 +80,16 @@ class SseManager:
 
         while retry_count < max_retries:
             try:
+                logger.debug("Creating pubsub instance")
                 pubsub = self.redis_service.redis.pubsub()
 
+                logger.debug("Subscribing to pubsub instance for SSE events")
                 pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
                 # Reset retry_count upon successful connection
                 retry_count = 0
 
+                logger.debug("Begin processing pubsub messages")
                 while True:
                     message = pubsub.get_message(ignore_subscribe_messages=True)
                     if message:

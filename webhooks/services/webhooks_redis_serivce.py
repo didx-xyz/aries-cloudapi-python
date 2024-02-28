@@ -21,8 +21,7 @@ class WebhooksRedisService(RedisService):
         Args:
             redis: A Redis client instance connected to a Redis cluster server.
         """
-        logger = get_logger(__name__)
-        super().__init__(redis=redis, logger=logger)
+        super().__init__(redis=redis, logger_name="webhooks")
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
@@ -34,7 +33,6 @@ class WebhooksRedisService(RedisService):
         self,
         event_json: str,
         wallet_id: str,
-        timestamp_ns=time.time_ns(),  # todo: this timestamp should be from webhook event metadata
     ) -> None:
         """
         Add a CloudAPI webhook event JSON string to Redis and publish a notification.
@@ -50,6 +48,9 @@ class WebhooksRedisService(RedisService):
 
         # Use the current timestamp as the score for the sorted set
         wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
+        timestamp_ns = (
+            time.time_ns()
+        )  # todo: this timestamp should be from webhook event metadata
         self.redis.zadd(wallet_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"

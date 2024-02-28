@@ -47,7 +47,7 @@ class Container(containers.DeclarativeContainer):
     redis_cluster = providers.Resource(
         init_redis_cluster_pool,
         nodes=nodes,
-        logger=get_logger(__name__),
+        logger_name="webhooks",
     )
 
     # Singleton provider for the WebhooksRedisService

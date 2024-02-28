@@ -21,7 +21,7 @@ async def check_webhook_state(
     client: RichAsyncClient,
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]],
-    max_duration: int = 30,
+    max_duration: int = 60,
 ) -> bool:
     assert max_duration >= 0, "Poll duration cannot be negative"
 

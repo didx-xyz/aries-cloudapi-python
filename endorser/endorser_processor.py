@@ -28,7 +28,7 @@ class Event(BaseModel):
 
 
 async def listen_endorsement_events():
-    topic = "endorsements-admin"
+    topic = "endorsements-governance"
 
     client = PubSubClient([topic], callback=process_endorsement_event)
     logger.debug("Opening connection to webhook server")

@@ -1,4 +1,5 @@
 import asyncio
+from uuid import uuid4
 from typing import NoReturn, Optional, Set
 
 from shared import APIRouter
@@ -84,7 +85,7 @@ class AcaPyEventsProcessor:
                     attempts_without_events += 1
                     if attempts_without_events >= max_attempts_without_events:
                         # Wait for a keyspace notification before continuing
-                        logger.info(
+                        logger.debug(
                             f"Scan has returned no keys {max_attempts_without_events} times in a row. "
                             "Waiting for keyspace notification..."
                         )
@@ -143,7 +144,7 @@ class AcaPyEventsProcessor:
                 f"Event {list_key} is currently being processed by another instance."
             )
 
-    def _process_list_events(self, list_key) -> None:
+    def _process_list_events(self, list_key) -> Optional[Exception]:
         try:
             while True:  # Keep processing until no elements are left
                 # Read 0th index of list:
@@ -193,8 +194,7 @@ class AcaPyEventsProcessor:
         cloudapi_topic = topic_mapping.get(acapy_topic)
         if not cloudapi_topic:
             bound_logger.warning(
-                "Not processing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
-                acapy_topic,
+                f"Not processing webhook event for acapy_topic `{acapy_topic}` as it doesn't exist in the topic_mapping",
             )
             return
 
@@ -211,8 +211,7 @@ class AcaPyEventsProcessor:
         )
         if not cloudapi_webhook_event:
             bound_logger.warning(
-                "Not processing webhook event for topic `{}` as no transformer exists for the topic",
-                cloudapi_topic,
+                f"Not processing webhook event for topic `{cloudapi_topic}` as no transformer exists for the topic",
             )
             return
 

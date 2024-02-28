@@ -194,8 +194,8 @@ class WebhooksRedisService(RedisService):
 
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
-                cursor, keys = self.redis.scan(
-                    cursor, match=f"{self.cloudapi_redis_prefix}:*", count=1000
+                next_cursor, keys = self.redis.scan(
+                    cursor, match=f"{self.cloudapi_redis_prefix}:*", count=10000
                 )
                 if keys:
                     wallet_id_batch = set(
@@ -208,9 +208,10 @@ class WebhooksRedisService(RedisService):
                 else:
                     self.logger.debug("No wallet IDs found in this batch.")
 
-                if cursor == 0 or all(c == 0 for c in cursor.values()):
+                if all(c == 0 for c in next_cursor.values()):
                     self.logger.info("Completed SCAN for wallet IDs.")
                     break  # Exit the loop
+                cursor += 1
         except Exception:
             self.logger.exception(
                 "An exception occurred when fetching wallet_ids from redis. Continuing..."

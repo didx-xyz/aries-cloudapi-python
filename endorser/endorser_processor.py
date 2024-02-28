@@ -33,8 +33,8 @@ async def listen_endorsement_events():
     client = PubSubClient([topic], callback=process_endorsement_event)
     logger.debug("Opening connection to webhook server")
     client.start_client(WEBHOOKS_PUBSUB_URL)
-    logger.debug("Opened connection to webhook server. waiting for readiness...")
-    await client.wait_until_done()
+    logger.debug("Opened connection to webhook server. Waiting for readiness...")
+    await client.wait_until_ready()
     logger.debug("Connection to webhook server ready")
     logger.info(
         "Listening for 'endorsements' events from webhook server at {}.",

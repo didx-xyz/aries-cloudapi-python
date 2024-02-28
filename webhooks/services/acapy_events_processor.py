@@ -125,7 +125,11 @@ class AcaPyEventsProcessor:
         """
         lock_key = f"lock:{list_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
-            self._process_list_events(list_key)
+            processing_exception = self._process_list_events(list_key)
+
+            if processing_exception:
+                # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
+                self._handle_unprocessable_event(list_key, processing_exception)
 
             # Delete lock after processing list, whether it completed or errored:
             if self.redis_service.delete_key(lock_key):
@@ -161,7 +165,8 @@ class AcaPyEventsProcessor:
                     )
                     break
         except Exception as e:
-            logger.error(f"Could not load event data ({event_data}): {e}")
+            logger.exception(f"Could not load event data ({event_data}): {e}")
+            return e
 
     def _process_event(self, event_json: str) -> None:
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
@@ -217,3 +222,23 @@ class AcaPyEventsProcessor:
         self.redis_service.add_cloudapi_webhook_event(webhook_event_json, wallet_id)
 
         bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")
+
+    def _handle_unprocessable_event(self, key: str, error: Exception) -> None:
+        """
+        Handles an event that could not be processed successfully. The unprocessable event is persisted
+        to a separate key for further investigation.
+
+        Args:
+            key: The Redis key where the problematic event was found.
+            error: The exception that occurred during event processing.
+        """
+        logger.warning(f"Handling problematic event at key: {key}")
+        problematic_event = self.redis_service.pop_first_list_element(key)
+
+        unprocessable_key = f"unprocessable:{key}:{uuid4().hex}"
+        error_message = f"Could not process: {problematic_event}. Error: {error}"
+
+        logger.warning(
+            f"Saving record of problematic event at key: {unprocessable_key}. Error: `{error_message}`"
+        )
+        self.redis_service.set(key=unprocessable_key, value=error_message)

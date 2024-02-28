@@ -4,9 +4,10 @@ from typing import List
 from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
+from shared.services.redis_service import init_redis_cluster_pool
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
-from webhooks.services.redis_service import RedisService, init_redis_cluster_pool
 from webhooks.services.sse_manager import SseManager
+from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
 
 def parse_redis_nodes(env_var_value: str) -> List[ClusterNode]:
@@ -47,9 +48,9 @@ class Container(containers.DeclarativeContainer):
         nodes=nodes,
     )
 
-    # Singleton provider for the RedisService
+    # Singleton provider for the WebhooksRedisService
     redis_service = providers.Singleton(
-        RedisService,
+        WebhooksRedisService,
         redis=redis_cluster,
     )
 

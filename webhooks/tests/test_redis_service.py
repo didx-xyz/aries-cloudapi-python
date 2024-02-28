@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
-from webhooks.services.redis_service import RedisService
+from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
 wallet_id = "test_wallet"
 topic = "test_topic"
@@ -32,8 +32,8 @@ async def test_add_cloudapi_webhook_event():
     redis_client.zadd = AsyncMock()
     redis_client.publish = AsyncMock()
 
-    # Initialize RedisService with the mocked Redis client
-    redis_service = RedisService(redis_client)
+    # Initialize WebhooksRedisService with the mocked Redis client
+    redis_service = WebhooksRedisService(redis_client)
 
     # Call the method you want to test
     await redis_service.add_cloudapi_webhook_event(event_json, wallet_id)
@@ -47,7 +47,7 @@ async def test_add_cloudapi_webhook_event():
 async def test_get_json_cloudapi_events_by_wallet():
     redis_client = AsyncMock()
     redis_client.zrange = AsyncMock(return_value=[e.encode() for e in json_entries])
-    redis_service = RedisService(redis_client)
+    redis_service = WebhooksRedisService(redis_client)
 
     events = await redis_service.get_json_cloudapi_events_by_wallet(wallet_id)
 
@@ -59,7 +59,7 @@ async def test_get_json_cloudapi_events_by_wallet():
 async def test_get_cloudapi_events_by_wallet(mocker):
     expected_events = cloudapi_entries
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(AsyncMock())
     mocker.patch.object(
         redis_service, "get_json_cloudapi_events_by_wallet", return_value=json_entries
     )
@@ -81,7 +81,7 @@ async def test_get_json_cloudapi_events_by_wallet_and_topic(mocker):
     ]
     expected_events = ['{"payload":{"test":"1"},"topic":"test_topic"}']
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(AsyncMock())
     mocker.patch.object(
         redis_service, "get_json_cloudapi_events_by_wallet", return_value=different_json
     )
@@ -105,7 +105,7 @@ async def test_get_cloudapi_events_by_wallet_and_topic(mocker):
     ]
     expected_events = [event_instances[0]]
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(AsyncMock())
     mocker.patch.object(
         redis_service, "get_cloudapi_events_by_wallet", return_value=event_instances
     )
@@ -127,7 +127,7 @@ async def test_get_json_cloudapi_events_by_timestamp():
         return_value=[e.encode() for e in json_entries]
     )
 
-    redis_service = RedisService(redis_client)
+    redis_service = WebhooksRedisService(redis_client)
 
     events = await redis_service.get_json_cloudapi_events_by_timestamp(
         wallet_id, start_timestamp, end_timestamp
@@ -146,7 +146,7 @@ async def test_get_cloudapi_events_by_timestamp(mocker):
     start_timestamp = 1609459200
     end_timestamp = 1609545600
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(AsyncMock())
     mocker.patch.object(
         redis_service,
         "get_json_cloudapi_events_by_timestamp",
@@ -181,7 +181,7 @@ async def test_get_all_cloudapi_wallet_ids():
     redis_client = AsyncMock()
     redis_client.scan = AsyncMock(side_effect=scan_results)
 
-    redis_service = RedisService(redis_client)
+    redis_service = WebhooksRedisService(redis_client)
 
     wallet_ids = await redis_service.get_all_cloudapi_wallet_ids()
 

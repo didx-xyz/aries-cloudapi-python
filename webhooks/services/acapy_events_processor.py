@@ -11,7 +11,7 @@ from shared.models.webhook_topics import (
 from shared.models.webhook_topics.base import AcaPyRedisEvent
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import acapy_to_cloudapi_event
-from webhooks.services.redis_service import RedisService
+from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
 logger = get_logger(__name__)
 
@@ -23,7 +23,7 @@ class AcaPyEventsProcessor:
     Class to process ACA-Py webhook events that the plugin writes to redis.
     """
 
-    def __init__(self, redis_service: RedisService) -> None:
+    def __init__(self, redis_service: WebhooksRedisService) -> None:
         self.redis_service = redis_service
 
         # Redis prefix for acapy events:

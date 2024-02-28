@@ -18,7 +18,7 @@ dummy_event = CloudApiWebhookEvent(
     return_value=dummy_event,
 )
 @patch(
-    "webhooks.services.redis_service.RedisService.add_webhook_event",
+    "webhooks.services.redis_service.WebhooksRedisService.add_cloudapi_webhook_event",
     new_callable=AsyncMock,
 )
 def test_topic_root(mock_add_webhook_event, _):

@@ -22,7 +22,7 @@ test_event = CloudApiWebhookEventGeneric(
 
 @pytest.fixture
 def redis_service_mock():
-    # Setup RedisService mock
+    # Setup WebhooksRedisService mock
     redis_service = MagicMock()
     redis_service.redis.pubsub.return_value = AsyncMock()
     redis_service.get_json_cloudapi_events_by_timestamp = AsyncMock(

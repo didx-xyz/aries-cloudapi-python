@@ -126,25 +126,25 @@ class AcaPyEventsProcessor:
         """
         lock_key = f"lock:{list_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
-            processing_exception = self._process_list_events(list_key)
-
-            if processing_exception:
+            try:
+                self._process_list_events(list_key)
+            except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                self._handle_unprocessable_event(list_key, processing_exception)
-
-            # Delete lock after processing list, whether it completed or errored:
-            if self.redis_service.delete_key(lock_key):
-                logger.debug(f"Deleted lock key: {lock_key}")
-            else:
-                logger.warning(
-                    f"Could not delete lock key: {lock_key}. Perhaps it expired?"
-                )
+                self._handle_unprocessable_event(list_key, e)
+            finally:
+                # Delete lock after processing list, whether it completed or errored:
+                if self.redis_service.delete_key(lock_key):
+                    logger.debug(f"Deleted lock key: {lock_key}")
+                else:
+                    logger.warning(
+                        f"Could not delete lock key: {lock_key}. Perhaps it expired?"
+                    )
         else:
             logger.debug(
                 f"Event {list_key} is currently being processed by another instance."
             )
 
-    def _process_list_events(self, list_key) -> Optional[Exception]:
+    def _process_list_events(self, list_key) -> None:
         try:
             while True:  # Keep processing until no elements are left
                 # Read 0th index of list:
@@ -165,9 +165,9 @@ class AcaPyEventsProcessor:
                         f"No more data found for event key: {list_key}, exiting."
                     )
                     break
-        except Exception as e:
-            logger.exception(f"Could not load event data ({event_data}): {e}")
-            return e
+        except Exception:
+            logger.exception(f"Could not load event data ({event_data})")
+            raise
 
     def _process_event(self, event_json: str) -> None:
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)

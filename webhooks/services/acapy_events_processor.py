@@ -224,7 +224,8 @@ class AcaPyEventsProcessor:
         cloudapi_topic = topic_mapping.get(acapy_topic)
         if not cloudapi_topic:
             bound_logger.warning(
-                f"Not processing webhook event for acapy_topic `{acapy_topic}` as it doesn't exist in the topic_mapping",
+                "Not processing webhook event for acapy_topic `{}` as it doesn't exist in the topic_mapping",
+                acapy_topic,
             )
             return
 
@@ -239,7 +240,8 @@ class AcaPyEventsProcessor:
         cloudapi_webhook_event = acapy_to_cloudapi_event(acapy_webhook_event)
         if not cloudapi_webhook_event:
             bound_logger.warning(
-                f"Not processing webhook event for topic `{cloudapi_topic}` as no transformer exists for the topic",
+                "Not processing webhook event for topic `{}` as no transformer exists for the topic",
+                cloudapi_topic,
             )
             return
 

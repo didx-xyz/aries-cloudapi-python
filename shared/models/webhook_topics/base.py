@@ -150,6 +150,8 @@ class AcaPyRedisEventPayload(BaseModel):
 
 
 class WebhookEventMetadata(BaseModel):
+    time_ns: int
+    origin: Optional[str] = None
     x_wallet_id: Optional[str] = Field(None, alias="x-wallet-id")
 
 

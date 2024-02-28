@@ -1,3 +1,4 @@
+import time
 from unittest.mock import AsyncMock
 
 import pytest
@@ -36,7 +37,9 @@ async def test_add_cloudapi_webhook_event():
     redis_service = WebhooksRedisService(redis_client)
 
     # Call the method you want to test
-    await redis_service.add_cloudapi_webhook_event(event_json, wallet_id)
+    await redis_service.add_cloudapi_webhook_event(
+        event_json, wallet_id, timestamp_ns=time.time_ns
+    )
 
     # Assert that the mocked methods were called as expected
     redis_client.zadd.assert_called_once()

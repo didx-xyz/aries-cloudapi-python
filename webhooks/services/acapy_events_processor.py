@@ -238,7 +238,9 @@ class AcaPyEventsProcessor:
         webhook_event_json = cloudapi_webhook_event.model_dump_json()
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
-        self.redis_service.add_cloudapi_webhook_event(webhook_event_json, wallet_id)
+        self.redis_service.add_cloudapi_webhook_event(
+            webhook_event_json, wallet_id, timestamp_ns=metadata_time_ns
+        )
 
         bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")
 

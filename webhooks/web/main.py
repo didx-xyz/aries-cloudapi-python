@@ -23,13 +23,16 @@ async def app_lifespan(_: FastAPI):
 
     # Start singleton services
     container.redis_service()
-    container.sse_manager()
-    container.acapy_events_processor()  # should start after SSE Manager is listening
+    sse_manager = container.sse_manager()
+    acapy_events_processor = container.acapy_events_processor()
 
+    sse_manager.start()
+    acapy_events_processor.start()  # should start after SSE Manager is listening
     yield
 
     logger.info("Shutdown Webhooks services")
-    # Todo: graceful shutdown of SSE Manager and AcaPyEventsProcessor
+    await acapy_events_processor.stop()
+    await sse_manager.stop()
 
 
 def create_app() -> FastAPI:

@@ -56,7 +56,7 @@ class EndorsementProcessor:
         """
         Processing handler for when set notifications are received
         """
-        if f"{self.endorse_prefix}:" in msg:
+        if f"{self.endorse_prefix}:" in msg["data"].decode():
             logger.trace(f"Received endorse set notification: {msg}")
             self._new_event_notification.set()
 
@@ -80,7 +80,7 @@ class EndorsementProcessor:
         logger.info("Starting endorsement processor")
 
         attempts_without_events = 0
-        max_attempts_without_events = 500
+        max_attempts_without_events = 200
         sleep_duration = 0.02
 
         while True:

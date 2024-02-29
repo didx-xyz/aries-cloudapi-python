@@ -34,6 +34,7 @@ class Container(containers.DeclarativeContainer):
     redis_service = providers.Singleton(
         RedisService,
         redis=redis_cluster,
+        logger_name="endorser",
     )
 
     # Singleton provider for the ACA-Py Redis events processor

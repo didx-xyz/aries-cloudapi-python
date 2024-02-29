@@ -11,7 +11,7 @@ from shared.log_config import get_logger
 from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL
 from webhooks.services.dependency_injection.container import Container
 from webhooks.services.sse_manager import SseManager
-from webhooks.utils.event_generator_wrapper import EventGeneratorWrapper
+from webhooks.util.event_generator_wrapper import EventGeneratorWrapper
 
 logger = get_logger(__name__)
 

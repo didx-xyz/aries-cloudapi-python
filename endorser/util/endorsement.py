@@ -3,12 +3,12 @@ import asyncio
 from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 
-from endorser.utils.transaction_record import (
+from endorser.util.transaction_record import (
     get_did_and_schema_id_from_cred_def_attachment,
     get_endorsement_request_attachment,
     is_credential_definition_transaction,
 )
-from endorser.utils.trust_registry import is_valid_issuer
+from endorser.util.trust_registry import is_valid_issuer
 from shared.log_config import get_logger
 from shared.models.webhook_topics import Endorsement
 

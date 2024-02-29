@@ -17,7 +17,7 @@ from shared.constants import (
 from shared.log_config import get_logger
 from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
-from webhooks.utils.event_generator_wrapper import EventGeneratorWrapper
+from webhooks.util.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.web.routers.websocket import publish_event_on_websocket
 
 logger = get_logger(__name__)

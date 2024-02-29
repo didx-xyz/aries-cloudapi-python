@@ -31,8 +31,6 @@ class AcaPyEventsProcessor:
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
-        self.start()
-
     def start(self) -> None:
         """
         Start the background tasks as part of AcaPyEventsProcessor's lifecycle

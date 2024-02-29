@@ -1,5 +1,5 @@
 import asyncio
-from typing import NoReturn, Set
+from typing import List, NoReturn, Set
 from uuid import uuid4
 
 from shared import APIRouter
@@ -29,14 +29,39 @@ class AcaPyEventsProcessor:
         # Event for indicating redis keyspace notifications
         self._new_event_notification = asyncio.Event()
 
-        self._start_background_tasks()
+        self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
-    def _start_background_tasks(self) -> None:
+        self.start()
+
+    def start(self) -> None:
         """
         Start the background tasks as part of AcaPyEventsProcessor's lifecycle
         """
-        asyncio.create_task(self._notification_listener())
-        asyncio.create_task(self._process_incoming_events())
+        self._start_notification_listener()
+        self._tasks.append(asyncio.create_task(self._process_incoming_events()))
+        logger.info("AcaPyEventsProcessor started.")
+
+    async def stop(self) -> None:
+        """
+        Stops all background tasks gracefully.
+        """
+        for task in self._tasks:
+            task.cancel()  # Request cancellation of the task
+            try:
+                await task  # Wait for the task to be cancelled
+            except asyncio.CancelledError:
+                pass  # Expected error upon cancellation, can be ignored
+        self._tasks.clear()  # Clear the list of tasks
+        logger.info("AcaPyEventsProcessor stopped.")
+
+    def are_tasks_running(self) -> bool:
+        """
+        Checks if the background tasks are still running.
+
+        Returns:
+            True if all background tasks are running, False if any task has stopped.
+        """
+        return all(not task.done() for task in self._tasks)
 
     def _rpush_notification_handler(self, msg) -> None:
         """
@@ -45,7 +70,7 @@ class AcaPyEventsProcessor:
         logger.trace(f"Received rpush notification: {msg}")
         self._new_event_notification.set()
 
-    async def _notification_listener(self) -> None:
+    def _start_notification_listener(self) -> None:
         """
         Listens for keyspace notifications from Redis and sets an event to resume processing.
         """

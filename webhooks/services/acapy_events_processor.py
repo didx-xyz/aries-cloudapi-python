@@ -193,7 +193,6 @@ class AcaPyEventsProcessor:
         """
         event = parse_with_error_handling(AcaPyRedisEvent, event_json)
 
-        metadata_time_ns = event.metadata.time_ns
         metadata_origin = event.metadata.origin
 
         if metadata_origin:
@@ -262,7 +261,7 @@ class AcaPyEventsProcessor:
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(
-            webhook_event_json, wallet_id, timestamp_ns=metadata_time_ns
+            webhook_event_json, wallet_id, timestamp_ns=event.metadata.time_ns
         )
 
         bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")

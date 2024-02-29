@@ -21,7 +21,8 @@ async def app_lifespan(_: FastAPI):
 
     # Start singleton services
     container.redis_service()
-    endorsement_processor = container.endorsement_processor()
+
+    endorsement_processor = await container.endorsement_processor()
     endorsement_processor.start()
 
     yield

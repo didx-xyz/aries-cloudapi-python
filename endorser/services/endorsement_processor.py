@@ -60,7 +60,7 @@ class EndorsementProcessor:
             logger.trace(f"Received endorse set notification: {msg}")
             self._new_event_notification.set()
 
-    async def _start_notification_listener(self) -> None:
+    def _start_notification_listener(self) -> None:
         """
         Listens for keyspace notifications related to endorsements and sets an event to resume processing.
         """

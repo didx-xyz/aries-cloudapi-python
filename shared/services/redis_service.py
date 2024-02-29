@@ -68,6 +68,7 @@ class RedisService:
         self.redis = redis
 
         self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
+        self.endorsement_redis_prefix = "endorse"  # redis prefix for endorsement events
 
         self.logger = get_logger(logger_name)
         self.logger.info("RedisService initialised")

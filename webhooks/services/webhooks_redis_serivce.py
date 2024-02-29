@@ -1,9 +1,8 @@
-import time
 from typing import List
+from uuid import uuid4
 
 from redis import RedisCluster
 
-from shared.log_config import get_logger
 from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
 from shared.services.redis_service import RedisService
 from shared.util.rich_parsing import parse_with_error_handling
@@ -28,6 +27,22 @@ class WebhooksRedisService(RedisService):
         self.acapy_redis_prefix = "acapy-record-*"  # redis prefix, ACA-Py events
 
         self.logger.info("WebhooksRedisService initialised")
+
+    def add_endorsement_event(self, event_json: str, transaction_id: str) -> None:
+        """
+        Add an endorsement event to bespoke prefix for the endorsement service.
+
+        Args:
+            event_json: The JSON string representation of the endorsement event.
+            transaction_id: The transaction id associated with the event.
+        """
+        self.logger.trace("Write endorsement entry to redis")
+
+        # Define key for this transaction_id, appending uuid4 to ensure uniqueness
+        redis_key = f"{self.endorsement_redis_prefix}:{transaction_id}:{uuid4().hex}"
+        self.set(key=redis_key, value=event_json)
+
+        self.logger.trace("Successfully wrote endorsement entry to redis.")
 
     def add_cloudapi_webhook_event(
         self, event_json: str, wallet_id: str, timestamp_ns: int

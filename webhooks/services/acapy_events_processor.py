@@ -1,11 +1,11 @@
 import asyncio
-from typing import List, NoReturn, Set
+from typing import List, NoReturn
 from uuid import uuid4
 
 from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.webhook_topics import AcaPyWebhookEvent, topic_mapping
-from shared.models.webhook_topics.base import AcaPyRedisEvent
+from shared.models.webhook_topics.base import AcaPyRedisEvent, Endorsement
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import acapy_to_cloudapi_event
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
@@ -247,6 +247,20 @@ class AcaPyEventsProcessor:
             return
 
         webhook_event_json = cloudapi_webhook_event.model_dump_json()
+
+        # Check if this webhook event should be forwarded to the Endorser service
+        if (
+            wallet_id == "governance"
+            and acapy_topic == "endorsement"
+            and isinstance(cloudapi_webhook_event.payload, Endorsement)
+        ):
+            endorsement_payload = cloudapi_webhook_event.payload
+            if endorsement_payload.state == "request-received":
+                bound_logger.info("Forwarding endorsement event for Endorser service")
+                transaction_id = endorsement_payload.transaction_id
+                self.redis_service.add_endorsement_event(
+                    event_json=webhook_event_json, transaction_id=transaction_id
+                )
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(

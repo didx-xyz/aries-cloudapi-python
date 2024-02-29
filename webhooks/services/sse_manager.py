@@ -51,23 +51,45 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
-        self._start_background_tasks()
+        self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
-    def _start_background_tasks(self) -> None:
+    def start(self):
         """
         Start the background tasks as part of SseManager's lifecycle
         """
         logger.info("Starting SSE Manager background tasks")
         # backfill previous events from redis, if any
-        asyncio.create_task(self._backfill_events())
+        self._tasks.append(asyncio.create_task(self._backfill_events()))
 
         # listen for new events on redis pubsub channel
-        asyncio.create_task(self._listen_for_new_events())
+        self._tasks.append(asyncio.create_task(self._listen_for_new_events()))
 
         # process incoming events and cleanup queues
-        asyncio.create_task(self._process_incoming_events())
-        asyncio.create_task(self._cleanup_cache())
+        self._tasks.append(asyncio.create_task(self._process_incoming_events()))
+        self._tasks.append(asyncio.create_task(self._cleanup_cache()))
         logger.info("SSE Manager background tasks started")
+
+    async def stop(self):
+        """
+        Stops all background tasks gracefully.
+        """
+        for task in self._tasks:
+            task.cancel()  # Request cancellation of the task
+            try:
+                await task  # Wait for the task to be cancelled
+            except asyncio.CancelledError:
+                pass  # Expected error upon cancellation, can be ignored
+        self._tasks.clear()  # Clear the list of tasks
+        logger.info("SSE Manager processes stopped.")
+
+    def are_tasks_running(self) -> bool:
+        """
+        Checks if the background tasks are still running.
+
+        Returns:
+            True if all background tasks are running, False if any task has stopped.
+        """
+        return all(not task.done() for task in self._tasks)
 
     async def _listen_for_new_events(
         self, max_retries=5, retry_duration=0.33

@@ -1,11 +1,13 @@
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from dependency_injector.wiring import Provide, inject
+from fastapi import Depends, FastAPI, HTTPException
 
 from shared.log_config import get_logger
-from webhooks.services import acapy_events_processor, sse_manager
-from webhooks.services.dependency_injection.container import get_container
+from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
+from webhooks.services.dependency_injection.container import Container, get_container
+from webhooks.services.sse_manager import SseManager
 from webhooks.web.routers import sse, webhooks, websocket
 
 logger = get_logger(__name__)
@@ -62,3 +64,19 @@ def create_app() -> FastAPI:
 
 logger.info("Start webhooks server")
 app = create_app()
+
+
+@app.get("/health")
+@inject
+async def health_check(
+    acapy_events_processor: AcaPyEventsProcessor = Depends(
+        Provide[Container.acapy_events_processor]
+    ),
+    sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
+):
+    if acapy_events_processor.are_tasks_running() and sse_manager.are_tasks_running():
+        return {"status": "healthy"}
+    else:
+        raise HTTPException(
+            status_code=503, detail="One or more background tasks are not running."
+        )

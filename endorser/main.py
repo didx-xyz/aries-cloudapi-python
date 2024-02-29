@@ -6,7 +6,6 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from endorser.services.dependency_injection.container import Container, get_container
 from endorser.services.endorsement_processor import EndorsementProcessor
-from endorser.services.endorser_redis_service import EndorserRedisService
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

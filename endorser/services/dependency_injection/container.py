@@ -5,8 +5,11 @@ from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
 from endorser.services.endorsement_processor import EndorsementProcessor
-from endorser.services.endorser_redis_service import EndorserRedisService
-from shared.services.redis_service import init_redis_cluster_pool, parse_redis_nodes
+from shared.services.redis_service import (
+    RedisService,
+    init_redis_cluster_pool,
+    parse_redis_nodes,
+)
 
 
 class Container(containers.DeclarativeContainer):
@@ -29,7 +32,7 @@ class Container(containers.DeclarativeContainer):
 
     # Singleton provider for the WebhooksRedisService
     redis_service = providers.Singleton(
-        EndorserRedisService,
+        RedisService,
         redis=redis_cluster,
     )
 

@@ -96,6 +96,21 @@ class RedisService:
         self.logger.trace(f"Setting key: {key}, with value: {value}")
         return self.redis.set(key, value=value)
 
+    def get(self, key: str) -> Optional[str]:
+        """
+        Get a value from redis
+
+        Args:
+            key: The key to get.
+
+        Returns:
+            The value from redis, if the key exists
+        """
+        self.logger.trace(f"Getting key: {key}")
+        value = self.redis.get(key)
+        self.logger.trace(f"Got value: {value}")
+        return value
+
     def set_lock(self, key: str, px: int = 500) -> Optional[bool]:
         """
         Attempts to acquire a distributed lock by setting a key in Redis with an expiration time,

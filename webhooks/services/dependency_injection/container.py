@@ -4,27 +4,10 @@ from typing import List
 from dependency_injector import containers, providers
 from redis.cluster import ClusterNode
 
-from shared.services.redis_service import init_redis_cluster_pool
+from shared.services.redis_service import init_redis_cluster_pool, parse_redis_nodes
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 from webhooks.services.sse_manager import SseManager
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
-
-
-def parse_redis_nodes(env_var_value: str) -> List[ClusterNode]:
-    """
-    Parses the REDIS_NODES environment variable to a list of ClusterNode.
-
-    :param env_var_value: The value of the REDIS_NODES environment variable.
-    :return: A list of ClusterNode definitions.
-    """
-    nodes = []
-    # We assume environment variable REDIS_NODES is like "host1:port1,host2:port2"
-    for node_str in (
-        env_var_value.split(",") if "," in env_var_value else [env_var_value]
-    ):
-        host, port = node_str.split(":")
-        nodes.append(ClusterNode(host=host, port=int(port)))
-    return nodes
 
 
 class Container(containers.DeclarativeContainer):

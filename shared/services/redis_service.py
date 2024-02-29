@@ -17,6 +17,23 @@ REDIS_CONNECTION_PARAMS = {
 }
 
 
+def parse_redis_nodes(env_var_value: str) -> List[ClusterNode]:
+    """
+    Parses the REDIS_NODES environment variable to a list of ClusterNode.
+
+    :param env_var_value: The value of the REDIS_NODES environment variable.
+    :return: A list of ClusterNode definitions.
+    """
+    nodes = []
+    # We assume environment variable REDIS_NODES is like "host1:port1,host2:port2"
+    for node_str in (
+        env_var_value.split(",") if "," in env_var_value else [env_var_value]
+    ):
+        host, port = node_str.split(":")
+        nodes.append(ClusterNode(host=host, port=int(port)))
+    return nodes
+
+
 async def init_redis_cluster_pool(
     nodes: List[ClusterNode], logger_name: str
 ) -> AsyncIterator[RedisCluster]:

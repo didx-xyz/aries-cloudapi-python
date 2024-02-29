@@ -249,7 +249,7 @@ class AcaPyEventsProcessor:
         # Check if this webhook event should be forwarded to the Endorser service
         if (
             wallet_id == "governance"
-            and acapy_topic == "endorsement"
+            and cloudapi_topic == "endorsements"
             and isinstance(cloudapi_webhook_event.payload, Endorsement)
         ):
             endorsement_payload = cloudapi_webhook_event.payload

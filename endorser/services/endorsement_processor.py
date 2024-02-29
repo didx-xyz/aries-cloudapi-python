@@ -125,6 +125,12 @@ class EndorsementProcessor:
             try:
                 event_json = self.redis_service.get(event_key)
                 self._process_endorsement_event(event_json)
+                if self.redis_service.delete_key(event_key):
+                    logger.info(f"Deleted processed endorsement event: {event_key}")
+                else:
+                    logger.warning(
+                        f"Couldn't delete processed endorsement event: {event_key}"
+                    )
             except Exception:
                 logger.exception(
                     "Something went wrong with processing endorsement. Continuing ..."
@@ -133,7 +139,7 @@ class EndorsementProcessor:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
                 # self._handle_unprocessable_event(event_key, e)
             finally:
-                # Delete lock after processing list, whether it completed or errored:
+                # Delete lock after processing, whether it completed or errored:
                 if self.redis_service.delete_key(lock_key):
                     logger.debug(f"Deleted lock key: {lock_key}")
                 else:

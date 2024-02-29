@@ -59,7 +59,7 @@ class SseManager:
         """
         logger.info("Starting SSE Manager background tasks")
         # backfill previous events from redis, if any
-        self._tasks.append(asyncio.create_task(self._backfill_events()))
+        asyncio.create_task(self._backfill_events())
 
         # listen for new events on redis pubsub channel
         self._tasks.append(asyncio.create_task(self._listen_for_new_events()))

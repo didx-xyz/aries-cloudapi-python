@@ -239,6 +239,8 @@ services:
     build:
       context: .
       dockerfile: ./dockerfiles/endorser/Dockerfile
+    ports:
+      - 0.0.0.0:3009:3009
     volumes:
       - ./endorser:/endorser
       - ./logs:/logs

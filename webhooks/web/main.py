@@ -19,22 +19,21 @@ async def app_lifespan(_: FastAPI):
 
     # Initialize the container
     container = get_container()
-    container.wire(
-        modules=[__name__, acapy_events_processor, sse, sse_manager, webhooks]
-    )
+    container.wire(modules=[__name__, sse, webhooks])
 
     # Start singleton services
     container.redis_service()
-    sse_manager = container.sse_manager()
-    acapy_events_processor = container.acapy_events_processor()
+    sse_manager = await container.sse_manager()
+    events_processor = await container.acapy_events_processor()
 
     sse_manager.start()
-    acapy_events_processor.start()  # should start after SSE Manager is listening
+    events_processor.start()  # should start after SSE Manager is listening
     yield
 
     logger.info("Shutdown Webhooks services")
-    await acapy_events_processor.stop()
+    await events_processor.stop()
     await sse_manager.stop()
+    # Todo: shutdown gets blocked by something ... for example cannot reload with watchfiles
 
 
 def create_app() -> FastAPI:

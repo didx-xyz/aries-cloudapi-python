@@ -14,6 +14,10 @@ logger = get_logger(__name__)
 
 
 class EndorsementProcessor:
+    """
+    Class to process endorsement webhook events that the Webhooks service writes to `endorsement_redis_prefix`
+    """
+
     def __init__(self, redis_service: RedisService) -> None:
         self.redis_service = redis_service
         self._new_event_notification = asyncio.Event()
@@ -152,6 +156,12 @@ class EndorsementProcessor:
             )
 
     async def _process_endorsement_event(self, event_json: str):
+        """
+        Processes an individual endorsement event, evaluating if it should be accepted and then endorsing as governance
+
+        Args:
+            event_json: The JSON string representation of the endorsement event.
+        """
         event: CloudApiWebhookEvent = parse_with_error_handling(
             CloudApiWebhookEvent, event_json
         )

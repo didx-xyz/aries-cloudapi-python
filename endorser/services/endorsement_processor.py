@@ -123,10 +123,15 @@ class EndorsementProcessor:
         lock_key = f"lock:{event_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
             try:
-                self._process_endorsement_event(event_key)
-            except Exception as e:
+                event_json = self.redis_service.get(event_key)
+                self._process_endorsement_event(event_json)
+            except Exception:
+                logger.exception(
+                    "Something went wrong with processing endorsement. Continuing ..."
+                )
+                # todo:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                self._handle_unprocessable_event(event_key, e)
+                # self._handle_unprocessable_event(event_key, e)
             finally:
                 # Delete lock after processing list, whether it completed or errored:
                 if self.redis_service.delete_key(lock_key):

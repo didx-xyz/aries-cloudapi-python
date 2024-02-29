@@ -41,7 +41,7 @@ async def should_accept_endorsement(
     )
 
     if transaction.state != "request_received":
-        bound_logger.debug(
+        bound_logger.warning(
             "Endorsement event for transaction with id `{}` "
             "not in state 'request_received' (is `{}`).",
             transaction_id,
@@ -52,15 +52,15 @@ async def should_accept_endorsement(
     attachment = get_endorsement_request_attachment(transaction)
 
     if not attachment:
-        bound_logger.debug("Could not extract attachment from transaction.")
+        bound_logger.warning("Could not extract attachment from transaction.")
         return False
 
     if not is_credential_definition_transaction(attachment):
-        bound_logger.debug("Endorsement request is not for credential definition.")
+        bound_logger.warning("Endorsement request is not for credential definition.")
         return False
 
     if "identifier" not in attachment:
-        bound_logger.debug(
+        bound_logger.warning(
             "Expected key `identifier` does not exist in extracted attachment. Got attachment: `{}`.",
             attachment,
         )
@@ -68,7 +68,7 @@ async def should_accept_endorsement(
 
     # `operation` key is asserted to exist in `is_credential_definition_transaction`
     if "ref" not in attachment["operation"]:
-        bound_logger.debug(
+        bound_logger.warning(
             "Expected key `ref` does not exist in attachment `operation`. Got operation: `{}`.",
             attachment["operation"],
         )
@@ -103,7 +103,7 @@ async def should_accept_endorsement(
             )
 
             if attempt < max_retries - 1:
-                bound_logger.info("Retrying...")
+                bound_logger.warning("Retrying in {}s ...", retry_delay)
                 await asyncio.sleep(retry_delay)
             else:
                 bound_logger.error("Max retries reached. Giving up.")

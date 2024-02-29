@@ -1,5 +1,5 @@
 import os
-from typing import AsyncIterator, List, Optional
+from typing import AsyncIterator, List, Optional, Set
 
 from redis.cluster import ClusterNode, RedisCluster
 
@@ -136,3 +136,33 @@ class RedisService:
         self.logger.trace(f"Pop first element from list: {key}")
         # Using LPOP to remove and return the first element of the list
         return self.redis.lpop(key)
+
+    def scan_keys(self, match_pattern: str, count: int) -> Set[str]:
+        """
+        Scans Redis for keys matching the pattern. Performs one scan for max `count` keys.
+
+        Parameters:
+        - match_pattern: str - The pattern to match against, e.g.: acapy-record-*
+        - count: int - The max number of keys to return in the scan
+
+        Returns:
+            A set of Redis keys that match the input pattern.
+        """
+        collected_keys = set()
+        self.logger.trace(f"Starting SCAN to fetch keys matching: {match_pattern}")
+
+        try:
+            _, keys = self.redis.scan(cursor=0, match=match_pattern, count=count)
+            if keys:
+                collected_keys = set(key.decode("utf-8") for key in keys)
+                self.logger.debug(
+                    f"Scanned {len(collected_keys)} event keys from Redis"
+                )
+            else:
+                self.logger.trace("No keys found matching pattern in this batch.")
+        except Exception:
+            self.logger.exception(
+                "An exception occurred when scanning for keys from redis. Continuing..."
+            )
+
+        return collected_keys

@@ -66,12 +66,14 @@ class AcaPyEventsProcessor:
         logger.info("Starting ACA-Py Events Processor")
 
         attempts_without_events = 0
-        max_attempts_without_events = 1000
+        max_attempts_without_events = 500
         sleep_duration = 0.02
 
         while True:
             try:
-                batch_event_keys = self._scan_acapy_event_keys()
+                batch_event_keys = self.redis_service.scan_keys(
+                    match_pattern=self.acapy_redis_prefix, count=10000
+                )
                 if batch_event_keys:
                     attempts_without_events = 0  # Reset the counter
                     for list_key in batch_event_keys:  # the keys are of LIST type
@@ -95,32 +97,6 @@ class AcaPyEventsProcessor:
                 logger.exception(
                     "Something went wrong while processing incoming events. Continuing..."
                 )
-
-    def _scan_acapy_event_keys(self) -> Set[str]:
-        """
-        Scans Redis for keys matching the ACA-Py event prefix and returns a set of these keys.
-
-        Returns:
-            A set of Redis keys that match the ACA-Py event prefix.
-        """
-        collected_keys = set()
-        logger.trace("Starting SCAN to fetch incoming ACA-Py event keys from Redis.")
-
-        try:
-            _, keys = self.redis_service.redis.scan(
-                cursor=0, match=self.acapy_redis_prefix, count=10000
-            )
-            if keys:
-                collected_keys = set(key.decode("utf-8") for key in keys)
-                logger.debug(f"Fetched {len(collected_keys)} event keys from Redis")
-            else:
-                logger.trace("No ACA-Py event keys found in this batch.")
-        except Exception:
-            logger.exception(
-                "An exception occurred when fetching ACA-Py event keys from redis. Continuing..."
-            )
-
-        return collected_keys
 
     def _attempt_process_list_events(self, list_key: str) -> None:
         """

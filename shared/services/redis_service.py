@@ -10,12 +10,14 @@ class RedisConfig:
     MAX_CONNECTIONS = os.getenv("REDIS_MAX_CONNECTIONS", 20000)
     PASSWORD = os.getenv("REDIS_PASSWORD", None)
     SSL = os.getenv("REDIS_SSL", "false").upper() == "TRUE"
+    SOCKET_TIMEOUT = int(os.getenv("REDIS_TIMEOUT", "5"))
 
 
 REDIS_CONNECTION_PARAMS = {
     "max_connections": RedisConfig.MAX_CONNECTIONS,
     "password": RedisConfig.PASSWORD,
     "ssl": RedisConfig.SSL,
+    "socket_timeout": RedisConfig.SOCKET_TIMEOUT,
 }
 
 

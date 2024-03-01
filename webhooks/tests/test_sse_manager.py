@@ -2,7 +2,7 @@ import asyncio
 import time
 from datetime import datetime, timedelta
 from itertools import chain, repeat
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 

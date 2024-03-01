@@ -1,16 +1,23 @@
 import asyncio
-from typing import List, NoReturn
+from typing import Any, Dict, List, NoReturn
 
 from aries_cloudcontroller import AcaPyClient
+from pydantic import BaseModel
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.constants import GOVERNANCE_AGENT_API_KEY, GOVERNANCE_AGENT_URL
 from shared.log_config import get_logger
-from shared.models.webhook_topics.base import CloudApiWebhookEvent, Endorsement
+from shared.models.webhook_topics.base import Endorsement
 from shared.services.redis_service import RedisService
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
+
+
+class EndorsementEvent(BaseModel):
+    payload: Dict[str, Any]
+    origin: str
+    wallet_id: str
 
 
 class EndorsementProcessor:
@@ -95,7 +102,7 @@ class EndorsementProcessor:
                 if batch_keys:
                     attempts_without_events = 0  # Reset the counter
                     for key in batch_keys:
-                        self._attempt_process_endorsement(key)
+                        await self._attempt_process_endorsement(key)
 
                 else:
                     attempts_without_events += 1
@@ -116,7 +123,7 @@ class EndorsementProcessor:
                     "Something went wrong while processing endorsement events. Continuing..."
                 )
 
-    def _attempt_process_endorsement(self, event_key: str) -> None:
+    async def _attempt_process_endorsement(self, event_key: str) -> None:
         """
         Attempts to process an endorsement event from Redis, ensuring that only one instance
         processes the event at a time by acquiring a lock.
@@ -124,11 +131,13 @@ class EndorsementProcessor:
         Args:
             list_key: The Redis key of the list to process.
         """
+        logger.trace(f"Attempt process: {event_key}")
         lock_key = f"lock:{event_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
+            logger.trace(f"Successfully set lock for {event_key}")
             try:
                 event_json = self.redis_service.get(event_key)
-                self._process_endorsement_event(event_json)
+                await self._process_endorsement_event(event_json)
                 if self.redis_service.delete_key(event_key):
                     logger.info(f"Deleted processed endorsement event: {event_key}")
                 else:
@@ -162,9 +171,7 @@ class EndorsementProcessor:
         Args:
             event_json: The JSON string representation of the endorsement event.
         """
-        event: CloudApiWebhookEvent = parse_with_error_handling(
-            CloudApiWebhookEvent, event_json
-        )
+        event = parse_with_error_handling(EndorsementEvent, event_json)
         logger.debug(
             "Processing endorsement event for agent `{}` and wallet `{}`",
             event.origin,

@@ -89,7 +89,7 @@ class AcaPyEventsProcessor:
         logger.info("Starting ACA-Py Events Processor")
 
         attempts_without_events = 0
-        max_attempts_without_events = 500
+        max_attempts_without_events = 200
         sleep_duration = 0.02
 
         while True:

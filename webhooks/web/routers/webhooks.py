@@ -27,7 +27,7 @@ async def get_webhooks_by_wallet(
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.info("GET request received: Fetch all webhook events for wallet")
 
-    data = await redis_service.get_cloudapi_events_by_wallet(wallet_id)
+    data = redis_service.get_cloudapi_events_by_wallet(wallet_id)
 
     if data:
         bound_logger.info("Successfully fetched webhooks events for wallet.")
@@ -52,7 +52,7 @@ async def get_webhooks_by_wallet_and_topic(
         "GET request received: Fetch all webhook events for wallet and topic"
     )
 
-    data = await redis_service.get_cloudapi_events_by_wallet_and_topic(
+    data = redis_service.get_cloudapi_events_by_wallet_and_topic(
         wallet_id=wallet_id, topic=topic
     )
 

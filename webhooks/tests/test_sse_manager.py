@@ -2,7 +2,7 @@ import asyncio
 import time
 from datetime import datetime, timedelta
 from itertools import chain, repeat
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import Mock, MagicMock, patch
 
 import pytest
 
@@ -24,8 +24,8 @@ test_event = CloudApiWebhookEventGeneric(
 def redis_service_mock():
     # Setup WebhooksRedisService mock
     redis_service = MagicMock()
-    redis_service.redis.pubsub.return_value = AsyncMock()
-    redis_service.get_json_cloudapi_events_by_timestamp = AsyncMock(
+    redis_service.redis.pubsub.return_value = Mock()
+    redis_service.get_json_cloudapi_events_by_timestamp = Mock(
         return_value=[MagicMock()]
     )
     return redis_service
@@ -34,25 +34,22 @@ def redis_service_mock():
 @pytest.fixture
 async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-name
     # Patch to prevent background tasks from starting automatically on init
-    with patch.object(SseManager, "_start_background_tasks", return_value=None):
-        return SseManager(redis_service_mock)
+    return SseManager(redis_service_mock)
 
 
 @pytest.mark.anyio
-@patch("webhooks.web.routers.websocket.endpoint.publish", new_callable=AsyncMock)
 @patch(
     "shared.models.webhook_topics.base.CloudApiWebhookEventGeneric.model_validate_json"
 )
 async def test_listen_for_new_events(
     mock_model_validate_json,
-    mock_publish,
     sse_manager,  # pylint: disable=redefined-outer-name
     redis_service_mock,  # pylint: disable=redefined-outer-name
 ):
     # Configure specific mocks for this test
     pubsub_mock = redis_service_mock.redis.pubsub.return_value
-    pubsub_mock.subscribe = AsyncMock()
-    pubsub_mock.get_message = AsyncMock(
+    pubsub_mock.subscribe = Mock()
+    pubsub_mock.get_message = Mock(
         side_effect=chain(
             [{"data": b"wallet1:123456789"}],  # First message
             repeat(None),  # Keep returning None indefinitely
@@ -76,8 +73,7 @@ async def test_listen_for_new_events(
     )
     assert pubsub_mock.get_message.call_count >= 1
     redis_service_mock.get_json_cloudapi_events_by_timestamp.assert_called_once()
-    # Check if websocket publish was called
-    mock_publish.assert_awaited_once()
+
     # Check if the event was added to the incoming_events queue
     assert not sse_manager.incoming_events.empty()
 
@@ -87,11 +83,11 @@ async def test_backfill_events(
     sse_manager, redis_service_mock  # pylint: disable=redefined-outer-name
 ):
     # Configure the mock for get_all_wallet_ids and get_events_by_timestamp
-    redis_service_mock.get_all_cloudapi_wallet_ids = AsyncMock(
+    redis_service_mock.get_all_cloudapi_wallet_ids = Mock(
         return_value=["wallet1", "wallet2"]
     )
     mock_event = MagicMock()  # Mocked event object
-    redis_service_mock.get_cloudapi_events_by_timestamp = AsyncMock(
+    redis_service_mock.get_cloudapi_events_by_timestamp = Mock(
         return_value=[mock_event]
     )
 

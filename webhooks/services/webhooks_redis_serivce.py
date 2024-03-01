@@ -20,7 +20,7 @@ class WebhooksRedisService(RedisService):
         Args:
             redis: A Redis client instance connected to a Redis cluster server.
         """
-        super().__init__(redis=redis, logger_name="webhooks")
+        super().__init__(redis=redis, logger_name="webhooks.redis")
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 

@@ -58,12 +58,13 @@ class RedisService:
     A service for interacting with Redis.
     """
 
-    def __init__(self, redis: RedisCluster, logger_name: str = "redis") -> None:
+    def __init__(self, redis: RedisCluster, logger_name: str) -> None:
         """
         Initialize the RedisService with a Redis cluster instance.
 
         Args:
             redis: A Redis client instance connected to a Redis cluster server.
+            logger_name: A name for the logger, useful with file logging
         """
         self.redis = redis
 

@@ -27,14 +27,14 @@ class Container(containers.DeclarativeContainer):
     redis_cluster = providers.Resource(
         init_redis_cluster_pool,
         nodes=nodes,
-        logger_name="endorser",
+        logger_name="endorser.redis",
     )
 
     # Singleton provider for the WebhooksRedisService
     redis_service = providers.Singleton(
         RedisService,
         redis=redis_cluster,
-        logger_name="endorser",
+        logger_name="endorser.redis",
     )
 
     # Singleton provider for the ACA-Py Redis events processor

@@ -11,7 +11,7 @@ from app.services.onboarding.util.set_endorser_metadata import (
     set_endorser_info,
     set_endorser_role,
 )
-from shared import ACAPY_ENDORSER_ALIAS
+from shared import ACAPY_ENDORSER_ALIAS, GOVERNANCE_LABEL
 
 
 async def create_connection_with_endorser(
@@ -64,7 +64,7 @@ async def wait_for_connection_completion(
     *, issuer_controller: AcaPyClient, invitation: InvitationRecord, logger: Logger
 ) -> tuple[str, str]:
     connections_listener = create_sse_listener(
-        topic="connections", wallet_id="governance"
+        topic="connections", wallet_id=GOVERNANCE_LABEL
     )
 
     logger.debug("Receive invitation from endorser on behalf of issuer")
@@ -167,7 +167,7 @@ async def register_issuer_did(
     )
 
     endorsements_listener = create_sse_listener(
-        topic="endorsements", wallet_id="governance"
+        topic="endorsements", wallet_id=GOVERNANCE_LABEL
     )
 
     try:

@@ -6,7 +6,11 @@ from aries_cloudcontroller import AcaPyClient
 from pydantic import BaseModel
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
-from shared.constants import GOVERNANCE_AGENT_API_KEY, GOVERNANCE_AGENT_URL
+from shared.constants import (
+    GOVERNANCE_AGENT_API_KEY,
+    GOVERNANCE_AGENT_URL,
+    GOVERNANCE_LABEL,
+)
 from shared.log_config import get_logger
 from shared.models.webhook_topics.base import Endorsement
 from shared.services.redis_service import RedisService
@@ -210,7 +214,7 @@ class EndorsementProcessor:
             event.wallet_id,
         )
         # We're only interested in events from the governance agent
-        if event.origin != "governance":
+        if event.wallet_id != GOVERNANCE_LABEL:
             logger.warning("Endorsement request is not for governance agent.")
             return
 

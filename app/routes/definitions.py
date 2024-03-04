@@ -39,7 +39,7 @@ from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
-from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
+from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL, GOVERNANCE_LABEL
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -359,7 +359,7 @@ async def create_credential_definition(
                     "Await endorsement transaction to be in state `request-received`"
                 )
                 endorser_listener = SseListener(
-                    topic="endorsements", wallet_id="governance"
+                    topic="endorsements", wallet_id=GOVERNANCE_LABEL
                 )
                 try:
                     txn_record = await endorser_listener.wait_for_state(
@@ -398,7 +398,9 @@ async def create_credential_definition(
                         create_transaction_for_endorser=True,
                     )
 
-                    listener = SseListener(topic="endorsements", wallet_id="governance")
+                    listener = SseListener(
+                        topic="endorsements", wallet_id=GOVERNANCE_LABEL
+                    )
                     # TODO move endorsement to endorser service
                     bound_logger.debug(
                         "Waiting for endorsements event in `request-received` state"

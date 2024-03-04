@@ -4,6 +4,7 @@ from typing import List, NoReturn
 from uuid import uuid4
 
 from shared import APIRouter
+from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
 from shared.models.webhook_topics import AcaPyWebhookEvent, topic_mapping
 from shared.models.webhook_topics.base import AcaPyRedisEvent, Endorsement
@@ -284,7 +285,7 @@ class AcaPyEventsProcessor:
 
         # Check if this webhook event should be forwarded to the Endorser service
         if (
-            wallet_id == "governance"
+            wallet_id == GOVERNANCE_LABEL
             and cloudapi_topic == "endorsements"
             and isinstance(cloudapi_webhook_event.payload, Endorsement)
         ):

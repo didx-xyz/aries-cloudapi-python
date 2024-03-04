@@ -6,7 +6,7 @@ from fastapi.params import Depends
 from fastapi.security import APIKeyHeader
 
 from app.dependencies.role import Role
-from shared import ACAPY_MULTITENANT_JWT_SECRET
+from shared import ACAPY_MULTITENANT_JWT_SECRET, GOVERNANCE_LABEL
 
 x_api_key_scheme = APIKeyHeader(name="x-api-key")
 
@@ -52,7 +52,7 @@ def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
         if auth.token != auth.role.agent_type.x_api_key:
             raise HTTPException(403, "Unauthorized")
 
-        wallet_id = "governance" if auth.role == Role.GOVERNANCE else "admin"
+        wallet_id = GOVERNANCE_LABEL if auth.role == Role.GOVERNANCE else "admin"
     else:
         try:
             # Decode JWT

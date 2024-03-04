@@ -135,6 +135,7 @@ class AcaPyEventsProcessor:
                 self._process_list_events(list_key)
             except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
+                logger.error(f"Processing {list_key} raised an exception: {e}")
                 self._handle_unprocessable_event(list_key, e)
             finally:
                 # Delete lock after processing list, whether it completed or errored:

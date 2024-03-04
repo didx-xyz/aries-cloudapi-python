@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from typing import Any, Dict, List, NoReturn
 
 from aries_cloudcontroller import AcaPyClient
@@ -125,8 +126,8 @@ class EndorsementProcessor:
         logger.info("Starting endorsement processor")
 
         attempts_without_events = 0
-        max_attempts_without_events = 200
-        sleep_duration = 0.02
+        max_attempts_without_events = sys.maxsize  # use max int to never stop
+        sleep_duration = 0.1
 
         while True:
             try:

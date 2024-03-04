@@ -1,4 +1,5 @@
 import asyncio
+import sys
 from typing import List, NoReturn
 from uuid import uuid4
 
@@ -124,8 +125,8 @@ class AcaPyEventsProcessor:
         logger.info("Starting ACA-Py Events Processor")
 
         attempts_without_events = 0
-        max_attempts_without_events = 200
-        sleep_duration = 0.02
+        max_attempts_without_events = sys.maxsize  # use max int to never stop
+        sleep_duration = 0.1
 
         while True:
             try:

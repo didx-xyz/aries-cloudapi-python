@@ -122,7 +122,7 @@ class SseManager:
         Terminates after exceeding max_retries connection attempts.
         """
         retry_count = 0
-        sleep_duration = 0.05  # time to sleep after empty pubsub message
+        sleep_duration = 0.1  # time to sleep after empty pubsub message
 
         while retry_count < max_retries:
             try:

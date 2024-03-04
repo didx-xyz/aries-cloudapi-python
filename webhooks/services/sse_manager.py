@@ -99,6 +99,7 @@ class SseManager:
         Terminates after exceeding max_retries connection attempts.
         """
         retry_count = 0
+        sleep_duration = 0.05  # time to sleep after empty pubsub message
 
         while retry_count < max_retries:
             try:
@@ -118,17 +119,18 @@ class SseManager:
                         logger.trace(f"Got pubsub message: {message}")
                         await self._process_redis_event(message)
                     else:
-                        await asyncio.sleep(0.01)  # Prevent a busy loop if no message
+                        logger.trace(f"message is empty, retry in {sleep_duration}s")
+                        await asyncio.sleep(sleep_duration)  # Prevent a busy loop
             except ConnectionError as e:
                 logger.error(f"ConnectionError detected: {e}.")
             except Exception as e:  # General exception catch
                 logger.exception(f"Unexpected error: {e}.")
-            finally:
-                retry_count += 1
-                logger.warning(
-                    f"Attempt #{retry_count} to reconnect in {retry_duration}s ..."
-                )
-                await asyncio.sleep(retry_duration)  # Wait a bit before retrying
+
+            retry_count += 1
+            logger.warning(
+                f"Attempt #{retry_count} to reconnect in {retry_duration}s ..."
+            )
+            await asyncio.sleep(retry_duration)  # Wait a bit before retrying
 
         # If the loop exits due to retry limit exceeded
         logger.critical(

@@ -61,14 +61,24 @@ class SseManager:
         """
         logger.info("Starting SSE Manager background tasks")
         # backfill previous events from redis, if any
-        asyncio.create_task(self._backfill_events())
+        asyncio.create_task(self._backfill_events(), name="Backfill events")
 
         # listen for new events on redis pubsub channel
-        self._tasks.append(asyncio.create_task(self._listen_for_new_events()))
+        self._tasks.append(
+            asyncio.create_task(
+                self._listen_for_new_events(), name="Listen for new events"
+            )
+        )
 
         # process incoming events and cleanup queues
-        self._tasks.append(asyncio.create_task(self._process_incoming_events()))
-        self._tasks.append(asyncio.create_task(self._cleanup_cache()))
+        self._tasks.append(
+            asyncio.create_task(
+                self._process_incoming_events(), name="Process incoming events"
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(self._cleanup_cache(), name="Cleanup cache")
+        )
         logger.info("SSE Manager background tasks started")
 
     async def stop(self):
@@ -98,6 +108,10 @@ class SseManager:
         logger.debug("Checking if all tasks are running")
         all_running = all(not task.done() for task in self._tasks)
         logger.debug("All tasks running: {}", all_running)
+        if not all_running:
+            for task in self._tasks:
+                if task.done():
+                    logger.warning("Task `{}` is not running", task.get_name())
         return all_running
 
     async def _listen_for_new_events(

@@ -41,7 +41,11 @@ class EndorsementProcessor:
         Starts the background tasks for processing endorsement events.
         """
         self._start_notification_listener()
-        self._tasks.append(asyncio.create_task(self._process_endorsement_requests()))
+        self._tasks.append(
+            asyncio.create_task(
+                self._process_endorsement_requests(), name="Process endorsements"
+            )
+        )
         logger.info("Endorsement processing started.")
 
     async def stop(self) -> None:
@@ -73,7 +77,14 @@ class EndorsementProcessor:
         Returns:
             True if all background tasks are running, False if any task has stopped.
         """
-        return all(not task.done() for task in self._tasks)
+        logger.debug("Checking if all tasks are running")
+        all_running = all(not task.done() for task in self._tasks)
+        logger.debug("All tasks running: {}", all_running)
+        if not all_running:
+            for task in self._tasks:
+                if task.done():
+                    logger.warning("Task `{}` is not running", task.get_name())
+        return all_running
 
     def _set_notification_handler(self, msg) -> None:
         """

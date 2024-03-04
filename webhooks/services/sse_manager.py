@@ -95,7 +95,10 @@ class SseManager:
         Returns:
             True if all background tasks are running, False if any task has stopped.
         """
-        return all(not task.done() for task in self._tasks)
+        logger.debug("Checking if all tasks are running")
+        all_running = all(not task.done() for task in self._tasks)
+        logger.debug("All tasks running: {}", all_running)
+        return all_running
 
     async def _listen_for_new_events(
         self, max_retries=5, retry_duration=0.33
@@ -109,20 +112,20 @@ class SseManager:
 
         while retry_count < max_retries:
             try:
-                logger.debug("Creating pubsub instance")
+                logger.info("Creating pubsub instance")
                 self._pubsub = self.redis_service.redis.pubsub()
 
-                logger.debug("Subscribing to pubsub instance for SSE events")
+                logger.info("Subscribing to pubsub instance for SSE events")
                 self._pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
                 # Reset retry_count upon successful connection
                 retry_count = 0
 
-                logger.debug("Begin processing pubsub messages")
+                logger.info("Begin SSE processing pubsub messages")
                 while True:
                     message = self._pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
-                        logger.trace(f"Got pubsub message: {message}")
+                        logger.debug(f"Got pubsub message: {message}")
                         await self._process_redis_event(message)
                     else:
                         logger.trace(f"message is empty, retry in {sleep_duration}s")

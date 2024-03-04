@@ -51,6 +51,8 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
+        self._pubsub = None
+
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
     def start(self):
@@ -82,6 +84,10 @@ class SseManager:
         self._tasks.clear()  # Clear the list of tasks
         logger.info("SSE Manager processes stopped.")
 
+        if self._pubsub:
+            self._pubsub.disconnect()
+            logger.info("Disconnected SseManager pubsub instance")
+
     def are_tasks_running(self) -> bool:
         """
         Checks if the background tasks are still running.
@@ -104,17 +110,17 @@ class SseManager:
         while retry_count < max_retries:
             try:
                 logger.debug("Creating pubsub instance")
-                pubsub = self.redis_service.redis.pubsub()
+                self._pubsub = self.redis_service.redis.pubsub()
 
                 logger.debug("Subscribing to pubsub instance for SSE events")
-                pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
+                self._pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
                 # Reset retry_count upon successful connection
                 retry_count = 0
 
                 logger.debug("Begin processing pubsub messages")
                 while True:
-                    message = pubsub.get_message(ignore_subscribe_messages=True)
+                    message = self._pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
                         logger.trace(f"Got pubsub message: {message}")
                         await self._process_redis_event(message)

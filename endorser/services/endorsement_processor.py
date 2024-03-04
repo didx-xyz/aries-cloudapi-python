@@ -31,6 +31,9 @@ class EndorsementProcessor:
 
         self.endorse_prefix = self.redis_service.endorsement_redis_prefix
 
+        self._pubsub = None
+        self._pubsub_thread = None
+
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
     def start(self) -> None:
@@ -52,6 +55,15 @@ class EndorsementProcessor:
             except asyncio.CancelledError:
                 pass  # Expected error upon cancellation, can be ignored
         self._tasks.clear()  # Clear the list of tasks
+
+        if self._pubsub_thread:
+            self._pubsub_thread.stop()
+            logger.info("Stopped Endorsement pubsub thread")
+
+        if self._pubsub:
+            await asyncio.sleep(0.1)  # allow thread to stop before disconnecting
+            self._pubsub.disconnect()
+            logger.info("Disconnected Endorsement pubsub instance")
         logger.info("Endorsement processing stopped.")
 
     def are_tasks_running(self) -> bool:
@@ -75,12 +87,14 @@ class EndorsementProcessor:
         """
         Listens for keyspace notifications related to endorsements and sets an event to resume processing.
         """
-        pubsub = self.redis_service.redis.pubsub()
+        self._pubsub = self.redis_service.redis.pubsub()
 
         # Subscribe this pubsub channel to the notification pattern (set may represent endorsement events)
         notification_pattern = "__keyevent@0__:set"
-        pubsub.psubscribe(**{notification_pattern: self._set_notification_handler})
-        pubsub.run_in_thread(sleep_time=0.01)
+        self._pubsub.psubscribe(
+            **{notification_pattern: self._set_notification_handler}
+        )
+        self._pubsub_thread = self._pubsub.run_in_thread(sleep_time=0.01)
 
         logger.info("Notification listener subscribed to redis keyspace notifications")
 

@@ -29,6 +29,9 @@ class AcaPyEventsProcessor:
         # Event for indicating redis keyspace notifications
         self._new_event_notification = asyncio.Event()
 
+        self._pubsub = None
+        self._pubsub_thread = None
+
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
     def start(self) -> None:
@@ -50,6 +53,16 @@ class AcaPyEventsProcessor:
             except asyncio.CancelledError:
                 pass  # Expected error upon cancellation, can be ignored
         self._tasks.clear()  # Clear the list of tasks
+
+        if self._pubsub_thread:
+            self._pubsub_thread.stop()
+            logger.info("Stopped AcaPyEvents pubsub thread")
+
+        if self._pubsub:
+            await asyncio.sleep(0.1)  # allow thread to stop before disconnecting
+            self._pubsub.disconnect()
+            logger.info("Disconnected AcaPyEvents pubsub instance")
+
         logger.info("AcaPyEventsProcessor stopped.")
 
     def are_tasks_running(self) -> bool:
@@ -73,12 +86,14 @@ class AcaPyEventsProcessor:
         Listens for keyspace notifications from Redis and sets an event to resume processing.
         """
         # Example subscription pattern for keyspace notifications. Adjust as necessary.
-        pubsub = self.redis_service.redis.pubsub()
+        self._pubsub = self.redis_service.redis.pubsub()
 
         # Subscribe this pubsub channel to the notification pattern (rpush represents ACA-Py writing to list types)
         notification_pattern = "__keyevent@0__:rpush"
-        pubsub.psubscribe(**{notification_pattern: self._rpush_notification_handler})
-        pubsub.run_in_thread(sleep_time=0.01)
+        self._pubsub.psubscribe(
+            **{notification_pattern: self._rpush_notification_handler}
+        )
+        self._pubsub_thread = self._pubsub.run_in_thread(sleep_time=0.01)
 
         logger.info("Notification listener subscribed to redis keyspace notifications")
 

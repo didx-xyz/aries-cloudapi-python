@@ -1,5 +1,5 @@
 import os
-from typing import AsyncIterator, List, Optional, Set
+from typing import Any, Generator, List, Optional, Set
 
 from redis.cluster import ClusterNode, RedisCluster
 
@@ -38,9 +38,9 @@ def parse_redis_nodes(env_var_value: str) -> List[ClusterNode]:
     return nodes
 
 
-async def init_redis_cluster_pool(
+def init_redis_cluster_pool(
     nodes: List[ClusterNode], logger_name: str
-) -> AsyncIterator[RedisCluster]:
+) -> Generator[RedisCluster, Any, None]:
     """
     Initialize a connection pool to the Redis Cluster.
 
@@ -54,7 +54,8 @@ async def init_redis_cluster_pool(
     yield cluster
 
     logger.info("Closing Redis connection")
-    await cluster.close()
+    cluster.close()
+    logger.info("Closed Redis connection.")
 
 
 class RedisService:

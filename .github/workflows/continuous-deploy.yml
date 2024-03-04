@@ -382,7 +382,7 @@ jobs:
 
       - name: Helmfile Diff
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
             diff \
@@ -401,7 +401,7 @@ jobs:
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
             destroy \
@@ -449,7 +449,7 @@ jobs:
 
       - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
             apply \
@@ -466,7 +466,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile Apply (Exclude Agents) # Always exclude agents and apply (zero diff if resetting deployments)
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
             apply \
@@ -493,7 +493,7 @@ jobs:
 
       - name: Helmfile Patch Proxy # Always patch agents with proxy.
         id: patch_proxy
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
             apply \
@@ -516,7 +516,7 @@ jobs:
       - name: Helmfile apply pytest
         # if: github.event.review.state == 'approved' || github.event_name == 'push' || ( github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-tests == 'true' ) || github.event.inputs.run-tests == 'true'
         id: pytest
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         with:
           helmfile-args: |
             apply \
@@ -629,7 +629,7 @@ jobs:
           create-new-comment: true
 
       - name: Helmfile destroy pytest
-        uses: helmfile/helmfile-action@v1.7.0
+        uses: helmfile/helmfile-action@v1.8.0
         if: always()
         with:
           helmfile-args: |

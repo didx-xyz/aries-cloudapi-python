@@ -51,7 +51,7 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
-        self._pubsub = None
+        self._pubsub = None  # for managing redis pubsub connection
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 

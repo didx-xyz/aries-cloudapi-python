@@ -29,7 +29,7 @@ class AcaPyEventsProcessor:
         # Event for indicating redis keyspace notifications
         self._new_event_notification = asyncio.Event()
 
-        self._pubsub = None
+        self._pubsub = None  # for managing redis pubsub connection
         self._pubsub_thread = None
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks

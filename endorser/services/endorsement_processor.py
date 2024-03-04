@@ -31,7 +31,7 @@ class EndorsementProcessor:
 
         self.endorse_prefix = self.redis_service.endorsement_redis_prefix
 
-        self._pubsub = None
+        self._pubsub = None  # for managing redis pubsub connection
         self._pubsub_thread = None
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks

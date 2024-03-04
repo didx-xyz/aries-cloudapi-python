@@ -33,7 +33,7 @@ class EndorsementProcessor:
 
         self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
 
-    def start(self):
+    def start(self) -> None:
         """
         Starts the background tasks for processing endorsement events.
         """
@@ -41,7 +41,7 @@ class EndorsementProcessor:
         self._tasks.append(asyncio.create_task(self._process_endorsement_requests()))
         logger.info("Endorsement processing started.")
 
-    async def stop(self):
+    async def stop(self) -> None:
         """
         Stops all background tasks gracefully.
         """
@@ -135,8 +135,8 @@ class EndorsementProcessor:
         lock_key = f"lock:{event_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
             logger.trace(f"Successfully set lock for {event_key}")
+            event_json = self.redis_service.get(event_key)
             try:
-                event_json = self.redis_service.get(event_key)
                 await self._process_endorsement_event(event_json)
                 if self.redis_service.delete_key(event_key):
                     logger.info(f"Deleted processed endorsement event: {event_key}")
@@ -144,13 +144,10 @@ class EndorsementProcessor:
                     logger.warning(
                         f"Couldn't delete processed endorsement event: {event_key}"
                     )
-            except Exception:
-                logger.exception(
-                    "Something went wrong with processing endorsement. Continuing ..."
-                )
-                # todo:
+            except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                # self._handle_unprocessable_event(event_key, e)
+                logger.error(f"Processing {event_key} raised an exception: {e}")
+                self._handle_unprocessable_endorse_event(event_key, event_json, e)
             finally:
                 # Delete lock after processing, whether it completed or errored:
                 if self.redis_service.delete_key(lock_key):
@@ -164,7 +161,7 @@ class EndorsementProcessor:
                 f"Event {event_key} is currently being processed by another instance."
             )
 
-    async def _process_endorsement_event(self, event_json: str):
+    async def _process_endorsement_event(self, event_json: str) -> None:
         """
         Processes an individual endorsement event, evaluating if it should be accepted and then endorsing as governance
 
@@ -200,3 +197,29 @@ class EndorsementProcessor:
                 endorsement.transaction_id,
             )
             await accept_endorsement(client, endorsement)
+
+    def _handle_unprocessable_endorse_event(
+        self, key: str, event_json: str, error: Exception
+    ) -> None:
+        """
+        Handles an event that could not be processed successfully. The unprocessable event is persisted
+        to a separate key for further investigation.
+
+        Args:
+            key: The Redis key where the problematic event was found.
+            error: The exception that occurred during event processing.
+        """
+        bound_logger = logger.bind(body={"key": key})
+        bound_logger.warning("Handling problematic endorsement event")
+
+        unprocessable_key = f"unprocessable:{key}"
+        error_message = f"Could not process: {event_json}. Error: {error}"
+
+        bound_logger.warning(
+            f"Saving record of problematic event at key: {unprocessable_key}. Error: `{error_message}`"
+        )
+        self.redis_service.set(key=unprocessable_key, value=error_message)
+
+        bound_logger.info("Deleting original problematic event")
+        self.redis_service.delete_key(key=key)
+        bound_logger.info("Successfully handled unprocessable event.")

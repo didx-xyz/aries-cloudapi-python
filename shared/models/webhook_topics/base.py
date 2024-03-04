@@ -143,7 +143,7 @@ class ProblemReport(BaseModel):
 
 class AcaPyRedisEventPayload(BaseModel):
     wallet_id: str
-    state: str
+    state: Optional[str] = None
     topic: str
     category: Optional[str] = None
     payload: Dict[str, Any]

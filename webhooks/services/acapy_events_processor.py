@@ -191,7 +191,7 @@ class AcaPyEventsProcessor:
         Args:
             event_json: The JSON string representation of the ACA-Py event.
         """
-        event = parse_with_error_handling(AcaPyRedisEvent, event_json)
+        event = parse_with_error_handling(AcaPyRedisEvent, event_json, logger)
 
         metadata_origin = event.metadata.origin
 

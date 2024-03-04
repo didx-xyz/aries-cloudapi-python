@@ -107,7 +107,7 @@ class WebhooksRedisService(RedisService):
         """
         entries = self.get_json_cloudapi_events_by_wallet(wallet_id)
         parsed_entries = [
-            parse_with_error_handling(CloudApiWebhookEventGeneric, entry)
+            parse_with_error_handling(CloudApiWebhookEventGeneric, entry, self.logger)
             for entry in entries
         ]
         return parsed_entries
@@ -190,7 +190,7 @@ class WebhooksRedisService(RedisService):
             wallet_id, start_timestamp, end_timestamp
         )
         parsed_entries = [
-            parse_with_error_handling(CloudApiWebhookEventGeneric, entry)
+            parse_with_error_handling(CloudApiWebhookEventGeneric, entry, self.logger)
             for entry in entries
         ]
         return parsed_entries

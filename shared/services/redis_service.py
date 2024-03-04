@@ -9,14 +9,14 @@ from shared.log_config import get_logger
 class RedisConfig:
     PASSWORD = os.getenv("REDIS_PASSWORD", None)
     SSL = os.getenv("REDIS_SSL", "false").upper() == "TRUE"
-    SOCKET_TIMEOUT = int(os.getenv("REDIS_TIMEOUT", "5"))
+    SOCKET_CONNECT_TIMEOUT = int(os.getenv("REDIS_CONNECT_TIMEOUT", "15"))
     MAX_CONNECTIONS = int(os.getenv("REDIS_MAX_CONNECTIONS", "20000"))
 
 
 REDIS_CONNECTION_PARAMS = {
     "password": RedisConfig.PASSWORD,
     "ssl": RedisConfig.SSL,
-    "socket_timeout": RedisConfig.SOCKET_TIMEOUT,
+    "socket_connect_timeout": RedisConfig.SOCKET_CONNECT_TIMEOUT,
     "max_connections": RedisConfig.MAX_CONNECTIONS,
 }
 

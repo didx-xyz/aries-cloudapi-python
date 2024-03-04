@@ -78,12 +78,21 @@ class EndorsementProcessor:
             True if all background tasks are running, False if any task has stopped.
         """
         logger.debug("Checking if all tasks are running")
-        all_running = all(not task.done() for task in self._tasks)
-        logger.debug("All tasks running: {}", all_running)
-        if not all_running:
+
+        pubsub_thread_running = self._pubsub_thread and self._pubsub_thread.is_alive()
+        tasks_running = all(not task.done() for task in self._tasks)
+
+        if not pubsub_thread_running:
+            logger.error("Pubsub thread is not running")
+
+        if not tasks_running:
             for task in self._tasks:
                 if task.done():
-                    logger.warning("Task `{}` is not running", task.get_name())
+                    logger.error("Task `{}` is not running", task.get_name())
+
+        all_running = tasks_running and pubsub_thread_running
+
+        logger.debug("All tasks running: {}", all_running)
         return all_running
 
     def _set_notification_handler(self, msg) -> None:

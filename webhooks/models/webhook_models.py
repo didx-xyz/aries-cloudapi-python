@@ -8,6 +8,8 @@ from aries_cloudcontroller import (
     V10CredentialExchange,
     V10PresentationExchange,
     V20CredExRecord,
+    V20CredExRecordIndy,
+    V20CredExRecordLDProof,
     V20PresExRecord,
 )
 
@@ -81,6 +83,14 @@ def to_credential_model(event: AcaPyWebhookEvent) -> CredentialExchange:
     return cred_model
 
 
+def to_credential_indy_model(event: AcaPyWebhookEvent) -> V20CredExRecordIndy:
+    return V20CredExRecordIndy(**event.payload)
+
+
+def to_credential_ld_model(event: AcaPyWebhookEvent) -> V20CredExRecordLDProof:
+    return V20CredExRecordLDProof(**event.payload)
+
+
 def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
     # v1
     if event.acapy_topic == "present_proof":
@@ -103,6 +113,8 @@ ModelTransformerFunction = Callable[[AcaPyWebhookEvent], WebhookEventPayloadType
 topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
     "proofs": to_proof_model,
     "credentials": to_credential_model,
+    "credentials_ld": to_credential_ld_model,
+    "credentials_indy": to_credential_indy_model,
     "connections": to_connections_model,
     "basic-messages": to_basic_message_model,
     "endorsements": to_endorsement_model,

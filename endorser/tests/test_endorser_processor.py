@@ -159,7 +159,7 @@ async def test_process_endorsement_requests(endorsement_processor_mock):
     )
 
     # Exception is to force the NoReturn function to exit
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(Exception):
         await endorsement_processor_mock._process_endorsement_requests()
 
     # Assert that the keys were processed

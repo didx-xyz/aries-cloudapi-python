@@ -257,15 +257,19 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
 
 
 class MockSseListener(SseListener):
-    async def wait_for_event(self, field, field_id, desired_state, timeout: int = 150):
+    async def wait_for_event(
+        self, field, field_id, desired_state, timeout: int = 150, lookback_time=1
+    ):
         pass
 
 
 class MockListenerEndorserConnectionId(MockSseListener):
-    async def wait_for_event(self, field, field_id, desired_state, timeout: int = 150):
+    async def wait_for_event(
+        self, field, field_id, desired_state, timeout: int = 150, lookback_time=1
+    ):
         return {"connection_id": "endorser_connection_id"}
 
 
 class MockListenerRequestReceived(MockSseListener):
-    async def wait_for_state(self, desired_state, timeout: int = 150):
+    async def wait_for_state(self, desired_state, timeout: int = 150, lookback_time=1):
         return {"state": "request-received", "transaction_id": "abcde"}

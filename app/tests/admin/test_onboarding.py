@@ -16,6 +16,7 @@ from app.services.acapy_wallet import Did
 from app.services.onboarding import issuer, verifier
 from app.services.onboarding.util import register_issuer_did
 from app.tests.util.mock import to_async
+from shared.constants import GOVERNANCE_LABEL
 from shared.util.mock_agent_controller import get_mock_agent_controller
 
 
@@ -57,12 +58,14 @@ async def test_onboard_issuer_public_did_exists(
 
     # Mock event listeners
     when(register_issuer_did).create_sse_listener(
-        topic="connections", wallet_id="governance"
-    ).thenReturn(MockSseListener(topic="connections", wallet_id="governance"))
+        topic="connections", wallet_id=GOVERNANCE_LABEL
+    ).thenReturn(MockSseListener(topic="connections", wallet_id=GOVERNANCE_LABEL))
     when(register_issuer_did).create_sse_listener(
-        topic="endorsements", wallet_id="governance"
+        topic="endorsements", wallet_id=GOVERNANCE_LABEL
     ).thenReturn(
-        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="governance")
+        MockListenerEndorserConnectionId(
+            topic="endorsements", wallet_id=GOVERNANCE_LABEL
+        )
     )
 
     invitation_url = "https://invitation.com/"
@@ -105,14 +108,16 @@ async def test_onboard_issuer_no_public_did(
 
     # Mock event listeners
     when(register_issuer_did).create_sse_listener(
-        topic="connections", wallet_id="governance"
+        topic="connections", wallet_id=GOVERNANCE_LABEL
     ).thenReturn(
-        MockListenerEndorserConnectionId(topic="connections", wallet_id="governance")
+        MockListenerEndorserConnectionId(
+            topic="connections", wallet_id=GOVERNANCE_LABEL
+        )
     )
     when(register_issuer_did).create_sse_listener(
-        topic="endorsements", wallet_id="governance"
+        topic="endorsements", wallet_id=GOVERNANCE_LABEL
     ).thenReturn(
-        MockListenerRequestReceived(topic="endorsements", wallet_id="governance")
+        MockListenerRequestReceived(topic="endorsements", wallet_id=GOVERNANCE_LABEL)
     )
 
     # Mock responses

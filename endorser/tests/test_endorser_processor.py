@@ -189,6 +189,18 @@ async def test_attempt_process_endorsement(endorsement_processor_mock):
 
 
 @pytest.mark.anyio
+async def test_attempt_process_endorsement_x(endorsement_processor_mock):
+    endorsement_processor_mock._handle_unprocessable_endorse_event = Mock()
+    endorsement_processor_mock._process_endorsement_event = AsyncMock(
+        side_effect=Exception("Test")
+    )
+    await endorsement_processor_mock._attempt_process_endorsement("key")
+
+    # Assert _handle_unprocessable_endorse_event is called when exception was raised
+    endorsement_processor_mock._handle_unprocessable_endorse_event.assert_called_once()
+
+
+@pytest.mark.anyio
 async def test_process_endorsement_event_governance(endorsement_processor_mock):
 
     governance = GOVERNANCE_LABEL

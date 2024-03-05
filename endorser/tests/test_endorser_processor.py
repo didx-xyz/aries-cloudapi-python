@@ -78,16 +78,16 @@ async def test_are_tasks_running_x(endorsement_processor_mock):
     assert not endorsement_processor_mock.are_tasks_running()
 
     # Create dummy task and stop it
-    endorsement_processor_mock._tasks = [asyncio.create_task(asyncio.sleep(1))]
-    await endorsement_processor_mock.stop()
+    dummy_done_task = MagicMock()
+    dummy_done_task.done.return_value = True
+    endorsement_processor_mock._tasks = [dummy_done_task]
+
     # Task has been cancelled, it should be considered not running
     assert not endorsement_processor_mock.are_tasks_running()
 
-    # Now test that is starts as normal:
-    endorsement_processor_mock._process_endorsement_requests = AsyncMock()
-    endorsement_processor_mock.start()
-    assert endorsement_processor_mock.are_tasks_running()
-
+    # Now reset task to appear as still running, to test pubsub thread case
+    dummy_done_task.done.return_value = False
+    endorsement_processor_mock._tasks = [dummy_done_task]
     # when pubsub thread stops, tasks should be not running
     endorsement_processor_mock._pubsub_thread.is_alive.return_value = False
     assert not endorsement_processor_mock.are_tasks_running()

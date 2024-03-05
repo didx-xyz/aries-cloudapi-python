@@ -1,3 +1,4 @@
+# flake8: noqa
 # pylint: disable=unused-import
 from aries_cloudcontroller.exceptions import *
 

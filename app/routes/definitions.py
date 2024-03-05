@@ -373,9 +373,15 @@ async def create_credential_definition(
 
                 # todo: Post to the endorser service the transaction id to be endorsed
                 async with get_governance_controller() as endorser_controller:
-                    await endorser_controller.endorse_transaction.endorse_transaction(
-                        tran_id=txn_record["transaction_id"]
-                    )
+                    try:
+                        await endorser_controller.endorse_transaction.endorse_transaction(
+                            tran_id=txn_record["transaction_id"]
+                        )
+                    except Exception as e:
+                        bound_logger.info(
+                            "Transaction {} is already endorsed",
+                            txn_record["transaction_id"],
+                        )
 
                     bound_logger.debug("Setting registry state to `active`")
                     active_rev_reg = (
@@ -421,9 +427,15 @@ async def create_credential_definition(
                     bound_logger.info(
                         "Endorsing what is presumed to be a rev_reg_entry transaction"
                     )
-                    await endorser_controller.endorse_transaction.endorse_transaction(
-                        tran_id=txn_record["transaction_id"]
-                    )
+                    try:
+                        await endorser_controller.endorse_transaction.endorse_transaction(
+                            tran_id=txn_record["transaction_id"]
+                        )
+                    except Exception as e:
+                        bound_logger.info(
+                            "Transaction {} is already endorsed",
+                            txn_record["transaction_id"],
+                        )
                 bound_logger.info(
                     "Successfully endorsed transaction of revocation registry entry."
                 )

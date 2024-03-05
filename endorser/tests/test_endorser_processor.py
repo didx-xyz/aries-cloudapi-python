@@ -134,6 +134,42 @@ def test_start_notification_listener(endorsement_processor_mock):
 
 
 @pytest.mark.anyio
+async def test_process_endorsement_requests(endorsement_processor_mock):
+    scan_results = [
+        [],  # empty list to start
+        ["endorse:key1"],  # Then a key returned from the scan
+        ["endorse:key2", "endorse:key3"],  # Then 2 keys in a batch
+        Exception(
+            "Force inf loop to stop"
+        ),  # force loop to exit after processing available keys
+    ]
+    redis_service = Mock()
+    redis_service.scan_keys = Mock(side_effect=scan_results)
+    endorsement_processor_mock.redis_service = redis_service
+
+    # Store processed keys for assertion
+    processed_keys = []
+
+    # Override _attempt_process_endorsement to track keys and then set the done_event
+    async def mock_attempt_process_endorsement(key):
+        processed_keys.append(key)
+
+    endorsement_processor_mock._attempt_process_endorsement = (
+        mock_attempt_process_endorsement
+    )
+
+    # Exception is to force the NoReturn function to exit
+    with pytest.raises(Exception) as exc_info:
+        await endorsement_processor_mock._process_endorsement_requests()
+
+    # Assert that the keys were processed
+    assert len(processed_keys) == 3
+    assert all(
+        k in processed_keys for k in ["endorse:key1", "endorse:key2", "endorse:key3"]
+    )
+
+
+@pytest.mark.anyio
 async def test_attempt_process_endorsement(endorsement_processor_mock):
     event_key = "endorse:key"
     lock_key = f"lock:{event_key}"

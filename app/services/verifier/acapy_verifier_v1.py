@@ -1,13 +1,12 @@
 from aries_cloudcontroller import (
     AcaPyClient,
-    IndyPresSpec,
     V10PresentationCreateRequestRequest,
     V10PresentationProblemReportRequest,
     V10PresentationSendRequest,
     V10PresentationSendRequestRequest,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import BadRequestException, CloudApiException
 from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -133,6 +132,16 @@ class VerifierV1(Verifier):
                 body=v10_pres_send_req,
             )
             result = record_to_model(presentation_record)
+        except BadRequestException as e:
+            reason = e.reason
+            bound_logger.info("Bad request: {}", reason)
+
+            if "Input error" in reason and "missing field" in reason:
+                reason += " Are you responding with the correct requested attributes?"
+
+            raise CloudApiException(
+                f"Failed to send proof presentation: {reason}.", e.status
+            ) from e
         except Exception as e:
             bound_logger.exception(
                 "An exception occurred while sending a proof presentation."

@@ -7,7 +7,7 @@ from aries_cloudcontroller import (
     V20PresSpecByFormatRequest,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import BadRequestException, CloudApiException
 from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -144,6 +144,16 @@ class VerifierV2(Verifier):
                 pres_ex_id=pres_ex_id, body=presentation_spec
             )
             result = record_to_model(presentation_record)
+        except BadRequestException as e:
+            reason = e.reason
+            bound_logger.info("Bad request: {}", reason)
+
+            if "Input error" in reason and "missing field" in reason:
+                reason += " Are you responding with the correct requested attributes?"
+
+            raise CloudApiException(
+                f"Failed to send proof presentation: {reason}.", e.status
+            ) from e
         except Exception as e:
             bound_logger.exception(
                 "An unexpected error occurred while sending a proof presentation."

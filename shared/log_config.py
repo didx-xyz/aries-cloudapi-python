@@ -8,6 +8,7 @@ STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
 ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
 DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
+ENABLE_SERIALIZE = os.getenv("ENABLE_SERIALIZE", "FALSE").upper() == "TRUE"
 
 # Create a mapping of module name to color
 color_map = {
@@ -66,12 +67,16 @@ def get_logger(name: str):
     color = color_map.get(main_module_name, "blue")  # Default to blue if no mapping
     formatter = formatter_builder(color)
 
+    # Determine if serialization should be enabled based on the environment variable
+    serialize = os.getenv("ENABLE_SERIALIZE", "").upper() == "TRUE"
+
     # Log to stdout
     logger_.add(
         sys.stdout,
         level=STDOUT_LOG_LEVEL,
         format=formatter,
         colorize=not DISABLE_COLORIZE_LOGS,
+        serialize=serialize,  # Output log records as JSON if enabled
     )
 
     # Log to a file
@@ -84,6 +89,7 @@ def get_logger(name: str):
                 enqueue=True,  # asynchronous
                 level=FILE_LOG_LEVEL,
                 format=formatter,
+                serialize=serialize,  # Output log records as JSON if enabled
             )
         except PermissionError:
             logger_.warning(

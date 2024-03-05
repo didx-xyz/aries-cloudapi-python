@@ -34,6 +34,8 @@ def endorsement_processor_mock(redis_service_mock):
     processor._pubsub_thread = Mock(spec=PubSubWorkerThread)
     processor._pubsub_thread.is_alive.return_value = True
     processor._pubsub = Mock(spec=ClusterPubSub)
+
+    processor.endorse_prefix = "endorse"
     return processor
 
 
@@ -91,6 +93,34 @@ async def test_are_tasks_running_x(endorsement_processor_mock):
     # when pubsub thread stops, tasks should be not running
     endorsement_processor_mock._pubsub_thread.is_alive.return_value = False
     assert not endorsement_processor_mock.are_tasks_running()
+
+
+@pytest.mark.anyio
+async def test_set_notification_handler(endorsement_processor_mock):
+    # Mock the Redis message to simulate a keyspace notification
+    mock_msg = {
+        "type": "pmessage",
+        "pattern": None,
+        "channel": b"__keyevent@0__:set",
+        "data": b"endorse:sample_key",
+    }
+
+    # Mock the _new_event_notification event inside the processor
+    endorsement_processor_mock._new_event_notification = Mock()
+
+    # Call the method with the mocked message
+    endorsement_processor_mock._set_notification_handler(mock_msg)
+
+    # Verify that _new_event_notification.set() was called
+    endorsement_processor_mock._new_event_notification.set.assert_called_once_with()
+
+    # Test with a non-matching message to ensure the set() method is not called
+    non_matching_msg = mock_msg.copy()
+    non_matching_msg["data"] = b"nonmatching:sample_key"
+    endorsement_processor_mock._set_notification_handler(non_matching_msg)
+
+    # Verify that set() method is still called only once from the first call
+    endorsement_processor_mock._new_event_notification.set.assert_called_once()
 
 
 @pytest.mark.anyio

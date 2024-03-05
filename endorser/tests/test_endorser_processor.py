@@ -28,8 +28,6 @@ def redis_service_mock():
 @pytest.fixture
 def endorsement_processor_mock(redis_service_mock):
     processor = EndorsementProcessor(redis_service=redis_service_mock)
-    # Mock the EndorsementProcessor methods
-    processor._start_notification_listener = Mock()
     # Mock pubsub
     processor._pubsub_thread = Mock(spec=PubSubWorkerThread)
     processor._pubsub_thread.is_alive.return_value = True
@@ -121,6 +119,18 @@ async def test_set_notification_handler(endorsement_processor_mock):
 
     # Verify that set() method is still called only once from the first call
     endorsement_processor_mock._new_event_notification.set.assert_called_once()
+
+
+def test_start_notification_listener(endorsement_processor_mock):
+    endorsement_processor_mock._pubsub.psubscribe = Mock()
+    endorsement_processor_mock._pubsub.run_in_thread = Mock()
+
+    # Call the method
+    endorsement_processor_mock._start_notification_listener()
+
+    # Verify psubscribe and run_in_thread was called correctly
+    endorsement_processor_mock._pubsub.psubscribe.assert_called_once()
+    endorsement_processor_mock._pubsub.run_in_thread.assert_called_once()
 
 
 @pytest.mark.anyio

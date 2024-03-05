@@ -10,6 +10,11 @@ from redis.cluster import ClusterPubSub
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.constants import GOVERNANCE_LABEL
 
+# pylint: disable=redefined-outer-name
+# because re-using fixtures in same module
+# pylint: disable=protected-access
+# because we are testing protected methods
+
 
 @pytest.fixture
 def redis_service_mock():

@@ -81,7 +81,7 @@ class AcaPyEventsProcessor:
         logger.debug("Checking if all tasks are running")
 
         pubsub_thread_running = self._pubsub_thread and self._pubsub_thread.is_alive()
-        tasks_running = all(not task.done() for task in self._tasks)
+        tasks_running = self._tasks and all(not task.done() for task in self._tasks)
 
         if not pubsub_thread_running:
             logger.error("Pubsub thread is not running")

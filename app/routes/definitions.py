@@ -21,7 +21,11 @@ from app.dependencies.auth import (
     acapy_auth_verified,
 )
 from app.event_handling.sse_listener import SseListener
-from app.exceptions import CloudApiException, TrustRegistryException
+from app.exceptions import (
+    BadRequestException,
+    CloudApiException,
+    TrustRegistryException,
+)
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -377,7 +381,7 @@ async def create_credential_definition(
                         await endorser_controller.endorse_transaction.endorse_transaction(
                             tran_id=txn_record["transaction_id"]
                         )
-                    except Exception as e:
+                    except BadRequestException:
                         bound_logger.info(
                             "Transaction {} is already endorsed",
                             txn_record["transaction_id"],
@@ -431,7 +435,7 @@ async def create_credential_definition(
                         await endorser_controller.endorse_transaction.endorse_transaction(
                             tran_id=txn_record["transaction_id"]
                         )
-                    except Exception as e:
+                    except BadRequestException:
                         bound_logger.info(
                             "Transaction {} is already endorsed",
                             txn_record["transaction_id"],

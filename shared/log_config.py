@@ -11,6 +11,7 @@ DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
 ENABLE_SERIALIZE_LOGS = os.getenv("ENABLE_SERIALIZE_LOGS", "FALSE").upper() == "TRUE"
 
 colorize = not DISABLE_COLORIZE_LOGS
+serialize = ENABLE_SERIALIZE_LOGS
 
 # Create a mapping of module name to color
 color_map = {
@@ -72,14 +73,11 @@ def get_logger(name: str):
 
     logger_.configure(extra={"body": ""})  # Default values for extra args
 
-    # Get the color for this module and build formatter
-    color = color_map.get(main_module_name, "blue")  # Default to blue if no mapping
-    formatter = formatter_builder(color)
-
-    # Determine if serialization should be enabled based on the environment variable
-    serialize = ENABLE_SERIALIZE_LOGS
-
     if not serialize:
+        # Get the color for this module and build formatter
+        color = color_map.get(main_module_name, "blue")  # Default to blue if no mapping
+        formatter = formatter_builder(color)
+
         # Log to stdout
         logger_.add(
             sys.stdout,

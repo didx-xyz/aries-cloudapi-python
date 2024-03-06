@@ -8,7 +8,7 @@ STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
 ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
 DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
-ENABLE_SERIALIZE = os.getenv("ENABLE_SERIALIZE", "FALSE").upper() == "TRUE"
+ENABLE_SERIALIZE_LOGS = os.getenv("ENABLE_SERIALIZE_LOGS", "FALSE").upper() == "TRUE"
 
 # Create a mapping of module name to color
 color_map = {
@@ -68,45 +68,61 @@ def get_logger(name: str):
     formatter = formatter_builder(color)
 
     # Determine if serialization should be enabled based on the environment variable
-    serialize = os.getenv("ENABLE_SERIALIZE", "").upper() == "TRUE"
+    serialize = ENABLE_SERIALIZE_LOGS
 
-    # Log to stdout
-    logger_.add(
-        sys.stdout,
-        level=STDOUT_LOG_LEVEL,
-        format=formatter,
-        colorize=not DISABLE_COLORIZE_LOGS,
-        serialize=serialize,  # Output log records as JSON if enabled
-    )
+    if not serialize:
+        # Log to stdout
+        logger_.add(
+            sys.stdout,
+            level=STDOUT_LOG_LEVEL,
+            format=formatter,
+            colorize=not DISABLE_COLORIZE_LOGS,
+        )
+    else:
+        # Log to stdout with serialization
+        logger_.add(
+            sys.stdout,
+            level=STDOUT_LOG_LEVEL,
+            serialize=True,
+        )
 
     # Log to a file
     if ENABLE_FILE_LOGGING:
-        try:
-            logger_.add(
-                get_log_file_path(main_module_name),
-                rotation="00:00",  # new file is created at midnight
-                retention="7 days",  # keep logs for up to 7 days
-                enqueue=True,  # asynchronous
-                level=FILE_LOG_LEVEL,
-                format=formatter,
-                serialize=serialize,  # Output log records as JSON if enabled
-            )
-        except PermissionError:
-            logger_.warning(
-                "Permission error caught when trying to create log file. "
-                "Continuing without file logging for `{}` in `{}`",
-                name,
-                main_module_name,
-            )
-
-    # Configure email notifications
-    # logger_.add(
-    #     "smtp+ssl://abc:password@smtp.gmail.com:465",
-    #     level="CRITICAL",
-    #     subject="Critical error encountered in your application",
-    #     fromaddr="abc@def.com",
-    #     to=["abc@def.com"],
-    # )
+        log_file_path = get_log_file_path(main_module_name)
+        if not serialize:
+            try:
+                logger_.add(
+                    log_file_path,
+                    rotation="00:00",  # new file is created at midnight
+                    retention="7 days",  # keep logs for up to 7 days
+                    enqueue=True,  # asynchronous
+                    level=FILE_LOG_LEVEL,
+                    format=formatter,
+                )
+            except PermissionError:
+                logger_.warning(
+                    "Permission error caught when trying to create log file. "
+                    "Continuing without file logging for `{}` in `{}`",
+                    name,
+                    main_module_name,
+                )
+        else:
+            try:
+                logger_.add(
+                    log_file_path,
+                    rotation="00:00",
+                    retention="7 days",
+                    enqueue=True,
+                    level=FILE_LOG_LEVEL,
+                    serialize=True,
+                )
+            except PermissionError:
+                logger_.warning(
+                    "Permission error caught when trying to create log file. "
+                    "Continuing without file logging for `{}` in `{}`",
+                    name,
+                    main_module_name,
+                )
 
     # Store the logger in the dictionary
     loggers[main_module_name] = logger_

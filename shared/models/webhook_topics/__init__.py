@@ -8,6 +8,7 @@ WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
 AcaPyTopics = Literal[
     "basicmessages",
     "connections",
+    "credential",
     "endorse_transaction",
     "forward",
     "issue_credential",
@@ -41,6 +42,7 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "basicmessages": "basic-messages",
     "connections": "connections",
     "endorse_transaction": "endorsements",
+    "credential": "credentials",
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
     "issue_credential_v2_0_indy": "credentials_indy",

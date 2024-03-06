@@ -342,11 +342,11 @@ jobs:
           DEFAULT_BRANCH: master
         run: |
           if gh api repos/didx-xyz/charts/git/ref/heads/$BRANCH_NAME; then
-            echo "::set-output name=branch_exists::true"
-            echo "::set-output name=branch_name::$BRANCH_NAME"
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=branch_exists::false"
-            echo "::set-output name=branch_name::$DEFAULT_BRANCH"
+            echo "branch_exists=false" >> $GITHUB_OUTPUT
+            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout Charts

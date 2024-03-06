@@ -164,9 +164,7 @@ async def test_process_endorsement_requests(endorsement_processor_mock):
 
     # Assert that the keys were processed
     assert len(processed_keys) == 3
-    assert all(
-        k in processed_keys for k in ["endorse:key1", "endorse:key2", "endorse:key3"]
-    )
+    assert processed_keys == ["endorse:key1", "endorse:key2", "endorse:key3"]
 
 
 @pytest.mark.anyio

@@ -91,40 +91,22 @@ def get_logger(name: str):
     # Log to a file
     if ENABLE_FILE_LOGGING:
         log_file_path = get_log_file_path(main_module_name)
-        if not serialize:
-            try:
-                logger_.add(
-                    log_file_path,
-                    rotation="00:00",  # new file is created at midnight
-                    retention="7 days",  # keep logs for up to 7 days
-                    enqueue=True,  # asynchronous
-                    level=FILE_LOG_LEVEL,
-                    format=formatter,
-                )
-            except PermissionError:
-                logger_.warning(
-                    "Permission error caught when trying to create log file. "
-                    "Continuing without file logging for `{}` in `{}`",
-                    name,
-                    main_module_name,
-                )
-        else:
-            try:
-                logger_.add(
-                    log_file_path,
-                    rotation="00:00",
-                    retention="7 days",
-                    enqueue=True,
-                    level=FILE_LOG_LEVEL,
-                    serialize=True,
-                )
-            except PermissionError:
-                logger_.warning(
-                    "Permission error caught when trying to create log file. "
-                    "Continuing without file logging for `{}` in `{}`",
-                    name,
-                    main_module_name,
-                )
+        try:
+            logger_.add(
+                log_file_path,
+                rotation="00:00",
+                retention="7 days",
+                enqueue=True,
+                level=FILE_LOG_LEVEL,
+                serialize=serialize,
+            )
+        except PermissionError:
+            logger_.warning(
+                "Permission error caught when trying to create log file. "
+                "Continuing without file logging for `{}` in `{}`",
+                name,
+                main_module_name,
+            )
 
     # Store the logger in the dictionary
     loggers[main_module_name] = logger_

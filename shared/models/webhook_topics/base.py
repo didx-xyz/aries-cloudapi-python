@@ -41,6 +41,7 @@ class Connection(BaseModel):
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
     invitation_msg_id: Optional[str] = None
     my_did: Optional[str] = None
+    request_id: Optional[str] = None
     state: Optional[str] = None  # did-exchange state
     their_did: Optional[str] = None
     their_label: Optional[str] = None

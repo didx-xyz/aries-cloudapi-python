@@ -215,11 +215,8 @@ class EndorsementProcessor:
             event_json: The JSON string representation of the endorsement event.
         """
         event = parse_with_error_handling(EndorsementEvent, event_json, logger)
-        logger.debug(
-            "Processing endorsement event for agent `{}` and wallet `{}`",
-            event.origin,
-            event.wallet_id,
-        )
+        logger.debug("Processing endorsement event for agent `{}`", event.origin)
+
         # We're only interested in events from the governance agent
         if event.wallet_id != GOVERNANCE_LABEL:
             logger.warning("Endorsement request is not for governance agent.")

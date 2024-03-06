@@ -11,26 +11,29 @@ from aries_cloudcontroller import (
     V20PresExRecord,
 )
 
-from shared.models.conversion import (
-    conn_record_to_connection,
+from shared.models.connection_record import Connection, conn_record_to_connection
+from shared.models.credential_exchange import (
+    CredentialExchange,
     credential_record_to_model_v1,
     credential_record_to_model_v2,
+)
+from shared.models.endorsement import Endorsement
+from shared.models.presentation_exchange import (
+    PresentationExchange,
     presentation_record_to_model,
 )
-from shared.models.webhook_topics import (
+from shared.models.webhook_events.topics import CloudApiTopics
+from webhooks.models.redis_payloads import (
     AcaPyWebhookEvent,
-    BasicMessage,
-    CloudApiTopics,
     CloudApiWebhookEvent,
-    Connection,
-    CredentialExchange,
+    WebhookEventPayloadType,
+)
+from webhooks.models.topic_payloads import (
+    BasicMessage,
     CredExRecordIndy,
     CredExRecordLDProof,
     DeletedCredential,
-    Endorsement,
-    PresentationExchange,
     ProblemReport,
-    WebhookEventPayloadType,
 )
 
 

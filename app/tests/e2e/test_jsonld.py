@@ -7,7 +7,7 @@ from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.routes.jsonld import router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
-from shared.models.webhook_topics import CredentialExchange
+from shared.models.credential_exchange import CredentialExchange
 
 JSONLD_BASE_PATH = router.prefix
 

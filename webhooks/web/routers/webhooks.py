@@ -5,7 +5,7 @@ from fastapi import Depends
 
 from shared import APIRouter
 from shared.log_config import get_logger
-from shared.models.webhook_topics import CloudApiWebhookEventGeneric
+from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from webhooks.services.dependency_injection.container import Container
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 

@@ -15,7 +15,7 @@ from shared.constants import (
     QUEUE_CLEANUP_PERIOD,
 )
 from shared.log_config import get_logger
-from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
+from shared.models.webhook_events import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 from webhooks.util.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.web.routers.websocket import publish_event_on_websocket

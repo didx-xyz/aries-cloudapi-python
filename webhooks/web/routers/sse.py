@@ -8,7 +8,7 @@ from sse_starlette.sse import EventSourceResponse
 from shared import DISCONNECT_CHECK_PERIOD, QUEUE_POLL_PERIOD, SSE_TIMEOUT, APIRouter
 from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
-from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL
+from shared.models.webhook_events import WEBHOOK_TOPIC_ALL
 from webhooks.services.dependency_injection.container import Container
 from webhooks.services.sse_manager import SseManager
 from webhooks.util.event_generator_wrapper import EventGeneratorWrapper

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from redis import RedisCluster
 
-from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
+from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from shared.services.redis_service import RedisService
 from shared.util.rich_parsing import parse_with_error_handling
 

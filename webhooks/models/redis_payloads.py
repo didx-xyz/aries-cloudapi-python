@@ -3,15 +3,16 @@ from typing import Any, Dict, Optional, Union
 from aries_cloudcontroller import IssuerCredRevRecord, IssuerRevRegRecord, OobRecord
 from pydantic import BaseModel, Field
 
-from shared.models.webhook_topics import (
+from shared.models.connection_record import Connection
+from shared.models.credential_exchange import CredentialExchange
+from shared.models.endorsement import Endorsement
+from shared.models.presentation_exchange import PresentationExchange
+from shared.models.webhook_events import WebhookEvent
+from webhooks.models.topic_payloads import (
     BasicMessage,
-    Connection,
-    CredentialExchange,
     CredExRecordIndy,
     CredExRecordLDProof,
     DeletedCredential,
-    Endorsement,
-    PresentationExchange,
     ProblemReport,
 )
 
@@ -33,12 +34,6 @@ class WebhookEventMetadata(BaseModel):
 class AcaPyRedisEvent(BaseModel):
     payload: AcaPyRedisEventPayload
     metadata: Optional[WebhookEventMetadata] = None
-
-
-class WebhookEvent(BaseModel):
-    wallet_id: str
-    topic: str
-    origin: str
 
 
 class AcaPyWebhookEvent(WebhookEvent):
@@ -64,10 +59,3 @@ WebhookEventPayloadType = Union[
 
 class CloudApiWebhookEvent(WebhookEvent):
     payload: WebhookEventPayloadType
-
-
-# When reading json webhook events from redis and deserialising back into a CloudApiWebhookEvent,
-# it does not always parse to the correct WebhookEventPayloadType for the payload.
-# So, use the generic version when parsing redis events
-class CloudApiWebhookEventGeneric(WebhookEvent):
-    payload: Dict[str, Any]

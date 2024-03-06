@@ -23,8 +23,9 @@ from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceCo
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
+from shared.models.credential_exchange import CredentialExchange
+from shared.models.presentation_exchange import PresentationExchange
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.webhook_topics import CredentialExchange, PresentationExchange
 
 VERIFIER_BASE_PATH = router.prefix
 OOB_BASE_PATH = oob_router.prefix

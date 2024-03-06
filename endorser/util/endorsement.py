@@ -10,7 +10,7 @@ from endorser.util.transaction_record import (
 )
 from endorser.util.trust_registry import is_valid_issuer
 from shared.log_config import get_logger
-from shared.models.webhook_topics import Endorsement
+from shared.models.endorsement import Endorsement
 
 logger = get_logger(__name__)
 

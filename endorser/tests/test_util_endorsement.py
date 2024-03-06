@@ -4,7 +4,7 @@ import pytest
 from fastapi import HTTPException
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
-from shared.models.webhook_topics import Endorsement
+from shared.models.endorsement import Endorsement
 
 
 @pytest.fixture

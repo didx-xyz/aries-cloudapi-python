@@ -14,10 +14,8 @@ from app.services import revocation_registry
 from app.services.issuer.acapy_issuer_v1 import IssuerV1
 from app.services.issuer.acapy_issuer_v2 import IssuerV2
 from app.tests.util.mock import to_async
-from shared.models.webhook_topics import (
-    CredentialExchange,
-    IssueCredentialProtocolVersion,
-)
+from shared.models.credential_exchange import CredentialExchange
+from shared.models.protocol import IssueCredentialProtocolVersion
 from shared.util.mock_agent_controller import MockContextManagedController
 
 

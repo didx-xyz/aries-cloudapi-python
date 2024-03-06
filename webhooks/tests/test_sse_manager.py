@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 
 from shared.constants import MAX_EVENT_AGE_SECONDS
-from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
+from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from webhooks.services.sse_manager import SseManager, _copy_queue
 
 # pylint: disable=protected-access
@@ -39,7 +39,7 @@ async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-na
 
 @pytest.mark.anyio
 @patch(
-    "shared.models.webhook_topics.base.CloudApiWebhookEventGeneric.model_validate_json"
+    "shared.models.webhook_events.payloads.CloudApiWebhookEventGeneric.model_validate_json"
 )
 async def test_listen_for_new_events(
     mock_model_validate_json,

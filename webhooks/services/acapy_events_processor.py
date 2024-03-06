@@ -6,10 +6,11 @@ from uuid import uuid4
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
-from shared.models.webhook_topics import AcaPyWebhookEvent, topic_mapping
-from shared.models.webhook_topics.base import AcaPyRedisEvent, Endorsement
+from shared.models.endorsement import Endorsement
 from shared.util.rich_parsing import parse_with_error_handling
-from webhooks.models import acapy_to_cloudapi_event
+from webhooks.models import AcaPyWebhookEvent, topic_mapping
+from webhooks.models.conversions import acapy_to_cloudapi_event
+from webhooks.models.redis_payloads import AcaPyRedisEvent
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
 logger = get_logger(__name__)

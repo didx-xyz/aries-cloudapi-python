@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi_websocket_pubsub import PubSubEndpoint
 
 from shared.log_config import get_logger
-from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL
+from shared.models.webhook_events import WEBHOOK_TOPIC_ALL
 
 logger = get_logger(__name__)
 

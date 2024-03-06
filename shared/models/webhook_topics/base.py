@@ -6,6 +6,7 @@ from aries_cloudcontroller import (
     IssuerCredRevRecord,
     IssuerRevRegRecord,
     OobRecord,
+    V20CredExRecordLDProof,
 )
 from pydantic import BaseModel, Field
 from typing_extensions import Literal, TypedDict
@@ -145,6 +146,10 @@ class ProblemReport(BaseModel):
     escalation_uri: Optional[str] = None
 
 
+class CredExRecordLDProof(V20CredExRecordLDProof):
+    pass
+
+
 class AcaPyRedisEventPayload(BaseModel):
     wallet_id: str
     state: Optional[str] = None
@@ -179,6 +184,7 @@ WebhookEventPayloadType = Union[
     BasicMessage,
     Connection,
     CredentialExchange,
+    CredExRecordLDProof,
     Endorsement,
     IssuerCredRevRecord,
     IssuerRevRegRecord,

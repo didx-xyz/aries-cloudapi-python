@@ -21,15 +21,13 @@ from shared.models.conversion import (
 )
 from shared.models.webhook_topics import (
     AcaPyWebhookEvent,
+    BasicMessage,
     CloudApiTopics,
+    CloudApiWebhookEvent,
     Connection,
     CredentialExchange,
     Endorsement,
     PresentationExchange,
-)
-from shared.models.webhook_topics.base import (
-    BasicMessage,
-    CloudApiWebhookEvent,
     ProblemReport,
     WebhookEventPayloadType,
 )

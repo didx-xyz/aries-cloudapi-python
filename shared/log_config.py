@@ -46,15 +46,17 @@ def _serialize_record(record):
             "traceback": bool(exception.traceback),
         }
 
-    # Define subset of serialized record (primary difference from default is we exclude the "text" field)
+    # Define subset of serialized record - combining message + extra into the text field
+    message_with_body = f"{record["message"]} | {record["extra"]}"
     subset = {
+        "text": message_with_body,
         "record": {
             "elapsed": {
                 "repr": record["elapsed"],
                 "seconds": record["elapsed"].total_seconds(),
             },
             "exception": exception,
-            "extra": record["extra"],
+            # "extra": record["extra"],
             "file": {"name": record["file"].name, "path": record["file"].path},
             "function": record["function"],
             "level": {
@@ -63,7 +65,7 @@ def _serialize_record(record):
                 "no": record["level"].no,
             },
             "line": record["line"],
-            "message": record["message"],
+            # "message": record["message"],
             "module": record["module"],
             "name": record["name"],
             "process": {"id": record["process"].id, "name": record["process"].name},

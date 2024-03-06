@@ -6,7 +6,7 @@ from uuid import uuid4
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
-from shared.models.endorsement import Endorsement, is_applicable_for_endorser
+from shared.models.endorsement import Endorsement, payload_is_applicable_for_endorser
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
@@ -286,20 +286,12 @@ class AcaPyEventsProcessor:
 
         # Check if this webhook event should be forwarded to the Endorser service
         if (
-            wallet_id == GOVERNANCE_LABEL
+            wallet_id == GOVERNANCE_LABEL  # represents event for the governance agent
             and cloudapi_topic == "endorsements"
-            and isinstance(cloudapi_webhook_event.payload, Endorsement)
+            and payload_is_applicable_for_endorser(payload, logger=bound_logger)
         ):
-            endorsement_payload = cloudapi_webhook_event.payload
-            if (
-                endorsement_payload.state == "request-received"
-                and is_applicable_for_endorser(payload=payload, logger=bound_logger)
-            ):
-                bound_logger.info("Forwarding endorsement event for Endorser service")
-                transaction_id = endorsement_payload.transaction_id
-                self.redis_service.add_endorsement_event(
-                    event_json=webhook_event_json, transaction_id=transaction_id
-                )
+            bound_logger.info("Forwarding endorsement event for Endorser service")
+            self.redis_service.add_endorsement_event(event_json=webhook_event_json)
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(

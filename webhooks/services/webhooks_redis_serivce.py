@@ -28,18 +28,17 @@ class WebhooksRedisService(RedisService):
 
         self.logger.info("WebhooksRedisService initialised")
 
-    def add_endorsement_event(self, event_json: str, transaction_id: str) -> None:
+    def add_endorsement_event(self, event_json: str) -> None:
         """
         Add an endorsement event to bespoke prefix for the endorsement service.
 
         Args:
             event_json: The JSON string representation of the endorsement event.
-            transaction_id: The transaction id associated with the event.
         """
         self.logger.trace("Write endorsement entry to redis")
 
-        # Define key for this transaction_id, appending uuid4 to ensure uniqueness
-        redis_key = f"{self.endorsement_redis_prefix}:{transaction_id}:{uuid4().hex}"
+        # Define key for this transaction, using uuid4 to ensure uniqueness
+        redis_key = f"{self.endorsement_redis_prefix}:{uuid4().hex}"
         self.set(key=redis_key, value=event_json)
 
         self.logger.trace("Successfully wrote endorsement entry to redis.")

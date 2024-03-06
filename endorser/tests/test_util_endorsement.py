@@ -14,7 +14,7 @@ def valid_endorsement():
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_success(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Mock the dependency functions
     mocker.patch(
@@ -48,7 +48,7 @@ async def test_should_accept_endorsement_success(
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_no_attach(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Assume the transaction has no attachments
     mocker.patch(
@@ -63,7 +63,7 @@ async def test_should_accept_endorsement_fail_no_attach(
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_not_cred_def(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Assume the transaction has valid attachments
     mocker.patch(
@@ -87,7 +87,7 @@ async def test_should_accept_endorsement_fail_not_cred_def(
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_not_correct_attach(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Assume the transaction has valid attachments
     mocker.patch(
@@ -111,7 +111,7 @@ async def test_should_accept_endorsement_fail_not_correct_attach(
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_not_valid_issuer(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     mocker.patch(
         "endorser.util.endorsement.get_endorsement_request_attachment",
@@ -143,7 +143,7 @@ async def test_should_accept_endorsement_fail_not_valid_issuer(
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_retries_on_http_exception(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Mock valid flow
     mocker.patch(
@@ -188,7 +188,7 @@ async def test_should_accept_endorsement_retries_on_http_exception(
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fails_after_max_retries(
-    mock_acapy_client, valid_endorsement, mocker
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Mock valid flow
     mocker.patch(
@@ -220,7 +220,9 @@ async def test_should_accept_endorsement_fails_after_max_retries(
         side_effect=HTTPException(status_code=500),
     )
 
-    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+    result = await should_accept_endorsement(
+        mock_acapy_client, valid_endorsement  # pylint: disable=redefined-outer-name
+    )
 
     # Assertions
     assert (
@@ -232,7 +234,7 @@ async def test_should_accept_endorsement_fails_after_max_retries(
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement_fail_bad_state(mock_acapy_client, mocker):
+async def test_should_accept_endorsement_fail_bad_state(mock_acapy_client):
     invalid_endorsement = Endorsement(
         state="transaction-created", transaction_id="test-transaction"
     )
@@ -243,7 +245,9 @@ async def test_should_accept_endorsement_fail_bad_state(mock_acapy_client, mocke
 
 
 @pytest.mark.anyio
-async def test_accept_endorsement(mock_acapy_client, valid_endorsement):
+async def test_accept_endorsement(
+    mock_acapy_client, valid_endorsement  # pylint: disable=redefined-outer-name
+):
     await accept_endorsement(mock_acapy_client, valid_endorsement)
 
     mock_acapy_client.endorse_transaction.endorse_transaction.assert_awaited_once_with(

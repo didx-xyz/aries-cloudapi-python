@@ -133,7 +133,7 @@ async def credential_exchange_id(
 @pytest.fixture(scope="function")
 async def issue_credential_to_alice(
     faber_client: RichAsyncClient,
-    credential_definition_id: str,
+    credential_definition_id: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,

@@ -10,6 +10,8 @@ ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
 DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
 ENABLE_SERIALIZE_LOGS = os.getenv("ENABLE_SERIALIZE_LOGS", "FALSE").upper() == "TRUE"
 
+colorize = not DISABLE_COLORIZE_LOGS
+
 # Create a mapping of module name to color
 color_map = {
     "app": "blue",
@@ -76,7 +78,7 @@ def get_logger(name: str):
             sys.stdout,
             level=STDOUT_LOG_LEVEL,
             format=formatter,
-            colorize=not DISABLE_COLORIZE_LOGS,
+            colorize=colorize,
         )
     else:
         # Log to stdout with serialization

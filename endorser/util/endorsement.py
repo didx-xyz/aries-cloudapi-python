@@ -86,7 +86,7 @@ async def should_accept_endorsement(
             valid_issuer = await is_valid_issuer(did, schema_id)
 
             if not valid_issuer:
-                bound_logger.info(
+                bound_logger.warning(
                     "Endorsement request with transaction id `{}` is not for did "
                     "and schema registered in the trust registry.",
                     transaction_id,

@@ -6,6 +6,7 @@ from aries_cloudcontroller import (
     IssuerCredRevRecord,
     IssuerRevRegRecord,
     OobRecord,
+    V20CredExRecordIndy,
     V20CredExRecordLDProof,
 )
 from pydantic import BaseModel, Field
@@ -147,7 +148,11 @@ class ProblemReport(BaseModel):
 
 
 class CredExRecordLDProof(V20CredExRecordLDProof):
-    pass
+    pass  # renaming ACA-Py model
+
+
+class CredExRecordIndy(V20CredExRecordIndy):
+    pass  # renaming ACA-Py model
 
 
 class AcaPyRedisEventPayload(BaseModel):
@@ -184,6 +189,7 @@ WebhookEventPayloadType = Union[
     BasicMessage,
     Connection,
     CredentialExchange,
+    CredExRecordIndy,
     CredExRecordLDProof,
     Endorsement,
     IssuerCredRevRecord,

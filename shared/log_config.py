@@ -34,7 +34,9 @@ def formatter_builder(color: str):
 
 # Define custom formatter for serialized logs
 def formatter_serialized_builder():
-    return "{message} | {extra[body]}"
+    # Serializing to JSON already includes message + extra[body] in the payload
+    # The "message" field is therefore unnecessary, so we're setting it to a blank string
+    return ""
 
 
 # This will hold our logger instances

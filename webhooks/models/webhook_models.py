@@ -26,6 +26,7 @@ from shared.models.webhook_topics import (
     CredentialExchange,
     CredExRecordIndy,
     CredExRecordLDProof,
+    DeletedCredential,
     Endorsement,
     PresentationExchange,
     ProblemReport,
@@ -81,6 +82,10 @@ def to_credential_model(event: AcaPyWebhookEvent) -> CredentialExchange:
     return cred_model
 
 
+def to_deleted_credential_model(event: AcaPyWebhookEvent) -> DeletedCredential:
+    return DeletedCredential(**event.payload)
+
+
 def to_credential_indy_model(event: AcaPyWebhookEvent) -> CredExRecordIndy:
     return CredExRecordIndy(**event.payload)
 
@@ -111,6 +116,7 @@ ModelTransformerFunction = Callable[[AcaPyWebhookEvent], WebhookEventPayloadType
 topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
     "proofs": to_proof_model,
     "credentials": to_credential_model,
+    "deleted_credential": to_deleted_credential_model,
     "credentials_ld": to_credential_ld_model,
     "credentials_indy": to_credential_indy_model,
     "connections": to_connections_model,

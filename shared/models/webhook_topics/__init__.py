@@ -2,6 +2,8 @@ from typing import Dict, Literal
 
 # flake8: noqa
 from shared.models.webhook_topics.base import *
+from shared.models.webhook_topics.endorsement_event import *
+from shared.models.webhook_topics.payloads import *
 
 WEBHOOK_TOPIC_ALL = "ALL_WEBHOOKS"
 
@@ -42,7 +44,7 @@ topic_mapping: Dict[AcaPyTopics, CloudApiTopics] = {
     "basicmessages": "basic-messages",
     "connections": "connections",
     "endorse_transaction": "endorsements",
-    "credential": "credentials",
+    "credential": "deleted_credential",  # This is a previously unhandled event that only contains state:deleted
     "issue_credential": "credentials",
     "issue_credential_v2_0": "credentials",
     "issue_credential_v2_0_indy": "credentials_indy",

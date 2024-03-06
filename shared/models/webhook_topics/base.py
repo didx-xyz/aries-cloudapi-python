@@ -135,3 +135,8 @@ class CredExRecordLDProof(V20CredExRecordLDProof):
 
 class CredExRecordIndy(V20CredExRecordIndy):
     pass  # renaming ACA-Py model
+
+
+class DeletedCredential(BaseModel):
+    id: str
+    state: Literal["deleted"]

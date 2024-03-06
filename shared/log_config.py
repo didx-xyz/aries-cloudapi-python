@@ -130,13 +130,12 @@ def get_logger(name: str):
 
     # Log to a file
     if ENABLE_FILE_LOGGING:
-        log_file_path = get_log_file_path(main_module_name)
         try:
             logger_.add(
-                log_file_path,
-                rotation="00:00",
-                retention="7 days",
-                enqueue=True,
+                get_log_file_path(main_module_name),
+                rotation="00:00",  # new file is created at midnight
+                retention="7 days",  # keep logs for up to 7 days
+                enqueue=True,  # asynchronous
                 level=FILE_LOG_LEVEL,
                 serialize=serialize,
             )

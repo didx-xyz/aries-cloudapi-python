@@ -6,7 +6,7 @@ from uuid import uuid4
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
-from shared.models.endorsement import Endorsement
+from shared.models.endorsement import Endorsement, is_applicable_for_endorser
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
@@ -291,7 +291,10 @@ class AcaPyEventsProcessor:
             and isinstance(cloudapi_webhook_event.payload, Endorsement)
         ):
             endorsement_payload = cloudapi_webhook_event.payload
-            if endorsement_payload.state == "request-received":
+            if (
+                endorsement_payload.state == "request-received"
+                and is_applicable_for_endorser(payload=payload, logger=bound_logger)
+            ):
                 bound_logger.info("Forwarding endorsement event for Endorser service")
                 transaction_id = endorsement_payload.transaction_id
                 self.redis_service.add_endorsement_event(

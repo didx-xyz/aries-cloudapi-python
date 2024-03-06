@@ -32,6 +32,11 @@ def formatter_builder(color: str):
     )
 
 
+# Define custom formatter for serialized logs
+def formatter_serialized_builder():
+    return "<level>{message}</level> | {extra[body]}"
+
+
 # This will hold our logger instances
 loggers = {}
 
@@ -85,6 +90,7 @@ def get_logger(name: str):
         logger_.add(
             sys.stdout,
             level=STDOUT_LOG_LEVEL,
+            format=formatter_serialized_builder(),  # use shortened formatter for serialized logs
             serialize=True,
         )
 

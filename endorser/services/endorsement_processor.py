@@ -232,7 +232,7 @@ class EndorsementProcessor:
         ) as client:
             # Not interested in this endorsement request
             if not await should_accept_endorsement(client, endorsement):
-                logger.warning(
+                logger.info(  # should_accept_endorsement already logs reason as warning
                     "Endorsement request with transaction id `{}` is not applicable for endorsement.",
                     endorsement.transaction_id,
                 )

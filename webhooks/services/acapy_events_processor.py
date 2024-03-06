@@ -6,7 +6,7 @@ from uuid import uuid4
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
-from shared.models.endorsement import Endorsement, payload_is_applicable_for_endorser
+from shared.models.endorsement import payload_is_applicable_for_endorser
 from shared.util.rich_parsing import parse_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event

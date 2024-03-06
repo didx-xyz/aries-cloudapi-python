@@ -34,7 +34,7 @@ def formatter_builder(color: str):
 
 # Define custom formatter for serialized logs
 def formatter_serialized_builder():
-    return "<level>{message}</level> | {extra[body]}"
+    return "{message} | {extra[body]}"
 
 
 # This will hold our logger instances

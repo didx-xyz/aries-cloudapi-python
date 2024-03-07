@@ -13,6 +13,12 @@ from shared.models.protocol import PresentProofProtocolVersion
 
 
 class PresentationExchange(BaseModel):
+    # auto_present: Optional[str] = None
+    # auto_verify: Optional[str] = None
+    # initiator: Optional[str] = None
+    # trace: Optional[str] = None
+    # presentation_exchange_id stored as proof_id instead
+
     connection_id: Optional[str] = None
     created_at: str
     error_msg: Optional[str] = None

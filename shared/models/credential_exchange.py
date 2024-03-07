@@ -7,6 +7,12 @@ from shared.models.protocol import IssueCredentialProtocolVersion
 
 
 class CredentialExchange(BaseModel):
+    # unused fields:
+    # auto_offer: Optional[str] = None
+    # auto_remove: Optional[str] = None
+    # initiator: Optional[str] = None
+    # credential_exchange_id stored as credential_id instead
+
     # Attributes can be None in proposed state
     attributes: Optional[Dict[str, str]] = None
     # Connection id can be None in connectionless exchanges

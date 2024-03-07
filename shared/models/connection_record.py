@@ -6,18 +6,19 @@ from pydantic import BaseModel
 
 class Connection(BaseModel):
     # accept: Optional[str] = None
+    # inbound_connection_id: Optional[str] = None
+    # request_id: Optional[str] = None
+    # rfc23_state: Optional[str] = None
+
     alias: Optional[str] = None
     connection_id: Optional[str] = None
     connection_protocol: Optional[Literal["connections/1.0", "didexchange/1.0"]] = None
     created_at: Optional[str] = None
     error_msg: Optional[str] = None
-    # inbound_connection_id
     invitation_key: Optional[str] = None
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
     invitation_msg_id: Optional[str] = None
     my_did: Optional[str] = None
-    # request_id: Optional[str] = None
-    # rfc23_state: Optional[str] = None
     state: Optional[str] = None
     their_did: Optional[str] = None
     their_label: Optional[str] = None

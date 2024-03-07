@@ -38,7 +38,7 @@ def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-name
 
 
 @pytest.mark.anyio
-async def test_start(sse_manager):
+async def test_start(sse_manager):  # pylint: disable=redefined-outer-name
     # Mock the coroutine methods
     sse_manager._backfill_events = AsyncMock()
     sse_manager._listen_for_new_events = AsyncMock()
@@ -55,7 +55,7 @@ async def test_start(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_stop(sse_manager):
+async def test_stop(sse_manager):  # pylint: disable=redefined-outer-name
     # Setup a dummy task to simulate an ongoing task
     dummy_task1 = asyncio.create_task(asyncio.sleep(1))
     dummy_task2 = asyncio.create_task(asyncio.sleep(1))
@@ -80,7 +80,7 @@ async def test_stop(sse_manager):
 
 # Sample test for checking if tasks are running
 @pytest.mark.anyio
-async def test_are_tasks_running_x(sse_manager):
+async def test_are_tasks_running_x(sse_manager):  # pylint: disable=redefined-outer-name
     sse_manager._pubsub = True
     sse_manager._tasks = []
     # Since we didn't start a task, it should be considered not running

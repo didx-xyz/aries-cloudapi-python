@@ -73,7 +73,7 @@ def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
 def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
     if auth.role == Role.GOVERNANCE:
         return AcaPyAuthVerified(
-            role=auth.role, token=auth.token, wallet_id="governance"
+            role=auth.role, token=auth.token, wallet_id=GOVERNANCE_LABEL
         )
     else:
         raise HTTPException(403, "Unauthorized")

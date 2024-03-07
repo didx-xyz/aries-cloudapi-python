@@ -1,9 +1,8 @@
 import asyncio
 import sys
-from typing import Any, Dict, List, NoReturn
+from typing import List, NoReturn
 
 from aries_cloudcontroller import AcaPyClient
-from pydantic import BaseModel
 
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.constants import (
@@ -13,16 +12,11 @@ from shared.constants import (
 )
 from shared.log_config import get_logger
 from shared.models.endorsement import Endorsement
+from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from shared.services.redis_service import RedisService
 from shared.util.rich_parsing import parse_with_error_handling
 
 logger = get_logger(__name__)
-
-
-class EndorsementEvent(BaseModel):
-    payload: Dict[str, Any]
-    origin: str
-    wallet_id: str
 
 
 class EndorsementProcessor:
@@ -214,7 +208,9 @@ class EndorsementProcessor:
         Args:
             event_json: The JSON string representation of the endorsement event.
         """
-        event = parse_with_error_handling(EndorsementEvent, event_json, logger)
+        event = parse_with_error_handling(
+            CloudApiWebhookEventGeneric, event_json, logger
+        )
         logger.debug("Processing endorsement event for agent `{}`", event.origin)
 
         # We're only interested in events from the governance agent

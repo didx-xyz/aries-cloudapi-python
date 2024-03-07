@@ -49,7 +49,7 @@ def extract_operation_type_from_endorsement_payload(
                     elif isinstance(json_payload, dict):
                         json_dict = json_payload
                     else:
-                        logger.warning(f"Unexpected json payload: {json_payload}")
+                        logger.warning("Unexpected json payload: {}", json_payload)
                         return None
 
                     operation = json_dict.get("operation")
@@ -59,11 +59,12 @@ def extract_operation_type_from_endorsement_payload(
                             return operation_type  # Successfully found the type
     except orjson.JSONDecodeError as e:
         logger.info(
-            f"Couldn't extract json payload from {json_payload}. {e}. Continuing..."
+            "Couldn't extract json payload from {}. {}. Continuing...", json_payload, e
         )
     except Exception as e:
         logger.warning(
-            f"Exception while extracting operation type from endorsement payload. {e}. Continuing..."
+            "Exception while extracting operation type from endorsement payload. {}. Continuing...",
+            e,
         )
 
     return None  # Return None if the type could not be found or if error occurred

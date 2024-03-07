@@ -29,5 +29,5 @@ async def publish_event_on_websocket(
     """
 
     publish_topics = [topic, wallet_id, f"{topic}-{wallet_id}", WEBHOOK_TOPIC_ALL]
-    logger.trace(f"Publishing event on websocket: {event_json}")
+    logger.trace("Publishing event on websocket: {}", event_json)
     await endpoint.publish(topics=publish_topics, data=event_json)

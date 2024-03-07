@@ -12,6 +12,6 @@ def parse_with_error_handling(model: Type[T], data: str, logger: Logger) -> T:
         return model.model_validate_json(data)
     except ValidationError as e:
         logger.error(
-            f"Could not parse data into {model.__name__} object. Error: `{str(e)}`."
+            "Could not parse data into {} object. Error: `{}`.", model.__name__, e
         )
         raise

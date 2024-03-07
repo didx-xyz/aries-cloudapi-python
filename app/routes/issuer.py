@@ -127,7 +127,7 @@ async def send_credential(
         try:
             public_did = await assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting agent has public DID failed: {e}")
+            bound_logger.warning("Asserting agent has public DID failed: {}", e)
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,
@@ -192,7 +192,7 @@ async def create_offer(
         try:
             public_did = await assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting agent has public DID failed: {e}")
+            bound_logger.warning("Asserting agent has public DID failed: {}", e)
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,

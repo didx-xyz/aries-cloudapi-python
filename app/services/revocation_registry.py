@@ -532,7 +532,9 @@ async def validate_rev_reg_ids(
                 raise CloudApiException(message, status_code=404)
 
             bound_logger.debug(
-                f"Got the following pending publications for revocation registry '{rev_reg_id}': {pending_pub}"
+                "Got the following pending publications for revocation registry '{}': {}",
+                rev_reg_id,
+                pending_pub,
             )
             requested_cred_rev_ids = revocation_registry_credential_map[rev_reg_id]
 

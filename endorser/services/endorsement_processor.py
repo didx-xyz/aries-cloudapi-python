@@ -99,7 +99,7 @@ class EndorsementProcessor:
         Processing handler for when set notifications are received
         """
         if f"{self.endorse_prefix}:" in msg["data"].decode():
-            logger.trace(f"Received endorse set notification: {msg}")
+            logger.trace("Received endorse set notification: {}", msg)
             self._new_event_notification.set()
 
     def _start_notification_listener(self) -> None:
@@ -145,8 +145,11 @@ class EndorsementProcessor:
                     if attempts_without_events >= max_attempts_without_events:
                         # Wait for a keyspace notification before continuing
                         logger.debug(
-                            f"Scan has returned no keys {max_attempts_without_events} times in a row. "
-                            "Waiting for keyspace notification..."
+                            (
+                                "Scan has returned no keys {} times in a row. "
+                                "Waiting for keyspace notification..."
+                            ),
+                            max_attempts_without_events,
                         )
                         await self._new_event_notification.wait()
                         logger.info("Keyspace notification triggered")
@@ -171,34 +174,34 @@ class EndorsementProcessor:
         Args:
             list_key: The Redis key of the list to process.
         """
-        logger.trace(f"Attempt process: {event_key}")
+        logger.trace("Attempt process: {}", event_key)
         lock_key = f"lock:{event_key}"
         if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
-            logger.trace(f"Successfully set lock for {event_key}")
+            logger.trace("Successfully set lock for {}", event_key)
             event_json = self.redis_service.get(event_key)
             try:
                 await self._process_endorsement_event(event_json)
                 if self.redis_service.delete_key(event_key):
-                    logger.info(f"Deleted processed endorsement event: {event_key}")
+                    logger.info("Deleted processed endorsement event: {}", event_key)
                 else:
                     logger.warning(
-                        f"Couldn't delete processed endorsement event: {event_key}"
+                        "Couldn't delete processed endorsement event: {}", event_key
                     )
             except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                logger.error(f"Processing {event_key} raised an exception: {e}")
+                logger.error("Processing {} raised an exception: {}", event_key, e)
                 self._handle_unprocessable_endorse_event(event_key, event_json, e)
             finally:
                 # Delete lock after processing, whether it completed or errored:
                 if self.redis_service.delete_key(lock_key):
-                    logger.debug(f"Deleted lock key: {lock_key}")
+                    logger.debug("Deleted lock key: {}", lock_key)
                 else:
                     logger.warning(
-                        f"Could not delete lock key: {lock_key}. Perhaps it expired?"
+                        "Could not delete lock key: {}. Perhaps it expired?", lock_key
                     )
         else:
             logger.debug(
-                f"Event {event_key} is currently being processed by another instance."
+                "Event {} is currently being processed by another instance.", event_key
             )
 
     async def _process_endorsement_event(self, event_json: str) -> None:
@@ -255,7 +258,9 @@ class EndorsementProcessor:
         error_message = f"Could not process: {event_json}. Error: {error}"
 
         bound_logger.warning(
-            f"Saving record of problematic event at key: {unprocessable_key}. Error: `{error_message}`"
+            "Saving record of problematic event at key: {}. Error: `{}`",
+            unprocessable_key,
+            error_message,
         )
         self.redis_service.set(key=unprocessable_key, value=error_message)
 

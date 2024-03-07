@@ -41,9 +41,9 @@ async def sign_sd_jws(
             )
     except ApiException as e:
         if str(e.status).startswith("4"):
-            bound_logger.info(f"Client error during SD-JWS signing: {e}")
+            bound_logger.info("Client error during SD-JWS signing: {}", e)
         else:
-            bound_logger.warning(f"Error during SD-JWS signing: {e}")
+            bound_logger.warning("Error during SD-JWS signing: {}", e)
 
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 
@@ -76,9 +76,9 @@ async def verify_sd_jws(
             )
     except ApiException as e:
         if str(e.status).startswith("4"):
-            bound_logger.info(f"Client error during SD-JWS verification: {e}")
+            bound_logger.info("Client error during SD-JWS verification: {}", e)
         else:
-            bound_logger.warning(f"API exception during SD-JWS verification: {e}")
+            bound_logger.warning("API exception during SD-JWS verification: {}", e)
 
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 

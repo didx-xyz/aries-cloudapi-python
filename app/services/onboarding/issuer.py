@@ -96,7 +96,7 @@ async def onboard_issuer_no_public_did(
         bound_logger.debug("Getting public DID for endorser")
         endorser_did = await acapy_wallet.get_public_did(controller=endorser_controller)
     except Exception as e:
-        bound_logger.critical(f"Could not get endorser's public DID: {e}")
+        bound_logger.critical("Could not get endorser's public DID: {}", e)
         raise CloudApiException("Unable to get endorser public DID.") from e
 
     try:

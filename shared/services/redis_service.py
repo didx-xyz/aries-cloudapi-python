@@ -47,7 +47,7 @@ def init_redis_cluster_pool(
     :param nodes: List of nodes from which initial bootstrapping can be done
     """
     logger = get_logger(logger_name)
-    logger.info(f"Initialising Redis Cluster with nodes: {nodes}")
+    logger.info("Initialising Redis Cluster with nodes: {}", nodes)
     cluster = RedisCluster(startup_nodes=nodes, **REDIS_CONNECTION_PARAMS)
 
     logger.info("Connected to Redis Cluster")
@@ -99,7 +99,7 @@ class RedisService:
         Returns:
             A boolean indicating that the value was successfully set.
         """
-        self.logger.trace(f"Setting key: {key}, with value: {value}")
+        self.logger.trace("Setting key: {}, with value: {}", key, value)
         return self.redis.set(key, value=value)
 
     def get(self, key: str) -> Optional[str]:
@@ -112,9 +112,9 @@ class RedisService:
         Returns:
             The value from redis, if the key exists
         """
-        self.logger.trace(f"Getting key: {key}")
+        self.logger.trace("Getting key: {}", key)
         value = self.redis.get(key)
-        self.logger.trace(f"Got value: {value}")
+        self.logger.trace("Got value: {}", value)
         return value
 
     def set_lock(self, key: str, px: int = 500) -> Optional[bool]:
@@ -130,7 +130,7 @@ class RedisService:
             A boolean indicating the lock was successfully acquired, or
             None if the key already exists and the lock could not be acquired.
         """
-        self.logger.trace(f"Setting lock for key: {key}; timeout: {px} milliseconds")
+        self.logger.trace("Setting lock for key: {}; timeout: {} milliseconds", key, px)
         return self.redis.set(key, value="1", px=px, nx=True)
 
     def delete_key(self, key: str) -> bool:
@@ -143,7 +143,7 @@ class RedisService:
         Returns:
         - bool: True if the key was deleted, False otherwise.
         """
-        self.logger.trace(f"Deleting key: {key}")
+        self.logger.trace("Deleting key: {}", key)
         # Deleting the key and returning True if the command was successful
         return self.redis.delete(key) == 1
 
@@ -158,7 +158,7 @@ class RedisService:
         Returns:
             The element at the specified index in the list, or None if the index is out of range.
         """
-        self.logger.trace(f"Reading {n} index from {key}")
+        self.logger.trace("Reading index {} from {}", n, key)
         return self.redis.lindex(key, index=n)
 
     def pop_first_list_element(self, key: str):
@@ -172,7 +172,7 @@ class RedisService:
         - The value of the first element if the list exists and is not empty,
           None otherwise.
         """
-        self.logger.trace(f"Pop first element from list: {key}")
+        self.logger.trace("Pop first element from list: {}", key)
         # Using LPOP to remove and return the first element of the list
         return self.redis.lpop(key)
 
@@ -188,14 +188,14 @@ class RedisService:
             A set of Redis keys that match the input pattern.
         """
         collected_keys = set()
-        self.logger.trace(f"Starting SCAN to fetch keys matching: {match_pattern}")
+        self.logger.trace("Starting SCAN to fetch keys matching: {}", match_pattern)
 
         try:
             _, keys = self.redis.scan(cursor=0, match=match_pattern, count=count)
             if keys:
                 collected_keys = set(key.decode("utf-8") for key in keys)
                 self.logger.debug(
-                    f"Scanned {len(collected_keys)} event keys from Redis"
+                    "Scanned {} event keys from Redis", len(collected_keys)
                 )
             else:
                 self.logger.trace("No keys found matching pattern in this batch.")

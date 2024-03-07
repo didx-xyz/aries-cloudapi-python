@@ -221,7 +221,7 @@ async def create_credential_definition(
         try:
             public_did = await acapy_wallet.assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting public DID failed: {e}")
+            bound_logger.warning("Asserting public DID failed: {}", e)
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,
@@ -444,7 +444,7 @@ async def create_credential_definition(
                     "Successfully endorsed transaction of revocation registry entry."
                 )
             except CloudApiException as e:
-                bound_logger.error(f"Error writing first accum value to ledger: {e}")
+                bound_logger.error("Error writing first accum value to ledger: {}", e)
                 raise
             except ApiException as e:
                 bound_logger.error(

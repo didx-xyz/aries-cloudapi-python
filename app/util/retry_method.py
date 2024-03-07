@@ -17,9 +17,14 @@ async def coroutine_with_retry(
                 raise e  # Re-raise the exception if max attempts exceeded
 
             logger.warning(
-                f"Failed to run coroutine (attempt {attempt + 1}). "
-                f"Reason: \n{e}.\n"
-                f"Retrying in {retry_delay} seconds..."
+                (
+                    "Failed to run coroutine (attempt {}). "
+                    "Reason: \n{}.\n"
+                    "Retrying in {} seconds..."
+                ),
+                attempt + 1,
+                e,
+                retry_delay,
             )
             await asyncio.sleep(retry_delay)
     return result
@@ -60,8 +65,14 @@ async def coroutine_with_retry_until_value(
             else:
                 if attempt + 1 < max_attempts:
                     logger.info(
-                        f"Coroutine returned {result} instead of expected {expected_value} "
-                        f"(attempt {attempt + 1}). Retrying in {retry_delay} seconds..."
+                        (
+                            "Coroutine returned {} instead of expected {} "
+                            "(attempt {}). Retrying in {} seconds..."
+                        ),
+                        result,
+                        expected_value,
+                        attempt + 1,
+                        retry_delay,
                     )
                 else:
                     logger.error(
@@ -77,9 +88,14 @@ async def coroutine_with_retry_until_value(
                 raise e  # Re-raise the exception if max attempts exceeded
 
             logger.warning(
-                f"Exception encountered (attempt {attempt + 1}). "
-                f"Reason: \n{e}.\n"
-                f"Retrying in {retry_delay} seconds..."
+                (
+                    "Exception encountered (attempt {}). "
+                    "Reason: \n{}.\n"
+                    "Retrying in {} seconds..."
+                ),
+                attempt + 1,
+                e,
+                retry_delay,
             )
 
         await asyncio.sleep(retry_delay)

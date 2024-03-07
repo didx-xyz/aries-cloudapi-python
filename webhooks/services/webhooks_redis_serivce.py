@@ -65,7 +65,7 @@ class WebhooksRedisService(RedisService):
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
-        bound_logger.trace(f"Publishing message on pubsub channel: {broadcast_message}")
+        bound_logger.trace("Publish message on pubsub channel: {}", broadcast_message)
         self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)
 
         bound_logger.trace("Successfully wrote entry to redis.")
@@ -213,7 +213,9 @@ class WebhooksRedisService(RedisService):
                     )
                     wallet_ids.update(wallet_id_batch)
                     self.logger.debug(
-                        f"Fetched {len(wallet_id_batch)} wallet IDs from Redis. Cursor value: {cursor}"
+                        "Fetched {} wallet IDs from Redis. Cursor value: {}",
+                        len(wallet_id_batch),
+                        cursor,
                     )
                 else:
                     self.logger.debug("No wallet IDs found in this batch.")
@@ -227,5 +229,5 @@ class WebhooksRedisService(RedisService):
                 "An exception occurred when fetching wallet_ids from redis. Continuing..."
             )
 
-        self.logger.info(f"Total wallet IDs fetched: {len(wallet_ids)}.")
+        self.logger.info("Total wallet IDs fetched: {}.", len(wallet_ids))
         return list(wallet_ids)

@@ -144,25 +144,26 @@ class SseManager:
                 while True:
                     message = self._pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
-                        logger.debug(f"Got pubsub message: {message}")
+                        logger.debug("Got pubsub message: {}", message)
                         await self._process_redis_event(message)
                     else:
-                        logger.trace(f"message is empty, retry in {sleep_duration}s")
+                        logger.trace("message is empty, retry in {}s", sleep_duration)
                         await asyncio.sleep(sleep_duration)  # Prevent a busy loop
             except ConnectionError as e:
-                logger.error(f"ConnectionError detected: {e}.")
+                logger.error("ConnectionError detected: {}.", e)
             except Exception as e:  # General exception catch
-                logger.exception(f"Unexpected error: {e}.")
+                logger.exception("Unexpected error.")
 
             retry_count += 1
             logger.warning(
-                f"Attempt #{retry_count} to reconnect in {retry_duration}s ..."
+                "Attempt #{} to reconnect in {}s ...", retry_count, retry_duration
             )
             await asyncio.sleep(retry_duration)  # Wait a bit before retrying
 
         # If the loop exits due to retry limit exceeded
         logger.critical(
-            f"Failed to connect to Redis after {max_retries} attempts. Terminating service."
+            "Failed to connect to Redis after {} attempts. Terminating service.",
+            max_retries,
         )
         sys.exit(1)  # todo: Not graceful
 
@@ -188,7 +189,7 @@ class SseManager:
                     topic = parsed_event.topic
 
                     # Add event to SSE queue for processing
-                    logger.trace(f"Put parsed event on events queue: {parsed_event}")
+                    logger.trace("Put parsed event on events queue: {}", parsed_event)
                     await self.incoming_events.put(parsed_event)
 
                     # Also publish event to websocket
@@ -219,7 +220,7 @@ class SseManager:
             # Calculate the minimum timestamp for backfilling
             current_time_ns = time.time_ns()  # Current time in nanoseconds
             min_timestamp_ns = current_time_ns - (MAX_EVENT_AGE_SECONDS * 1e9)
-            logger.debug(f"Backfilling events from timestamp_ns: {min_timestamp_ns}")
+            logger.debug("Backfilling events from timestamp_ns: {}", min_timestamp_ns)
 
             # Get all wallets to backfill events for
             wallets = self.redis_service.get_all_cloudapi_wallet_ids()
@@ -236,7 +237,7 @@ class SseManager:
                     await self.incoming_events.put(event)
                     total_events_backfilled += 1
 
-            logger.info(f"Backfilled a total of {total_events_backfilled} events.")
+            logger.info("Backfilled a total of {} events.", total_events_backfilled)
         except Exception as e:
             logger.exception("Exception caught during backfilling events: {}", e)
 

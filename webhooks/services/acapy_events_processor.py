@@ -101,7 +101,7 @@ class AcaPyEventsProcessor:
         """
         Processing handler for when rpush notifications are received
         """
-        logger.trace(f"Received rpush notification: {msg}")
+        logger.trace("Received rpush notification: {}", msg)
         self._new_event_notification.set()
 
     def _start_notification_listener(self) -> None:
@@ -148,8 +148,11 @@ class AcaPyEventsProcessor:
                     if attempts_without_events >= max_attempts_without_events:
                         # Wait for a keyspace notification before continuing
                         logger.debug(
-                            f"Scan has returned no keys {max_attempts_without_events} times in a row. "
-                            "Waiting for keyspace notification..."
+                            (
+                                "Scan has returned no keys {} times in a row. "
+                                "Waiting for keyspace notification..."
+                            ),
+                            max_attempts_without_events,
                         )
                         await self._new_event_notification.wait()
                         logger.info("Keyspace notification triggered")
@@ -180,19 +183,19 @@ class AcaPyEventsProcessor:
                 self._process_list_events(list_key)
             except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
-                logger.error(f"Processing {list_key} raised an exception: {e}")
+                logger.error("Processing {} raised an exception: {}", list_key, e)
                 self._handle_unprocessable_event(list_key, e)
             finally:
                 # Delete lock after processing list, whether it completed or errored:
                 if self.redis_service.delete_key(lock_key):
-                    logger.debug(f"Deleted lock key: {lock_key}")
+                    logger.debug("Deleted lock key: {}", lock_key)
                 else:
                     logger.warning(
-                        f"Could not delete lock key: {lock_key}. Perhaps it expired?"
+                        "Could not delete lock key: {}. Perhaps it expired?", lock_key
                     )
         else:
             logger.debug(
-                f"Event {list_key} is currently being processed by another instance."
+                "Event {} is currently being processed by another instance.", list_key
             )
 
     def _process_list_events(self, list_key) -> None:
@@ -215,19 +218,22 @@ class AcaPyEventsProcessor:
 
                     # Cleanup: remove the element from the list and delete the lock if successfully processed
                     if self.redis_service.pop_first_list_element(list_key):
-                        logger.debug(f"Removed processed element from list: {list_key}")
+                        logger.debug(
+                            "Removed processed element from list: {}", list_key
+                        )
                     else:
                         logger.warning(
-                            f"Tried to pop list element from: {list_key}, but already removed from list?"
+                            "Tried to pop list element from: {}, but already removed from list?",
+                            list_key,
                         )
                 else:
                     # If no data is found, the list is empty, exit the loop
                     logger.debug(
-                        f"No more data found for event key: {list_key}, exiting."
+                        "No more data found for event key: {}, exiting.", list_key
                     )
                     break
         except Exception:
-            logger.exception(f"Could not process list key {list_key}")
+            logger.exception("Could not process list key {}", list_key)
             raise
 
     def _process_event(self, event_json: str) -> None:
@@ -244,7 +250,7 @@ class AcaPyEventsProcessor:
         if metadata_origin:
             origin = metadata_origin.lower()
         else:
-            logger.warning(f"webhook event has unknown origin: {event}")
+            logger.warning("webhook event has unknown origin: {}", event)
             origin = "unknown"
 
         wallet_id = event.metadata.x_wallet_id or origin
@@ -316,13 +322,15 @@ class AcaPyEventsProcessor:
             key: The Redis key where the problematic event was found.
             error: The exception that occurred during event processing.
         """
-        logger.warning(f"Handling problematic event at key: {key}")
+        logger.warning("Handling problematic event at key: {}", key)
         problematic_event = self.redis_service.pop_first_list_element(key)
 
         unprocessable_key = f"unprocessable:{key}:{uuid4().hex}"
         error_message = f"Could not process: {problematic_event}. Error: {error}"
 
         logger.warning(
-            f"Saving record of problematic event at key: {unprocessable_key}. Error: `{error_message}`"
+            "Saving record of problematic event at key: {}. Error: `{}`",
+            unprocessable_key,
+            error_message,
         )
         self.redis_service.set(key=unprocessable_key, value=error_message)

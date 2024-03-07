@@ -10,7 +10,7 @@
 !trustregistry/
 !webhooks/
 !scripts/
-!configuration/
+!config/
 
 !LICENSE
 

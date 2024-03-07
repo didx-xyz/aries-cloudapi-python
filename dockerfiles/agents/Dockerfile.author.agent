@@ -8,6 +8,10 @@ RUN pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.6.2
 # install redis-events plugin
 RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-03-05#subdirectory=redis_events
 
+# Copy config
+COPY config/redis_events_plugin_conf.yaml redis_events_plugin_conf.yaml
+
+# Copy startup script
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh
 
@@ -16,4 +20,4 @@ USER aries
 ENTRYPOINT [ "./startup.sh" ]
 CMD [ "--wallet-type", "askar", "--auto-promote-author-did", \
   "--plugin", "acapy_wallet_groups_plugin", \
-  "--plugin", "redis_events.v1_0.redis_queue.events", "--plugin-config-value", "redis_queue.connection.connection_url=\"redis://172.29.0.101:6377\""]
+  "--plugin", "redis_events.v1_0.redis_queue.events", "--plugin-config", "redis_events_plugin_conf.yaml"]

@@ -7,7 +7,7 @@ from shared.log_config import get_logger
 
 
 class RedisConfig:
-    PASSWORD = os.getenv("REDIS_PASSWORD", None)
+    PASSWORD = os.getenv("REDIS_PASSWORD", "test1234")
     SSL = os.getenv("REDIS_SSL", "false").upper() == "TRUE"
     SOCKET_CONNECT_TIMEOUT = int(os.getenv("REDIS_CONNECT_TIMEOUT", "15"))
     MAX_CONNECTIONS = int(os.getenv("REDIS_MAX_CONNECTIONS", "20000"))

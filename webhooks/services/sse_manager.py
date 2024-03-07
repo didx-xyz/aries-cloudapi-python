@@ -151,7 +151,7 @@ class SseManager:
                         await asyncio.sleep(sleep_duration)  # Prevent a busy loop
             except ConnectionError as e:
                 logger.error("ConnectionError detected: {}.", e)
-            except Exception as e:  # General exception catch
+            except Exception:  # General exception catch
                 logger.exception("Unexpected error.")
 
             retry_count += 1

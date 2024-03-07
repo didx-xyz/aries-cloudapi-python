@@ -2,7 +2,7 @@ import asyncio
 import time
 from datetime import datetime, timedelta
 from itertools import chain, repeat
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -32,9 +32,76 @@ def redis_service_mock():
 
 
 @pytest.fixture
-async def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-name
+def sse_manager(redis_service_mock):  # pylint: disable=redefined-outer-name
     # Patch to prevent background tasks from starting automatically on init
     return SseManager(redis_service_mock)
+
+
+@pytest.mark.anyio
+async def test_start(sse_manager):
+    # Mock the coroutine methods
+    sse_manager._backfill_events = AsyncMock()
+    sse_manager._listen_for_new_events = AsyncMock()
+    sse_manager._process_incoming_events = AsyncMock()
+    sse_manager._cleanup_cache = AsyncMock()
+
+    sse_manager.start()
+
+    # Ensure background tasks are started
+    assert len(sse_manager._tasks) == 3  # correct num tasks stored
+
+    sse_manager._pubsub = True
+    assert sse_manager.are_tasks_running()
+
+
+@pytest.mark.anyio
+async def test_stop(sse_manager):
+    # Setup a dummy task to simulate an ongoing task
+    dummy_task1 = asyncio.create_task(asyncio.sleep(1))
+    dummy_task2 = asyncio.create_task(asyncio.sleep(1))
+    sse_manager._tasks.append(dummy_task1)
+    sse_manager._tasks.append(dummy_task2)
+
+    # Simulate an existing pubsub instance
+    sse_manager._pubsub = Mock()
+
+    await sse_manager.stop()
+
+    # Check that all tasks were attempted to be cancelled
+    assert dummy_task1.cancelled()
+    assert dummy_task2.cancelled()
+
+    # Ensure tasks list is cleared
+    assert len(sse_manager._tasks) == 0
+
+    # Verify that pubsub_thread stop and pubsub disconnect methods were called
+    sse_manager._pubsub.disconnect.assert_called_once()
+
+
+# Sample test for checking if tasks are running
+@pytest.mark.anyio
+async def test_are_tasks_running_x(sse_manager):
+    sse_manager._pubsub = True
+    sse_manager._tasks = []
+    # Since we didn't start a task, it should be considered not running
+    assert not sse_manager.are_tasks_running()
+
+    # Create dummy task and stop it
+    dummy_done_task = MagicMock()
+    dummy_done_task.done.return_value = True
+    sse_manager._tasks = [dummy_done_task]
+
+    # Task has been cancelled, it should be considered not running
+    assert not sse_manager.are_tasks_running()
+
+    # Now reset task to appear as still running, to test pubsub case
+    dummy_done_task.done.return_value = False
+    sse_manager._tasks = [dummy_done_task]
+    assert sse_manager.are_tasks_running()  # is running again
+
+    # when pubsub stops, tasks should be not running
+    sse_manager._pubsub = None
+    assert not sse_manager.are_tasks_running()
 
 
 @pytest.mark.anyio

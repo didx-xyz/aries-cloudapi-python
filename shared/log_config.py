@@ -141,6 +141,7 @@ def get_logger(name: str):
                 retention="7 days",  # keep logs for up to 7 days
                 enqueue=True,  # asynchronous
                 level=FILE_LOG_LEVEL,
+                format=formatter_builder("blue"),
                 serialize=serialize,
             )
         except PermissionError:

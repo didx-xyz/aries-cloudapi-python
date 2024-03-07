@@ -1,7 +1,10 @@
 from fastapi import APIRouter
 from fastapi_websocket_pubsub import PubSubEndpoint
 
-from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL
+from shared.log_config import get_logger
+from shared.models.webhook_events import WEBHOOK_TOPIC_ALL
+
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -26,5 +29,5 @@ async def publish_event_on_websocket(
     """
 
     publish_topics = [topic, wallet_id, f"{topic}-{wallet_id}", WEBHOOK_TOPIC_ALL]
-
+    logger.trace("Publishing event on websocket: {}", event_json)
     await endpoint.publish(topics=publish_topics, data=event_json)

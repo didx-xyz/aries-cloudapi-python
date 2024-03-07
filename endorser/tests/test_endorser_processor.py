@@ -1,351 +1,242 @@
+import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock, Mock
+import unittest
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from aries_cloudcontroller import AcaPyClient
-from fastapi import HTTPException
-from httpx import Response
-from mockito import verify, when
-from pytest_mock import MockerFixture
+from redis.client import PubSubWorkerThread
+from redis.cluster import ClusterPubSub
 
-from app.tests.util.mock import to_async
-from endorser import endorser_processor as test_module
-from endorser.endorser_processor import (
-    Event,
-    accept_endorsement,
-    get_did_and_schema_id_from_cred_def_attachment,
-    get_endorsement_request_attachment,
-    is_credential_definition_transaction,
-    is_governance_agent,
-    is_valid_issuer,
-    process_endorsement_event,
-    should_accept_endorsement,
-)
-from shared import TRUST_REGISTRY_URL
+from endorser.services.endorsement_processor import EndorsementProcessor
+from shared.constants import GOVERNANCE_LABEL
+
+# pylint: disable=redefined-outer-name
+# because re-using fixtures in same module
+# pylint: disable=protected-access
+# because we are testing protected methods
 
 
-@pytest.mark.anyio
-async def test_accept_endorsement(mock_agent_controller: AcaPyClient):
-    when(mock_agent_controller.endorse_transaction).endorse_transaction(
-        tran_id="the-tran-id"
-    ).thenReturn(to_async())
-    endorsement = Mock(transaction_id="the-tran-id")
-    await accept_endorsement(mock_agent_controller, endorsement)
-
-    verify(mock_agent_controller.endorse_transaction).endorse_transaction(
-        tran_id="the-tran-id"
-    )
+@pytest.fixture
+def redis_service_mock():
+    redis_service = MagicMock()
+    redis_service.endorsement_redis_prefix = "endorse:"
+    redis_service.scan_keys = Mock(return_value=["endorse:key1", "endorse:key2"])
+    redis_service.get = Mock(side_effect=["event_json1", "event_json2"])
+    return redis_service
 
 
-def test_is_credential_definition_transaction():
-    # operation type 102 is credential definition
-    assert is_credential_definition_transaction({"operation": {"type": "102"}})
+@pytest.fixture
+def endorsement_processor_mock(redis_service_mock):
+    processor = EndorsementProcessor(redis_service=redis_service_mock)
+    # Mock pubsub
+    processor._pubsub_thread = Mock(spec=PubSubWorkerThread)
+    processor._pubsub_thread.is_alive.return_value = True
+    processor._pubsub = Mock(spec=ClusterPubSub)
 
-    assert not is_credential_definition_transaction({"operation": {"type": "100"}})
-    assert not is_credential_definition_transaction({"random": "json"})
-
-
-def test_get_endorsement_request_attachment():
-    # valid string json data
-    the_json_string = '{"the": "json"}'
-    the_json_dict = {"the": "json"}
-    transaction = Mock(messages_attach=[{"data": {"json": the_json_string}}])
-    assert get_endorsement_request_attachment(transaction) == the_json_dict
-
-    # valid dict json data
-    transaction = Mock(messages_attach=[{"data": {"json": the_json_dict}}])
-    assert get_endorsement_request_attachment(transaction) == the_json_dict
-
-    # no attachment
-    assert get_endorsement_request_attachment(Mock(messages_attach=None)) is None
-
-    # exception
-    assert get_endorsement_request_attachment(Mock(messages_attach={"a": "b"})) is None
+    processor.endorse_prefix = "endorse"
+    return processor
 
 
 @pytest.mark.anyio
-async def test_get_did_and_schema_id_from_cred_def_attachment(
-    mock_agent_controller: AcaPyClient,
-):
-    attachment = {"identifier": "123", "operation": {"ref": "456"}}
+async def test_start_and_tasks_are_running(endorsement_processor_mock):
+    endorsement_processor_mock._process_endorsement_requests = AsyncMock()
 
-    schema = Mock(var_schema=Mock(id="the-schema-id"))
-
-    when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        to_async(schema)
-    )
-
-    (did, schema_id) = await get_did_and_schema_id_from_cred_def_attachment(
-        mock_agent_controller, attachment
-    )
-
-    assert did == "did:sov:123"
-    assert schema_id == "the-schema-id"
-
-    verify(mock_agent_controller.schema).get_schema(schema_id="456")
+    endorsement_processor_mock.start()
+    # Ensure background tasks are started
+    assert len(endorsement_processor_mock._tasks) > 0
+    assert endorsement_processor_mock.are_tasks_running()
 
 
 @pytest.mark.anyio
-async def test_get_did_and_schema_id_from_cred_def_attachment_err_no_schema_id(
-    mock_agent_controller: AcaPyClient,
-):
-    attachment = {"identifier": "123", "operation": {"ref": "456"}}
+async def test_stop(endorsement_processor_mock):
+    # Setup a dummy task to simulate an ongoing task
+    dummy_task = asyncio.create_task(asyncio.sleep(1))
+    endorsement_processor_mock._tasks.append(dummy_task)
 
-    schema = Mock(var_schema=Mock(id=None))
+    # Simulate an existing pubsub_thread and pubsub instance
+    # endorsement_processor_mock._pubsub_thread = Mock(spec=PubSubWorkerThread)
+    endorsement_processor_mock._pubsub = Mock()
 
-    when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        to_async(schema)
-    )
+    await endorsement_processor_mock.stop()
 
-    with pytest.raises(
-        Exception, match="Could not extract schema id from schema response"
-    ):
-        await get_did_and_schema_id_from_cred_def_attachment(
-            mock_agent_controller, attachment
-        )
+    # Check that all tasks were attempted to be cancelled
+    assert dummy_task.cancelled()
 
-    verify(mock_agent_controller.schema).get_schema(schema_id="456")
+    # Ensure tasks list is cleared
+    assert len(endorsement_processor_mock._tasks) == 0
+
+    # Verify that pubsub_thread stop and pubsub disconnect methods were called
+    endorsement_processor_mock._pubsub_thread.stop.assert_called_once()
+    endorsement_processor_mock._pubsub.disconnect.assert_called_once()
 
 
-def test_is_governance_agent():
-    assert is_governance_agent(
-        Event(origin="governance", payload={}, wallet_id="something")
-    )
-    assert not is_governance_agent(
-        Event(origin="random", payload={}, wallet_id="something")
-    )
+# Sample test for checking if tasks are running
+@pytest.mark.anyio
+async def test_are_tasks_running_x(endorsement_processor_mock):
+    endorsement_processor_mock._tasks = []
+    # Since we didn't start a task, it should be considered not running
+    assert not endorsement_processor_mock.are_tasks_running()
+
+    # Create dummy task and stop it
+    dummy_done_task = MagicMock()
+    dummy_done_task.done.return_value = True
+    endorsement_processor_mock._tasks = [dummy_done_task]
+
+    # Task has been cancelled, it should be considered not running
+    assert not endorsement_processor_mock.are_tasks_running()
+
+    # Now reset task to appear as still running, to test pubsub thread case
+    dummy_done_task.done.return_value = False
+    endorsement_processor_mock._tasks = [dummy_done_task]
+    # when pubsub thread stops, tasks should be not running
+    endorsement_processor_mock._pubsub_thread.is_alive.return_value = False
+    assert not endorsement_processor_mock.are_tasks_running()
 
 
 @pytest.mark.anyio
-async def test_is_valid_issuer(mocker: MockerFixture):
-    patch_async_client = mocker.patch("endorser.endorser_processor.RichAsyncClient")
-    mocked_async_client = MagicMock()
-    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+async def test_set_notification_handler(endorsement_processor_mock):
+    # Mock the Redis message to simulate a keyspace notification
+    mock_msg = {
+        "type": "pmessage",
+        "pattern": None,
+        "channel": b"__keyevent@0__:set",
+        "data": b"endorse:sample_key",
+    }
 
-    did = "did:sov:123"
-    schema_id = "the-schema-id"
+    # Mock the _new_event_notification event inside the processor
+    endorsement_processor_mock._new_event_notification = Mock()
 
-    # Mock responses
-    actor_response = Response(200, json={"roles": ["issuer"]})
-    schema_response = Response(
-        200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
-    )
-    schema_response.raise_for_status = Mock()
-    mocked_async_client.get = AsyncMock(side_effect=[actor_response, schema_response])
-    # Mock the `async with RichAsyncClient` to return mocked_async_client
+    # Call the method with the mocked message
+    endorsement_processor_mock._set_notification_handler(mock_msg)
 
-    assert await is_valid_issuer(did, schema_id)
+    # Verify that _new_event_notification.set() was called
+    endorsement_processor_mock._new_event_notification.set.assert_called_once_with()
 
-    # Verify the calls
-    mocked_async_client.get.assert_any_call(
-        f"{TRUST_REGISTRY_URL}/registry/actors/did/{did}"
-    )
-    mocked_async_client.get.assert_any_call(
-        f"{TRUST_REGISTRY_URL}/registry/schemas/{schema_id}"
-    )
+    # Test with a non-matching message to ensure the set() method is not called
+    non_matching_msg = mock_msg.copy()
+    non_matching_msg["data"] = b"nonmatching:sample_key"
+    endorsement_processor_mock._set_notification_handler(non_matching_msg)
+
+    # Verify that set() method is still called only once from the first call
+    endorsement_processor_mock._new_event_notification.set.assert_called_once()
 
 
-@pytest.mark.anyio
-async def test_is_valid_issuer_x_res_errors(mocker: MockerFixture):
-    patch_async_client = mocker.patch("endorser.endorser_processor.RichAsyncClient")
-    mocked_async_client = MagicMock()
-    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+def test_start_notification_listener(endorsement_processor_mock):
+    endorsement_processor_mock._pubsub.psubscribe = Mock()
+    endorsement_processor_mock._pubsub.run_in_thread = Mock()
 
-    did = "did:sov:123"
-    schema_id = "the-schema-id"
+    # Call the method
+    endorsement_processor_mock._start_notification_listener()
 
-    actor_response = Response(200, json={"roles": ["issuer"]})
-    schema_response = Response(
-        200, json={"id": schema_id, "did": did, "version": "1.0", "name": "name"}
-    )
-    # Mock HTTPException to be raised on get call
-    error = HTTPException(status_code=404, detail="Not Found")
-
-    mocked_async_client.get = AsyncMock(side_effect=[actor_response, error])
-
-    result = await is_valid_issuer(did, schema_id)
-
-    assert result is False
-
-    # Error schema res
-    not_schema_id = "not-the-schema-id"
-    error_response = HTTPException(
-        status_code=500,
-        detail="Something went wrong",
-    )
-    mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
-    with pytest.raises(HTTPException):
-        await is_valid_issuer(did, not_schema_id)
-
-    # Invalid role
-    mocked_async_client.get = AsyncMock(
-        side_effect=[
-            Response(200, json={"roles": ["verifier"], "id": "the-actor-id"}),
-            schema_response,
-        ]
-    )
-    assert not await is_valid_issuer(did, schema_id)
-
-    # schema not registered
-    not_schema_id = "not-the-schema-id"
-    error_response = HTTPException(
-        status_code=404,
-        detail="Schema does not exist in registry.",
-    )
-    mocked_async_client.get = AsyncMock(side_effect=[actor_response, error_response])
-    assert not await is_valid_issuer(did, schema_id)
-
-    # Back to valid again
-    mocked_async_client.get = AsyncMock(
-        side_effect=[
-            actor_response,
-            schema_response,
-        ]
-    )
-    assert await is_valid_issuer(did, schema_id)
+    # Verify psubscribe and run_in_thread was called correctly
+    endorsement_processor_mock._pubsub.psubscribe.assert_called_once()
+    endorsement_processor_mock._pubsub.run_in_thread.assert_called_once()
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement(mock_agent_controller: AcaPyClient):
-    transaction = Mock(
-        state="request_received",
-        messages_attach=[
-            {
-                "data": {
-                    "json": json.dumps(
-                        {
-                            "identifier": "123",  # did
-                            "operation": {
-                                "type": "102",  # cred def operation
-                                "ref": "456",  # schema id
-                            },
-                        }
-                    )
-                }
-            }
-        ],
-    )
-    when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        to_async(Mock(var_schema=Mock(id="the-schema-id")))
-    )
-    when(mock_agent_controller.endorse_transaction).get_transaction(
-        tran_id="the-tran-id"
-    ).thenReturn(to_async(transaction))
-    when(test_module).is_valid_issuer("did:sov:123", "the-schema-id").thenReturn(
-        to_async(True)
+async def test_process_endorsement_requests(endorsement_processor_mock):
+    scan_results = [
+        [],  # empty list to start
+        ["endorse:key1"],  # Then a key returned from the scan
+        ["endorse:key2", "endorse:key3"],  # Then 2 keys in a batch
+        Exception(
+            "Force inf loop to stop"
+        ),  # force loop to exit after processing available keys
+    ]
+    redis_service = Mock()
+    redis_service.scan_keys = Mock(side_effect=scan_results)
+    endorsement_processor_mock.redis_service = redis_service
+
+    # Store processed keys for assertion
+    processed_keys = []
+
+    # Override _attempt_process_endorsement to track keys and then set the done_event
+    async def mock_attempt_process_endorsement(key):
+        processed_keys.append(key)
+
+    endorsement_processor_mock._attempt_process_endorsement = (
+        mock_attempt_process_endorsement
     )
 
-    endorsement = Mock(transaction_id="the-tran-id")
-    assert await should_accept_endorsement(mock_agent_controller, endorsement)
+    # Exception is to force the NoReturn function to exit
+    with pytest.raises(Exception):
+        await endorsement_processor_mock._process_endorsement_requests()
+
+    # Assert that the keys were processed
+    assert len(processed_keys) == 3
+    assert processed_keys == ["endorse:key1", "endorse:key2", "endorse:key3"]
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement_invalid_state(
-    mock_agent_controller: AcaPyClient,
-):
-    transaction = Mock(state="done")
-    when(mock_agent_controller.endorse_transaction).get_transaction(
-        tran_id="the-tran-id"
-    ).thenReturn(to_async(transaction))
+async def test_attempt_process_endorsement(endorsement_processor_mock):
+    event_key = "endorse:key"
+    lock_key = f"lock:{event_key}"
+    endorsement_processor_mock.redis_service.set_lock.return_value = True
+    endorsement_processor_mock._process_endorsement_event = AsyncMock()
 
-    endorsement = Mock(transaction_id="the-tran-id")
-    assert not await should_accept_endorsement(mock_agent_controller, endorsement)
+    await endorsement_processor_mock._attempt_process_endorsement(event_key)
+
+    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
+        lock_key, px=500
+    )
+    endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
+    endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
+        "event_json1"
+    )
+    endorsement_processor_mock.redis_service.delete_key.assert_called_with(lock_key)
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement_no_attachment(
-    mock_agent_controller: AcaPyClient,
-):
-    transaction = Mock(state="request_received")
-    when(mock_agent_controller.endorse_transaction).get_transaction(
-        tran_id="the-tran-id"
-    ).thenReturn(to_async(transaction))
+async def test_attempt_process_endorsement_x(endorsement_processor_mock):
+    endorsement_processor_mock._handle_unprocessable_endorse_event = Mock()
+    endorsement_processor_mock._process_endorsement_event = AsyncMock(
+        side_effect=Exception("Test")
+    )
+    await endorsement_processor_mock._attempt_process_endorsement("key")
 
-    endorsement = Mock(transaction_id="the-tran-id")
-    assert not await should_accept_endorsement(mock_agent_controller, endorsement)
+    # Assert _handle_unprocessable_endorse_event is called when exception was raised
+    endorsement_processor_mock._handle_unprocessable_endorse_event.assert_called_once()
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement_no_cred_def_operation(
-    mock_agent_controller: AcaPyClient,
-):
-    transaction = Mock(
-        state="request_received",
-        messages_attach=[
-            {
-                "data": {
-                    "json": json.dumps(
-                        {
-                            "identifier": "123",  # did
-                            "operation": {
-                                "type": "1045",  # not cred def operation
-                                "ref": "456",  # schema id
-                            },
-                        }
-                    )
-                }
-            }
-        ],
-    )
-    when(mock_agent_controller.endorse_transaction).get_transaction(
-        tran_id="the-tran-id"
-    ).thenReturn(to_async(transaction))
+async def test_process_endorsement_event_governance(endorsement_processor_mock):
+    governance = GOVERNANCE_LABEL
+    event_dict = {
+        "origin": governance,
+        "wallet_id": governance,
+        "topic": "endorsements",
+        "payload": {"state": "request-received", "transaction_id": "txn1"},
+    }
 
-    endorsement = Mock(transaction_id="the-tran-id")
-    assert not await should_accept_endorsement(mock_agent_controller, endorsement)
+    event_json = json.dumps(event_dict)
+
+    with patch(
+        "endorser.services.endorsement_processor.should_accept_endorsement"
+    ) as mock_should_accept_endorsement, patch(
+        "endorser.services.endorsement_processor.accept_endorsement"
+    ) as mock_accept_endorsement:
+        mock_should_accept_endorsement.return_value = True
+        mock_accept_endorsement.return_value = AsyncMock()
+        await endorsement_processor_mock._process_endorsement_event(event_json)
+
+        mock_should_accept_endorsement.assert_called_once()
+        mock_accept_endorsement.assert_called_once()
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement_not_valid_issuer(
-    mock_agent_controller: AcaPyClient,
-):
-    transaction = Mock(
-        state="request_received",
-        messages_attach=[
-            {
-                "data": {
-                    "json": json.dumps(
-                        {
-                            "identifier": "123",  # did
-                            "operation": {
-                                "type": "102",  # cred def operation
-                                "ref": "456",  # schema id
-                            },
-                        }
-                    )
-                }
-            }
-        ],
-    )
-    when(mock_agent_controller.schema).get_schema(schema_id="456").thenReturn(
-        to_async(Mock(var_schema=Mock(id="the-schema-id")))
-    )
-    when(mock_agent_controller.endorse_transaction).get_transaction(
-        tran_id="the-tran-id"
-    ).thenReturn(to_async(transaction))
-    when(test_module).is_valid_issuer("did:sov:123", "the-schema-id").thenReturn(
-        to_async(False)
+async def test_handle_unprocessable_endorse_event(endorsement_processor_mock):
+    key = "endorse:key"
+    event_json = "event_json"
+    error = Exception("Processing error")
+
+    endorsement_processor_mock._handle_unprocessable_endorse_event(
+        key, event_json, error
     )
 
-    endorsement = Mock(transaction_id="the-tran-id")
-    assert not await should_accept_endorsement(mock_agent_controller, endorsement)
-
-
-@pytest.mark.anyio
-async def test_process_endorsement_event():
-    data = json.dumps(
-        {
-            "origin": "governance",
-            "wallet_id": "admin",
-            "payload": {"transaction_id": "tran-id", "state": "request-received"},
-        }
+    unprocessable_key_prefix = "unprocessable:endorse:key"
+    # unprocessable key is set:
+    endorsement_processor_mock.redis_service.set.assert_called_with(
+        key=unprocessable_key_prefix, value=unittest.mock.ANY
     )
-
-    when(test_module).should_accept_endorsement(...).thenReturn(to_async(True))
-
-    when(test_module).accept_endorsement(...).thenReturn(to_async())
-
-    await process_endorsement_event(data, "endorsements")
-
-    verify(test_module).accept_endorsement(...)
-    verify(test_module).should_accept_endorsement(...)
+    # original event deleted:
+    endorsement_processor_mock.redis_service.delete_key.assert_called_with(key=key)

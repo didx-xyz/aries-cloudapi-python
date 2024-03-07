@@ -18,7 +18,7 @@ from mockito import mock
 
 from app.dependencies.auth import AcaPyAuth, AcaPyAuthVerified
 from app.dependencies.role import Role
-from shared.constants import GOVERNANCE_AGENT_API_KEY
+from shared.constants import GOVERNANCE_AGENT_API_KEY, GOVERNANCE_LABEL
 
 
 async def noop():
@@ -69,7 +69,7 @@ def mock_governance_auth():
     auth = mock(AcaPyAuthVerified)
     auth.role = Role.GOVERNANCE
     auth.token = GOVERNANCE_AGENT_API_KEY
-    auth.wallet_id = "admin"
+    auth.wallet_id = GOVERNANCE_LABEL
     return auth
 
 

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from app.routes.webhooks import router
 from app.tests.util.ecosystem_connections import BobAliceConnect
 from shared import RichAsyncClient
-from shared.models.webhook_topics import Connection
+from shared.models.connection_record import Connection
 
 BASE_PATH = router.prefix
 

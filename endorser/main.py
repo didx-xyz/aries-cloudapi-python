@@ -1,12 +1,64 @@
-import asyncio
+import os
+from contextlib import asynccontextmanager
 
-from endorser.endorser_processor import listen_endorsement_events
+from dependency_injector.wiring import Provide, inject
+from fastapi import Depends, FastAPI, HTTPException
+
+from endorser.services.dependency_injection.container import Container, get_container
+from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.log_config import get_logger
 
-logger = get_logger("endorser.main")  # override as __name__ gets passed as __main__
+logger = get_logger(__name__)
 
-if __name__ == "__main__":
-    logger.info("Starting endorser service")
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(listen_endorsement_events())
+@asynccontextmanager
+async def app_lifespan(_: FastAPI):
+    logger.info("Endorser Service startup")
+
+    # Initialize the container
+    container = get_container()
+    container.wire(modules=[__name__])
+
+    # Start singleton services
+    container.redis_service()
+
+    endorsement_processor = container.endorsement_processor()
+    endorsement_processor.start()
+
+    yield
+
+    logger.info("Shutting down Endorser services ...")
+    await endorsement_processor.stop()
+    container.shutdown_resources()  # shutdown redis instance
+    logger.info("Shutdown Endorser services.")
+
+
+def create_app() -> FastAPI:
+    OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Aries Cloud API: Endorser Service")
+    PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
+
+    application = FastAPI(
+        title=OPENAPI_NAME,
+        version=PROJECT_VERSION,
+        lifespan=app_lifespan,
+    )
+
+    return application
+
+
+app = create_app()
+
+
+@app.get("/health")
+@inject
+async def health_check(
+    endorsement_processor: EndorsementProcessor = Depends(
+        Provide[Container.endorsement_processor]
+    ),
+):
+    if endorsement_processor.are_tasks_running():
+        return {"status": "healthy"}
+    else:
+        raise HTTPException(
+            status_code=503, detail="One or more background tasks are not running."
+        )

@@ -88,7 +88,8 @@ async def assert_valid_prover(
         their_label = connection_record.their_label
         if e.status_code == 404 and their_label:
             logger.info(
-                f"Actor did not found. Try fetch using `their_label` from connection: {their_label}"
+                "Actor did not found. Try fetch using `their_label` from connection: {}",
+                their_label,
             )
             # DID is not found on Trust Registry. May arise if verifier has public did
             # (eg. has issuer role), but connection is made without using public did,
@@ -101,7 +102,7 @@ async def assert_valid_prover(
             ) from e
         else:
             logger.warning(
-                f"An unexpected exception occurred while asserting valid verifier: {e}"
+                "An unexpected exception occurred while asserting valid verifier: {}", e
             )
             raise
 
@@ -177,7 +178,7 @@ async def assert_valid_verifier(
             ) from e
         else:
             logger.warning(
-                f"An unexpected exception occurred while asserting valid verifier: {e}"
+                "An unexpected exception occurred while asserting valid verifier: {}", e
             )
             raise
 

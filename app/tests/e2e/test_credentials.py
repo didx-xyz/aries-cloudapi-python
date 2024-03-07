@@ -19,7 +19,7 @@ from app.tests.util.trust_registry import register_issuer
 from app.tests.util.webhooks import check_webhook_state
 from app.util.string import random_version
 from shared import RichAsyncClient
-from shared.models.webhook_topics import CredentialExchange
+from shared.models.credential_exchange import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix
 
@@ -52,7 +52,7 @@ async def schema_definition_alt(
 
 @pytest.fixture(scope="module")
 async def credential_definition_id(
-    schema_definition: CredentialSchema,
+    schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
     faber_client: RichAsyncClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition.id)
@@ -71,7 +71,7 @@ async def credential_definition_id(
 
 @pytest.fixture(scope="module")
 async def credential_definition_id_revocable(
-    schema_definition_alt: CredentialSchema,
+    schema_definition_alt: CredentialSchema,  # pylint: disable=redefined-outer-name
     faber_client: RichAsyncClient,
 ) -> str:
     await register_issuer(faber_client, schema_definition_alt.id)
@@ -89,7 +89,7 @@ async def credential_definition_id_revocable(
 @pytest.fixture(scope="function")
 async def credential_exchange_id(
     faber_client: RichAsyncClient,
-    credential_definition_id: str,
+    credential_definition_id: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
@@ -107,7 +107,7 @@ async def credential_exchange_id(
         json=credential,
     )
     credential_exchange = response.json()
-    credential_exchange_id = credential_exchange["credential_id"]
+    cred_ex_id = credential_exchange["credential_id"]
     assert credential_exchange["protocol_version"] == "v1"
 
     assert await check_webhook_state(
@@ -115,11 +115,11 @@ async def credential_exchange_id(
         topic="credentials",
         filter_map={
             "state": "offer-sent",
-            "credential_id": credential_exchange["credential_id"],
+            "credential_id": cred_ex_id,
         },
     )
 
-    await asyncio.sleep(0.1)  # credential may take moment to reflect after webhook
+    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
         params={"connection_id": faber_and_alice_connection.alice_connection_id},
@@ -127,13 +127,13 @@ async def credential_exchange_id(
     records = response.json()
     assert len(records) > 0
 
-    return credential_exchange_id
+    return cred_ex_id
 
 
 @pytest.fixture(scope="function")
 async def issue_credential_to_alice(
     faber_client: RichAsyncClient,
-    credential_definition_id: str,
+    credential_definition_id: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,

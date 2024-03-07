@@ -26,7 +26,7 @@ from app.util.acapy_issuer_utils import (
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from shared.log_config import get_logger
-from shared.models.webhook_topics import CredentialExchange
+from shared.models.credential_exchange import CredentialExchange
 
 logger = get_logger(__name__)
 
@@ -127,7 +127,7 @@ async def send_credential(
         try:
             public_did = await assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting agent has public DID failed: {e}")
+            bound_logger.warning("Asserting agent has public DID failed: {}", e)
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,
@@ -192,7 +192,7 @@ async def create_offer(
         try:
             public_did = await assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting agent has public DID failed: {e}")
+            bound_logger.warning("Asserting agent has public DID failed: {}", e)
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,

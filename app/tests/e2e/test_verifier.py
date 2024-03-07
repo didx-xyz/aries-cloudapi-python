@@ -23,8 +23,9 @@ from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceCo
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
+from shared.models.credential_exchange import CredentialExchange
+from shared.models.presentation_exchange import PresentationExchange
 from shared.models.protocol import PresentProofProtocolVersion
-from shared.models.webhook_topics import CredentialExchange, PresentationExchange
 
 VERIFIER_BASE_PATH = router.prefix
 OOB_BASE_PATH = oob_router.prefix
@@ -65,7 +66,6 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
-        max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
@@ -78,7 +78,6 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "request-received", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=60,
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]
@@ -104,14 +103,12 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=240,
     )
 
     assert await check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
         topic="proofs",
-        max_duration=240,
     )
 
     result = response.json()
@@ -752,7 +749,6 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
-        max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
@@ -765,7 +761,6 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
         client=alice_member_client,
         filter_map={"state": "request-received", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=120,
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]
@@ -791,14 +786,12 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=240,
     )
 
     assert await check_webhook_state(
         client=meld_co_client,
         filter_map={"state": "done", "proof_id": meld_co_proof_id},
         topic="proofs",
-        max_duration=240,
     )
 
     result = response.json()
@@ -908,7 +901,6 @@ async def test_saving_of_presentation_exchange_records(
         client=alice_member_client,
         filter_map={"state": "request-received"},
         topic="proofs",
-        max_duration=240,
     )
     proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
@@ -921,7 +913,6 @@ async def test_saving_of_presentation_exchange_records(
         client=alice_member_client,
         filter_map={"state": "request-received", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=60,
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]
@@ -948,14 +939,12 @@ async def test_saving_of_presentation_exchange_records(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
-        max_duration=240,
     )
 
     assert await check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
         topic="proofs",
-        max_duration=240,
     )
 
     result = response.json()

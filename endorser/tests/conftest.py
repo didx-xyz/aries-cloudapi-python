@@ -1,8 +1,7 @@
-import mockito
-import pytest
+from unittest.mock import AsyncMock, MagicMock
 
-# pylint: disable=unused-import
-from shared.util.mock_agent_controller import mock_agent_controller  # noqa: F401
+import pytest
+from aries_cloudcontroller import AcaPyClient, EndorseTransactionApi, SchemaApi
 
 
 @pytest.fixture(scope="session")
@@ -10,14 +9,12 @@ def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture(autouse=True)
-def unstub_mockito():
-    """
-    Automatically unstub all stubbed methods after each test.
-    """
-    # Setup phase: No setup needed in this fixture
-
-    yield
-
-    # Teardown phase: After each test, unstub all stubbed methods
-    mockito.unstub()
+@pytest.fixture
+def mock_acapy_client():
+    client = MagicMock(spec=AcaPyClient)
+    client.endorse_transaction = MagicMock(spec=EndorseTransactionApi)
+    client.schema = MagicMock(spec=SchemaApi)
+    client.endorse_transaction.get_transaction = AsyncMock()
+    client.endorse_transaction.endorse_transaction = AsyncMock()
+    client.schema.get_schema = AsyncMock()
+    return client

@@ -10,6 +10,8 @@ from shared.util.rich_async_client import RichAsyncClient
 logger = get_logger(__name__)
 base_url = f"{WEBHOOKS_URL}/sse"
 
+DEFAULT_LISTENER_TIMEOUT = 30  # seconds
+
 
 class SseListener:
     """
@@ -29,7 +31,7 @@ class SseListener:
         self.topic = topic
 
     async def wait_for_state(
-        self, desired_state, timeout: int = 60, lookback_time=1
+        self, desired_state, timeout: int = DEFAULT_LISTENER_TIMEOUT, lookback_time=1
     ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
@@ -53,7 +55,12 @@ class SseListener:
         raise SseListenerTimeout("Event with request state was not returned by server.")
 
     async def wait_for_event(
-        self, field, field_id, desired_state, timeout: int = 60, lookback_time=1
+        self,
+        field,
+        field_id,
+        desired_state,
+        timeout: int = DEFAULT_LISTENER_TIMEOUT,
+        lookback_time=1,
     ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.

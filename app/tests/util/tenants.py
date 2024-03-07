@@ -1,7 +1,7 @@
 from app.models.tenants import CreateTenantRequest, CreateTenantResponse
 from app.routes.admin.tenants import router
 from app.util.string import random_string
-from shared import RichAsyncClient, parse_with_error_handling
+from shared import RichAsyncClient
 
 TENANT_BASE_PATH = router.prefix
 
@@ -14,7 +14,7 @@ async def post_tenant_request(
     admin_client: RichAsyncClient, request: CreateTenantRequest
 ) -> CreateTenantResponse:
     response = await admin_client.post(TENANT_BASE_PATH, json=request.model_dump())
-    return parse_with_error_handling(CreateTenantResponse, response.text)
+    return CreateTenantResponse.model_validate_json(response.text)
 
 
 async def create_issuer_tenant(admin_client: RichAsyncClient, name: str):

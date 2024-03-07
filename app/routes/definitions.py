@@ -21,7 +21,11 @@ from app.dependencies.auth import (
     acapy_auth_verified,
 )
 from app.event_handling.sse_listener import SseListener
-from app.exceptions import CloudApiException, TrustRegistryException
+from app.exceptions import (
+    BadRequestException,
+    CloudApiException,
+    TrustRegistryException,
+)
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -39,7 +43,7 @@ from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
-from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL
+from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL, GOVERNANCE_LABEL
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -217,7 +221,7 @@ async def create_credential_definition(
         try:
             public_did = await acapy_wallet.assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting public DID failed: {e}")
+            bound_logger.warning("Asserting public DID failed: {}", e)
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,
@@ -358,9 +362,11 @@ async def create_credential_definition(
                 bound_logger.debug(
                     "Await endorsement transaction to be in state `request-received`"
                 )
-                admin_listener = SseListener(topic="endorsements", wallet_id="admin")
+                endorser_listener = SseListener(
+                    topic="endorsements", wallet_id=GOVERNANCE_LABEL
+                )
                 try:
-                    txn_record = await admin_listener.wait_for_state(
+                    txn_record = await endorser_listener.wait_for_state(
                         desired_state="request-received"
                     )
                 except TimeoutError as e:
@@ -371,9 +377,15 @@ async def create_credential_definition(
 
                 # todo: Post to the endorser service the transaction id to be endorsed
                 async with get_governance_controller() as endorser_controller:
-                    await endorser_controller.endorse_transaction.endorse_transaction(
-                        tran_id=txn_record["transaction_id"]
-                    )
+                    try:
+                        await endorser_controller.endorse_transaction.endorse_transaction(
+                            tran_id=txn_record["transaction_id"]
+                        )
+                    except BadRequestException:
+                        bound_logger.info(
+                            "Transaction {} is already endorsed",
+                            txn_record["transaction_id"],
+                        )
 
                     bound_logger.debug("Setting registry state to `active`")
                     active_rev_reg = (
@@ -396,7 +408,9 @@ async def create_credential_definition(
                         create_transaction_for_endorser=True,
                     )
 
-                    listener = SseListener(topic="endorsements", wallet_id="admin")
+                    listener = SseListener(
+                        topic="endorsements", wallet_id=GOVERNANCE_LABEL
+                    )
                     # TODO move endorsement to endorser service
                     bound_logger.debug(
                         "Waiting for endorsements event in `request-received` state"
@@ -417,14 +431,20 @@ async def create_credential_definition(
                     bound_logger.info(
                         "Endorsing what is presumed to be a rev_reg_entry transaction"
                     )
-                    await endorser_controller.endorse_transaction.endorse_transaction(
-                        tran_id=txn_record["transaction_id"]
-                    )
+                    try:
+                        await endorser_controller.endorse_transaction.endorse_transaction(
+                            tran_id=txn_record["transaction_id"]
+                        )
+                    except BadRequestException:
+                        bound_logger.info(
+                            "Transaction {} is already endorsed",
+                            txn_record["transaction_id"],
+                        )
                 bound_logger.info(
                     "Successfully endorsed transaction of revocation registry entry."
                 )
             except CloudApiException as e:
-                bound_logger.error(f"Error writing first accum value to ledger: {e}")
+                bound_logger.error("Error writing first accum value to ledger: {}", e)
                 raise
             except ApiException as e:
                 bound_logger.error(

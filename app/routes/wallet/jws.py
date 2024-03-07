@@ -40,9 +40,9 @@ async def sign_jws(
             )
     except ApiException as e:
         if str(e.status).startswith("4"):
-            bound_logger.info(f"Client error during JWS signing: {e}")
+            bound_logger.info("Client error during JWS signing: {}", e)
         else:
-            bound_logger.warning(f"Error during JWS signing: {e}")
+            bound_logger.warning("Error during JWS signing: {}", e)
 
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 
@@ -74,9 +74,9 @@ async def verify_jws(
             )
     except ApiException as e:
         if str(e.status).startswith("4"):
-            bound_logger.info(f"Client error during JWS verification: {e}")
+            bound_logger.info("Client error during JWS verification: {}", e)
         else:
-            bound_logger.warning(f"API exception during JWS verification: {e}")
+            bound_logger.warning("API exception during JWS verification: {}", e)
 
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 

@@ -11,25 +11,29 @@ from aries_cloudcontroller import (
     V20PresExRecord,
 )
 
-from shared.models.conversion import (
-    conn_record_to_connection,
+from shared.models.connection_record import Connection, conn_record_to_connection
+from shared.models.credential_exchange import (
+    CredentialExchange,
     credential_record_to_model_v1,
     credential_record_to_model_v2,
+)
+from shared.models.endorsement import Endorsement
+from shared.models.presentation_exchange import (
+    PresentationExchange,
     presentation_record_to_model,
 )
-from shared.models.webhook_topics import (
+from shared.models.webhook_events.topics import CloudApiTopics
+from webhooks.models.redis_payloads import (
     AcaPyWebhookEvent,
-    CloudApiTopics,
-    Connection,
-    CredentialExchange,
-    Endorsement,
-    PresentationExchange,
-)
-from shared.models.webhook_topics.base import (
-    BasicMessage,
     CloudApiWebhookEvent,
-    ProblemReport,
     WebhookEventPayloadType,
+)
+from webhooks.models.topic_payloads import (
+    BasicMessage,
+    CredExRecordIndy,
+    CredExRecordLDProof,
+    DeletedCredential,
+    ProblemReport,
 )
 
 
@@ -81,6 +85,18 @@ def to_credential_model(event: AcaPyWebhookEvent) -> CredentialExchange:
     return cred_model
 
 
+def to_deleted_credential_model(event: AcaPyWebhookEvent) -> DeletedCredential:
+    return DeletedCredential(**event.payload)
+
+
+def to_credential_indy_model(event: AcaPyWebhookEvent) -> CredExRecordIndy:
+    return CredExRecordIndy(**event.payload)
+
+
+def to_credential_ld_model(event: AcaPyWebhookEvent) -> CredExRecordLDProof:
+    return CredExRecordLDProof(**event.payload)
+
+
 def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
     # v1
     if event.acapy_topic == "present_proof":
@@ -103,6 +119,9 @@ ModelTransformerFunction = Callable[[AcaPyWebhookEvent], WebhookEventPayloadType
 topic_to_transformer: Dict[CloudApiTopics, ModelTransformerFunction] = {
     "proofs": to_proof_model,
     "credentials": to_credential_model,
+    "deleted_credential": to_deleted_credential_model,
+    "credentials_ld": to_credential_ld_model,
+    "credentials_indy": to_credential_indy_model,
     "connections": to_connections_model,
     "basic-messages": to_basic_message_model,
     "endorsements": to_endorsement_model,
@@ -122,7 +141,8 @@ def transform_webhook_payload(
 
     if transformer:
         return transformer(acapy_event)
-    return
+
+    return None
 
 
 def acapy_to_cloudapi_event(
@@ -139,4 +159,5 @@ def acapy_to_cloudapi_event(
             origin=acapy_event.origin,
             payload=transformed_payload,
         )
-    return
+
+    return None

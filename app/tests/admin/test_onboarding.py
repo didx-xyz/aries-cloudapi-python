@@ -16,6 +16,7 @@ from app.services.acapy_wallet import Did
 from app.services.onboarding import issuer, verifier
 from app.services.onboarding.util import register_issuer_did
 from app.tests.util.mock import to_async
+from shared.constants import GOVERNANCE_LABEL
 from shared.util.mock_agent_controller import get_mock_agent_controller
 
 
@@ -57,12 +58,14 @@ async def test_onboard_issuer_public_did_exists(
 
     # Mock event listeners
     when(register_issuer_did).create_sse_listener(
-        topic="connections", wallet_id="admin"
-    ).thenReturn(MockSseListener(topic="connections", wallet_id="admin"))
+        topic="connections", wallet_id=GOVERNANCE_LABEL
+    ).thenReturn(MockSseListener(topic="connections", wallet_id=GOVERNANCE_LABEL))
     when(register_issuer_did).create_sse_listener(
-        topic="endorsements", wallet_id="admin"
+        topic="endorsements", wallet_id=GOVERNANCE_LABEL
     ).thenReturn(
-        MockListenerEndorserConnectionId(topic="endorsements", wallet_id="admin")
+        MockListenerEndorserConnectionId(
+            topic="endorsements", wallet_id=GOVERNANCE_LABEL
+        )
     )
 
     invitation_url = "https://invitation.com/"
@@ -105,13 +108,17 @@ async def test_onboard_issuer_no_public_did(
 
     # Mock event listeners
     when(register_issuer_did).create_sse_listener(
-        topic="connections", wallet_id="admin"
+        topic="connections", wallet_id=GOVERNANCE_LABEL
     ).thenReturn(
-        MockListenerEndorserConnectionId(topic="connections", wallet_id="admin")
+        MockListenerEndorserConnectionId(
+            topic="connections", wallet_id=GOVERNANCE_LABEL
+        )
     )
     when(register_issuer_did).create_sse_listener(
-        topic="endorsements", wallet_id="admin"
-    ).thenReturn(MockListenerRequestReceived(topic="endorsements", wallet_id="admin"))
+        topic="endorsements", wallet_id=GOVERNANCE_LABEL
+    ).thenReturn(
+        MockListenerRequestReceived(topic="endorsements", wallet_id=GOVERNANCE_LABEL)
+    )
 
     # Mock responses
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
@@ -250,15 +257,19 @@ async def test_onboard_verifier_no_recipient_keys(mock_agent_controller: AcaPyCl
 
 
 class MockSseListener(SseListener):
-    async def wait_for_event(self, field, field_id, desired_state, timeout: int = 150):
+    async def wait_for_event(
+        self, field, field_id, desired_state, timeout: int = 150, lookback_time=1
+    ):
         pass
 
 
 class MockListenerEndorserConnectionId(MockSseListener):
-    async def wait_for_event(self, field, field_id, desired_state, timeout: int = 150):
+    async def wait_for_event(
+        self, field, field_id, desired_state, timeout: int = 150, lookback_time=1
+    ):
         return {"connection_id": "endorser_connection_id"}
 
 
 class MockListenerRequestReceived(MockSseListener):
-    async def wait_for_state(self, desired_state, timeout: int = 150):
+    async def wait_for_state(self, desired_state, timeout: int = 150, lookback_time=1):
         return {"state": "request-received", "transaction_id": "abcde"}

@@ -5,8 +5,8 @@ from collections import defaultdict as ddict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Dict, List, NoReturn, Tuple
 
-import aioredis
 from pydantic import ValidationError
+from redis import ConnectionError
 
 from shared.constants import (
     CLIENT_QUEUE_POLL_PERIOD,
@@ -15,10 +15,10 @@ from shared.constants import (
     QUEUE_CLEANUP_PERIOD,
 )
 from shared.log_config import get_logger
-from shared.models.webhook_topics import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
-from webhooks.dependencies.event_generator_wrapper import EventGeneratorWrapper
-from webhooks.dependencies.redis_service import RedisService
-from webhooks.routers.websocket import publish_event_on_websocket
+from shared.models.webhook_events import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
+from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.util.event_generator_wrapper import EventGeneratorWrapper
+from webhooks.web.routers.websocket import publish_event_on_websocket
 
 logger = get_logger(__name__)
 
@@ -28,7 +28,7 @@ class SseManager:
     Class to manage Server-Sent Events (SSE).
     """
 
-    def __init__(self, redis_service: RedisService) -> None:
+    def __init__(self, redis_service: WebhooksRedisService) -> None:
         self.redis_service = redis_service
 
         # Define incoming events queue, to decouple the process of receiving events,
@@ -51,21 +51,73 @@ class SseManager:
         # To clean up queues that are no longer used
         self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
 
-        self._start_background_tasks()
+        self._pubsub = None  # for managing redis pubsub connection
 
-    def _start_background_tasks(self) -> None:
+        self._tasks: List[asyncio.Task] = []  # To keep track of running tasks
+
+    def start(self):
         """
         Start the background tasks as part of SseManager's lifecycle
         """
+        logger.info("Starting SSE Manager background tasks")
         # backfill previous events from redis, if any
-        asyncio.create_task(self._backfill_events())
+        asyncio.create_task(self._backfill_events(), name="Backfill events")
 
         # listen for new events on redis pubsub channel
-        asyncio.create_task(self._listen_for_new_events())
+        self._tasks.append(
+            asyncio.create_task(
+                self._listen_for_new_events(), name="Listen for new events"
+            )
+        )
 
         # process incoming events and cleanup queues
-        asyncio.create_task(self._process_incoming_events())
-        asyncio.create_task(self._cleanup_cache())
+        self._tasks.append(
+            asyncio.create_task(
+                self._process_incoming_events(), name="Process incoming events"
+            )
+        )
+        self._tasks.append(
+            asyncio.create_task(self._cleanup_cache(), name="Cleanup cache")
+        )
+        logger.info("SSE Manager background tasks started")
+
+    async def stop(self):
+        """
+        Stops all background tasks gracefully.
+        """
+        for task in self._tasks:
+            task.cancel()  # Request cancellation of the task
+            try:
+                await task  # Wait for the task to be cancelled
+            except asyncio.CancelledError:
+                pass  # Expected error upon cancellation, can be ignored
+        self._tasks.clear()  # Clear the list of tasks
+        logger.info("SSE Manager processes stopped.")
+
+        if self._pubsub:
+            self._pubsub.disconnect()
+            logger.info("Disconnected SseManager pubsub instance")
+
+    def are_tasks_running(self) -> bool:
+        """
+        Checks if the background tasks are still running.
+
+        Returns:
+            True if all background tasks are running, False if any task has stopped.
+        """
+        logger.debug("Checking if all tasks are running")
+
+        if not self._pubsub:
+            logger.error("Pubsub is not running")
+
+        all_running = self._tasks and all(not task.done() for task in self._tasks)
+        logger.debug("All tasks running: {}", all_running)
+
+        if not all_running:
+            for task in self._tasks:
+                if task.done():
+                    logger.warning("Task `{}` is not running", task.get_name())
+        return self._pubsub and all_running
 
     async def _listen_for_new_events(
         self, max_retries=5, retry_duration=0.33
@@ -75,36 +127,43 @@ class SseManager:
         Terminates after exceeding max_retries connection attempts.
         """
         retry_count = 0
+        sleep_duration = 0.1  # time to sleep after empty pubsub message
 
         while retry_count < max_retries:
             try:
-                pubsub = self.redis_service.redis.pubsub()
+                logger.info("Creating pubsub instance")
+                self._pubsub = self.redis_service.redis.pubsub()
 
-                await pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
+                logger.info("Subscribing to pubsub instance for SSE events")
+                self._pubsub.subscribe(self.redis_service.sse_event_pubsub_channel)
 
                 # Reset retry_count upon successful connection
                 retry_count = 0
 
+                logger.info("Begin SSE processing pubsub messages")
                 while True:
-                    message = await pubsub.get_message(ignore_subscribe_messages=True)
+                    message = self._pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
+                        logger.debug("Got pubsub message: {}", message)
                         await self._process_redis_event(message)
                     else:
-                        await asyncio.sleep(0.01)  # Prevent a busy loop if no message
-            except aioredis.ConnectionError as e:
-                logger.error(f"ConnectionError detected: {e}.")
-            except Exception as e:  # General exception catch
-                logger.exception(f"Unexpected error: {e}.")
-            finally:
-                retry_count += 1
-                logger.warning(
-                    f"Attempt #{retry_count} to reconnect in {retry_duration}s ..."
-                )
-                await asyncio.sleep(retry_duration)  # Wait a bit before retrying
+                        logger.trace("message is empty, retry in {}s", sleep_duration)
+                        await asyncio.sleep(sleep_duration)  # Prevent a busy loop
+            except ConnectionError as e:
+                logger.error("ConnectionError detected: {}.", e)
+            except Exception:  # General exception catch
+                logger.exception("Unexpected error.")
+
+            retry_count += 1
+            logger.warning(
+                "Attempt #{} to reconnect in {}s ...", retry_count, retry_duration
+            )
+            await asyncio.sleep(retry_duration)  # Wait a bit before retrying
 
         # If the loop exits due to retry limit exceeded
         logger.critical(
-            f"Failed to connect to Redis after {max_retries} attempts. Terminating service."
+            "Failed to connect to Redis after {} attempts. Terminating service.",
+            max_retries,
         )
         sys.exit(1)  # todo: Not graceful
 
@@ -118,7 +177,7 @@ class SseManager:
             timestamp_ns = int(timestamp_ns_str)
 
             # Fetch the event with the exact timestamp from the sorted set
-            json_events = await self.redis_service.get_json_events_by_timestamp(
+            json_events = self.redis_service.get_json_cloudapi_events_by_timestamp(
                 wallet_id, timestamp_ns, timestamp_ns
             )
 
@@ -130,6 +189,7 @@ class SseManager:
                     topic = parsed_event.topic
 
                     # Add event to SSE queue for processing
+                    logger.trace("Put parsed event on events queue: {}", parsed_event)
                     await self.incoming_events.put(parsed_event)
 
                     # Also publish event to websocket
@@ -160,15 +220,15 @@ class SseManager:
             # Calculate the minimum timestamp for backfilling
             current_time_ns = time.time_ns()  # Current time in nanoseconds
             min_timestamp_ns = current_time_ns - (MAX_EVENT_AGE_SECONDS * 1e9)
-            logger.debug(f"Backfilling events from timestamp_ns: {min_timestamp_ns}")
+            logger.debug("Backfilling events from timestamp_ns: {}", min_timestamp_ns)
 
             # Get all wallets to backfill events for
-            wallets = await self.redis_service.get_all_wallet_ids()
+            wallets = self.redis_service.get_all_cloudapi_wallet_ids()
 
             total_events_backfilled = 0
             for wallet_id in wallets:
                 # Fetch events within the time window from Redis for each wallet
-                events = await self.redis_service.get_events_by_timestamp(
+                events = self.redis_service.get_cloudapi_events_by_timestamp(
                     wallet_id, min_timestamp_ns, "+inf"
                 )
 
@@ -177,7 +237,7 @@ class SseManager:
                     await self.incoming_events.put(event)
                     total_events_backfilled += 1
 
-            logger.info(f"Backfilled a total of {total_events_backfilled} events.")
+            logger.info("Backfilled a total of {} events.", total_events_backfilled)
         except Exception as e:
             logger.exception("Exception caught during backfilling events: {}", e)
 
@@ -208,7 +268,7 @@ class SseManager:
                     self.fifo_cache[wallet][topic] = fifo_queue
                     self.lifo_cache[wallet][topic] = lifo_queue
 
-                timestamped_event: Tuple(float, CloudApiWebhookEventGeneric) = (
+                timestamped_event: Tuple(float, CloudApiWebhookEventGeneric) = (  # type: ignore
                     time.time(),
                     event,
                 )

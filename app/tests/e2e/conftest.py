@@ -40,7 +40,7 @@ async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
             response = await create_public_did(governance_acapy_client, set_public=True)
         else:
             logger.error(
-                f"Something went wrong when fetching public did for governance: {e}"
+                "Something went wrong when fetching public did for governance: {}", e
             )
             raise e
 

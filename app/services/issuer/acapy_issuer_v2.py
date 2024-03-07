@@ -18,8 +18,10 @@ from app.models.issuer import CredentialBase, CredentialType, CredentialWithConn
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
 from shared.log_config import get_logger
-from shared.models.conversion import credential_record_to_model_v2
-from shared.models.webhook_topics import CredentialExchange
+from shared.models.credential_exchange import (
+    CredentialExchange,
+    credential_record_to_model_v2,
+)
 
 logger = get_logger(__name__)
 

@@ -103,7 +103,7 @@ async def assert_metadata_set(
     for _ in range(num_tries):
         # Delay is placed at the start to avoid race condition in ACA-Py, where reading metadata causes duplicate
         # record error if metadata is still due to be updated
-        logger.debug(f"Sleep {delay}s before trying to fetch metadata")
+        logger.debug("Sleep {}s before trying to fetch metadata", delay)
         await asyncio.sleep(delay)
         try:
             logger.debug("Fetching connection metadata")

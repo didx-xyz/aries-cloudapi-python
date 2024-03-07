@@ -1,9 +1,10 @@
-from unittest.mock import AsyncMock
+import time
+from unittest.mock import Mock
 
 import pytest
 
-from shared.models.webhook_topics.base import CloudApiWebhookEventGeneric
-from webhooks.dependencies.redis_service import RedisService
+from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
+from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
 wallet_id = "test_wallet"
 topic = "test_topic"
@@ -24,19 +25,21 @@ cloudapi_entries = [
 
 
 @pytest.mark.anyio
-async def test_add_webhook_event():
+async def test_add_cloudapi_webhook_event():
     event_json = json_entries[0]
 
     # Create a mock Redis client with the methods you want to test
-    redis_client = AsyncMock()
-    redis_client.zadd = AsyncMock()
-    redis_client.publish = AsyncMock()
+    redis_client = Mock()
+    redis_client.zadd = Mock()
+    redis_client.publish = Mock()
 
-    # Initialize RedisService with the mocked Redis client
-    redis_service = RedisService(redis_client)
+    # Initialize WebhooksRedisService with the mocked Redis client
+    redis_service = WebhooksRedisService(redis_client)
 
     # Call the method you want to test
-    await redis_service.add_webhook_event(event_json, wallet_id)
+    redis_service.add_cloudapi_webhook_event(
+        event_json, wallet_id, timestamp_ns=time.time_ns
+    )
 
     # Assert that the mocked methods were called as expected
     redis_client.zadd.assert_called_once()
@@ -44,49 +47,49 @@ async def test_add_webhook_event():
 
 
 @pytest.mark.anyio
-async def test_get_json_webhook_events_by_wallet():
-    redis_client = AsyncMock()
-    redis_client.zrange = AsyncMock(return_value=[e.encode() for e in json_entries])
-    redis_service = RedisService(redis_client)
+async def test_get_json_cloudapi_events_by_wallet():
+    redis_client = Mock()
+    redis_client.zrange = Mock(return_value=[e.encode() for e in json_entries])
+    redis_service = WebhooksRedisService(redis_client)
 
-    events = await redis_service.get_json_webhook_events_by_wallet(wallet_id)
+    events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id)
 
     assert events == json_entries
     redis_client.zrange.assert_called_once()
 
 
 @pytest.mark.anyio
-async def test_get_webhook_events_by_wallet(mocker):
+async def test_get_cloudapi_events_by_wallet(mocker):
     expected_events = cloudapi_entries
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(Mock())
     mocker.patch.object(
-        redis_service, "get_json_webhook_events_by_wallet", return_value=json_entries
+        redis_service, "get_json_cloudapi_events_by_wallet", return_value=json_entries
     )
     mocker.patch(
         "shared.util.rich_parsing.parse_with_error_handling",
         side_effect=expected_events,
     )
 
-    events = await redis_service.get_webhook_events_by_wallet(wallet_id)
+    events = redis_service.get_cloudapi_events_by_wallet(wallet_id)
 
     assert events == expected_events
 
 
 @pytest.mark.anyio
-async def test_get_json_webhook_events_by_wallet_and_topic(mocker):
+async def test_get_json_cloudapi_events_by_wallet_and_topic(mocker):
     different_json = [
         '{"payload":{"test":"1"},"topic":"test_topic"}',
         '{"payload":{"test":"2"},"topic":"other_topic"}',
     ]
     expected_events = ['{"payload":{"test":"1"},"topic":"test_topic"}']
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(Mock())
     mocker.patch.object(
-        redis_service, "get_json_webhook_events_by_wallet", return_value=different_json
+        redis_service, "get_json_cloudapi_events_by_wallet", return_value=different_json
     )
 
-    events = await redis_service.get_json_webhook_events_by_wallet_and_topic(
+    events = redis_service.get_json_cloudapi_events_by_wallet_and_topic(
         wallet_id="test_wallet_id", topic=topic
     )
 
@@ -94,7 +97,7 @@ async def test_get_json_webhook_events_by_wallet_and_topic(mocker):
 
 
 @pytest.mark.anyio
-async def test_get_webhook_events_by_wallet_and_topic(mocker):
+async def test_get_cloudapi_events_by_wallet_and_topic(mocker):
     event_instances = [
         CloudApiWebhookEventGeneric(
             wallet_id=wallet_id, topic=topic, origin="a", payload={"test": "1"}
@@ -105,55 +108,55 @@ async def test_get_webhook_events_by_wallet_and_topic(mocker):
     ]
     expected_events = [event_instances[0]]
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(Mock())
     mocker.patch.object(
-        redis_service, "get_webhook_events_by_wallet", return_value=event_instances
+        redis_service, "get_cloudapi_events_by_wallet", return_value=event_instances
     )
 
-    events = await redis_service.get_webhook_events_by_wallet_and_topic(
-        wallet_id, topic
-    )
+    events = redis_service.get_cloudapi_events_by_wallet_and_topic(wallet_id, topic)
 
     assert events == expected_events
 
 
 @pytest.mark.anyio
-async def test_get_json_events_by_timestamp():
+async def test_get_json_cloudapi_events_by_timestamp():
     start_timestamp = 1609459200
     end_timestamp = 1609545600
 
-    redis_client = AsyncMock()
-    redis_client.zrangebyscore = AsyncMock(
-        return_value=[e.encode() for e in json_entries]
-    )
+    redis_client = Mock()
+    redis_client.zrangebyscore = Mock(return_value=[e.encode() for e in json_entries])
 
-    redis_service = RedisService(redis_client)
+    redis_service = WebhooksRedisService(redis_client)
 
-    events = await redis_service.get_json_events_by_timestamp(
+    events = redis_service.get_json_cloudapi_events_by_timestamp(
         wallet_id, start_timestamp, end_timestamp
     )
 
     assert events == json_entries
     redis_client.zrangebyscore.assert_called_once_with(
-        f"wallet_id:{wallet_id}", min=start_timestamp, max=end_timestamp
+        f"{redis_service.cloudapi_redis_prefix}:{wallet_id}",
+        min=start_timestamp,
+        max=end_timestamp,
     )
 
 
 @pytest.mark.anyio
-async def test_get_events_by_timestamp(mocker):
+async def test_get_cloudapi_events_by_timestamp(mocker):
     start_timestamp = 1609459200
     end_timestamp = 1609545600
 
-    redis_service = RedisService(AsyncMock())
+    redis_service = WebhooksRedisService(Mock())
     mocker.patch.object(
-        redis_service, "get_json_events_by_timestamp", return_value=json_entries
+        redis_service,
+        "get_json_cloudapi_events_by_timestamp",
+        return_value=json_entries,
     )
     mocker.patch(
         "shared.util.rich_parsing.parse_with_error_handling",
         side_effect=cloudapi_entries,
     )
 
-    events = await redis_service.get_events_by_timestamp(
+    events = redis_service.get_cloudapi_events_by_timestamp(
         wallet_id, start_timestamp, end_timestamp
     )
 
@@ -161,25 +164,25 @@ async def test_get_events_by_timestamp(mocker):
 
 
 @pytest.mark.anyio
-async def test_get_all_wallet_ids():
+async def test_get_all_cloudapi_wallet_ids():
     expected_wallet_ids = ["wallet1", "wallet2", "wallet3"]
     scan_results = [
         (
-            1,
+            {"localhost:6379": 1},
             [
-                f"wallet_id:{wallet_id}".encode()
+                f"cloudapi_event:{wallet_id}".encode()
                 for wallet_id in expected_wallet_ids[:2]
             ],
         ),
-        (0, [f"wallet_id:{expected_wallet_ids[2]}".encode()]),
+        ({"localhost:6379": 0}, [f"cloudapi_event:{expected_wallet_ids[2]}".encode()]),
     ]
 
-    redis_client = AsyncMock()
-    redis_client.scan = AsyncMock(side_effect=scan_results)
+    redis_client = Mock()
+    redis_client.scan = Mock(side_effect=scan_results)
 
-    redis_service = RedisService(redis_client)
+    redis_service = WebhooksRedisService(redis_client)
 
-    wallet_ids = await redis_service.get_all_wallet_ids()
+    wallet_ids = redis_service.get_all_cloudapi_wallet_ids()
 
     assert set(wallet_ids) == set(expected_wallet_ids)
     assert redis_client.scan.call_count == 2

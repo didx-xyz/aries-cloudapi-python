@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 from app.routes.wallet.credentials import router
 from shared import RichAsyncClient
-from shared.models.webhook_topics.base import CredentialExchange
+from shared.models.credential_exchange import CredentialExchange
 
 WALLET_CREDENTIALS_PATH = router.prefix
 

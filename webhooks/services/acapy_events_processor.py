@@ -126,6 +126,9 @@ class AcaPyEventsProcessor:
         """
         logger.info("Starting ACA-Py Events Processor")
 
+        exception_count = 0
+        max_exception_count = 5  # break inf loop after 5 consecutive exceptions
+
         attempts_without_events = 0
         max_attempts_without_events = sys.maxsize  # use max int to never stop
         sleep_duration = 0.1
@@ -154,10 +157,14 @@ class AcaPyEventsProcessor:
                         attempts_without_events = 0  # Reset the counter
                     else:
                         await asyncio.sleep(sleep_duration)  # prevent a busy loop
+                exception_count = 0  # reset exception count after successful loop
             except Exception:
+                exception_count += 1
                 logger.exception(
                     "Something went wrong while processing incoming events. Continuing..."
                 )
+                if exception_count >= max_exception_count:
+                    raise  # exit inf loop
 
     def _attempt_process_list_events(self, list_key: str) -> None:
         """

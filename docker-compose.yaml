@@ -287,7 +287,7 @@ services:
     ports:
       - 6377:6377
     volumes:
-      - ./environments/redis_conf/redis.conf:/conf/redis.conf
+      - ./config/redis.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
         ipv4_address: 172.29.0.101
@@ -298,7 +298,7 @@ services:
     ports:
       - 6378:6378
     volumes:
-      - ./environments/redis_conf/redis.conf:/conf/redis.conf
+      - ./config/redis.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
         ipv4_address: 172.29.0.102
@@ -309,7 +309,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - ./environments/redis_conf/redis.conf:/conf/redis.conf
+      - ./config/redis.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
         ipv4_address: 172.29.0.103
@@ -320,7 +320,7 @@ services:
     ports:
       - 6380:6380
     volumes:
-      - ./environments/redis_conf/redis.conf:/conf/redis.conf
+      - ./config/redis.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
         ipv4_address: 172.29.0.104
@@ -331,7 +331,7 @@ services:
     ports:
       - 6381:6381
     volumes:
-      - ./environments/redis_conf/redis.conf:/conf/redis.conf
+      - ./config/redis.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
         ipv4_address: 172.29.0.105
@@ -342,7 +342,7 @@ services:
     ports:
       - 6382:6382
     volumes:
-      - ./environments/redis_conf/redis.conf:/conf/redis.conf
+      - ./config/redis.conf:/conf/redis.conf
     networks:
       redis-cluster-network:
         ipv4_address: 172.29.0.106

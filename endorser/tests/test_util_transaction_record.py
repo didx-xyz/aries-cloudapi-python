@@ -65,7 +65,7 @@ def test_get_endorsement_request_attachment_invalid_json():
 
 def test_get_endorsement_request_attachment_exception():
     # Mock a TransactionRecord that raises an Exception when messages_attach is accessed
-    transaction_record_exception = MagicMock(spec=TransactionRecord)
+    transaction_record_exception = MagicMock()
     transaction_record_exception.messages_attach = Mock(
         side_effect=KeyError("Key error exception")
     )
@@ -73,7 +73,7 @@ def test_get_endorsement_request_attachment_exception():
     attachment = get_endorsement_request_attachment(transaction_record_exception)
     assert attachment is None
 
-    transaction_record_exception = MagicMock(spec=TransactionRecord)
+    transaction_record_exception = MagicMock()
     transaction_record_exception.messages_attach = Mock(
         side_effect=Exception("Test exception")
     )

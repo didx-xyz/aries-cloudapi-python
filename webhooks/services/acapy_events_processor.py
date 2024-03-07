@@ -227,7 +227,7 @@ class AcaPyEventsProcessor:
                     )
                     break
         except Exception:
-            logger.exception(f"Could not load event data ({event_data})")
+            logger.exception(f"Could not process list key {list_key}")
             raise
 
     def _process_event(self, event_json: str) -> None:

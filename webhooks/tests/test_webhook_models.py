@@ -259,7 +259,7 @@ issuer_cred_rev_event_payload = {
 
 # Helper method to dynamically check every key in the payload against the model's attributes
 def validate_result(
-    result: WebhookEventPayloadType, input_payload: Dict[str, str], skip: List[str] = []
+    result: WebhookEventPayloadType, input_payload: Dict[str, str], skip: List[str]
 ):
     print(f"{result=}")
     print(f"{input_payload=}")
@@ -278,7 +278,7 @@ def test_to_basic_message_model():
     cloudapi_event = acapy_to_cloudapi_event(event)
     result = cloudapi_event.payload
     assert isinstance(result, BasicMessage)
-    validate_result(result, basic_message_event_payload)
+    validate_result(result, basic_message_event_payload, skip=[])
 
 
 def test_to_connections_model():
@@ -313,7 +313,8 @@ def test_to_oob_model():
     result = cloudapi_event.payload
     assert isinstance(result, OobRecord)
     validate_result(result, oob_event_payload, skip=["invitation"])
-    validate_result(result.invitation, oob_event_payload["invitation"])  # nested models
+    # and to account for nested model:
+    validate_result(result.invitation, oob_event_payload["invitation"], skip=[])
 
 
 def test_credential_model():
@@ -382,7 +383,7 @@ def test_credential_indy_model():
     cloudapi_event = acapy_to_cloudapi_event(event)
     result = cloudapi_event.payload
     assert isinstance(result, CredExRecordIndy)
-    validate_result(result, issue_credential_v2_0_indy_event_payload)
+    validate_result(result, issue_credential_v2_0_indy_event_payload, skip=[])
 
 
 def test_credential_ld_model():
@@ -395,7 +396,7 @@ def test_credential_ld_model():
     cloudapi_event = acapy_to_cloudapi_event(event)
     result = cloudapi_event.payload
     assert isinstance(result, CredExRecordLDProof)
-    validate_result(result, issue_credential_v2_0_ld_event_payload)
+    validate_result(result, issue_credential_v2_0_ld_event_payload, skip=[])
 
 
 def test_proof_model():
@@ -466,7 +467,7 @@ def test_to_revocation_model():
     cloudapi_event = acapy_to_cloudapi_event(event)
     result = cloudapi_event.payload
     assert isinstance(result, IssuerRevRegRecord)
-    validate_result(result, revocation_event_payload)
+    validate_result(result, revocation_event_payload, skip=[])
 
 
 def test_to_issuer_cred_rev_model():
@@ -476,7 +477,7 @@ def test_to_issuer_cred_rev_model():
     cloudapi_event = acapy_to_cloudapi_event(event)
     result = cloudapi_event.payload
     assert isinstance(result, IssuerCredRevRecord)
-    validate_result(result, issuer_cred_rev_event_payload)
+    validate_result(result, issuer_cred_rev_event_payload, skip=[])
 
 
 # NB: No current webhook event example of a ProblemReport generated in our webhook logs

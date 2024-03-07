@@ -106,13 +106,18 @@ class SseManager:
             True if all background tasks are running, False if any task has stopped.
         """
         logger.debug("Checking if all tasks are running")
-        all_running = all(not task.done() for task in self._tasks)
+
+        if not self._pubsub:
+            logger.error("Pubsub is not running")
+
+        all_running = self._tasks and all(not task.done() for task in self._tasks)
         logger.debug("All tasks running: {}", all_running)
+
         if not all_running:
             for task in self._tasks:
                 if task.done():
                     logger.warning("Task `{}` is not running", task.get_name())
-        return all_running
+        return self._pubsub and all_running
 
     async def _listen_for_new_events(
         self, max_retries=5, retry_duration=0.33

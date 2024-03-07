@@ -204,6 +204,7 @@ async def test_process_endorsement_event_governance(endorsement_processor_mock):
     event_dict = {
         "origin": governance,
         "wallet_id": governance,
+        "topic": "endorsements",
         "payload": {"state": "request-received", "transaction_id": "txn1"},
     }
 

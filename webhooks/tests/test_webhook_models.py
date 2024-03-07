@@ -91,7 +91,9 @@ endorsement_event_payload = {
                     },
                     "protocolVersion": 2,
                     "reqId": 1709636128406146415,
-                    "signature": "4R8acvAFxS12pqZdTL38a7iz5kGvke2CF6bNWPDEBmSMSwHT3gVyG5Fue25kNEaK4ubwQe38dd37e3iWwkxMmBQh",
+                    "signature": (
+                        "4R8acvAFxS12pqZdTL38a7iz5kGvke2CF6bNWPDEBmSMSwHT3gVyG5Fue25kNEaK4ubwQe38dd37e3iWwkxMmBQh"
+                    ),
                     "taaAcceptance": {
                         "mechanism": "service_agreement",
                         "taaDigest": "0be4d87dec17a7901cb8ba8bb4239ee34d4f6e08906f3dad81d1d052dccc078f",
@@ -123,7 +125,10 @@ oob_event_payload = {
                 "id": "#inline",
                 "type": "did-communication",
                 "recipientKeys": [
-                    "did:key:z6MkiBY7si4p3mXYZWuz9jL9L2VKV1WtLh8oEnGhpAmj7NMX#z6MkiBY7si4p3mXYZWuz9jL9L2VKV1WtLh8oEnGhpAmj7NMX"
+                    (
+                        "did:key:z6MkiBY7si4p3mXYZWuz9jL9L2VKV1WtLh8oEnGhpAmj7NMX"
+                        "#z6MkiBY7si4p3mXYZWuz9jL9L2VKV1WtLh8oEnGhpAmj7NMX"
+                    )
                 ],
                 "serviceEndpoint": "http://governance-multitenant-agent:3020",
             }
@@ -167,7 +172,17 @@ issue_credential_v2_0_indy_event_payload = {
     "cred_ex_id": "de58b9ee-85e2-44fa-ad02-cd1c3e4d0f90",
     "cred_request_metadata": {
         "master_secret_blinding_data": {
-            "v_prime": "32121437961053510851105450867939422298894949696250264006383500377679729932498641517751196062469381921222864509492481073195971097258505244704198984882480824015501323030977489312548514393957069673232613342260358464427194114107824545472447094563563016520661946003061633136499010571040267984433089766835486889525363539473495659377827692790248202925368355817923508338593622488710786587707474094792060730836121511948880160287223456608107452388547383665429871078704483629869962953951236416854591921175660678376740453808713909379369010805315215104412502261950061083043002441541628847408080571331708812337603757371271493486144633241542403216814484036",
+            "v_prime": (
+                "32121437961053510851105450867939422298894949696250264006383500"
+                "3776797299324986415177511960624693819212228645094924810731959710972585052"
+                "4470419898488248082401550132303097748931254851439395706967323261334226035"
+                "8464427194114107824545472447094563563016520661946003061633136499010571040"
+                "2679844330897668354868895253635394734956593778276927902482029253683558179"
+                "2350833859362248871078658770747409479206073083612151194888016028722345660"
+                "8107452388547383665429871078704483629869962953951236416854591921175660678"
+                "3767404538087139093793690108053152151044125022619500610830430024415416288"
+                "47408080571331708812337603757371271493486144633241542403216814484036"
+            ),
             "vr_prime": None,
         },
         "nonce": "650900890204237446704340",
@@ -219,7 +234,10 @@ revocation_event_payload = {
     "issuer_did": "9dTJaBsMhXvTzmau2vkauz",
     "max_cred_num": 32767,
     "revoc_def_type": "CL_ACCUM",
-    "revoc_reg_id": "9dTJaBsMhXvTzmau2vkauz:4:9dTJaBsMhXvTzmau2vkauz:3:CL:13:VMOIP:CL_ACCUM:2db7da9e-bf1e-47f7-b016-ab41b7bf4e4c",
+    "revoc_reg_id": (
+        "9dTJaBsMhXvTzmau2vkauz:4:9dTJaBsMhXvTzmau2vkauz:3:CL:13:VMOIP:"
+        "CL_ACCUM:2db7da9e-bf1e-47f7-b016-ab41b7bf4e4c"
+    ),
     "pending_pub": [],
 }
 
@@ -229,7 +247,10 @@ issuer_cred_rev_event_payload = {
     "updated_at": "2024-03-07T07:55:55.443663Z",
     "record_id": "12658f33-cd4d-40fa-9adc-c31cb3ba6687",
     "cred_ex_id": "ceabcae9-ba61-4961-935e-6c98b2f5e754",
-    "rev_reg_id": "XRniRTaMU3mdMRkMrSvvmg:4:XRniRTaMU3mdMRkMrSvvmg:3:CL:25:tag:CL_ACCUM:5a2f9198-0114-48cb-a7a3-de6299919856",
+    "rev_reg_id": (
+        "XRniRTaMU3mdMRkMrSvvmg:4:XRniRTaMU3mdMRkMrSvvmg:3:"
+        "CL:25:tag:CL_ACCUM:5a2f9198-0114-48cb-a7a3-de6299919856"
+    ),
     "cred_def_id": "XRniRTaMU3mdMRkMrSvvmg:3:CL:25:tag",
     "cred_rev_id": "1",
     "cred_ex_version": "1",

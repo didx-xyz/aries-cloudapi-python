@@ -1,12 +1,10 @@
 import asyncio
-import json
-import time
+
 from typing import List, Optional
 
 from aries_cloudcontroller import (
     ApiException,
     CredentialDefinitionSendRequest,
-    RevRegUpdateTailsFileUri,
     SchemaGetResult,
     SchemaSendRequest,
 )
@@ -22,7 +20,6 @@ from app.dependencies.auth import (
 )
 from app.event_handling.sse_listener import SseListener
 from app.exceptions import (
-    BadRequestException,
     CloudApiException,
     TrustRegistryException,
 )
@@ -33,17 +30,14 @@ from app.models.definitions import (
     CredentialSchema,
 )
 from app.services import acapy_wallet
-from app.services.revocation_registry import (
-    create_revocation_registry,
-    publish_revocation_registry_on_ledger,
-)
+from app.services.revocation_registry import wait_for_active_registry
 from app.services.trust_registry.schemas import register_schema
 from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
-from shared import ACAPY_ENDORSER_ALIAS, ACAPY_TAILS_SERVER_BASE_URL, GOVERNANCE_LABEL
+from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

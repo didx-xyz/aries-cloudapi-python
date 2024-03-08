@@ -306,39 +306,10 @@ async def create_credential_definition(
                     field_id=result.txn.transaction_id,
                     desired_state="transaction-acked",
                 )
-            except asyncio.TimeoutError:
+            except asyncio.TimeoutError as e:
                 raise CloudApiException(
                     "Timeout waiting for endorser to accept the endorsement request.",
                     504,
-                )
-            bound_logger.debug(
-                "Transaction has been acknowledged. Fetching transaction"
-            )
-
-            try:
-                transaction = (
-                    await aries_controller.endorse_transaction.get_transaction(
-                        tran_id=result.txn.transaction_id
-                    )
-                )
-                bound_logger.debug("Transaction fetched successfully")
-
-                # Based on
-                # https://github.com/bcgov/traction/blob/6c86d35f3e8b8ca0b88a198876155ba820fb34ea/services/traction/api/services/SchemaWorkflow.py#L276-L280
-                signatures = transaction.signature_response[0]["signature"]
-                endorser_public_did = list(signatures.keys())[0]
-                signature = json.loads(signatures[endorser_public_did])
-
-                public_did = signature["identifier"]
-                sig_type = signature["operation"]["signature_type"]
-                schema_ref = signature["operation"]["ref"]
-                tag = signature["operation"]["tag"]
-                credential_definition_id = (
-                    f"{public_did}:3:{sig_type}:{schema_ref}:{tag}"
-                )
-            except Exception as e:
-                raise CloudApiException(
-                    "Unable to construct credential definition id from signature response."
                 ) from e
         elif result.sent and result.sent.credential_definition_id:
             bound_logger.debug(

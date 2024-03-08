@@ -7,6 +7,7 @@ from endorser.util.transaction_record import (
     get_did_and_schema_id_from_cred_def_attachment,
     get_endorsement_request_attachment,
     is_credential_definition_transaction,
+    is_revocation_def_or_entry
 )
 from endorser.util.trust_registry import is_valid_issuer
 from shared.log_config import get_logger
@@ -55,6 +56,10 @@ async def should_accept_endorsement(
         bound_logger.warning("Could not extract attachment from transaction.")
         return False
 
+    if is_revocation_def_or_entry(attachment):
+        bound_logger.debug("Endorsement request is for revocation definition or entry.")
+        return True
+    
     if not is_credential_definition_transaction(attachment):
         bound_logger.warning("Endorsement request is not for credential definition.")
         return False

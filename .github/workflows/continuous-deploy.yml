@@ -436,14 +436,26 @@ jobs:
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
-        run: redis-cli -h $REDIS_HOST -p $REDIS_PORT --scan --pattern '*'
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        run: |
+          redis-cli \
+            -h $REDIS_HOST \
+            -p $REDIS_PORT \
+            --tls --pass $REDIS_PASSWORD \
+            --scan --pattern '*'
 
       - name: Clean Elasticache Redis
         if: github.event.inputs.run-reset-deployments == 'true'
         env:
           REDIS_HOST: ${{ secrets.REDIS_HOST }}
           REDIS_PORT: ${{ secrets.REDIS_PORT }}
-        run: redis-cli -h $REDIS_HOST -p $REDIS_PORT FLUSHALL
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+        run: |
+          redis-cli \
+            --tls --pass $REDIS_PASSWORD \
+            --cluster call --cluster-only-masters \
+            $REDIS_HOST:$REDIS_PORT \
+            FLUSHALL
 
       - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
@@ -608,10 +620,9 @@ jobs:
           LOCAL_PATH: ./
           NAMESPACE: dev-cloudapi
 
-
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4
-        if: always ()
+        if: always()
         with:
           report_paths: './test_output.xml'
           fail_on_failure: true
@@ -619,8 +630,8 @@ jobs:
           require_passed_tests: true
 
       - name: Pytest coverage comment
-        if: always()
-        uses: MishaKav/pytest-coverage-comment@main
+        if: github.event_name == 'pull_request'
+        uses: MishaKav/pytest-coverage-comment@v1.1.51
         with:
           pytest-coverage-path: ./test_coverage.txt
           junitxml-path: ./test_output.xml

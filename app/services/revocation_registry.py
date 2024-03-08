@@ -388,3 +388,30 @@ async def validate_rev_reg_ids(
                 ) from e
 
     bound_logger.info("Successfully validated revocation registry ids.")
+
+
+async def get_created_active_registries(
+    controller: AcaPyClient, cred_def_id: str
+) -> List[str]:
+    """
+    Get the active revocation registries for a credential definition with state active.
+
+    """
+    bound_logger = logger.bind(body={"cred_def_id": cred_def_id})
+    try:
+        # Both will be in active state when created
+        reg = await controller.revocation.get_created_registries(
+            cred_def_id=cred_def_id, state="active"
+        )
+        return reg.rev_reg_ids
+    except ApiException as e:
+        bound_logger.error("ApiException getting registries : {}", e.reason)
+        detail = (
+            "Error while creating credential definition: "
+            + f"Could not retrieve active revocation registries `{e.reason}`."
+        )
+        raise CloudApiException(
+            detail=detail,
+            status_code=e.status,
+        ) from e
+

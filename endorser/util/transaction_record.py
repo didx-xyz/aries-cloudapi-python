@@ -114,7 +114,6 @@ def is_revocation_def_or_entry(attachment: Dict[str, Any]) -> bool:
             "Endorsement request operation type: `{}`. Must be 113 or 114 for REVOC_REG_DEF or REVOC_REG_ENTRY",
             operation.get("type"),
         )
-
         return operation.get("type") in ["113", "114"]
     except Exception:
         logger.exception("Exception caught while running `is_revocation`.")

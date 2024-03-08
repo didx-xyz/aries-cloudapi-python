@@ -228,6 +228,9 @@ async def create_credential_definition(
     bound_logger.info("POST request received: Create credential definition")
 
     support_revocation = credential_definition.support_revocation
+    rev_reg_size = (
+        credential_definition.revocation_registry_size if support_revocation else None
+    )
 
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
@@ -235,7 +238,7 @@ async def create_credential_definition(
         try:
             public_did = await acapy_wallet.assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning("Asserting public DID failed: {}", e)
+            bound_logger.warning(f"Asserting public DID failed: {e}")
             raise CloudApiException(
                 "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
                 403,

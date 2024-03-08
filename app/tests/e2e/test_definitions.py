@@ -165,3 +165,13 @@ async def test_create_credential_definition_issuer_tenant(
         assert issuer_rev_reg_record
         assert cred_def_id == issuer_rev_reg_record.cred_def_id
         assert issuer_rev_reg_record.issuer_did == faber_public_did.did
+
+        revocation_registries = (
+            await faber_acapy_client.revocation.get_created_registries(
+                cred_def_id=cred_def_id
+            )
+        ).rev_reg_ids
+
+        # There should be two revocation registries,
+        # one being used to issue credentails against and once full swith to the next one
+        assert len(revocation_registries) == 2

@@ -548,7 +548,7 @@ services:
         condition: service_completed_successfully
   pytest:
     image: local/tests
-    container_name: tests
+    container_name: tests2
     restart: "no"
     build:
       context: .

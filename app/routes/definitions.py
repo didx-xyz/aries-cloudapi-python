@@ -216,7 +216,15 @@ async def create_credential_definition(
     --------
         Credential Definition
     """
-    bound_logger = logger.bind(body=credential_definition)
+    bound_logger = logger.bind(
+        body={
+            "tag": credential_definition.tag,
+            "schema_id": credential_definition.schema_id,
+            "support_revocation": credential_definition.support_revocation,
+            "revocation_registry_size": credential_definition.revocation_registry_size,
+            "unsafe_dont_wait_for_registries": unsafe_dont_wait_for_registries,
+        }
+    )
     bound_logger.info("POST request received: Create credential definition")
 
     support_revocation = credential_definition.support_revocation

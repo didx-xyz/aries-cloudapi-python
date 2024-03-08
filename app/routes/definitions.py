@@ -1,5 +1,4 @@
 import asyncio
-
 from typing import List, Optional
 
 from aries_cloudcontroller import (
@@ -19,10 +18,7 @@ from app.dependencies.auth import (
     acapy_auth_verified,
 )
 from app.event_handling.sse_listener import SseListener
-from app.exceptions import (
-    CloudApiException,
-    TrustRegistryException,
-)
+from app.exceptions import CloudApiException, TrustRegistryException
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,

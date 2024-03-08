@@ -64,7 +64,9 @@ async def credential_definition_id(
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(credential_definition=definition, auth=auth)
+    result = await create_credential_definition(
+        credential_definition=definition, auth=auth
+    )
 
     return result.id
 
@@ -77,11 +79,16 @@ async def credential_definition_id_revocable(
     await register_issuer(faber_client, schema_definition_alt.id)
 
     definition = CreateCredentialDefinition(
-        tag="tag", schema_id=schema_definition_alt.id, support_revocation=True, revocation_registry_size=100
+        tag="tag",
+        schema_id=schema_definition_alt.id,
+        support_revocation=True,
+        revocation_registry_size=100,
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
-    result = await create_credential_definition(credential_definition=definition, auth=auth)
+    result = await create_credential_definition(
+        credential_definition=definition, auth=auth
+    )
 
     return result.id
 
@@ -191,7 +198,9 @@ async def meld_co_credential_definition_id(
     )
 
     auth = acapy_auth_verified(acapy_auth(meld_co_client.headers["x-api-key"]))
-    result = await create_credential_definition(credential_definition=definition, auth=auth)
+    result = await create_credential_definition(
+        credential_definition=definition, auth=auth
+    )
 
     return result.id
 

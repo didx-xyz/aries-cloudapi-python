@@ -266,19 +266,34 @@ async def create_credential_definition(
                     "to support revocation. Please establish a connection with an endorser and try again."
                 )
 
-            endorser_connection_id = endorser_connection.results[0].connection_id
-
         listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
 
         bound_logger.debug("Publishing credential definition")
-        result = await aries_controller.credential_definition.publish_cred_def(
-            body=CredentialDefinitionSendRequest(
-                schema_id=credential_definition.schema_id,
-                support_revocation=support_revocation,
-                tag=credential_definition.tag,
+        try:
+            result = await aries_controller.credential_definition.publish_cred_def(
+                body=CredentialDefinitionSendRequest(
+                    schema_id=credential_definition.schema_id,
+                    support_revocation=support_revocation,
+                    tag=credential_definition.tag,
+                    revocation_registry_size=rev_reg_size,
+                ),
             )
-        )
+            credential_definition_id = result.sent.credential_definition_id
+        except ApiException as e:
+            bound_logger.warning(
+                "An ApiException was caught while publishing credential definition: `{}` `{}`",
+                e.reason,
+                e.status,
+            )
+            if "already exists" in e.reason:
+                raise CloudApiException(status_code=409, detail=e.reason) from e
+            else:
+                raise CloudApiException(
+                    detail=f"Error while creating credential definition: {e.reason}",
+                    status_code=e.status,
+                ) from e
 
+        # Wait for cred_def transaction to be acknowledged
         if result.txn and result.txn.transaction_id:
             bound_logger.debug(
                 "The publish credential definition response provides a transaction id. "

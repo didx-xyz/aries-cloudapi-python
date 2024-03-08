@@ -9,10 +9,7 @@ from aries_cloudcontroller import (
     IssuerRevRegRecord,
     PublishRevocations,
     RevokeRequest,
-    RevRegCreateRequest,
     RevRegResult,
-    TransactionRecord,
-    TxnOrRevRegResult,
 )
 
 from app.exceptions import CloudApiException
@@ -20,50 +17,6 @@ from app.models.issuer import ClearPendingRevocationsResult
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
-
-
-async def create_revocation_registry(
-    controller: AcaPyClient, credential_definition_id: str, max_cred_num: int = 32767
-) -> IssuerRevRegRecord:
-    """
-        Create a new revocation registry
-
-        This should be called whenever a new credential definition is created.
-
-    Args:
-        controller (AcaPyClient): aca-py client
-        credential_definition_id (str): The credential definition ID.
-        max_cred_num (int): The maximum number of credentials to be stored by the registry.
-            Default = 32768 (i.e. max is 32768)
-
-    Raises:
-        Exception: When the credential definition is not found or the revocation registry could not be created.
-
-    Returns:
-        result (IssuerRevRegRecord): The revocation registry record.
-    """
-    bound_logger = logger.bind(
-        body={
-            "credential_definition_id": credential_definition_id,
-            "max_cred_num": max_cred_num,
-        }
-    )
-    bound_logger.info("Creating a new revocation registry for a credential definition")
-    result = await controller.revocation.create_registry(
-        body=RevRegCreateRequest(
-            credential_definition_id=credential_definition_id, max_cred_num=max_cred_num
-        )
-    )
-
-    if not result:
-        bound_logger.error("Error creating revocation registry.")
-        raise CloudApiException(
-            f"Error creating revocation registry for credential with ID `{credential_definition_id}`."
-        )
-
-    bound_logger.info("Successfully created revocation registry.")
-
-    return result.result
 
 
 async def get_active_revocation_registry_for_credential(
@@ -103,133 +56,6 @@ async def get_active_revocation_registry_for_credential(
     bound_logger.info(
         "Successfully retrieved revocation registry for credential definition."
     )
-    return result.result
-
-
-async def publish_revocation_registry_on_ledger(
-    controller: AcaPyClient,
-    revocation_registry_id: str,
-    connection_id: Optional[str] = None,
-    create_transaction_for_endorser: bool = False,
-) -> TransactionRecord:
-    """
-        Publish a created revocation registry to the ledger
-
-    Args:
-        controller (AcaPyClient): aca-py client
-        revocation_registry_id (str): The revocation registry ID.
-        connection_id (Optional[str]): The connection ID of author to endorser.
-        create_transaction_for_endorser (bool): Whether to create a transaction
-            record to for the endorser to be endorsed.
-
-    Raises:
-        Exception: When the revocation registry could not be published.
-
-    Returns:
-        result TransactionRecord: The transaction record or the Revocation Register Result.
-    """
-    bound_logger = logger.bind(
-        body={
-            "revocation_registry_id": revocation_registry_id,
-            "connection_id": connection_id,
-            "create_transaction_for_endorser": create_transaction_for_endorser,
-        }
-    )
-    bound_logger.info("Publishing revocation registry to the ledger")
-
-    txn_or_rev_reg_result = await controller.revocation.publish_rev_reg_def(
-        rev_reg_id=revocation_registry_id,
-        conn_id=connection_id if create_transaction_for_endorser else None,
-        create_transaction_for_endorser=create_transaction_for_endorser,
-    )
-
-    if isinstance(txn_or_rev_reg_result, RevRegResult):
-        result = txn_or_rev_reg_result.result
-    elif (
-        isinstance(txn_or_rev_reg_result, TxnOrRevRegResult)
-        and txn_or_rev_reg_result.txn
-    ):
-        result = txn_or_rev_reg_result.txn
-    else:
-        bound_logger.error(
-            "Unexpected type returned from publish_rev_reg_def: `{}`.",
-            txn_or_rev_reg_result,
-        )
-        raise CloudApiException("Failed to publish revocation registry to ledger.")
-
-    bound_logger.info("Successfully published revocation registry to ledger.")
-
-    return result
-
-
-async def publish_revocation_entry_to_ledger(
-    controller: AcaPyClient,
-    revocation_registry_id: Optional[str] = None,
-    credential_definition_id: Optional[str] = None,
-    connection_id: Optional[str] = None,
-    create_transaction_for_endorser: Optional[bool] = False,
-) -> IssuerRevRegRecord:
-    """
-        Publish a created revocation entry to the ledger
-
-    Args:
-        controller (AcaPyClient): aca-py client
-        credential_definition_id (str): The credential definition ID.
-        revocation_registry_id (str): The revocation registry ID.
-            Default is None
-        connection_id (str): The connection ID of author to endorser.
-            Default is None
-        create_transaction_for_endorser (bool): Whether to create a transaction
-            record to for the endorser to be endorsed.
-            Default is False
-
-    Raises:
-        Exception: When the revocation registry entry could not be published.
-
-    Returns:
-        result (IssuerRevRegRecord): The revocation registry record.
-    """
-    bound_logger = logger.bind(
-        body={
-            "revocation_registry_id": revocation_registry_id,
-            "credential_definition_id": credential_definition_id,
-            "connection_id": connection_id,
-            "create_transaction_for_endorser": create_transaction_for_endorser,
-        }
-    )
-    bound_logger.info("Publishing revocation entry to the ledger")
-
-    if not revocation_registry_id and not credential_definition_id:
-        bound_logger.info(
-            "Bad request: one of `revocation_registry_id` or `credential_definition_id` must be given"
-        )
-        raise CloudApiException(
-            "Invalid request. Please provide either a 'revocation registry id' or a 'credential definition id'.",
-            400,
-        )
-    if not revocation_registry_id:
-        bound_logger.debug("Fetching active revocation registry for credential")
-        revocation_registry_id = await get_active_revocation_registry_for_credential(
-            controller=controller, credential_definition_id=credential_definition_id
-        )
-    try:
-        bound_logger.debug("Publishing revocation entry")
-        result = await controller.revocation.publish_rev_reg_entry(
-            rev_reg_id=revocation_registry_id,
-            conn_id=connection_id if create_transaction_for_endorser else None,
-            create_transaction_for_endorser=create_transaction_for_endorser,
-        )
-    except Exception as e:
-        bound_logger.exception("An unexpected exception occurred.")
-        return e
-
-    if not isinstance(result, RevRegResult):
-        bound_logger.error(
-            "Unexpected type returned from publish_rev_reg_entry: `{}`.", result
-        )
-        raise CloudApiException("Failed to publish revocation entry to ledger.")
-
-    bound_logger.info("Successfully published revocation entry to ledger.")
     return result.result
 
 

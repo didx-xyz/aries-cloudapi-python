@@ -415,3 +415,11 @@ async def get_created_active_registries(
             status_code=e.status,
         ) from e
 
+
+async def wait_for_active_registry(
+    controller: AcaPyClient, cred_def_id: str
+) -> List[str]:
+    active_registries = await get_created_active_registries(controller, cred_def_id)
+    while len(active_registries) != 2:
+        active_registries = await get_created_active_registries(controller, cred_def_id)
+    return active_registries

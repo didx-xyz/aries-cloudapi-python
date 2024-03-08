@@ -204,6 +204,12 @@ async def create_credential_definition(
         credential_definition: CreateCredentialDefinition
             Payload for creating a credential definition.
 
+        unsafe_dont_wait_for_registries: bool (Optional)
+            If set to true, the endpoint will not wait for the revocation registries to be created.
+            This is not recommended, as it can lead to failed credential issuance if the revocation
+            registries are not ready.
+            If set to true, please wait at least one to two minutes before issuing credentials.
+
     Returns:
     --------
         Credential Definition

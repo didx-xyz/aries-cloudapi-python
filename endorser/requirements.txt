@@ -7,4 +7,4 @@ orjson~=3.9.15
 pydantic~=2.5.1
 redis~=5.1.0b4
 typing-extensions~=4.9.0
-uvicorn[standard]~=0.27.0
+uvicorn[standard]~=0.28.0

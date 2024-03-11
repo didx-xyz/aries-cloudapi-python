@@ -61,8 +61,8 @@ class WebhooksRedisService(RedisService):
         bound_logger.trace("Write entry to redis")
 
         # Use the current timestamp as the score for the sorted set
-        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        self.redis.zadd(wallet_key, {event_json: timestamp_ns})
+        redis_key = self.get_cloudapi_event_redis_key(wallet_id, group_id)
+        self.redis.zadd(redis_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
@@ -85,8 +85,8 @@ class WebhooksRedisService(RedisService):
         bound_logger.trace("Fetching entries from redis by wallet id")
 
         # Fetch all entries using the full range of scores
-        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        entries: List[bytes] = self.redis.zrange(wallet_key, 0, -1)
+        redis_key = self.get_cloudapi_event_redis_key(wallet_id)
+        entries: List[bytes] = self.redis.zrange(redis_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
         bound_logger.trace("Successfully fetched redis entries.")
@@ -163,9 +163,9 @@ class WebhooksRedisService(RedisService):
         """
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by timestamp for wallet")
-        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
+        redis_key = self.get_cloudapi_event_redis_key(wallet_id)
         entries: List[bytes] = self.redis.zrangebyscore(
-            wallet_key, min=start_timestamp, max=end_timestamp
+            redis_key, min=start_timestamp, max=end_timestamp
         )
         entries_str: List[str] = [entry.decode() for entry in entries]
         bound_logger.trace("Fetched entries: {}", entries_str)

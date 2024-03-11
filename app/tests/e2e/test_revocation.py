@@ -265,7 +265,7 @@ async def test_publish_revocations_bad_payload(
 @pytest.mark.anyio
 async def test_proof_revoked_credential_v1(
     faber_client: RichAsyncClient,
-    issue_revocable_credentials_to_alice_and_revoke: list, # pylint: disable=unused-argument
+    issue_revocable_credentials_to_alice_and_revoke: list,  # pylint: disable=unused-argument
     acme_client: RichAsyncClient,
     acme_verifier: CreateTenantResponse,
     alice_member_client: RichAsyncClient,
@@ -368,7 +368,7 @@ async def test_proof_revoked_credential_v1(
 @pytest.mark.anyio
 async def test_proof_revoked_credential_v2(
     faber_client: RichAsyncClient,
-    issue_revocable_credentials_to_alice_and_revoke: list, # pylint: disable=unused-argument
+    issue_revocable_credentials_to_alice_and_revoke: list,  # pylint: disable=unused-argument
     acme_client: RichAsyncClient,
     acme_verifier: CreateTenantResponse,
     alice_member_client: RichAsyncClient,

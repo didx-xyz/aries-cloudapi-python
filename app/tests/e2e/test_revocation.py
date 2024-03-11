@@ -1,11 +1,18 @@
+import time
+
 import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
 
+from app.event_handling.sse_listener import SseListener
+from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
+from app.routes.verifier import router as verifier_router
+from app.tests.util.ecosystem_connections import AcmeAliceConnect, FaberAliceConnect
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = router.prefix
+VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
@@ -253,3 +260,209 @@ async def test_publish_revocations_bad_payload(
         )
 
     assert_that(exc.value.status_code).is_equal_to(404)
+
+
+@pytest.mark.anyio
+async def test_proof_revoked_credential_v1(
+    faber_client: RichAsyncClient,
+    issue_revocable_credentials_to_alice_and_revoke: list, # pylint: disable=unused-argument
+    acme_client: RichAsyncClient,
+    acme_verifier: CreateTenantResponse,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    acme_and_alice_connection: AcmeAliceConnect,
+):
+
+    acme_connection_id = acme_and_alice_connection.acme_connection_id
+    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
+    acme_listener = SseListener(topic="proofs", wallet_id=acme_verifier.wallet_id)
+
+    # Publish revoked credentials
+    await faber_client.post(
+        f"{CREDENTIALS_BASE_PATH}/publish-revocations",
+        json={"revocation_registry_credential_map": {}},
+    )
+
+    # Get current time
+    unix_timestamp = int(time.time())
+
+    # Do proof request
+    send_proof_request = await acme_client.post(
+        f"{VERIFIER_BASE_PATH}/send-request",
+        json={
+            "protocol_version": "v1",
+            "comment": "Test proof of revocation",
+            "type": "indy",
+            "indy_proof_request": {
+                "name": "Proof of SPEED",
+                "version": "1.0",
+                "non_revoked": {"to": unix_timestamp},
+                "requested_attributes": {
+                    "THE_SPEED": {
+                        "name": "speed",
+                        "restrictions": [],
+                    }
+                },
+                "requested_predicates": {},
+            },
+            "save_exchange_record": True,
+            "connection_id": acme_connection_id,
+        },
+    )
+
+    acme_proof_exchange_id = send_proof_request.json()["proof_id"]
+
+    await alice_listener.wait_for_state(
+        desired_state="request-received",
+        lookback_time=5,
+    )
+
+    # Get proof exchange id
+    proof_exchange_record = (
+        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    ).json()
+
+    alice_proof_exchange_id = proof_exchange_record[0]["proof_id"]
+
+    # Get referent
+    referent = (
+        await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_exchange_id}/credentials"
+        )
+    ).json()[0]["cred_info"]["referent"]
+
+    # Send proof
+    await alice_member_client.post(
+        f"{VERIFIER_BASE_PATH}/accept-request",
+        json={
+            "proof_id": alice_proof_exchange_id,
+            "type": "indy",
+            "indy_presentation_spec": {
+                "requested_attributes": {
+                    "THE_SPEED": {"cred_id": referent, "revealed": True}
+                },
+                "requested_predicates": {},
+                "self_attested_attributes": {},
+            },
+            "dif_presentation_spec": {},
+        },
+    )
+
+    await alice_listener.wait_for_state(
+        desired_state="done",
+        lookback_time=5,
+    )
+    await acme_listener.wait_for_state(
+        desired_state="done",
+        lookback_time=5,
+    )
+
+    # Check proof
+    proof = (
+        await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_exchange_id}")
+    ).json()
+
+    assert proof["verified"] == False
+
+
+@pytest.mark.anyio
+async def test_proof_revoked_credential_v2(
+    faber_client: RichAsyncClient,
+    issue_revocable_credentials_to_alice_and_revoke: list, # pylint: disable=unused-argument
+    acme_client: RichAsyncClient,
+    acme_verifier: CreateTenantResponse,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+    acme_and_alice_connection: AcmeAliceConnect,
+):
+
+    acme_connection_id = acme_and_alice_connection.acme_connection_id
+    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
+    acme_listener = SseListener(topic="proofs", wallet_id=acme_verifier.wallet_id)
+
+    # Publish revoked credentials
+    await faber_client.post(
+        f"{CREDENTIALS_BASE_PATH}/publish-revocations",
+        json={"revocation_registry_credential_map": {}},
+    )
+
+    # Get current time
+    unix_timestamp = int(time.time())
+
+    # Do proof request
+    send_proof_request = await acme_client.post(
+        f"{VERIFIER_BASE_PATH}/send-request",
+        json={
+            "protocol_version": "v2",
+            "comment": "Test proof of revocation",
+            "type": "indy",
+            "indy_proof_request": {
+                "name": "Proof of SPEED",
+                "version": "1.0",
+                "non_revoked": {"to": unix_timestamp},
+                "requested_attributes": {
+                    "THE_SPEED": {
+                        "name": "speed",
+                        "restrictions": [],
+                    }
+                },
+                "requested_predicates": {},
+            },
+            "save_exchange_record": True,
+            "connection_id": acme_connection_id,
+        },
+    )
+
+    acme_proof_exchange_id = send_proof_request.json()["proof_id"]
+
+    await alice_listener.wait_for_state(
+        desired_state="request-received",
+        lookback_time=5,
+    )
+
+    # Get proof exchange id
+    proof_exchange_record = (
+        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    ).json()
+
+    alice_proof_exchange_id = proof_exchange_record[0]["proof_id"]
+
+    # Get referent
+    referent = (
+        await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_exchange_id}/credentials"
+        )
+    ).json()[0]["cred_info"]["referent"]
+
+    # Send proof
+    await alice_member_client.post(
+        f"{VERIFIER_BASE_PATH}/accept-request",
+        json={
+            "proof_id": alice_proof_exchange_id,
+            "type": "indy",
+            "indy_presentation_spec": {
+                "requested_attributes": {
+                    "THE_SPEED": {"cred_id": referent, "revealed": True}
+                },
+                "requested_predicates": {},
+                "self_attested_attributes": {},
+            },
+            "dif_presentation_spec": {},
+        },
+    )
+
+    await alice_listener.wait_for_state(
+        desired_state="done",
+        lookback_time=5,
+    )
+    await acme_listener.wait_for_state(
+        desired_state="done",
+        lookback_time=5,
+    )
+
+    # Check proof
+    proof = (
+        await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_exchange_id}")
+    ).json()
+
+    assert proof["verified"] == False

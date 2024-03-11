@@ -278,7 +278,7 @@ class AcaPyEventsProcessor:
                 "payload": payload,
             }
         )
-        bound_logger.debug("Processing ACA-Py Redis webhook event")
+        bound_logger.trace("Processing ACA-Py Redis webhook event")
 
         # Map from the acapy webhook topic to a unified cloud api topic
         cloudapi_topic = topic_mapping.get(acapy_topic)
@@ -313,7 +313,7 @@ class AcaPyEventsProcessor:
             and cloudapi_topic == "endorsements"
             and payload_is_applicable_for_endorser(payload, logger=bound_logger)
         ):
-            bound_logger.info("Forwarding endorsement event for Endorser service")
+            logger.info("Forwarding endorsement event for Endorser service")
             self.redis_service.add_endorsement_event(event_json=webhook_event_json)
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
@@ -324,7 +324,7 @@ class AcaPyEventsProcessor:
             timestamp_ns=event.metadata.time_ns,
         )
 
-        bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")
+        bound_logger.trace("Successfully processed ACA-Py Redis webhook event.")
 
     def _handle_unprocessable_event(self, key: str, error: Exception) -> None:
         """

@@ -114,6 +114,21 @@ class CreateTenantRequest(BaseModel):
 
         return v
 
+    @field_validator("group_id", mode="before")
+    @classmethod
+    def validate_group_id(cls, v):
+        if v:
+            if len(v) > 50:
+                raise ValueError("group_id has a max length of 50 characters")
+
+            if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
+                raise ValueError(
+                    "group_id may not contain certain special characters. Must be alphanumeric, may include "
+                    f"spaces, and the following special characters are allowed: {allowable_special_chars}"
+                )
+
+        return v
+
 
 class UpdateTenantRequest(BaseModel):
     wallet_label: Optional[str] = Field(
@@ -122,7 +137,6 @@ class UpdateTenantRequest(BaseModel):
     roles: Optional[List[TrustRegistryRole]] = None
     image_url: Optional[str] = image_url_field
     extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
-    # TODO: add group_id to update request
 
     @field_validator("wallet_label", mode="before")
     @classmethod

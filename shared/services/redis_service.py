@@ -73,20 +73,10 @@ class RedisService:
         """
         self.redis = redis
 
-        self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
         self.endorsement_redis_prefix = "endorse"  # redis prefix for endorsement events
 
         self.logger = get_logger(logger_name)
         self.logger.info("RedisService initialised")
-
-    def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:
-        """
-        Define redis prefix for CloudAPI (transformed) webhook events
-
-        Args:
-            wallet_id: The relevant wallet id
-        """
-        return f"{self.cloudapi_redis_prefix}:{wallet_id}"
 
     def set(self, key: str, value: str) -> Optional[bool]:
         """

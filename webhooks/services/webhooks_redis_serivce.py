@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 from redis import RedisCluster
@@ -24,9 +24,25 @@ class WebhooksRedisService(RedisService):
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
-        self.acapy_redis_prefix = "acapy-record-*"  # redis prefix, ACA-Py events
+        self.acapy_redis_prefix = "acapy-record-*"  # redis prefix for ACA-Py events
+
+        self.cloudapi_redis_prefix = "cloudapi"  # redis prefix for CloudAPI events
 
         self.logger.info("WebhooksRedisService initialised")
+
+    def get_cloudapi_event_redis_key(
+        self, wallet_id: str, group_id: Optional[str] = None
+    ) -> str:
+        """
+        Define redis prefix for CloudAPI (transformed) webhook events
+
+        Args:
+            wallet_id: The relevant wallet id
+            group_id: The group_id to which this wallet_id belongs.
+        """
+        group_and_wallet_id = f"group:{group_id}:{wallet_id}" if group_id else wallet_id
+
+        return f"{self.cloudapi_redis_prefix}:{group_and_wallet_id}"
 
     def add_endorsement_event(self, event_json: str) -> None:
         """

@@ -210,7 +210,7 @@ class WebhooksRedisService(RedisService):
                 )
                 if keys:
                     wallet_id_batch = set(
-                        key.decode("utf-8").split(":")[1] for key in keys
+                        key.decode("utf-8").split(":")[-1] for key in keys
                     )
                     wallet_ids.update(wallet_id_batch)
                     self.logger.debug(

@@ -170,11 +170,11 @@ async def test_get_all_cloudapi_wallet_ids():
         (
             {"localhost:6379": 1},
             [
-                f"cloudapi_event:{wallet_id}".encode()
+                f"cloudapi:{wallet_id}".encode()
                 for wallet_id in expected_wallet_ids[:2]
             ],
         ),
-        ({"localhost:6379": 0}, [f"cloudapi_event:{expected_wallet_ids[2]}".encode()]),
+        ({"localhost:6379": 0}, [f"cloudapi:{expected_wallet_ids[2]}".encode()]),
     ]
 
     redis_client = Mock()

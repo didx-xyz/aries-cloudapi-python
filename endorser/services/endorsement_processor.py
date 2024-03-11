@@ -208,14 +208,6 @@ class EndorsementProcessor:
                 # Cancel the lock extension task if it's still running
                 if extend_lock_task:
                     extend_lock_task.cancel()
-
-                # Delete the lock key to signify completion
-                if self.redis_service.delete_key(lock_key):
-                    logger.debug("Deleted lock key: {}", lock_key)
-                else:
-                    logger.warning(
-                        "Could not delete lock key: {}. Perhaps it expired?", lock_key
-                    )
         else:
             logger.debug(
                 "Event {} is currently being processed by another instance.", event_key

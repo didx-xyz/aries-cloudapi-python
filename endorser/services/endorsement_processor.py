@@ -187,6 +187,13 @@ class EndorsementProcessor:
         ):
             logger.trace("Successfully set lock for {}", event_key)
             event_json = self.redis_service.get(event_key)
+            if not event_json:
+                logger.warning(
+                    "Tried to read an event from key {}, but event has been deleted:",
+                    event_key,
+                )
+                return
+
             try:
                 # Start a background task to extend the lock periodically
                 extend_lock_task = self.redis_service.extend_lock_task(

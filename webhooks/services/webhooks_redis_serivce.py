@@ -44,6 +44,34 @@ class WebhooksRedisService(RedisService):
 
         return f"{self.cloudapi_redis_prefix}:{group_and_wallet_id}"
 
+    def get_cloudapi_event_redis_key_unknown_group(
+        self, wallet_id: str
+    ) -> Optional[str]:
+        """
+        Fetch the redis key for a CloudAPI webhook event
+
+        Args:
+            wallet_id: The relevant wallet id
+        """
+        wildcard_key = f"{self.cloudapi_redis_prefix}*{wallet_id}"
+        self.logger.debug("Fetching redis keys matching pattern: {}", wildcard_key)
+        list_keys = self.match_keys(wildcard_key)
+
+        if not list_keys:
+            self.logger.debug(
+                "No redis keys found matching the pattern for wallet: {}.", wallet_id
+            )
+            return None
+
+        if len(list_keys) > 1:
+            self.logger.warning(
+                "More than one redis key found for wallet: {}", wallet_id
+            )
+
+        result = list_keys[0]
+        self.logger.debug("Returning matched key: {}.", result)
+        return result
+
     def add_cloudapi_webhook_event(
         self,
         event_json: str,
@@ -89,8 +117,12 @@ class WebhooksRedisService(RedisService):
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.trace("Fetching entries from redis by wallet id")
 
+        redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
+        if not redis_key:
+            bound_logger.debug("No entries found for wallet without matching redis key")
+            return []
+
         # Fetch all entries using the full range of scores
-        redis_key = self.get_cloudapi_event_redis_key(wallet_id)
         entries: List[bytes] = self.redis.zrange(redis_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
@@ -168,7 +200,12 @@ class WebhooksRedisService(RedisService):
         """
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by timestamp for wallet")
-        redis_key = self.get_cloudapi_event_redis_key(wallet_id)
+
+        redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
+        if not redis_key:
+            bound_logger.debug("No entries found for wallet without matching redis key")
+            return []
+
         entries: List[bytes] = self.redis.zrangebyscore(
             redis_key, min=start_timestamp, max=end_timestamp
         )

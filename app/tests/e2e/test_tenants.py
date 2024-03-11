@@ -384,7 +384,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
         json={
             "image_url": "https://image.ca",
             "wallet_label": uuid4().hex,
-            "group_id": "ac/dc",
+            "group_id": "acdc",
         },
     )
 
@@ -398,7 +398,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
     # Make sure created tenant is returned
     assert_that(tenants).extracting("wallet_id").contains(last_wallet_id)
-    assert_that(tenants).extracting("group_id").contains("ac/dc")
+    assert_that(tenants).extracting("group_id").contains("acdc")
 
 
 @pytest.mark.anyio
@@ -601,6 +601,16 @@ async def test_create_tenant_validation(tenant_admin_client: RichAsyncClient):
 
             assert bad_name_response.status_code == 422
             assert "wallet_name" in bad_label_response.json()
+
+        # Assert bad requests for group_id
+        with pytest.raises(Exception):
+            bad_group_response = await tenant_admin_client.post(
+                TENANTS_BASE_PATH,
+                json={"wallet_label": uuid4().hex, "group_id": char},
+            )
+
+            assert bad_group_response.status_code == 422
+            assert "group_id" in bad_group_response.json()
 
     # Lastly, assert very long strings (> 100 chars) aren't allowed
     very_long_string = 101 * "a"

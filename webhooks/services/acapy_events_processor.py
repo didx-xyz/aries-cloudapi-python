@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import sys
 from typing import List, NoReturn
 from uuid import uuid4
@@ -178,21 +179,28 @@ class AcaPyEventsProcessor:
             list_key: The Redis key of the list to process.
         """
         lock_key = f"lock:{list_key}"
-        if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
+        extend_lock_task = None
+
+        lock_duration = 500  # milliseconds
+
+        if self.redis_service.set_lock(lock_key, px=lock_duration):
             try:
+                # Start a background task to extend the lock periodically
+                # This is just to ensure that on the off chance that 500ms isn't enough to process all the
+                # events in the list, we want to avoid replicas processing the same webhook event twice
+                extend_lock_task = self.redis_service.extend_lock_task(
+                    lock_key, interval=datetime.timedelta(milliseconds=lock_duration)
+                )
+
                 self._process_list_events(list_key)
             except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
                 logger.error("Processing {} raised an exception: {}", list_key, e)
                 self._handle_unprocessable_event(list_key, e)
             finally:
-                # Delete lock after processing list, whether it completed or errored:
-                if self.redis_service.delete_key(lock_key):
-                    logger.debug("Deleted lock key: {}", lock_key)
-                else:
-                    logger.warning(
-                        "Could not delete lock key: {}. Perhaps it expired?", lock_key
-                    )
+                # Cancel the lock extension task if it's still running
+                if extend_lock_task:
+                    extend_lock_task.cancel()
         else:
             logger.debug(
                 "Event {} is currently being processed by another instance.", list_key
@@ -253,6 +261,7 @@ class AcaPyEventsProcessor:
             logger.warning("webhook event has unknown origin: {}", event)
             origin = "unknown"
 
+        group_id = event.metadata.group_id
         wallet_id = event.metadata.x_wallet_id or origin
 
         acapy_topic = event.payload.category or event.payload.topic
@@ -265,10 +274,11 @@ class AcaPyEventsProcessor:
                 "wallet_id": wallet_id,
                 "acapy_topic": acapy_topic,
                 "origin": origin,
+                "group_id": group_id,
                 "payload": payload,
             }
         )
-        bound_logger.debug("Processing ACA-Py Redis webhook event")
+        bound_logger.trace("Processing ACA-Py Redis webhook event")
 
         # Map from the acapy webhook topic to a unified cloud api topic
         cloudapi_topic = topic_mapping.get(acapy_topic)
@@ -303,15 +313,18 @@ class AcaPyEventsProcessor:
             and cloudapi_topic == "endorsements"
             and payload_is_applicable_for_endorser(payload, logger=bound_logger)
         ):
-            bound_logger.info("Forwarding endorsement event for Endorser service")
+            logger.info("Forwarding endorsement event for Endorser service")
             self.redis_service.add_endorsement_event(event_json=webhook_event_json)
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(
-            webhook_event_json, wallet_id, timestamp_ns=event.metadata.time_ns
+            event_json=webhook_event_json,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            timestamp_ns=event.metadata.time_ns,
         )
 
-        bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")
+        bound_logger.trace("Successfully processed ACA-Py Redis webhook event.")
 
     def _handle_unprocessable_event(self, key: str, error: Exception) -> None:
         """

@@ -35,7 +35,7 @@ def extract_operation_type_from_endorsement_payload(
     # Attempt to navigate through the nested structure
     messages_attach = payload.get("messages_attach", [])
     if not messages_attach:
-        logger.info("No `messages_attach` found in endorsement payload.")
+        logger.debug("No `messages_attach` found in endorsement payload.")
         return None  # Early return if 'messages_attach' is empty or does not exist
 
     try:
@@ -58,7 +58,7 @@ def extract_operation_type_from_endorsement_payload(
                         if operation_type:
                             return operation_type  # Successfully found the type
     except orjson.JSONDecodeError as e:
-        logger.info(
+        logger.warning(
             "Couldn't extract json payload from {}. {}. Continuing...", json_payload, e
         )
     except Exception as e:
@@ -74,22 +74,22 @@ def payload_is_applicable_for_endorser(payload: Dict[str, Any], logger: Logger) 
     state = payload.get("state")
 
     if state == "request_received":
-        logger.info("Endorsement payload in eligible state: {}", state)
+        logger.debug("Endorsement payload in eligible state: {}", state)
     else:
-        logger.info("Endorsement payload not in eligible state: {}", state)
+        logger.debug("Endorsement payload not in eligible state: {}", state)
         return False
 
     operation_type = extract_operation_type_from_endorsement_payload(payload, logger)
 
     if not operation_type:
-        logger.info("Could not extract an operation type from payload.")
+        logger.debug("Could not extract an operation type from payload.")
         return False
 
     is_applicable = operation_type == "102"
     if is_applicable:
-        logger.info("Endorsement payload is applicable for the endorser service.")
+        logger.debug("Endorsement payload is applicable for the endorser service.")
     else:
-        logger.info(
+        logger.debug(
             "Endorsement payload is not applicable for the endorser service, with operation type {}.",
             operation_type,
         )

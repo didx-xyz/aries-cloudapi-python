@@ -177,13 +177,12 @@ async def test_attempt_process_endorsement(endorsement_processor_mock):
     await endorsement_processor_mock._attempt_process_endorsement(event_key)
 
     endorsement_processor_mock.redis_service.set_lock.assert_called_with(
-        lock_key, px=500
+        key=lock_key, px=1000
     )
     endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
     endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
         "event_json1"
     )
-    endorsement_processor_mock.redis_service.delete_key.assert_called_with(lock_key)
 
 
 @pytest.mark.anyio

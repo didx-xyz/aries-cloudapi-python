@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 from redis import RedisCluster
@@ -24,44 +24,78 @@ class WebhooksRedisService(RedisService):
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
-        self.acapy_redis_prefix = "acapy-record-*"  # redis prefix, ACA-Py events
+        self.acapy_redis_prefix = "acapy-record-*"  # redis prefix for ACA-Py events
+
+        self.cloudapi_redis_prefix = "cloudapi"  # redis prefix for CloudAPI events
 
         self.logger.info("WebhooksRedisService initialised")
 
-    def add_endorsement_event(self, event_json: str) -> None:
+    def get_cloudapi_event_redis_key(
+        self, wallet_id: str, group_id: Optional[str] = None
+    ) -> str:
         """
-        Add an endorsement event to bespoke prefix for the endorsement service.
+        Define redis prefix for CloudAPI (transformed) webhook events
 
         Args:
-            event_json: The JSON string representation of the endorsement event.
+            wallet_id: The relevant wallet id
+            group_id: The group_id to which this wallet_id belongs.
         """
-        self.logger.trace("Write endorsement entry to redis")
+        group_and_wallet_id = f"group:{group_id}:{wallet_id}" if group_id else wallet_id
 
-        # Define key for this transaction, using uuid4 to ensure uniqueness
-        redis_key = f"{self.endorsement_redis_prefix}:{uuid4().hex}"
-        self.set(key=redis_key, value=event_json)
+        return f"{self.cloudapi_redis_prefix}:{group_and_wallet_id}"
 
-        self.logger.trace("Successfully wrote endorsement entry to redis.")
+    def get_cloudapi_event_redis_key_unknown_group(
+        self, wallet_id: str
+    ) -> Optional[str]:
+        """
+        Fetch the redis key for a CloudAPI webhook event
+
+        Args:
+            wallet_id: The relevant wallet id
+        """
+        wildcard_key = f"{self.cloudapi_redis_prefix}:*{wallet_id}"
+        self.logger.debug("Fetching redis keys matching pattern: {}", wildcard_key)
+        list_keys = self.match_keys(wildcard_key)
+
+        if not list_keys:
+            self.logger.debug(
+                "No redis keys found matching the pattern for wallet: {}.", wallet_id
+            )
+            return None
+
+        if len(list_keys) > 1:
+            self.logger.warning(
+                "More than one redis key found for wallet: {}", wallet_id
+            )
+
+        result = list_keys[0]
+        self.logger.debug("Returning matched key: {}.", result)
+        return result
 
     def add_cloudapi_webhook_event(
-        self, event_json: str, wallet_id: str, timestamp_ns: int
+        self,
+        event_json: str,
+        group_id: Optional[str],
+        wallet_id: str,
+        timestamp_ns: int,
     ) -> None:
         """
         Add a CloudAPI webhook event JSON string to Redis and publish a notification.
 
         Args:
             event_json: The JSON string representation of the webhook event.
+            group_id: The group_id to which this wallet_id belongs.
             wallet_id: The identifier of the wallet associated with the event.
             timestamp_ns: The timestamp (in nanoseconds) of when the event was saved.
         """
         bound_logger = self.logger.bind(
-            body={"wallet_id": wallet_id, "event": event_json}
+            body={"wallet_id": wallet_id, "group_id": group_id, "event": event_json}
         )
         bound_logger.trace("Write entry to redis")
 
         # Use the current timestamp as the score for the sorted set
-        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        self.redis.zadd(wallet_key, {event_json: timestamp_ns})
+        redis_key = self.get_cloudapi_event_redis_key(wallet_id, group_id)
+        self.redis.zadd(redis_key, {event_json: timestamp_ns})
 
         broadcast_message = f"{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
@@ -83,9 +117,13 @@ class WebhooksRedisService(RedisService):
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.trace("Fetching entries from redis by wallet id")
 
+        redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
+        if not redis_key:
+            bound_logger.debug("No entries found for wallet without matching redis key")
+            return []
+
         # Fetch all entries using the full range of scores
-        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
-        entries: List[bytes] = self.redis.zrange(wallet_key, 0, -1)
+        entries: List[bytes] = self.redis.zrange(redis_key, 0, -1)
         entries_str: List[str] = [entry.decode() for entry in entries]
 
         bound_logger.trace("Successfully fetched redis entries.")
@@ -162,9 +200,14 @@ class WebhooksRedisService(RedisService):
         """
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by timestamp for wallet")
-        wallet_key = self.get_cloudapi_event_redis_key(wallet_id)
+
+        redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
+        if not redis_key:
+            bound_logger.debug("No entries found for wallet without matching redis key")
+            return []
+
         entries: List[bytes] = self.redis.zrangebyscore(
-            wallet_key, min=start_timestamp, max=end_timestamp
+            redis_key, min=start_timestamp, max=end_timestamp
         )
         entries_str: List[str] = [entry.decode() for entry in entries]
         bound_logger.trace("Fetched entries: {}", entries_str)
@@ -205,11 +248,14 @@ class WebhooksRedisService(RedisService):
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
                 next_cursor, keys = self.redis.scan(
-                    cursor, match=f"{self.cloudapi_redis_prefix}:*", count=10000
+                    cursor=cursor,
+                    match=f"{self.cloudapi_redis_prefix}:*",
+                    count=10000,
+                    target_nodes=RedisCluster.PRIMARIES,
                 )
                 if keys:
                     wallet_id_batch = set(
-                        key.decode("utf-8").split(":")[1] for key in keys
+                        key.decode("utf-8").split(":")[-1] for key in keys
                     )
                     wallet_ids.update(wallet_id_batch)
                     self.logger.debug(
@@ -231,3 +277,18 @@ class WebhooksRedisService(RedisService):
 
         self.logger.info("Total wallet IDs fetched: {}.", len(wallet_ids))
         return list(wallet_ids)
+
+    def add_endorsement_event(self, event_json: str) -> None:
+        """
+        Add an endorsement event to bespoke prefix for the endorsement service.
+
+        Args:
+            event_json: The JSON string representation of the endorsement event.
+        """
+        self.logger.trace("Write endorsement entry to redis")
+
+        # Define key for this transaction, using uuid4 to ensure uniqueness
+        redis_key = f"{self.endorsement_redis_prefix}:{uuid4().hex}"
+        self.set(key=redis_key, value=event_json)
+
+        self.logger.trace("Successfully wrote endorsement entry to redis.")

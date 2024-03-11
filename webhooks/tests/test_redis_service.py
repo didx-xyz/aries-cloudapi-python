@@ -38,7 +38,7 @@ async def test_add_cloudapi_webhook_event():
 
     # Call the method you want to test
     redis_service.add_cloudapi_webhook_event(
-        event_json, wallet_id, timestamp_ns=time.time_ns
+        event_json, group_id=None, wallet_id=wallet_id, timestamp_ns=time.time_ns
     )
 
     # Assert that the mocked methods were called as expected
@@ -51,6 +51,7 @@ async def test_get_json_cloudapi_events_by_wallet():
     redis_client = Mock()
     redis_client.zrange = Mock(return_value=[e.encode() for e in json_entries])
     redis_service = WebhooksRedisService(redis_client)
+    redis_service.match_keys = Mock(return_value=["dummy_key"])
 
     events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id)
 
@@ -127,6 +128,9 @@ async def test_get_json_cloudapi_events_by_timestamp():
     redis_client.zrangebyscore = Mock(return_value=[e.encode() for e in json_entries])
 
     redis_service = WebhooksRedisService(redis_client)
+    expected_key = f"{redis_service.cloudapi_redis_prefix}:{wallet_id}"
+
+    redis_service.match_keys = Mock(return_value=[expected_key])
 
     events = redis_service.get_json_cloudapi_events_by_timestamp(
         wallet_id, start_timestamp, end_timestamp
@@ -169,12 +173,9 @@ async def test_get_all_cloudapi_wallet_ids():
     scan_results = [
         (
             {"localhost:6379": 1},
-            [
-                f"cloudapi_event:{wallet_id}".encode()
-                for wallet_id in expected_wallet_ids[:2]
-            ],
+            [f"cloudapi:{wallet_id}".encode() for wallet_id in expected_wallet_ids[:2]],
         ),
-        ({"localhost:6379": 0}, [f"cloudapi_event:{expected_wallet_ids[2]}".encode()]),
+        ({"localhost:6379": 0}, [f"cloudapi:{expected_wallet_ids[2]}".encode()]),
     ]
 
     redis_client = Mock()

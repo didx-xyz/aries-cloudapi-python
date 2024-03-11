@@ -1,3 +1,5 @@
+import asyncio
+import datetime
 import os
 from typing import Any, Generator, List, Optional, Set
 
@@ -73,20 +75,10 @@ class RedisService:
         """
         self.redis = redis
 
-        self.cloudapi_redis_prefix = "cloudapi_event"  # redis prefix, CloudAPI events
         self.endorsement_redis_prefix = "endorse"  # redis prefix for endorsement events
 
         self.logger = get_logger(logger_name)
         self.logger.info("RedisService initialised")
-
-    def get_cloudapi_event_redis_key(self, wallet_id: str) -> str:
-        """
-        Define redis prefix for CloudAPI (transformed) webhook events
-
-        Args:
-            wallet_id: The relevant wallet id
-        """
-        return f"{self.cloudapi_redis_prefix}:{wallet_id}"
 
     def set(self, key: str, value: str) -> Optional[bool]:
         """
@@ -117,14 +109,14 @@ class RedisService:
         self.logger.trace("Got value: {}", value)
         return value
 
-    def set_lock(self, key: str, px: int = 500) -> Optional[bool]:
+    def set_lock(self, key: str, px: int = 1000) -> Optional[bool]:
         """
         Attempts to acquire a distributed lock by setting a key in Redis with an expiration time,
         if and only if the key does not already exist.
 
         Args:
             key: The key to set for the lock.
-            px: Expiration time of the lock in miliseconds.
+            px: Expiration time of the lock in milliseconds.
 
         Returns:
             A boolean indicating the lock was successfully acquired, or
@@ -191,7 +183,12 @@ class RedisService:
         self.logger.trace("Starting SCAN to fetch keys matching: {}", match_pattern)
 
         try:
-            _, keys = self.redis.scan(cursor=0, match=match_pattern, count=count)
+            _, keys = self.redis.scan(
+                cursor=0,
+                match=match_pattern,
+                count=count,
+                target_nodes=RedisCluster.PRIMARIES,
+            )
             if keys:
                 collected_keys = set(key.decode("utf-8") for key in keys)
                 self.logger.debug(
@@ -205,3 +202,50 @@ class RedisService:
             )
 
         return collected_keys
+
+    def match_keys(self, match_pattern: str = "*") -> List[str]:
+        """
+        Fetches keys from all Redis cluster nodes matching the pattern.
+
+        Parameters:
+        - match_pattern: str - The pattern to match against, e.g.: cloudapi*
+
+        Returns:
+            A set of Redis keys that match the input pattern.
+        """
+
+        return self.redis.keys(match_pattern, target_nodes=RedisCluster.PRIMARIES)
+
+    async def _extend_lock(self, lock_key: str, interval: datetime.timedelta) -> None:
+        """
+        Periodically extends the lock until cancelled. To be used as an asyncio background task.
+
+        Args:
+            lock_key: The Redis key of the lock to extend.
+            interval: Timedelta object representing how long to wait before extending the lock again.
+        """
+        retry_interval = interval.total_seconds() * 0.9
+        try:
+            while True:
+                await asyncio.sleep(retry_interval)
+                # Attempt to extend the lock by resetting its expiration time
+                self.logger.debug(f"Extending expiry for lock {lock_key}")
+                lock_extended = self.redis.expire(lock_key, interval)
+                if not lock_extended:
+                    self.logger.warning(
+                        f"Failed to extend lock: {lock_key}. Lock might have been lost."
+                    )
+        except asyncio.CancelledError:
+            self.logger.debug(f"Lock extension task for {lock_key} was cancelled.")
+
+    def extend_lock_task(
+        self, lock_key: str, interval: datetime.timedelta
+    ) -> asyncio.Task:
+        """
+        Starts an async background task for extending a lock key.
+
+        Args:
+            lock_key: The Redis key of the lock to extend.
+            interval: Timedelta object representing how long to wait before extending the lock again.
+        """
+        return asyncio.create_task(self._extend_lock(lock_key, interval=interval))

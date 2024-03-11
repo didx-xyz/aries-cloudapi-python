@@ -413,7 +413,6 @@ async def test_proof_revoked_credential_v2(
         )
     ).json()["proof_id"]
 
-
     await alice_listener.wait_for_state(
         desired_state="request-received",
         lookback_time=5,

@@ -53,7 +53,7 @@ class WebhooksRedisService(RedisService):
         Args:
             wallet_id: The relevant wallet id
         """
-        wildcard_key = f"{self.cloudapi_redis_prefix}*{wallet_id}"
+        wildcard_key = f"{self.cloudapi_redis_prefix}:*{wallet_id}"
         self.logger.debug("Fetching redis keys matching pattern: {}", wildcard_key)
         list_keys = self.match_keys(wildcard_key)
 

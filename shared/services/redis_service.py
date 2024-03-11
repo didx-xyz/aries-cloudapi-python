@@ -195,3 +195,16 @@ class RedisService:
             )
 
         return collected_keys
+
+    def match_keys(self, match_pattern: str = "*") -> List[str]:
+        """
+        Fetches keys from all Redis cluster nodes matching the pattern.
+
+        Parameters:
+        - match_pattern: str - The pattern to match against, e.g.: cloudapi*
+
+        Returns:
+            A set of Redis keys that match the input pattern.
+        """
+
+        return self.redis.keys(match_pattern, target_nodes=RedisCluster.PRIMARIES)

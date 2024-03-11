@@ -8,7 +8,7 @@ from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
-from app.tests.util.ecosystem_connections import AcmeAliceConnect, FaberAliceConnect
+from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = router.prefix
@@ -362,7 +362,7 @@ async def test_proof_revoked_credential_v1(
         await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_exchange_id}")
     ).json()
 
-    assert proof["verified"] == False
+    assert proof["verified"] is False
 
 
 @pytest.mark.anyio
@@ -465,4 +465,4 @@ async def test_proof_revoked_credential_v2(
         await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_exchange_id}")
     ).json()
 
-    assert proof["verified"] == False
+    assert proof["verified"] is False

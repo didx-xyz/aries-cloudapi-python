@@ -169,10 +169,7 @@ async def test_get_all_cloudapi_wallet_ids():
     scan_results = [
         (
             {"localhost:6379": 1},
-            [
-                f"cloudapi:{wallet_id}".encode()
-                for wallet_id in expected_wallet_ids[:2]
-            ],
+            [f"cloudapi:{wallet_id}".encode() for wallet_id in expected_wallet_ids[:2]],
         ),
         ({"localhost:6379": 0}, [f"cloudapi:{expected_wallet_ids[2]}".encode()]),
     ]

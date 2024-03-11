@@ -313,6 +313,8 @@ jobs:
       pull-requests: write # Required to comment on PRs for Pytest coverage comment
     runs-on: ubuntu-latest
 
+    timeout-minutes: 30
+
     env:
       TAILSCALE_VERSION: 1.58.2
       HELMFILE_VERSION: v0.161.0

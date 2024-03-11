@@ -257,7 +257,7 @@ class EndorsementProcessor:
         unprocessable_key = f"unprocessable:{key}"
         error_message = f"Could not process: {event_json}. Error: {error}"
 
-        bound_logger.warning(
+        bound_logger.info(
             "Saving record of problematic event at key: {}. Error: `{}`",
             unprocessable_key,
             error_message,

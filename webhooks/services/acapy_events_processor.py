@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import sys
 from typing import List, NoReturn
 from uuid import uuid4
@@ -178,14 +179,29 @@ class AcaPyEventsProcessor:
             list_key: The Redis key of the list to process.
         """
         lock_key = f"lock:{list_key}"
-        if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
+        extend_lock_task = None
+
+        lock_duration = 500  # milliseconds
+
+        if self.redis_service.set_lock(lock_key, px=lock_duration):
             try:
+                # Start a background task to extend the lock periodically
+                # This is just to ensure that on the off chance that 500ms isn't enough to process all the
+                # events in the list, we want to avoid replicas processing the same webhook event twice
+                extend_lock_task = self.redis_service.extend_lock_task(
+                    lock_key, interval=datetime.timedelta(milliseconds=lock_duration)
+                )
+
                 self._process_list_events(list_key)
             except Exception as e:
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
                 logger.error("Processing {} raised an exception: {}", list_key, e)
                 self._handle_unprocessable_event(list_key, e)
             finally:
+                # Cancel the lock extension task if it's still running
+                if extend_lock_task:
+                    extend_lock_task.cancel()
+
                 # Delete lock after processing list, whether it completed or errored:
                 if self.redis_service.delete_key(lock_key):
                     logger.debug("Deleted lock key: {}", lock_key)

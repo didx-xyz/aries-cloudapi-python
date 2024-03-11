@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import sys
 from typing import List, NoReturn
 
@@ -176,10 +177,22 @@ class EndorsementProcessor:
         """
         logger.trace("Attempt process: {}", event_key)
         lock_key = f"lock:{event_key}"
-        if self.redis_service.set_lock(lock_key, px=500):  # Lock for 500 ms
+        extend_lock_task = None
+
+        lock_duration = 1  # second
+
+        if self.redis_service.set_lock(
+            key=lock_key,
+            px=lock_duration * 1000,  # to milliseconds
+        ):
             logger.trace("Successfully set lock for {}", event_key)
             event_json = self.redis_service.get(event_key)
             try:
+                # Start a background task to extend the lock periodically
+                extend_lock_task = self.redis_service.extend_lock_task(
+                    lock_key, interval=datetime.timedelta(seconds=lock_duration)
+                )
+
                 await self._process_endorsement_event(event_json)
                 if self.redis_service.delete_key(event_key):
                     logger.info("Deleted processed endorsement event: {}", event_key)
@@ -192,7 +205,11 @@ class EndorsementProcessor:
                 logger.error("Processing {} raised an exception: {}", event_key, e)
                 self._handle_unprocessable_endorse_event(event_key, event_json, e)
             finally:
-                # Delete lock after processing, whether it completed or errored:
+                # Cancel the lock extension task if it's still running
+                if extend_lock_task:
+                    extend_lock_task.cancel()
+
+                # Delete the lock key to signify completion
                 if self.redis_service.delete_key(lock_key):
                     logger.debug("Deleted lock key: {}", lock_key)
                 else:

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -7,6 +7,7 @@ class WebhookEvent(BaseModel):
     wallet_id: str
     topic: str
     origin: str
+    group_id: Optional[str] = None
 
 
 # When reading json webhook events from redis and deserialising back into a CloudApiWebhookEvent,

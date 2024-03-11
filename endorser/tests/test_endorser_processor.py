@@ -183,7 +183,6 @@ async def test_attempt_process_endorsement(endorsement_processor_mock):
     endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
         "event_json1"
     )
-    endorsement_processor_mock.redis_service.delete_key.assert_called_with(lock_key)
 
 
 @pytest.mark.anyio

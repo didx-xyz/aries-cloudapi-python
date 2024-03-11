@@ -183,7 +183,12 @@ class RedisService:
         self.logger.trace("Starting SCAN to fetch keys matching: {}", match_pattern)
 
         try:
-            _, keys = self.redis.scan(cursor=0, match=match_pattern, count=count)
+            _, keys = self.redis.scan(
+                cursor=0,
+                match=match_pattern,
+                count=count,
+                target_nodes=RedisCluster.PRIMARIES,
+            )
             if keys:
                 collected_keys = set(key.decode("utf-8") for key in keys)
                 self.logger.debug(

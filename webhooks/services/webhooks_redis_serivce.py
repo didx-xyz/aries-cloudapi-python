@@ -248,7 +248,10 @@ class WebhooksRedisService(RedisService):
         try:
             while True:  # Loop until the cursor returned by SCAN is '0'
                 next_cursor, keys = self.redis.scan(
-                    cursor, match=f"{self.cloudapi_redis_prefix}:*", count=10000
+                    cursor=cursor,
+                    match=f"{self.cloudapi_redis_prefix}:*",
+                    count=10000,
+                    target_nodes=RedisCluster.PRIMARIES,
                 )
                 if keys:
                     wallet_id_batch = set(

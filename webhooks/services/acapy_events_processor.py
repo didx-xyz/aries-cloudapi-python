@@ -253,6 +253,7 @@ class AcaPyEventsProcessor:
             logger.warning("webhook event has unknown origin: {}", event)
             origin = "unknown"
 
+        group_id = event.metadata.group_id
         wallet_id = event.metadata.x_wallet_id or origin
 
         acapy_topic = event.payload.category or event.payload.topic
@@ -265,6 +266,7 @@ class AcaPyEventsProcessor:
                 "wallet_id": wallet_id,
                 "acapy_topic": acapy_topic,
                 "origin": origin,
+                "group_id": group_id,
                 "payload": payload,
             }
         )
@@ -308,7 +310,10 @@ class AcaPyEventsProcessor:
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(
-            webhook_event_json, wallet_id, timestamp_ns=event.metadata.time_ns
+            event_json=webhook_event_json,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            timestamp_ns=event.metadata.time_ns,
         )
 
         bound_logger.debug("Successfully processed ACA-Py Redis webhook event.")

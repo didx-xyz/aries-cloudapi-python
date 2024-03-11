@@ -45,18 +45,23 @@ class WebhooksRedisService(RedisService):
         return f"{self.cloudapi_redis_prefix}:{group_and_wallet_id}"
 
     def add_cloudapi_webhook_event(
-        self, event_json: str, wallet_id: str, timestamp_ns: int
+        self,
+        event_json: str,
+        group_id: Optional[str],
+        wallet_id: str,
+        timestamp_ns: int,
     ) -> None:
         """
         Add a CloudAPI webhook event JSON string to Redis and publish a notification.
 
         Args:
             event_json: The JSON string representation of the webhook event.
+            group_id: The group_id to which this wallet_id belongs.
             wallet_id: The identifier of the wallet associated with the event.
             timestamp_ns: The timestamp (in nanoseconds) of when the event was saved.
         """
         bound_logger = self.logger.bind(
-            body={"wallet_id": wallet_id, "event": event_json}
+            body={"wallet_id": wallet_id, "group_id": group_id, "event": event_json}
         )
         bound_logger.trace("Write entry to redis")
 

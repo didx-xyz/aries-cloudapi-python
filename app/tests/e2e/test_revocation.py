@@ -287,30 +287,30 @@ async def test_proof_revoked_credential_v1(
     unix_timestamp = int(time.time())
 
     # Do proof request
-    send_proof_request = await acme_client.post(
-        f"{VERIFIER_BASE_PATH}/send-request",
-        json={
-            "protocol_version": "v1",
-            "comment": "Test proof of revocation",
-            "type": "indy",
-            "indy_proof_request": {
-                "name": "Proof of SPEED",
-                "version": "1.0",
-                "non_revoked": {"to": unix_timestamp},
-                "requested_attributes": {
-                    "THE_SPEED": {
-                        "name": "speed",
-                        "restrictions": [],
-                    }
+    acme_proof_exchange_id = (
+        await acme_client.post(
+            f"{VERIFIER_BASE_PATH}/send-request",
+            json={
+                "protocol_version": "v1",
+                "comment": "Test proof of revocation",
+                "type": "indy",
+                "indy_proof_request": {
+                    "name": "Proof of SPEED",
+                    "version": "1.0",
+                    "non_revoked": {"to": unix_timestamp},
+                    "requested_attributes": {
+                        "THE_SPEED": {
+                            "name": "speed",
+                            "restrictions": [],
+                        }
+                    },
+                    "requested_predicates": {},
                 },
-                "requested_predicates": {},
+                "save_exchange_record": True,
+                "connection_id": acme_connection_id,
             },
-            "save_exchange_record": True,
-            "connection_id": acme_connection_id,
-        },
-    )
-
-    acme_proof_exchange_id = send_proof_request.json()["proof_id"]
+        )
+    ).json()["proof_id"]
 
     await alice_listener.wait_for_state(
         desired_state="request-received",
@@ -318,11 +318,9 @@ async def test_proof_revoked_credential_v1(
     )
 
     # Get proof exchange id
-    proof_exchange_record = (
+    alice_proof_exchange_id = (
         await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    ).json()
-
-    alice_proof_exchange_id = proof_exchange_record[0]["proof_id"]
+    ).json()[0]["proof_id"]
 
     # Get referent
     referent = (
@@ -390,30 +388,31 @@ async def test_proof_revoked_credential_v2(
     unix_timestamp = int(time.time())
 
     # Do proof request
-    send_proof_request = await acme_client.post(
-        f"{VERIFIER_BASE_PATH}/send-request",
-        json={
-            "protocol_version": "v2",
-            "comment": "Test proof of revocation",
-            "type": "indy",
-            "indy_proof_request": {
-                "name": "Proof of SPEED",
-                "version": "1.0",
-                "non_revoked": {"to": unix_timestamp},
-                "requested_attributes": {
-                    "THE_SPEED": {
-                        "name": "speed",
-                        "restrictions": [],
-                    }
+    acme_proof_exchange_id = (
+        await acme_client.post(
+            f"{VERIFIER_BASE_PATH}/send-request",
+            json={
+                "protocol_version": "v2",
+                "comment": "Test proof of revocation",
+                "type": "indy",
+                "indy_proof_request": {
+                    "name": "Proof of SPEED",
+                    "version": "1.0",
+                    "non_revoked": {"to": unix_timestamp},
+                    "requested_attributes": {
+                        "THE_SPEED": {
+                            "name": "speed",
+                            "restrictions": [],
+                        }
+                    },
+                    "requested_predicates": {},
                 },
-                "requested_predicates": {},
+                "save_exchange_record": True,
+                "connection_id": acme_connection_id,
             },
-            "save_exchange_record": True,
-            "connection_id": acme_connection_id,
-        },
-    )
+        )
+    ).json()["proof_id"]
 
-    acme_proof_exchange_id = send_proof_request.json()["proof_id"]
 
     await alice_listener.wait_for_state(
         desired_state="request-received",
@@ -421,11 +420,9 @@ async def test_proof_revoked_credential_v2(
     )
 
     # Get proof exchange id
-    proof_exchange_record = (
+    alice_proof_exchange_id = (
         await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    ).json()
-
-    alice_proof_exchange_id = proof_exchange_record[0]["proof_id"]
+    ).json()[0]["proof_id"]
 
     # Get referent
     referent = (

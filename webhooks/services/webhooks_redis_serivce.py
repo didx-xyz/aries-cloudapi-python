@@ -44,21 +44,6 @@ class WebhooksRedisService(RedisService):
 
         return f"{self.cloudapi_redis_prefix}:{group_and_wallet_id}"
 
-    def add_endorsement_event(self, event_json: str) -> None:
-        """
-        Add an endorsement event to bespoke prefix for the endorsement service.
-
-        Args:
-            event_json: The JSON string representation of the endorsement event.
-        """
-        self.logger.trace("Write endorsement entry to redis")
-
-        # Define key for this transaction, using uuid4 to ensure uniqueness
-        redis_key = f"{self.endorsement_redis_prefix}:{uuid4().hex}"
-        self.set(key=redis_key, value=event_json)
-
-        self.logger.trace("Successfully wrote endorsement entry to redis.")
-
     def add_cloudapi_webhook_event(
         self, event_json: str, wallet_id: str, timestamp_ns: int
     ) -> None:
@@ -247,3 +232,18 @@ class WebhooksRedisService(RedisService):
 
         self.logger.info("Total wallet IDs fetched: {}.", len(wallet_ids))
         return list(wallet_ids)
+
+    def add_endorsement_event(self, event_json: str) -> None:
+        """
+        Add an endorsement event to bespoke prefix for the endorsement service.
+
+        Args:
+            event_json: The JSON string representation of the endorsement event.
+        """
+        self.logger.trace("Write endorsement entry to redis")
+
+        # Define key for this transaction, using uuid4 to ensure uniqueness
+        redis_key = f"{self.endorsement_redis_prefix}:{uuid4().hex}"
+        self.set(key=redis_key, value=event_json)
+
+        self.logger.trace("Successfully wrote endorsement entry to redis.")

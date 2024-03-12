@@ -186,7 +186,6 @@ async def get_credential_definition_by_id(
 @router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
-    unsafe_dont_wait_for_registries: Optional[bool] = False,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> CredentialDefinition:
     """
@@ -203,12 +202,6 @@ async def create_credential_definition(
     -----------
         credential_definition: CreateCredentialDefinition
             Payload for creating a credential definition.
-
-        unsafe_dont_wait_for_registries: bool (Optional)
-            If set to true, the endpoint will not wait for the revocation registries to be created.
-            This is not recommended, as it can lead to failed credential issuance if the revocation
-            registries are not ready.
-            If set to true, please wait at least one to two minutes before issuing credentials.
 
     Returns:
     --------

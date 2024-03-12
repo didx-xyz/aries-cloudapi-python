@@ -331,12 +331,12 @@ async def create_credential_definition(
                     ),
                     timeout=REGISTRY_CREATION_TIMEOUT,
                 )
-            except asyncio.TimeoutError:
+            except asyncio.TimeoutError as e:
                 bound_logger.error("Timeout waiting for revocation registry creation.")
                 raise CloudApiException(
                     "Timeout waiting for revocation registry creation.",
                     504,
-                )
+                ) from e
 
         # ACA-Py only returns the id after creating a credential definition
         # We want consistent return types across all endpoints, so retrieving the credential

@@ -332,12 +332,12 @@ async def create_credential_definition(
                     504,
                 ) from e
 
-        # ACA-Py only returns the id after creating a credential definition
-        # We want consistent return types across all endpoints, so retrieving the credential
-        # definition here.
-        result = await get_credential_definition_by_id(credential_definition_id, auth)
-        bound_logger.info("Successfully created credential definition.")
-        return result
+    # ACA-Py only returns the id after creating a credential definition
+    # We want consistent return types across all endpoints, so retrieving the credential
+    # definition here.
+    result = await get_credential_definition_by_id(credential_definition_id, auth)
+    bound_logger.info("Successfully created credential definition.")
+    return result
 
 
 @router.get("/schemas", response_model=List[CredentialSchema])

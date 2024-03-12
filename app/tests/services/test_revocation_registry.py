@@ -96,13 +96,13 @@ async def test_get_credential_definition_id_from_exchange_id(
         )
     )
 
-    cred_def_id = await rg.get_credential_definition_id_from_exchange_id(
+    cred_def_id_result = await rg.get_credential_definition_id_from_exchange_id(
         controller=mock_agent_controller, credential_exchange_id=cred_ex_id
     )
 
-    assert cred_def_id
-    assert isinstance(cred_def_id, str)
-    assert cred_def_id == cred_def_id
+    assert cred_def_id_result
+    assert isinstance(cred_def_id_result, str)
+    assert cred_def_id_result == cred_def_id
 
     # Success v2
     when(mock_agent_controller.issue_credential_v1_0).get_record(
@@ -118,13 +118,13 @@ async def test_get_credential_definition_id_from_exchange_id(
         )
     )
 
-    cred_def_id = await rg.get_credential_definition_id_from_exchange_id(
+    cred_def_id_result = await rg.get_credential_definition_id_from_exchange_id(
         controller=mock_agent_controller, credential_exchange_id=cred_ex_id
     )
 
-    assert cred_def_id
-    assert isinstance(cred_def_id, str)
-    assert cred_def_id == cred_def_id
+    assert cred_def_id_result
+    assert isinstance(cred_def_id_result, str)
+    assert cred_def_id_result == cred_def_id
 
     # Not found
     when(mock_agent_controller.issue_credential_v1_0).get_record(
@@ -134,8 +134,8 @@ async def test_get_credential_definition_id_from_exchange_id(
         cred_ex_id=cred_ex_id
     ).thenRaise(ApiException())
 
-    cred_def_id = await rg.get_credential_definition_id_from_exchange_id(
+    cred_def_id_result = await rg.get_credential_definition_id_from_exchange_id(
         controller=mock_agent_controller, credential_exchange_id=cred_ex_id
     )
 
-    assert cred_def_id is None
+    assert cred_def_id_result is None

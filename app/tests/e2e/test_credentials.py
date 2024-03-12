@@ -324,7 +324,7 @@ async def test_issue_credential_with_save_exchange_record(
 
 
 @pytest.fixture(scope="function")
-async def issue_revocable_credentials_to_alice_and_revoke(
+async def issue_revocable_credentials_to_alice_and_revoke_unpublished(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,

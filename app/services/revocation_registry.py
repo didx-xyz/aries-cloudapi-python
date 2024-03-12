@@ -417,7 +417,7 @@ async def get_created_active_registries(
 async def wait_for_active_registry(
     controller: AcaPyClient, cred_def_id: str
 ) -> List[str]:
-    active_registries = 0
+    active_registries = []
     sleep_duration = 0  # First sleep should be 0
 
     while len(active_registries) != 2:

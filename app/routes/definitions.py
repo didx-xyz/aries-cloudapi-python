@@ -234,11 +234,22 @@ async def create_credential_definition(
         try:
             public_did = await acapy_wallet.assert_public_did(aries_controller)
         except CloudApiException as e:
-            bound_logger.warning(f"Asserting public DID failed: {e}")
-            raise CloudApiException(
-                "Wallet making this request has no public DID. Only issuers with a public DID can make this request.",
-                403,
-            ) from e
+            log_message = f"Asserting public DID failed: {e}"
+
+            if e.status_code == 403:
+                bound_logger.info(log_message)
+                client_error_message = (
+                    "Wallet making this request has no public DID. "
+                    "Only issuers with a public DID can make this request."
+                )
+            else:
+                bound_logger.error(log_message)
+                client_error_message = (
+                    "Something went wrong while asserting if request is from a valid issuer. "
+                    "Please try again."
+                )
+
+            raise CloudApiException(client_error_message, e.status_code) from e
 
         # Make sure we are allowed to issue this schema according to trust registry rules
         bound_logger.debug("Asserting client is a valid issuer")

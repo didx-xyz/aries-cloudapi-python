@@ -548,7 +548,7 @@ services:
         condition: service_completed_successfully
   pytest:
     image: local/tests
-    container_name: tests2
+    container_name: loop_tests
     restart: "no"
     build:
       context: .
@@ -557,7 +557,7 @@ services:
       - /bin/sh
       - -c
       - |-
-        ./test_runner.sh 100 pytest app/tests/e2e/test_trust_registry_integration.py
+        ./test_runner.sh 5 pytest
     environment:
       ACAPY_GOVERNANCE_AGENT_URL: http://governance-ga-agent:3021
       ACAPY_GOVERNANCE_AGENT_API_KEY: adminApiKey

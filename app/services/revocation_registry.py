@@ -410,10 +410,7 @@ async def get_created_active_registries(
             "Error while creating credential definition: "
             + f"Could not retrieve active revocation registries `{e.reason}`."
         )
-        raise CloudApiException(
-            detail=detail,
-            status_code=e.status,
-        ) from e
+        raise CloudApiException(detail=detail, status_code=e.status) from e
 
 
 async def wait_for_active_registry(

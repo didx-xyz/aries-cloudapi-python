@@ -103,12 +103,14 @@ async def test_accept_proof_request_v1(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
         topic="proofs",
+        lookback_time=5,
     )
 
     result = response.json()
@@ -786,12 +788,14 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=meld_co_client,
         filter_map={"state": "done", "proof_id": meld_co_proof_id},
         topic="proofs",
+        lookback_time=5,
     )
 
     result = response.json()
@@ -939,12 +943,14 @@ async def test_saving_of_presentation_exchange_records(
         client=alice_member_client,
         filter_map={"state": "done", "proof_id": alice_proof_id},
         topic="proofs",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=acme_client,
         filter_map={"state": "done", "proof_id": acme_proof_id},
         topic="proofs",
+        lookback_time=5,
     )
 
     result = response.json()

@@ -226,12 +226,14 @@ async def test_send_jsonld_request(
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
         topic="credentials",
+        lookback_time=5,
     )
 
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
@@ -252,12 +254,14 @@ async def test_send_jsonld_request(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="credentials",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         filter_map={"state": "request-received"},
         topic="credentials",
+        lookback_time=5,
     )
 
 
@@ -289,12 +293,14 @@ async def test_issue_jsonld_bbs(
             "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=alice_member_client,
         filter_map={"state": "offer-received"},
         topic="credentials",
+        lookback_time=5,
     )
 
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
@@ -315,10 +321,12 @@ async def test_issue_jsonld_bbs(
         client=alice_member_client,
         filter_map={"state": "done"},
         topic="credentials",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         filter_map={"state": "done"},
         topic="credentials",
+        lookback_time=5,
     )

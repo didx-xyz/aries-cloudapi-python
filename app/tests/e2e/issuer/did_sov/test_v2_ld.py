@@ -261,12 +261,14 @@ async def test_send_jsonld_request_sov(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="credentials",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         filter_map={"state": "request-received"},
         topic="credentials",
+        lookback_time=5,
     )
 
 
@@ -328,10 +330,12 @@ async def test_issue_jsonld_sov(
         client=alice_member_client,
         filter_map={"state": "done"},
         topic="credentials",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         filter_map={"state": "done"},
         topic="credentials",
+        lookback_time=5,
     )

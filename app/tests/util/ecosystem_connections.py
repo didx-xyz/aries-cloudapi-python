@@ -54,11 +54,13 @@ async def bob_and_alice_connection(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed"},
+        lookback_time=5,
     )
     assert await check_webhook_state(
         bob_member_client,
         topic="connections",
         filter_map={"state": "completed"},
+        lookback_time=5,
     )
 
     return BobAliceConnect(
@@ -128,11 +130,13 @@ async def acme_and_alice_connection(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": alice_connection_id},
+        lookback_time=5,
     )
     assert await check_webhook_state(
         acme_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": acme_connection_id},
+        lookback_time=5,
     )
 
     return AcmeAliceConnect(
@@ -173,11 +177,13 @@ async def faber_and_alice_connection(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": alice_connection_id},
+        lookback_time=5,
     )
     assert await check_webhook_state(
         faber_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": faber_connection_id},
+        lookback_time=5,
     )
 
     return FaberAliceConnect(
@@ -249,11 +255,13 @@ async def meld_co_and_alice_connection(
         alice_member_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": alice_connection_id},
+        lookback_time=5,
     )
     assert await check_webhook_state(
         meld_co_client,
         topic="connections",
         filter_map={"state": "completed", "connection_id": meld_co_connection_id},
+        lookback_time=5,
     )
 
     return MeldCoAliceConnect(
@@ -367,11 +375,13 @@ async def alice_bob_connect_multi(
         client=alice_member_client,
         filter_map={"state": "completed"},
         topic="connections",
+        lookback_time=5,
     )
     assert await check_webhook_state(
         client=bob_member_client,
         filter_map={"state": "completed"},
         topic="connections",
+        lookback_time=5,
     )
 
     return BobAliceConnect(

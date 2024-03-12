@@ -222,12 +222,14 @@ async def test_send_credential_request(
         client=alice_member_client,
         filter_map={"state": "request-sent"},
         topic="credentials",
+        lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         filter_map={"state": "request-received"},
         topic="credentials",
+        lookback_time=5,
     )
 
 

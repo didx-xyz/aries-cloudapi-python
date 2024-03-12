@@ -186,6 +186,7 @@ async def get_credential_definition_by_id(
 @router.post("/credentials", response_model=CredentialDefinition)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
+    unsafe_skip_registries_wait: Optional[bool] = False,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> CredentialDefinition:
     """
@@ -195,6 +196,11 @@ async def create_credential_definition(
 
     **NB**: The creation of these revocation registries can take up to one minute.
 
+    The default behaviour of this endpoint is to wait for revocation registries to be active before completing.
+    Therefore, advanced users can optionally set unsafe_skip_registries_wait to True. This means that the
+    revocation registries are not awaited as part of this POST call.
+    todo: explain how to manually validate that they were in fact created
+
     It is recommended to use the max (default) revocation registry size of 32767,
     as this will allow for minimal ledger writes (lower cost).
 
@@ -203,6 +209,11 @@ async def create_credential_definition(
         credential_definition: CreateCredentialDefinition
             Payload for creating a credential definition.
 
+        unsafe_skip_registries_wait: bool (Optional)
+            If set to true, the endpoint will not wait for the revocation registries to be created.
+            This is not recommended, as it can lead to failed credential issuance if the revocation
+            registries are not yet ready, or failed to create.
+            todo: explain how to manually validate that they were in fact created
     Returns:
     --------
         Credential Definition
@@ -213,6 +224,7 @@ async def create_credential_definition(
             "schema_id": credential_definition.schema_id,
             "support_revocation": credential_definition.support_revocation,
             "revocation_registry_size": credential_definition.revocation_registry_size,
+            "unsafe_skip_registries_wait": unsafe_skip_registries_wait,
         }
     )
     bound_logger.info("POST request received: Create credential definition")
@@ -316,7 +328,7 @@ async def create_credential_definition(
             bound_logger.debug("Transaction has been acknowledged by the endorser")
 
         # Wait for revocation registry creation
-        if support_revocation:
+        if support_revocation and not unsafe_skip_registries_wait:
             try:
                 bound_logger.debug("Waiting for revocation registry creation")
                 await asyncio.wait_for(

@@ -175,5 +175,5 @@ async def test_create_credential_definition_issuer_tenant(
         ).rev_reg_ids
 
         # There should be two revocation registries,
-        # one being used to issue credentails against and once full swith to the next one
+        # one being used to issue credentials against and once full with to the next one
         assert len(revocation_registries) == 2

@@ -273,9 +273,12 @@ async def test_proof_revoked_credential_v1(
     acme_and_alice_connection: AcmeAliceConnect,
 ):
 
-    acme_connection_id = acme_and_alice_connection.acme_connection_id
-    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
-    acme_listener = SseListener(topic="proofs", wallet_id=acme_verifier.wallet_id)
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.wallet_id
+    )
+    acme_proofs_listener = SseListener(
+        topic="proofs", wallet_id=acme_verifier.wallet_id
+    )
 
     # Publish revoked credentials
     await faber_client.post(
@@ -307,12 +310,12 @@ async def test_proof_revoked_credential_v1(
                     "requested_predicates": {},
                 },
                 "save_exchange_record": True,
-                "connection_id": acme_connection_id,
+                "connection_id": acme_and_alice_connection.acme_connection_id,
             },
         )
     ).json()["proof_id"]
 
-    await alice_listener.wait_for_state(
+    await alice_proofs_listener.wait_for_state(
         desired_state="request-received",
         lookback_time=5,
     )
@@ -346,11 +349,11 @@ async def test_proof_revoked_credential_v1(
         },
     )
 
-    await alice_listener.wait_for_state(
+    await alice_proofs_listener.wait_for_state(
         desired_state="done",
         lookback_time=5,
     )
-    await acme_listener.wait_for_state(
+    await acme_proofs_listener.wait_for_state(
         desired_state="done",
         lookback_time=5,
     )
@@ -374,9 +377,12 @@ async def test_proof_revoked_credential_v2(
     acme_and_alice_connection: AcmeAliceConnect,
 ):
 
-    acme_connection_id = acme_and_alice_connection.acme_connection_id
-    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
-    acme_listener = SseListener(topic="proofs", wallet_id=acme_verifier.wallet_id)
+    alice_proofs_listener = SseListener(
+        topic="proofs", wallet_id=alice_tenant.wallet_id
+    )
+    acme_proofs_listener = SseListener(
+        topic="proofs", wallet_id=acme_verifier.wallet_id
+    )
 
     # Publish revoked credentials
     await faber_client.post(
@@ -408,12 +414,12 @@ async def test_proof_revoked_credential_v2(
                     "requested_predicates": {},
                 },
                 "save_exchange_record": True,
-                "connection_id": acme_connection_id,
+                "connection_id": acme_and_alice_connection.acme_connection_id,
             },
         )
     ).json()["proof_id"]
 
-    await alice_listener.wait_for_state(
+    await alice_proofs_listener.wait_for_state(
         desired_state="request-received",
         lookback_time=5,
     )
@@ -447,11 +453,11 @@ async def test_proof_revoked_credential_v2(
         },
     )
 
-    await alice_listener.wait_for_state(
+    await alice_proofs_listener.wait_for_state(
         desired_state="done",
         lookback_time=5,
     )
-    await acme_listener.wait_for_state(
+    await acme_proofs_listener.wait_for_state(
         desired_state="done",
         lookback_time=5,
     )

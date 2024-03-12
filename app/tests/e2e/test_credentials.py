@@ -350,19 +350,26 @@ async def issue_revocable_credentials_to_alice_and_revoke(
             json=credential,
         )
 
-    alice_cred_ex_response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
-    )
+    num_tries = 0
+    num_credentials_returned = 0
+    while num_credentials_returned != 3 and num_tries < 10:
+        await asyncio.sleep(0.25)
+        alice_cred_ex_response = (
+            await alice_member_client.get(
+                CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
+            )
+        ).json()
+        num_credentials_returned = len(alice_cred_ex_response)
+        num_tries += 1
 
-    while len(alice_cred_ex_response.json()) != 3:
-        print("not 3 credentials yet")
-        alice_cred_ex_response = await alice_member_client.get(
-            CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
+    if num_credentials_returned != 3:
+        raise Exception(
+            f"Expected 3 credentials to be issued; only got {num_credentials_returned}"
         )
 
     listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
 
-    for cred in alice_cred_ex_response.json():
+    for cred in alice_cred_ex_response:
         await alice_member_client.post(
             f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
         )

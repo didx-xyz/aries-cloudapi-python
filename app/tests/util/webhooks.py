@@ -22,6 +22,7 @@ async def check_webhook_state(
     topic: CloudApiTopics,
     filter_map: Dict[str, Optional[str]],
     max_duration: int = 60,
+    lookback_time: int = 1,
 ) -> bool:
     assert max_duration >= 0, "Poll duration cannot be negative"
 
@@ -44,11 +45,14 @@ async def check_webhook_state(
             field_id=field_id,
             desired_state=desired_state,
             timeout=max_duration,
+            lookback_time=lookback_time,
         )
     else:
         # No other key means we are only asserting the state
         event = await listener.wait_for_state(
-            desired_state=desired_state, timeout=max_duration
+            desired_state=desired_state,
+            timeout=max_duration,
+            lookback_time=lookback_time,
         )
 
     if event:

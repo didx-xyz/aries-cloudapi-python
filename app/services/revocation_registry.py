@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict, List, Optional
 
 from aries_cloudcontroller import (
@@ -416,7 +417,12 @@ async def get_created_active_registries(
 async def wait_for_active_registry(
     controller: AcaPyClient, cred_def_id: str
 ) -> List[str]:
-    active_registries = await get_created_active_registries(controller, cred_def_id)
+    active_registries = 0
+    sleep_duration = 0  # First sleep should be 0
+
     while len(active_registries) != 2:
+        await asyncio.sleep(sleep_duration)
         active_registries = await get_created_active_registries(controller, cred_def_id)
+        sleep_duration = 0.5  # Following sleeps should wait 0.5s before retry
+
     return active_registries

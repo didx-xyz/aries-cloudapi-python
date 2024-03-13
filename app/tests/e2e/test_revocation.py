@@ -266,7 +266,9 @@ async def test_publish_revocations_bad_payload(
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_proof_revoked_credential(
-    issue_alice_creds_and_revoke_published: list,  # pylint: disable=unused-argument
+    issue_alice_creds_and_revoke_published: List[  # pylint: disable=redefined-outer-name
+        CredentialExchange
+    ],
     acme_client: RichAsyncClient,
     acme_verifier: CreateTenantResponse,
     alice_member_client: RichAsyncClient,

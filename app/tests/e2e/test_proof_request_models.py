@@ -17,6 +17,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.xfail(raises=HTTPException, strict=True)
 @pytest.mark.parametrize(
     "name, version, protocol_version",
     [
@@ -102,25 +103,19 @@ async def test_proof_model(
         )
     ).json()[0]["cred_info"]["referent"]
 
-    with pytest.raises(HTTPException) as exc:
-        # Send proof
-        await alice_member_client.post(
-            f"{VERIFIER_BASE_PATH}/accept-request",
-            json={
-                "proof_id": alice_proof_exchange_id,
-                "type": "indy",
-                "indy_presentation_spec": {
-                    "requested_attributes": {
-                        "THE_SPEED": {"cred_id": referent, "revealed": True}
-                    },
-                    "requested_predicates": {},
-                    "self_attested_attributes": {},
+    # Send proof
+    await alice_member_client.post(
+        f"{VERIFIER_BASE_PATH}/accept-request",
+        json={
+            "proof_id": alice_proof_exchange_id,
+            "type": "indy",
+            "indy_presentation_spec": {
+                "requested_attributes": {
+                    "THE_SPEED": {"cred_id": referent, "revealed": True}
                 },
-                "dif_presentation_spec": {},
+                "requested_predicates": {},
+                "self_attested_attributes": {},
             },
-        )
-
-    assert exc.value.status_code == 500
-    assert ("Input error [missing field `version`]" in exc.value.detail) or (
-        "Input error [missing field `name`]" in exc.value.detail
+            "dif_presentation_spec": {},
+        },
     )

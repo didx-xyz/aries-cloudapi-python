@@ -59,7 +59,8 @@ def _serialize_record(record):
             # },
             "exception": exception,
             # "extra": record["extra"],
-            "file": {"name": record["file"].name, "path": record["file"].path},
+            # "file": {"name": record["file"].name, "path": record["file"].path},
+            "file": record["file"].path,
             "function": record["function"],
             "level": {
                 "icon": record["level"].icon,

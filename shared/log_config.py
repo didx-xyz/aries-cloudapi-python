@@ -73,7 +73,11 @@ def _serialize_record(record):
             "name": record["name"],
             # "process": {"id": record["process"].id, "name": record["process"].name},
             # "thread": {"id": record["thread"].id, "name": record["thread"].name},
-            "time": {"repr": record["time"], "timestamp": record["time"].timestamp()},
+            "time": {
+                "repr": record["time"],
+                "timestamp": record["time"].timestamp(),
+                "elapsed_h:m:s": record["elapsed"],
+            },
         },
         "log_status ": record["level"].name,
     }

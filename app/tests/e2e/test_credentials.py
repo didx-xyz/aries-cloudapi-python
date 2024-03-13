@@ -324,7 +324,7 @@ async def test_issue_credential_with_save_exchange_record(
 
 
 @pytest.fixture(scope="function")
-async def issue_revocable_credentials_to_alice_and_revoke_unpublished(
+async def issue_alice_creds_and_revoke_unpublished(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
@@ -399,81 +399,15 @@ async def issue_revocable_credentials_to_alice_and_revoke_unpublished(
 
 
 @pytest.fixture(scope="function")
-async def issue_revocable_credentials_to_alice_and_revoke_published(
+async def issue_alice_creds_and_revoke_published(
     faber_client: RichAsyncClient,
-    alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
-    credential_definition_id_revocable: str,  # pylint: disable=redefined-outer-name
-    faber_and_alice_connection: FaberAliceConnect,
+    issue_alice_creds_and_revoke_unpublished: list,
 ):
-    faber_conn_id = faber_and_alice_connection.faber_connection_id
-    alice_conn_id = faber_and_alice_connection.alice_connection_id
-
-    for i in range(3):
-        credential = {
-            "protocol_version": "v1",
-            "connection_id": faber_conn_id,
-            "save_exchange_record": True,
-            "indy_credential_detail": {
-                "credential_definition_id": credential_definition_id_revocable,
-                "attributes": {"speed": str(i)},
-            },
-        }
-
-        await faber_client.post(
-            CREDENTIALS_BASE_PATH,
-            json=credential,
-        )
-
-    num_tries = 0
-    num_credentials_returned = 0
-    while num_credentials_returned != 3 and num_tries < 10:
-        await asyncio.sleep(0.25)
-        alice_cred_ex_response = (
-            await alice_member_client.get(
-                CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
-            )
-        ).json()
-        num_credentials_returned = len(alice_cred_ex_response)
-        num_tries += 1
-
-    if num_credentials_returned != 3:
-        raise Exception(
-            f"Expected 3 credentials to be issued; only got {num_credentials_returned}"
-        )
-
-    listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
-
-    for cred in alice_cred_ex_response:
-        await alice_member_client.post(
-            f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
-        )
-        # add sse listener to wait for credential state "done" for each credential
-        await listener.wait_for_event(
-            field="credential_id", field_id=cred["credential_id"], desired_state="done"
-        )
-
-    cred_ex_response = await faber_client.get(
-        CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
-    )
-
-    cred_ex_response = cred_ex_response.json()
-    assert len(cred_ex_response) == 3
-
-    # revoke all credentials in list
-    for cred in cred_ex_response:
-        await faber_client.post(
-            f"{CREDENTIALS_BASE_PATH}/revoke",
-            json={
-                "credential_definition_id": credential_definition_id_revocable,
-                "credential_exchange_id": cred["credential_id"][3:],
-            },
-        )
-
+    credential_exchange_records = issue_alice_creds_and_revoke_unpublished
     # Publish revoked credentials
     await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/publish-revocations",
         json={"revocation_registry_credential_map": {}},
     )
 
-    return cred_ex_response
+    return credential_exchange_records

@@ -1,5 +1,6 @@
 import asyncio
 import time
+from typing import List
 
 import pytest
 
@@ -395,13 +396,18 @@ async def issue_alice_creds_and_revoke_unpublished(
             },
         )
 
-    return cred_ex_response
+    credential_exchange_records = [
+        CredentialExchange(**cred) for cred in cred_ex_response
+    ]
+    return credential_exchange_records
 
 
 @pytest.fixture(scope="function")
 async def issue_alice_creds_and_revoke_published(
     faber_client: RichAsyncClient,
-    issue_alice_creds_and_revoke_unpublished: list,  # pylint: disable=redefined-outer-name
+    issue_alice_creds_and_revoke_unpublished: List[
+        CredentialExchange
+    ],  # pylint: disable=redefined-outer-name
 ):
     credential_exchange_records = issue_alice_creds_and_revoke_unpublished
     # Publish revoked credentials

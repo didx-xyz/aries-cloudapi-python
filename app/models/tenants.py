@@ -43,27 +43,8 @@ ExtraSettings = Literal[
 ]
 ExtraSettings_field = Field(
     None,
-    description="Optional per-tenant settings to configure wallet behavior",
-    examples=[
-        {
-            "ACAPY_LOG_LEVEL": "debug, info, warning, error, critical",
-            "ACAPY_INVITE_PUBLIC": "bool",
-            "ACAPY_PUBLIC_INVITES": "bool",
-            "ACAPY_AUTO_ACCEPT_INVITES": "bool",
-            "ACAPY_AUTO_ACCEPT_REQUESTS": "bool",
-            "ACAPY_AUTO_PING_CONNECTION": "bool",
-            "ACAPY_MONITOR_PING": "bool",
-            "ACAPY_AUTO_RESPOND_MESSAGES": "bool",
-            "ACAPY_AUTO_RESPOND_CREDENTIAL_OFFER": "bool",
-            "ACAPY_AUTO_RESPOND_CREDENTIAL_REQUEST": "bool",
-            "ACAPY_AUTO_VERIFY_PRESENTATION": "bool",
-            "ACAPY_NOTIFY_REVOCATION": "bool",
-            "ACAPY_AUTO_REQUEST_ENDORSEMENT": "bool",
-            "ACAPY_AUTO_WRITE_TRANSACTIONS": "bool",
-            "ACAPY_CREATE_REVOCATION_TRANSACTIONS": "bool",
-            "ACAPY_ENDORSER_ROLE": "author, endorser",
-        }
-    ],
+    description="Optional per-tenant settings to configure wallet behavior for advanced users.",
+    examples=[{"ACAPY_AUTO_PING_CONNECTION": True}],
 )
 
 

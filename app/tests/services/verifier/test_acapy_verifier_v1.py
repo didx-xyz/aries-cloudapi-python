@@ -9,11 +9,11 @@ from app.routes.verifier import (
     SendProofRequest,
 )
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
-from app.tests.util.mock import to_async
-from app.tests.verifier.utils import (
+from app.tests.services.verifier.utils import (
     indy_proof_request,
     v10_presentation_exchange_records,
 )
+from app.tests.util.mock import to_async
 from shared.models.presentation_exchange import PresentationExchange
 from shared.models.protocol import PresentProofProtocolVersion
 

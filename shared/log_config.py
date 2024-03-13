@@ -48,7 +48,7 @@ def _serialize_record(record):
 
     # Define subset of serialized record - combining message + extra into the text field
     message = record["message"]
-    extra = record["extra"]
+    extra = record["extra"].get("body")
     message_with_body = f"{message} | {extra}"
     subset = {
         "text": message_with_body,

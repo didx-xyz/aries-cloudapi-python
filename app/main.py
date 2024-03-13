@@ -2,7 +2,6 @@ import io
 import os
 import traceback
 from contextlib import asynccontextmanager
-from distutils.util import strtobool
 
 import pydantic
 import yaml
@@ -64,7 +63,7 @@ Welcome to the Aries CloudAPI Python project.
 """
 
 logger = get_logger(__name__)
-prod = strtobool(os.environ.get("prod", "True"))
+prod = os.environ.get("prod", "true").upper() == "TRUE"
 debug = not prod
 
 

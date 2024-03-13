@@ -177,11 +177,15 @@ jobs:
           - { test: "app/tests/e2e/test_verifier.py", cov: "--cov=app", id: "4" }
           - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "5" }
           - { test: "app --ignore=app/tests/e2e/test_definitions.py
-                         --ignore=app/tests/e2e/issuer/did_sov/
-                         --ignore=app/tests/e2e/issuer/did_key_*
-                         --ignore=app/tests/e2e/test_verifier.py
-                         --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "6" }
-          - { test: "endorser trustregistry webhooks", cov: "--cov=endorser --cov=trustregistry --cov=webhooks", id: "7" }
+                --ignore=app/tests/e2e/issuer/did_sov/
+                --ignore=app/tests/e2e/issuer/did_key_*
+                --ignore=app/tests/e2e/test_verifier.py
+                --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "6" }
+          - {
+              test: "endorser trustregistry webhooks",
+              cov: "--cov=endorser --cov=trustregistry --cov=webhooks",
+              id: "7",
+            }
     steps:
       - uses: actions/checkout@v4
         with:
@@ -626,7 +630,7 @@ jobs:
         uses: mikepenz/action-junit-report@v4
         if: always()
         with:
-          report_paths: './test_output.xml'
+          report_paths: "./test_output.xml"
           fail_on_failure: true
           detailed_summary: true
           require_passed_tests: true

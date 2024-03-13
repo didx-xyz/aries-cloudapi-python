@@ -1,5 +1,6 @@
 from aries_cloudcontroller import (
     AcaPyClient,
+    ApiException,
     V10PresentationCreateRequestRequest,
     V10PresentationProblemReportRequest,
     V10PresentationSendRequest,

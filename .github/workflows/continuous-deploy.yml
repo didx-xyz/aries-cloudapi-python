@@ -158,7 +158,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Pylint
         run: |
-          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+          pylint app/ endorser/ shared/ trustregistry/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
 
   test:
     if: github.event.pull_request.draft == false

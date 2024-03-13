@@ -147,9 +147,7 @@ def read_openapi_yaml() -> Response:
 
 
 @app.exception_handler(Exception)
-async def client_response_error_exception_handler(
-    request: Request, exception: Exception
-):
+async def client_response_error_exception_handler(_: Request, exception: Exception):
     stacktrace = {"stack": traceback.format_exc()}
 
     if isinstance(exception, ClientResponseError):

@@ -50,6 +50,8 @@ def _serialize_record(record):
     message = record["message"]
     extra = record["extra"].get("body")
     message_with_body = f"{message} | {extra}"
+
+    # we keep optional fields commented out to compare with loguru's original serialised structure
     subset = {
         "text": message_with_body,
         "record": {

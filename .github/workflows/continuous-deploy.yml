@@ -172,10 +172,10 @@ jobs:
       matrix:
         module:
           - { test: "app/tests endorser trustregistry webhooks --ignore=app/tests/e2e", cov: "--cov", id: "1" } # fast tests, ignore e2e
-          - { test: "app/tests/e2e/issuer/", cov: "--cov", id: "2" } # then some individual, slower e2e tests
-          - { test: "app/tests/e2e/verifier/", cov: "--cov", id: "3" }
+          - { test: "app/tests/e2e/issuer/*", cov: "--cov", id: "2" } # then some individual, slower e2e tests
+          - { test: "app/tests/e2e/verifier/*", cov: "--cov", id: "3" }
           - { test: "app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py", cov: "--cov", id: "4" }
-          - { test: "app/tests/e2e/
+          - { test: "app/tests/e2e/*
                 --ignore=app/tests/e2e/issuer/
                 --ignore=app/tests/e2e/verifier/
                 --ignore=app/tests/e2e/test_definitions.py

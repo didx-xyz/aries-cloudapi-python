@@ -383,8 +383,7 @@ async def issue_alice_creds_and_revoke_unpublished(
         CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
     )
 
-    cred_ex_response = cred_ex_response.json()
-    assert len(cred_ex_response) == 3
+    assert len(cred_ex_response.json()) == 3
 
     # revoke all credentials in list
     for cred in cred_ex_response:
@@ -405,9 +404,9 @@ async def issue_alice_creds_and_revoke_unpublished(
 @pytest.fixture(scope="function")
 async def issue_alice_creds_and_revoke_published(
     faber_client: RichAsyncClient,
-    issue_alice_creds_and_revoke_unpublished: List[
+    issue_alice_creds_and_revoke_unpublished: List[  # pylint: disable=redefined-outer-name
         CredentialExchange
-    ],  # pylint: disable=redefined-outer-name
+    ],
 ):
     credential_exchange_records = issue_alice_creds_and_revoke_unpublished
     # Publish revoked credentials

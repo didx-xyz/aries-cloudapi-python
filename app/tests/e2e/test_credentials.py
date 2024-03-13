@@ -401,7 +401,7 @@ async def issue_alice_creds_and_revoke_unpublished(
 @pytest.fixture(scope="function")
 async def issue_alice_creds_and_revoke_published(
     faber_client: RichAsyncClient,
-    issue_alice_creds_and_revoke_unpublished: list, # pylint: disable=redefined-outer-name
+    issue_alice_creds_and_revoke_unpublished: list,  # pylint: disable=redefined-outer-name
 ):
     credential_exchange_records = issue_alice_creds_and_revoke_unpublished
     # Publish revoked credentials

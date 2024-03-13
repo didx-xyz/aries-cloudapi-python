@@ -171,21 +171,15 @@ jobs:
     strategy:
       matrix:
         module:
-          - { test: "app/tests/e2e/test_definitions.py", cov: "--cov=app", id: "1" }
-          - { test: "app/tests/e2e/issuer/did_sov/", cov: "--cov=app", id: "2" }
-          - { test: "app/tests/e2e/issuer/did_key_*", cov: "--cov=app", id: "3" }
-          - { test: "app/tests/e2e/test_verifier.py", cov: "--cov=app", id: "4" }
-          - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "5" }
-          - { test: "app --ignore=app/tests/e2e/test_definitions.py
-                --ignore=app/tests/e2e/issuer/did_sov/
-                --ignore=app/tests/e2e/issuer/did_key_*
-                --ignore=app/tests/e2e/test_verifier.py
-                --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "6" }
-          - {
-              test: "endorser trustregistry webhooks",
-              cov: "--cov=endorser --cov=trustregistry --cov=webhooks",
-              id: "7",
-            }
+          - { test: "app/tests endorser trustregistry webhooks --ignore=app/tests/e2e", cov: "--cov", id: "1" } # fast tests, ignore e2e
+          - { test: "app/tests/e2e/issuer/", cov: "--cov", id: "2" } # then some individual, slower e2e tests
+          - { test: "app/tests/e2e/verifier/", cov: "--cov", id: "3" }
+          - { test: "app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py", cov: "--cov", id: "4" }
+          - { test: "app/tests/e2e/
+                --ignore=app/tests/e2e/issuer/
+                --ignore=app/tests/e2e/verifier/
+                --ignore=app/tests/e2e/test_definitions.py
+                --ignore=app/tests/e2e/test_revocation.py", cov: "--cov", id: "5" } # all other e2e tests
     steps:
       - uses: actions/checkout@v4
         with:

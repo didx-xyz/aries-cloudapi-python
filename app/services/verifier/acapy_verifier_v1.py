@@ -134,11 +134,18 @@ class VerifierV1(Verifier):
                 body=v10_pres_send_req,
             )
             result = record_to_model(presentation_record)
+        except ApiException as e:
+            bound_logger.exception(
+                "An ACA-PY ApiException occurred while sending a proof presentation."
+            )
+            raise CloudApiException(
+                f"Failed to send proof presentation: {e.reason}."
+            ) from e
         except Exception as e:
             bound_logger.exception(
-                "An exception occurred while sending a proof presentation."
+                "An unexpected error occurred while sending a proof presentation."
             )
-            raise CloudApiException(f"Failed to send proof presentation: {e}.") from e
+            raise CloudApiException("Failed to send proof presentation.") from e
 
         if result:
             bound_logger.debug("Successfully sent v1 proof presentation.")

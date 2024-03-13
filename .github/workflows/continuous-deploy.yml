@@ -175,10 +175,10 @@ jobs:
           - { test: "app/tests/e2e/issuer/*", cov: "--cov", id: "2" } # then some individual, slower e2e tests
           - { test: "app/tests/e2e/verifier/*", cov: "--cov", id: "3" }
           - { test: "app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py", cov: "--cov", id: "4" }
-          - { test: "app/tests/e2e/*
-                --ignore=app/tests/e2e/issuer/
-                --ignore=app/tests/e2e/verifier/
-                --ignore=app/tests/e2e/test_definitions.py
+          - { test: "app/tests/e2e \
+                --ignore=app/tests/e2e/issuer \
+                --ignore=app/tests/e2e/verifier \
+                --ignore=app/tests/e2e/test_definitions.py \
                 --ignore=app/tests/e2e/test_revocation.py", cov: "--cov", id: "5" } # all other e2e tests
     steps:
       - uses: actions/checkout@v4

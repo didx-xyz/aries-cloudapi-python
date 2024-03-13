@@ -65,7 +65,7 @@ class CreateTenantRequest(BaseModel):
     roles: Optional[List[TrustRegistryRole]] = None
     group_id: Optional[str] = group_id_field
     image_url: Optional[str] = image_url_field
-    extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
+    extra_settings: Optional[Dict[ExtraSettings, bool]] = ExtraSettings_field
 
     @field_validator("wallet_label", mode="before")
     @classmethod
@@ -117,7 +117,7 @@ class UpdateTenantRequest(BaseModel):
     )
     roles: Optional[List[TrustRegistryRole]] = None
     image_url: Optional[str] = image_url_field
-    extra_settings: Optional[Dict[ExtraSettings, str]] = ExtraSettings_field
+    extra_settings: Optional[Dict[ExtraSettings, bool]] = ExtraSettings_field
 
     @field_validator("wallet_label", mode="before")
     @classmethod

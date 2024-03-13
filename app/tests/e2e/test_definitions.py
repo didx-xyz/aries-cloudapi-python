@@ -38,7 +38,7 @@ async def test_create_credential_definition(
     # when
     result = (
         await definitions.create_credential_definition(
-            credential_definition, mock_governance_auth
+            credential_definition=credential_definition, auth=mock_governance_auth
         )
     ).model_dump()
 
@@ -110,7 +110,7 @@ async def test_get_credential_definition(
     # when
     create_result = (
         await definitions.create_credential_definition(
-            credential_definition, mock_governance_auth
+            credential_definition=credential_definition, auth=mock_governance_auth
         )
     ).model_dump()
 
@@ -142,7 +142,9 @@ async def test_create_credential_definition_issuer_tenant(
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
 
     result = (
-        await definitions.create_credential_definition(credential_definition, auth)
+        await definitions.create_credential_definition(
+            credential_definition=credential_definition, auth=auth
+        )
     ).model_dump()
 
     faber_public_did = await get_public_did(faber_acapy_client)
@@ -165,3 +167,13 @@ async def test_create_credential_definition_issuer_tenant(
         assert issuer_rev_reg_record
         assert cred_def_id == issuer_rev_reg_record.cred_def_id
         assert issuer_rev_reg_record.issuer_did == faber_public_did.did
+
+        revocation_registries = (
+            await faber_acapy_client.revocation.get_created_registries(
+                cred_def_id=cred_def_id
+            )
+        ).rev_reg_ids
+
+        # There should be two revocation registries,
+        # one being used to issue credentials against and once full with to the next one
+        assert len(revocation_registries) == 2

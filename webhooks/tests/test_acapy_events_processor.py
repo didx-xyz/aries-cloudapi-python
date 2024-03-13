@@ -166,6 +166,7 @@ async def test_attempt_process_list_events(acapy_events_processor_mock):
         lock_key, px=500
     )
     acapy_events_processor_mock._process_list_events.assert_called_with(event_key)
+    acapy_events_processor_mock.redis_service.delete_key.assert_called_with(lock_key)
 
 
 @pytest.mark.anyio

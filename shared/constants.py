@@ -64,3 +64,6 @@ DISCONNECT_CHECK_PERIOD = float(
 # client.py
 TEST_CLIENT_TIMEOUT = int(os.getenv("TEST_CLIENT_TIMEOUT", "300"))
 MAX_NUM_RETRIES = int(os.getenv("MAX_NUM_RETRIES", "3"))
+
+# timeout for waiting for registries to be created
+REGISTRY_CREATION_TIMEOUT = int(os.getenv("REGISTRY_CREATION_TIMEOUT", "60"))

@@ -3,7 +3,6 @@ from typing import Optional, Tuple
 from aries_cloudcontroller import (
     AcaPyClient,
     ApiException,
-    CredentialDefinitionSendRequest,
     SchemaGetResult,
     TAAAccept,
     TAAInfo,

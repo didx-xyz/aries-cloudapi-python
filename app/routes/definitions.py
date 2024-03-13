@@ -17,7 +17,6 @@ from app.dependencies.auth import (
     acapy_auth_governance,
     acapy_auth_verified,
 )
-from app.event_handling.sse_listener import SseListener
 from app.exceptions import CloudApiException, TrustRegistryException
 from app.models.definitions import (
     CreateCredentialDefinition,
@@ -26,6 +25,7 @@ from app.models.definitions import (
     CredentialSchema,
 )
 from app.services import acapy_wallet
+from app.services.event_handling.sse_listener import SseListener
 from app.services.revocation_registry import wait_for_active_registry
 from app.services.trust_registry.schemas import register_schema
 from app.services.trust_registry.util.issuer import assert_valid_issuer

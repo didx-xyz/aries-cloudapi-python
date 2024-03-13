@@ -12,7 +12,6 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
-from app.event_handling.websocket_manager import WebsocketManager
 from app.exceptions import CloudApiException
 from app.routes import (
     connections,
@@ -32,6 +31,7 @@ from app.routes.wallet import credentials as wallet_credentials
 from app.routes.wallet import dids as wallet_dids
 from app.routes.wallet import jws as wallet_jws
 from app.routes.wallet import sd_jws as wallet_sd_jws
+from app.services.event_handling.websocket_manager import WebsocketManager
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")

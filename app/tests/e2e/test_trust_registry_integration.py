@@ -1,12 +1,12 @@
 import pytest
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.connections import router as conn_router
 from app.routes.definitions import router as def_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.routes.verifier import router as verifier_router
+from app.services.event_handling.sse_listener import SseListener
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.client import get_tenant_client
 from app.util.string import base64_to_json, random_string

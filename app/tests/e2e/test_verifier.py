@@ -8,7 +8,6 @@ from aries_cloudcontroller import (
 )
 from assertpy import assert_that
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.oob import AcceptOobInvitation, CreateOobInvitation
 from app.routes.oob import router as oob_router
@@ -19,6 +18,7 @@ from app.routes.verifier import (
     SendProofRequest,
     router,
 )
+from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.tests.verifier.utils import indy_proof_request

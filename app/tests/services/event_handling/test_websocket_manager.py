@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi import WebSocket
 
-from app.event_handling.websocket_manager import (
+from app.services.event_handling.websocket_manager import (
     WebsocketManager,
     convert_url_to_websocket,
 )
@@ -12,7 +12,7 @@ from app.event_handling.websocket_manager import (
 @pytest.fixture(autouse=True)
 def mock_pubsub_client():
     with patch(
-        "app.event_handling.websocket_manager.PubSubClient", autospec=True
+        "app.services.event_handling.websocket_manager.PubSubClient", autospec=True
     ) as mock_client:
         mock_client.return_value.wait_until_ready = AsyncMock()
         mock_client.return_value.disconnect = AsyncMock()

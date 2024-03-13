@@ -3,9 +3,9 @@ from typing import List
 
 import pytest
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
+from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import FaberAliceConnect, MeldCoAliceConnect
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange

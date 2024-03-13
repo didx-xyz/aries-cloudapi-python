@@ -5,10 +5,10 @@ import pytest
 from assertpy import assert_that
 from fastapi import HTTPException
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
+from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange

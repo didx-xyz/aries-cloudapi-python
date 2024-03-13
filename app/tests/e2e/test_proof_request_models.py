@@ -29,7 +29,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
         (None, None, "v2"),
     ],
 )
-async def test_proof_model(
+async def test_proof_model_failures(
     issue_credential_to_alice: list,  # pylint: disable=unused-argument
     acme_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,

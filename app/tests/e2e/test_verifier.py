@@ -19,9 +19,9 @@ from app.routes.verifier import (
     router,
 )
 from app.services.event_handling.sse_listener import SseListener
+from app.tests.services.verifier.utils import indy_proof_request
 from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
-from app.tests.verifier.utils import indy_proof_request
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 from shared.models.presentation_exchange import PresentationExchange

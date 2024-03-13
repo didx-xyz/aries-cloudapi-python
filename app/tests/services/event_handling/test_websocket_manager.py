@@ -20,7 +20,9 @@ def mock_pubsub_client():
 
 
 @pytest.mark.anyio
-async def test_subscribe_wallet_id_and_topic(mock_pubsub_client):
+async def test_subscribe_wallet_id_and_topic(
+    mock_pubsub_client,  # pylint: disable=redefined-outer-name
+):
     websocket = AsyncMock(spec=WebSocket)
     wallet_id = "test_wallet_id"
     topic = "test_topic"

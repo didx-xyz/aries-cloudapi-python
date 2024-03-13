@@ -44,7 +44,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
     "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
 async def test_accept_proof_request_v1(
-    issue_credential_to_alice: CredentialExchange,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
@@ -120,7 +120,7 @@ async def test_accept_proof_request_v1(
 
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v1(
-    issue_credential_to_alice: CredentialExchange,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
@@ -214,7 +214,7 @@ async def test_accept_proof_request_oob_v1(
 
 @pytest.mark.anyio
 async def test_accept_proof_request_oob_v2(
-    issue_credential_to_alice: CredentialExchange,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
@@ -307,7 +307,7 @@ async def test_accept_proof_request_oob_v2(
     "acme_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
 async def test_accept_proof_request_v2(
-    issue_credential_to_alice: CredentialExchange,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
@@ -644,7 +644,7 @@ async def test_delete_proof(
 
 @pytest.mark.anyio
 async def test_get_credentials_for_request(
-    issue_credential_to_alice: CredentialExchange,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
@@ -729,7 +729,7 @@ async def test_get_credentials_for_request(
     "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
 )
 async def test_accept_proof_request_v1_verifier_has_issuer_role(
-    meld_co_issue_credential_to_alice: CredentialExchange,
+    meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     meld_co_client: RichAsyncClient,
     meld_co_and_alice_connection: MeldCoAliceConnect,
@@ -879,7 +879,7 @@ async def test_send_proof_request_verifier_has_issuer_role(
 @pytest.mark.parametrize("acme_save_exchange_record", [False, True])
 @pytest.mark.parametrize("alice_save_exchange_record", [False, True])
 async def test_saving_of_presentation_exchange_records(
-    issue_credential_to_alice: CredentialExchange,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,

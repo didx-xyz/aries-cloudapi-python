@@ -18,7 +18,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_proof_revoked_credential(
-    issue_alice_creds_and_revoke_published: List[  # pylint: disable=redefined-outer-name
+    issue_alice_creds_and_revoke_published: List[  # pylint: disable=unused-argument
         CredentialExchange
     ],
     acme_client: RichAsyncClient,

@@ -4,6 +4,7 @@ from copy import deepcopy
 import pytest
 from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCDetailOptions
 from assertpy import assert_that
+from fastapi import HTTPException
 
 from app.models.issuer import SendCredential
 from app.routes.connections import router as con_router
@@ -338,3 +339,31 @@ async def test_issue_jsonld_ed(
         topic="credentials",
         lookback_time=5,
     )
+
+
+# Fail cases:
+
+
+@pytest.mark.anyio
+async def test_send_jsonld_mismatch_ed_bbs(
+    faber_client: RichAsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    register_issuer_key_ed25519: DidKey,
+):
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
+
+    # Creating JSON-LD credential did:key with proofType: BbsBlsSignature2020
+    credential = deepcopy(credential_)
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = register_issuer_key_ed25519
+    credential["ld_credential_detail"]["options"] = {"proofType": "BbsBlsSignature2020"}
+
+    # Send credential must fail did:key made with ed25519 mismatch with prooftype:BbsBlsSignature2020
+    with pytest.raises(HTTPException) as exc:
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    assert_that(exc.value.status_code).is_equal_to(400)

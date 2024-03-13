@@ -62,11 +62,11 @@ def _serialize_record(record):
             # "file": {"name": record["file"].name, "path": record["file"].path},
             "file": record["file"].path,
             "function": record["function"],
-            "level": {
-                "icon": record["level"].icon,
-                "name": record["level"].name,
-                "no": record["level"].no,
-            },
+            # "level": {
+            #     "icon": record["level"].icon,
+            #     "name": record["level"].name,
+            #     "no": record["level"].no,
+            # },
             "line": record["line"],
             # "message": record["message"],
             "module": record["module"],
@@ -75,6 +75,7 @@ def _serialize_record(record):
             "thread": {"id": record["thread"].id, "name": record["thread"].name},
             "time": {"repr": record["time"], "timestamp": record["time"].timestamp()},
         },
+        "log_status ": record["level"].name,
     }
 
     record["extra"]["serialized"] = orjson.dumps(subset, default=str).decode("utf-8")

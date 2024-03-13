@@ -379,11 +379,13 @@ async def issue_alice_creds_and_revoke_unpublished(
             field="credential_id", field_id=cred["credential_id"], desired_state="done"
         )
 
-    cred_ex_response = await faber_client.get(
-        CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
-    )
+    cred_ex_response = (
+        await faber_client.get(
+            CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
+        )
+    ).json()
 
-    assert len(cred_ex_response.json()) == 3
+    assert len(cred_ex_response) == 3
 
     # revoke all credentials in list
     for cred in cred_ex_response:

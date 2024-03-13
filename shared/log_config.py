@@ -53,10 +53,10 @@ def _serialize_record(record):
     subset = {
         "text": message_with_body,
         "record": {
-            "elapsed": {
-                "repr": record["elapsed"],
-                "seconds": record["elapsed"].total_seconds(),
-            },
+            # "elapsed": {
+            #     "repr": record["elapsed"],
+            #     "seconds": record["elapsed"].total_seconds(),
+            # },
             "exception": exception,
             # "extra": record["extra"],
             "file": {"name": record["file"].name, "path": record["file"].path},

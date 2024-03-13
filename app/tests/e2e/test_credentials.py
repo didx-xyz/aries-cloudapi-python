@@ -17,7 +17,7 @@ CREDENTIALS_BASE_PATH = router.prefix
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_issue_credential_with_save_exchange_record(
     faber_client: RichAsyncClient,
-    credential_definition_id: str,  # pylint: disable=redefined-outer-name
+    credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,

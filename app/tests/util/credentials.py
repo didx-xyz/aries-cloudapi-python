@@ -16,7 +16,7 @@ CREDENTIALS_BASE_PATH = router.prefix
 @pytest.fixture(scope="function")
 async def issue_credential_to_alice(
     faber_client: RichAsyncClient,
-    credential_definition_id: str,  # pylint: disable=redefined-outer-name
+    credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
@@ -63,7 +63,7 @@ async def issue_credential_to_alice(
 @pytest.fixture(scope="function")
 async def meld_co_issue_credential_to_alice(
     meld_co_client: RichAsyncClient,
-    meld_co_credential_definition_id: str,  # pylint: disable=redefined-outer-name
+    meld_co_credential_definition_id: str,
     meld_co_and_alice_connection: MeldCoAliceConnect,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
@@ -112,7 +112,7 @@ async def issue_alice_creds_and_revoke_unpublished(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
-    credential_definition_id_revocable: str,  # pylint: disable=redefined-outer-name
+    credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ) -> List[CredentialExchange]:
     faber_conn_id = faber_and_alice_connection.faber_connection_id

@@ -1,6 +1,8 @@
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
+# flake8: noqa
+# pylint: disable=unused-import
 from app.exceptions import CloudApiException
 from app.services.acapy_wallet import get_public_did
 from app.services.trust_registry.actors import (
@@ -8,17 +10,16 @@ from app.services.trust_registry.actors import (
     register_actor,
     remove_actor_by_id,
 )
-
-# pylint: disable=unused-import
-from app.tests.e2e.test_credentials import (  # noqa: F401
-    credential_definition_id,
-    credential_definition_id_revocable,
-    credential_exchange_id,
+from app.tests.util.credentials import (
     issue_alice_creds_and_revoke_published,
     issue_alice_creds_and_revoke_unpublished,
     issue_credential_to_alice,
-    meld_co_credential_definition_id,
     meld_co_issue_credential_to_alice,
+)
+from app.tests.util.definitions import (
+    credential_definition_id,
+    credential_definition_id_revocable,
+    meld_co_credential_definition_id,
     schema_definition,
     schema_definition_alt,
 )

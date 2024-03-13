@@ -331,9 +331,8 @@ async def issue_alice_creds_and_revoke_unpublished(
     alice_tenant: CreateTenantResponse,
     credential_definition_id_revocable: str,  # pylint: disable=redefined-outer-name
     faber_and_alice_connection: FaberAliceConnect,
-):
+) -> List[CredentialExchange]:
     faber_conn_id = faber_and_alice_connection.faber_connection_id
-    alice_conn_id = faber_and_alice_connection.alice_connection_id
 
     for i in range(3):
         credential = {
@@ -357,7 +356,7 @@ async def issue_alice_creds_and_revoke_unpublished(
         await asyncio.sleep(0.25)
         alice_cred_ex_response = (
             await alice_member_client.get(
-                CREDENTIALS_BASE_PATH + "?connection_id=" + alice_conn_id
+                f"{CREDENTIALS_BASE_PATH}?connection_id={faber_and_alice_connection.alice_connection_id}"
             )
         ).json()
         num_credentials_returned = len(alice_cred_ex_response)
@@ -409,7 +408,7 @@ async def issue_alice_creds_and_revoke_published(
     issue_alice_creds_and_revoke_unpublished: List[  # pylint: disable=redefined-outer-name
         CredentialExchange
     ],
-):
+) -> List[CredentialExchange]:
     credential_exchange_records = issue_alice_creds_and_revoke_unpublished
     # Publish revoked credentials
     await faber_client.post(

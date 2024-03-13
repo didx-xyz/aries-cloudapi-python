@@ -1,4 +1,3 @@
-import asyncio
 import time
 
 import pytest
@@ -7,55 +6,10 @@ from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
-from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix
-
-
-@pytest.fixture(scope="function")
-async def credential_exchange_id(
-    faber_client: RichAsyncClient,
-    credential_definition_id: str,  # pylint: disable=redefined-outer-name
-    faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
-):
-    credential = {
-        "protocol_version": "v1",
-        "connection_id": faber_and_alice_connection.faber_connection_id,
-        "indy_credential_detail": {
-            "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "average"},
-        },
-    }
-
-    response = await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
-    credential_exchange = response.json()
-    cred_ex_id = credential_exchange["credential_id"]
-    assert credential_exchange["protocol_version"] == "v1"
-
-    assert await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        filter_map={
-            "state": "offer-sent",
-            "credential_id": cred_ex_id,
-        },
-    )
-
-    await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
-    )
-    records = response.json()
-    assert len(records) > 0
-
-    return cred_ex_id
 
 
 @pytest.mark.anyio

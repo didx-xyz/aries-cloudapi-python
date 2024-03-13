@@ -59,6 +59,7 @@ async def should_accept_endorsement(
     if is_revocation_def_or_entry(attachment):
         bound_logger.debug("Endorsement request is for revocation definition or entry.")
         return True
+
     if not is_credential_definition_transaction(attachment):
         bound_logger.warning("Endorsement request is not for credential definition.")
         return False

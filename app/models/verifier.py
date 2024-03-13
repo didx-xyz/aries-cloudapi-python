@@ -1,12 +1,8 @@
 from enum import Enum
 from typing import Optional
 
-from aries_cloudcontroller import (
-    DIFPresSpec,
-    DIFProofRequest,
-    IndyPresSpec,
-    IndyProofRequest,
-)
+from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
+from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion

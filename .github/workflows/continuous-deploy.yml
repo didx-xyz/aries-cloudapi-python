@@ -208,7 +208,7 @@ jobs:
         id: test
         run: |
           set +e
-          pytest --durations=0 ${{ matrix.module.cov }} ${{ matrix.module.test }} | tee test_output.txt
+          pytest --durations=0 ${{ matrix.module.test }} ${{ matrix.module.cov }} | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           echo "Exit code: $EXIT_CODE"

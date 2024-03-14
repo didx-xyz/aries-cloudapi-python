@@ -127,6 +127,21 @@ def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     return translation_dict[state]
 
 
+def back_to_v1_presentation_state(state: Optional[str]) -> Optional[str]:
+    translation_dict = {
+        "abandoned": "abandoned",
+        "done": "verified",
+        "presentation-received": "presentation_received",
+        "presentation-sent": "presentation_sent",
+        "proposal-received": "proposal_received",
+        "proposal-sent": "proposal_sent",
+        "request-received": "request_received",
+        "request-sent": "request_sent",
+    }
+
+    return translation_dict[state]
+
+
 def string_to_bool(verified: Optional[str]) -> Optional[bool]:
     if verified == "true":
         return True

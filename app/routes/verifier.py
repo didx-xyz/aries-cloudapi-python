@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Optional
+from uuid import UUID
 
 from aries_cloudcontroller import IndyCredPrecis
 from fastapi import APIRouter, Depends
@@ -10,7 +11,9 @@ from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
     RejectProofRequest,
+    Role,
     SendProofRequest,
+    State,
 )
 from app.util.acapy_verifier_utils import (
     VerifierFacade,
@@ -19,7 +22,10 @@ from app.util.acapy_verifier_utils import (
     get_verifier_by_version,
 )
 from shared.log_config import get_logger
-from shared.models.presentation_exchange import PresentationExchange
+from shared.models.presentation_exchange import (
+    PresentationExchange,
+    back_to_v1_presentation_state,
+)
 
 logger = get_logger(__name__)
 

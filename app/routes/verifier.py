@@ -227,6 +227,10 @@ async def reject_proof_request(
 @router.get("/proofs", response_model=List[PresentationExchange])
 async def get_proof_records(
     auth: AcaPyAuth = Depends(acapy_auth),
+    connection_id: Optional[UUID] = None,
+    role: Optional[Role] = None,
+    state: Optional[State] = None,
+    thread_id: Optional[UUID] = None,
 ) -> List[PresentationExchange]:
     """
     Get all proof records

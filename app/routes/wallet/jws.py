@@ -1,5 +1,6 @@
 from aries_cloudcontroller import ApiException, JWSCreate, JWSVerify
 from fastapi import APIRouter, Depends
+from pydantic import ValidationError
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
@@ -10,6 +11,7 @@ from app.models.jws import (
     JWSVerifyRequest,
     JWSVerifyResponse,
 )
+from app.util.extract_validation_error import extract_validation_error_msg
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -38,6 +40,13 @@ async def sign_jws(
             jws = await aries_controller.wallet.wallet_jwt_sign_post(
                 body=JWSCreate(**body.model_dump())
             )
+    except ValidationError as e:
+        error_msg = extract_validation_error_msg(e)
+        bound_logger.info(
+            "Bad request: Validation error during JWS signing: {}",
+            error_msg,
+        )
+        raise CloudApiException(status_code=422, detail=error_msg) from e
     except ApiException as e:
         if str(e.status).startswith("4"):
             bound_logger.info("Client error during JWS signing: {}", e)
@@ -72,6 +81,14 @@ async def verify_jws(
             verify_result = await aries_controller.wallet.wallet_jwt_verify_post(
                 body=JWSVerify(jwt=body.jws)
             )
+    except ValidationError as e:
+        error_msg = extract_validation_error_msg(e)
+        error_msg = error_msg.replace("jwt", "jws")  # match the input field
+        bound_logger.info(
+            "Bad request: Validation error during JWS verification: {}",
+            error_msg,
+        )
+        raise CloudApiException(status_code=422, detail=error_msg) from e
     except ApiException as e:
         if str(e.status).startswith("4"):
             bound_logger.info("Client error during JWS verification: {}", e)

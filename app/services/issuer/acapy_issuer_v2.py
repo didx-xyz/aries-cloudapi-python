@@ -177,12 +177,17 @@ class IssuerV2(Issuer):
 
     @classmethod
     async def get_records(
-        cls, controller: AcaPyClient, connection_id: Optional[str] = None
+        cls,
+        controller: AcaPyClient,
+        connection_id: Optional[str] = None,
+        role: Optional[str] = None,
+        state: Optional[str] = None,
+        thread_id: Optional[str] = None,
     ):
         bound_logger = logger.bind(body={"connection_id": connection_id})
         bound_logger.debug("Getting v2 credential records by connection id")
         result = await controller.issue_credential_v2_0.get_records(
-            connection_id=connection_id,
+            connection_id=connection_id, role=role, state=state, thread_id=thread_id
         )
 
         if not result.results:

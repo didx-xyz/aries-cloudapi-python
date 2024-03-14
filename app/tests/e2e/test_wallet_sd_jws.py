@@ -45,6 +45,17 @@ async def test_sign_sdjws_x(alice_member_client: RichAsyncClient):
         await alice_member_client.post("/v1/wallet/sd-jws/sign", json={})
     assert exc_info.value.status_code == 422
 
+    with pytest.raises(HTTPException) as exc_info:
+        # If did / verification method are bad values
+        request = SDJWSCreateRequest(
+            did="bad did",
+            headers={},
+            payload={"example": "payload"},
+            verification_method="bad method",
+        ).model_dump()
+        await alice_member_client.post("/v1/wallet/sd-jws/sign", json=request)
+    assert exc_info.value.status_code == 422
+
 
 @pytest.mark.anyio
 async def test_sign_and_verify_sdjws_success(alice_member_client: RichAsyncClient):
@@ -77,7 +88,7 @@ async def test_sign_and_verify_sdjws_success(alice_member_client: RichAsyncClien
 @pytest.mark.anyio
 async def test_verify_sdjws_x(alice_member_client: RichAsyncClient):
     with pytest.raises(HTTPException) as exc_info:
-        await alice_member_client.post("/v1/wallet/sd-jws/verify", json={"sd_jws": ""})
-    assert (
-        exc_info.value.status_code == 500
-    )  # Todo: this error should be improved in ACA-Py
+        await alice_member_client.post(
+            "/v1/wallet/sd-jws/verify", json={"sd_jws": "bad value"}
+        )
+    assert exc_info.value.status_code == 422

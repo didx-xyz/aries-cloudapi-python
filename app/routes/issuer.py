@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 
 from aries_cloudcontroller import ApiException, IssuerCredRevRecord
 from fastapi import APIRouter, Depends, Query
@@ -13,7 +14,9 @@ from app.models.issuer import (
     CredentialType,
     PublishRevocationsRequest,
     RevokeCredential,
+    Role,
     SendCredential,
+    State,
 )
 from app.services import revocation_registry
 from app.services.acapy_ledger import schema_id_from_credential_definition_id
@@ -26,7 +29,10 @@ from app.util.acapy_issuer_utils import (
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from shared.log_config import get_logger
-from shared.models.credential_exchange import CredentialExchange
+from shared.models.credential_exchange import (
+    CredentialExchange,
+    back_to_v1_credential_state,
+)
 
 logger = get_logger(__name__)
 

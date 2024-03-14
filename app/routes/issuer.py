@@ -52,7 +52,16 @@ async def get_credentials(
 
     Parameters:
     ------------
-        connection_id: str (Optional)
+        connection_id: UUID (Optional)
+        role: Role (Optional): "issuer", "holder"
+        state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
+                                 "request-sent", "request-received", "credential-issued", "credential-received",
+                                 "credential-revoked","abandoned", "done"
+        thread_id: UUID (Optional)
+    Returns:
+    --------
+        payload: List[CredentialExchange]
+            A list of credential exchange records
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get credentials")

@@ -55,7 +55,7 @@ def _serialize_record(record):
     subset = {
         "message": message_with_body,
         "levelname ": record["level"].name,  # log level
-        "timestamp": record["time"].timestamp(),
+        "date": record["time"],
         "name": record["name"],
         "record": {
             # "elapsed": {
@@ -78,7 +78,7 @@ def _serialize_record(record):
             "process": {"id": record["process"].id, "name": record["process"].name},
             "thread": {"id": record["thread"].id, "name": record["thread"].name},
             "time": {
-                "repr": record["time"],
+                "timestamp": record["time"].timestamp(),
                 "uptime_h:m:s": record["elapsed"],
             },
         },

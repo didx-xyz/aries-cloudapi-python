@@ -1,6 +1,8 @@
+import json
 import time
 
 import pytest
+from fastapi import HTTPException
 
 from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
@@ -81,3 +83,87 @@ async def test_issue_credential_with_save_exchange_record(
         await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")  # Clean up
     else:
         assert len(faber_cred_ex_recs) == 0  # default is to remove records
+
+
+@pytest.mark.anyio
+async def test_get_cred_exchange_records(
+    faber_client: RichAsyncClient,
+    credential_definition_id: str,  # pylint: disable=redefined-outer-name
+    faber_and_alice_connection: FaberAliceConnect,
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+):
+    credential_v1 = {
+        "protocol_version": "v1",
+        "connection_id": faber_and_alice_connection.faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "10"},
+        },
+        "save_exchange_record": True,
+    }
+
+    await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential_v1,
+    )
+
+    credential_v2 = {
+        "protocol_version": "v2",
+        "connection_id": faber_and_alice_connection.faber_connection_id,
+        "indy_credential_detail": {
+            "credential_definition_id": credential_definition_id,
+            "attributes": {"speed": "20"},
+        },
+        "save_exchange_record": True,
+    }
+
+    await faber_client.post(
+        CREDENTIALS_BASE_PATH,
+        json=credential_v2,
+    )
+
+    alice_cred_ex_response = await alice_member_client.get(
+        f"{CREDENTIALS_BASE_PATH}?connection_id={faber_and_alice_connection.alice_connection_id}"
+    )
+
+    while len(alice_cred_ex_response.json()) != 2:
+        print("not 2 credentials yet")
+        alice_cred_ex_response = await alice_member_client.get(
+            CREDENTIALS_BASE_PATH + "?state=offer-received"
+        )
+
+    for cred in alice_cred_ex_response.json():
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
+        )
+        # add sse listener to wait for credential state "done" for each credential
+        listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
+        await listener.wait_for_event(
+            field="credential_id", field_id=cred["credential_id"], desired_state="done"
+        )
+
+    response = await faber_client.get(CREDENTIALS_BASE_PATH)
+
+    faber_records = response.json()
+    faber_cred_ex_response = await faber_client.get(
+        CREDENTIALS_BASE_PATH + "?state=done"
+    )
+    assert len(faber_cred_ex_response.json()) == 2
+
+    faber_cred_ex_response = await faber_client.get(
+        CREDENTIALS_BASE_PATH + "?role=issuer"
+    )
+    assert len(faber_cred_ex_response.json()) == 2
+
+    faber_cred_ex_response = await faber_client.get(
+        f"{CREDENTIALS_BASE_PATH}?thread_id={faber_records[0]['thread_id']}"
+    )
+    assert len(faber_cred_ex_response.json()) == 1
+
+    with pytest.raises(HTTPException) as exc:
+        faber_cred_ex_response = await faber_client.get(
+            f"{CREDENTIALS_BASE_PATH}?connection_id=123&thread_id=123&role=asf&state=asd"
+        )
+    assert exc.value.status_code == 422
+    assert len(json.loads(exc.value.detail)["detail"]) == 4

@@ -155,6 +155,11 @@ async def get_connection_by_id(
     -----------
     connection_id: str
 
+    Returns:
+    ---------
+    Connection.
+        A connection object.
+
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get connection by ID")

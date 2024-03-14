@@ -2,7 +2,7 @@ version: "3"
 
 services:
   governance-ga-wallets-db:
-    image: postgres:15
+    image: postgres:16-alpine
     container_name: governance-ga-wallets-db
     command: postgres -c listen_addresses='*' -c 'max_connections=500'
     env_file:
@@ -79,7 +79,7 @@ services:
       trustregistry-db:
         condition: service_healthy
   trustregistry-db:
-    image: postgres:15
+    image: postgres:16-alpine
     container_name: trustregistry-db
     command: postgres -c listen_addresses='*' -c 'max_connections=500'
     environment:
@@ -342,7 +342,7 @@ services:
         ipv4_address: 172.29.0.106
 
   governance-multitenant-wallets-db:
-    image: postgres:15
+    image: postgres:16-alpine
     container_name: governance-multitenant-wallets-db
     command: postgres -c listen_addresses='*' -c 'max_connections=500'
     env_file:

@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.exceptions import CloudApiException
+from app.exceptions import BadRequestException, CloudApiException
 from app.models.jws import (
     JWSCreateRequest,
     JWSCreateResponse,
@@ -47,12 +47,11 @@ async def sign_jws(
             error_msg,
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
+    except BadRequestException as e:
+        bound_logger.info("Client error during JWS signing: {}", e)
+        raise CloudApiException(status_code=e.status, detail=e.body) from e
     except ApiException as e:
-        if str(e.status).startswith("4"):
-            bound_logger.info("Client error during JWS signing: {}", e)
-        else:
-            bound_logger.warning("Error during JWS signing: {}", e)
-
+        bound_logger.warning("Error during JWS signing: {}", e)
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 
     result = JWSCreateResponse(jws=jws)
@@ -89,12 +88,11 @@ async def verify_jws(
             error_msg,
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
+    except BadRequestException as e:
+        bound_logger.info("Client error during JWS verification: {}", e)
+        raise CloudApiException(status_code=e.status, detail=e.body) from e
     except ApiException as e:
-        if str(e.status).startswith("4"):
-            bound_logger.info("Client error during JWS verification: {}", e)
-        else:
-            bound_logger.warning("API exception during JWS verification: {}", e)
-
+        bound_logger.warning("API exception during JWS verification: {}", e)
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 
     result = JWSVerifyResponse(**verify_result.model_dump())

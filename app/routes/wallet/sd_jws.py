@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.exceptions import CloudApiException
+from app.exceptions import BadRequestException, CloudApiException
 from app.models.sd_jws import (
     SDJWSCreateRequest,
     SDJWSCreateResponse,
@@ -48,12 +48,11 @@ async def sign_sd_jws(
             error_msg,
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
+    except BadRequestException as e:
+        bound_logger.info("Client error during SD-JWS signing: {}", e)
+        raise CloudApiException(status_code=e.status, detail=e.body) from e
     except ApiException as e:
-        if str(e.status).startswith("4"):
-            bound_logger.info("Client error during SD-JWS signing: {}", e)
-        else:
-            bound_logger.warning("Error during SD-JWS signing: {}", e)
-
+        bound_logger.warning("Error during SD-JWS signing: {}", e)
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 
     result = SDJWSCreateResponse(sd_jws=sd_jws)
@@ -91,12 +90,11 @@ async def verify_sd_jws(
             error_msg,
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
+    except BadRequestException as e:
+        bound_logger.info("Client error during SD-JWS verification: {}", e)
+        raise CloudApiException(status_code=e.status, detail=e.body) from e
     except ApiException as e:
-        if str(e.status).startswith("4"):
-            bound_logger.info("Client error during SD-JWS verification: {}", e)
-        else:
-            bound_logger.warning("API exception during SD-JWS verification: {}", e)
-
+        bound_logger.warning("API exception during SD-JWS verification: {}", e)
         raise CloudApiException(status_code=e.status, detail=e.body) from e
 
     result = SDJWSVerifyResponse(**verify_result.model_dump())

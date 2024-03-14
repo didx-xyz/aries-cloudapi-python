@@ -102,11 +102,63 @@ async def test_get_connections(
     alice_member_client: RichAsyncClient,
     bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
-    alice_connections = (await alice_member_client.get(f"{BASE_PATH}")).json()
-    bob_connections = (await bob_member_client.get(f"{BASE_PATH}")).json()
+    alice_connections = (await alice_member_client.get(f"{BASE_PATH}")).json()[0]
+    bob_connections = (await bob_member_client.get(f"{BASE_PATH}")).json()[0]
 
     assert_that(len(alice_connections)).is_greater_than_or_equal_to(1)
     assert_that(len(bob_connections)).is_greater_than_or_equal_to(1)
+
+    alice_initation_msg_id = alice_connections['invitation_msg_id']
+    alice_did = alice_connections['my_did']
+
+    alice_alias = (await alice_member_client.get(f"{BASE_PATH}?alias=alice")).json()[0][
+        "alias"
+    ]
+    assert alice_alias == "alice"
+
+    alice_state = (
+        await alice_member_client.get(f"{BASE_PATH}?state=completed")
+    ).json()[0]["state"]
+    assert alice_state == "completed"
+
+    alice_key = (
+        await alice_member_client.get(
+            f"{BASE_PATH}?invitation_key={bob_connections['invitation_key']}"
+        )
+    ).json()[0]["invitation_key"]
+    assert alice_key == alice_connections["invitation_key"]
+
+    alice_invitation_msg_id = (
+        await alice_member_client.get(
+            f"{BASE_PATH}?invitation_msg_id={alice_initation_msg_id}"
+        )
+    ).json()[0]["invitation_msg_id"]
+    assert alice_invitation_msg_id == alice_initation_msg_id
+
+    alice_my_did = (
+        await alice_member_client.get(
+            f"{BASE_PATH}?my_did={alice_did}"
+        )
+    ).json()[0]["my_did"]
+    assert alice_my_did == alice_did
+
+    alice_their_did = (
+        await alice_member_client.get(
+            f"{BASE_PATH}?their_did={bob_connections['my_did']}"
+        )
+    ).json()[0]["their_did"]
+    assert alice_their_did == alice_connections["their_did"]
+
+    with pytest.raises(HTTPException) as exc:
+        await alice_member_client.get(
+            f"{BASE_PATH}?their_public_did={bob_connections['their_public_did']}"
+    )
+    assert exc.value.status_code == 422
+
+    alice_their_role = (
+        await alice_member_client.get(f"{BASE_PATH}?their_role=inviter")
+    ).json()[0]["their_role"]
+    assert alice_their_role == "inviter"
 
 
 @pytest.mark.anyio

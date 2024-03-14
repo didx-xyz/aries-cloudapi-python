@@ -90,6 +90,24 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     return translation_dict[state]
 
 
+def back_to_v1_credential_state(state: Optional[str]) -> Optional[str]:
+    translation_dict = {
+        "abandoned": "abandoned",
+        "done": "credential_acked",
+        "credential-issued": "credential_issued",
+        "credential-received": "credential_received",
+        "credential-revoked": "credential_revoked",
+        "offer-received": "offer_received",
+        "offer-sent": "offer_sent",
+        "proposal-received": "proposal_received",
+        "proposal-sent": "proposal_sent",
+        "request-received": "request_received",
+        "request-sent": "request_sent",
+    }
+
+    return translation_dict[state]
+
+
 def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange:
     attributes = attributes_from_record_v2(record)
     schema_id, credential_definition_id = schema_cred_def_from_record(record)

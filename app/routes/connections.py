@@ -1,12 +1,23 @@
+import json
 from typing import List, Optional
 
-from aries_cloudcontroller import CreateInvitationRequest, InvitationResult
+from aries_cloudcontroller import (
+    ApiException,
+    CreateInvitationRequest,
+    InvitationResult,
+)
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions import handle_acapy_call
-from app.models.connections import AcceptInvitation, CreateInvitation
+from app.models.connections import (
+    AcceptInvitation,
+    CreateInvitation,
+    Protocol,
+    Role,
+    State,
+)
 from shared.log_config import get_logger
 from shared.models.connection_record import Connection, conn_record_to_connection
 

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from aries_cloudcontroller import LDProofVCDetail
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
@@ -98,3 +98,20 @@ class ClearPendingRevocationsResult(BaseModel):
             "The resulting revocations that are still pending after a clear-pending request has been completed."
         ),
     )
+
+
+State = Literal[
+    "proposal-sent",
+    "proposal-received",
+    "offer-sent",
+    "offer-received",
+    "request-sent",
+    "request-received",
+    "credential-issued",
+    "credential-received",
+    "credential-revoked",
+    "abandoned",
+    "done",
+]
+
+Role = Literal["issuer", "holder"]

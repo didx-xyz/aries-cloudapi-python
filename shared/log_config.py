@@ -72,7 +72,7 @@ def _serialize_record(record):
             # },
             "line": record["line"],
             # "message": record["message"],
-            "module": record["module"],
+            # "module": record["module"],
             "name": record["name"],
             # "process": {"id": record["process"].id, "name": record["process"].name},
             # "thread": {"id": record["thread"].id, "name": record["thread"].name},

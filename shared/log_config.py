@@ -54,7 +54,7 @@ def _serialize_record(record):
     # we keep optional fields commented out to compare with loguru's original serialised structure
     subset = {
         "text": message_with_body,
-        "log_status ": record["level"].name,
+        "levelname ": record["level"].name,  # log level
         "record": {
             # "elapsed": {
             #     "repr": record["elapsed"],

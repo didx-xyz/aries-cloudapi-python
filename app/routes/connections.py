@@ -97,9 +97,23 @@ async def get_connections(
     """
     Retrieve list of connections.
 
+    Parameters:
+    -----------
+        alias: Optional[str]
+        connection_protocol: Optional[Protocol]: "connections/1.0", "didexchange/1.0"
+        invitation_key: Optional[str]
+        invitation_msg_id: Optional[str]
+        my_did: Optional[str]
+        state: Optional[State]: "active", "response", "request", "start",
+                                "completed", "init", "error", "invitation", "abandoned"
+        their_did: Optional[str]
+        their_public_did: Optional[str]
+        their_role: Optional[Role]: "invitee", "requester", "inviter", "responder"
+
     Returns:
     ---------
-    JSON object with connections (key), a list of connections (ids)
+        List[Connection]
+            A list of connection objects.
     """
     logger.info("GET request received: Get connections")
 

@@ -83,6 +83,15 @@ async def accept_invitation(
 
 @router.get("", response_model=List[Connection])
 async def get_connections(
+    alias: Optional[str] = None,
+    connection_protocol: Optional[Protocol] = None,
+    invitation_key: Optional[str] = None,
+    invitation_msg_id: Optional[str] = None,
+    my_did: Optional[str] = None,
+    state: Optional[State] = None,
+    their_did: Optional[str] = None,
+    their_public_did: Optional[str] = None,
+    their_role: Optional[Role] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[Connection]:
     """

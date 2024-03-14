@@ -41,7 +41,10 @@ router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 
 @router.get("", response_model=List[CredentialExchange])
 async def get_credentials(
-    connection_id: Optional[str] = Query(None),
+    connection_id: Optional[UUID] = Query(None),
+    role: Optional[Role] = Query(None),
+    state: Optional[State] = Query(None),
+    thread_id: Optional[UUID] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """

@@ -54,6 +54,7 @@ def _serialize_record(record):
     # we keep optional fields commented out to compare with loguru's original serialised structure
     subset = {
         "text": message_with_body,
+        "log_status ": record["level"].name,
         "record": {
             # "elapsed": {
             #     "repr": record["elapsed"],
@@ -81,7 +82,6 @@ def _serialize_record(record):
                 "elapsed_h:m:s": record["elapsed"],
             },
         },
-        "log_status ": record["level"].name,
     }
 
     record["extra"]["serialized"] = orjson.dumps(subset, default=str).decode("utf-8")

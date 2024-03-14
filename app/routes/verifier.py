@@ -235,6 +235,15 @@ async def get_proof_records(
     """
     Get all proof records
 
+    Parameters:
+    ----------
+        connection_id: Optional[UUID]
+        role: Optional[Role]: "prover", "verifier"
+        state: Optional[State]: "abandoned", "done", "presentation-received",
+                                "presentation-sent", "proposal-received", "proposal-sent",
+                                "request-received", "request-sent"
+        thread_id: Optional[UUID]
+
     Returns:
     --------
     presentation_exchange_list: [PresentationExchange]

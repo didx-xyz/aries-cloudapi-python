@@ -255,11 +255,19 @@ async def get_proof_records(
         async with client_from_auth(auth) as aries_controller:
             logger.debug("Fetching v1 proof records")
             v1_records = await VerifierFacade.v1.value.get_proof_records(
-                controller=aries_controller
+                controller=aries_controller,
+                connection_id=str(connection_id) if connection_id else None,
+                role=role,
+                state=back_to_v1_presentation_state(state) if state else None,
+                thread_id=str(thread_id) if thread_id else None,
             )
             logger.debug("Fetching v2 proof records")
             v2_records = await VerifierFacade.v2.value.get_proof_records(
-                controller=aries_controller
+                controller=aries_controller,
+                connection_id=str(connection_id) if connection_id else None,
+                role=role,
+                state=state,
+                thread_id=str(thread_id) if thread_id else None,
             )
     except CloudApiException as e:
         logger.info("Could not fetch proof records: {}.", e)

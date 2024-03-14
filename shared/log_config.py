@@ -54,7 +54,7 @@ def _serialize_record(record):
     # we keep optional fields commented out to compare with loguru's original serialised structure
     subset = {
         "message": message_with_body,
-        "levelname ": record["level"].name,  # log level
+        "levelname": record["level"].name,  # log level
         "date": record["time"],
         "name": record["name"],
         "record": {
@@ -78,7 +78,7 @@ def _serialize_record(record):
             "process": {"id": record["process"].id, "name": record["process"].name},
             "thread": {"id": record["thread"].id, "name": record["thread"].name},
             "time": {
-                "timestamp": record["time"].timestamp(),
+                "repr": record["time"].timestamp(),
                 "uptime_h:m:s": record["elapsed"],
             },
         },

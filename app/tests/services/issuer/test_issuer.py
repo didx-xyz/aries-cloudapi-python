@@ -98,28 +98,56 @@ async def test_get_credentials(
     with when(IssuerV1).get_records(...).thenReturn(
         to_async(v1_records_no_conn_id)
     ), when(IssuerV2).get_records(...).thenReturn(to_async(v2_records_no_conn_id)):
-        result = await test_module.get_credentials(None, mock_tenant_auth)
+        result = await test_module.get_credentials(
+            connection_id=None,
+            state=None,
+            thread_id=None,
+            role=None,
+            auth=mock_tenant_auth,
+        )
 
         assert result == v1_records_no_conn_id + v2_records_no_conn_id
 
         verify(IssuerV1).get_records(
-            controller=mock_agent_controller, connection_id=None
+            controller=mock_agent_controller,
+            connection_id=None,
+            state=None,
+            thread_id=None,
+            role=None,
         )
         verify(IssuerV2).get_records(
-            controller=mock_agent_controller, connection_id=None
+            controller=mock_agent_controller,
+            connection_id=None,
+            state=None,
+            thread_id=None,
+            role=None,
         )
 
     with when(IssuerV1).get_records(...).thenReturn(to_async(v1_records)), when(
         IssuerV2
     ).get_records(...).thenReturn(to_async(v2_records)):
-        result = await test_module.get_credentials("conn_id", mock_tenant_auth)
+        result = await test_module.get_credentials(
+            connection_id="conn_id",
+            role="issuer",
+            state="done",
+            thread_id="thread",
+            auth=mock_tenant_auth,
+        )
 
         assert result == v1_records + v2_records
         verify(IssuerV1).get_records(
-            controller=mock_agent_controller, connection_id="conn_id"
+            controller=mock_agent_controller,
+            connection_id="conn_id",
+            role="issuer",
+            state="credential_acked",
+            thread_id="thread",
         )
         verify(IssuerV2).get_records(
-            controller=mock_agent_controller, connection_id="conn_id"
+            controller=mock_agent_controller,
+            connection_id="conn_id",
+            role="issuer",
+            state="done",
+            thread_id="thread",
         )
 
 

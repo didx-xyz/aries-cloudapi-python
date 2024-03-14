@@ -34,14 +34,21 @@ async def bob_and_alice_connection(
 ) -> BobAliceConnect:
     # create invitation on bob side
     invitation = (
-        await bob_member_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
+        await bob_member_client.post(
+            f"{CONNECTIONS_BASE_PATH}/create-invitation",
+            json=CreateInvitation(
+                alias="bob",
+                multi_use=False,
+                use_public_did=False,
+            ).model_dump(),
+        )
     ).json()
 
     # accept invitation on alice side
     invitation_response = (
         await alice_member_client.post(
             f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-            json={"invitation": invitation["invitation"]},
+            json={"alias": "alice", "invitation": invitation["invitation"]},
         )
     ).json()
 

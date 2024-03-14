@@ -158,7 +158,7 @@ jobs:
           pip install -r requirements.txt
       - name: Run Pylint
         run: |
-          pylint app --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
+          pylint app/ endorser/ shared/ trustregistry/ webhooks/ --rcfile=.pylintrc -r n --msg-template="{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}" --exit-zero > pylintreport.txt
 
   test:
     if: github.event.pull_request.draft == false
@@ -171,17 +171,15 @@ jobs:
     strategy:
       matrix:
         module:
-          - { test: "app/tests/e2e/test_definitions.py", cov: "--cov=app", id: "1" }
-          - { test: "app/tests/e2e/issuer/did_sov/", cov: "--cov=app", id: "2" }
-          - { test: "app/tests/e2e/issuer/did_key_*", cov: "--cov=app", id: "3" }
-          - { test: "app/tests/e2e/test_verifier.py", cov: "--cov=app", id: "4" }
-          - { test: "app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "5" }
-          - { test: "app --ignore=app/tests/e2e/test_definitions.py
-                         --ignore=app/tests/e2e/issuer/did_sov/
-                         --ignore=app/tests/e2e/issuer/did_key_*
-                         --ignore=app/tests/e2e/test_verifier.py
-                         --ignore=app/tests/e2e/test_trust_registry_integration.py", cov: "--cov=app", id: "6" }
-          - { test: "endorser trustregistry webhooks", cov: "--cov=endorser --cov=trustregistry --cov=webhooks", id: "7" }
+          - { test: "app/tests/ endorser trustregistry webhooks --ignore=app/tests/e2e/", id: "1" } # fast tests, ignore e2e
+          - { test: "app/tests/e2e/issuer/", id: "2" } # then some individual, slower e2e tests
+          - { test: "app/tests/e2e/verifier/", id: "3" }
+          - { test: "app/tests/e2e/test_definitions.py app/tests/e2e/test_revocation.py", id: "4" }
+          - { test: "app/tests/e2e/ \
+                --ignore=app/tests/e2e/issuer/ \
+                --ignore=app/tests/e2e/verifier/ \
+                --ignore=app/tests/e2e/test_definitions.py \
+                --ignore=app/tests/e2e/test_revocation.py", id: "5" } # all other e2e tests
     steps:
       - uses: actions/checkout@v4
         with:
@@ -210,7 +208,7 @@ jobs:
         id: test
         run: |
           set +e
-          pytest --durations=0 ${{ matrix.module.cov }} ${{ matrix.module.test }} | tee test_output.txt
+          pytest --durations=0 ${{ matrix.module.test }} --cov | tee test_output.txt
           EXIT_CODE=${PIPESTATUS[0]}
           set -e
           echo "Exit code: $EXIT_CODE"
@@ -626,7 +624,7 @@ jobs:
         uses: mikepenz/action-junit-report@v4
         if: always()
         with:
-          report_paths: './test_output.xml'
+          report_paths: "./test_output.xml"
           fail_on_failure: true
           detailed_summary: true
           require_passed_tests: true

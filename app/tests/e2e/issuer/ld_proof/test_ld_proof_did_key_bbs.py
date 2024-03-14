@@ -2,8 +2,14 @@ import asyncio
 from copy import deepcopy
 
 import pytest
-from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCDetailOptions
+from aries_cloudcontroller import (
+    AcaPyClient,
+    Credential,
+    LDProofVCDetail,
+    LDProofVCDetailOptions,
+)
 from assertpy import assert_that
+from fastapi import HTTPException
 
 from app.models.issuer import SendCredential
 from app.routes.connections import router as con_router
@@ -330,3 +336,56 @@ async def test_issue_jsonld_bbs(
         topic="credentials",
         lookback_time=5,
     )
+
+
+# Fail tests:
+
+
+@pytest.mark.anyio
+async def test_send_jsonld_mismatch_sov_bbs(
+    faber_client: RichAsyncClient,
+    faber_acapy_client: AcaPyClient,
+    faber_and_alice_connection: FaberAliceConnect,
+):
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
+
+    faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
+
+    # Creating JSON-LD credential did:sov
+    credential = deepcopy(credential_)
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"][
+        "issuer"
+    ] = f"did:sov:{faber_pub_did}"
+
+    # Send credential must fail did:sov cant issue proofType: BbsBlsSignature2020
+    with pytest.raises(HTTPException) as exc:
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    assert_that(exc.value.status_code).is_equal_to(400)
+
+
+@pytest.mark.anyio
+async def test_send_jsonld_mismatch_bbs_ed(
+    faber_client: RichAsyncClient,
+    faber_and_alice_connection: FaberAliceConnect,
+    register_issuer_key_bbs: DidKey,
+):
+    faber_connection_id = faber_and_alice_connection.faber_connection_id
+
+    # Creating JSON-LD credential did:key
+    credential = deepcopy(credential_)
+    credential["connection_id"] = faber_connection_id
+    credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
+    credential["ld_credential_detail"]["options"] = {
+        "proofType": "Ed25519Signature2018"
+    }
+    # Send credential must fail did:key made with bbs cant issue proofType: Ed25519Signature2018
+    with pytest.raises(HTTPException) as exc:
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    assert_that(exc.value.status_code).is_equal_to(400)

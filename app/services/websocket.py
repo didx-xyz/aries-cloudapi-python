@@ -7,7 +7,7 @@ from app.dependencies.auth import (
     get_acapy_auth,
     get_acapy_auth_verified,
 )
-from app.event_handling.websocket_manager import WebsocketManager
+from app.services.event_handling.websocket_manager import WebsocketManager
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

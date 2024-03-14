@@ -4,11 +4,11 @@ from typing import Any, Dict, TypedDict
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
+from app.services.event_handling.sse_listener import SseListener
 from app.services.trust_registry import actors
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.ledger import create_public_did

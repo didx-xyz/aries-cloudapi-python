@@ -3,11 +3,11 @@ import asyncio
 import pytest
 from assertpy import assert_that
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.definitions import CredentialSchema
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
+from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from app.util.credentials import cred_id_no_version

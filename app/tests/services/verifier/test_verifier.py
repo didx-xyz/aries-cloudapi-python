@@ -10,8 +10,8 @@ from app.dependencies.auth import AcaPyAuth
 from app.models.trust_registry import Actor
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
+from app.tests.services.verifier.utils import indy_pres_spec, indy_proof_request
 from app.tests.util.mock import to_async
-from app.tests.verifier.utils import indy_pres_spec, indy_proof_request
 from app.util import acapy_verifier_utils
 from shared.models.presentation_exchange import PresentationExchange
 from shared.models.protocol import PresentProofProtocolVersion

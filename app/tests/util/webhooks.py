@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 
-from app.event_handling.sse_listener import SseListener
+from app.services.event_handling.sse_listener import SseListener
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
 from shared.models.webhook_events import CloudApiTopics

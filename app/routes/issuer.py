@@ -105,6 +105,11 @@ async def get_credential(
     -----------
         credential_id: str
             credential identifier
+
+    Returns:
+    --------
+        payload: CredentialExchange
+            The credential exchange record
     """
     bound_logger = logger.bind(body={"credential_id": credential_id})
     bound_logger.info("GET request received: Get credentials by credential id")

@@ -88,10 +88,10 @@ jobs:
             context: .
             file: dockerfiles/agents/Dockerfile.author.agent
           - image: ledger-browser
-            context: https://github.com/bcgov/von-network.git#main
+            context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
           - image: ledger-nodes
-            context: https://github.com/bcgov/von-network.git#main
+            context: https://github.com/bcgov/von-network.git#v1.8.0
             file: Dockerfile
           - image: governance-endorser
             context: .

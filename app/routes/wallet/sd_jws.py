@@ -1,10 +1,10 @@
-from aries_cloudcontroller import ApiException, SDJWSCreate, SDJWSVerify
+from aries_cloudcontroller import SDJWSCreate, SDJWSVerify
 from fastapi import APIRouter, Depends
 from pydantic import ValidationError
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.exceptions import BadRequestException, CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.sd_jws import (
     SDJWSCreateRequest,
     SDJWSCreateResponse,
@@ -37,23 +37,21 @@ async def sign_sd_jws(
     bound_logger.info("POST request received: Sign SD-JWS")
 
     try:
-        async with client_from_auth(auth) as aries_controller:
-            sd_jws = await aries_controller.wallet.wallet_sd_jwt_sign_post(
-                body=SDJWSCreate(**body.model_dump())
-            )
+        sign_request = SDJWSCreate(**body.model_dump())
     except ValidationError as e:
+        # Handle Pydantic validation error:
         error_msg = extract_validation_error_msg(e)
         bound_logger.info(
-            "Bad request: Validation error during SD-JWS signing: {}",
-            error_msg,
+            "Bad request: Validation error from SDJWSCreateRequest body: {}", error_msg
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
-    except BadRequestException as e:
-        bound_logger.info("Client error during SD-JWS signing: {}", e)
-        raise CloudApiException(status_code=e.status, detail=e.body) from e
-    except ApiException as e:
-        bound_logger.warning("Error during SD-JWS signing: {}", e)
-        raise CloudApiException(status_code=e.status, detail=e.body) from e
+
+    async with client_from_auth(auth) as aries_controller:
+        sd_jws = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.wallet.wallet_sd_jwt_sign_post,
+            body=sign_request,
+        )
 
     result = SDJWSCreateResponse(sd_jws=sd_jws)
     bound_logger.info("Successfully signed SD-JWS.")
@@ -78,24 +76,22 @@ async def verify_sd_jws(
     bound_logger.info("POST request received: Verify SD-JWS")
 
     try:
-        async with client_from_auth(auth) as aries_controller:
-            verify_result = await aries_controller.wallet.wallet_sd_jwt_verify_post(
-                body=SDJWSVerify(sd_jwt=body.sd_jws)
-            )
+        verify_request = SDJWSVerify(sd_jwt=body.sd_jws)
     except ValidationError as e:
+        # Handle Pydantic validation error:
         error_msg = extract_validation_error_msg(e)
         error_msg = error_msg.replace("sd_jwt", "sd_jws")  # match the input field
         bound_logger.info(
-            "Bad request: Validation error during SD-JWS verification: {}",
-            error_msg,
+            "Bad request: Validation error from SDJWSVerifyRequest body: {}", error_msg
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
-    except BadRequestException as e:
-        bound_logger.info("Client error during SD-JWS verification: {}", e)
-        raise CloudApiException(status_code=e.status, detail=e.body) from e
-    except ApiException as e:
-        bound_logger.warning("API exception during SD-JWS verification: {}", e)
-        raise CloudApiException(status_code=e.status, detail=e.body) from e
+
+    async with client_from_auth(auth) as aries_controller:
+        verify_result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.wallet.wallet_sd_jwt_verify_post,
+            body=verify_request,
+        )
 
     result = SDJWSVerifyResponse(**verify_result.model_dump())
     bound_logger.info("Successfully verified SD-JWS.")

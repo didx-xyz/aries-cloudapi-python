@@ -5,7 +5,7 @@ import sys
 import orjson
 from loguru import logger
 
-STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
+STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
 ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
 DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
@@ -48,31 +48,39 @@ def _serialize_record(record):
 
     # Define subset of serialized record - combining message + extra into the text field
     message = record["message"]
-    extra = record["extra"]
+    extra = record["extra"].get("body")
     message_with_body = f"{message} | {extra}"
+
+    # we keep optional fields commented out to compare with loguru's original serialised structure
     subset = {
-        "text": message_with_body,
+        "message": message_with_body,
+        "levelname": record["level"].name,  # log level
+        "date": record["time"],
+        "name": record["name"],
         "record": {
-            "elapsed": {
-                "repr": record["elapsed"],
-                "seconds": record["elapsed"].total_seconds(),
-            },
+            # "elapsed": {
+            #     "repr": record["elapsed"],
+            #     "seconds": record["elapsed"].total_seconds(),
+            # },
             "exception": exception,
             # "extra": record["extra"],
-            "file": {"name": record["file"].name, "path": record["file"].path},
+            # "file": {"name": record["file"].name, "path": record["file"].path},
+            "file": record["file"].path,
             "function": record["function"],
-            "level": {
-                "icon": record["level"].icon,
-                "name": record["level"].name,
-                "no": record["level"].no,
-            },
+            # "level": {
+            #     "icon": record["level"].icon,
+            #     "name": record["level"].name,
+            #     "no": record["level"].no,
+            # },
             "line": record["line"],
             # "message": record["message"],
-            "module": record["module"],
-            "name": record["name"],
+            # "module": record["module"],
             "process": {"id": record["process"].id, "name": record["process"].name},
             "thread": {"id": record["thread"].id, "name": record["thread"].name},
-            "time": {"repr": record["time"], "timestamp": record["time"].timestamp()},
+            "time": {
+                "repr": record["time"].timestamp(),
+                "uptime_h:m:s": record["elapsed"],
+            },
         },
     }
 

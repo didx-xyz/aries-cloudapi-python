@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.exceptions import handle_acapy_call
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -51,8 +52,10 @@ async def get_credential_record(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching credential")
-        result = await aries_controller.credentials.get_record(
-            credential_id=credential_id
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.get_record,
+            credential_id=credential_id,
         )
 
     bound_logger.info("Successfully fetched credential.")

@@ -5,6 +5,8 @@ from sqlalchemy.sql.sqltypes import String
 class StringList(TypeDecorator):
     impl = String
 
+    cache_ok = False  # Resolves warning: https://sqlalche.me/e/20/cprf
+
     def process_bind_param(self, value, _):
         if isinstance(value, list):
             return ",".join(value)

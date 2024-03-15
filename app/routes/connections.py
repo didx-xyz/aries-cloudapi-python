@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.exceptions import handle_acapy_call
 from app.models.connections import AcceptInvitation, CreateInvitation
 from shared.log_config import get_logger
 from shared.models.connection_record import Connection, conn_record_to_connection
@@ -28,7 +29,9 @@ async def create_invitation(
         body = CreateInvitation()
 
     async with client_from_auth(auth) as aries_controller:
-        invitation = await aries_controller.connection.create_invitation(
+        invitation = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.connection.create_invitation,
             alias=body.alias,
             auto_accept=True,
             multi_use=body.multi_use,
@@ -55,7 +58,9 @@ async def accept_invitation(
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept invitation")
     async with client_from_auth(auth) as aries_controller:
-        connection_record = await aries_controller.connection.receive_invitation(
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.connection.receive_invitation,
             body=body.invitation,
             auto_accept=True,
             alias=body.alias,
@@ -79,15 +84,17 @@ async def get_connections(
     logger.info("GET request received: Get connections")
 
     async with client_from_auth(auth) as aries_controller:
-        connections = await aries_controller.connection.get_connections()
+        connections = await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.connection.get_connections,
+        )
 
-        if connections.results:
-            result = [
-                conn_record_to_connection(connection)
-                for connection in connections.results
-            ]
-            logger.info("Successfully returned connections.")
-            return result
+    if connections.results:
+        result = [
+            conn_record_to_connection(connection) for connection in connections.results
+        ]
+        logger.info("Successfully returned connections.")
+        return result
 
     logger.info("No connections returned.")
     return []
@@ -109,9 +116,12 @@ async def get_connection_by_id(
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get connection by ID")
     async with client_from_auth(auth) as aries_controller:
-        connection = await aries_controller.connection.get_connection(
-            conn_id=connection_id
+        connection = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.connection.get_connection,
+            conn_id=connection_id,
         )
+
     result = conn_record_to_connection(connection)
     if result.connection_id:
         bound_logger.info("Successfully got connection by ID.")
@@ -140,7 +150,11 @@ async def delete_connection_by_id(
     bound_logger.info("DELETE request received: Delete connection by ID")
 
     async with client_from_auth(auth) as aries_controller:
-        await aries_controller.connection.delete_connection(conn_id=connection_id)
+        await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.connection.delete_connection,
+            conn_id=connection_id,
+        )
 
     bound_logger.info("Successfully deleted connection by ID.")
     return {}

@@ -15,7 +15,7 @@ from shared.log_config import get_logger
 from shared.models.endorsement import Endorsement
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from shared.services.redis_service import RedisService
-from shared.util.rich_parsing import parse_with_error_handling
+from shared.util.rich_parsing import parse_json_with_error_handling
 
 logger = get_logger(__name__)
 
@@ -227,7 +227,7 @@ class EndorsementProcessor:
         Args:
             event_json: The JSON string representation of the endorsement event.
         """
-        event = parse_with_error_handling(
+        event = parse_json_with_error_handling(
             CloudApiWebhookEventGeneric, event_json, logger
         )
         logger.debug("Processing endorsement event for agent `{}`", event.origin)

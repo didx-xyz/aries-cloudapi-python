@@ -1,16 +1,16 @@
 from logging import Logger
 from typing import Any, Callable, Coroutine, TypeVar
 
-from pydantic import ValidationError
-
-from app.exceptions import (
+from aries_cloudcontroller.exceptions import (
     ApiException,
     BadRequestException,
-    CloudApiException,
     ForbiddenException,
     NotFoundException,
     UnauthorizedException,
 )
+from pydantic import ValidationError
+
+from app.exceptions.cloudapi_exception import CloudApiException
 from app.util.extract_validation_error import extract_validation_error_msg
 
 T = TypeVar("T", bound=Any)

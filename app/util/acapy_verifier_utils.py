@@ -37,7 +37,9 @@ def get_verifier_by_version(
     ):
         return VerifierFacade.v2.value
     else:
-        raise ValueError(f"Unknown protocol version: `{version_candidate}`.")
+        raise ValueError(
+            f"Unknown protocol version: `{version_candidate}`. Expecting `v1` or `v2`."
+        )
 
 
 async def assert_valid_prover(

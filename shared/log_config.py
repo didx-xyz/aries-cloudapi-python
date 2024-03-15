@@ -5,7 +5,7 @@ import sys
 import orjson
 from loguru import logger
 
-STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG").upper()
+STDOUT_LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
 ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
 DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"

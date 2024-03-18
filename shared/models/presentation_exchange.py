@@ -104,7 +104,7 @@ def presentation_record_to_model(
             verified=string_to_bool(record.verified),
         )
     else:
-        raise ValueError("Record format unknown.")
+        raise ValueError("Presentation record format unknown.")
 
 
 def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:

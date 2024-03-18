@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Optional, TypedDict
+from typing import Dict, List, Literal, Optional
 
 from aries_cloudcontroller import V20CredExRecordIndy, V20CredExRecordLDProof
 from pydantic import BaseModel, Field

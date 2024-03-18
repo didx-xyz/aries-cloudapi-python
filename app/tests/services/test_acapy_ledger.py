@@ -39,14 +39,14 @@ async def test_error_on_get_taa(mock_agent_controller: AcaPyClient):
 async def test_error_on_accept_taa(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.ledger).accept_taa(
         body=TAAAccept(mechanism="data", text=None, version=None)
-    ).thenReturn(to_async(ApiException()))
+    ).thenRaise(ApiException(status=500))
 
     with pytest.raises(CloudApiException) as exc:
         await accept_taa(
             mock_agent_controller, taa=TAARecord(digest=""), mechanism="data"
         )
-    assert exc.value.status_code == 400
-    assert "Something went wrong. Could not accept TAA." in exc.value.detail
+    assert exc.value.status_code == 500
+    assert "An unexpected error occurred while trying to accept TAA" in exc.value.detail
 
 
 @pytest.mark.anyio

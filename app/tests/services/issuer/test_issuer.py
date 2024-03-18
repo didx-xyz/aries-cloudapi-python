@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 from aiohttp import RequestInfo
-from aries_cloudcontroller import AcaPyClient, ApiException
+from aries_cloudcontroller import AcaPyClient
 from mockito import mock, verify, when
 from pytest_mock import MockerFixture
 
@@ -70,7 +70,7 @@ async def test_send_credential(
     when(test_module).schema_id_from_credential_definition_id(
         mock_agent_controller, cred_def_id
     ).thenReturn(to_async("schema_id"))
-    when(IssuerV1).send_credential(...).thenRaise(ApiException())
+    when(IssuerV1).send_credential(...).thenRaise(CloudApiException("abc"))
 
     with pytest.raises(CloudApiException):
         await test_module.send_credential(credential, mock_tenant_auth)

@@ -2,7 +2,7 @@ from logging import Logger
 
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.services import acapy_ledger, acapy_wallet
 from app.services.acapy_wallet import Did
 from app.services.event_handling.sse_listener import SseListener
@@ -48,13 +48,16 @@ async def create_endorser_invitation(
     *, endorser_controller: AcaPyClient, name: str, logger: Logger
 ):
     logger.debug("Create OOB invitation on behalf of endorser")
-    invitation = await endorser_controller.out_of_band.create_invitation(
+    request_body = InvitationCreateRequest(
+        alias=name,
+        handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+        use_public_did=True,
+    )
+    invitation = await handle_acapy_call(
+        logger=logger,
+        acapy_call=endorser_controller.out_of_band.create_invitation,
         auto_accept=True,
-        body=InvitationCreateRequest(
-            alias=name,
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-            use_public_did=True,
-        ),
+        body=request_body,
     )
     logger.debug("Created OOB invitation")
     return invitation
@@ -68,7 +71,9 @@ async def wait_for_connection_completion(
     )
 
     logger.debug("Receive invitation from endorser on behalf of issuer")
-    connection_record = await issuer_controller.out_of_band.receive_invitation(
+    connection_record = await handle_acapy_call(
+        logger=logger,
+        acapy_call=issuer_controller.out_of_band.receive_invitation,
         auto_accept=True,
         use_existing_connection=False,
         body=invitation.invitation,
@@ -182,8 +187,10 @@ async def register_issuer_did(
         ) from e
 
     logger.bind(body=txn_record["transaction_id"]).debug("Endorsing transaction")
-    await endorser_controller.endorse_transaction.endorse_transaction(
-        tran_id=txn_record["transaction_id"]
+    await handle_acapy_call(
+        logger=logger,
+        acapy_call=endorser_controller.endorse_transaction.endorse_transaction,
+        tran_id=txn_record["transaction_id"],
     )
 
     logger.debug("Issuer DID registered and endorsed successfully.")

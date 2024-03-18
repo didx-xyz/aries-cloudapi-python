@@ -7,7 +7,11 @@ from app.dependencies.acapy_clients import (
     get_governance_controller,
     get_tenant_controller,
 )
-from app.exceptions import CloudApiException
+from app.exceptions import (
+    CloudApiException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.tenants import OnboardResult, UpdateTenantRequest
 from app.models.trust_registry import TrustRegistryRole
 from app.services.onboarding.issuer import onboard_issuer
@@ -27,7 +31,11 @@ async def handle_tenant_update(
     bound_logger.bind(body=update_request).info("Handling tenant update")
 
     bound_logger.debug("Retrieving the wallet")
-    wallet = await admin_controller.multitenancy.get_wallet(wallet_id=wallet_id)
+    wallet = await handle_acapy_call(
+        logger=bound_logger,
+        acapy_call=admin_controller.multitenancy.get_wallet,
+        wallet_id=wallet_id,
+    )
     if not wallet:
         bound_logger.info("Bad request: Wallet not found.")
         raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
@@ -61,8 +69,10 @@ async def handle_tenant_update(
             if added_roles:
                 bound_logger.info("Updating tenant roles")
                 # We need to pose as the tenant to onboard for the specified role
-                token_response = await admin_controller.multitenancy.get_auth_token(
-                    wallet_id=wallet_id
+                token_response = await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=admin_controller.multitenancy.get_auth_token,
+                    wallet_id=wallet_id,
                 )
 
                 onboard_result = await onboard_tenant(
@@ -80,13 +90,18 @@ async def handle_tenant_update(
         await update_actor(updated_actor)
 
     bound_logger.debug("Updating wallet")
-    wallet = await admin_controller.multitenancy.update_wallet(
+    request_body = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=UpdateWalletRequest,
+        label=new_label,
+        image_url=update_request.image_url,
+        extra_settings=update_request.extra_settings,
+    )
+    wallet = await handle_acapy_call(
+        logger=bound_logger,
+        acapy_call=admin_controller.multitenancy.update_wallet,
         wallet_id=wallet_id,
-        body=UpdateWalletRequest(
-            label=new_label,
-            image_url=update_request.image_url,
-            extra_settings=update_request.extra_settings,
-        ),
+        body=request_body,
     )
     bound_logger.info("Tenant update handled successfully.")
     return wallet

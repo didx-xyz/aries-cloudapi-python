@@ -1,6 +1,6 @@
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.tenants import OnboardResult
 from app.services import acapy_wallet
 from app.services.onboarding.util.register_issuer_did import (
@@ -48,13 +48,16 @@ async def onboard_issuer(
         )
 
     bound_logger.debug("Creating OOB invitation on behalf of issuer")
-    invitation = await issuer_controller.out_of_band.create_invitation(
+    request_body = InvitationCreateRequest(
+        alias=f"Trust Registry {issuer_label}",
+        handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+    )
+    invitation = await handle_acapy_call(
+        logger=bound_logger,
+        acapy_call=issuer_controller.out_of_band.create_invitation,
         auto_accept=True,
         multi_use=True,
-        body=InvitationCreateRequest(
-            alias=f"Trust Registry {issuer_label}",
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-        ),
+        body=request_body,
     )
 
     return OnboardResult(

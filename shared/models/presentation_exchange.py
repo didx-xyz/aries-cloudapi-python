@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 from aries_cloudcontroller import (
     IndyProof,
@@ -7,7 +7,6 @@ from aries_cloudcontroller import (
     V20PresExRecord,
 )
 from pydantic import BaseModel
-from typing_extensions import Literal
 
 from shared.models.protocol import PresentProofProtocolVersion
 

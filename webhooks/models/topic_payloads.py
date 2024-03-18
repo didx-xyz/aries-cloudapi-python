@@ -1,8 +1,8 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional, TypedDict
 
 from aries_cloudcontroller import V20CredExRecordIndy, V20CredExRecordLDProof
 from pydantic import BaseModel, Field
-from typing_extensions import Literal, TypedDict
+from typing_extensions import TypedDict
 
 
 class BasicMessage(BaseModel):

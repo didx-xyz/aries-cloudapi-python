@@ -64,5 +64,5 @@ async def handle_acapy_call(
         raise CloudApiException(status_code=e.status, detail=e.reason) from e
     except Exception as e:
         # General exceptions:
-        logger.exception("Unhandled exception")
+        logger.exception("Unexpected exception from ACA-Py call")
         raise CloudApiException(status_code=500, detail="Internal server error") from e

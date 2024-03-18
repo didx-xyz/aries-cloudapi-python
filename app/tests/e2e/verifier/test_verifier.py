@@ -1208,7 +1208,7 @@ async def test_get_proof_records(
     )
     meld_connection_id = meld_co_and_alice_connection.meld_co_connection_id
 
-    alice_Listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
+    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
 
     # Meld_co does proof request and alice responds
     proof = await meld_co_client.post(
@@ -1224,7 +1224,7 @@ async def test_get_proof_records(
     proof_1 = proof.json()
     assert proof.status_code == 200
     assert proof_1["state"] == "request-sent"
-    await alice_Listener.wait_for_state(
+    await alice_listener.wait_for_state(
         desired_state="request-received",
     )
 
@@ -1257,7 +1257,7 @@ async def test_get_proof_records(
         json=proof_accept.model_dump(),
     )
 
-    await alice_Listener.wait_for_event(
+    await alice_listener.wait_for_event(
         field="proof_id",
         field_id=proof_request["proof_id"],
         desired_state="done",

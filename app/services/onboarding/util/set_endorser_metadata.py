@@ -5,7 +5,7 @@ from typing import Callable
 
 from aries_cloudcontroller import AcaPyClient, ApiException
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 
 DEFAULT_NUM_TRIES = 1
 DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))
@@ -107,14 +107,16 @@ async def assert_metadata_set(
         await asyncio.sleep(delay)
         try:
             logger.debug("Fetching connection metadata")
-            connection_metadata = await controller.connection.get_metadata(
-                conn_id=conn_id
+            connection_metadata = await handle_acapy_call(
+                logger=logger,
+                acapy_call=controller.connection.get_metadata,
+                conn_id=conn_id,
             )
             logger.debug("Successfully fetched metadata")
             metadata_dict = connection_metadata.results
             if check_fn(metadata_dict):
                 return True
-        except ApiException as e:
+        except CloudApiException as e:
             logger.error("Exception occurred when getting metadata: {}", e)
 
     raise SettingMetadataException(

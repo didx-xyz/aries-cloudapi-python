@@ -1,8 +1,6 @@
-import json
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    ApiException,
     CreateInvitationRequest,
     InvitationResult,
 )

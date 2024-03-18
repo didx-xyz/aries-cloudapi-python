@@ -2,7 +2,6 @@ import asyncio
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    ApiException,
     CredentialDefinitionSendRequest,
     SchemaGetResult,
     SchemaSendRequest,

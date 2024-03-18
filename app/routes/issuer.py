@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import ApiException, IssuerCredRevRecord
+from aries_cloudcontroller import IssuerCredRevRecord
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -149,13 +149,9 @@ async def send_credential(
             result = await issuer.send_credential(
                 controller=aries_controller, credential=credential
             )
-        except ApiException as e:
-            logger.warning(
-                "An ApiException was caught while sending credentials, with message `{}`.",
-                e.reason,
-            )
+        except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to create or send credential: {e.reason}", e.status
+                f"Failed to send credential: {e.detail}", e.status_code
             ) from e
 
     if result:

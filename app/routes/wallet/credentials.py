@@ -33,8 +33,12 @@ async def list_credentials(
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching credentials")
-        results = await aries_controller.credentials.get_records(
-            count=count, start=start, wql=wql
+        results = await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.credentials.get_records,
+            count=count,
+            start=start,
+            wql=wql,
         )
 
     logger.info("Successfully listed credentials.")
@@ -73,8 +77,10 @@ async def delete_credential(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Deleting credential")
-        result = await aries_controller.credentials.delete_record(
-            credential_id=credential_id
+        await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.delete_record,
+            credential_id=credential_id,
         )
 
     bound_logger.info("Successfully deleted credential.")
@@ -93,8 +99,10 @@ async def get_credential_mime_types(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching MIME types")
-        result = await aries_controller.credentials.get_credential_mime_types(
-            credential_id=credential_id
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.get_credential_mime_types,
+            credential_id=credential_id,
         )
 
     bound_logger.info("Successfully fetched attribute MIME types.")
@@ -116,8 +124,12 @@ async def get_credential_revocation_status(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching revocation status")
-        result = await aries_controller.credentials.get_revocation_status(
-            credential_id=credential_id, var_from=from_, to=to
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.get_revocation_status,
+            credential_id=credential_id,
+            var_from=from_,
+            to=to,
         )
 
     bound_logger.info("Successfully fetched revocation status.")
@@ -137,8 +149,13 @@ async def list_w3c_credentials(
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching W3C credentials")
-        results = await aries_controller.credentials.get_w3c_credentials(
-            count=count, start=start, wql=wql, body=body
+        results = await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.credentials.get_w3c_credentials,
+            count=count,
+            start=start,
+            wql=wql,
+            body=body,
         )
 
     logger.info("Successfully listed W3C credentials.")
@@ -156,8 +173,10 @@ async def get_w3c_credential(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching W3C credential")
-        result = await aries_controller.credentials.get_w3c_credential(
-            credential_id=credential_id
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.get_w3c_credential,
+            credential_id=credential_id,
         )
 
     bound_logger.info("Successfully fetched W3C credential.")
@@ -175,8 +194,10 @@ async def delete_w3c_credential(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Deleting W3C credential")
-        result = await aries_controller.credentials.delete_w3c_credential(
-            credential_id=credential_id
+        await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.delete_w3c_credential,
+            credential_id=credential_id,
         )
 
     bound_logger.info("Successfully deleted W3C credential.")

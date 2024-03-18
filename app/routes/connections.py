@@ -121,16 +121,16 @@ async def get_connections(
         connections = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.connection.get_connections,
-                alias=alias,
-                connection_protocol=connection_protocol,
-                invitation_key=invitation_key,
-                invitation_msg_id=invitation_msg_id,
-                my_did=my_did,
-                state=state,
-                their_did=their_did,
-                their_public_did=their_public_did,
-                their_role=their_role,
-            )
+            alias=alias,
+            connection_protocol=connection_protocol,
+            invitation_key=invitation_key,
+            invitation_msg_id=invitation_msg_id,
+            my_did=my_did,
+            state=state,
+            their_did=their_did,
+            their_public_did=their_public_did,
+            their_role=their_role,
+        )
 
     if connections.results:
         result = [

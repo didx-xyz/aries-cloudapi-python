@@ -2,6 +2,8 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
+from shared.exceptions import CloudApiValueError
+
 
 class JWSCreateRequest(BaseModel):
     did: Optional[str] = Field(
@@ -23,7 +25,7 @@ class JWSCreateRequest(BaseModel):
     def check_at_least_one_field_is_populated(cls, values):
         did, verification_method = values.get("did"), values.get("verification_method")
         if not did and not verification_method:
-            raise ValueError(
+            raise CloudApiValueError(
                 "At least one of `did` or `verification_method` must be populated."
             )
         return values

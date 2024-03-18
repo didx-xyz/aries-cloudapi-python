@@ -14,6 +14,7 @@ from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.util.did import ed25519_verkey_to_did_key
 from app.util.tenants import get_wallet_label_from_controller
+from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -37,7 +38,7 @@ def get_verifier_by_version(
     ):
         return VerifierFacade.v2.value
     else:
-        raise ValueError(
+        raise CloudApiValueError(
             f"Unknown protocol version: `{version_candidate}`. Expecting `v1` or `v2`."
         )
 

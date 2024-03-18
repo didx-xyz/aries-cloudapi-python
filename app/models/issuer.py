@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from aries_cloudcontroller import LDProofVCDetail
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
+from shared.exceptions import CloudApiValueError
 from shared.models.protocol import IssueCredentialProtocolVersion
 
 
@@ -31,7 +32,7 @@ class CredentialBase(BaseModel):
     @classmethod
     def check_indy_credential_detail(cls, value, values: ValidationInfo):
         if values.data.get("type") == CredentialType.INDY and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "indy_credential_detail must be populated if `indy` credential type is selected"
             )
         return value
@@ -40,7 +41,7 @@ class CredentialBase(BaseModel):
     @classmethod
     def check_ld_credential_detail(cls, value, values: ValidationInfo):
         if values.data.get("type") == CredentialType.LD_PROOF and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "ld_credential_detail must be populated if `ld_proof` credential type is selected"
             )
         return value

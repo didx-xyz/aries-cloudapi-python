@@ -5,6 +5,7 @@ from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
 from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
+from shared.exceptions import CloudApiValueError
 from shared.models.protocol import PresentProofProtocolVersion
 
 
@@ -28,7 +29,7 @@ class ProofRequestBase(BaseModel):
     @classmethod
     def check_indy_proof_request(cls, value, values: ValidationInfo):
         if values.data.get("type") == ProofRequestType.INDY and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "indy_proof_request must be populated if `indy` type is selected"
             )
 
@@ -45,7 +46,7 @@ class ProofRequestBase(BaseModel):
     @classmethod
     def check_dif_proof_request(cls, value, values: ValidationInfo):
         if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "dif_proof_request must be populated if `ld_proof` type is selected"
             )
         if (
@@ -92,7 +93,7 @@ class AcceptProofRequest(ProofId):
     @classmethod
     def check_indy_presentation_spec(cls, value, values: ValidationInfo):
         if values.data.get("type") == ProofRequestType.INDY and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "indy_presentation_spec must be populated if `indy` type is selected"
             )
         return value
@@ -101,7 +102,7 @@ class AcceptProofRequest(ProofId):
     @classmethod
     def check_dif_presentation_spec(cls, value, values: ValidationInfo):
         if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "dif_presentation_spec must be populated if `ld_proof` type is selected"
             )
         return value

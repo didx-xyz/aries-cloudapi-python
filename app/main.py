@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 import pydantic
 import yaml
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import ApiException
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
@@ -149,12 +148,6 @@ def read_openapi_yaml() -> Response:
 @app.exception_handler(Exception)
 async def client_response_error_exception_handler(_: Request, exception: Exception):
     stacktrace = {"stack": traceback.format_exc()}
-
-    if isinstance(exception, ClientResponseError):
-        return JSONResponse(
-            {"detail": exception.message, **(stacktrace if debug else {})},
-            exception.status or 500,
-        )
 
     if isinstance(exception, CloudApiException):
         return JSONResponse(

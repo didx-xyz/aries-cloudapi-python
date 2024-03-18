@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 
@@ -123,17 +124,25 @@ async def test_get_cred_exchange_records(
         json=credential_v2,
     )
 
-    alice_cred_ex_response = await alice_member_client.get(
-        f"{CREDENTIALS_BASE_PATH}?connection_id={faber_and_alice_connection.alice_connection_id}"
-    )
+    num_tries = 0
+    num_credentials_returned = 0
+    while num_credentials_returned != 2 and num_tries < 10:
+        await asyncio.sleep(0.25)
+        alice_cred_ex_response = (
+            await alice_member_client.get(
+                CREDENTIALS_BASE_PATH + "?state=offer-received"
+            )
+        ).json()
+        num_credentials_returned = len(alice_cred_ex_response)
+        num_tries += 1
 
-    while len(alice_cred_ex_response.json()) != 2:
-        print("not 2 credentials yet")
-        alice_cred_ex_response = await alice_member_client.get(
-            CREDENTIALS_BASE_PATH + "?state=offer-received"
+    if num_credentials_returned != 2:
+        raise Exception(
+            f"Expected 2 credentials to be issued; only got {num_credentials_returned}"
         )
+    
 
-    for cred in alice_cred_ex_response.json():
+    for cred in alice_cred_ex_response:
         await alice_member_client.post(
             f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
         )

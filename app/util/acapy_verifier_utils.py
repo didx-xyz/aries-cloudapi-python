@@ -265,11 +265,3 @@ async def get_connection_from_proof(
         controller=aries_controller, proof_id=proof_id
     )
     return proof_record.connection_id
-
-
-async def get_connection_record(
-    aries_controller: AcaPyClient,
-    connection_id: str,
-) -> ConnRecord:
-    """Retrieve the connection record"""
-    return await aries_controller.connection.get_connection(conn_id=connection_id)

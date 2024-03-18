@@ -1,5 +1,8 @@
+from typing import List
+
 from aries_cloudcontroller import (
     AcaPyClient,
+    IndyCredPrecis,
     V20PresCreateRequestRequest,
     V20PresProblemReportRequest,
     V20PresRequestByFormat,
@@ -194,7 +197,9 @@ class VerifierV2(Verifier):
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
 
     @classmethod
-    async def get_proof_records(cls, controller: AcaPyClient):
+    async def get_proof_records(
+        cls, controller: AcaPyClient
+    ) -> List[PresentationExchange]:
         try:
             logger.debug("Fetching v2 present-proof exchange records")
             presentation_exchange = await controller.present_proof_v2_0.get_records()
@@ -212,7 +217,9 @@ class VerifierV2(Verifier):
         return result
 
     @classmethod
-    async def get_proof_record(cls, controller: AcaPyClient, proof_id: str):
+    async def get_proof_record(
+        cls, controller: AcaPyClient, proof_id: str
+    ) -> PresentationExchange:
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id)
 
@@ -235,7 +242,7 @@ class VerifierV2(Verifier):
         return result
 
     @classmethod
-    async def delete_proof(cls, controller: AcaPyClient, proof_id: str):
+    async def delete_proof(cls, controller: AcaPyClient, proof_id: str) -> None:
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
 
@@ -253,7 +260,9 @@ class VerifierV2(Verifier):
         bound_logger.debug("Successfully deleted v2 present-proof record.")
 
     @classmethod
-    async def get_credentials_by_proof_id(cls, controller: AcaPyClient, proof_id: str):
+    async def get_credentials_by_proof_id(
+        cls, controller: AcaPyClient, proof_id: str
+    ) -> List[IndyCredPrecis]:
         bound_logger = logger.bind(body={"proof_id": proof_id})
         pres_ex_id = pres_id_no_version(proof_id=proof_id)
 

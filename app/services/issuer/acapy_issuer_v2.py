@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -30,7 +30,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def send_credential(
         cls, controller: AcaPyClient, credential: CredentialWithConnection
-    ):
+    ) -> CredentialExchange:
         bound_logger = logger.bind(body=credential)
 
         credential_preview = None
@@ -67,7 +67,9 @@ class IssuerV2(Issuer):
         return cls.__record_to_model(record)
 
     @classmethod
-    async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
+    async def create_offer(
+        cls, controller: AcaPyClient, credential: CredentialBase
+    ) -> CredentialExchange:
         bound_logger = logger.bind(body=credential)
 
         credential_preview = None
@@ -109,7 +111,7 @@ class IssuerV2(Issuer):
         cls,
         controller: AcaPyClient,
         credential_exchange_id: str,
-    ):
+    ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -127,7 +129,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def store_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
-    ):
+    ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -150,7 +152,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def delete_credential_exchange_record(
         cls, controller: AcaPyClient, credential_exchange_id: str
-    ):
+    ) -> None:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -178,7 +180,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def get_records(
         cls, controller: AcaPyClient, connection_id: Optional[str] = None
-    ):
+    ) -> List[CredentialExchange]:
         bound_logger = logger.bind(body={"connection_id": connection_id})
         bound_logger.debug("Getting v2 credential records by connection id")
         result = await controller.issue_credential_v2_0.get_records(
@@ -197,7 +199,9 @@ class IssuerV2(Issuer):
         ]
 
     @classmethod
-    async def get_record(cls, controller: AcaPyClient, credential_exchange_id: str):
+    async def get_record(
+        cls, controller: AcaPyClient, credential_exchange_id: str
+    ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )

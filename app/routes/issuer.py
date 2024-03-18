@@ -37,7 +37,7 @@ router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 async def get_credentials(
     connection_id: Optional[str] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> List[CredentialExchange]:
     """
         Get a list of credential records.
 
@@ -71,7 +71,7 @@ async def get_credentials(
 async def get_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Get a credential by credential id.
 
@@ -102,7 +102,7 @@ async def get_credential(
 async def send_credential(
     credential: SendCredential,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Create and send a credential. Automating the entire flow.
 
@@ -169,7 +169,7 @@ async def send_credential(
 async def create_offer(
     credential: CreateOffer,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Create a credential offer not bound to any connection.
 
@@ -440,7 +440,7 @@ async def get_credential_revocation_record(
 async def request_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Send a credential request.
 
@@ -495,7 +495,7 @@ async def request_credential(
 async def store_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Store a credential.
 

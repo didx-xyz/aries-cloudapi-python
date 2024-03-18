@@ -2,7 +2,7 @@ from typing import Optional, Tuple
 
 from aries_cloudcontroller import (
     AcaPyClient,
-    ApiException,
+    GetDIDEndpointResponse,
     SchemaGetResult,
     TAAAccept,
     TAAInfo,
@@ -10,13 +10,13 @@ from aries_cloudcontroller import (
     TxnOrRegisterLedgerNymResponse,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
 
 
-async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
+async def get_taa(controller: AcaPyClient) -> Tuple[TAAInfo, str]:
     """
     Obtains the TAA from the ledger
 
@@ -27,32 +27,31 @@ async def get_taa(controller: AcaPyClient) -> Tuple[TAARecord, str]:
 
     Returns:
     --------
-    taa: dict
-        The TAA object
+    taa: Tuple[TAAInfo, str]
+        The TAAInfo object, with the mechanism
     """
     logger.info("Fetching TAA")
-    taa_response = await controller.ledger.fetch_taa()
-    logger.debug("TTA Response: `{}`", taa_response)
-    if isinstance(taa_response, TAAInfo) or isinstance(taa_response.result, TAAInfo):
-        if taa_response.result:
-            taa_response = taa_response.result
-        mechanism = (
-            taa_response.taa_accepted.mechanism
-            if taa_response.taa_accepted
-            else "service_agreement"
-        )
-        if not taa_response.taa_record and taa_response.taa_required:
-            logger.error("Failed to get TAA. Received response: `{}`.", taa_response)
-            raise CloudApiException("Something went wrong. Could not get TAA.")
-        return taa_response, mechanism
+    taa_response = await handle_acapy_call(
+        logger=logger, acapy_call=controller.ledger.fetch_taa
+    )
 
-    logger.info("Successfully fetched TAA.")
-    return taa_response, "service_agreement"
+    taa_info = taa_response.result
+    if not taa_info or (not taa_info.taa_record and taa_info.taa_required):
+        logger.error("Failed to get TAA. Received info: `{}`.", taa_info)
+        raise CloudApiException("Something went wrong. Could not get TAA.")
+
+    logger.info("Successfully fetched TAA info: {}", taa_info)
+    mechanism = (
+        taa_info.taa_accepted.mechanism
+        if taa_info.taa_accepted
+        else "service_agreement"
+    )
+    return taa_info, mechanism
 
 
 async def accept_taa(
     controller: AcaPyClient, taa: TAARecord, mechanism: Optional[str] = None
-):
+) -> None:
     """
     Accept the TAA
 
@@ -62,35 +61,27 @@ async def accept_taa(
         The aries_cloudcontroller object
     TAA:
         The TAA object we want to agree to
-
-    Returns:
-    --------
-    accept_taa_response: {}
-        The response from letting the ledger know we accepted the response
+    mechanism:
+        An optional mechanism to specify
     """
     logger.bind(body=taa).info("Accepting TAA")
+    request_body = TAAAccept(**taa.to_dict(), mechanism=mechanism)
     try:
-        accept_taa_response = await controller.ledger.accept_taa(
-            body=TAAAccept(**taa.to_dict(), mechanism=mechanism)
+        await handle_acapy_call(
+            logger=logger, acapy_call=controller.ledger.accept_taa, body=request_body
         )
-    except Exception as e:
-        logger.exception("An exception occurred while trying to accept TAA.")
+    except CloudApiException as e:
+        logger.error("An exception occurred while trying to accept TAA.")
         raise CloudApiException(
-            "An unexpected error occurred while trying to accept TAA."
+            f"An unexpected error occurred while trying to accept TAA: {e.detail}"
         ) from e
 
-    if isinstance(accept_taa_response, ApiException):
-        logger.warning(
-            "Failed to accept TAA with ApiException. Response: `{}`.",
-            accept_taa_response,
-        )
-        raise CloudApiException("Something went wrong. Could not accept TAA.", 400)
-
     logger.info("Successfully accepted TAA.")
-    return accept_taa_response
 
 
-async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
+async def get_did_endpoint(
+    controller: AcaPyClient, issuer_nym: str
+) -> GetDIDEndpointResponse:
     """
     Obtains the public DID endpoint
 
@@ -103,14 +94,16 @@ async def get_did_endpoint(controller: AcaPyClient, issuer_nym: str):
 
     Returns:
     --------
-    issuer_endpoint_response: dict
+    GetDIDEndpointResponse
         The response from getting the public endpoint associated with
         the issuer's Verinym from the ledger
     """
     bound_logger = logger.bind(body={"issuer_nym": issuer_nym})
     bound_logger.info("Fetching DID endpoint")
 
-    issuer_endpoint_response = await controller.ledger.get_did_endpoint(did=issuer_nym)
+    issuer_endpoint_response = await handle_acapy_call(
+        logger=logger, acapy_call=controller.ledger.get_did_endpoint, did=issuer_nym
+    )
     if not issuer_endpoint_response:
         bound_logger.info("Failed to get DID endpoint; received empty response.")
         raise CloudApiException("Could not obtain issuer endpoint.", 404)
@@ -131,7 +124,9 @@ async def register_nym_on_ledger(
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("Registering NYM on ledger")
     try:
-        response = await aries_controller.ledger.register_nym(
+        response = await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.ledger.register_nym,
             did=did,
             verkey=verkey,
             alias=alias,
@@ -141,32 +136,26 @@ async def register_nym_on_ledger(
         )
         bound_logger.info("Successfully registered NYM on ledger.")
         return response
-    except ApiException as e:
-        bound_logger.warning(
-            "An ApiException was caught while registering NYM. The error message is: '{}'.",
-            e.reason,
-        )
-        # if not nym_response.success:
+    except CloudApiException as e:
         raise CloudApiException(
-            f"Error registering NYM on ledger: {e.reason}.", e.status
+            f"Error registering NYM on ledger: {e.detail}.", e.status_code
         ) from e
 
 
-async def accept_taa_if_required(aries_controller: AcaPyClient):
+async def accept_taa_if_required(aries_controller: AcaPyClient) -> None:
     taa_response, mechanism = await get_taa(aries_controller)
 
-    # TODO: The following is broken:
-    if isinstance(taa_response, (TAAInfo, TAARecord)) and taa_response.taa_required:
+    if taa_response.taa_required:
         await accept_taa(
-            aries_controller,
-            taa_response.taa_record,
-            mechanism,
+            controller=aries_controller,
+            taa=taa_response.taa_record,
+            mechanism=mechanism,
         )
 
 
 async def schema_id_from_credential_definition_id(
     controller: AcaPyClient, credential_definition_id: str
-):
+) -> str:
     """
     From a credential definition, get the identifier for its schema.
 
@@ -175,6 +164,8 @@ async def schema_id_from_credential_definition_id(
 
     Parameters:
     ----------
+    controller: AcaPyClient
+        The aries_cloudcontroller object
     credential_definition_id: The identifier of the credential definition
             from which to identify a schema
 
@@ -197,7 +188,9 @@ async def schema_id_from_credential_definition_id(
     seq_no = tokens[3]
 
     bound_logger.debug("Fetching schema using sequence number: `{}`", seq_no)
-    schema: SchemaGetResult = await controller.schema.get_schema(schema_id=seq_no)
+    schema: SchemaGetResult = await handle_acapy_call(
+        logger=logger, acapy_call=controller.schema.get_schema, schema_id=seq_no
+    )
 
     if not schema.var_schema or not schema.var_schema.id:
         bound_logger.warning("No schema found with sequence number: `{}`.", seq_no)

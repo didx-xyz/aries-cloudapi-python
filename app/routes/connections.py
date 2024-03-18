@@ -111,7 +111,6 @@ async def get_connection_by_id(
     Parameters:
     -----------
     connection_id: str
-
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get connection by ID")
@@ -141,10 +140,6 @@ async def delete_connection_by_id(
     Parameters:
     -----------
     connection_id: str
-
-    Returns:
-    ------------
-    Empty dict: {}
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("DELETE request received: Delete connection by ID")

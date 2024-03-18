@@ -88,7 +88,11 @@ class IssuerV1(Issuer):
             cred_def_id=credential.indy_credential_detail.credential_definition_id,
         )
 
-        record = await controller.issue_credential_v1_0.create_offer(body=request_body)
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.create_offer,
+            body=request_body,
+        )
 
         bound_logger.debug("Returning v1 create offer result as CredentialExchange.")
         return cls.__record_to_model(record)

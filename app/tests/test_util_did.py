@@ -1,6 +1,7 @@
 import pytest
 
 from app.util.did import ed25519_verkey_to_did_key, qualified_did_sov
+from shared.exceptions import CloudApiValueError
 
 
 def test_ed25519_verkey_to_did_key():
@@ -17,21 +18,21 @@ def test_ed25519_verkey_to_did_key():
         assert ed25519_verkey_to_did_key(valid_key).startswith("did:key:z")
 
     # Test invalid key lengths
-    with pytest.raises(ValueError, match="Invalid key length."):
+    with pytest.raises(CloudApiValueError, match="Invalid key length."):
         ed25519_verkey_to_did_key(
             "abcdefghijkmnopqrstuvwxyz123456789ABCDEFGH"
         )  # length 42
-    with pytest.raises(ValueError, match="Invalid key length."):
+    with pytest.raises(CloudApiValueError, match="Invalid key length."):
         ed25519_verkey_to_did_key(
             "abcdefghijkmnopqrstuvwxyz123456789ABCDEFGHJKL"
         )  # length 45
 
     # Test invalid characters
-    with pytest.raises(ValueError, match="Invalid key."):
+    with pytest.raises(CloudApiValueError, match="Invalid key."):
         ed25519_verkey_to_did_key(
             "abcdefghijkmnopqrstuvwxyz123456789ABCDEFGH*"
         )  # invalid character *
-    with pytest.raises(ValueError, match="Invalid key."):
+    with pytest.raises(CloudApiValueError, match="Invalid key."):
         ed25519_verkey_to_did_key(
             "abcdefghijkmnopqrstuvwxyz123456789ABCDEFGHJ0"
         )  # invalid character 0

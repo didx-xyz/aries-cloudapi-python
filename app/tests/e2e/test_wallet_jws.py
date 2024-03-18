@@ -1,9 +1,9 @@
 import pytest
 from aries_cloudcontroller import DIDCreate
 from fastapi import HTTPException
-from pydantic import ValidationError
 
 from app.models.jws import JWSCreateRequest
+from shared.exceptions import CloudApiValueError
 from shared.util.rich_async_client import RichAsyncClient
 
 
@@ -32,7 +32,7 @@ async def test_sign_jws_success(alice_member_client: RichAsyncClient):
 
 @pytest.mark.anyio
 async def test_sign_jws_x(alice_member_client: RichAsyncClient):
-    with pytest.raises(ValidationError):
+    with pytest.raises(CloudApiValueError):
         # Requires at least one of did or verification method
         JWSCreateRequest(
             did=None,

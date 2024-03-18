@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.exceptions.handle_acapy_call import handle_acapy_call
 from app.models.messaging import Message, TrustPingMsg
 from shared.log_config import get_logger
 
@@ -29,9 +30,13 @@ async def send_messages(
     The response object obtained when sending a message.
     """
     logger.info("POST request received: Send message")
+    request_body = SendMessage(content=message.content)
     async with client_from_auth(auth) as aries_controller:
-        await aries_controller.basicmessage.send_message(
-            conn_id=message.connection_id, body=SendMessage(content=message.content)
+        await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.basicmessage.send_message,
+            conn_id=message.connection_id,
+            body=request_body,
         )
     logger.info("Successfully sent message.")
 
@@ -54,10 +59,13 @@ async def send_trust_ping(
     The response object obtained when sending a trust ping.
     """
     logger.info("POST request received: Send trust ping")
+    request_body = PingRequest(comment=trustping_msg.comment)
     async with client_from_auth(auth) as aries_controller:
-        response = await aries_controller.trustping.send_ping(
+        response = await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.trustping.send_ping,
             conn_id=trustping_msg.connection_id,
-            body=PingRequest(comment=trustping_msg.comment),
+            body=request_body,
         )
     logger.info("Successfully sent trust ping.")
     return response

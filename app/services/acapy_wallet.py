@@ -3,7 +3,7 @@ from typing import Optional
 from aries_cloudcontroller import DID, AcaPyClient, DIDCreate
 from pydantic import BaseModel
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.util.did import qualified_did_sov
 from shared.log_config import get_logger
 
@@ -26,7 +26,9 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
     """
     # Assert the agent has a public did
     logger.info("Fetching public DID")
-    public_did = await aries_controller.wallet.get_public_did()
+    public_did = await handle_acapy_call(
+        logger=logger, acapy_call=aries_controller.wallet.get_public_did
+    )
 
     if not public_did.result or not public_did.result.did:
         raise CloudApiException("Agent has no public did.", 403)
@@ -53,7 +55,9 @@ async def create_did(
     logger.info("Creating local DID")
     if did_create is None:
         did_create = DIDCreate()
-    did_result = await controller.wallet.create_did(body=did_create)
+    did_result = await handle_acapy_call(
+        logger=logger, acapy_call=controller.wallet.create_did, body=did_create
+    )
 
     if (
         not did_result.result
@@ -86,7 +90,9 @@ async def set_public_did(
         DID: the did
     """
     logger.info("Setting public DID")
-    result = await controller.wallet.set_public_did(
+    result = await handle_acapy_call(
+        logger=logger,
+        acapy_call=controller.wallet.set_public_did,
         did=did,
         conn_id=connection_id,
         create_transaction_for_endorser=create_transaction_for_endorser,
@@ -112,7 +118,9 @@ async def get_public_did(controller: AcaPyClient) -> Did:
         Did: the public did
     """
     logger.info("Fetching public DID")
-    result = await controller.wallet.get_public_did()
+    result = await handle_acapy_call(
+        logger=logger, acapy_call=controller.wallet.get_public_did
+    )
 
     if not result.result:
         raise CloudApiException("No public did found", 404)

@@ -10,7 +10,7 @@ from aries_cloudcontroller import (
     V20PresSpecByFormatRequest,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -60,16 +60,17 @@ class VerifierV2(Verifier):
             trace=create_proof_request.trace,
         )
         try:
-            proof_record = await controller.present_proof_v2_0.create_proof_request(
-                body=request_body
+            proof_record = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.create_proof_request,
+                body=request_body,
             )
             bound_logger.debug("Returning v2 PresentationExchange.")
             return record_to_model(proof_record)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while creating presentation request."
-            )
-            raise CloudApiException("Failed to create presentation request.") from e
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to create presentation request: {e.detail}.", e.status_code
+            ) from e
 
     @classmethod
     async def send_proof_request(
@@ -102,15 +103,16 @@ class VerifierV2(Verifier):
         )
         try:
             bound_logger.debug("Send free v2 presentation request")
-            presentation_exchange = (
-                await controller.present_proof_v2_0.send_request_free(body=request_body)
+            presentation_exchange = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.send_request_free,
+                body=request_body,
             )
             result = record_to_model(presentation_exchange)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while sending presentation request."
-            )
-            raise CloudApiException("Failed to send presentation request.") from e
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to send presentation request: {e.detail}.", e.status_code
+            ) from e
 
         if result:
             bound_logger.debug("Successfully sent v2 presentation request.")
@@ -143,15 +145,17 @@ class VerifierV2(Verifier):
 
         try:
             bound_logger.debug("Send v2 proof presentation")
-            presentation_record = await controller.present_proof_v2_0.send_presentation(
-                pres_ex_id=pres_ex_id, body=presentation_spec
+            presentation_record = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.send_presentation,
+                pres_ex_id=pres_ex_id,
+                body=presentation_spec,
             )
             result = record_to_model(presentation_record)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while sending a proof presentation."
-            )
-            raise CloudApiException("Failed to send proof presentation.") from e
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to send proof presentation: {e.detail}.", e.status_code
+            ) from e
 
         if result:
             bound_logger.debug("Successfully sent v2 proof presentation.")
@@ -174,23 +178,28 @@ class VerifierV2(Verifier):
             )
             try:
                 bound_logger.debug("Submitting v2 problem report")
-                await controller.present_proof_v2_0.report_problem(
-                    pres_ex_id=pres_ex_id, body=request_body
+                await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=controller.present_proof_v2_0.report_problem,
+                    pres_ex_id=pres_ex_id,
+                    body=request_body,
                 )
-            except Exception as e:
-                bound_logger.exception(
-                    "An unexpected error occurred while reporting problem."
-                )
-                raise CloudApiException("Failed to report problem.") from e
+            except CloudApiException as e:
+                raise CloudApiException(
+                    f"Failed to send problem report: {e.detail}.", e.status_code
+                ) from e
 
         try:
             bound_logger.debug("Deleting v2 presentation exchange record")
-            await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while deleting record."
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.delete_record,
+                pres_ex_id=pres_ex_id,
             )
-            raise CloudApiException("Failed to delete record.") from e
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to delete record: {e.detail}.", e.status_code
+            ) from e
 
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
 
@@ -200,13 +209,16 @@ class VerifierV2(Verifier):
     ) -> List[PresentationExchange]:
         try:
             logger.debug("Fetching v2 present-proof exchange records")
-            presentation_exchange = await controller.present_proof_v2_0.get_records()
+            presentation_exchange = await handle_acapy_call(
+                logger=logger, acapy_call=controller.present_proof_v2_0.get_records
+            )
             result = [
                 record_to_model(rec) for rec in presentation_exchange.results or []
             ]
-        except Exception as e:
-            logger.exception("An unexpected error occurred while getting records.")
-            raise CloudApiException("Failed to get proof records.") from e
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to get proof records: {e.detail}.", e.status_code
+            ) from e
 
         if result:
             logger.debug("Successfully got v2 present-proof records.")
@@ -223,14 +235,16 @@ class VerifierV2(Verifier):
 
         try:
             bound_logger.debug("Fetching single v2 present-proof exchange record")
-            presentation_exchange = await controller.present_proof_v2_0.get_record(
-                pres_ex_id=pres_ex_id
+            presentation_exchange = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.get_record,
+                pres_ex_id=pres_ex_id,
             )
             result = record_to_model(presentation_exchange)
-        except Exception as e:
-            bound_logger.exception("An unexpected error occurred while getting record.")
+        except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to get proof record with proof id `{proof_id}`."
+                f"Failed to get proof record with proof id `{proof_id}`: {e.detail}.",
+                e.status_code,
             ) from e
 
         if result:
@@ -246,13 +260,15 @@ class VerifierV2(Verifier):
 
         try:
             bound_logger.debug("Deleting v2 present-proof exchange record")
-            await controller.present_proof_v2_0.delete_record(pres_ex_id=pres_ex_id)
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while deleting record."
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.delete_record,
+                pres_ex_id=pres_ex_id,
             )
+        except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to delete record with proof id `{proof_id}`."
+                f"Failed to delete record with proof id `{proof_id}`: {e.detail}.",
+                e.status_code,
             ) from e
 
         bound_logger.debug("Successfully deleted v2 present-proof record.")
@@ -266,15 +282,15 @@ class VerifierV2(Verifier):
 
         try:
             bound_logger.debug("Getting v2 matching credentials from proof id")
-            result = await controller.present_proof_v2_0.get_matching_credentials(
-                pres_ex_id=pres_ex_id
+            result = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v2_0.get_matching_credentials,
+                pres_ex_id=pres_ex_id,
             )
-        except Exception as e:
-            bound_logger.exception(
-                "An unexpected error occurred while getting matching credentials."
-            )
+        except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to get credentials with proof id `{proof_id}`."
+                f"Failed to get credentials with proof id `{proof_id}`: {e.detail}.",
+                e.status_code,
             ) from e
 
         if result:

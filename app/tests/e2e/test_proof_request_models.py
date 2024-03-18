@@ -7,9 +7,9 @@ from aries_cloudcontroller import (
 )
 from fastapi import HTTPException
 
-from app.event_handling.sse_listener import SseListener
 from app.models.tenants import CreateTenantResponse
 from app.routes.verifier import router as verifier_router
+from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from shared.util.rich_async_client import RichAsyncClient
 

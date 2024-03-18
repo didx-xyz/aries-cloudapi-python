@@ -4,6 +4,7 @@ from aries_cloudcontroller import DID, AcaPyClient, DIDCreate
 from pydantic import BaseModel
 
 from app.exceptions import CloudApiException
+from app.util.did import qualified_did_sov
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -31,7 +32,8 @@ async def assert_public_did(aries_controller: AcaPyClient) -> str:
         raise CloudApiException("Agent has no public did.", 403)
 
     logger.info("Successfully fetched public DID.")
-    return f"did:sov:{public_did.result.did}"
+
+    return qualified_did_sov(public_did.result.did)
 
 
 async def create_did(

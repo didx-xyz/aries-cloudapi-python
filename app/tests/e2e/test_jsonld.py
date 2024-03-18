@@ -7,6 +7,7 @@ from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.routes.jsonld import router
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
+from shared.exceptions.cloudapi_value_error import CloudApiValueError
 from shared.models.credential_exchange import CredentialExchange
 
 JSONLD_BASE_PATH = router.prefix
@@ -60,32 +61,34 @@ async def test_sign_jsonld(
     faber_and_alice_connection: FaberAliceConnect,
     issue_credential_to_alice: CredentialExchange,
 ):
-    json_ld_req = JsonLdSignRequest(
-        verkey="abcde",
-        pub_did="abcde",
-        credential_id=issue_credential_to_alice["credential_id"][3:],
-        signature_options=SignatureOptions(
-            proof_purpose="test", verification_method="ed25519"
-        ).model_dump(),
-    )
-
-    # Error
-    with pytest.raises(HTTPException) as exc:
-        await alice_member_client.post(
-            JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
+    # First assert 422 error for providing both pub_did and verkey:
+    with pytest.raises(CloudApiValueError) as exc:
+        json_ld_req = JsonLdSignRequest(
+            verkey="abcde",
+            pub_did="abcde",
+            credential_id=issue_credential_to_alice["credential_id"][3:],
+            signature_options=SignatureOptions(
+                proof_purpose="test", verification_method="ed25519"
+            ).model_dump(),
         )
 
     assert_that(exc.value.detail).contains(
         "Please provide either or neither, but not both"
     )
-    assert_that(exc.value.status_code).is_equal_to(400)
 
     # Success pub_did
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
-    json_ld_req.pub_did = faber_pub_did
-    json_ld_req.credential = jsonld_credential
-    json_ld_req.credential_id = None
-    json_ld_req.verkey = None
+
+    json_ld_req = JsonLdSignRequest(
+        verkey=None,
+        pub_did=faber_pub_did,
+        credential=jsonld_credential,
+        credential_id=None,
+        signature_options=SignatureOptions(
+            proof_purpose="test", verification_method="ed25519"
+        ),
+    )
+
     jsonld_sign_response = await faber_client.post(
         JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )

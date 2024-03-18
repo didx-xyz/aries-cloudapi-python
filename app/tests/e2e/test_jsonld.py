@@ -5,7 +5,6 @@ from fastapi import HTTPException
 
 from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from app.routes.jsonld import router
-from app.tests.util.ecosystem_connections import FaberAliceConnect
 from shared import RichAsyncClient
 from shared.exceptions.cloudapi_value_error import CloudApiValueError
 from shared.models.credential_exchange import CredentialExchange
@@ -55,10 +54,8 @@ signed_doc = {
 
 @pytest.mark.anyio
 async def test_sign_jsonld(
-    alice_member_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
     faber_client: RichAsyncClient,
-    faber_and_alice_connection: FaberAliceConnect,
     issue_credential_to_alice: CredentialExchange,
 ):
     # First assert 422 error for providing both pub_did and verkey:

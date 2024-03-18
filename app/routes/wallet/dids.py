@@ -36,7 +36,7 @@ async def create_did(
 @router.get("", response_model=List[DID])
 async def list_dids(
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> List[DID]:
     """
     Retrieve list of DIDs.
     """
@@ -57,7 +57,7 @@ async def list_dids(
 @router.get("/public", response_model=DID)
 async def get_public_did(
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> DID:
     """
     Fetch the current public DID.
     """
@@ -79,7 +79,7 @@ async def get_public_did(
 async def set_public_did(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> DID:
     """Set the current public DID."""
     logger.info("PUT request received: Set public DID")
 
@@ -109,7 +109,7 @@ async def rotate_keypair(
 async def get_did_endpoint(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> DIDEndpoint:
     """Get DID endpoint."""
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("GET request received: Get endpoint for DID")

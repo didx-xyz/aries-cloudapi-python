@@ -27,7 +27,7 @@ async def list_credentials(
     start: Optional[str] = None,
     wql: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredInfoList:
     """Fetch a list of credentials from the wallet."""
     logger.info("GET request received: List credentials")
 
@@ -45,7 +45,7 @@ async def list_credentials(
 async def get_credential_record(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> IndyCredInfo:
     """Fetch a specific credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.info("GET request received: Fetch specific credential by ID")
@@ -78,14 +78,13 @@ async def delete_credential(
         )
 
     bound_logger.info("Successfully deleted credential.")
-    return result
 
 
 @router.get("/{credential_id}/mime-types", response_model=AttributeMimeTypesResult)
 async def get_credential_mime_types(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> AttributeMimeTypesResult:
     """Retrieve attribute MIME types of a specific credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.info(
@@ -108,7 +107,7 @@ async def get_credential_revocation_status(
     from_: Optional[str] = None,
     to: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredRevokedResult:
     """Query the revocation status of a specific credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.info(
@@ -132,7 +131,7 @@ async def list_w3c_credentials(
     wql: Optional[str] = None,
     body: Optional[W3CCredentialsListRequest] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> VCRecordList:
     """Fetch a list of W3C credentials from the wallet."""
     logger.info("GET request received: List W3C credentials")
 
@@ -150,7 +149,7 @@ async def list_w3c_credentials(
 async def get_w3c_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> VCRecord:
     """Fetch a specific W3C credential by ID."""
     bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.info("GET request received: Fetch specific W3C credential by ID")
@@ -181,4 +180,3 @@ async def delete_w3c_credential(
         )
 
     bound_logger.info("Successfully deleted W3C credential.")
-    return result

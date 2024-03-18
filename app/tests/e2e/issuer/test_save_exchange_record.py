@@ -140,7 +140,6 @@ async def test_get_cred_exchange_records(
         raise Exception(
             f"Expected 2 credentials to be issued; only got {num_credentials_returned}"
         )
-    
 
     for cred in alice_cred_ex_response:
         await alice_member_client.post(

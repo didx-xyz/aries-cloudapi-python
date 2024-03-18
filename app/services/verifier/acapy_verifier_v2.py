@@ -52,16 +52,16 @@ class VerifierV2(Verifier):
 
         bound_logger = logger.bind(body=create_proof_request)
         bound_logger.debug("Creating v2 proof request")
-        auto_remove = not create_proof_request.save_exchange_record
+        request_body = V20PresCreateRequestRequest(
+            auto_remove=not create_proof_request.save_exchange_record,
+            presentation_request=presentation_request,
+            auto_verify=True,
+            comment=create_proof_request.comment,
+            trace=create_proof_request.trace,
+        )
         try:
             proof_record = await controller.present_proof_v2_0.create_proof_request(
-                body=V20PresCreateRequestRequest(
-                    auto_remove=auto_remove,
-                    presentation_request=presentation_request,
-                    auto_verify=True,
-                    comment=create_proof_request.comment,
-                    trace=create_proof_request.trace,
-                )
+                body=request_body
             )
             bound_logger.debug("Returning v2 PresentationExchange.")
             return record_to_model(proof_record)
@@ -92,20 +92,18 @@ class VerifierV2(Verifier):
             )
 
         bound_logger = logger.bind(body=send_proof_request)
-        auto_remove = not send_proof_request.save_exchange_record
+        request_body = V20PresSendRequestRequest(
+            auto_remove=not send_proof_request.save_exchange_record,
+            connection_id=send_proof_request.connection_id,
+            presentation_request=presentation_request,
+            auto_verify=True,
+            comment=send_proof_request.comment,
+            trace=send_proof_request.trace,
+        )
         try:
             bound_logger.debug("Send free v2 presentation request")
             presentation_exchange = (
-                await controller.present_proof_v2_0.send_request_free(
-                    body=V20PresSendRequestRequest(
-                        auto_remove=auto_remove,
-                        connection_id=send_proof_request.connection_id,
-                        presentation_request=presentation_request,
-                        auto_verify=True,
-                        comment=send_proof_request.comment,
-                        trace=send_proof_request.trace,
-                    )
-                )
+                await controller.present_proof_v2_0.send_request_free(body=request_body)
             )
             result = record_to_model(presentation_exchange)
         except Exception as e:
@@ -171,13 +169,13 @@ class VerifierV2(Verifier):
 
         # Report problem if desired
         if reject_proof_request.problem_report:
+            request_body = V20PresProblemReportRequest(
+                description=reject_proof_request.problem_report
+            )
             try:
                 bound_logger.debug("Submitting v2 problem report")
                 await controller.present_proof_v2_0.report_problem(
-                    pres_ex_id=pres_ex_id,
-                    body=V20PresProblemReportRequest(
-                        description=reject_proof_request.problem_report
-                    ),
+                    pres_ex_id=pres_ex_id, body=request_body
                 )
             except Exception as e:
                 bound_logger.exception(

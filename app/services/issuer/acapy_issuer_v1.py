@@ -10,7 +10,11 @@ from aries_cloudcontroller import (
     V10CredentialStoreRequest,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import (
+    CloudApiException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.issuer import CredentialBase, CredentialType, CredentialWithConnection
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
@@ -41,14 +45,19 @@ class IssuerV1(Issuer):
         )
 
         bound_logger.debug("Issue v1 credential (automated)")
-        auto_remove = not credential.save_exchange_record
-        record = await controller.issue_credential_v1_0.issue_credential_automated(
-            body=V10CredentialProposalRequestMand(
-                auto_remove=auto_remove,
-                connection_id=credential.connection_id,
-                credential_proposal=credential_preview,
-                cred_def_id=credential.indy_credential_detail.credential_definition_id,
-            )
+        request_body = handle_model_with_validation(
+            logger=bound_logger,
+            model_class=V10CredentialProposalRequestMand,
+            auto_remove=not credential.save_exchange_record,
+            connection_id=credential.connection_id,
+            credential_proposal=credential_preview,
+            cred_def_id=credential.indy_credential_detail.credential_definition_id,
+        )
+
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.issue_credential_automated,
+            body=request_body,
         )
 
         bound_logger.debug("Returning v1 credential result as CredentialExchange.")
@@ -71,14 +80,15 @@ class IssuerV1(Issuer):
         )
 
         bound_logger.debug("Creating v1 credential offer")
-        auto_remove = not credential.save_exchange_record
-        record = await controller.issue_credential_v1_0.create_offer(
-            body=V10CredentialConnFreeOfferRequest(
-                auto_remove=auto_remove,
-                credential_preview=credential_preview,
-                cred_def_id=credential.indy_credential_detail.credential_definition_id,
-            )
+        request_body = handle_model_with_validation(
+            logger=bound_logger,
+            model_class=V10CredentialConnFreeOfferRequest,
+            auto_remove=not credential.save_exchange_record,
+            credential_preview=credential_preview,
+            cred_def_id=credential.indy_credential_detail.credential_definition_id,
         )
+
+        record = await controller.issue_credential_v1_0.create_offer(body=request_body)
 
         bound_logger.debug("Returning v1 create offer result as CredentialExchange.")
         return cls.__record_to_model(record)
@@ -96,7 +106,9 @@ class IssuerV1(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Sending v1 credential request")
-        record = await controller.issue_credential_v1_0.send_request(
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.send_request,
             cred_ex_id=credential_exchange_id,
         )
 
@@ -114,8 +126,12 @@ class IssuerV1(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Storing v1 credential record")
-        record = await controller.issue_credential_v1_0.store_credential(
-            cred_ex_id=credential_exchange_id, body=V10CredentialStoreRequest()
+        request_body = V10CredentialStoreRequest()
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.store_credential,
+            cred_ex_id=credential_exchange_id,
+            body=request_body,
         )
 
         bound_logger.debug(
@@ -134,20 +150,26 @@ class IssuerV1(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Getting v1 credential record")
-        record = await controller.issue_credential_v1_0.get_record(
-            cred_ex_id=credential_exchange_id
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.get_record,
+            cred_ex_id=credential_exchange_id,
         )
 
         bound_logger.debug("Deleting v1 credential record")
-        await controller.issue_credential_v1_0.delete_record(
-            cred_ex_id=credential_exchange_id
+        await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.delete_record,
+            cred_ex_id=credential_exchange_id,
         )
 
         # also delete indy credential
         if record.credential_id:
             bound_logger.debug("Deleting indy credential")
-            await controller.credentials.delete_record(
-                credential_id=record.credential_id
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.credentials.delete_record,
+                credential_id=record.credential_id,
             )
         bound_logger.debug("Successfully deleted credential.")
 
@@ -157,7 +179,9 @@ class IssuerV1(Issuer):
     ) -> List[CredentialExchange]:
         bound_logger = logger.bind(body={"connection_id": connection_id})
         bound_logger.debug("Getting v1 credential records by connection id")
-        result = await controller.issue_credential_v1_0.get_records(
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.get_records,
             connection_id=connection_id,
         )
 
@@ -179,7 +203,9 @@ class IssuerV1(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Getting v1 credential record")
-        record = await controller.issue_credential_v1_0.get_record(
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v1_0.get_record,
             cred_ex_id=credential_exchange_id,
         )
 

@@ -1,5 +1,6 @@
 import pytest
 from aries_cloudcontroller import (
+    DID,
     AcaPyClient,
     ConnRecord,
     InvitationCreateRequest,
@@ -11,7 +12,6 @@ from mockito import verify, when
 
 from app.exceptions import CloudApiException
 from app.services import acapy_ledger, acapy_wallet
-from app.services.acapy_wallet import Did
 from app.services.event_handling.sse_listener import SseListener
 from app.services.onboarding import issuer, verifier
 from app.services.onboarding.util import register_issuer_did
@@ -26,7 +26,7 @@ async def test_onboard_issuer_public_did_exists(
 ):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
         to_async(
-            Did(
+            DID(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
             )
@@ -43,7 +43,7 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        Did(did="EndorserController", verkey="EndorserVerkey")
+        DID(did="EndorserController", verkey="EndorserVerkey")
     )
 
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
@@ -99,7 +99,7 @@ async def test_onboard_issuer_no_public_did(
         CloudApiException(detail="Error")
     )
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        to_async(Did(did=endorser_did, verkey="EndorserVerkey"))
+        to_async(DID(did=endorser_did, verkey="EndorserVerkey"))
     )
 
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
@@ -137,7 +137,7 @@ async def test_onboard_issuer_no_public_did(
 
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
         to_async(
-            Did(
+            DID(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
             )
@@ -187,7 +187,7 @@ async def test_onboard_issuer_no_public_did(
 async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
         to_async(
-            Did(
+            DID(
                 did="WgWxqztrNooG92RXvxSTWv",
                 verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
             )

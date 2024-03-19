@@ -1,10 +1,14 @@
 from logging import Logger
 
-from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
+from aries_cloudcontroller import (
+    DID,
+    AcaPyClient,
+    InvitationCreateRequest,
+    InvitationRecord,
+)
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.services import acapy_ledger, acapy_wallet
-from app.services.acapy_wallet import Did
 from app.services.event_handling.sse_listener import SseListener
 from app.services.onboarding.util.set_endorser_metadata import (
     set_author_role,
@@ -18,7 +22,7 @@ async def create_connection_with_endorser(
     *,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
-    endorser_did: Did,
+    endorser_did: DID,
     name: str,
     logger: Logger,
 ):

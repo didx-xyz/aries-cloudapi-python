@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from aries_cloudcontroller import AcaPyClient
+from aries_cloudcontroller import DID, AcaPyClient
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
@@ -68,7 +68,7 @@ async def has_public_did(aries_controller: AcaPyClient):
 
 async def create_public_did(
     aries_controller: AcaPyClient, set_public: bool = True
-) -> acapy_wallet.Did:
+) -> DID:
     logger.info("Handling create public did request")
     did_object = await acapy_wallet.create_did(aries_controller)
 

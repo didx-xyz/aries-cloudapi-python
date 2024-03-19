@@ -40,7 +40,7 @@ async def onboard_issuer(
         bound_logger.debug("Obtained public DID for the to-be issuer")
     except CloudApiException:
         bound_logger.debug("No public DID for the to-be issuer")
-        issuer_did: acapy_wallet.Did = await onboard_issuer_no_public_did(
+        issuer_did = await onboard_issuer_no_public_did(
             endorser_controller=endorser_controller,
             issuer_controller=issuer_controller,
             issuer_wallet_id=issuer_wallet_id,

@@ -1,6 +1,6 @@
 import asyncio
 from logging import Logger
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Optional, Tuple
 
 
 async def coroutine_with_retry(
@@ -33,6 +33,7 @@ async def coroutine_with_retry(
 async def coroutine_with_retry_until_value(
     coroutine_func: Callable,
     args: Tuple,
+    field_name: Optional[str],
     expected_value: Any,
     logger: Logger,
     max_attempts: int = 5,
@@ -45,6 +46,7 @@ async def coroutine_with_retry_until_value(
     Args:
         coroutine_func (Callable): The coroutine function to be called. It should be awaitable.
         args (Tuple): The arguments to pass to the coroutine function.
+        field_name (str): The name of the field in the returned object to check against the expected value.
         expected_value (Any): The value that the coroutine should return for the call to be considered successful.
         logger (Logger): Logger instance used to log information and warnings about the retry attempts and exceptions.
         max_attempts (int, optional): The maximum number of attempts to make. Defaults to 5.
@@ -60,32 +62,37 @@ async def coroutine_with_retry_until_value(
     for attempt in range(max_attempts):
         try:
             result = await coroutine_func(*args)
-            if result == expected_value:
-                return result
+
+            if field_name:
+                if getattr(result, field_name, None) == expected_value:
+                    return result
             else:
-                if attempt + 1 < max_attempts:
-                    logger.info(
-                        (
-                            "Coroutine returned {} instead of expected {} "
-                            "(attempt {}). Retrying in {} seconds..."
-                        ),
-                        result,
-                        expected_value,
-                        attempt + 1,
-                        retry_delay,
-                    )
-                else:
-                    logger.error(
-                        "Maximum number of retries exceeded without returning expected value."
-                    )
-                    return
+                if result == expected_value:
+                    return result
+
+            if attempt + 1 < max_attempts:
+                logger.info(
+                    (
+                        "Coroutine returned {} instead of expected {} "
+                        "(attempt {}). Retrying in {} seconds..."
+                    ),
+                    result,
+                    expected_value,
+                    attempt + 1,
+                    retry_delay,
+                )
+            else:
+                logger.error(
+                    "Maximum number of retries exceeded without returning expected value."
+                )
+                return
 
         except Exception as e:
             if attempt + 1 == max_attempts:
                 logger.error(
                     "Maximum number of retries exceeded with exception. Failing."
                 )
-                raise e  # Re-raise the exception if max attempts exceeded
+                raise asyncio.TimeoutError from e  # Raise TimeoutError if max attempts exceeded
 
             logger.warning(
                 (

@@ -85,7 +85,7 @@ async def coroutine_with_retry_until_value(
                 logger.error(
                     "Maximum number of retries exceeded without returning expected value."
                 )
-                return
+                raise asyncio.TimeoutError
 
         except Exception as e:
             if attempt + 1 == max_attempts:

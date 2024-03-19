@@ -173,12 +173,15 @@ class SseManager:
             if isinstance(message_data, bytes):
                 message_data = message_data.decode("utf-8")
 
-            wallet_id, group_id, timestamp_ns_str = message_data.split(":")
+            group_id, wallet_id, timestamp_ns_str = message_data.split(":")
             timestamp_ns = int(timestamp_ns_str)
 
             # Fetch the event with the exact timestamp from the sorted set
             json_events = self.redis_service.get_json_cloudapi_events_by_timestamp(
-                wallet_id, timestamp_ns, timestamp_ns
+                wallet_id=wallet_id,
+                start_timestamp=timestamp_ns,
+                end_timestamp=timestamp_ns,
+                group_id=group_id,
             )
 
             for json_event in json_events:
@@ -198,10 +201,11 @@ class SseManager:
                         event_json=json_event,
                         wallet_id=wallet_id,
                         topic=topic,
+                        group_id=group_id,
                     )
                 except ValidationError as e:
                     error_message = (
-                        "Could not parse json event retreived from redis "
+                        "Could not parse json event retrieved from redis "
                         f"into a `CloudApiWebhookEventGeneric`. Error: `{str(e)}`."
                     )
                     logger.error(error_message)
@@ -246,6 +250,7 @@ class SseManager:
             # Wait for an event to be added to the incoming events queue
             event: CloudApiWebhookEventGeneric = await self.incoming_events.get()
             wallet = event.wallet_id
+            group_id = event.group_id
             topic = event.topic
 
             # Process the event into the per-wallet queues

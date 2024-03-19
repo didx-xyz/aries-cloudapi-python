@@ -89,15 +89,17 @@ class WebhooksRedisService(RedisService):
             timestamp_ns: The timestamp (in nanoseconds) of when the event was saved.
         """
         bound_logger = self.logger.bind(
-            body={"wallet_id": wallet_id, "group_id": group_id, "event": event_json}
+            body={"group_id": group_id, "wallet_id": wallet_id, "event": event_json}
         )
         bound_logger.trace("Write entry to redis")
 
         # Use the current timestamp as the score for the sorted set
-        redis_key = self.get_cloudapi_event_redis_key(wallet_id, group_id)
+        redis_key = self.get_cloudapi_event_redis_key(
+            wallet_id=wallet_id, group_id=group_id
+        )
         self.redis.zadd(redis_key, {event_json: timestamp_ns})
 
-        broadcast_message = f"{wallet_id}:{timestamp_ns}"
+        broadcast_message = f"{group_id}:{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
         bound_logger.trace("Publish message on pubsub channel: {}", broadcast_message)
         self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)

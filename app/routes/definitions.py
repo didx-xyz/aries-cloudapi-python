@@ -25,7 +25,6 @@ from app.models.definitions import (
     CredentialSchema,
 )
 from app.services import acapy_wallet
-from app.services.event_handling.sse_listener import SseListener
 from app.services.revocation_registry import wait_for_active_registry
 from app.services.trust_registry.schemas import register_schema
 from app.services.trust_registry.util.issuer import assert_valid_issuer
@@ -33,6 +32,7 @@ from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
+from app.util.retry_method import coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
 from shared.log_config import get_logger
 
@@ -267,8 +267,6 @@ async def create_credential_definition(
                     "to support revocation. Please establish a connection with an endorser and try again."
                 )
 
-        listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
-
         bound_logger.debug("Publishing credential definition")
         try:
             result = await aries_controller.credential_definition.publish_cred_def(
@@ -300,12 +298,17 @@ async def create_credential_definition(
                 "The publish credential definition response provides a transaction id. "
                 "Waiting for transaction to be in state `transaction-acked`"
             )
+
             try:
                 # Wait for transaction to be acknowledged and written to the ledger
-                await listener.wait_for_event(
-                    field="transaction_id",
-                    field_id=result.txn.transaction_id,
-                    desired_state="transaction-acked",
+                await coroutine_with_retry_until_value(
+                    coroutine_func=aries_controller.endorse_transaction.get_transaction,
+                    args=(result.txn.transaction_id,),
+                    field_name="state",
+                    expected_value="transaction-acked",
+                    logger=bound_logger,
+                    max_attempts=10,
+                    retry_delay=0.5,
                 )
             except asyncio.TimeoutError as e:
                 raise CloudApiException(

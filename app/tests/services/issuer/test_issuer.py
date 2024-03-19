@@ -18,6 +18,9 @@ from shared.models.credential_exchange import CredentialExchange
 from shared.models.protocol import IssueCredentialProtocolVersion
 from shared.util.mock_agent_controller import MockContextManagedController
 
+did = "did:sov:WgWxqztrNooG92RXvxSTWv"
+cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
+
 
 @pytest.mark.anyio
 async def test_send_credential(
@@ -26,8 +29,6 @@ async def test_send_credential(
     mock_tenant_auth: AcaPyAuth,
     mocker: MockerFixture,
 ):
-    did = "did:sov:WgWxqztrNooG92RXvxSTWv"
-    cred_def_id = "WgWxqztrNooG92RXvxSTWv:1:12345:tag"
     cred_ex = mock(CredentialExchange)
 
     mocker.patch.object(
@@ -221,7 +222,7 @@ async def test_request_credential(
     v2_record.type = "indy"
 
     ld_record.type = "ld_proof"
-    ld_record.did = "did:sov:WgWxqztrNooG92RXvxSTWv"
+    ld_record.did = did
 
     with when(IssuerV1).request_credential(...).thenReturn(to_async(v1_record)), when(
         test_module
@@ -235,9 +236,7 @@ async def test_request_credential(
         verify(IssuerV1).request_credential(
             controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
         )
-        verify(test_module).assert_valid_issuer(
-            "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id1"
-        )
+        verify(test_module).assert_valid_issuer(did, "schema_id1")
 
     with when(IssuerV2).request_credential(...).thenReturn(to_async(v2_record)), when(
         IssuerV2
@@ -253,9 +252,7 @@ async def test_request_credential(
         verify(IssuerV2).request_credential(
             controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
         )
-        verify(test_module).assert_valid_issuer(
-            "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id2"
-        )
+        verify(test_module).assert_valid_issuer(did, "schema_id2")
 
     with when(IssuerV2).request_credential(...).thenReturn(to_async(ld_record)), when(
         IssuerV2
@@ -271,7 +268,7 @@ async def test_request_credential(
         verify(IssuerV2).request_credential(
             controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
         )
-        verify(test_module).assert_valid_issuer("did:sov:WgWxqztrNooG92RXvxSTWv", None)
+        verify(test_module).assert_valid_issuer(did, None)
 
 
 @pytest.mark.anyio
@@ -293,9 +290,7 @@ async def test_request_credential_x_no_schema_cred_def(
         verify(IssuerV1, times=0).request_credential(
             controller=mock_agent_controller, credential_exchange_id="credential_id"
         )
-        verify(test_module, times=0).assert_valid_issuer(
-            "did:sov:WgWxqztrNooG92RXvxSTWv", "schema_id1"
-        )
+        verify(test_module, times=0).assert_valid_issuer(did, "schema_id1")
 
 
 @pytest.mark.anyio
@@ -329,9 +324,6 @@ async def test_store_credential(
 
 
 @pytest.mark.anyio
-@unittest.mock.patch(
-    "app.services.acapy_wallet.assert_public_did", return_value="did:sov:123456879"
-)
 async def test_create_offer(
     mock_agent_controller: AcaPyClient,
     mock_context_managed_controller: MockContextManagedController,
@@ -358,9 +350,11 @@ async def test_create_offer(
     when(IssuerV1).create_offer(...).thenReturn(to_async(v1_record))
     when(IssuerV2).create_offer(...).thenReturn(to_async(v2_record))
 
+    when(test_module).assert_public_did(...).thenReturn(to_async(did))
     when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     await test_module.create_offer(v1_credential, mock_tenant_auth)
 
+    when(test_module).assert_public_did(...).thenReturn(to_async(did))
     when(test_module).assert_valid_issuer(...).thenReturn(to_async(True))
     await test_module.create_offer(v2_credential, mock_tenant_auth)
 

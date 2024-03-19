@@ -19,18 +19,18 @@ from app.tests.util.mock import to_async
 from shared.constants import GOVERNANCE_LABEL
 from shared.util.mock_agent_controller import get_mock_agent_controller
 
+did_object = DID(
+    did="WgWxqztrNooG92RXvxSTWv",
+    verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
+)
+
 
 @pytest.mark.anyio
 async def test_onboard_issuer_public_did_exists(
     mock_agent_controller: AcaPyClient,
 ):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
-        to_async(
-            DID(
-                did="WgWxqztrNooG92RXvxSTWv",
-                verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
-            )
-        )
+        to_async(did_object)
     )
 
     endorser_controller = get_mock_agent_controller()
@@ -43,7 +43,7 @@ async def test_onboard_issuer_public_did_exists(
     )
 
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        DID(did="EndorserController", verkey="EndorserVerkey")
+        did_object
     )
 
     when(mock_agent_controller.endorse_transaction).set_endorser_role(...).thenReturn(
@@ -93,13 +93,12 @@ async def test_onboard_issuer_no_public_did(
     mock_agent_controller: AcaPyClient,
 ):
     endorser_controller = get_mock_agent_controller()
-    endorser_did = "EndorserDid"
 
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
         CloudApiException(detail="Error")
     )
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
-        to_async(DID(did=endorser_did, verkey="EndorserVerkey"))
+        to_async(did_object)
     )
 
     when(endorser_controller.out_of_band).create_invitation(...).thenReturn(
@@ -136,12 +135,7 @@ async def test_onboard_issuer_no_public_did(
     )
 
     when(acapy_wallet).create_did(mock_agent_controller).thenReturn(
-        to_async(
-            DID(
-                did="WgWxqztrNooG92RXvxSTWv",
-                verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
-            )
-        )
+        to_async(did_object)
     )
     when(acapy_ledger).register_nym_on_ledger(...).thenReturn(to_async())
     when(acapy_ledger).accept_taa_if_required(...).thenReturn(to_async())
@@ -186,12 +180,7 @@ async def test_onboard_issuer_no_public_did(
 @pytest.mark.anyio
 async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
-        to_async(
-            DID(
-                did="WgWxqztrNooG92RXvxSTWv",
-                verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
-            )
-        )
+        to_async(did_object)
     )
 
     onboard_result = await verifier.onboard_verifier(

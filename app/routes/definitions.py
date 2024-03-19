@@ -308,7 +308,7 @@ async def create_credential_definition(
                     expected_value="transaction-acked",
                     logger=bound_logger,
                     max_attempts=10,
-                    retry_delay=0.5,
+                    retry_delay=2,
                 )
             except asyncio.TimeoutError as e:
                 raise CloudApiException(

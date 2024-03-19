@@ -1,11 +1,17 @@
 import asyncio
 from logging import Logger
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Coroutine, Optional, Tuple, TypeVar
+
+T = TypeVar("T", bound=Any)
 
 
 async def coroutine_with_retry(
-    coroutine_func: Callable, args: Tuple, logger: Logger, max_attempts=5, retry_delay=2
-) -> Any:
+    coroutine_func: Callable[..., Coroutine[Any, Any, T]],
+    args: Tuple,
+    logger: Logger,
+    max_attempts=5,
+    retry_delay=2,
+) -> T:
     result = None
     for attempt in range(max_attempts):
         try:
@@ -31,14 +37,14 @@ async def coroutine_with_retry(
 
 
 async def coroutine_with_retry_until_value(
-    coroutine_func: Callable,
+    coroutine_func: Callable[..., Coroutine[Any, Any, T]],
     args: Tuple,
     field_name: Optional[str],
     expected_value: Any,
     logger: Logger,
     max_attempts: int = 5,
     retry_delay: int = 2,
-) -> Any:
+) -> T:
     """
     Executes a coroutine function with retries until it returns an expected value
     or until a maximum number of attempts is reached.

@@ -35,7 +35,7 @@ class Connection(BaseModel):
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
     invitation_msg_id: Optional[str] = None
     my_did: Optional[str] = None
-    state: Optional[State] = None
+    state: Optional[str] = None  # not State Literal because we use rfc23_state
     their_did: Optional[str] = None
     their_label: Optional[str] = None
     their_public_did: Optional[str] = None

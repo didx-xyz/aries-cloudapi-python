@@ -25,7 +25,7 @@ router = APIRouter(prefix="/v1/connections", tags=["connections"])
 async def create_invitation(
     body: Optional[CreateInvitation] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> InvitationResult:
     """
     Create connection invitation.
     """
@@ -142,7 +142,7 @@ async def get_connections(
 async def get_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> Connection:
     """
     Retrieve connection by id.
 
@@ -173,21 +173,17 @@ async def get_connection_by_id(
     return result
 
 
-@router.delete("/{connection_id}")
+@router.delete("/{connection_id}", status_code=204)
 async def delete_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """
     Delete connection by id.
 
     Parameters:
     -----------
     connection_id: str
-
-    Returns:
-    ------------
-    Empty dict: {}
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("DELETE request received: Delete connection by ID")
@@ -200,4 +196,3 @@ async def delete_connection_by_id(
         )
 
     bound_logger.info("Successfully deleted connection by ID.")
-    return {}

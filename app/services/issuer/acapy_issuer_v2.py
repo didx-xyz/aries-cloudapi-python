@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from aries_cloudcontroller import (
     AcaPyClient,
@@ -13,7 +13,11 @@ from aries_cloudcontroller import (
     V20CredStoreRequest,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import (
+    CloudApiException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.issuer import CredentialBase, CredentialType, CredentialWithConnection
 from app.services.issuer.acapy_issuer import Issuer
 from app.util.credentials import cred_id_no_version
@@ -30,7 +34,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def send_credential(
         cls, controller: AcaPyClient, credential: CredentialWithConnection
-    ):
+    ) -> CredentialExchange:
         bound_logger = logger.bind(body=credential)
 
         credential_preview = None
@@ -40,11 +44,13 @@ class IssuerV2(Issuer):
             credential_preview = cls.__preview_from_attributes(
                 attributes=credential.indy_credential_detail.attributes
             )
-            cred_filter = V20CredFilter(
-                indy=V20CredFilterIndy(
-                    cred_def_id=credential.indy_credential_detail.credential_definition_id,
-                )
+
+            indy_model = handle_model_with_validation(
+                logger=bound_logger,
+                model_class=V20CredFilterIndy,
+                cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
+            cred_filter = V20CredFilter(indy=indy_model)
         elif credential.type == CredentialType.LD_PROOF:
             cred_filter = V20CredFilter(ld_proof=credential.ld_credential_detail)
         else:
@@ -53,21 +59,25 @@ class IssuerV2(Issuer):
             )
 
         bound_logger.debug("Issue v2 credential (automated)")
-        auto_remove = not credential.save_exchange_record
-        record = await controller.issue_credential_v2_0.issue_credential_automated(
-            body=V20CredExFree(
-                auto_remove=auto_remove,
-                connection_id=credential.connection_id,
-                filter=cred_filter,
-                credential_preview=credential_preview,
-            )
+        request_body = V20CredExFree(
+            auto_remove=not credential.save_exchange_record,
+            connection_id=credential.connection_id,
+            filter=cred_filter,
+            credential_preview=credential_preview,
+        )
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.issue_credential_automated,
+            body=request_body,
         )
 
         bound_logger.debug("Returning v2 credential result as CredentialExchange.")
         return cls.__record_to_model(record)
 
     @classmethod
-    async def create_offer(cls, controller: AcaPyClient, credential: CredentialBase):
+    async def create_offer(
+        cls, controller: AcaPyClient, credential: CredentialBase
+    ) -> CredentialExchange:
         bound_logger = logger.bind(body=credential)
 
         credential_preview = None
@@ -77,11 +87,12 @@ class IssuerV2(Issuer):
             credential_preview = cls.__preview_from_attributes(
                 attributes=credential.indy_credential_detail.attributes
             )
-            cred_filter = V20CredFilter(
-                indy=V20CredFilterIndy(
-                    cred_def_id=credential.indy_credential_detail.credential_definition_id,
-                )
+            indy_model = handle_model_with_validation(
+                logger=bound_logger,
+                model_class=V20CredFilterIndy,
+                cred_def_id=credential.indy_credential_detail.credential_definition_id,
             )
+            cred_filter = V20CredFilter(indy=indy_model)
         elif credential.type == CredentialType.LD_PROOF:
             cred_filter = V20CredFilter(ld_proof=credential.ld_credential_detail)
         else:
@@ -90,15 +101,15 @@ class IssuerV2(Issuer):
             )
 
         bound_logger.debug("Creating v2 credential offer")
-        auto_remove = not credential.save_exchange_record
-        record = (
-            await controller.issue_credential_v2_0.issue_credential20_create_offer_post(
-                body=V20CredOfferConnFreeRequest(
-                    auto_remove=auto_remove,
-                    credential_preview=credential_preview,
-                    filter=cred_filter,
-                )
-            )
+        request_body = V20CredOfferConnFreeRequest(
+            auto_remove=not credential.save_exchange_record,
+            credential_preview=credential_preview,
+            filter=cred_filter,
+        )
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.issue_credential20_create_offer_post,
+            body=request_body,
         )
 
         bound_logger.debug("Returning v2 create offer result as CredentialExchange.")
@@ -109,7 +120,7 @@ class IssuerV2(Issuer):
         cls,
         controller: AcaPyClient,
         credential_exchange_id: str,
-    ):
+    ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -117,8 +128,12 @@ class IssuerV2(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Sending v2 credential request")
-        record = await controller.issue_credential_v2_0.send_request(
-            cred_ex_id=credential_exchange_id, body=V20CredRequestRequest()
+        request_body = V20CredRequestRequest()
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.send_request,
+            cred_ex_id=credential_exchange_id,
+            body=request_body,
         )
 
         bound_logger.debug("Returning v2 send request result as CredentialExchange.")
@@ -127,7 +142,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def store_credential(
         cls, controller: AcaPyClient, credential_exchange_id: str
-    ):
+    ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -135,8 +150,12 @@ class IssuerV2(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Storing v2 credential record")
-        record = await controller.issue_credential_v2_0.store_credential(
-            cred_ex_id=credential_exchange_id, body=V20CredStoreRequest()
+        request_body = V20CredStoreRequest()
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.store_credential,
+            cred_ex_id=credential_exchange_id,
+            body=request_body,
         )
 
         if not record.cred_ex_record:
@@ -150,7 +169,7 @@ class IssuerV2(Issuer):
     @classmethod
     async def delete_credential_exchange_record(
         cls, controller: AcaPyClient, credential_exchange_id: str
-    ):
+    ) -> None:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -158,20 +177,26 @@ class IssuerV2(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Getting v2 credential record")
-        record = await controller.issue_credential_v2_0.get_record(
-            cred_ex_id=credential_exchange_id
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.get_record,
+            cred_ex_id=credential_exchange_id,
         )
 
         bound_logger.debug("Deleting v2 credential record")
-        await controller.issue_credential_v2_0.delete_record(
-            cred_ex_id=credential_exchange_id
+        await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.delete_record,
+            cred_ex_id=credential_exchange_id,
         )
 
         # also delete indy credential
         if record.indy and record.indy.cred_id_stored:
             bound_logger.debug("Deleting indy credential")
-            await controller.credentials.delete_record(
-                credential_id=record.indy.cred_id_stored
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.credentials.delete_record,
+                credential_id=record.indy.cred_id_stored,
             )
         bound_logger.debug("Successfully deleted credential.")
 
@@ -183,11 +208,16 @@ class IssuerV2(Issuer):
         role: Optional[str] = None,
         state: Optional[str] = None,
         thread_id: Optional[str] = None,
-    ):
+    ) -> List[CredentialExchange]:
         bound_logger = logger.bind(body={"connection_id": connection_id})
         bound_logger.debug("Getting v2 credential records by connection id")
-        result = await controller.issue_credential_v2_0.get_records(
-            connection_id=connection_id, role=role, state=state, thread_id=thread_id
+        result = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.get_records,
+            connection_id=connection_id,
+            role=role,
+            state=state,
+            thread_id=thread_id,
         )
 
         if not result.results:
@@ -202,7 +232,9 @@ class IssuerV2(Issuer):
         ]
 
     @classmethod
-    async def get_record(cls, controller: AcaPyClient, credential_exchange_id: str):
+    async def get_record(
+        cls, controller: AcaPyClient, credential_exchange_id: str
+    ) -> CredentialExchange:
         bound_logger = logger.bind(
             body={"credential_exchange_id": credential_exchange_id}
         )
@@ -210,7 +242,9 @@ class IssuerV2(Issuer):
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
         bound_logger.debug("Getting v2 credential record")
-        record = await controller.issue_credential_v2_0.get_record(
+        record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=controller.issue_credential_v2_0.get_record,
             cred_ex_id=credential_exchange_id,
         )
 

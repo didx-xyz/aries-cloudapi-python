@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 from aries_cloudcontroller import (
     IndyProof,
@@ -7,7 +7,6 @@ from aries_cloudcontroller import (
     V20PresExRecord,
 )
 from pydantic import BaseModel
-from typing_extensions import Literal
 
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -105,7 +104,7 @@ def presentation_record_to_model(
             verified=string_to_bool(record.verified),
         )
     else:
-        raise ValueError("Record format unknown.")
+        raise ValueError("Presentation record format unknown.")
 
 
 def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:

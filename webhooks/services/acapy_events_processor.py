@@ -8,7 +8,7 @@ from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
 from shared.models.endorsement import payload_is_applicable_for_endorser
-from shared.util.rich_parsing import parse_with_error_handling
+from shared.util.rich_parsing import parse_json_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
 from webhooks.models.redis_payloads import AcaPyRedisEvent
@@ -259,7 +259,7 @@ class AcaPyEventsProcessor:
         Args:
             event_json: The JSON string representation of the ACA-Py event.
         """
-        event = parse_with_error_handling(AcaPyRedisEvent, event_json, logger)
+        event = parse_json_with_error_handling(AcaPyRedisEvent, event_json, logger)
 
         metadata_origin = event.metadata.origin
 

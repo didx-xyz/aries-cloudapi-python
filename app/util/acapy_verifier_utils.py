@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import List, Optional, Set, Union
 
-from aries_cloudcontroller import AcaPyClient, ConnRecord, IndyPresSpec
+from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.trust_registry import Actor
 from app.models.verifier import AcceptProofRequest, ProofRequestType, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
@@ -14,6 +14,7 @@ from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.util.did import ed25519_verkey_to_did_key
 from app.util.tenants import get_wallet_label_from_controller
+from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion
 
@@ -37,7 +38,9 @@ def get_verifier_by_version(
     ):
         return VerifierFacade.v2.value
     else:
-        raise ValueError(f"Unknown protocol version: `{version_candidate}`.")
+        raise CloudApiValueError(
+            f"Unknown protocol version: `{version_candidate}`. Expecting `v1` or `v2`."
+        )
 
 
 async def assert_valid_prover(
@@ -62,9 +65,10 @@ async def assert_valid_prover(
         )
 
     bound_logger.debug("Getting connection record")
-    connection_record = await get_connection_record(
-        aries_controller=aries_controller,
-        connection_id=connection_id,
+    connection_record = await handle_acapy_call(
+        logger=bound_logger,
+        acapy_call=aries_controller.connection.get_connection,
+        conn_id=connection_id,
     )
 
     if not connection_record.connection_id:
@@ -146,10 +150,12 @@ async def assert_valid_verifier(
         bound_logger.debug(
             "Agent has no public DID. Getting connection record from proof request"
         )
-        connection_record = await get_connection_record(
-            aries_controller=aries_controller,
-            connection_id=proof_request.connection_id,
+        connection_record = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.connection.get_connection,
+            conn_id=proof_request.connection_id,
         )
+
         # get invitation key
         invitation_key = connection_record.invitation_key
 
@@ -241,9 +247,12 @@ async def get_schema_ids(
         "Getting records from each of the revealed credential ids"
     )
     for revealed_cred_id in revealed_cred_ids:
-        credential = await aries_controller.credentials.get_record(
-            credential_id=revealed_cred_id
+        credential = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credentials.get_record,
+            credential_id=revealed_cred_id,
         )
+
         if credential.schema_id:
             revealed_schema_ids.add(credential.schema_id)
 
@@ -262,11 +271,3 @@ async def get_connection_from_proof(
         controller=aries_controller, proof_id=proof_id
     )
     return proof_record.connection_id
-
-
-async def get_connection_record(
-    aries_controller: AcaPyClient,
-    connection_id: str,
-) -> ConnRecord:
-    """Retrieve the connection record"""
-    return await aries_controller.connection.get_connection(conn_id=connection_id)

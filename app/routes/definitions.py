@@ -2,7 +2,6 @@ import asyncio
 from typing import List, Optional
 
 from aries_cloudcontroller import (
-    ApiException,
     CredentialDefinitionSendRequest,
     SchemaGetResult,
     SchemaSendRequest,
@@ -17,7 +16,12 @@ from app.dependencies.auth import (
     acapy_auth_governance,
     acapy_auth_verified,
 )
-from app.exceptions import CloudApiException, TrustRegistryException
+from app.exceptions import (
+    CloudApiException,
+    TrustRegistryException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -86,7 +90,9 @@ async def get_credential_definitions(
     # Get all created credential definition ids that match the filter
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting created credential definitions")
-        response = await aries_controller.credential_definition.get_created_cred_defs(
+        response = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credential_definition.get_created_cred_defs,
             issuer_did=issuer_did,
             cred_def_id=credential_definition_id,
             schema_id=schema_id,
@@ -98,8 +104,10 @@ async def get_credential_definitions(
         # Initiate retrieving all credential definitions
         credential_definition_ids = response.credential_definition_ids or []
         get_credential_definition_futures = [
-            aries_controller.credential_definition.get_cred_def(
-                cred_def_id=credential_definition_id
+            handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.credential_definition.get_cred_def,
+                cred_def_id=credential_definition_id,
             )
             for credential_definition_id in credential_definition_ids
         ]
@@ -152,10 +160,10 @@ async def get_credential_definition_by_id(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential definition")
-        credential_definition = (
-            await aries_controller.credential_definition.get_cred_def(
-                cred_def_id=credential_definition_id
-            )
+        credential_definition = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.credential_definition.get_cred_def,
+            cred_def_id=credential_definition_id,
         )
 
         if not credential_definition.credential_definition:
@@ -250,8 +258,10 @@ async def create_credential_definition(
         await assert_valid_issuer(public_did, credential_definition.schema_id)
 
         if support_revocation:
-            endorser_connection = await aries_controller.connection.get_connections(
-                alias=ACAPY_ENDORSER_ALIAS
+            endorser_connection = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.connection.get_connections,
+                alias=ACAPY_ENDORSER_ALIAS,
             )
             has_connections = len(endorser_connection.results) > 0
 
@@ -267,33 +277,37 @@ async def create_credential_definition(
                     "to support revocation. Please establish a connection with an endorser and try again."
                 )
 
-        listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
-
         bound_logger.debug("Publishing credential definition")
+        request_body = handle_model_with_validation(
+            logger=bound_logger,
+            model_class=CredentialDefinitionSendRequest,
+            schema_id=credential_definition.schema_id,
+            support_revocation=support_revocation,
+            tag=credential_definition.tag,
+            revocation_registry_size=rev_reg_size,
+        )
         try:
-            result = await aries_controller.credential_definition.publish_cred_def(
-                body=CredentialDefinitionSendRequest(
-                    schema_id=credential_definition.schema_id,
-                    support_revocation=support_revocation,
-                    tag=credential_definition.tag,
-                    revocation_registry_size=rev_reg_size,
-                ),
+            result = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.credential_definition.publish_cred_def,
+                body=request_body,
             )
             credential_definition_id = result.sent.credential_definition_id
-        except ApiException as e:
+        except CloudApiException as e:
             bound_logger.warning(
-                "An ApiException was caught while publishing credential definition: `{}` `{}`",
-                e.reason,
-                e.status,
+                "An Exception was caught while publishing credential definition: `{}` `{}`",
+                e.detail,
+                e.status_code,
             )
-            if "already exists" in e.reason:
-                raise CloudApiException(status_code=409, detail=e.reason) from e
+            if "already exists" in e.detail:
+                raise CloudApiException(status_code=409, detail=e.detail) from e
             else:
                 raise CloudApiException(
-                    detail=f"Error while creating credential definition: {e.reason}",
-                    status_code=e.status,
+                    detail=f"Error while creating credential definition: {e.detail}",
+                    status_code=e.status_code,
                 ) from e
 
+        listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
         # Wait for cred_def transaction to be acknowledged
         if result.txn and result.txn.transaction_id:
             bound_logger.debug(
@@ -375,7 +389,9 @@ async def get_schemas(
     # Get all created schema ids that match the filter
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching created schemas")
-        response = await aries_controller.schema.get_created_schemas(
+        response = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.schema.get_created_schemas,
             schema_id=schema_id,
             schema_issuer_did=schema_issuer_did,
             schema_name=schema_name,
@@ -385,7 +401,11 @@ async def get_schemas(
         # Initiate retrieving all schemas
         schema_ids = response.schema_ids or []
         get_schema_futures = [
-            aries_controller.schema.get_schema(schema_id=schema_id)
+            handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.get_schema,
+                schema_id=schema_id,
+            )
             for schema_id in schema_ids
         ]
 
@@ -430,8 +450,11 @@ async def get_schema(
     bound_logger.info("GET request received: Get schema by id")
 
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Fetching schema")
-        schema = await aries_controller.schema.get_schema(schema_id=schema_id)
+        schema = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.schema.get_schema,
+            schema_id=schema_id,
+        )
 
     if not schema.var_schema:
         bound_logger.info("Bad request: schema id not found.")
@@ -463,7 +486,9 @@ async def create_schema(
     bound_logger = logger.bind(body=schema)
     bound_logger.info("POST request received: Create schema (publish and register)")
 
-    schema_send_request = SchemaSendRequest(
+    schema_send_request = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=SchemaSendRequest,
         attributes=schema.attribute_names,
         schema_name=schema.name,
         schema_version=schema.version,
@@ -471,26 +496,34 @@ async def create_schema(
     async with get_governance_controller(governance_auth) as aries_controller:
         try:
             bound_logger.info("Publishing schema as governance")
-            result = await aries_controller.schema.publish_schema(
-                body=schema_send_request, create_transaction_for_endorser=False
+            result = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.publish_schema,
+                body=schema_send_request,
+                create_transaction_for_endorser=False,
             )
-        except ApiException as e:
+        except CloudApiException as e:
             bound_logger.info(
-                "ApiException caught while trying to publish schema: `{}`",
-                e.reason,
+                "An Exception was caught while trying to publish schema: `{}`",
+                e.detail,
             )
-            if e.status == 400 and "already exist" in e.reason:
+            if e.status_code == 400 and "already exist" in e.detail:
                 bound_logger.info("Handling case of schema already existing on ledger")
                 bound_logger.debug("Fetching public DID for governance controller")
-                pub_did = await aries_controller.wallet.get_public_did()
+                pub_did = await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=aries_controller.wallet.get_public_did,
+                )
 
                 _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
                 bound_logger.debug(
                     "Fetching schema id `{}` which is associated with request",
                     _schema_id,
                 )
-                _schema: SchemaGetResult = await aries_controller.schema.get_schema(
-                    schema_id=_schema_id
+                _schema: SchemaGetResult = await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=aries_controller.schema.get_schema,
+                    schema_id=_schema_id,
                 )
                 # Edge case where the governance agent has changed its public did
                 # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
@@ -500,14 +533,19 @@ async def create_schema(
                         "Schema not found. Governance agent may have changed public DID. "
                         "Fetching schemas created by governance agent with request name and version"
                     )
-                    schemas_created_ids = (
-                        await aries_controller.schema.get_created_schemas(
-                            schema_name=schema.name, schema_version=schema.version
-                        )
+                    schemas_created_ids = await handle_acapy_call(
+                        logger=bound_logger,
+                        acapy_call=aries_controller.schema.get_created_schemas,
+                        schema_name=schema.name,
+                        schema_version=schema.version,
                     )
                     bound_logger.debug("Getting schemas associated with fetched ids")
                     schemas: List[SchemaGetResult] = [
-                        await aries_controller.schema.get_schema(schema_id=schema_id)
+                        await handle_acapy_call(
+                            logger=bound_logger,
+                            acapy_call=aries_controller.schema.get_schema,
+                            schema_id=schema_id,
+                        )
                         for schema_id in schemas_created_ids.schema_ids
                         if schema_id
                     ]
@@ -541,8 +579,8 @@ async def create_schema(
                 return result
             else:
                 bound_logger.warning(
-                    "An unhandled ApiException was caught while publishing schema. The error message is: '{}'.",
-                    e.reason,
+                    "An unhandled Exception was caught while publishing schema. The error message is: '{}'.",
+                    e.detail,
                 )
                 raise CloudApiException("Error while creating schema.") from e
 

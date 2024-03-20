@@ -3,7 +3,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 import base58
-from aries_cloudcontroller import ApiException, CreateWalletTokenRequest
+from aries_cloudcontroller import CreateWalletTokenRequest
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
@@ -12,7 +12,12 @@ from app.dependencies.auth import (
     acapy_auth_tenant_admin,
     tenant_api_key,
 )
-from app.exceptions import CloudApiException, TrustRegistryException
+from app.exceptions import (
+    CloudApiException,
+    TrustRegistryException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.tenants import (
     CreateTenantRequest,
     CreateTenantResponse,
@@ -68,27 +73,32 @@ async def create_tenant(
     bound_logger.debug("Actor name is unique")
 
     wallet_response = None
+    body_request = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=CreateWalletRequestWithGroups,
+        image_url=body.image_url,
+        key_management_mode="managed",
+        label=wallet_label,
+        wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
+        wallet_name=wallet_name,
+        wallet_type="askar",
+        group_id=body.group_id,
+        extra_settings=body.extra_settings,
+    )
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         try:
             bound_logger.info("Creating wallet")
-            wallet_response = await admin_controller.multitenancy.create_wallet(
-                body=CreateWalletRequestWithGroups(
-                    image_url=body.image_url,
-                    key_management_mode="managed",
-                    label=wallet_label,
-                    wallet_key=base58.b58encode(token_urlsafe(48)).decode(),
-                    wallet_name=wallet_name,
-                    wallet_type="askar",
-                    group_id=body.group_id,
-                    extra_settings=body.extra_settings,
-                )
+            wallet_response = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=admin_controller.multitenancy.create_wallet,
+                body=body_request,
             )
-        except ApiException as e:
+        except CloudApiException as e:
             bound_logger.info(
                 "Error while trying to create wallet: `{}`",
-                e.reason,
+                e.detail,
             )
-            if e.status == 400 and "already exists" in e.reason:
+            if e.status_code == 400 and "already exists" in e.detail:
                 raise HTTPException(
                     409,
                     f"A wallet with name `{wallet_name}` already exists. "
@@ -125,8 +135,10 @@ async def create_tenant(
                 bound_logger.info(
                     "Stray wallet was created for unregistered actor; deleting wallet"
                 )
-                await admin_controller.multitenancy.delete_wallet(
-                    wallet_id=wallet_response.wallet_id
+                await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=admin_controller.multitenancy.delete_wallet,
+                    wallet_id=wallet_response.wallet_id,
                 )
                 bound_logger.info("Wallet deleted.")
             raise
@@ -136,8 +148,10 @@ async def create_tenant(
                 bound_logger.info(
                     "Could not register actor, but wallet was created; deleting wallet"
                 )
-                await admin_controller.multitenancy.delete_wallet(
-                    wallet_id=wallet_response.wallet_id
+                await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=admin_controller.multitenancy.delete_wallet,
+                    wallet_id=wallet_response.wallet_id,
                 )
                 bound_logger.info("Wallet deleted.")
             raise
@@ -167,7 +181,11 @@ async def delete_tenant_by_id(
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         bound_logger.debug("Retrieving the wallet")
-        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=wallet_id)
+        wallet = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.get_wallet,
+            wallet_id=wallet_id,
+        )
         if not wallet:
             bound_logger.error("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
@@ -185,7 +203,11 @@ async def delete_tenant_by_id(
             await remove_actor_by_id(wallet.wallet_id)
 
         bound_logger.debug("Deleting wallet")
-        await admin_controller.multitenancy.delete_wallet(wallet_id=wallet_id)
+        await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.delete_wallet,
+            wallet_id=wallet_id,
+        )
         bound_logger.info("Successfully deleted tenant.")
 
 
@@ -199,14 +221,21 @@ async def get_wallet_auth_token(
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         bound_logger.debug("Retrieving the wallet")
-        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=wallet_id)
+        wallet = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.get_wallet,
+            wallet_id=wallet_id,
+        )
         if not wallet:
             bound_logger.error("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         bound_logger.debug("Getting auth token for wallet")
-        response = await admin_controller.multitenancy.get_auth_token(
-            wallet_id=wallet.wallet_id, body=CreateWalletTokenRequest()
+        response = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.get_auth_token,
+            wallet_id=wallet.wallet_id,
+            body=CreateWalletTokenRequest(),
         )
 
     response = TenantAuth(access_token=tenant_api_key(response.token))
@@ -245,7 +274,11 @@ async def get_tenant(
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         bound_logger.debug("Retrieving the wallet")
-        wallet = await admin_controller.multitenancy.get_wallet(wallet_id=wallet_id)
+        wallet = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.get_wallet,
+            wallet_id=wallet_id,
+        )
         if not wallet:
             bound_logger.error("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
@@ -270,8 +303,10 @@ async def get_tenants(
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         if wallet_name:
             bound_logger.info("Fetching wallet by wallet name")
-            wallets = await admin_controller.multitenancy.get_wallets(
-                wallet_name=wallet_name
+            wallets = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=admin_controller.multitenancy.get_wallets,
+                wallet_name=wallet_name,
             )
             # TODO: fetching by wallet_name still returns all wallets ... bug in cc or group_id plugin?
             # Filtering result as workaround:
@@ -289,10 +324,17 @@ async def get_tenants(
             return response
         elif group_id:
             bound_logger.info("Fetching wallets by group_id")
-            wallets = await admin_controller.multitenancy.get_wallets(group_id=group_id)
+            wallets = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=admin_controller.multitenancy.get_wallets,
+                group_id=group_id,
+            )
         else:
             bound_logger.info("Fetching all wallets")
-            wallets = await admin_controller.multitenancy.get_wallets()
+            wallets = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=admin_controller.multitenancy.get_wallets,
+            )
 
     if not wallets.results:
         bound_logger.info("No wallets found.")

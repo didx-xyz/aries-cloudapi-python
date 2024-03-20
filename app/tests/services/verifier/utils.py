@@ -42,7 +42,6 @@ from app.util.acapy_verifier_utils import (
     assert_valid_verifier,
     ed25519_verkey_to_did_key,
     get_actor,
-    get_connection_record,
     get_schema_ids,
     is_verifier,
 )
@@ -186,37 +185,6 @@ async def test_are_valid_schemas(mock_async_client):
     assert (
         await are_valid_schemas(schema_ids=["SomeRandomDid:2:test_schema:0.3"]) is False
     )
-
-
-@pytest.mark.anyio
-async def test_get_connection_record(mock_agent_controller: AcaPyClient):
-    pres_exchange = PresentationExchange(
-        connection_id="3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        created_at="2021-09-15 13:49:47Z",
-        proof_id="v1-abcd",
-        presentation=None,
-        presentation_request=indy_proof_request,
-        role="prover",
-        state="proposal-sent",
-        protocol_version="v1",
-        updated_at=None,
-        verified="false",
-    )
-    conn_record = ConnRecord(connection_id=pres_exchange.connection_id)
-    with when(mock_agent_controller.connection).get_connection(...).thenReturn(
-        to_async(conn_record)
-    ), when(Verifier).get_proof_record(...).thenReturn(pres_exchange), patch(
-        "app.generic.verifier.verifier_utils.get_connection_record",
-        return_value=conn_record,
-    ):
-        assert (
-            await get_connection_record(
-                aries_controller=mock_agent_controller,
-                connection_id=conn_record.connection_id,
-            )
-            == conn_record
-        )
-    # todo: mocking of get_proof_record does nothing
 
 
 @pytest.mark.anyio

@@ -41,7 +41,7 @@ async def get_wallet_label_from_controller(aries_controller: AcaPyClient) -> str
     controller_wallet_id = get_wallet_id_from_b64encoded_jwt(controller_token)
     async with get_tenant_admin_controller() as admin_controller:
         controller_wallet_record = await admin_controller.multitenancy.get_wallet(
-            controller_wallet_id
+            wallet_id=controller_wallet_id
         )
     controller_label = controller_wallet_record.settings["default_label"]
     return controller_label

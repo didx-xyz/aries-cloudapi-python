@@ -102,7 +102,7 @@ class Issuer(ABC):
     @abstractmethod
     async def delete_credential_exchange_record(
         cls, controller: AcaPyClient, credential_exchange_id: str
-    ):
+    ) -> None:
         """Delete credential record.
 
         Parameters:

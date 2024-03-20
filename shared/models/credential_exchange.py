@@ -17,6 +17,7 @@ State = Literal[
     "credential-revoked",
     "abandoned",
     "done",
+    "deleted",
 ]
 
 Role = Literal["issuer", "holder"]
@@ -76,6 +77,7 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
         "credential_revoked": "credential-revoked",
+        "deleted": "deleted",
         "done": "done",
         "offer_received": "offer-received",
         "offer_sent": "offer-sent",
@@ -94,6 +96,7 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 def back_to_v1_credential_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "abandoned": "abandoned",
+        "deleted": "deleted",
         "done": "credential_acked",
         "credential-issued": "credential_issued",
         "credential-received": "credential_received",

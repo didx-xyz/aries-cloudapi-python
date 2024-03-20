@@ -59,10 +59,21 @@ async def handle_acapy_call(
         )
         raise CloudApiException(status_code=422, detail=error_msg) from e
     except ApiException as e:
-        # Handle 500 errors:
-        logger.warning("Error during {}: {}", method_identifier, e.reason)
-        raise CloudApiException(status_code=e.status, detail=e.reason) from e
+        error_msg = e.reason
+        status = e.status
+        if status == 422:
+            # handle 422 errors:
+            logger.info(
+                "Bad request: Validation error during {}: {}",
+                method_identifier,
+                error_msg,
+            )
+            raise CloudApiException(status_code=422, detail=error_msg) from e
+        else:
+            # Handle other / 500 errors:
+            logger.warning("Error during {}: {}", method_identifier, error_msg)
+            raise CloudApiException(status_code=status, detail=error_msg) from e
     except Exception as e:
         # General exceptions:
-        logger.exception("Unhandled exception")
+        logger.exception("Unexpected exception from ACA-Py call")
         raise CloudApiException(status_code=500, detail="Internal server error") from e

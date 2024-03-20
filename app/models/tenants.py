@@ -5,6 +5,7 @@ from aries_cloudcontroller import CreateWalletRequest
 from pydantic import BaseModel, Field, field_validator
 
 from app.models.trust_registry import TrustRegistryRole
+from shared.exceptions import CloudApiValueError
 
 # Deduplicate some descriptions and field definitions
 allowable_special_chars = ".!@$*()~_-"  # the dash character must be at the end, otherwise it defines a regex range
@@ -71,10 +72,10 @@ class CreateTenantRequest(BaseModel):
     @classmethod
     def validate_wallet_label(cls, v):
         if len(v) > 100:
-            raise ValueError("wallet_label has a max length of 100 characters")
+            raise CloudApiValueError("wallet_label has a max length of 100 characters")
 
         if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
-            raise ValueError(
+            raise CloudApiValueError(
                 "wallet_label may not contain certain special characters. Must be alphanumeric, may include "
                 f"spaces, and the following special characters are allowed: {allowable_special_chars}"
             )
@@ -85,10 +86,12 @@ class CreateTenantRequest(BaseModel):
     def validate_wallet_name(cls, v):
         if v:
             if len(v) > 100:
-                raise ValueError("wallet_name has a max length of 100 characters")
+                raise CloudApiValueError(
+                    "wallet_name has a max length of 100 characters"
+                )
 
             if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
-                raise ValueError(
+                raise CloudApiValueError(
                     "wallet_name may not contain certain special characters. Must be alphanumeric, may include "
                     f"spaces, and the following special characters are allowed: {allowable_special_chars}"
                 )
@@ -100,10 +103,10 @@ class CreateTenantRequest(BaseModel):
     def validate_group_id(cls, v):
         if v:
             if len(v) > 50:
-                raise ValueError("group_id has a max length of 50 characters")
+                raise CloudApiValueError("group_id has a max length of 50 characters")
 
             if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
-                raise ValueError(
+                raise CloudApiValueError(
                     "group_id may not contain certain special characters. Must be alphanumeric, may include "
                     f"spaces, and the following special characters are allowed: {allowable_special_chars}"
                 )
@@ -123,10 +126,12 @@ class UpdateTenantRequest(BaseModel):
     @classmethod
     def validate_wallet_label(cls, v):
         if len(v) > 100:
-            raise ValueError("wallet_label must be less than 100 characters long")
+            raise CloudApiValueError(
+                "wallet_label must be less than 100 characters long"
+            )
 
         if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
-            raise ValueError(
+            raise CloudApiValueError(
                 "wallet_label may not contain certain special characters. Must be alphanumeric, may include "
                 f"spaces, and the following special characters are allowed: {allowable_special_chars}"
             )

@@ -68,7 +68,7 @@ async def test_get_cloudapi_events_by_wallet(mocker):
         redis_service, "get_json_cloudapi_events_by_wallet", return_value=json_entries
     )
     mocker.patch(
-        "shared.util.rich_parsing.parse_with_error_handling",
+        "shared.util.rich_parsing.parse_json_with_error_handling",
         side_effect=expected_events,
     )
 
@@ -156,7 +156,7 @@ async def test_get_cloudapi_events_by_timestamp(mocker):
         return_value=json_entries,
     )
     mocker.patch(
-        "shared.util.rich_parsing.parse_with_error_handling",
+        "shared.util.rich_parsing.parse_json_with_error_handling",
         side_effect=cloudapi_entries,
     )
 

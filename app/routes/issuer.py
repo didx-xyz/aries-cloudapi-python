@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 
-from aries_cloudcontroller import ApiException, IssuerCredRevRecord
+from aries_cloudcontroller import IssuerCredRevRecord
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
@@ -46,7 +46,7 @@ async def get_credentials(
     state: Optional[State] = Query(None),
     thread_id: Optional[UUID] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> List[CredentialExchange]:
     """
         Get a list of credential records.
 
@@ -97,7 +97,7 @@ async def get_credentials(
 async def get_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Get a credential by credential id.
 
@@ -133,7 +133,7 @@ async def get_credential(
 async def send_credential(
     credential: SendCredential,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Create and send a credential. Automating the entire flow.
 
@@ -180,13 +180,9 @@ async def send_credential(
             result = await issuer.send_credential(
                 controller=aries_controller, credential=credential
             )
-        except ApiException as e:
-            logger.warning(
-                "An ApiException was caught while sending credentials, with message `{}`.",
-                e.reason,
-            )
+        except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to create or send credential: {e.reason}", e.status
+                f"Failed to send credential: {e.detail}", e.status_code
             ) from e
 
     if result:
@@ -200,7 +196,7 @@ async def send_credential(
 async def create_offer(
     credential: CreateOffer,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Create a credential offer not bound to any connection.
 
@@ -471,7 +467,7 @@ async def get_credential_revocation_record(
 async def request_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Send a credential request.
 
@@ -526,7 +522,7 @@ async def request_credential(
 async def store_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> CredentialExchange:
     """
         Store a credential.
 

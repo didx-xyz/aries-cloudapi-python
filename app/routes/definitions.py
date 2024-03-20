@@ -311,7 +311,7 @@ async def create_credential_definition(
         if result.txn and result.txn.transaction_id:
             bound_logger.debug(
                 "The publish credential definition response provides a transaction id. "
-                "Waiting for transaction to be in state `transaction-acked`"
+                "Waiting for transaction to be in state `transaction_acked`"
             )
 
             try:
@@ -320,7 +320,7 @@ async def create_credential_definition(
                     coroutine_func=aries_controller.endorse_transaction.get_transaction,
                     args=(result.txn.transaction_id,),
                     field_name="state",
-                    expected_value="transaction-acked",
+                    expected_value="transaction_acked",
                     logger=bound_logger,
                     max_attempts=10,
                     retry_delay=2,

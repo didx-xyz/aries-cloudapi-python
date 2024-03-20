@@ -14,7 +14,6 @@ from aries_cloudcontroller import (
     IndyProof,
     IndyProofProof,
     IndyProofReqAttrSpec,
-    IndyProofRequest,
     IndyProofRequestedProof,
     IndyProofRequestNonRevoked,
     IndyRequestedCredsRequestedAttr,
@@ -33,6 +32,7 @@ from mockito import mock, when
 
 from app.exceptions import CloudApiException
 from app.models.trust_registry import Actor
+from app.models.verifier import IndyProofRequest
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
 from app.services.verifier.acapy_verifier import Verifier
 from app.tests.util.mock import to_async
@@ -64,12 +64,10 @@ indy_proof = IndyProof(
 )
 
 indy_proof_request_empty = IndyProofRequest(
-    name=None,
     non_revoked=None,
     nonce=None,
     requested_attributes={},
     requested_predicates={},
-    version="0.0.1",
 )
 
 v10_presentation_exchange_records = [

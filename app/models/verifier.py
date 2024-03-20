@@ -1,12 +1,8 @@
 from enum import Enum
 from typing import Optional
 
-from aries_cloudcontroller import (
-    DIFPresSpec,
-    DIFProofRequest,
-    IndyPresSpec,
-    IndyProofRequest,
-)
+from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
+from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from shared.models.protocol import PresentProofProtocolVersion
@@ -16,6 +12,11 @@ class ProofRequestType(str, Enum):
     INDY: str = "indy"
     JWT: str = "jwt"
     LD_PROOF: str = "ld_proof"
+
+
+class IndyProofRequest(AcaPyIndyProofRequest):
+    name: str = Field(default="Proof", description="Proof request name")
+    version: str = Field(default="1.0", description="Proof request version")
 
 
 class ProofRequestBase(BaseModel):
@@ -30,6 +31,14 @@ class ProofRequestBase(BaseModel):
             raise ValueError(
                 "indy_proof_request must be populated if `indy` type is selected"
             )
+
+        if (
+            values.data.get("type") == ProofRequestType.INDY
+            and values.data.get("dif_proof_request") is not None
+        ):
+            raise ValueError(
+                "dif_proof_request must not be populated if `indy` type is selected"
+            )
         return value
 
     @field_validator("dif_proof_request", mode="before")
@@ -38,6 +47,13 @@ class ProofRequestBase(BaseModel):
         if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
             raise ValueError(
                 "dif_proof_request must be populated if `ld_proof` type is selected"
+            )
+        if (
+            values.data.get("type") == ProofRequestType.LD_PROOF
+            and values.data.get("indy_proof_request") is not None
+        ):
+            raise ValueError(
+                "indy_proof_request must not be populated if `ld_proof` type is selected"
             )
         return value
 

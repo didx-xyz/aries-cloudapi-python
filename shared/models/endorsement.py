@@ -70,10 +70,28 @@ def extract_operation_type_from_endorsement_payload(
     return None  # Return None if the type could not be found or if error occurred
 
 
+class TransactionTypes:
+    # See aries-cloudagent-python/aries_cloudagent/ledger/merkel_validation/constants.py
+    ATTRIB = "100"
+    CLAIM_DEF = "102"
+    REVOC_REG_DEF = "113"
+    REVOC_REG_ENTRY = "114"
+
+
+applicable_transaction_state = "request_received"
+
+valid_operation_types = [
+    TransactionTypes.ATTRIB,
+    TransactionTypes.CLAIM_DEF,
+    TransactionTypes.REVOC_REG_DEF,
+    TransactionTypes.REVOC_REG_ENTRY,
+]
+
+
 def payload_is_applicable_for_endorser(payload: Dict[str, Any], logger: Logger) -> bool:
     state = payload.get("state")
 
-    if state == "request_received":
+    if state == applicable_transaction_state:
         logger.debug("Endorsement payload in eligible state: {}", state)
     else:
         logger.debug("Endorsement payload not in eligible state: {}", state)
@@ -85,7 +103,7 @@ def payload_is_applicable_for_endorser(payload: Dict[str, Any], logger: Logger) 
         logger.debug("Could not extract an operation type from payload.")
         return False
 
-    is_applicable = operation_type in ["102", "113", "114"]
+    is_applicable = operation_type in valid_operation_types
     if is_applicable:
         logger.debug("Endorsement payload is applicable for the endorser service.")
     else:

@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 
 from shared.log_config import get_logger
+from shared.models.endorsement import TransactionTypes
 
 logger = get_logger(__name__)
 

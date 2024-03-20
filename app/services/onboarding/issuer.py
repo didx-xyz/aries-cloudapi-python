@@ -1,4 +1,4 @@
-from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest
+from aries_cloudcontroller import DID, AcaPyClient, InvitationCreateRequest
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.tenants import OnboardResult
@@ -20,7 +20,7 @@ async def onboard_issuer(
     issuer_controller: AcaPyClient,
     issuer_wallet_id: str,
     issuer_label: str = None,
-):
+) -> OnboardResult:
     """Onboard the controller as issuer.
 
     The onboarding will take care of the following:
@@ -72,7 +72,7 @@ async def onboard_issuer_no_public_did(
     issuer_controller: AcaPyClient,
     issuer_wallet_id: str,
     issuer_label: str,
-):
+) -> DID:
     """
     Onboard an issuer without a public DID.
 

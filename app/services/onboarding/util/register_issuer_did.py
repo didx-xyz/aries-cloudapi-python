@@ -56,7 +56,7 @@ async def create_connection_with_endorser(
 # todo: Migrate to endorser service
 async def create_endorser_invitation(
     *, endorser_controller: AcaPyClient, name: str, logger: Logger
-):
+) -> InvitationRecord:
     logger.debug("Create OOB invitation on behalf of endorser")
     request_body = InvitationCreateRequest(
         alias=name,
@@ -119,7 +119,7 @@ async def set_endorser_roles(
     endorser_connection_id: str,
     issuer_connection_id: str,
     logger: Logger,
-):
+) -> None:
     logger.debug("Setting roles for endorser")
     await set_endorser_role(
         endorser_controller=endorser_controller,
@@ -143,7 +143,7 @@ async def configure_endorsement(
     issuer_connection_id: str,
     endorser_did: str,
     logger: Logger,
-):
+) -> None:
     # Make sure endorsement has been configured
     # There is currently no way to retrieve endorser info. We'll just set it
     # to make sure the endorser info is set.
@@ -163,7 +163,7 @@ async def register_issuer_did(
     issuer_controller: AcaPyClient,
     issuer_label: str,
     logger: Logger,
-):
+) -> DID:
     logger.info("Creating DID for issuer")
     issuer_did = await acapy_wallet.create_did(issuer_controller)
 

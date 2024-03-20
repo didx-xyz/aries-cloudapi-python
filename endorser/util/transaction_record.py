@@ -55,31 +55,10 @@ def get_endorsement_request_attachment(
     return None
 
 
-def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:
-    try:
-        if "operation" not in attachment:
-            logger.debug("Key `operation` not in attachment: `{}`.", attachment)
-            return False
-
-        operation = attachment["operation"]
-
-        if "type" not in operation:
-            logger.debug("Key `type` not in operation attachment.")
-            return False
-
-        logger.debug(
-            "Endorsement request operation type: `{}`. Must be 102 for credential definition",
-            operation.get("type"),
-        )
-        # credential definition type is 102
-        # see https://github.com/hyperledger/indy-node/blob/master/docs/source/requests.md#common-request-structure
-
-        return operation.get("type") == "102"
-    except Exception:
-        logger.exception(
-            "Exception caught while running `is_credential_definition_transaction`."
-        )
-        return False
+def is_credential_definition_transaction(operation_type: str) -> bool:
+    # credential definition type is 102
+    # see https://github.com/hyperledger/indy-node/blob/master/docs/source/requests.md#common-request-structure
+    return operation_type == TransactionTypes.CLAIM_DEF
 
 
 async def get_did_and_schema_id_from_cred_def_attachment(
@@ -114,23 +93,12 @@ async def get_did_and_schema_id_from_cred_def_attachment(
     return (did, schema_id)
 
 
-def is_revocation_def_or_entry(attachment: Dict[str, Any]) -> bool:
-    try:
-        if "operation" not in attachment:
-            logger.debug("Key `operation` not in attachment: `{}`.", attachment)
-            return False
+def is_attrib_type(operation_type: str) -> bool:
+    return operation_type == TransactionTypes.ATTRIB
 
-        operation = attachment["operation"]
 
-        if "type" not in operation:
-            logger.debug("Key `type` not in operation attachment.")
-            return False
-        logger.debug(
-            "Endorsement request operation type: `{}`. Must be 113 or 114 for REVOC_REG_DEF or REVOC_REG_ENTRY",
-            operation.get("type"),
-        )
-
-        return operation.get("type") in ["113", "114"]
-    except Exception:
-        logger.exception("Exception caught while running `is_revocation`.")
-        return False
+def is_revocation_def_or_entry(operation_type: str) -> bool:
+    return operation_type in [
+        TransactionTypes.REVOC_REG_DEF,
+        TransactionTypes.REVOC_REG_ENTRY,
+    ]

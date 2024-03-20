@@ -26,12 +26,15 @@ async def create_connection_with_endorser(
     endorser_did: Did,
     name: str,
     logger: Logger,
-):
+) -> str:
     invitation = await create_endorser_invitation(
         endorser_controller=endorser_controller, name=name, logger=logger
     )
     endorser_connection_id, issuer_connection_id = await wait_for_connection_completion(
-        issuer_controller=issuer_controller, invitation=invitation, logger=logger
+        issuer_controller=issuer_controller,
+        endorser_controller=endorser_controller,
+        invitation=invitation,
+        logger=logger,
     )
     await set_endorser_roles(
         endorser_controller=endorser_controller,
@@ -46,6 +49,8 @@ async def create_connection_with_endorser(
         endorser_did=endorser_did.did,
         logger=logger,
     )
+
+    return issuer_connection_id
 
 
 # todo: Migrate to endorser service

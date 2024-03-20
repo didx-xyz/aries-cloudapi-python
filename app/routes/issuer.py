@@ -41,7 +41,7 @@ router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 
 @router.get("", response_model=List[CredentialExchange])
 async def get_credentials(
-    connection_id: Optional[UUID] = Query(None),
+    connection_id: Optional[str] = Query(None),
     role: Optional[Role] = Query(None),
     state: Optional[State] = Query(None),
     thread_id: Optional[UUID] = Query(None),
@@ -52,7 +52,7 @@ async def get_credentials(
 
     Parameters:
     ------------
-        connection_id: UUID (Optional)
+        connection_id: str (Optional)
         role: Role (Optional): "issuer", "holder"
         state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
                                  "request-sent", "request-received", "credential-issued", "credential-received",
@@ -70,7 +70,7 @@ async def get_credentials(
         bound_logger.debug("Fetching v1 records")
         v1_records = await IssueCredentialFacades.v1.value.get_records(
             controller=aries_controller,
-            connection_id=str(connection_id) if connection_id else None,
+            connection_id=connection_id,
             role=role,
             state=back_to_v1_credential_state(state) if state else None,
             thread_id=str(thread_id) if thread_id else None,
@@ -79,7 +79,7 @@ async def get_credentials(
         bound_logger.debug("Fetching v2 records")
         v2_records = await IssueCredentialFacades.v2.value.get_records(
             controller=aries_controller,
-            connection_id=str(connection_id) if connection_id else None,
+            connection_id=connection_id,
             role=role,
             state=state,
             thread_id=str(thread_id) if thread_id else None,

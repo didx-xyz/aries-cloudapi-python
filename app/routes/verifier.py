@@ -227,7 +227,7 @@ async def reject_proof_request(
 @router.get("/proofs", response_model=List[PresentationExchange])
 async def get_proof_records(
     auth: AcaPyAuth = Depends(acapy_auth),
-    connection_id: Optional[UUID] = None,
+    connection_id: Optional[str] = None,
     role: Optional[Role] = None,
     state: Optional[State] = None,
     thread_id: Optional[UUID] = None,
@@ -237,7 +237,7 @@ async def get_proof_records(
 
     Parameters:
     ----------
-        connection_id: Optional[UUID]
+        connection_id: Optional[str]
         role: Optional[Role]: "prover", "verifier"
         state: Optional[State]: "abandoned", "done", "presentation-received",
                                 "presentation-sent", "proposal-received", "proposal-sent",
@@ -256,7 +256,7 @@ async def get_proof_records(
             logger.debug("Fetching v1 proof records")
             v1_records = await VerifierFacade.v1.value.get_proof_records(
                 controller=aries_controller,
-                connection_id=str(connection_id) if connection_id else None,
+                connection_id=connection_id,
                 role=role,
                 state=back_to_v1_presentation_state(state) if state else None,
                 thread_id=str(thread_id) if thread_id else None,
@@ -264,7 +264,7 @@ async def get_proof_records(
             logger.debug("Fetching v2 proof records")
             v2_records = await VerifierFacade.v2.value.get_proof_records(
                 controller=aries_controller,
-                connection_id=str(connection_id) if connection_id else None,
+                connection_id=connection_id,
                 role=role,
                 state=state,
                 thread_id=str(thread_id) if thread_id else None,

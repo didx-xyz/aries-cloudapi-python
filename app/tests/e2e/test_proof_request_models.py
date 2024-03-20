@@ -17,7 +17,11 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
-@pytest.mark.xfail(raises=HTTPException, strict=True)
+@pytest.mark.xfail(
+    raises=HTTPException,
+    strict=True,
+    reason="Assert version and name are required fields, despite being optional according to ACA-Py models",
+)
 @pytest.mark.parametrize(
     "name, version, protocol_version",
     [
@@ -44,12 +48,33 @@ async def test_proof_model_failures(
     alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
 
     if protocol_version == "v1":
-        await acme_acapy_client.present_proof_v1_0.send_request_free(
-            body=V10PresentationSendRequestRequest(
-                auto_remove=False,
-                connection_id=acme_connection_id,
-                comment="Test proof",
-                proof_request={
+
+        request_body = V10PresentationSendRequestRequest(
+            auto_remove=False,
+            connection_id=acme_connection_id,
+            comment="Test proof",
+            proof_request={
+                "name": name,
+                "version": version,
+                "requested_attributes": {
+                    "THE_SPEED": {
+                        "name": "speed",
+                        "restrictions": [],
+                    }
+                },
+                "requested_predicates": {},
+            },
+            auto_verify=True,
+        )
+
+        await acme_acapy_client.present_proof_v1_0.send_request_free(body=request_body)
+    else:
+        request_body = V20PresSendRequestRequest(
+            auto_remove=False,
+            connection_id=acme_connection_id,
+            comment="Test proof",
+            presentation_request=V20PresRequestByFormat(
+                indy={
                     "name": name,
                     "version": version,
                     "requested_attributes": {
@@ -60,31 +85,11 @@ async def test_proof_model_failures(
                     },
                     "requested_predicates": {},
                 },
-                auto_verify=True,
-            )
+            ),
+            auto_verify=True,
         )
-    else:
-        await acme_acapy_client.present_proof_v2_0.send_request_free(
-            body=V20PresSendRequestRequest(
-                auto_remove=False,
-                connection_id=acme_connection_id,
-                comment="Test proof",
-                presentation_request=V20PresRequestByFormat(
-                    indy={
-                        "name": name,
-                        "version": version,
-                        "requested_attributes": {
-                            "THE_SPEED": {
-                                "name": "speed",
-                                "restrictions": [],
-                            }
-                        },
-                        "requested_predicates": {},
-                    },
-                ),
-                auto_verify=True,
-            )
-        )
+
+        await acme_acapy_client.present_proof_v2_0.send_request_free(body=request_body)
 
     await alice_listener.wait_for_state(
         desired_state="request-received",
@@ -103,7 +108,9 @@ async def test_proof_model_failures(
         )
     ).json()[0]["cred_info"]["referent"]
 
-    # Send proof
+    # Accept proof request. This call will fail because the proof request is missing
+    # the required fields (name and version). The send proof request call are missing 
+    # the required fields (name and version) and the ACA-Py models do not enforce these
     await alice_member_client.post(
         f"{VERIFIER_BASE_PATH}/accept-request",
         json={

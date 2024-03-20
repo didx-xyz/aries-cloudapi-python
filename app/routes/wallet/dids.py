@@ -5,7 +5,11 @@ from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
-from app.exceptions import CloudApiException
+from app.exceptions import (
+    CloudApiException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.wallet import SetDidEndpointRequest
 from app.services import acapy_wallet
 from shared.log_config import get_logger
@@ -36,7 +40,7 @@ async def create_did(
 @router.get("", response_model=List[DID])
 async def list_dids(
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> List[DID]:
     """
     Retrieve list of DIDs.
     """
@@ -44,7 +48,9 @@ async def list_dids(
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching DIDs")
-        did_result = await aries_controller.wallet.get_dids()
+        did_result = await handle_acapy_call(
+            logger=logger, acapy_call=aries_controller.wallet.get_dids
+        )
 
     if not did_result.results:
         logger.info("No DIDs returned.")
@@ -57,7 +63,7 @@ async def list_dids(
 @router.get("/public", response_model=DID)
 async def get_public_did(
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> DID:
     """
     Fetch the current public DID.
     """
@@ -65,7 +71,9 @@ async def get_public_did(
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching public DID")
-        result = await aries_controller.wallet.get_public_did()
+        result = await handle_acapy_call(
+            logger=logger, acapy_call=aries_controller.wallet.get_public_did
+        )
 
     if not result.result:
         logger.info("Bad request: no public DID found.")
@@ -79,7 +87,7 @@ async def get_public_did(
 async def set_public_did(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> DID:
     """Set the current public DID."""
     logger.info("PUT request received: Set public DID")
 
@@ -100,7 +108,9 @@ async def rotate_keypair(
     bound_logger.info("PATCH request received: Rotate keypair for DID")
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Rotating keypair")
-        await aries_controller.wallet.rotate_keypair(did=did)
+        await handle_acapy_call(
+            logger=logger, acapy_call=aries_controller.wallet.rotate_keypair, did=did
+        )
 
     bound_logger.info("Successfully rotated keypair.")
 
@@ -109,13 +119,15 @@ async def rotate_keypair(
 async def get_did_endpoint(
     did: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> DIDEndpoint:
     """Get DID endpoint."""
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("GET request received: Get endpoint for DID")
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching DID endpoint")
-        result = await aries_controller.wallet.get_did_endpoint(did=did)
+        result = await handle_acapy_call(
+            logger=logger, acapy_call=aries_controller.wallet.get_did_endpoint, did=did
+        )
 
     bound_logger.info("Successfully fetched DID endpoint.")
     return result
@@ -135,12 +147,20 @@ async def set_did_endpoint(
 
     endpoint_type = "Endpoint"
 
+    request_body = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=DIDEndpointWithType,
+        did=did,
+        endpoint=body.endpoint,
+        endpoint_type=endpoint_type,
+    )
+
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Setting DID endpoint")
-        await aries_controller.wallet.set_did_endpoint(
-            body=DIDEndpointWithType(
-                did=did, endpoint=body.endpoint, endpoint_type=endpoint_type
-            )
+        await handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.wallet.set_did_endpoint,
+            body=request_body,
         )
 
     bound_logger.info("Successfully set DID endpoint.")

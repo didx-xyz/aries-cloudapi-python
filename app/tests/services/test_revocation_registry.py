@@ -320,7 +320,7 @@ async def test_get_credential_definition_id_from_exchange_id(
     # Success v2
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ApiException())
+    ).thenRaise(CloudApiException(detail=""))
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenReturn(
@@ -342,10 +342,10 @@ async def test_get_credential_definition_id_from_exchange_id(
     # Not found
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ApiException())
+    ).thenRaise(CloudApiException(detail=""))
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ApiException())
+    ).thenRaise(CloudApiException(detail=""))
 
     cred_def_id_result = await rg.get_credential_definition_id_from_exchange_id(
         controller=mock_agent_controller, credential_exchange_id=cred_ex_id
@@ -356,7 +356,7 @@ async def test_get_credential_definition_id_from_exchange_id(
     # Not found general exception
     when(mock_agent_controller.issue_credential_v1_0).get_record(
         cred_ex_id=cred_ex_id
-    ).thenRaise(ApiException())
+    ).thenRaise(CloudApiException(detail=""))
     when(mock_agent_controller.issue_credential_v2_0).get_record(
         cred_ex_id=cred_ex_id
     ).thenRaise(Exception())

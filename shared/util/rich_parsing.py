@@ -3,11 +3,11 @@ from typing import Type, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-# Define generic type for `parse_with_error_handling`
+# Define generic type for `parse_json_with_error_handling`
 T = TypeVar("T", bound=BaseModel)
 
 
-def parse_with_error_handling(model: Type[T], data: str, logger: Logger) -> T:
+def parse_json_with_error_handling(model: Type[T], data: str, logger: Logger) -> T:
     try:
         return model.model_validate_json(data)
     except ValidationError as e:

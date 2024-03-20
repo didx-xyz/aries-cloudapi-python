@@ -1,5 +1,6 @@
 import pytest
 
+from shared.exceptions.cloudapi_value_error import CloudApiValueError
 from shared.models.trustregistry import Actor, Schema
 from trustregistry import db
 
@@ -28,13 +29,13 @@ def test_schema():
     assert schema.version == "0.4.20"
     assert schema.id == "abc:2:doubleaceschema:0.4.20"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(CloudApiValueError):
         Schema(did="abc:def", name="doubleaceschema", version="0.4.20")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(CloudApiValueError):
         Schema(did="abc", name="double:ace:schema", version="0.4.20")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(CloudApiValueError):
         Schema(did="abc", name="doubleaceschema", version="0:4:20")
 
 

@@ -2,15 +2,15 @@ import asyncio
 from logging import Logger
 
 from aries_cloudcontroller import (
+    DID,
     AcaPyClient,
     ConnRecord,
     InvitationCreateRequest,
     InvitationRecord,
 )
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.services import acapy_ledger, acapy_wallet
-from app.services.acapy_wallet import Did
 from app.services.onboarding.util.set_endorser_metadata import (
     set_author_role,
     set_endorser_info,
@@ -23,7 +23,7 @@ async def create_connection_with_endorser(
     *,
     endorser_controller: AcaPyClient,
     issuer_controller: AcaPyClient,
-    endorser_did: Did,
+    endorser_did: DID,
     name: str,
     logger: Logger,
 ) -> str:
@@ -58,13 +58,16 @@ async def create_endorser_invitation(
     *, endorser_controller: AcaPyClient, name: str, logger: Logger
 ):
     logger.debug("Create OOB invitation on behalf of endorser")
-    invitation = await endorser_controller.out_of_band.create_invitation(
+    request_body = InvitationCreateRequest(
+        alias=name,
+        handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+        use_public_did=True,
+    )
+    invitation = await handle_acapy_call(
+        logger=logger,
+        acapy_call=endorser_controller.out_of_band.create_invitation,
         auto_accept=True,
-        body=InvitationCreateRequest(
-            alias=name,
-            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-            use_public_did=True,
-        ),
+        body=request_body,
     )
     logger.debug("Created OOB invitation")
     return invitation
@@ -78,7 +81,9 @@ async def wait_for_connection_completion(
     logger: Logger,
 ) -> tuple[str, str]:
     logger.debug("Receive invitation from endorser on behalf of issuer")
-    issuer_connection_record = await issuer_controller.out_of_band.receive_invitation(
+    issuer_connection_record = await handle_acapy_call(
+        logger=logger,
+        acapy_call=issuer_controller.out_of_band.receive_invitation,
         auto_accept=True,
         use_existing_connection=False,
         body=invitation.invitation,

@@ -5,7 +5,7 @@ from redis import RedisCluster
 
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from shared.services.redis_service import RedisService
-from shared.util.rich_parsing import parse_with_error_handling
+from shared.util.rich_parsing import parse_json_with_error_handling
 
 
 class WebhooksRedisService(RedisService):
@@ -144,7 +144,9 @@ class WebhooksRedisService(RedisService):
         """
         entries = self.get_json_cloudapi_events_by_wallet(wallet_id)
         parsed_entries = [
-            parse_with_error_handling(CloudApiWebhookEventGeneric, entry, self.logger)
+            parse_json_with_error_handling(
+                CloudApiWebhookEventGeneric, entry, self.logger
+            )
             for entry in entries
         ]
         return parsed_entries
@@ -232,7 +234,9 @@ class WebhooksRedisService(RedisService):
             wallet_id, start_timestamp, end_timestamp
         )
         parsed_entries = [
-            parse_with_error_handling(CloudApiWebhookEventGeneric, entry, self.logger)
+            parse_json_with_error_handling(
+                CloudApiWebhookEventGeneric, entry, self.logger
+            )
             for entry in entries
         ]
         return parsed_entries

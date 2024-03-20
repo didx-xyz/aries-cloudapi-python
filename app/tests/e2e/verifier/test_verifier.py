@@ -1,3 +1,4 @@
+import json
 import time
 
 import pytest
@@ -7,6 +8,7 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedAttr,
 )
 from assertpy import assert_that
+from fastapi import HTTPException
 
 from app.models.tenants import CreateTenantResponse
 from app.routes.connections import router as conn_router
@@ -1190,3 +1192,158 @@ async def test_accept_proof_request_verifier_no_public_did(
         desired_state="done",
     )
     assert event["verified"]
+
+
+@pytest.mark.anyio
+async def test_get_proof_records(
+    meld_co_client: RichAsyncClient,
+    meld_co_and_alice_connection: MeldCoAliceConnect,
+    meld_co_issuer_verifier: CreateTenantResponse,
+    meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
+    alice_member_client: RichAsyncClient,
+    alice_tenant: CreateTenantResponse,
+):
+    meld_listener = SseListener(
+        topic="proofs", wallet_id=meld_co_issuer_verifier.wallet_id
+    )
+    meld_connection_id = meld_co_and_alice_connection.meld_co_connection_id
+
+    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
+
+    # Meld_co does proof request and alice responds
+    proof = await meld_co_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "save_exchange_record": True,
+            "connection_id": meld_connection_id,
+            "protocol_version": "v1",
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+
+    proof_1 = proof.json()
+    assert proof.status_code == 200
+    assert proof_1["state"] == "request-sent"
+    await alice_listener.wait_for_state(
+        desired_state="request-received",
+    )
+
+    proof_exc = await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    assert proof_exc.status_code == 200
+
+    proof_request = proof_exc.json()[0]
+
+    referent = (
+        await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs/{proof_request['proof_id']}/credentials"
+        )
+    ).json()[0]["cred_info"]["referent"]
+
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+
+    proof_accept = AcceptProofRequest(
+        proof_id=proof_exc.json()[0]["proof_id"],
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    await alice_member_client.post(
+        VERIFIER_BASE_PATH + "/accept-request",
+        json=proof_accept.model_dump(),
+    )
+
+    await alice_listener.wait_for_event(
+        field="proof_id",
+        field_id=proof_request["proof_id"],
+        desired_state="done",
+    )
+    await meld_listener.wait_for_event(
+        field="proof_id",
+        field_id=proof_1["proof_id"],
+        desired_state="done",
+    )
+
+    meld_proof = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    assert meld_proof.status_code == 200
+    meld_proof_exchange = meld_proof.json()
+
+    # Make sure the proof is done
+    for proof in meld_proof_exchange:
+        if proof["proof_id"] == proof_1["proof_id"]:
+            assert proof["state"] == "done"
+
+    # Meldco does proof request and alice does not respond
+    proof = await meld_co_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "save_exchange_record": True,
+            "connection_id": meld_connection_id,
+            "protocol_version": "v1",
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+    proof_2 = proof.json()
+    proofs = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+
+    # Make sure both proofs are in the list
+    proof_ids = [proof_1["proof_id"], proof_2["proof_id"]]
+    proof_count = sum(1 for proof in proofs.json() if proof["proof_id"] in proof_ids)
+    assert proof_count == 2
+
+    # Now test query params
+    proofs_sent = await meld_co_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?state=request-sent"
+    )
+    assert proofs.status_code == 200
+    for proof in proofs_sent.json():
+        assert proof["state"] == "request-sent"
+
+    proofs_done = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs?state=done")
+    assert proofs.status_code == 200
+    for proof in proofs_done.json():
+        assert proof["state"] == "done"
+
+    proofs_role = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=verifier")
+    assert proofs.status_code == 200
+    for proof in proofs_role.json():
+        assert proof["role"] == "verifier"
+
+    proofs_prover = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=prover")
+    assert proofs.status_code == 200
+    assert len(proofs_prover.json()) == 0
+
+    proofs = await meld_co_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&state=done"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    proofs = await meld_co_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&state=request-sent"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    proofs = await meld_co_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&thread_id={proof_1['thread_id']}"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    proofs = await meld_co_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&thread_id={proof_2['thread_id']}"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    with pytest.raises(HTTPException) as exc:
+        await meld_co_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?connection_id=123&state=invalid&role=invalid&thread_id=invalid"
+        )
+    assert exc.value.status_code == 422
+    assert len(json.loads(exc.value.detail)["detail"]) == 3

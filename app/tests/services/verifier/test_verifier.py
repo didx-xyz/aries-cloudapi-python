@@ -405,22 +405,48 @@ async def test_get_proof_records(
     )
     # V1 and V2
     with when(VerifierV1).get_proof_records(
-        controller=mock_agent_controller
+        controller=mock_agent_controller,
+        connection_id=None,
+        role=None,
+        state=None,
+        thread_id=None,
     ).thenReturn(to_async([presentation_exchange_record_1])), when(
         VerifierV2
     ).get_proof_records(
-        controller=mock_agent_controller
+        controller=mock_agent_controller,
+        connection_id=None,
+        role=None,
+        state=None,
+        thread_id=None,
     ).thenReturn(
         to_async([presentation_exchange_record_2])
     ):
-        result = await test_module.get_proof_records(auth=mock_tenant_auth)
+        result = await test_module.get_proof_records(
+            auth=mock_tenant_auth,
+            connection_id=None,
+            role=None,
+            state=None,
+            thread_id=None,
+        )
 
         assert result == [
             presentation_exchange_record_1,
             presentation_exchange_record_2,
         ]
-        verify(VerifierV1).get_proof_records(controller=mock_agent_controller)
-        verify(VerifierV2).get_proof_records(controller=mock_agent_controller)
+        verify(VerifierV1).get_proof_records(
+            controller=mock_agent_controller,
+            connection_id=None,
+            role=None,
+            state=None,
+            thread_id=None,
+        )
+        verify(VerifierV2).get_proof_records(
+            controller=mock_agent_controller,
+            connection_id=None,
+            role=None,
+            state=None,
+            thread_id=None,
+        )
 
 
 @pytest.mark.anyio

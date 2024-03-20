@@ -1,6 +1,6 @@
 from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.tenants import OnboardResult
 from app.services import acapy_wallet
 from app.util.did import qualified_did_sov
@@ -37,16 +37,17 @@ async def onboard_verifier(*, verifier_controller: AcaPyClient, verifier_label: 
             "Creating OOB invitation on their behalf."
         )
         # create a multi_use invitation from the did
-        invitation: InvitationRecord = (
-            await verifier_controller.out_of_band.create_invitation(
-                auto_accept=True,
-                multi_use=True,
-                body=InvitationCreateRequest(
-                    use_public_did=False,
-                    alias=f"Trust Registry {verifier_label}",
-                    handshake_protocols=["https://didcomm.org/didexchange/1.0"],
-                ),
-            )
+        request_body = InvitationCreateRequest(
+            use_public_did=False,
+            alias=f"Trust Registry {verifier_label}",
+            handshake_protocols=["https://didcomm.org/didexchange/1.0"],
+        )
+        invitation: InvitationRecord = await handle_acapy_call(
+            logger=logger,
+            acapy_call=verifier_controller.out_of_band.create_invitation,
+            auto_accept=True,
+            multi_use=True,
+            body=request_body,
         )
 
         # check if invitation and necessary attributes exist

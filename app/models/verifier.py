@@ -1,14 +1,11 @@
 from enum import Enum
 from typing import Optional
 
-from aries_cloudcontroller import (
-    DIFPresSpec,
-    DIFProofRequest,
-    IndyPresSpec,
-    IndyProofRequest,
-)
+from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
+from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
+from shared.exceptions import CloudApiValueError
 from shared.models.protocol import PresentProofProtocolVersion
 
 
@@ -16,6 +13,11 @@ class ProofRequestType(str, Enum):
     INDY: str = "indy"
     JWT: str = "jwt"
     LD_PROOF: str = "ld_proof"
+
+
+class IndyProofRequest(AcaPyIndyProofRequest):
+    name: str = Field(default="Proof", description="Proof request name")
+    version: str = Field(default="1.0", description="Proof request version")
 
 
 class ProofRequestBase(BaseModel):
@@ -26,18 +28,38 @@ class ProofRequestBase(BaseModel):
     @field_validator("indy_proof_request", mode="before")
     @classmethod
     def check_indy_proof_request(cls, value, values: ValidationInfo):
-        if values.data.get("type") == ProofRequestType.INDY and value is None:
-            raise ValueError(
+        proof_type = values.data.get("type")
+
+        if proof_type == ProofRequestType.INDY and value is None:
+            raise CloudApiValueError(
                 "indy_proof_request must be populated if `indy` type is selected"
+            )
+
+        if (
+            proof_type == ProofRequestType.INDY
+            and values.data.get("dif_proof_request") is not None
+        ):
+            raise CloudApiValueError(
+                "dif_proof_request must not be populated if `indy` type is selected"
             )
         return value
 
     @field_validator("dif_proof_request", mode="before")
     @classmethod
     def check_dif_proof_request(cls, value, values: ValidationInfo):
-        if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
-            raise ValueError(
+        proof_type = values.data.get("type")
+
+        if proof_type == ProofRequestType.LD_PROOF and value is None:
+            raise CloudApiValueError(
                 "dif_proof_request must be populated if `ld_proof` type is selected"
+            )
+
+        if (
+            proof_type == ProofRequestType.LD_PROOF
+            and values.data.get("indy_proof_request") is not None
+        ):
+            raise CloudApiValueError(
+                "indy_proof_request must not be populated if `ld_proof` type is selected"
             )
         return value
 
@@ -76,7 +98,7 @@ class AcceptProofRequest(ProofId):
     @classmethod
     def check_indy_presentation_spec(cls, value, values: ValidationInfo):
         if values.data.get("type") == ProofRequestType.INDY and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "indy_presentation_spec must be populated if `indy` type is selected"
             )
         return value
@@ -85,7 +107,7 @@ class AcceptProofRequest(ProofId):
     @classmethod
     def check_dif_presentation_spec(cls, value, values: ValidationInfo):
         if values.data.get("type") == ProofRequestType.LD_PROOF and value is None:
-            raise ValueError(
+            raise CloudApiValueError(
                 "dif_presentation_spec must be populated if `ld_proof` type is selected"
             )
         return value

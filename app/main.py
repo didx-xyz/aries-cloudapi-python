@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 import pydantic
 import yaml
-from aiohttp import ClientResponseError
 from aries_cloudcontroller import ApiException
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException
@@ -31,6 +30,7 @@ from app.routes.wallet import dids as wallet_dids
 from app.routes.wallet import jws as wallet_jws
 from app.routes.wallet import sd_jws as wallet_sd_jws
 from app.services.event_handling.websocket_manager import WebsocketManager
+from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
@@ -147,20 +147,19 @@ def read_openapi_yaml() -> Response:
 
 
 @app.exception_handler(Exception)
-async def client_response_error_exception_handler(_: Request, exception: Exception):
+async def client_response_error_exception_handler(
+    _: Request, exception: Exception
+) -> JSONResponse:
     stacktrace = {"stack": traceback.format_exc()}
-
-    if isinstance(exception, ClientResponseError):
-        return JSONResponse(
-            {"detail": exception.message, **(stacktrace if debug else {})},
-            exception.status or 500,
-        )
 
     if isinstance(exception, CloudApiException):
         return JSONResponse(
             {"detail": exception.detail, **(stacktrace if debug else {})},
             exception.status_code,
         )
+
+    if isinstance(exception, CloudApiValueError):
+        return JSONResponse({"detail": exception.detail}, status_code=422)
 
     if isinstance(exception, ApiException):
         return JSONResponse(

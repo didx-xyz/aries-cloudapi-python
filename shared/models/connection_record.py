@@ -3,6 +3,22 @@ from typing import Literal, Optional
 from aries_cloudcontroller import ConnRecord
 from pydantic import BaseModel
 
+State = Literal[
+    "active",
+    "response",
+    "request",
+    "start",
+    "completed",
+    "init",
+    "error",
+    "invitation",
+    "abandoned",
+]
+
+Role = Literal["invitee", "requester", "inviter", "responder"]
+
+Protocol = Literal["connections/1.0", "didexchange/1.0"]
+
 
 class Connection(BaseModel):
     # accept: Optional[str] = None
@@ -12,18 +28,18 @@ class Connection(BaseModel):
 
     alias: Optional[str] = None
     connection_id: Optional[str] = None
-    connection_protocol: Optional[Literal["connections/1.0", "didexchange/1.0"]] = None
+    connection_protocol: Optional[Protocol] = None
     created_at: Optional[str] = None
     error_msg: Optional[str] = None
     invitation_key: Optional[str] = None
     invitation_mode: Optional[Literal["once", "multi", "static"]] = None
     invitation_msg_id: Optional[str] = None
     my_did: Optional[str] = None
-    state: Optional[str] = None
+    state: Optional[str] = None  # not State Literal because we use rfc23_state
     their_did: Optional[str] = None
     their_label: Optional[str] = None
     their_public_did: Optional[str] = None
-    their_role: Optional[Literal["invitee", "requester", "inviter", "responder"]] = None
+    their_role: Optional[Role] = None
     updated_at: Optional[str] = None
 
 

@@ -4,7 +4,7 @@ from fastapi import HTTPException
 
 
 class CloudApiException(HTTPException):
-    """Class that represents a cloud api error"""
+    """Class that represents a Cloud API error"""
 
     def __init__(
         self,

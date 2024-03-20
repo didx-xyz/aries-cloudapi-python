@@ -3,9 +3,9 @@ import os
 from logging import Logger
 from typing import Callable
 
-from aries_cloudcontroller import AcaPyClient, ApiException
+from aries_cloudcontroller import AcaPyClient
 
-from app.exceptions import CloudApiException
+from app.exceptions import CloudApiException, handle_acapy_call
 
 DEFAULT_NUM_TRIES = 1
 DEFAULT_DELAY = float(os.environ.get("SET_ENDORSER_INFO_DELAY", "1.5"))
@@ -17,13 +17,15 @@ async def set_endorser_role(
 ):
     try:
         logger.debug("Setting roles for endorser on endorser-issuer connection.")
-        await endorser_controller.endorse_transaction.set_endorser_role(
+        await handle_acapy_call(
+            logger=logger,
+            acapy_call=endorser_controller.endorse_transaction.set_endorser_role,
             conn_id=endorser_connection_id,
             transaction_my_job="TRANSACTION_ENDORSER",
         )
         logger.debug("Successfully set endorser role.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
-    except ApiException as e:
+    except CloudApiException as e:
         logger.error("Failed to set endorser role: {}.", e)
         raise CloudApiException(
             "Failed to set the endorser role in the endorser-issuer connection, "
@@ -37,13 +39,15 @@ async def set_author_role(
 ):
     try:
         logger.debug("Setting roles for author on issuer-endorser connection")
-        await issuer_controller.endorse_transaction.set_endorser_role(
+        await handle_acapy_call(
+            logger=logger,
+            acapy_call=issuer_controller.endorse_transaction.set_endorser_role,
             conn_id=issuer_connection_id,
             transaction_my_job="TRANSACTION_AUTHOR",
         )
         logger.debug("Successfully set author role.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
-    except ApiException as e:
+    except CloudApiException as e:
         logger.error("Failed to set author role: {}.", e)
         raise CloudApiException(
             "Failed to set the author role in the issuer-endorser connection, "
@@ -61,13 +65,15 @@ async def set_endorser_info(
 ):
     try:
         logger.debug("Setting endorser info on issuer-endorser connection")
-        await issuer_controller.endorse_transaction.set_endorser_info(
+        await handle_acapy_call(
+            logger=logger,
+            acapy_call=issuer_controller.endorse_transaction.set_endorser_info,
             conn_id=issuer_connection_id,
             endorser_did=endorser_did,
         )
         logger.debug("Successfully set endorser info.")
         await asyncio.sleep(DEFAULT_DELAY)  # Allow ACA-Py records to update
-    except ApiException as e:
+    except CloudApiException as e:
         logger.error("Failed to set endorser info: {}.", e)
         raise CloudApiException(
             "Failed to set the endorser info in the issuer-endorser connection, "
@@ -107,14 +113,16 @@ async def assert_metadata_set(
         await asyncio.sleep(delay)
         try:
             logger.debug("Fetching connection metadata")
-            connection_metadata = await controller.connection.get_metadata(
-                conn_id=conn_id
+            connection_metadata = await handle_acapy_call(
+                logger=logger,
+                acapy_call=controller.connection.get_metadata,
+                conn_id=conn_id,
             )
             logger.debug("Successfully fetched metadata")
             metadata_dict = connection_metadata.results
             if check_fn(metadata_dict):
                 return True
-        except ApiException as e:
+        except CloudApiException as e:
             logger.error("Exception occurred when getting metadata: {}", e)
 
     raise SettingMetadataException(

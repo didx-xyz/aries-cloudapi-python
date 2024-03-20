@@ -5,6 +5,23 @@ from pydantic import BaseModel
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
+State = Literal[
+    "proposal-sent",
+    "proposal-received",
+    "offer-sent",
+    "offer-received",
+    "request-sent",
+    "request-received",
+    "credential-issued",
+    "credential-received",
+    "credential-revoked",
+    "abandoned",
+    "done",
+    "deleted",
+]
+
+Role = Literal["issuer", "holder"]
+
 
 class CredentialExchange(BaseModel):
     # unused fields:
@@ -23,24 +40,10 @@ class CredentialExchange(BaseModel):
     did: Optional[str] = None
     error_msg: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion
-    role: Literal["issuer", "holder"]
+    role: Role
     schema_id: Optional[str] = None
     # state can be None in proposed state
-    state: Optional[
-        Literal[
-            "abandoned",
-            "credential-issued",
-            "credential-received",
-            "done",
-            "deleted",
-            "offer-received",
-            "offer-sent",
-            "proposal-received",
-            "proposal-sent",
-            "request-received",
-            "request-sent",
-        ]
-    ] = None
+    state: Optional[State] = None
     # Thread id can be None in connectionless exchanges
     thread_id: Optional[str] = None
     type: str = "indy"
@@ -73,6 +76,8 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
         "credential_acked": "done",
         "credential_issued": "credential-issued",
         "credential_received": "credential-received",
+        "credential_revoked": "credential-revoked",
+        "deleted": "deleted",
         "done": "done",
         "offer_received": "offer-received",
         "offer_sent": "offer-sent",
@@ -84,6 +89,25 @@ def v1_credential_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 
     if not state or state not in translation_dict:
         return None
+
+    return translation_dict[state]
+
+
+def back_to_v1_credential_state(state: Optional[str]) -> Optional[str]:
+    translation_dict = {
+        "abandoned": "abandoned",
+        "deleted": "deleted",
+        "done": "credential_acked",
+        "credential-issued": "credential_issued",
+        "credential-received": "credential_received",
+        "credential-revoked": "credential_revoked",
+        "offer-received": "offer_received",
+        "offer-sent": "offer_sent",
+        "proposal-received": "proposal_received",
+        "proposal-sent": "proposal_sent",
+        "request-received": "request_received",
+        "request-sent": "request_sent",
+    }
 
     return translation_dict[state]
 

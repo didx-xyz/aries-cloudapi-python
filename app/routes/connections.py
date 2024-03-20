@@ -8,7 +8,13 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions import handle_acapy_call
 from app.models.connections import AcceptInvitation, CreateInvitation
 from shared.log_config import get_logger
-from shared.models.connection_record import Connection, conn_record_to_connection
+from shared.models.connection_record import (
+    Connection,
+    Protocol,
+    Role,
+    State,
+    conn_record_to_connection,
+)
 
 logger = get_logger(__name__)
 
@@ -19,7 +25,7 @@ router = APIRouter(prefix="/v1/connections", tags=["connections"])
 async def create_invitation(
     body: Optional[CreateInvitation] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> InvitationResult:
     """
     Create connection invitation.
     """
@@ -72,14 +78,37 @@ async def accept_invitation(
 
 @router.get("", response_model=List[Connection])
 async def get_connections(
+    alias: Optional[str] = None,
+    connection_protocol: Optional[Protocol] = None,
+    invitation_key: Optional[str] = None,
+    invitation_msg_id: Optional[str] = None,
+    my_did: Optional[str] = None,
+    state: Optional[State] = None,
+    their_did: Optional[str] = None,
+    their_public_did: Optional[str] = None,
+    their_role: Optional[Role] = None,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> List[Connection]:
     """
     Retrieve list of connections.
 
+    Parameters:
+    -----------
+        alias: Optional[str]
+        connection_protocol: Optional[Protocol]: "connections/1.0", "didexchange/1.0"
+        invitation_key: Optional[str]
+        invitation_msg_id: Optional[str]
+        my_did: Optional[str]
+        state: Optional[State]: "active", "response", "request", "start",
+                                "completed", "init", "error", "invitation", "abandoned"
+        their_did: Optional[str]
+        their_public_did: Optional[str]
+        their_role: Optional[Role]: "invitee", "requester", "inviter", "responder"
+
     Returns:
     ---------
-    JSON object with connections (key), a list of connections (ids)
+        List[Connection]
+            A list of connection objects.
     """
     logger.info("GET request received: Get connections")
 
@@ -87,6 +116,15 @@ async def get_connections(
         connections = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.connection.get_connections,
+            alias=alias,
+            connection_protocol=connection_protocol,
+            invitation_key=invitation_key,
+            invitation_msg_id=invitation_msg_id,
+            my_did=my_did,
+            state=state,
+            their_did=their_did,
+            their_public_did=their_public_did,
+            their_role=their_role,
         )
 
     if connections.results:
@@ -104,13 +142,18 @@ async def get_connections(
 async def get_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> Connection:
     """
     Retrieve connection by id.
 
     Parameters:
     -----------
     connection_id: str
+
+    Returns:
+    ---------
+    Connection.
+        A connection object.
 
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
@@ -130,21 +173,17 @@ async def get_connection_by_id(
     return result
 
 
-@router.delete("/{connection_id}")
+@router.delete("/{connection_id}", status_code=204)
 async def delete_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-):
+) -> None:
     """
     Delete connection by id.
 
     Parameters:
     -----------
     connection_id: str
-
-    Returns:
-    ------------
-    Empty dict: {}
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("DELETE request received: Delete connection by ID")
@@ -157,4 +196,3 @@ async def delete_connection_by_id(
         )
 
     bound_logger.info("Successfully deleted connection by ID.")
-    return {}

@@ -2,6 +2,8 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from shared.exceptions import CloudApiValueError
+
 
 class Actor(BaseModel):
     id: str
@@ -14,7 +16,7 @@ class Actor(BaseModel):
     @classmethod
     def did_validator(cls, did: str):
         if not did.startswith("did:"):
-            raise ValueError("Only fully qualified DIDs allowed.")
+            raise CloudApiValueError("Only fully qualified DIDs allowed.")
 
         return did
 
@@ -41,7 +43,9 @@ class Schema(BaseModel):
         try:
             for v in ["did", "name", "version"]:
                 if ":" in values[v]:
-                    raise ValueError(f"Schema field `{v}` must not contain colon.")
+                    raise CloudApiValueError(
+                        f"Schema field `{v}` must not contain colon."
+                    )
             did = values["did"]
             name = values["name"]
             version = values["version"]
@@ -57,7 +61,7 @@ class Schema(BaseModel):
 
         if id is None:
             if None in (did, name, version):
-                raise ValueError(
+                raise CloudApiValueError(
                     "Either `id` or all of (`did`, `name`, `version`) must be specified."
                 )
             id = calc_schema_id(did, name, version)
@@ -65,17 +69,17 @@ class Schema(BaseModel):
             if None not in (did, name, version):
                 expected_id = calc_schema_id(did, name, version)
                 if id != expected_id:
-                    raise ValueError(
+                    raise CloudApiValueError(
                         f"Schema's `id` field does not match expected format: `{expected_id}`."
                     )
             else:
                 # Extract did, name, and version from id if not specified
                 try:
                     did, _, name, version = id.split(":")
-                except ValueError:
-                    raise ValueError(
+                except ValueError as e:
+                    raise CloudApiValueError(
                         "Invalid `id` field. It does not match the expected format."
-                    )
+                    ) from e
 
         values["did"] = did
         values["name"] = name

@@ -552,7 +552,7 @@ async def test_extra_settings(
         TENANTS_BASE_PATH,
         json={
             "wallet_label": uuid4().hex,
-            "extra_settings": {"ACAPY_AUTO_ACCEPT_INVITES": "true"},
+            "extra_settings": {"ACAPY_AUTO_ACCEPT_INVITES": True},
         },
     )
     assert created_tenant_response.status_code == 200
@@ -562,14 +562,14 @@ async def test_extra_settings(
     wallet_record = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=created_wallet_id
     )
-    assert wallet_record.settings["debug.auto_accept_invites"] == "true"
+    assert wallet_record.settings["debug.auto_accept_invites"] is True
 
     # Test updating a wallet setting
     update_tenant_response = await tenant_admin_client.put(
         f"{TENANTS_BASE_PATH}/{created_wallet_id}",
         json={
             "wallet_label": "new_label",
-            "extra_settings": {"ACAPY_AUTO_ACCEPT_INVITES": "false"},
+            "extra_settings": {"ACAPY_AUTO_ACCEPT_INVITES": False},
         },
     )
     assert update_tenant_response.status_code == 200
@@ -578,7 +578,7 @@ async def test_extra_settings(
     updated_wallet_record = await tenant_admin_acapy_client.multitenancy.get_wallet(
         wallet_id=created_wallet_id
     )
-    assert updated_wallet_record.settings["debug.auto_accept_invites"] == "false"
+    assert updated_wallet_record.settings["debug.auto_accept_invites"] is False
 
     # Delete created tenant
     await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{created_wallet_id}")
@@ -589,7 +589,7 @@ async def test_extra_settings(
             TENANTS_BASE_PATH,
             json={
                 "wallet_label": uuid4().hex,
-                "extra_settings": {"Bad_value": "true"},
+                "extra_settings": {"Bad_value": True},
             },
         )
 

@@ -307,7 +307,6 @@ async def create_credential_definition(
                     status_code=e.status_code,
                 ) from e
 
-        listener = SseListener(topic="endorsements", wallet_id=auth.wallet_id)
         # Wait for cred_def transaction to be acknowledged
         if result.txn and result.txn.transaction_id:
             bound_logger.debug(

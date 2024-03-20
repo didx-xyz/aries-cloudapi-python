@@ -5,6 +5,22 @@ from pydantic import BaseModel
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
+State = Literal[
+    "proposal-sent",
+    "proposal-received",
+    "offer-sent",
+    "offer-received",
+    "request-sent",
+    "request-received",
+    "credential-issued",
+    "credential-received",
+    "credential-revoked",
+    "abandoned",
+    "done",
+]
+
+Role = Literal["issuer", "holder"]
+
 
 class CredentialExchange(BaseModel):
     # unused fields:
@@ -23,25 +39,10 @@ class CredentialExchange(BaseModel):
     did: Optional[str] = None
     error_msg: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion
-    role: Literal["issuer", "holder"]
+    role: Role
     schema_id: Optional[str] = None
     # state can be None in proposed state
-    state: Optional[
-        Literal[
-            "abandoned",
-            "credential-issued",
-            "credential-received",
-            "credential-revoked",
-            "done",
-            "deleted",
-            "offer-received",
-            "offer-sent",
-            "proposal-received",
-            "proposal-sent",
-            "request-received",
-            "request-sent",
-        ]
-    ] = None
+    state: Optional[State] = None
     # Thread id can be None in connectionless exchanges
     thread_id: Optional[str] = None
     type: str = "indy"

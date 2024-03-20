@@ -11,6 +11,20 @@ from typing_extensions import Literal
 
 from shared.models.protocol import PresentProofProtocolVersion
 
+State = Literal[
+    "abandoned",
+    "done",
+    "presentation-received",
+    "presentation-sent",
+    "proposal-received",
+    "proposal-sent",
+    "request-received",
+    "request-sent",
+    "deleted",
+]
+
+Role = Literal["prover", "verifier"]
+
 
 class PresentationExchange(BaseModel):
     # auto_present: Optional[str] = None
@@ -27,21 +41,8 @@ class PresentationExchange(BaseModel):
     presentation_request: Optional[IndyProofRequest] = None
     proof_id: str
     protocol_version: PresentProofProtocolVersion
-    role: Literal["prover", "verifier"]
-    state: Optional[
-        Literal[
-            "abandoned",
-            "done",
-            "presentation-received",
-            "presentation-sent",
-            "proposal-received",
-            "proposal-sent",
-            "request-received",
-            "request-sent",
-            "abandoned",
-            "deleted",
-        ]
-    ] = None
+    role: Role
+    state: Optional[State] = None
     thread_id: Optional[str] = None
     updated_at: Optional[str] = None
     verified: Optional[bool] = None

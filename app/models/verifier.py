@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, Optional
+from typing import Optional
 
 from aries_cloudcontroller import DIFPresSpec, DIFProofRequest, IndyPresSpec
 from aries_cloudcontroller import IndyProofRequest as AcaPyIndyProofRequest
@@ -109,17 +109,3 @@ class AcceptProofRequest(ProofId):
 
 class RejectProofRequest(ProofId):
     problem_report: Optional[str] = None
-
-
-State = Literal[
-    "abandoned",
-    "done",
-    "presentation-received",
-    "presentation-sent",
-    "proposal-received",
-    "proposal-sent",
-    "request-received",
-    "request-sent",
-]
-
-Role = Literal["prover", "verifier"]

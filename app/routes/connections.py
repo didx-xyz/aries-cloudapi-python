@@ -6,15 +6,15 @@ from fastapi import APIRouter, Depends
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth
 from app.exceptions import handle_acapy_call
-from app.models.connections import (
-    AcceptInvitation,
-    CreateInvitation,
+from app.models.connections import AcceptInvitation, CreateInvitation
+from shared.log_config import get_logger
+from shared.models.connection_record import (
+    Connection,
     Protocol,
     Role,
     State,
+    conn_record_to_connection,
 )
-from shared.log_config import get_logger
-from shared.models.connection_record import Connection, conn_record_to_connection
 
 logger = get_logger(__name__)
 

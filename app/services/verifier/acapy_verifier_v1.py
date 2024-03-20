@@ -192,14 +192,25 @@ class VerifierV1(Verifier):
 
     @classmethod
     async def get_proof_records(
-        cls, controller: AcaPyClient
+        cls,
+        controller: AcaPyClient,
+        connection_id: str = None,
+        role: str = None,
+        state: str = None,
+        thread_id: str = None,
     ) -> List[PresentationExchange]:
-        logger.debug("Fetching v1 present-proof exchange records")
         try:
+            logger.debug("Fetching v1 present-proof exchange records")
             presentation_exchange = await handle_acapy_call(
-                logger=logger, acapy_call=controller.present_proof_v1_0.get_records
+                logger=logger,
+                acapy_call=controller.present_proof_v1_0.get_records,
+                connection_id=connection_id,
+                role=role,
+                state=state,
+                thread_id=thread_id,
             )
         except CloudApiException as e:
+            logger.exception("An exception occurred while getting records.")
             raise CloudApiException(
                 f"Failed to get proof records: {e.detail}.", e.status_code
             ) from e

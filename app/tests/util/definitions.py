@@ -71,7 +71,7 @@ async def credential_definition_id_revocable(
         tag="tag",
         schema_id=schema_definition_alt.id,
         support_revocation=True,
-        revocation_registry_size=100,
+        revocation_registry_size=5000,
     )
 
     auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))

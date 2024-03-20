@@ -12,7 +12,7 @@ from endorser.util.transaction_record import (
 )
 from endorser.util.trust_registry import is_valid_issuer
 from shared.log_config import get_logger
-from shared.models.endorsement import Endorsement
+from shared.models.endorsement import Endorsement, applicable_transaction_state
 
 logger = get_logger(__name__)
 
@@ -42,11 +42,12 @@ async def should_accept_endorsement(
         tran_id=transaction_id
     )
 
-    if transaction.state != "request_received":
+    if transaction.state != applicable_transaction_state:
         bound_logger.warning(
             "Endorsement event for transaction with id `{}` "
-            "not in state 'request_received' (is `{}`).",
+            "not in state '{}' (is `{}`).",
             transaction_id,
+            applicable_transaction_state,
             transaction.state,
         )
         return False

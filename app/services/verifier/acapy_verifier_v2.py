@@ -1,6 +1,5 @@
 from aries_cloudcontroller import (
     AcaPyClient,
-    ApiException,
     V20PresCreateRequestRequest,
     V20PresProblemReportRequest,
     V20PresRequestByFormat,
@@ -147,13 +146,6 @@ class VerifierV2(Verifier):
                 pres_ex_id=pres_ex_id, body=presentation_spec
             )
             result = record_to_model(presentation_record)
-        except ApiException as e:
-            bound_logger.exception(
-                "An ACA-PY ApiException error occurred while sending a proof presentation."
-            )
-            raise CloudApiException(
-                f"Failed to send proof presentation. {e.reason}"
-            ) from e
         except Exception as e:
             bound_logger.exception(
                 "An unexpected error occurred while sending a proof presentation."

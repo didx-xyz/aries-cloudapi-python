@@ -33,14 +33,16 @@ async def bob_and_alice_connection(
     alice_member_client: RichAsyncClient,
 ) -> BobAliceConnect:
     # create invitation on bob side
+    json_request = (
+        CreateInvitation(
+            alias="bob",
+            multi_use=False,
+            use_public_did=False,
+        ).model_dump(),
+    )
     invitation = (
         await bob_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/create-invitation",
-            json=CreateInvitation(
-                alias="bob",
-                multi_use=False,
-                use_public_did=False,
-            ).model_dump(),
+            f"{CONNECTIONS_BASE_PATH}/create-invitation", json=json_request
         )
     ).json()
 

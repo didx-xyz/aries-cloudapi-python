@@ -1,17 +1,22 @@
+import asyncio
 from logging import Logger
 
-from aries_cloudcontroller import AcaPyClient, InvitationCreateRequest, InvitationRecord
+from aries_cloudcontroller import (
+    AcaPyClient,
+    ConnRecord,
+    InvitationCreateRequest,
+    InvitationRecord,
+)
 
 from app.exceptions import CloudApiException
 from app.services import acapy_ledger, acapy_wallet
 from app.services.acapy_wallet import Did
-from app.services.event_handling.sse_listener import SseListener
 from app.services.onboarding.util.set_endorser_metadata import (
     set_author_role,
     set_endorser_info,
     set_endorser_role,
 )
-from shared import ACAPY_ENDORSER_ALIAS, GOVERNANCE_LABEL
+from shared import ACAPY_ENDORSER_ALIAS
 
 
 async def create_connection_with_endorser(
@@ -190,6 +195,47 @@ async def register_issuer_did(
     return issuer_did
 
 
-def create_sse_listener(wallet_id: str, topic: str) -> SseListener:
-    # Helper method for passing a MockListener to this module in tests
-    return SseListener(topic=topic, wallet_id=wallet_id)
+
+async def wait_issuer_did_transaction_endorsed(
+    *, issuer_controller: AcaPyClient, issuer_connection_id: str, logger: Logger
+) -> None:
+    attempt = 0
+    max_attempts = 15
+    retry_delay = 1
+
+    while attempt + 1 < max_attempts:
+        try:
+            transactions_response = (
+                await issuer_controller.endorse_transaction.get_records()
+            )
+
+            for transaction in transactions_response.results:
+                if (
+                    transaction.connection_id == issuer_connection_id
+                    and transaction.state == "transaction_acked"
+                ):
+                    return
+
+        except Exception as e:
+            if attempt + 1 == max_attempts:
+                logger.error(
+                    "Maximum number of retries exceeded with exception. Failing."
+                )
+                raise asyncio.TimeoutError from e  # Raise TimeoutError if max attempts exceeded
+
+            logger.warning(
+                (
+                    "Exception encountered (attempt {}). "
+                    "Reason: \n{}.\n"
+                    "Retrying in {} seconds..."
+                ),
+                attempt + 1,
+                e,
+                retry_delay,
+            )
+
+        await asyncio.sleep(retry_delay)
+        attempt += 1
+
+    logger.error("Maximum number of retries exceeded while waiting for transaction ack")
+    raise asyncio.TimeoutError

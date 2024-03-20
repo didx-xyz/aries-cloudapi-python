@@ -381,7 +381,7 @@ async def validate_rev_reg_ids(
                 raise CloudApiException(message, e.status_code) from e
             else:
                 bound_logger.error(
-                    "An ApiException was caught while validating rev_reg_id. The error message is: '{}'.",
+                    "An Exception was caught while validating rev_reg_id. The error message is: '{}'.",
                     e.detail,
                 )
                 raise CloudApiException(

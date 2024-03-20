@@ -159,7 +159,7 @@ async def client_response_error_exception_handler(
         )
 
     if isinstance(exception, CloudApiValueError):
-        return JSONResponse({"detail": str(exception)}, status_code=422)
+        return JSONResponse({"detail": exception.detail}, status_code=422)
 
     if isinstance(exception, ApiException):
         return JSONResponse(

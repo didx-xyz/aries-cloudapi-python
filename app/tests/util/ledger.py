@@ -29,7 +29,7 @@ class LedgerRequestVon(BaseModel):
 
 async def post_to_ledger(
     did: str, verkey: str, role: Optional[Literal["ENDORSER"]] = "ENDORSER"
-):
+) -> None:
     if LEDGER_TYPE == "sovrin":
         payload = LedgerRequestSovrin(
             network="stagingnet",
@@ -58,7 +58,7 @@ async def post_to_ledger(
     logger.info("Successfully posted to ledger.")
 
 
-async def has_public_did(aries_controller: AcaPyClient):
+async def has_public_did(aries_controller: AcaPyClient) -> bool:
     try:
         await acapy_wallet.get_public_did(aries_controller)
         return True

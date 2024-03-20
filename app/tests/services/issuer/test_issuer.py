@@ -1,5 +1,3 @@
-import unittest
-
 import pytest
 from aiohttp import RequestInfo
 from aries_cloudcontroller import AcaPyClient

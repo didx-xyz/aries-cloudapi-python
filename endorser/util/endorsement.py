@@ -64,21 +64,6 @@ async def should_accept_endorsement(
         bound_logger.warning("Endorsement request is not for credential definition.")
         return False
 
-    if "identifier" not in attachment:
-        bound_logger.warning(
-            "Expected key `identifier` does not exist in extracted attachment. Got attachment: `{}`.",
-            attachment,
-        )
-        return False
-
-    # `operation` key is asserted to exist in `is_credential_definition_transaction`
-    if "ref" not in attachment["operation"]:
-        bound_logger.warning(
-            "Expected key `ref` does not exist in attachment `operation`. Got operation: `{}`.",
-            attachment["operation"],
-        )
-        return False
-
     did, schema_id = await get_did_and_schema_id_from_cred_def_attachment(
         client, attachment
     )

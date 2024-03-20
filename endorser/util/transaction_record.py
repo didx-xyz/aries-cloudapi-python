@@ -85,6 +85,21 @@ def is_credential_definition_transaction(attachment: Dict[str, Any]) -> bool:
 async def get_did_and_schema_id_from_cred_def_attachment(
     client: AcaPyClient, attachment: Dict[str, Any]
 ):
+    if "identifier" not in attachment:
+        logger.warning(
+            "Expected key `identifier` does not exist in extracted attachment. Got attachment: `{}`.",
+            attachment,
+        )
+        return False
+
+    # `operation` key is asserted to exist in `is_credential_definition_transaction`
+    if "ref" not in attachment["operation"]:
+        logger.warning(
+            "Expected key `ref` does not exist in attachment `operation`. Got operation: `{}`.",
+            attachment["operation"],
+        )
+        return False
+
     did = "did:sov:" + attachment["identifier"]
     schema_seq_id = attachment["operation"]["ref"]
 

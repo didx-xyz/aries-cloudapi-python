@@ -65,12 +65,17 @@ class VerifierV2(Verifier):
                 acapy_call=controller.present_proof_v2_0.create_proof_request,
                 body=request_body,
             )
-            bound_logger.debug("Returning v2 PresentationExchange.")
-            return record_to_model(proof_record)
         except CloudApiException as e:
             raise CloudApiException(
                 f"Failed to create presentation request: {e.detail}.", e.status_code
             ) from e
+
+        result = record_to_model(proof_record)
+        if result:
+            bound_logger.debug("Successfully created v2 presentation request.")
+        else:
+            bound_logger.warning("No result from creating v2 presentation request.")
+        return result
 
     @classmethod
     async def send_proof_request(
@@ -108,12 +113,12 @@ class VerifierV2(Verifier):
                 acapy_call=controller.present_proof_v2_0.send_request_free,
                 body=request_body,
             )
-            result = record_to_model(presentation_exchange)
         except CloudApiException as e:
             raise CloudApiException(
                 f"Failed to send presentation request: {e.detail}.", e.status_code
             ) from e
 
+        result = record_to_model(presentation_exchange)
         if result:
             bound_logger.debug("Successfully sent v2 presentation request.")
         else:
@@ -151,12 +156,13 @@ class VerifierV2(Verifier):
                 pres_ex_id=pres_ex_id,
                 body=presentation_spec,
             )
-            result = record_to_model(presentation_record)
+
         except CloudApiException as e:
             raise CloudApiException(
                 f"Failed to send proof presentation: {e.detail}.", e.status_code
             ) from e
 
+        result = record_to_model(presentation_record)
         if result:
             bound_logger.debug("Successfully sent v2 proof presentation.")
         else:
@@ -226,6 +232,7 @@ class VerifierV2(Verifier):
             raise CloudApiException(
                 f"Failed to get proof records: {e.detail}.", e.status_code
             ) from e
+
         result = [record_to_model(rec) for rec in presentation_exchange.results or []]
 
         if result:
@@ -248,13 +255,13 @@ class VerifierV2(Verifier):
                 acapy_call=controller.present_proof_v2_0.get_record,
                 pres_ex_id=pres_ex_id,
             )
-            result = record_to_model(presentation_exchange)
         except CloudApiException as e:
             raise CloudApiException(
                 f"Failed to get proof record with proof id `{proof_id}`: {e.detail}.",
                 e.status_code,
             ) from e
 
+        result = record_to_model(presentation_exchange)
         if result:
             bound_logger.debug("Successfully got v2 present-proof record.")
         else:

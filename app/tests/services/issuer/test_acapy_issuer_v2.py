@@ -98,15 +98,22 @@ async def test_get_records(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_get_records_connection_id(mock_agent_controller: AcaPyClient):
+async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient):
     v2_record = v2_credential_exchange_records[0]
 
     when(mock_agent_controller.issue_credential_v2_0).get_records(
-        connection_id=v2_record.cred_ex_record.connection_id
+        connection_id=v2_record.cred_ex_record.connection_id,
+        role=v2_record.cred_ex_record.role,
+        state=v2_record.cred_ex_record.state,
+        thread_id=v2_record.cred_ex_record.thread_id,
     ).thenReturn(to_async(V20CredExRecordListResult(results=[v2_record])))
 
     records = await IssuerV2.get_records(
-        mock_agent_controller, connection_id=v2_record.cred_ex_record.connection_id
+        mock_agent_controller,
+        connection_id=v2_record.cred_ex_record.connection_id,
+        role=v2_record.cred_ex_record.role,
+        state=v2_record.cred_ex_record.state,
+        thread_id=v2_record.cred_ex_record.thread_id,
     )
 
     assert len(records) == 1

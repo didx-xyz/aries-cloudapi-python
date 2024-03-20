@@ -194,10 +194,19 @@ class VerifierV2(Verifier):
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
 
     @classmethod
-    async def get_proof_records(cls, controller: AcaPyClient):
+    async def get_proof_records(
+        cls,
+        controller: AcaPyClient,
+        connection_id: str = None,
+        role: str = None,
+        state: str = None,
+        thread_id: str = None,
+    ):
         try:
             logger.debug("Fetching v2 present-proof exchange records")
-            presentation_exchange = await controller.present_proof_v2_0.get_records()
+            presentation_exchange = await controller.present_proof_v2_0.get_records(
+                connection_id=connection_id, role=role, state=state, thread_id=thread_id
+            )
             result = [
                 record_to_model(rec) for rec in presentation_exchange.results or []
             ]

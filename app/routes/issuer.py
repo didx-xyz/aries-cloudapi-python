@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 
 from aries_cloudcontroller import ApiException, IssuerCredRevRecord
 from fastapi import APIRouter, Depends, Query
@@ -26,7 +27,12 @@ from app.util.acapy_issuer_utils import (
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
 from shared.log_config import get_logger
-from shared.models.credential_exchange import CredentialExchange
+from shared.models.credential_exchange import (
+    CredentialExchange,
+    Role,
+    State,
+    back_to_v1_credential_state,
+)
 
 logger = get_logger(__name__)
 
@@ -36,6 +42,9 @@ router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 @router.get("", response_model=List[CredentialExchange])
 async def get_credentials(
     connection_id: Optional[str] = Query(None),
+    role: Optional[Role] = Query(None),
+    state: Optional[State] = Query(None),
+    thread_id: Optional[UUID] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth),
 ):
     """
@@ -44,6 +53,15 @@ async def get_credentials(
     Parameters:
     ------------
         connection_id: str (Optional)
+        role: Role (Optional): "issuer", "holder"
+        state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
+                                 "request-sent", "request-received", "credential-issued", "credential-received",
+                                 "credential-revoked","abandoned", "done"
+        thread_id: UUID (Optional)
+    Returns:
+    --------
+        payload: List[CredentialExchange]
+            A list of credential exchange records
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get credentials")
@@ -51,12 +69,20 @@ async def get_credentials(
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching v1 records")
         v1_records = await IssueCredentialFacades.v1.value.get_records(
-            controller=aries_controller, connection_id=connection_id
+            controller=aries_controller,
+            connection_id=connection_id,
+            role=role,
+            state=back_to_v1_credential_state(state) if state else None,
+            thread_id=str(thread_id) if thread_id else None,
         )
 
         bound_logger.debug("Fetching v2 records")
         v2_records = await IssueCredentialFacades.v2.value.get_records(
-            controller=aries_controller, connection_id=connection_id
+            controller=aries_controller,
+            connection_id=connection_id,
+            role=role,
+            state=state,
+            thread_id=str(thread_id) if thread_id else None,
         )
 
     result = v1_records + v2_records
@@ -79,6 +105,11 @@ async def get_credential(
     -----------
         credential_id: str
             credential identifier
+
+    Returns:
+    --------
+        payload: CredentialExchange
+            The credential exchange record
     """
     bound_logger = logger.bind(body={"credential_id": credential_id})
     bound_logger.info("GET request received: Get credentials by credential id")

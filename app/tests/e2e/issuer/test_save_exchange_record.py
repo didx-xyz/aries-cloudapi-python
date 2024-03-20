@@ -151,9 +151,8 @@ async def test_get_cred_exchange_records(
             field="credential_id", field_id=cred["credential_id"], desired_state="done"
         )
 
-    response = await faber_client.get(CREDENTIALS_BASE_PATH)
+    faber_records = (await faber_client.get(CREDENTIALS_BASE_PATH)).json()
 
-    faber_records = response.json()
     faber_cred_ex_response = await faber_client.get(
         CREDENTIALS_BASE_PATH + "?state=done"
     )

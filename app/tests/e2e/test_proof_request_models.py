@@ -109,7 +109,7 @@ async def test_proof_model_failures(
     ).json()[0]["cred_info"]["referent"]
 
     # Accept proof request. This call will fail because the proof request is missing
-    # the required fields (name and version). The send proof request call are missing 
+    # the required fields (name and version). The send proof request call are missing
     # the required fields (name and version) and the ACA-Py models do not enforce these
     await alice_member_client.post(
         f"{VERIFIER_BASE_PATH}/accept-request",

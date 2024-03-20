@@ -21,7 +21,7 @@ async def test_should_accept_endorsement_success(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
     )
     mocker.patch(
@@ -70,7 +70,7 @@ async def test_should_accept_endorsement_fail_not_cred_def(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "99"},
         },
     )
 
@@ -150,7 +150,7 @@ async def test_should_accept_endorsement_retries_on_http_exception(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
     )
     mocker.patch(
@@ -195,7 +195,7 @@ async def test_should_accept_endorsement_fails_after_max_retries(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
     )
     mocker.patch(

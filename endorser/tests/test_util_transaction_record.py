@@ -83,23 +83,13 @@ def test_get_endorsement_request_attachment_exception():
 
 
 def test_is_credential_definition_transaction_true():
-    attachment = {"operation": {"type": "102"}}
-    assert is_credential_definition_transaction(attachment) is True
+    operation_type = "102"
+    assert is_credential_definition_transaction(operation_type) is True
 
 
 def test_is_credential_definition_transaction_false():
-    attachment = {"operation": {"type": "100"}}
-    assert is_credential_definition_transaction(attachment) is False
-
-
-def test_is_credential_definition_transaction_no_operation():
-    attachment = {"bad_key": {"type": "102"}}
-    assert is_credential_definition_transaction(attachment) is False
-
-
-def test_is_credential_definition_transaction_no_type():
-    attachment = {"operation": {"bad_key": "102"}}
-    assert is_credential_definition_transaction(attachment) is False
+    operation_type = "100"
+    assert is_credential_definition_transaction(operation_type) is False
 
 
 def test_is_credential_definition_transaction_exception():

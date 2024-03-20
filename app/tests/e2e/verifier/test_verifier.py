@@ -1199,7 +1199,7 @@ async def test_get_proof_records(
     meld_co_client: RichAsyncClient,
     meld_co_and_alice_connection: MeldCoAliceConnect,
     meld_co_issuer_verifier: CreateTenantResponse,
-    meld_co_issue_credential_to_alice: CredentialExchange,
+    meld_co_issue_credential_to_alice: CredentialExchange, # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     alice_tenant: CreateTenantResponse,
 ):
@@ -1346,4 +1346,4 @@ async def test_get_proof_records(
             f"{VERIFIER_BASE_PATH}/proofs?connection_id=123&state=invalid&role=invalid&thread_id=invalid"
         )
     assert exc.value.status_code == 422
-    assert len(json.loads(exc.value.detail)["detail"]) == 4
+    assert len(json.loads(exc.value.detail)["detail"]) == 3

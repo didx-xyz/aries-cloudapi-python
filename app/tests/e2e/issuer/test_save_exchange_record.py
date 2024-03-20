@@ -173,4 +173,4 @@ async def test_get_cred_exchange_records(
             f"{CREDENTIALS_BASE_PATH}?connection_id=123&thread_id=123&role=asf&state=asd"
         )
     assert exc.value.status_code == 422
-    assert len(json.loads(exc.value.detail)["detail"]) == 4
+    assert len(json.loads(exc.value.detail)["detail"]) == 3

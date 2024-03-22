@@ -142,6 +142,7 @@ class AcaPyEventsProcessor:
                 if batch_event_keys:
                     attempts_without_events = 0  # Reset the counter
                     for list_key in batch_event_keys:  # the keys are of LIST type
+                        logger.debug("Attempt to process list key: {}", list_key)
                         self._attempt_process_list_events(list_key)
 
                 else:
@@ -286,7 +287,7 @@ class AcaPyEventsProcessor:
                 "payload": payload,
             }
         )
-        bound_logger.trace("Processing ACA-Py Redis webhook event")
+        bound_logger.debug("Processing ACA-Py Redis webhook event")
 
         # Map from the acapy webhook topic to a unified cloud api topic
         cloudapi_topic = topic_mapping.get(acapy_topic)

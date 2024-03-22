@@ -83,23 +83,13 @@ def test_get_endorsement_request_attachment_exception():
 
 
 def test_is_credential_definition_transaction_true():
-    attachment = {"operation": {"type": "102"}}
-    assert is_credential_definition_transaction(attachment) is True
+    operation_type = "102"
+    assert is_credential_definition_transaction(operation_type) is True
 
 
 def test_is_credential_definition_transaction_false():
-    attachment = {"operation": {"type": "100"}}
-    assert is_credential_definition_transaction(attachment) is False
-
-
-def test_is_credential_definition_transaction_no_operation():
-    attachment = {"bad_key": {"type": "102"}}
-    assert is_credential_definition_transaction(attachment) is False
-
-
-def test_is_credential_definition_transaction_no_type():
-    attachment = {"operation": {"bad_key": "102"}}
-    assert is_credential_definition_transaction(attachment) is False
+    operation_type = "100"
+    assert is_credential_definition_transaction(operation_type) is False
 
 
 def test_is_credential_definition_transaction_exception():
@@ -122,3 +112,37 @@ async def test_get_did_and_schema_id_from_cred_def_attachment(mock_acapy_client)
     assert did == "did:sov:identifier_value"
     assert schema_id == "schema_id"
     mock_acapy_client.schema.get_schema.assert_awaited_once_with(schema_id="ref_value")
+
+
+@pytest.mark.anyio
+async def test_get_did_and_schema_id_from_cred_def_attachment_fail_no_identifier(
+    mock_acapy_client,
+):
+    mock_acapy_client.schema.get_schema.return_value = MagicMock(
+        var_schema=MagicMock(id="schema_id")
+    )
+
+    assert (
+        await get_did_and_schema_id_from_cred_def_attachment(
+            mock_acapy_client,
+            {"not_identifier": "identifier_value", "operation": {"ref": "ref_value"}},
+        )
+        is False
+    )
+
+
+@pytest.mark.anyio
+async def test_get_did_and_schema_id_from_cred_def_attachment_fail_no_ref(
+    mock_acapy_client,
+):
+    mock_acapy_client.schema.get_schema.return_value = MagicMock(
+        var_schema=MagicMock(id="schema_id")
+    )
+
+    assert (
+        await get_did_and_schema_id_from_cred_def_attachment(
+            mock_acapy_client,
+            {"identifier": "identifier_value", "operation": {"no_ref": "ref_value"}},
+        )
+        is False
+    )

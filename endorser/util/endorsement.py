@@ -6,12 +6,13 @@ from fastapi import HTTPException
 from endorser.util.transaction_record import (
     get_did_and_schema_id_from_cred_def_attachment,
     get_endorsement_request_attachment,
+    is_attrib_type,
     is_credential_definition_transaction,
     is_revocation_def_or_entry,
 )
 from endorser.util.trust_registry import is_valid_issuer
 from shared.log_config import get_logger
-from shared.models.endorsement import Endorsement
+from shared.models.endorsement import Endorsement, applicable_transaction_state
 
 logger = get_logger(__name__)
 
@@ -41,42 +42,41 @@ async def should_accept_endorsement(
         tran_id=transaction_id
     )
 
-    if transaction.state != "request_received":
+    if transaction.state != applicable_transaction_state:
         bound_logger.warning(
             "Endorsement event for transaction with id `{}` "
-            "not in state 'request_received' (is `{}`).",
+            "not in state '{}' (is `{}`).",
             transaction_id,
+            applicable_transaction_state,
             transaction.state,
         )
         return False
 
     attachment = get_endorsement_request_attachment(transaction)
-
     if not attachment:
         bound_logger.warning("Could not extract attachment from transaction.")
         return False
 
-    if is_revocation_def_or_entry(attachment):
+    operation = attachment.get("operation")
+    if not operation:
+        logger.debug("Key `operation` not in attachment: `{}`.", attachment)
+        return False
+
+    operation_type = operation.get("type")
+    if not operation_type:
+        logger.debug("Key `type` not in operation attachment.")
+        return False
+
+    if is_revocation_def_or_entry(operation_type):
         bound_logger.debug("Endorsement request is for revocation definition or entry.")
         return True
 
-    if not is_credential_definition_transaction(attachment):
+    if is_attrib_type(operation_type):
+        bound_logger.debug("Endorsement request is for ATTRIB type.")
+        return True
+
+    if not is_credential_definition_transaction(operation_type):
         bound_logger.warning("Endorsement request is not for credential definition.")
-        return False
-
-    if "identifier" not in attachment:
-        bound_logger.warning(
-            "Expected key `identifier` does not exist in extracted attachment. Got attachment: `{}`.",
-            attachment,
-        )
-        return False
-
-    # `operation` key is asserted to exist in `is_credential_definition_transaction`
-    if "ref" not in attachment["operation"]:
-        bound_logger.warning(
-            "Expected key `ref` does not exist in attachment `operation`. Got operation: `{}`.",
-            attachment["operation"],
-        )
         return False
 
     did, schema_id = await get_did_and_schema_id_from_cred_def_attachment(

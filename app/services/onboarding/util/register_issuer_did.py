@@ -1,21 +1,22 @@
+import asyncio
 from logging import Logger
 
 from aries_cloudcontroller import (
     DID,
     AcaPyClient,
+    ConnRecord,
     InvitationCreateRequest,
     InvitationRecord,
 )
 
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.services import acapy_ledger, acapy_wallet
-from app.services.event_handling.sse_listener import SseListener
 from app.services.onboarding.util.set_endorser_metadata import (
     set_author_role,
     set_endorser_info,
     set_endorser_role,
 )
-from shared import ACAPY_ENDORSER_ALIAS, GOVERNANCE_LABEL
+from shared import ACAPY_ENDORSER_ALIAS
 
 
 async def create_connection_with_endorser(
@@ -25,12 +26,15 @@ async def create_connection_with_endorser(
     endorser_did: DID,
     name: str,
     logger: Logger,
-):
+) -> str:
     invitation = await create_endorser_invitation(
         endorser_controller=endorser_controller, name=name, logger=logger
     )
     endorser_connection_id, issuer_connection_id = await wait_for_connection_completion(
-        issuer_controller=issuer_controller, invitation=invitation, logger=logger
+        issuer_controller=issuer_controller,
+        endorser_controller=endorser_controller,
+        invitation=invitation,
+        logger=logger,
     )
     await set_endorser_roles(
         endorser_controller=endorser_controller,
@@ -46,11 +50,13 @@ async def create_connection_with_endorser(
         logger=logger,
     )
 
+    return issuer_connection_id
+
 
 # todo: Migrate to endorser service
 async def create_endorser_invitation(
     *, endorser_controller: AcaPyClient, name: str, logger: Logger
-):
+) -> InvitationRecord:
     logger.debug("Create OOB invitation on behalf of endorser")
     request_body = InvitationCreateRequest(
         alias=name,
@@ -68,14 +74,14 @@ async def create_endorser_invitation(
 
 
 async def wait_for_connection_completion(
-    *, issuer_controller: AcaPyClient, invitation: InvitationRecord, logger: Logger
+    *,
+    issuer_controller: AcaPyClient,
+    endorser_controller: AcaPyClient,
+    invitation: InvitationRecord,
+    logger: Logger,
 ) -> tuple[str, str]:
-    connections_listener = create_sse_listener(
-        topic="connections", wallet_id=GOVERNANCE_LABEL
-    )
-
     logger.debug("Receive invitation from endorser on behalf of issuer")
-    connection_record = await handle_acapy_call(
+    issuer_connection_record = await handle_acapy_call(
         logger=logger,
         acapy_call=issuer_controller.out_of_band.receive_invitation,
         auto_accept=True,
@@ -84,14 +90,14 @@ async def wait_for_connection_completion(
         alias=ACAPY_ENDORSER_ALIAS,
     )
 
+    invitation_msg_id = invitation.invi_msg_id
     try:
-        logger.debug("Waiting for event signalling invitation complete")
-        endorser_connection = await connections_listener.wait_for_event(
-            field="invitation_msg_id",
-            field_id=invitation.invi_msg_id,
-            desired_state="completed",
+        endorser_connection = await wait_endorser_connection_completed(
+            endorser_controller=endorser_controller,
+            invitation_msg_id=invitation_msg_id,
+            logger=logger,
         )
-    except TimeoutError as e:
+    except asyncio.TimeoutError as e:
         logger.error("Waiting for invitation complete event has timed out.")
         raise CloudApiException(
             "Timeout occurred while waiting for connection with endorser to complete.",
@@ -99,7 +105,11 @@ async def wait_for_connection_completion(
         ) from e
 
     logger.info("Connection complete between issuer and endorser.")
-    return endorser_connection["connection_id"], connection_record.connection_id
+
+    endorser_connection_id = endorser_connection.connection_id
+    issuer_connection_id = issuer_connection_record.connection_id
+
+    return endorser_connection_id, issuer_connection_id
 
 
 async def set_endorser_roles(
@@ -109,7 +119,7 @@ async def set_endorser_roles(
     endorser_connection_id: str,
     issuer_connection_id: str,
     logger: Logger,
-):
+) -> None:
     logger.debug("Setting roles for endorser")
     await set_endorser_role(
         endorser_controller=endorser_controller,
@@ -133,7 +143,7 @@ async def configure_endorsement(
     issuer_connection_id: str,
     endorser_did: str,
     logger: Logger,
-):
+) -> None:
     # Make sure endorsement has been configured
     # There is currently no way to retrieve endorser info. We'll just set it
     # to make sure the endorser info is set.
@@ -153,7 +163,7 @@ async def register_issuer_did(
     issuer_controller: AcaPyClient,
     issuer_label: str,
     logger: Logger,
-):
+) -> DID:
     logger.info("Creating DID for issuer")
     issuer_did = await acapy_wallet.create_did(issuer_controller)
 
@@ -175,32 +185,100 @@ async def register_issuer_did(
         create_transaction_for_endorser=True,
     )
 
-    endorsements_listener = create_sse_listener(
-        topic="endorsements", wallet_id=GOVERNANCE_LABEL
-    )
-
-    try:
-        logger.debug("Waiting for endorsement request received")
-        txn_record = await endorsements_listener.wait_for_state(
-            desired_state="request-received"
-        )
-    except TimeoutError as e:
-        logger.error("Waiting for endorsement request has timed out.")
-        raise CloudApiException(
-            "Timeout occurred while waiting for endorsement request.", 504
-        ) from e
-
-    logger.bind(body=txn_record["transaction_id"]).debug("Endorsing transaction")
-    await handle_acapy_call(
-        logger=logger,
-        acapy_call=endorser_controller.endorse_transaction.endorse_transaction,
-        tran_id=txn_record["transaction_id"],
-    )
-
-    logger.debug("Issuer DID registered and endorsed successfully.")
+    logger.debug("Issuer DID registered.")
     return issuer_did
 
 
-def create_sse_listener(wallet_id: str, topic: str) -> SseListener:
-    # Helper method for passing a MockListener to this module in tests
-    return SseListener(topic=topic, wallet_id=wallet_id)
+async def wait_endorser_connection_completed(
+    *,
+    endorser_controller: AcaPyClient,
+    invitation_msg_id: str,
+    logger: Logger,
+    max_attempts: int = 15,
+    retry_delay: float = 0.5,
+) -> ConnRecord:
+    attempt = 0
+
+    while attempt < max_attempts:
+        try:
+            invitation_connections = (
+                await endorser_controller.connection.get_connections(
+                    invitation_msg_id=invitation_msg_id
+                )
+            )
+
+            for conn_record in invitation_connections.results:
+                if conn_record.rfc23_state == "completed":
+                    return conn_record
+
+        except Exception as e:
+            if attempt + 1 == max_attempts:
+                logger.error(
+                    "Maximum number of retries exceeded with exception. Failing."
+                )
+                raise asyncio.TimeoutError from e  # Raise TimeoutError if max attempts exceeded
+
+            logger.warning(
+                (
+                    "Exception encountered (attempt {}). "
+                    "Reason: \n{}.\n"
+                    "Retrying in {} seconds..."
+                ),
+                attempt + 1,
+                e,
+                retry_delay,
+            )
+
+        await asyncio.sleep(retry_delay)
+        attempt += 1
+
+    logger.error("Maximum number of retries exceeded without returning expected value.")
+    raise asyncio.TimeoutError
+
+
+async def wait_issuer_did_transaction_endorsed(
+    *,
+    issuer_controller: AcaPyClient,
+    issuer_connection_id: str,
+    logger: Logger,
+    max_attempts: int = 15,
+    retry_delay: float = 1.0,
+) -> None:
+    attempt = 0
+
+    while attempt < max_attempts:
+        try:
+            transactions_response = (
+                await issuer_controller.endorse_transaction.get_records()
+            )
+
+            for transaction in transactions_response.results:
+                if (
+                    transaction.connection_id == issuer_connection_id
+                    and transaction.state == "transaction_acked"
+                ):
+                    return
+
+        except Exception as e:
+            if attempt + 1 == max_attempts:
+                logger.error(
+                    "Maximum number of retries exceeded with exception. Failing."
+                )
+                raise asyncio.TimeoutError from e  # Raise TimeoutError if max attempts exceeded
+
+            logger.warning(
+                (
+                    "Exception encountered (attempt {}). "
+                    "Reason: \n{}.\n"
+                    "Retrying in {} seconds..."
+                ),
+                attempt + 1,
+                e,
+                retry_delay,
+            )
+
+        await asyncio.sleep(retry_delay)
+        attempt += 1
+
+    logger.error("Maximum number of retries exceeded while waiting for transaction ack")
+    raise asyncio.TimeoutError

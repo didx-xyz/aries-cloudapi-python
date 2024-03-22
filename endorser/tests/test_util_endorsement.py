@@ -13,7 +13,7 @@ def valid_endorsement():
 
 
 @pytest.mark.anyio
-async def test_should_accept_endorsement_success(
+async def test_should_accept_endorsement_success_claim_def(
     mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
     # Mock the dependency functions
@@ -21,12 +21,8 @@ async def test_should_accept_endorsement_success(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
-    )
-    mocker.patch(
-        "endorser.util.endorsement.is_credential_definition_transaction",
-        return_value=True,
     )
     mocker.patch(
         "endorser.util.endorsement.get_did_and_schema_id_from_cred_def_attachment",
@@ -47,6 +43,30 @@ async def test_should_accept_endorsement_success(
 
 
 @pytest.mark.anyio
+async def test_should_accept_endorsement_fail_not_claim_def(
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
+):
+    # Mock the dependency functions
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={
+            "identifier": "test-identifier",
+            "operation": {"ref": "test-ref", "type": "99"},
+        },
+    )
+    # Mock transaction response
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert result is False
+
+
+@pytest.mark.anyio
 async def test_should_accept_endorsement_fail_no_attach(
     mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
@@ -62,6 +82,84 @@ async def test_should_accept_endorsement_fail_no_attach(
 
 
 @pytest.mark.anyio
+async def test_should_accept_endorsement_fail_no_operation(
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
+):
+    # Assume the transaction has no operation field
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={"something": "else"},
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert result is False
+
+
+@pytest.mark.anyio
+async def test_should_accept_endorsement_fail_no_type(
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
+):
+    # Assume the transaction has no type field
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={"operation": {"no": "type"}},
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert result is False
+
+
+@pytest.mark.anyio
+async def test_should_accept_endorsement_is_cred_def(
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
+):
+    # Mock transaction response
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={
+            "identifier": "test-identifier",
+            "operation": {"ref": "test-ref", "type": "113"},  # 113 for cred def
+        },
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert result is True
+
+
+@pytest.mark.anyio
+async def test_should_accept_endorsement_is_attrib(
+    mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
+):
+    # Mock transaction response
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
+    mocker.patch(
+        "endorser.util.endorsement.get_endorsement_request_attachment",
+        return_value={
+            "identifier": "test-identifier",
+            "operation": {"ref": "test-ref", "type": "100"},  # 100 for attrib
+        },
+    )
+
+    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+
+    assert result is True
+
+
+@pytest.mark.anyio
 async def test_should_accept_endorsement_fail_not_cred_def(
     mock_acapy_client, valid_endorsement, mocker  # pylint: disable=redefined-outer-name
 ):
@@ -70,7 +168,7 @@ async def test_should_accept_endorsement_fail_not_cred_def(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "99"},
         },
     )
 
@@ -150,7 +248,7 @@ async def test_should_accept_endorsement_retries_on_http_exception(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
     )
     mocker.patch(
@@ -195,7 +293,7 @@ async def test_should_accept_endorsement_fails_after_max_retries(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
     )
     mocker.patch(

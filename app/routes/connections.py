@@ -173,11 +173,11 @@ async def get_connection_by_id(
     return result
 
 
-@router.delete("/{connection_id}", status_code=204)
+@router.delete("/{connection_id}", status_code=200)
 async def delete_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth),
-) -> None:
+):
     """
     Delete connection by id.
 
@@ -196,3 +196,4 @@ async def delete_connection_by_id(
         )
 
     bound_logger.info("Successfully deleted connection by ID.")
+    return {}  # todo change to 204 in next breaking release

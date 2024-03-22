@@ -142,9 +142,6 @@ async def test_onboard_issuer_no_public_did(
     when(acapy_ledger).register_nym_on_ledger(...).thenReturn(to_async())
     when(acapy_ledger).accept_taa_if_required(...).thenReturn(to_async())
     when(acapy_wallet).set_public_did(...).thenReturn(to_async())
-    when(endorser_controller.endorse_transaction).endorse_transaction(...).thenReturn(
-        to_async()
-    )
 
     # Create an invitation as well
     invitation_url = "https://invitation.com/"

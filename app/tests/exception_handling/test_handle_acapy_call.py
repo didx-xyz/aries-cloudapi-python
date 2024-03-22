@@ -1,5 +1,5 @@
 from logging import Logger
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from aries_cloudcontroller.exceptions import (
@@ -17,10 +17,13 @@ from app.exceptions.handle_acapy_call import handle_acapy_call
 dummy_acapy_call = "dummy_acapy_call"
 
 
+# pylint: disable=redefined-outer-name
+
+
 # Mock logger to avoid actual logging during tests
 @pytest.fixture
 def mock_logger():
-    return AsyncMock(spec=Logger)
+    return Mock(spec=Logger)
 
 
 # Sample Async function to simulate ACA-Py call

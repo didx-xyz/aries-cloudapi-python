@@ -190,11 +190,14 @@ async def register_issuer_did(
 
 
 async def wait_endorser_connection_completed(
-    *, endorser_controller: AcaPyClient, invitation_msg_id: str, logger: Logger
+    *,
+    endorser_controller: AcaPyClient,
+    invitation_msg_id: str,
+    logger: Logger,
+    max_attempts: int = 15,
+    retry_delay: float = 0.5,
 ) -> ConnRecord:
     attempt = 0
-    max_attempts = 15
-    retry_delay = 0.5
 
     while attempt < max_attempts:
         try:
@@ -234,11 +237,14 @@ async def wait_endorser_connection_completed(
 
 
 async def wait_issuer_did_transaction_endorsed(
-    *, issuer_controller: AcaPyClient, issuer_connection_id: str, logger: Logger
+    *,
+    issuer_controller: AcaPyClient,
+    issuer_connection_id: str,
+    logger: Logger,
+    max_attempts: int = 15,
+    retry_delay: float = 1.0,
 ) -> None:
     attempt = 0
-    max_attempts = 15
-    retry_delay = 1
 
     while attempt < max_attempts:
         try:

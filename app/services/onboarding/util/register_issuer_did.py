@@ -196,7 +196,7 @@ async def wait_endorser_connection_completed(
     max_attempts = 15
     retry_delay = 0.5
 
-    while attempt + 1 < max_attempts:
+    while attempt < max_attempts:
         try:
             invitation_connections = (
                 await endorser_controller.connection.get_connections(
@@ -240,7 +240,7 @@ async def wait_issuer_did_transaction_endorsed(
     max_attempts = 15
     retry_delay = 1
 
-    while attempt + 1 < max_attempts:
+    while attempt < max_attempts:
         try:
             transactions_response = (
                 await issuer_controller.endorse_transaction.get_records()

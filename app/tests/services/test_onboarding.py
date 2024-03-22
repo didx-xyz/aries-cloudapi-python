@@ -180,6 +180,54 @@ async def test_onboard_issuer_no_public_did(
 
 
 @pytest.mark.anyio
+async def test_onboard_issuer_no_public_did_endorser_did_exception(
+    mock_agent_controller: AcaPyClient,
+):
+    endorser_controller = get_mock_agent_controller()
+    when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
+        CloudApiException(detail="Error")
+    )
+    when(acapy_wallet).get_public_did(controller=endorser_controller).thenRaise(
+        CloudApiException(detail="Error")
+    )
+
+    with pytest.raises(CloudApiException, match="Unable to get endorser public DID."):
+        await issuer.onboard_issuer(
+            issuer_label="issuer_name",
+            endorser_controller=endorser_controller,
+            issuer_controller=mock_agent_controller,
+            issuer_wallet_id="issuer_wallet_id",
+        )
+
+
+@pytest.mark.anyio
+async def test_onboard_issuer_no_public_did_connection_error(
+    mock_agent_controller: AcaPyClient,
+):
+    endorser_controller = get_mock_agent_controller()
+    when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenRaise(
+        CloudApiException(detail="Error")
+    )
+    when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(
+        to_async(did_object)
+    )
+
+    when(mock_agent_controller.out_of_band).receive_invitation(...).thenRaise(
+        CloudApiException(detail="Error")
+    )
+
+    with pytest.raises(
+        CloudApiException, match="Error creating connection with endorser"
+    ):
+        await issuer.onboard_issuer(
+            issuer_label="issuer_name",
+            endorser_controller=endorser_controller,
+            issuer_controller=mock_agent_controller,
+            issuer_wallet_id="issuer_wallet_id",
+        )
+
+
+@pytest.mark.anyio
 async def test_onboard_verifier_public_did_exists(mock_agent_controller: AcaPyClient):
     when(acapy_wallet).get_public_did(controller=mock_agent_controller).thenReturn(
         to_async(did_object)

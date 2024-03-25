@@ -89,6 +89,11 @@ valid_operation_types = [
 
 
 def payload_is_applicable_for_endorser(payload: Dict[str, Any], logger: Logger) -> bool:
+    transaction_id = payload.get("transaction_id")
+    if not transaction_id:
+        logger.warning("No transaction id associated with this endorsement event")
+        return False
+
     state = payload.get("state")
 
     if state == applicable_transaction_state:

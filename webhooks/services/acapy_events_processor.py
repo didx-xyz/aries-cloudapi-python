@@ -326,7 +326,10 @@ class AcaPyEventsProcessor:
             and payload_is_applicable_for_endorser(payload, logger=bound_logger)
         ):
             logger.info("Forwarding endorsement event for Endorser service")
-            self.redis_service.add_endorsement_event(event_json=webhook_event_json)
+            transaction_id = payload["transaction_id"]  # check has asserted key exists
+            self.redis_service.add_endorsement_event(
+                event_json=webhook_event_json, transaction_id=transaction_id
+            )
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(

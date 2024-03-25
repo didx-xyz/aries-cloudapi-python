@@ -282,17 +282,23 @@ class WebhooksRedisService(RedisService):
         self.logger.info("Total wallet IDs fetched: {}.", len(wallet_ids))
         return list(wallet_ids)
 
-    def add_endorsement_event(self, event_json: str) -> None:
+    def add_endorsement_event(self, event_json: str, transaction_id: str) -> None:
         """
         Add an endorsement event to bespoke prefix for the endorsement service.
 
         Args:
             event_json: The JSON string representation of the endorsement event.
         """
-        self.logger.trace("Write endorsement entry to redis")
+        bound_logger = self.logger.bind(body={"transaction_id": transaction_id})
+        bound_logger.debug(
+            "Write endorsement entry to redis for transaction id: {}", transaction_id
+        )
 
         # Define key for this transaction, using uuid4 to ensure uniqueness
-        redis_key = f"{self.endorsement_redis_prefix}:{uuid4().hex}"
-        self.set(key=redis_key, value=event_json)
+        redis_key = f"{self.endorsement_redis_prefix}:{transaction_id}"
+        result = self.set(key=redis_key, value=event_json)
 
-        self.logger.trace("Successfully wrote endorsement entry to redis.")
+        if result:
+            bound_logger.debug("Successfully wrote endorsement entry to redis.")
+        else:
+            bound_logger.warning("Redis key for this endorsement entry is already set.")

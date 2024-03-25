@@ -314,3 +314,59 @@ async def test_handle_unprocessable_event(acapy_events_processor_mock):
     acapy_events_processor_mock.redis_service.set.assert_called_with(
         key=unittest.mock.ANY, value=expected_error_message
     )
+
+
+@pytest.mark.anyio
+async def test_obfuscate_sensitive_data_endorse_transaction(
+    acapy_events_processor_mock, mocker
+):
+    acapy_topic = "endorse_transaction"
+    payload = {"some_key": "some_value"}
+    obfuscated_payload = {"obfuscated": "payload"}
+    mocker.patch(
+        "webhooks.services.acapy_events_processor.obfuscate_primary_data_in_payload",
+        return_value=obfuscated_payload,
+    )
+
+    result = acapy_events_processor_mock._obfuscate_sensitive_data(acapy_topic, payload)
+
+    assert result == obfuscated_payload
+
+
+@pytest.mark.anyio
+async def test_obfuscate_sensitive_data_issue_credential_v2_0_indy(
+    acapy_events_processor_mock,
+):
+    acapy_topic = "issue_credential_v2_0_indy"
+    payload = {
+        "cred_request_metadata": {
+            "master_secret_blinding_data": {
+                "v_prime": "sensitive_data_v_prime",
+                "vr_prime": "sensitive_data_vr_prime",
+                "other_field": "unchanged_data",
+            }
+        }
+    }
+
+    expected_payload = payload.copy()
+    expected_payload["cred_request_metadata"]["master_secret_blinding_data"][
+        "v_prime"
+    ] = "REDACTED"
+    expected_payload["cred_request_metadata"]["master_secret_blinding_data"][
+        "vr_prime"
+    ] = "REDACTED"
+
+    result = acapy_events_processor_mock._obfuscate_sensitive_data(acapy_topic, payload)
+
+    assert result == expected_payload
+
+
+@pytest.mark.anyio
+async def test_obfuscate_sensitive_data_other(acapy_events_processor_mock):
+    # Other topics should be unchanged
+    acapy_topic = "other"
+    payload = {"some_key": "some_value"}
+
+    result = acapy_events_processor_mock._obfuscate_sensitive_data(acapy_topic, payload)
+
+    assert result == payload

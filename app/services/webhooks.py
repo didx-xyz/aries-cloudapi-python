@@ -20,7 +20,7 @@ async def get_hooks_for_wallet_by_topic(wallet_id: str, topic: CloudApiTopics) -
             ).json()
             return hooks if hooks else []
     except HTTPError as e:
-        bound_logger.exception("HTTP Error caught when fetching webhooks.")
+        bound_logger.error("HTTP Error caught when fetching webhooks: {}.", e)
         raise e
 
 
@@ -35,5 +35,5 @@ async def get_hooks_for_wallet(wallet_id: str) -> List:
             hooks = (await client.get(f"{WEBHOOKS_URL}/webhooks/{wallet_id}")).json()
             return hooks if hooks else []
     except HTTPError as e:
-        bound_logger.exception("HTTP Error caught when fetching webhooks.")
+        bound_logger.error("HTTP Error caught when fetching webhooks: {}.", e)
         raise e

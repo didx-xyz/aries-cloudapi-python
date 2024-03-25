@@ -1,13 +1,16 @@
 import asyncio
 import datetime
 import sys
-from typing import List, NoReturn
+from typing import Any, Dict, List, NoReturn
 from uuid import uuid4
 
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
-from shared.models.endorsement import payload_is_applicable_for_endorser
+from shared.models.endorsement import (
+    obfuscate_primary_data_in_payload,
+    payload_is_applicable_for_endorser,
+)
 from shared.util.rich_parsing import parse_json_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
@@ -281,13 +284,17 @@ class AcaPyEventsProcessor:
 
         payload = event.payload.payload
 
+        obfuscated_payload = self._obfuscate_sensitive_data(
+            acapy_topic=acapy_topic, payload=payload
+        )
+
         bound_logger = logger.bind(
             body={
                 "wallet_id": wallet_id,
                 "acapy_topic": acapy_topic,
                 "origin": origin,
                 "group_id": group_id,
-                "payload": payload,
+                "payload": obfuscated_payload,
             }
         )
         bound_logger.debug("Processing ACA-Py Redis webhook event")
@@ -359,3 +366,30 @@ class AcaPyEventsProcessor:
             error_message,
         )
         self.redis_service.set(key=unprocessable_key, value=error_message)
+
+    def _obfuscate_sensitive_data(
+        self, acapy_topic: str, payload: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        if acapy_topic == "endorse_transaction":
+            return obfuscate_primary_data_in_payload(payload, logger)
+
+        if acapy_topic == "issue_credential_v2_0_indy":
+            if (
+                "cred_request_metadata" in payload
+                and "master_secret_blinding_data" in payload["cred_request_metadata"]
+            ):
+                obfuscated_payload = payload.copy()
+                master_secret_blinding_data = obfuscated_payload[
+                    "cred_request_metadata"
+                ]["master_secret_blinding_data"]
+
+                if "v_prime" in master_secret_blinding_data:
+                    master_secret_blinding_data["v_prime"] = "REDACTED"
+
+                if "vr_prime" in master_secret_blinding_data:
+                    master_secret_blinding_data["vr_prime"] = "REDACTED"
+
+                return obfuscated_payload
+
+        # No modification:
+        return payload

@@ -6,7 +6,7 @@ USER root
 RUN pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.7.0
 
 # install redis-events plugin
-RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-03-11#subdirectory=redis_events
+RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-03-25#subdirectory=redis_events
 
 COPY scripts/startup.sh startup.sh
 RUN chmod +x ./startup.sh

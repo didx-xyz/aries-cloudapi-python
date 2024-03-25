@@ -10,6 +10,7 @@ FILE_LOG_LEVEL = os.getenv("FILE_LOG_LEVEL", "DEBUG").upper()
 ENABLE_FILE_LOGGING = os.getenv("ENABLE_FILE_LOGGING", "").upper() == "TRUE"
 DISABLE_COLORIZE_LOGS = os.getenv("DISABLE_COLORIZE_LOGS", "").upper() == "TRUE"
 ENABLE_SERIALIZE_LOGS = os.getenv("ENABLE_SERIALIZE_LOGS", "").upper() == "TRUE"
+LOGURU_DIAGNOSE = os.getenv("LOGURU_DIAGNOSE", "").upper() == "TRUE"
 
 colorize = not DISABLE_COLORIZE_LOGS
 serialize = ENABLE_SERIALIZE_LOGS
@@ -130,6 +131,7 @@ def get_logger(name: str):
         logger_.add(
             sys.stdout,
             level=STDOUT_LOG_LEVEL,
+            diagnose=True,  # for local dev
             format=formatter,
             colorize=colorize,
         )
@@ -137,6 +139,7 @@ def get_logger(name: str):
         logger_.add(
             sys.stdout,
             level=STDOUT_LOG_LEVEL,
+            diagnose=LOGURU_DIAGNOSE,  # default = disabled for serialized logs
             format=_serialize_record,  # Use our custom serialization formatter
         )
 
@@ -149,6 +152,7 @@ def get_logger(name: str):
                 retention="7 days",  # keep logs for up to 7 days
                 enqueue=True,  # asynchronous
                 level=FILE_LOG_LEVEL,
+                diagnose=True,
                 format=formatter_builder("blue"),
                 serialize=serialize,
             )

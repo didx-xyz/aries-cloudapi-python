@@ -77,7 +77,7 @@ async def coroutine_with_retry_until_value(
                     return result
 
             if attempt + 1 < max_attempts:
-                logger.info(
+                logger.debug(
                     (
                         "Coroutine returned {} instead of expected {} "
                         "(attempt {}). Retrying in {} seconds..."

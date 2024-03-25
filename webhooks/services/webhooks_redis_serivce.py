@@ -68,7 +68,7 @@ class WebhooksRedisService(RedisService):
                 "More than one redis key found for wallet: {}", wallet_id
             )
 
-        result = list_keys[0]
+        result = list_keys[0].decode()
         self.logger.debug("Returning matched key: {}.", result)
         return result
 

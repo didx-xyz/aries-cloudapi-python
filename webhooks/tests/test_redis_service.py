@@ -51,7 +51,7 @@ async def test_get_json_cloudapi_events_by_wallet():
     redis_client = Mock()
     redis_client.zrange = Mock(return_value=[e.encode() for e in json_entries])
     redis_service = WebhooksRedisService(redis_client)
-    redis_service.match_keys = Mock(return_value=["dummy_key"])
+    redis_service.match_keys = Mock(return_value=[b"dummy_key"])
 
     events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id)
 
@@ -128,7 +128,7 @@ async def test_get_json_cloudapi_events_by_timestamp():
     redis_client.zrangebyscore = Mock(return_value=[e.encode() for e in json_entries])
 
     redis_service = WebhooksRedisService(redis_client)
-    expected_key = f"{redis_service.cloudapi_redis_prefix}:{wallet_id}"
+    expected_key = f"{redis_service.cloudapi_redis_prefix}:{wallet_id}".encode()
 
     redis_service.match_keys = Mock(return_value=[expected_key])
 

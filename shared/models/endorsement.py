@@ -112,3 +112,60 @@ def payload_is_applicable_for_endorser(payload: Dict[str, Any], logger: Logger) 
             operation_type,
         )
     return is_applicable
+
+
+def obfuscate_primary_data_in_payload(
+    payload: Dict[str, Any], logger: Logger
+) -> Dict[str, Any]:
+    # Endorsement event payloads can contain a key called "master_secret", which we will obfuscate.
+    # This value is deeply nested in the payload, as part of the `json` string
+    # within `messages_attach: [{`data`:{...}}]`, or in `signature_response: [{signature: {"<did>: {...}}]`
+
+    payload_copy = payload.copy()
+
+    # Iterate over each 'messages_attach' item, if it exists
+    for message_attach in payload_copy.get("messages_attach", []):
+        # Ensure 'data' and 'data['json']' fields exist and contain JSON strings
+        if "data" in message_attach and "json" in message_attach["data"]:
+            try:
+                # Parse the JSON string in 'data['json']'
+                data_json = orjson.loads(message_attach["data"]["json"])
+
+                # Check if the 'primary' field exists in the parsed JSON and obfuscate it
+                if "operation" in data_json and "data" in data_json["operation"]:
+                    if "primary" in data_json["operation"]["data"]:
+                        data_json["operation"]["data"]["primary"] = "[REDACTED]"
+
+                    # While we are here, let's obfuscate the revocation field too. Big payload with many irrelevant keys
+                    if "revocation" in data_json["operation"]["data"]:
+                        data_json["operation"]["data"]["revocation"] = "[REDACTED]"
+
+                # Replace the original JSON string with the modified version
+                message_attach["data"]["json"] = orjson.dumps(data_json).decode()
+
+            except orjson.JSONDecodeError:
+                logger.debug("Could not parse json in message_attach")
+
+    # Iterate over each 'signature_response' item, if it exists
+    for signature_response in payload_copy.get("signature_response", []):
+        # Ensure 'data' and 'data['json']' fields exist and contain JSON strings
+        if "signature" in signature_response:
+            for did, signature_json_str in signature_response["signature"].items():
+                try:
+                    signature_json = orjson.loads(signature_json_str)
+                    if (
+                        "operation" in signature_json
+                        and "data" in signature_json["operation"]
+                        and "primary" in signature_json["operation"]["data"]
+                    ):
+                        signature_json["operation"]["data"]["primary"] = "[REDACTED]"
+
+                    # Replace the original JSON string with the modified version
+                    signature_response["signature"][did] = orjson.dumps(
+                        signature_json
+                    ).decode()
+
+                except orjson.JSONDecodeError:
+                    logger.debug("Could not parse json in signature_response")
+
+    return payload_copy

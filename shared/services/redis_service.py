@@ -203,7 +203,7 @@ class RedisService:
 
         return collected_keys
 
-    def match_keys(self, match_pattern: str = "*") -> List[str]:
+    def match_keys(self, match_pattern: str = "*") -> List[bytes]:
         """
         Fetches keys from all Redis cluster nodes matching the pattern.
 

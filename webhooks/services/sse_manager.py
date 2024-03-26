@@ -470,6 +470,11 @@ class SseManager:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
 
+    def check_wallet_belongs_to_group(self, wallet_id: str, group_id: str) -> bool:
+        return self.redis_service.check_wallet_belongs_to_group(
+            wallet_id=wallet_id, group_id=group_id
+        )
+
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE

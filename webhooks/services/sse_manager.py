@@ -173,7 +173,7 @@ class SseManager:
             if isinstance(message_data, bytes):
                 message_data = message_data.decode("utf-8")
 
-            wallet_id, group_id, timestamp_ns_str = message_data.split(":")
+            wallet_id, timestamp_ns_str = message_data.split(":")
             timestamp_ns = int(timestamp_ns_str)
 
             # Fetch the event with the exact timestamp from the sorted set

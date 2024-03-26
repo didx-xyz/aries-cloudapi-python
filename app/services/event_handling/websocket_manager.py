@@ -20,22 +20,23 @@ class WebsocketManager:
 
     @staticmethod
     async def subscribe(
-        websocket: WebSocket, wallet_id: str = "", topic: str = ""
+        websocket: WebSocket,
+        *,
+        group_id: str = "",
+        wallet_id: str = "",
+        topic: str = "",
     ) -> str:
         """
         Subscribe a websocket connection to a specific topic.
         Returns a string representing a unique ID for this client
         """
 
-        if wallet_id and topic:
-            subscribed_topic = f"{topic}-{wallet_id}"
-        elif wallet_id:
-            subscribed_topic = wallet_id
-        elif topic:
-            subscribed_topic = topic
-        else:
-            logger.error("Subscribe requires `topic` or `wallet_id` in request.")
-            return
+        subscribed_topic = group_id  # general prefix
+
+        if wallet_id:
+            subscribed_topic += f":{wallet_id}"
+        if topic:
+            subscribed_topic += f":{topic}"
 
         async def callback(data: str, _: str) -> None:
             """

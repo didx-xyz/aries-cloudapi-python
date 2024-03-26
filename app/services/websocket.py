@@ -38,6 +38,8 @@ async def websocket_auth(
 
 async def handle_websocket(
     websocket: WebSocket,
+    *,
+    group_id: str,
     wallet_id: str,
     topic: str,
     auth: AcaPyAuthVerified,
@@ -64,7 +66,9 @@ async def handle_websocket(
     uuid = None
     try:
         # Subscribe the WebSocket connection to the wallet / topic
-        uuid = await WebsocketManager.subscribe(websocket, wallet_id, topic)
+        uuid = await WebsocketManager.subscribe(
+            websocket, group_id=group_id, wallet_id=wallet_id, topic=topic
+        )
 
         # Keep the connection open until the client disconnects
         while True:

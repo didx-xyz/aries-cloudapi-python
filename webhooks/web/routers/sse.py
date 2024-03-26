@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Generator
+from typing import Any, AsyncGenerator
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import BackgroundTasks, Depends, Query, Request
@@ -63,7 +63,7 @@ async def sse_subscribe_wallet(
         "SSE: GET request received: Subscribe to wallet events on all topics"
     )
 
-    async def event_stream() -> Generator[str, Any, None]:
+    async def event_stream() -> AsyncGenerator[str, Any, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -121,7 +121,7 @@ async def sse_subscribe_wallet_topic(
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
 
-    async def event_stream() -> Generator[str, Any, None]:
+    async def event_stream() -> AsyncGenerator[str, Any, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -178,7 +178,7 @@ async def sse_subscribe_event_with_state(
         "waiting for specific state"
     )
 
-    async def event_stream():
+    async def event_stream() -> AsyncGenerator[str, Any, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -244,7 +244,7 @@ async def sse_subscribe_stream_with_fields(
         "only events with specific field-id pairs"
     )
 
-    async def event_stream():
+    async def event_stream() -> AsyncGenerator[str, Any, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -313,7 +313,7 @@ async def sse_subscribe_event_with_field_and_state(
         "waiting for payload with field-id pair and specific state"
     )
 
-    async def event_stream():
+    async def event_stream() -> AsyncGenerator[str, Any, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(

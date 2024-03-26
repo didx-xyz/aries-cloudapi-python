@@ -207,11 +207,7 @@ class WebhooksRedisService(RedisService):
         return result
 
     def get_json_cloudapi_events_by_timestamp(
-        self,
-        wallet_id: str,
-        start_timestamp: float,
-        end_timestamp: float = "+inf",
-        group_id: Optional[str] = None,
+        self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
     ) -> List[str]:
         """
         Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID within a timestamp range.
@@ -227,17 +223,10 @@ class WebhooksRedisService(RedisService):
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by timestamp for wallet")
 
-        if group_id:
-            redis_key = self.get_cloudapi_event_redis_key(
-                wallet_id=wallet_id, group_id=group_id
-            )
-        else:
-            redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
-            if not redis_key:
-                bound_logger.debug(
-                    "No entries found for wallet without matching redis key"
-                )
-                return []
+        redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
+        if not redis_key:
+            bound_logger.debug("No entries found for wallet without matching redis key")
+            return []
 
         entries: List[bytes] = self.redis.zrangebyscore(
             redis_key, min=start_timestamp, max=end_timestamp

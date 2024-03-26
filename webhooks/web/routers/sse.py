@@ -1,8 +1,8 @@
 import asyncio
-from typing import Any, Generator
+from typing import AsyncGenerator, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import BackgroundTasks, Depends, Query, Request
+from fastapi import BackgroundTasks, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
 from shared import DISCONNECT_CHECK_PERIOD, QUEUE_POLL_PERIOD, SSE_TIMEOUT, APIRouter
@@ -29,8 +29,22 @@ lookback_time_field = Query(
     ),
 )
 
+group_id_field = Query(
+    default=None,
+    description="Group ID to which the wallet belongs",
+)
 
-async def check_disconnection(request: Request, stop_event: asyncio.Event):
+
+class BadGroupIdException(HTTPException):
+    """Custom exception when group_id is specified and no events exist on redis"""
+
+    def __init__(self):
+        super().__init__(
+            status_code=404, detail="No events found for this wallet/group combination"
+        )
+
+
+async def check_disconnection(request: Request, stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
         if await request.is_disconnected():
             logger.debug("SSE check_disconnection: request has disconnected.")
@@ -49,8 +63,9 @@ async def sse_subscribe_wallet(
     background_tasks: BackgroundTasks,
     wallet_id: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     """
     Subscribe to server-side events for a specific wallet ID.
 
@@ -58,12 +73,17 @@ async def sse_subscribe_wallet(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    bound_logger = logger.bind(body={"wallet_id": wallet_id})
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "group_id": group_id})
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet events on all topics"
     )
 
-    async def event_stream() -> Generator[str, Any, None]:
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise BadGroupIdException()
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -108,8 +128,9 @@ async def sse_subscribe_wallet_topic(
     wallet_id: str,
     topic: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     """
     Subscribe to server-side events for a specific topic and wallet ID.
 
@@ -118,10 +139,17 @@ async def sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+    bound_logger = logger.bind(
+        body={"wallet_id": wallet_id, "group_id": group_id, "topic": topic}
+    )
     bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
 
-    async def event_stream() -> Generator[str, Any, None]:
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise BadGroupIdException()
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -168,27 +196,28 @@ async def sse_subscribe_event_with_state(
     topic: str,
     desired_state: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     bound_logger = logger.bind(
-        body={"wallet_id": wallet_id, "topic": topic, "desired_state": desired_state}
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "topic": topic,
+            "desired_state": desired_state,
+        }
     )
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet event by topic, "
         "waiting for specific state"
     )
 
-    # Special case: Endorsements only contain two fields: `state` and `transaction_id`.
-    # Endorsement Listeners will query by state only, in order to get the relevant transaction id.
-    # So, a problem arises because the Admin wallet can listen for "request-received",
-    # and we may return transaction_ids matching that state, but they have already been endorsed.
-    # So, instead of imposing an arbitrary sleep duration for the listeners, for the event to arrive,
-    # we will instead only return endorsement records if their state in cache isn't also acked or endorsed
-    # Therefore, before sending events, we will check the state, and use an ignore list, as follows.
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise BadGroupIdException()
 
-    async def event_stream():
-        ignore_list = []
-
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -209,17 +238,6 @@ async def sse_subscribe_event_with_state(
                     break
                 try:
                     payload = dict(event.payload)  # to check if keys exist in payload
-
-                    if topic == "endorsements" and desired_state == "request-received":
-                        if (
-                            payload["state"]
-                            in ["transaction-acked", "transaction-endorsed"]
-                            and payload["transaction_id"] not in ignore_list
-                        ):
-                            ignore_list += (payload["transaction_id"],)
-                            continue
-                        if payload["transaction_id"] in ignore_list:
-                            continue
 
                     if "state" in payload and payload["state"] == desired_state:
                         result = event.model_dump_json()
@@ -255,17 +273,28 @@ async def sse_subscribe_stream_with_fields(
     field: str,
     field_id: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     bound_logger = logger.bind(
-        body={"wallet_id": wallet_id, "topic": topic, field: field_id}
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "topic": topic,
+            field: field_id,
+        }
     )
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet events by topic, "
         "only events with specific field-id pairs"
     )
 
-    async def event_stream():
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise BadGroupIdException()
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -319,11 +348,13 @@ async def sse_subscribe_event_with_field_and_state(
     field_id: str,
     desired_state: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     bound_logger = logger.bind(
         body={
             "wallet_id": wallet_id,
+            "group_id": group_id,
             "topic": topic,
             field: field_id,
             "desired_state": desired_state,
@@ -334,7 +365,12 @@ async def sse_subscribe_event_with_field_and_state(
         "waiting for payload with field-id pair and specific state"
     )
 
-    async def event_stream():
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise BadGroupIdException()
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(

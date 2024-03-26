@@ -319,6 +319,32 @@ class WebhooksRedisService(RedisService):
         if result:
             bound_logger.debug("Successfully wrote endorsement entry to redis.")
         else:
-            bound_logger.warning(
-                "Redis key for this endorsement entry is already set."
-            )  #
+            bound_logger.warning("Redis key for this endorsement entry is already set.")
+
+        self.logger.trace("Successfully wrote endorsement entry to redis.")
+
+    def check_wallet_belongs_to_group(self, wallet_id: str, group_id: str) -> bool:
+        """
+        Return a boolean indicating that the wallet_id belongs to the group_id or not
+        """
+        self.logger.trace("Checking if wallet belongs to group, based on redis keys")
+
+        wallet_group_key = self.get_cloudapi_event_redis_key(wallet_id, group_id)
+        self.logger.debug("Fetching redis keys matching pattern: {}", wallet_group_key)
+        list_keys = self.match_keys(wallet_group_key)
+
+        if not list_keys:
+            self.logger.debug(
+                "No redis keys found matching the pattern: {}.", wallet_group_key
+            )
+            return False
+
+        if len(list_keys) > 1:
+            self.logger.warning(
+                "More than one redis key found for pattern: {}", wallet_group_key
+            )
+
+        self.logger.debug(
+            "Validated that wallet {} belongs to group {}.", wallet_id, group_id
+        )
+        return True

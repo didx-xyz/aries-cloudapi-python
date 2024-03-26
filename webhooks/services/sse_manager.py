@@ -465,6 +465,23 @@ class SseManager:
             # Wait for a while between cleanup operations
             await asyncio.sleep(QUEUE_CLEANUP_PERIOD)
 
+    async def check_wallet_belongs_to_group(
+        self, wallet_id: str, group_id: str, max_checks: int = 10, delay: float = 0.1
+    ) -> bool:
+        # We offer some grace window, in case SSE connection is attempted before any webhooks exist
+        # So we will retry checking `max_checks` times, with `delay` sleep in between
+        valid_wallet_group = False
+        attempt = 1
+        while not valid_wallet_group and attempt <= max_checks:
+            valid_wallet_group = self.redis_service.check_wallet_belongs_to_group(
+                wallet_id=wallet_id, group_id=group_id
+            )
+            if not valid_wallet_group:
+                attempt += 1
+                await asyncio.sleep(delay)
+
+        return valid_wallet_group
+
 
 async def _copy_queue(
     queue: asyncio.Queue, maxsize: int = MAX_QUEUE_SIZE

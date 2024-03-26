@@ -69,7 +69,7 @@ async def sse_subscribe_wallet(
         "SSE: GET request received: Subscribe to wallet events on all topics"
     )
 
-    if group_id and not sse_manager.check_wallet_belongs_to_group(
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
         raise HTTPException(
@@ -137,7 +137,7 @@ async def sse_subscribe_wallet_topic(
     )
     bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
 
-    if group_id and not sse_manager.check_wallet_belongs_to_group(
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
         raise HTTPException(
@@ -207,7 +207,7 @@ async def sse_subscribe_event_with_state(
         "waiting for specific state"
     )
 
-    if group_id and not sse_manager.check_wallet_belongs_to_group(
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
         raise HTTPException(
@@ -286,7 +286,7 @@ async def sse_subscribe_stream_with_fields(
         "only events with specific field-id pairs"
     )
 
-    if group_id and not sse_manager.check_wallet_belongs_to_group(
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
         raise HTTPException(
@@ -364,7 +364,7 @@ async def sse_subscribe_event_with_field_and_state(
         "waiting for payload with field-id pair and specific state"
     )
 
-    if group_id and not sse_manager.check_wallet_belongs_to_group(
+    if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
         raise HTTPException(

@@ -173,12 +173,15 @@ class SseManager:
             if isinstance(message_data, bytes):
                 message_data = message_data.decode("utf-8")
 
-            wallet_id, timestamp_ns_str = message_data.split(":")
+            group_id, wallet_id, timestamp_ns_str = message_data.split(":")
             timestamp_ns = int(timestamp_ns_str)
 
             # Fetch the event with the exact timestamp from the sorted set
             json_events = self.redis_service.get_json_cloudapi_events_by_timestamp(
-                wallet_id, timestamp_ns, timestamp_ns
+                group_id=group_id,
+                wallet_id=wallet_id,
+                start_timestamp=timestamp_ns,
+                end_timestamp=timestamp_ns,
             )
 
             for json_event in json_events:
@@ -196,6 +199,7 @@ class SseManager:
                     # Doing it here makes websockets stateless as well
                     await publish_event_on_websocket(
                         event_json=json_event,
+                        group_id=group_id,
                         wallet_id=wallet_id,
                         topic=topic,
                     )

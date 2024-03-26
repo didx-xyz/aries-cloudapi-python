@@ -37,10 +37,9 @@ class WebsocketManager:
             logger.error("Subscribe requires `topic` or `wallet_id` in request.")
             return
 
-        async def callback(data: str, topic: str) -> None:
+        async def callback(data: str, _: str) -> None:
             """
             Callback function for handling received webhook events.
-            Note: PubSubClient expects a topic argument in callback
             """
             await websocket.send_text(data)
 

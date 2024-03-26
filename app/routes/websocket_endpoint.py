@@ -17,10 +17,7 @@ async def websocket_endpoint_wallet(
     group_id: str = group_id_field,
     auth: AcaPyAuthVerified = Depends(websocket_auth),
 ):
-    logger.info(
-        "Received websocket request on group `{}`",
-        group_id,
-    )
+    logger.info("Received websocket request on group `{}`", group_id)
     await handle_websocket(
         websocket, group_id=group_id, wallet_id="", topic="", auth=auth
     )

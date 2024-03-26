@@ -296,7 +296,9 @@ async def test_cleanup_cache(sse_manager):  # pylint: disable=redefined-outer-na
 
 
 @pytest.mark.anyio
-async def test_check_wallet_belongs_to_group_immediate_success(sse_manager):
+async def test_check_wallet_belongs_to_group_immediate_success(
+    sse_manager,  # pylint: disable=redefined-outer-name
+):
     sse_manager.redis_service.check_wallet_belongs_to_group = Mock(return_value=True)
 
     result = await sse_manager.check_wallet_belongs_to_group(
@@ -310,7 +312,9 @@ async def test_check_wallet_belongs_to_group_immediate_success(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_check_wallet_belongs_to_group_eventual_success(sse_manager):
+async def test_check_wallet_belongs_to_group_eventual_success(
+    sse_manager,  # pylint: disable=redefined-outer-name
+):
     side_effects = [False] * 3 + [True]  # Fails 3 times, then succeeds
     sse_manager.redis_service.check_wallet_belongs_to_group = Mock(
         side_effect=side_effects
@@ -325,7 +329,9 @@ async def test_check_wallet_belongs_to_group_eventual_success(sse_manager):
 
 
 @pytest.mark.anyio
-async def test_check_wallet_belongs_to_group_failure(sse_manager):
+async def test_check_wallet_belongs_to_group_failure(
+    sse_manager,  # pylint: disable=redefined-outer-name
+):
     sse_manager.redis_service.check_wallet_belongs_to_group = Mock(return_value=False)
 
     result = await sse_manager.check_wallet_belongs_to_group(

@@ -30,7 +30,7 @@ lookback_time_field = Query(
 )
 
 
-async def check_disconnection(request: Request, stop_event: asyncio.Event):
+async def check_disconnection(request: Request, stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
         if await request.is_disconnected():
             logger.debug("SSE check_disconnection: request has disconnected.")
@@ -50,7 +50,7 @@ async def sse_subscribe_wallet(
     wallet_id: str,
     lookback_time: int = lookback_time_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     """
     Subscribe to server-side events for a specific wallet ID.
 
@@ -109,7 +109,7 @@ async def sse_subscribe_wallet_topic(
     topic: str,
     lookback_time: int = lookback_time_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     """
     Subscribe to server-side events for a specific topic and wallet ID.
 
@@ -169,7 +169,7 @@ async def sse_subscribe_event_with_state(
     desired_state: str,
     lookback_time: int = lookback_time_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     bound_logger = logger.bind(
         body={"wallet_id": wallet_id, "topic": topic, "desired_state": desired_state}
     )
@@ -235,7 +235,7 @@ async def sse_subscribe_stream_with_fields(
     field_id: str,
     lookback_time: int = lookback_time_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     bound_logger = logger.bind(
         body={"wallet_id": wallet_id, "topic": topic, field: field_id}
     )
@@ -299,7 +299,7 @@ async def sse_subscribe_event_with_field_and_state(
     desired_state: str,
     lookback_time: int = lookback_time_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
-):
+) -> EventSourceResponse:
     bound_logger = logger.bind(
         body={
             "wallet_id": wallet_id,

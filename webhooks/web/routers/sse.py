@@ -35,6 +35,15 @@ group_id_field = Query(
 )
 
 
+class BadGroupIdException(HTTPException):
+    """Custom exception when group_id is specified and no events exist on redis"""
+
+    def __init__(self):
+        super().__init__(
+            status_code=404, detail="No events found for this wallet/group combination"
+        )
+
+
 async def check_disconnection(request: Request, stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
         if await request.is_disconnected():
@@ -72,9 +81,7 @@ async def sse_subscribe_wallet(
     if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
-        raise HTTPException(
-            status_code=403, detail="Wallet ID not a member of this group"
-        )
+        raise BadGroupIdException()
 
     async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
@@ -140,9 +147,7 @@ async def sse_subscribe_wallet_topic(
     if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
-        raise HTTPException(
-            status_code=403, detail="Wallet ID not a member of this group"
-        )
+        raise BadGroupIdException()
 
     async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
@@ -210,9 +215,7 @@ async def sse_subscribe_event_with_state(
     if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
-        raise HTTPException(
-            status_code=403, detail="Wallet ID not a member of this group"
-        )
+        raise BadGroupIdException()
 
     async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
@@ -289,9 +292,7 @@ async def sse_subscribe_stream_with_fields(
     if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
-        raise HTTPException(
-            status_code=403, detail="Wallet ID not a member of this group"
-        )
+        raise BadGroupIdException()
 
     async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
@@ -367,9 +368,7 @@ async def sse_subscribe_event_with_field_and_state(
     if group_id and not await sse_manager.check_wallet_belongs_to_group(
         wallet_id=wallet_id, group_id=group_id
     ):
-        raise HTTPException(
-            status_code=403, detail="Wallet ID not a member of this group"
-        )
+        raise BadGroupIdException()
 
     async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()

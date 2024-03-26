@@ -14,17 +14,16 @@ router = APIRouter(prefix="/v1/webhooks", tags=["webhooks"])
 
 @router.get("", deprecated=True)
 async def get_webhooks_for_wallet(
-    # Makes sure the authentication is verified
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> List[CloudApiWebhookEventGeneric]:
     """
     **Deprecated**: Fetching bulk webhook events is set to be removed.
     We recommend monitoring webhook events live, using the SSE endpoint instead, or websockets if preferred.
 
-    Returns all webhooks per wallet
+    Returns 100 most recent webhooks for this wallet
 
     This implicitly extracts the wallet ID and return only items
-    belonging to the wallet.
+    belonging to the caller's wallet.
 
     Returns:
     ---------
@@ -40,17 +39,16 @@ async def get_webhooks_for_wallet(
 @router.get("/{topic}", deprecated=True)
 async def get_webhooks_for_wallet_by_topic(
     topic: CloudApiTopics,
-    # Makes sure the authentication is verified
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> List[CloudApiWebhookEventGeneric]:
     """
     **Deprecated**: Fetching bulk webhook events is set to be removed.
     We recommend monitoring webhook events live, using the SSE endpoint instead, or websockets if preferred.
 
-    Returns the webhooks per wallet per topic
+    Returns 100 most recent webhooks for this wallet / topic pair
 
     This implicitly extracts the wallet ID and return only items
-    belonging to the wallet.
+    belonging to the caller's wallet.
 
     Returns:
     ---------

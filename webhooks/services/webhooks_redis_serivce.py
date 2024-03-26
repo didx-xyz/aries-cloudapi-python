@@ -105,7 +105,7 @@ class WebhooksRedisService(RedisService):
         bound_logger.trace("Successfully wrote entry to redis.")
 
     def get_json_cloudapi_events_by_wallet(
-        self, wallet_id: str, num: Optional[int] = 1000
+        self, wallet_id: str, num: Optional[int] = 100
     ) -> List[str]:
         """
         Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID.
@@ -125,9 +125,13 @@ class WebhooksRedisService(RedisService):
             bound_logger.debug("No entries found for wallet without matching redis key")
             return []
 
+        if num is None:
+            # Set to some large number to limit maximum number of webhooks returned
+            num = 10000
+
         # Fetch all entries using the full range of scores
-        entries: List[bytes] = self.redis.zrange(
-            name=redis_key, start=0, end=-1, desc=True, num=num
+        entries: List[bytes] = self.redis.zrevrangebyscore(
+            name=redis_key, max="+inf", min="-inf", start=0, num=num
         )
         entries_str: List[str] = [entry.decode() for entry in entries]
 
@@ -135,7 +139,7 @@ class WebhooksRedisService(RedisService):
         return entries_str
 
     def get_cloudapi_events_by_wallet(
-        self, wallet_id: str, num: Optional[int] = 1000
+        self, wallet_id: str, num: Optional[int] = 100
     ) -> List[CloudApiWebhookEventGeneric]:
         """
         Retrieve all CloudAPI webhook events for a specified wallet ID,
@@ -158,7 +162,7 @@ class WebhooksRedisService(RedisService):
         return parsed_entries
 
     def get_json_cloudapi_events_by_wallet_and_topic(
-        self, wallet_id: str, topic: str, num: Optional[int] = 1000
+        self, wallet_id: str, topic: str, num: Optional[int] = 100
     ) -> List[str]:
         """
         Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID and topic.
@@ -171,27 +175,32 @@ class WebhooksRedisService(RedisService):
         Returns:
             A list of event JSON strings that match the specified topic.
         """
-        entries = self.get_json_cloudapi_events_by_wallet(wallet_id, num=num)
+        entries = self.get_json_cloudapi_events_by_wallet(wallet_id, num=None)  # max
         # Filter the json entry for our requested topic without deserialising
         topic_str = f'"topic":"{topic}"'
-        return [entry for entry in entries if topic_str in entry]
+        filtered_by_topic = [entry for entry in entries if topic_str in entry]
+        result = filtered_by_topic[:num] if num else filtered_by_topic
+        return result
 
     def get_cloudapi_events_by_wallet_and_topic(
-        self, wallet_id: str, topic: str
+        self, wallet_id: str, topic: str, num: int = 100
     ) -> List[CloudApiWebhookEventGeneric]:
         """
-        Retrieve all CloudAPI webhook events for a specified wallet ID and topic,
+        Retrieve CloudAPI webhook events for a specified wallet ID and topic,
         parsed as CloudApiWebhookEventGeneric objects.
 
         Args:
             wallet_id: The identifier of the wallet for which events are retrieved.
             topic: The topic to filter the events by.
+            num: The max number of events to return.
 
         Returns:
             A list of CloudApiWebhookEventGeneric instances that match the specified topic.
         """
-        entries = self.get_cloudapi_events_by_wallet(wallet_id)
-        return [entry for entry in entries if topic == entry.topic]
+        entries = self.get_cloudapi_events_by_wallet(wallet_id, num=None)  # fetch max
+        filtered_by_topic = [entry for entry in entries if topic == entry.topic]
+        result = filtered_by_topic[:num] if num else filtered_by_topic
+        return result
 
     def get_json_cloudapi_events_by_timestamp(
         self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"

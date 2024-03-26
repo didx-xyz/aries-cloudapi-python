@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Optional
 
 from dependency_injector.wiring import Provide, inject
 from fastapi import BackgroundTasks, Depends, Query, Request
@@ -29,6 +29,11 @@ lookback_time_field = Query(
     ),
 )
 
+group_id_field = Query(
+    default=None,
+    description="Group ID to which the wallet belongs",
+)
+
 
 async def check_disconnection(request: Request, stop_event: asyncio.Event) -> None:
     while not stop_event.is_set():
@@ -49,6 +54,7 @@ async def sse_subscribe_wallet(
     background_tasks: BackgroundTasks,
     wallet_id: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     """
@@ -108,6 +114,7 @@ async def sse_subscribe_wallet_topic(
     wallet_id: str,
     topic: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     """
@@ -168,6 +175,7 @@ async def sse_subscribe_event_with_state(
     topic: str,
     desired_state: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(
@@ -234,6 +242,7 @@ async def sse_subscribe_stream_with_fields(
     field: str,
     field_id: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(
@@ -298,6 +307,7 @@ async def sse_subscribe_event_with_field_and_state(
     field_id: str,
     desired_state: str,
     lookback_time: int = lookback_time_field,
+    group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(

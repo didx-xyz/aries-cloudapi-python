@@ -122,6 +122,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
+            type=raw,value=latest,enable=${{ format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
             type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
             type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
             type=ref,event=branch,priority=600

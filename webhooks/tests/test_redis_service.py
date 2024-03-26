@@ -49,14 +49,16 @@ async def test_add_cloudapi_webhook_event():
 @pytest.mark.anyio
 async def test_get_json_cloudapi_events_by_wallet():
     redis_client = Mock()
-    redis_client.zrange = Mock(return_value=[e.encode() for e in json_entries])
+    redis_client.zrevrangebyscore = Mock(
+        return_value=[e.encode() for e in json_entries]
+    )
     redis_service = WebhooksRedisService(redis_client)
     redis_service.match_keys = Mock(return_value=[b"dummy_key"])
 
     events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id)
 
     assert events == json_entries
-    redis_client.zrange.assert_called_once()
+    redis_client.zrevrangebyscore.assert_called_once()
 
 
 @pytest.mark.anyio

@@ -11,21 +11,6 @@ router = APIRouter()
 group_id_field = Query(default="", description="Group ID to which the wallet belongs")
 
 
-@router.websocket("/v1/ws/topic/{topic}")
-async def websocket_endpoint_topic(
-    websocket: WebSocket,
-    topic: str,
-    group_id: str = group_id_field,
-    auth: AcaPyAuthVerified = Depends(websocket_auth),
-):
-    logger.info(
-        "Received websocket request on group `{}` and topic `{}`", group_id, topic
-    )
-    await handle_websocket(
-        websocket, group_id=group_id, wallet_id="", topic=topic, auth=auth
-    )
-
-
 @router.websocket("/v1/ws/{wallet_id}")
 async def websocket_endpoint_wallet(
     websocket: WebSocket,
@@ -40,6 +25,21 @@ async def websocket_endpoint_wallet(
     )
     await handle_websocket(
         websocket, group_id=group_id, wallet_id=wallet_id, topic="", auth=auth
+    )
+
+
+@router.websocket("/v1/ws/topic/{topic}")
+async def websocket_endpoint_topic(
+    websocket: WebSocket,
+    topic: str,
+    group_id: str = group_id_field,
+    auth: AcaPyAuthVerified = Depends(websocket_auth),
+):
+    logger.info(
+        "Received websocket request on group `{}` and topic `{}`", group_id, topic
+    )
+    await handle_websocket(
+        websocket, group_id=group_id, wallet_id="", topic=topic, auth=auth
     )
 
 

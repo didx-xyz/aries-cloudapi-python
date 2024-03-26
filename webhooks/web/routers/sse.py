@@ -2,7 +2,7 @@ import asyncio
 from typing import Any, AsyncGenerator, Optional
 
 from dependency_injector.wiring import Provide, inject
-from fastapi import BackgroundTasks, Depends, Query, Request
+from fastapi import BackgroundTasks, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
 from shared import DISCONNECT_CHECK_PERIOD, QUEUE_POLL_PERIOD, SSE_TIMEOUT, APIRouter
@@ -64,12 +64,19 @@ async def sse_subscribe_wallet(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    bound_logger = logger.bind(body={"wallet_id": wallet_id})
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "group_id": group_id})
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet events on all topics"
     )
 
-    async def event_stream() -> AsyncGenerator[str, Any, None]:
+    if group_id and not sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise HTTPException(
+            status_code=403, detail="Wallet ID not a member of this group"
+        )
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -125,10 +132,19 @@ async def sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
+    bound_logger = logger.bind(
+        body={"wallet_id": wallet_id, "group_id": group_id, "topic": topic}
+    )
     bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
 
-    async def event_stream() -> AsyncGenerator[str, Any, None]:
+    if group_id and not sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise HTTPException(
+            status_code=403, detail="Wallet ID not a member of this group"
+        )
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -179,14 +195,26 @@ async def sse_subscribe_event_with_state(
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(
-        body={"wallet_id": wallet_id, "topic": topic, "desired_state": desired_state}
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "topic": topic,
+            "desired_state": desired_state,
+        }
     )
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet event by topic, "
         "waiting for specific state"
     )
 
-    async def event_stream() -> AsyncGenerator[str, Any, None]:
+    if group_id and not sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise HTTPException(
+            status_code=403, detail="Wallet ID not a member of this group"
+        )
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -246,14 +274,26 @@ async def sse_subscribe_stream_with_fields(
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(
-        body={"wallet_id": wallet_id, "topic": topic, field: field_id}
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "topic": topic,
+            field: field_id,
+        }
     )
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet events by topic, "
         "only events with specific field-id pairs"
     )
 
-    async def event_stream() -> AsyncGenerator[str, Any, None]:
+    if group_id and not sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise HTTPException(
+            status_code=403, detail="Wallet ID not a member of this group"
+        )
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -313,6 +353,7 @@ async def sse_subscribe_event_with_field_and_state(
     bound_logger = logger.bind(
         body={
             "wallet_id": wallet_id,
+            "group_id": group_id,
             "topic": topic,
             field: field_id,
             "desired_state": desired_state,
@@ -323,7 +364,14 @@ async def sse_subscribe_event_with_field_and_state(
         "waiting for payload with field-id pair and specific state"
     )
 
-    async def event_stream() -> AsyncGenerator[str, Any, None]:
+    if group_id and not sse_manager.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=group_id
+    ):
+        raise HTTPException(
+            status_code=403, detail="Wallet ID not a member of this group"
+        )
+
+    async def event_stream() -> AsyncGenerator[str, None]:
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(

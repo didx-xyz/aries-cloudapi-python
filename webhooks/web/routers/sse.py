@@ -178,17 +178,7 @@ async def sse_subscribe_event_with_state(
         "waiting for specific state"
     )
 
-    # Special case: Endorsements only contain two fields: `state` and `transaction_id`.
-    # Endorsement Listeners will query by state only, in order to get the relevant transaction id.
-    # So, a problem arises because the Admin wallet can listen for "request-received",
-    # and we may return transaction_ids matching that state, but they have already been endorsed.
-    # So, instead of imposing an arbitrary sleep duration for the listeners, for the event to arrive,
-    # we will instead only return endorsement records if their state in cache isn't also acked or endorsed
-    # Therefore, before sending events, we will check the state, and use an ignore list, as follows.
-
     async def event_stream():
-        ignore_list = []
-
         stop_event = asyncio.Event()
         event_generator_wrapper: EventGeneratorWrapper = (
             await sse_manager.sse_event_stream(
@@ -209,17 +199,6 @@ async def sse_subscribe_event_with_state(
                     break
                 try:
                     payload = dict(event.payload)  # to check if keys exist in payload
-
-                    if topic == "endorsements" and desired_state == "request-received":
-                        if (
-                            payload["state"]
-                            in ["transaction-acked", "transaction-endorsed"]
-                            and payload["transaction_id"] not in ignore_list
-                        ):
-                            ignore_list += (payload["transaction_id"],)
-                            continue
-                        if payload["transaction_id"] in ignore_list:
-                            continue
 
                     if "state" in payload and payload["state"] == desired_state:
                         result = event.model_dump_json()

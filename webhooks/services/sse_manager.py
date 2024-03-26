@@ -476,8 +476,9 @@ class SseManager:
             valid_wallet_group = self.redis_service.check_wallet_belongs_to_group(
                 wallet_id=wallet_id, group_id=group_id
             )
-            attempt += 1
-            await asyncio.sleep(delay)
+            if not valid_wallet_group:
+                attempt += 1
+                await asyncio.sleep(delay)
 
         return valid_wallet_group
 

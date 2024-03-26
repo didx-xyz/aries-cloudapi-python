@@ -189,3 +189,27 @@ async def test_get_all_cloudapi_wallet_ids():
 
     assert set(wallet_ids) == set(expected_wallet_ids)
     assert redis_client.scan.call_count == 2
+
+
+@pytest.mark.anyio
+async def test_check_wallet_belongs_to_group():
+    valid_group_id = "abc"
+    match_keys_result = [f"cloudapi:group:{valid_group_id}:{wallet_id}".encode()]
+
+    redis_client = Mock()
+
+    redis_service = WebhooksRedisService(redis_client)
+    redis_service.match_keys = Mock(return_value=match_keys_result)
+
+    valid = redis_service.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id=valid_group_id
+    )
+
+    assert valid is True
+
+    redis_service.match_keys = Mock(return_value=[])
+    valid = redis_service.check_wallet_belongs_to_group(
+        wallet_id=wallet_id, group_id="invalid_group_id"
+    )
+
+    assert valid is False

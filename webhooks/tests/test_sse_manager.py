@@ -118,7 +118,7 @@ async def test_listen_for_new_events(
     pubsub_mock.subscribe = Mock()
     pubsub_mock.get_message = Mock(
         side_effect=chain(
-            [{"data": b"wallet1:123456789"}],  # First message
+            [{"data": b"group:wallet1:123456789"}],  # First message
             repeat(None),  # Keep returning None indefinitely
         )
     )

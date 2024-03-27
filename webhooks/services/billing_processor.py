@@ -182,7 +182,7 @@ class BillingManager:
             logger.info(f"Response from LAGO: {lago_response.json()}")
 
         except HTTPException as e:
-            if e.status_code == 422 and "value_already_exist" in e.detail :
+            if e.status_code == 422 and "value_already_exist" in e.detail:
                 logger.debug(f"Error posting billing event >>> : {e.detail}")
                 pass
             else:

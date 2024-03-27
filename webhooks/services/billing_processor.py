@@ -231,33 +231,36 @@ class BillingManager:
 
         # use operation type to determine the endorsement type
         # using transaction_id asfor LAGO transaction_id
-        if payload.get("type") == "100":
+        endorsement_type = payload.get("type")
+        if endorsement_type == "100":
             lago_event = AttribBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
 
-        if payload.get("type") == "102":
+        if endorsement_type == "102":
             lago_event = CredDefBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
 
-        if payload.get("type") == "113":
+        if endorsement_type == "113":
             lago_event = RevRegDefBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
 
-        if payload.get("type") == "114":
+        if endorsement_type == "114":
             lago_event = RevRegEntryBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
+        
+        raise ValueError(f"Unknown endorsement type: {endorsement_type}")
 
     def _convert_issuer_cred_rev_event(
         self, event: Dict[str, Any]

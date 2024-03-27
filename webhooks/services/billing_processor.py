@@ -21,3 +21,21 @@ from webhooks.models.billing_payloads import (
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
 logger = get_logger(__name__)
+
+
+class BillingManager:
+    """
+    Class process billing events and send them to LAGO
+    """
+
+    def __init__(self, redis_service: WebhooksRedisService) -> None:
+        self.redis_service = redis_service
+
+        self._tasks: List[asyncio.Task] = []
+
+        self._pubsub = None
+
+        self._client = RichAsyncClient(name="BillingManager")
+        self._client.headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
+
+        self._LAGO_URL = LAGO_URL

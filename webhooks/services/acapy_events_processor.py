@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import json
+import orjson
 import sys
 from typing import Any, Dict, List, NoReturn
 from uuid import uuid4
@@ -340,37 +340,36 @@ class AcaPyEventsProcessor:
                 event_json=webhook_event_json, transaction_id=transaction_id
             )
 
-        if wallet_id != GOVERNANCE_LABEL and (
-            is_applicable_for_billing(
-                topic=cloudapi_topic, payload=payload, logger=bound_logger
-            )
+        if is_applicable_for_billing(
+            wallet_id=wallet_id,
+            topic=cloudapi_topic,
+            payload=payload,
+            logger=bound_logger,
         ):
-            bound_logger.info(
+            bound_logger.debug(
                 "Forwarding billing event for Billing service",
             )
             if cloudapi_topic == "endorsements":
                 # Add the operation type to the payload for endorsements
                 # Simplifies the billing service's logic for determining the operation type
-                endorse_event: Dict[str, Any] = json.loads(webhook_event_json)
+
                 operation_type = get_operation_type(
                     payload=payload, logger=bound_logger
                 )
+                
+                endorse_event: Dict[str, Any] = orjson.loads(webhook_event_json)
                 endorse_event["payload"]["type"] = operation_type
-                webhook_event_for_billing = json.dumps(endorse_event)
+                webhook_event_for_billing = orjson.dumps(endorse_event)
 
-                self.redis_service.add_billing_event(
-                    event_json=webhook_event_for_billing,
-                    group_id=group_id,
-                    wallet_id=wallet_id,
-                    timestamp_ns=event.metadata.time_ns,
-                )
             else:
-                self.redis_service.add_billing_event(
-                    event_json=webhook_event_json,
-                    group_id=group_id,
-                    wallet_id=wallet_id,
-                    timestamp_ns=event.metadata.time_ns,
-                )
+                webhook_event_for_billing = webhook_event_json
+
+            self.redis_service.add_billing_event(
+                event_json=webhook_event_for_billing,
+                group_id=group_id,
+                wallet_id=wallet_id,
+                timestamp_ns=event.metadata.time_ns,
+            )
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(

@@ -359,3 +359,37 @@ class WebhooksRedisService(RedisService):
             "Validated that wallet {} belongs to group {}.", wallet_id, group_id
         )
         return True
+
+    def add_billing_event(
+        self,
+        event_json: str,
+        group_id: str,
+        wallet_id: str,
+        timestamp_ns: int,
+    ) -> None:
+        """
+        billing stuff
+        """
+        bound_logger = self.logger.bind(
+            body={
+                "wallet_id": wallet_id,
+                "group_id": group_id,
+                "event": event_json,
+                "timestamp_ns": timestamp_ns,
+            }
+        )
+        bound_logger.debug("Write billing entry to redis")
+
+        # Use the current timestamp as the score for the sorted set
+        redis_key = f"billing:{group_id}"
+        self.redis.zadd(name=redis_key, mapping={event_json: timestamp_ns})
+
+        broadcast_message = f"{group_id}:{timestamp_ns}"
+
+        # publish that a new event has been added
+        bound_logger.trace(
+            "Publish billing message on pubsub channel: {}", broadcast_message
+        )
+        self.redis.publish(self.billing_event_pubsub_channel, broadcast_message)
+
+        bound_logger.info("Successfully wrote billing entry to redis.")

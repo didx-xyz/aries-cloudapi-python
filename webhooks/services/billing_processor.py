@@ -259,7 +259,7 @@ class BillingManager:
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
-        
+
         raise ValueError(f"Unknown endorsement type: {endorsement_type}")
 
     def _convert_issuer_cred_rev_event(

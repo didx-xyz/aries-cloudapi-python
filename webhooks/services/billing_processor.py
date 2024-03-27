@@ -147,20 +147,20 @@ class BillingManager:
             return
 
         event: Dict[str, Any] = json.loads(events[0])
-
-        if event.get("topic") == "credentials":
+        topic = event.get("topic")
+        if topic == "credentials":
             # handel credentials event
             lago = self._convert_credential_event(event)
 
-        if event.get("topic") == "proofs":
+        if topic == "proofs":
             # handel proofs event
             lago = self._convert_proofs_event(event)
 
-        if event.get("topic") == "endorsements":
+        if topic == "endorsements":
             # handel endorsements event
             lago = self._convert_endorsements_event(event)
 
-        if event.get("topic") == "issuer_cred_rev":
+        if topic == "issuer_cred_rev":
             # handel issuer_cred_rev event
             lago = self._convert_issuer_cred_rev_event(event)
 

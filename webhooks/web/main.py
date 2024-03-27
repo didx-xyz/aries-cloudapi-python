@@ -78,8 +78,13 @@ async def health_check(
         Provide[Container.acapy_events_processor]
     ),
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
+    billing_manager: BillingManager = Depends(Provide[Container.billing_manager]),
 ):
-    if acapy_events_processor.are_tasks_running() and sse_manager.are_tasks_running():
+    if (
+        acapy_events_processor.are_tasks_running()
+        and sse_manager.are_tasks_running()
+        and billing_manager.are_task_running()
+    ):
         return {"status": "healthy"}
     else:
         raise HTTPException(

@@ -8,7 +8,6 @@ from app.models.tenants import CreateTenantResponse
 from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
 from app.routes.oob import router as oob_router
-from app.services.event_handling.sse_listener import SseListener
 from app.services.trust_registry import actors
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.util.ledger import create_public_did
@@ -104,13 +103,14 @@ async def acme_and_alice_connection(
             )
         ).json()
 
-        acme_listener = SseListener(
-            topic="connections", wallet_id=acme_verifier.wallet_id
-        )
-
         alice_label = alice_tenant.wallet_label
-        payload = await acme_listener.wait_for_event(
-            field="their_label", field_id=alice_label, desired_state="completed"
+        payload = await check_webhook_state(
+            client=acme_client,
+            topic="connections",
+            filter_map={
+                "their_label": alice_label,
+                "state": "completed",
+            },
         )
 
         alice_connection_id = invitation_response["connection_id"]
@@ -230,12 +230,14 @@ async def meld_co_and_alice_connection(
             )
         ).json()
 
-        meld_co_listener = SseListener(
-            topic="connections", wallet_id=meld_co_issuer_verifier.wallet_id
-        )
         alice_label = alice_tenant.wallet_label
-        payload = await meld_co_listener.wait_for_event(
-            field="their_label", field_id=alice_label, desired_state="completed"
+        payload = await check_webhook_state(
+            client=meld_co_client,
+            topic="connections",
+            filter_map={
+                "their_label": alice_label,
+                "state": "completed",
+            },
         )
 
         meld_co_connection_id = payload["connection_id"]

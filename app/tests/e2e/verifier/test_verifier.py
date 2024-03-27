@@ -10,7 +10,6 @@ from aries_cloudcontroller import (
 from assertpy import assert_that
 from fastapi import HTTPException
 
-from app.models.tenants import CreateTenantResponse
 from app.routes.connections import router as conn_router
 from app.routes.definitions import router as def_router
 from app.routes.issuer import router as issuer_router
@@ -22,10 +21,8 @@ from app.routes.verifier import (
     RejectProofRequest,
 )
 from app.routes.verifier import router as verifier_router
-from app.services.event_handling.sse_listener import SseListener
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.services.verifier.utils import indy_proof_request
-from app.tests.util.client import get_tenant_client
 from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.string import base64_to_json, random_string
@@ -126,12 +123,6 @@ async def test_accept_proof_request_oob_v1(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
-    bob_wallet_id = get_wallet_id_from_async_client(bob_member_client)
-
-    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_wallet_id)
-    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_wallet_id)
-
     # Create the proof request against aca-py
     create_proof_request = CreateProofRequest(
         indy_proof_request=indy_proof_request,
@@ -165,10 +156,13 @@ async def test_accept_proof_request_oob_v1(
         json=accept_oob_invitation_request.model_dump(by_alias=True),
     )
 
-    alice_request_received = await alice_proofs_listener.wait_for_event(
-        field="thread_id",
-        field_id=thread_id,
-        desired_state="request-received",
+    alice_request_received = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "thread_id": thread_id,
+            "state": "request-received",
+        },
     )
 
     alice_proof_id = alice_request_received["proof_id"]
@@ -199,17 +193,22 @@ async def test_accept_proof_request_oob_v1(
     )
     assert accept_response.status_code == 200
 
-    alice_presentation_sent = await alice_proofs_listener.wait_for_event(
-        field="proof_id",
-        field_id=alice_proof_id,
-        desired_state="presentation-sent",
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "proof_id": alice_proof_id,
+            "state": "presentation-sent",
+        },
     )
-    assert alice_presentation_sent
 
-    bob_presentation_received = await bob_proofs_listener.wait_for_event(
-        field="thread_id",
-        field_id=thread_id,
-        desired_state="done",
+    bob_presentation_received = await check_webhook_state(
+        client=bob_member_client,
+        topic="proofs",
+        filter_map={
+            "thread_id": thread_id,
+            "state": "done",
+        },
     )
     assert bob_presentation_received["role"] == "verifier"
 
@@ -220,12 +219,6 @@ async def test_accept_proof_request_oob_v2(
     alice_member_client: RichAsyncClient,
     bob_member_client: RichAsyncClient,
 ):
-    alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
-    bob_wallet_id = get_wallet_id_from_async_client(bob_member_client)
-
-    alice_proofs_listener = SseListener(topic="proofs", wallet_id=alice_wallet_id)
-    bob_proofs_listener = SseListener(topic="proofs", wallet_id=bob_wallet_id)
-
     # Create the proof request against aca-py
     response = await bob_member_client.post(
         VERIFIER_BASE_PATH + "/create-request",
@@ -256,10 +249,13 @@ async def test_accept_proof_request_oob_v2(
         json={"invitation": invitation},
     )
 
-    alice_request_received = await alice_proofs_listener.wait_for_event(
-        field="thread_id",
-        field_id=thread_id,
-        desired_state="request-received",
+    alice_request_received = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "thread_id": thread_id,
+            "state": "request-received",
+        },
     )
 
     alice_proof_id = alice_request_received["proof_id"]
@@ -289,17 +285,22 @@ async def test_accept_proof_request_oob_v2(
         json=proof_accept.model_dump(),
     )
 
-    alice_presentation_sent = await alice_proofs_listener.wait_for_event(
-        field="proof_id",
-        field_id=alice_proof_id,
-        desired_state="presentation-sent",
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "proof_id": alice_proof_id,
+            "state": "presentation-sent",
+        },
     )
-    assert alice_presentation_sent
 
-    bob_presentation_received = await bob_proofs_listener.wait_for_event(
-        field="thread_id",
-        field_id=thread_id,
-        desired_state="done",
+    bob_presentation_received = await check_webhook_state(
+        client=bob_member_client,
+        topic="proofs",
+        filter_map={
+            "thread_id": thread_id,
+            "state": "done",
+        },
     )
     assert bob_presentation_received["role"] == "verifier"
 
@@ -312,15 +313,9 @@ async def test_accept_proof_request_v2(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
-    acme_verifier: CreateTenantResponse,
     credential_definition_id: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
-
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
@@ -344,10 +339,13 @@ async def test_accept_proof_request_v2(
     acme_exchange = response.json()
     acme_proof_id = acme_exchange["proof_id"]
 
-    payload = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
 
     alice_proof_id = payload["proof_id"]
@@ -369,19 +367,18 @@ async def test_accept_proof_request_v2(
         ),
     )
 
-    acme_proofs_listener = SseListener(
-        topic="proofs", wallet_id=acme_verifier.wallet_id
-    )
-
     response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
         json=proof_accept.model_dump(),
     )
 
-    acme_proof_event = await acme_proofs_listener.wait_for_event(
-        field="proof_id",
-        field_id=acme_proof_id,
-        desired_state="done",
+    acme_proof_event = await check_webhook_state(
+        client=acme_client,
+        topic="proofs",
+        filter_map={
+            "proof_id": acme_proof_id,
+            "state": "done",
+        },
     )
     assert acme_proof_event["verified"]
 
@@ -399,11 +396,8 @@ async def test_accept_proof_request_v2(
 async def test_send_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
+    alice_member_client: RichAsyncClient,
 ):
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
@@ -425,10 +419,13 @@ async def test_send_proof_request(
     time.sleep(0.5)
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
-    alice_connection_event = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_connection_event = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_connection_event["protocol_version"] == "v1"
 
@@ -455,10 +452,13 @@ async def test_send_proof_request(
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
 
-    alice_connection_event = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_connection_event = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_connection_event["protocol_version"] == "v2"
 
@@ -467,13 +467,8 @@ async def test_send_proof_request(
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
     acme_client: RichAsyncClient,
 ):
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
-
     # V1
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -488,10 +483,13 @@ async def test_reject_proof_request(
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
 
-    alice_exchange = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_exchange = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_exchange["protocol_version"] == "v1"
 
@@ -649,12 +647,8 @@ async def test_get_credentials_for_request(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_and_alice_connection: AcmeAliceConnect,
     acme_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
     alice_member_client: RichAsyncClient,
 ):
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
     # V1
     await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -669,10 +663,13 @@ async def test_get_credentials_for_request(
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
 
-    alice_exchange = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_exchange = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_exchange["protocol_version"] == "v1"
 
@@ -704,10 +701,13 @@ async def test_get_credentials_for_request(
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
 
-    alice_exchange = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=acme_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_exchange = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_exchange["protocol_version"] == "v2"
 
@@ -812,11 +812,8 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
 async def test_send_proof_request_verifier_has_issuer_role(
     meld_co_and_alice_connection: MeldCoAliceConnect,
     meld_co_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
+    alice_member_client: RichAsyncClient,
 ):
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
     response = await meld_co_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
@@ -838,10 +835,13 @@ async def test_send_proof_request_verifier_has_issuer_role(
     time.sleep(0.5)
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
-    alice_connection_event = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=meld_co_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_connection_event = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": meld_co_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_connection_event["protocol_version"] == "v1"
 
@@ -868,10 +868,13 @@ async def test_send_proof_request_verifier_has_issuer_role(
     # Allow webhook event to be registered in SSE before querying. Only necessary because
     # we are querying by connection_id, and will return previous result if we don't add short wait
 
-    alice_connection_event = await alice_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=meld_co_and_alice_connection.alice_connection_id,
-        desired_state="request-received",
+    alice_connection_event = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": meld_co_and_alice_connection.alice_connection_id,
+            "state": "request-received",
+        },
     )
     assert alice_connection_event["protocol_version"] == "v2"
 
@@ -981,26 +984,17 @@ async def test_saving_of_presentation_exchange_records(
 @pytest.mark.anyio
 async def test_accept_proof_request_verifier_no_public_did(
     governance_client: RichAsyncClient,
-    acme_verifier: CreateTenantResponse,
-    faber_issuer: CreateTenantResponse,
-    alice_tenant: CreateTenantResponse,
+    acme_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
 ):
-    # Get clients
-    verifier_client = get_tenant_client(token=acme_verifier.access_token)
-    issuer_client = get_tenant_client(token=faber_issuer.access_token)
-    holder_client = get_tenant_client(token=alice_tenant.access_token)
-
     # Create connection between issuer and holder
     invitation = (
-        await issuer_client.post(CONNECTIONS_BASE_PATH + "/create-invitation")
+        await faber_client.post(CONNECTIONS_BASE_PATH + "/create-invitation")
     ).json()
 
-    issuer_tenant_listener = SseListener(
-        topic="connections", wallet_id=faber_issuer.wallet_id
-    )
-
     invitation_response = (
-        await holder_client.post(
+        await alice_member_client.post(
             CONNECTIONS_BASE_PATH + "/accept-invitation",
             json={"invitation": invitation["invitation"]},
         )
@@ -1009,37 +1003,38 @@ async def test_accept_proof_request_verifier_no_public_did(
     issuer_holder_connection_id = invitation["connection_id"]
     holder_issuer_connection_id = invitation_response["connection_id"]
 
-    await issuer_tenant_listener.wait_for_event(
-        field="connection_id",
-        field_id=issuer_holder_connection_id,
-        desired_state="completed",
+    await check_webhook_state(
+        client=faber_client,
+        topic="connections",
+        filter_map={
+            "connection_id": issuer_holder_connection_id,
+            "state": "completed",
+        },
     )
 
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
-    verifier_actor = await fetch_actor_by_id(acme_verifier.wallet_id)
+    acme_wallet_id = get_wallet_id_from_async_client(acme_client)
+    verifier_actor = await fetch_actor_by_id(acme_wallet_id)
 
     assert verifier_actor
-
-    verifier_tenant_listener = SseListener(
-        topic="connections",
-        wallet_id=acme_verifier.wallet_id,
-    )
-
     assert verifier_actor["didcomm_invitation"]
 
     invitation_json = base64_to_json(
         verifier_actor["didcomm_invitation"].split("?oob=")[1]
     )
     invitation_response = (
-        await holder_client.post(
+        await alice_member_client.post(
             OOB_BASE_PATH + "/accept-invitation",
             json={"invitation": invitation_json},
         )
     ).json()
 
-    payload = await verifier_tenant_listener.wait_for_state(desired_state="completed")
-
+    payload = await check_webhook_state(
+        client=acme_client,
+        topic="connections",
+        filter_map={"state": "completed"},
+    )
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
 
@@ -1058,7 +1053,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     schema_id = schema["id"]
 
     # Create credential definition as issuer
-    credential_definition = await issuer_client.post(
+    credential_definition = await faber_client.post(
         DEFINITIONS_BASE_PATH + "/credentials",
         json={
             "tag": random_string(5),
@@ -1072,12 +1067,8 @@ async def test_accept_proof_request_verifier_no_public_did(
     credential_definition_id = credential_definition.json()["id"]
 
     # Issue credential from issuer to holder
-    holder_tenant_listener = SseListener(
-        topic="credentials", wallet_id=alice_tenant.wallet_id
-    )
-
     issuer_credential_exchange = (
-        await issuer_client.post(
+        await faber_client.post(
             f"{ISSUER_BASE_PATH}",
             json={
                 "protocol_version": "v1",
@@ -1090,37 +1081,34 @@ async def test_accept_proof_request_verifier_no_public_did(
         )
     ).json()
 
-    payload = await holder_tenant_listener.wait_for_event(
-        field="connection_id",
-        field_id=holder_issuer_connection_id,
-        desired_state="offer-received",
+    payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        filter_map={
+            "connection_id": holder_issuer_connection_id,
+            "state": "offer-received",
+        },
     )
 
     issuer_credential_exchange_id = issuer_credential_exchange["credential_id"]
     holder_credential_exchange_id = payload["credential_id"]
 
-    issuer_tenant_cred_listener = SseListener(
-        topic="credentials", wallet_id=faber_issuer.wallet_id
-    )
-
-    response = await holder_client.post(
+    response = await alice_member_client.post(
         f"{ISSUER_BASE_PATH}/{holder_credential_exchange_id}/request"
     )
 
     # Wait for credential exchange to finish
-    await issuer_tenant_cred_listener.wait_for_event(
-        field="credential_id",
-        field_id=issuer_credential_exchange_id,
-        desired_state="done",
+    await check_webhook_state(
+        client=faber_client,
+        topic="credentials",
+        filter_map={
+            "credential_id": issuer_credential_exchange_id,
+            "state": "done",
+        },
     )
 
     # Present proof from holder to verifier
-
-    holder_tenant_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
-
-    response = await verifier_client.post(
+    response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
             "protocol_version": "v1",
@@ -1148,28 +1136,27 @@ async def test_accept_proof_request_verifier_no_public_did(
 
     verifier_proof_exchange = response.json()
 
-    payload = await holder_tenant_proofs_listener.wait_for_event(
-        field="connection_id",
-        field_id=holder_verifier_connection_id,
-        desired_state="request-received",
+    payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "connection_id": holder_verifier_connection_id,
+            "state": "request-received",
+        },
     )
 
     verifier_proof_exchange_id = verifier_proof_exchange["proof_id"]
     holder_proof_exchange_id = payload["proof_id"]
 
     available_credentials = (
-        await holder_client.get(
+        await alice_member_client.get(
             f"{VERIFIER_BASE_PATH}/proofs/{holder_proof_exchange_id}/credentials",
         )
     ).json()
 
     cred_id = available_credentials[0]["cred_info"]["referent"]
 
-    verifier_tenant_proofs_listener = SseListener(
-        topic="proofs", wallet_id=acme_verifier.wallet_id
-    )
-
-    response = await holder_client.post(
+    response = await alice_member_client.post(
         VERIFIER_BASE_PATH + "/accept-request",
         json={
             "proof_id": holder_proof_exchange_id,
@@ -1186,10 +1173,13 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
     )
 
-    event = await verifier_tenant_proofs_listener.wait_for_event(
-        field="proof_id",
-        field_id=verifier_proof_exchange_id,
-        desired_state="done",
+    event = await check_webhook_state(
+        client=acme_client,
+        topic="proofs",
+        filter_map={
+            "proof_id": verifier_proof_exchange_id,
+            "state": "done",
+        },
     )
     assert event["verified"]
 
@@ -1198,17 +1188,10 @@ async def test_accept_proof_request_verifier_no_public_did(
 async def test_get_proof_records(
     meld_co_client: RichAsyncClient,
     meld_co_and_alice_connection: MeldCoAliceConnect,
-    meld_co_issuer_verifier: CreateTenantResponse,
     meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
 ):
-    meld_listener = SseListener(
-        topic="proofs", wallet_id=meld_co_issuer_verifier.wallet_id
-    )
     meld_connection_id = meld_co_and_alice_connection.meld_co_connection_id
-
-    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
 
     # Meld_co does proof request and alice responds
     proof = await meld_co_client.post(
@@ -1224,8 +1207,13 @@ async def test_get_proof_records(
     proof_1 = proof.json()
     assert proof.status_code == 200
     assert proof_1["state"] == "request-sent"
-    await alice_listener.wait_for_state(
-        desired_state="request-received",
+
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "state": "request-received",
+        },
     )
 
     proof_exc = await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
@@ -1257,15 +1245,21 @@ async def test_get_proof_records(
         json=proof_accept.model_dump(),
     )
 
-    await alice_listener.wait_for_event(
-        field="proof_id",
-        field_id=proof_request["proof_id"],
-        desired_state="done",
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={
+            "proof_id": proof_request["proof_id"],
+            "state": "done",
+        },
     )
-    await meld_listener.wait_for_event(
-        field="proof_id",
-        field_id=proof_1["proof_id"],
-        desired_state="done",
+    await check_webhook_state(
+        client=meld_co_client,
+        topic="proofs",
+        filter_map={
+            "proof_id": proof_1["proof_id"],
+            "state": "done",
+        },
     )
 
     meld_proof = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs")

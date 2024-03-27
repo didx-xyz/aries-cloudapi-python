@@ -56,6 +56,6 @@ async def check_webhook_state(
         )
 
     if event:
-        return True
+        return event
     else:
         raise Exception(f"Could not satisfy webhook filter: `{filter_map}`.")

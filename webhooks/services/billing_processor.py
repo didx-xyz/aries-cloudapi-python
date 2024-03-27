@@ -38,7 +38,7 @@ class BillingManager:
         self._client = RichAsyncClient(name="BillingManager")
         self._client.headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
 
-        self._LAGO_URL = LAGO_URL
+        self._lago_url = LAGO_URL
 
     def start(self) -> None:
         """
@@ -174,19 +174,20 @@ class BillingManager:
         logger.debug(f"Posting billing event: {event}")
         try:
             lago_response = await self._client.post(
-                url=self._LAGO_URL,
+                url=self._lago_url,
                 json={"event": event.model_dump()},
             )
 
-            logger.error(f"Response from LAGO: {lago_response.json()}")
             lago_response.raise_for_status()
+            logger.info(f"Response from LAGO: {lago_response.json()}")
 
         except HTTPException as e:
-            if e.status_code == 422:
-                logger.error(f"Error posting billing event >>> : {e.detail}")
+            if e.status_code == 422 and "value_already_exist" in e.detail :
+                logger.debug(f"Error posting billing event >>> : {e.detail}")
                 pass
-            logger.error(f"Error posting billing event: {e}")
-            raise e
+            else:
+                logger.error(f"Error posting billing event: {e}")
+                raise e
 
     def _convert_credential_event(
         self, event: Dict[str, Any]

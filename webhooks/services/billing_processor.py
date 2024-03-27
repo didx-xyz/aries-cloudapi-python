@@ -187,3 +187,89 @@ class BillingManager:
                 pass
             logger.error(f"Error posting billing event: {e}")
             raise e
+
+    def _convert_credential_event(
+        self, event: Dict[str, Any]
+    ) -> CredentialBillingEvent:
+        """
+        Convert credential event to LAGO event
+        """
+        logger.debug(f"Converting credential event: {event}")
+
+        # using thread_id as transaction_id
+        payload: Dict[str, Any] = event.get("payload")
+        lago_event = CredentialBillingEvent(
+            transaction_id=payload.get("thread_id"),
+            external_customer_id=event.get("group_id"),
+        )
+        return lago_event
+
+    def _convert_proofs_event(self, event: Dict[str, Any]) -> ProofBillingEvent:
+        """
+        Convert proofs event to LAGO event
+        """
+        logger.debug(f"Converting proofs event: {event}")
+
+        # using thread_id as transaction_id
+        payload: Dict[str, Any] = event.get("payload")
+        lago_event = ProofBillingEvent(
+            transaction_id=payload.get("thread_id"),
+            external_customer_id=event.get("group_id"),
+        )
+        return lago_event
+
+    def _convert_endorsements_event(
+        self, event: Dict[str, Any]
+    ) -> EndorsementBillingEvent:
+        """
+        Convert endorsements event to LAGO event
+        """
+        logger.debug(f"Converting endorsements event: {event}")
+
+        payload: Dict[str, Any] = event.get("payload")
+
+        # use operation type to determine the endorsement type
+        # using transaction_id asfor LAGO transaction_id
+        if payload.get("type") == "100":
+            lago_event = AttribBillingEvent(
+                transaction_id=payload.get("transaction_id"),
+                external_customer_id=event.get("group_id"),
+            )
+            return lago_event
+
+        if payload.get("type") == "102":
+            lago_event = CredDefBillingEvent(
+                transaction_id=payload.get("transaction_id"),
+                external_customer_id=event.get("group_id"),
+            )
+            return lago_event
+
+        if payload.get("type") == "113":
+            lago_event = RevRegDefBillingEvent(
+                transaction_id=payload.get("transaction_id"),
+                external_customer_id=event.get("group_id"),
+            )
+            return lago_event
+
+        if payload.get("type") == "114":
+            lago_event = RevRegEntryBillingEvent(
+                transaction_id=payload.get("transaction_id"),
+                external_customer_id=event.get("group_id"),
+            )
+            return lago_event
+
+    def _convert_issuer_cred_rev_event(
+        self, event: Dict[str, Any]
+    ) -> RevocationBillingEvent:
+        """
+        Convert issuer cred rev event to LAGO event
+        """
+
+        # using record_id as transaction_id
+        logger.debug(f"Converting issuer cred rev event: {event}")
+        payload: Dict[str, Any] = event.get("payload")
+        lago_event = RevocationBillingEvent(
+            transaction_id=payload.get("record_id"),
+            external_customer_id=event.get("group_id"),
+        )
+        return lago_event

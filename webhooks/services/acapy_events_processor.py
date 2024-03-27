@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import json
 import sys
 from typing import Any, Dict, List, NoReturn
 from uuid import uuid4
@@ -16,6 +17,7 @@ from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
 from webhooks.models.redis_payloads import AcaPyRedisEvent
 from webhooks.services.webhooks_redis_service import WebhooksRedisService
+from webhooks.util.billing import get_operation_type, is_applicable_for_billing
 
 logger = get_logger(__name__)
 

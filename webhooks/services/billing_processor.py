@@ -184,7 +184,7 @@ class BillingManager:
         except HTTPException as e:
             if e.status_code == 422 and "value_already_exist" in e.detail:
                 logger.debug(f"Error posting billing event >>> : {e.detail}")
-                
+
             else:
                 logger.error(f"Error posting billing event: {e}")
                 raise e

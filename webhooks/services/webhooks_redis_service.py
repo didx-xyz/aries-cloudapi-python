@@ -374,7 +374,6 @@ class WebhooksRedisService(RedisService):
             body={
                 "wallet_id": wallet_id,
                 "group_id": group_id,
-                "event": event_json,
                 "timestamp_ns": timestamp_ns,
             }
         )

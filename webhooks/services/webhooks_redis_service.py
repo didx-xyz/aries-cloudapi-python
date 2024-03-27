@@ -23,6 +23,10 @@ class WebhooksRedisService(RedisService):
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
+        self.billing_event_pubsub_channel = (
+            "new_billing_event"  # name of pub/sub channel
+        )
+
         self.acapy_redis_prefix = "acapy-record-*"  # redis prefix for ACA-Py events
 
         self.cloudapi_redis_prefix = "cloudapi"  # redis prefix for CloudAPI events

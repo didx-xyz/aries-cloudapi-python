@@ -315,6 +315,7 @@ class AcaPyEventsProcessor:
             wallet_id=wallet_id,
             acapy_topic=acapy_topic,
             topic=cloudapi_topic,
+            group_id=group_id,
             origin=origin,
         )
 

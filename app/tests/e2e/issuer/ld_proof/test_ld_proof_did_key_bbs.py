@@ -107,8 +107,8 @@ async def test_send_jsonld_key_bbs(
         client=alice_member_client,
         topic="credentials",
         filter_map={
-            "state": "offer-received",
             "connection_id": alice_connection_id,
+            "state": "offer-received",
         },
     )
 
@@ -162,8 +162,8 @@ async def test_send_jsonld_bbs_oob(
         client=alice_member_client,
         topic="connections",
         filter_map={
-            "state": "completed",
             "connection_id": alice_connection_id,
+            "state": "completed",
         },
     )
 
@@ -197,8 +197,8 @@ async def test_send_jsonld_bbs_oob(
         client=alice_member_client,
         topic="credentials",
         filter_map={
-            "state": "offer-received",
             "connection_id": alice_connection_id,
+            "state": "offer-received",
         },
     )
 
@@ -229,16 +229,16 @@ async def test_send_jsonld_request(
         client=faber_client,
         topic="credentials",
         filter_map={
-            "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
+            "state": "offer-sent",
         },
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
         topic="credentials",
+        filter_map={"state": "offer-received"},
         lookback_time=5,
     )
 
@@ -258,15 +258,15 @@ async def test_send_jsonld_request(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "request-sent"},
         topic="credentials",
+        filter_map={"state": "request-sent"},
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state": "request-received"},
         topic="credentials",
+        filter_map={"state": "request-received"},
         lookback_time=5,
     )
 
@@ -296,16 +296,16 @@ async def test_issue_jsonld_bbs(
         client=faber_client,
         topic="credentials",
         filter_map={
-            "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
+            "state": "offer-sent",
         },
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
         topic="credentials",
+        filter_map={"state": "offer-received"},
         lookback_time=5,
     )
 
@@ -325,15 +325,15 @@ async def test_issue_jsonld_bbs(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "done"},
         topic="credentials",
+        filter_map={"state": "done"},
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state": "done"},
         topic="credentials",
+        filter_map={"state": "done"},
         lookback_time=5,
     )
 

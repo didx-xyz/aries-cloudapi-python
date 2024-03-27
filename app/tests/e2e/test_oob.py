@@ -76,8 +76,8 @@ async def test_oob_connect_via_public_did(
         client=bob_member_client,
         topic="connections",
         filter_map={
-            "state": "request-sent",
             "connection_id": bob_oob_record["connection_id"],
+            "state": "request-sent",
         },
     )
 

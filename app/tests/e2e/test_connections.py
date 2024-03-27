@@ -90,8 +90,8 @@ async def test_accept_invitation(
         client=alice_member_client,
         topic="connections",
         filter_map={
-            "state": "completed",
             "connection_id": connection_record["connection_id"],
+            "state": "completed",
         },
     )
 
@@ -212,8 +212,8 @@ async def test_bob_and_alice_connect(
         client=alice_member_client,
         topic="connections",
         filter_map={
-            "state": "completed",
             "connection_id": connection_record["connection_id"],
+            "state": "completed",
         },
     )
 

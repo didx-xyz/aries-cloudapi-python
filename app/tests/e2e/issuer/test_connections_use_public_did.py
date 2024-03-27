@@ -50,8 +50,8 @@ async def test_accept_use_public_did(
         client=meld_co_client,
         topic="connections",
         filter_map={
-            "state": "completed",
             "connection_id": connection_record["connection_id"],
+            "state": "completed",
         },
     )
 
@@ -95,7 +95,7 @@ async def test_accept_use_public_did_between_issuer_and_holder(
         client=alice_member_client,
         topic="connections",
         filter_map={
-            "state": "completed",
             "connection_id": connection_record["connection_id"],
+            "state": "completed",
         },
     )

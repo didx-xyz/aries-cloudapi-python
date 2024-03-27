@@ -136,13 +136,19 @@ async def acme_and_alice_connection(
     assert await check_webhook_state(
         alice_member_client,
         topic="connections",
-        filter_map={"state": "completed", "connection_id": alice_connection_id},
+        filter_map={
+            "connection_id": alice_connection_id,
+            "state": "completed",
+        },
         lookback_time=5,
     )
     assert await check_webhook_state(
         acme_client,
         topic="connections",
-        filter_map={"state": "completed", "connection_id": acme_connection_id},
+        filter_map={
+            "connection_id": acme_connection_id,
+            "state": "completed",
+        },
         lookback_time=5,
     )
 
@@ -183,13 +189,19 @@ async def faber_and_alice_connection(
     assert await check_webhook_state(
         alice_member_client,
         topic="connections",
-        filter_map={"state": "completed", "connection_id": alice_connection_id},
+        filter_map={
+            "connection_id": alice_connection_id,
+            "state": "completed",
+        },
         lookback_time=5,
     )
     assert await check_webhook_state(
         faber_client,
         topic="connections",
-        filter_map={"state": "completed", "connection_id": faber_connection_id},
+        filter_map={
+            "connection_id": faber_connection_id,
+            "state": "completed",
+        },
         lookback_time=5,
     )
 
@@ -263,13 +275,19 @@ async def meld_co_and_alice_connection(
     assert await check_webhook_state(
         alice_member_client,
         topic="connections",
-        filter_map={"state": "completed", "connection_id": alice_connection_id},
+        filter_map={
+            "connection_id": alice_connection_id,
+            "state": "completed",
+        },
         lookback_time=5,
     )
     assert await check_webhook_state(
         meld_co_client,
         topic="connections",
-        filter_map={"state": "completed", "connection_id": meld_co_connection_id},
+        filter_map={
+            "connection_id": meld_co_connection_id,
+            "state": "completed",
+        },
         lookback_time=5,
     )
 
@@ -367,8 +385,8 @@ async def alice_bob_connect_multi(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "request-sent"},
         topic="connections",
+        filter_map={"state": "request-sent"},
     )
 
     bob_connection_id = multi_use_invite["multi_use_invitation"]["connection_id"]
@@ -382,14 +400,14 @@ async def alice_bob_connect_multi(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "completed"},
         topic="connections",
+        filter_map={"state": "completed"},
         lookback_time=5,
     )
     assert await check_webhook_state(
         client=bob_member_client,
-        filter_map={"state": "completed"},
         topic="connections",
+        filter_map={"state": "completed"},
         lookback_time=5,
     )
 

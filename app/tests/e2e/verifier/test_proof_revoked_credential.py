@@ -57,9 +57,7 @@ async def test_proof_revoked_credential(
     await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={
-            "state": "request-received",
-        },
+        filter_map={"state": "request-received"},
         lookback_time=5,
     )
 

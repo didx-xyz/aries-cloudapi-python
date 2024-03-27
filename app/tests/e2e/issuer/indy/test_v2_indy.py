@@ -122,8 +122,8 @@ async def test_send_credential(
         client=faber_client,
         topic="credentials",
         filter_map={
-            "state": "offer-sent",
             "credential_id": data["credential_id"],
+            "state": "offer-sent",
         },
     )
 
@@ -158,8 +158,8 @@ async def test_create_offer(
         client=faber_client,
         topic="credentials",
         filter_map={
-            "state": "offer-sent",
             "credential_id": data["credential_id"],
+            "state": "offer-sent",
         },
     )
 
@@ -191,8 +191,8 @@ async def test_send_credential_request(
         client=faber_client,
         topic="credentials",
         filter_map={
-            "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
+            "state": "offer-sent",
         },
     )
 
@@ -206,8 +206,8 @@ async def test_send_credential_request(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
         topic="credentials",
+        filter_map={"state": "offer-received"},
     )
 
     request_response = await alice_member_client.post(
@@ -218,15 +218,15 @@ async def test_send_credential_request(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "request-sent"},
         topic="credentials",
+        filter_map={"state": "request-sent"},
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state": "request-received"},
         topic="credentials",
+        filter_map={"state": "request-received"},
         lookback_time=5,
     )
 

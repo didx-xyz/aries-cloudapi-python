@@ -328,7 +328,6 @@ class AcaPyEventsProcessor:
             return
 
         webhook_event_json = cloudapi_webhook_event.model_dump_json()
-
         # Check if this webhook event should be forwarded to the Endorser service
         if (
             wallet_id == GOVERNANCE_LABEL  # represents event for the governance agent
@@ -340,6 +339,38 @@ class AcaPyEventsProcessor:
             self.redis_service.add_endorsement_event(
                 event_json=webhook_event_json, transaction_id=transaction_id
             )
+
+        if wallet_id != GOVERNANCE_LABEL and (
+            is_applicable_for_billing(
+                topic=cloudapi_topic, payload=payload, logger=bound_logger
+            )
+        ):
+            bound_logger.info(
+                "Forwarding billing event for Billing service",
+            )
+            if cloudapi_topic == "endorsements":
+                # Add the operation type to the payload for endorsements
+                # Simplifies the billing service's logic for determining the operation type
+                endorse_event: Dict[str, Any] = json.loads(webhook_event_json)
+                operation_type = get_operation_type(
+                    payload=payload, logger=bound_logger
+                )
+                endorse_event["payload"]["type"] = operation_type
+                webhook_event_for_billing = json.dumps(endorse_event)
+
+                self.redis_service.add_billing_event(
+                    event_json=webhook_event_for_billing,
+                    group_id=group_id,
+                    wallet_id=wallet_id,
+                    timestamp_ns=event.metadata.time_ns,
+                )
+            else:
+                self.redis_service.add_billing_event(
+                    event_json=webhook_event_json,
+                    group_id=group_id,
+                    wallet_id=wallet_id,
+                    timestamp_ns=event.metadata.time_ns,
+                )
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to
         self.redis_service.add_cloudapi_webhook_event(

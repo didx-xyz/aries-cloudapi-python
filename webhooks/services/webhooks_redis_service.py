@@ -393,3 +393,22 @@ class WebhooksRedisService(RedisService):
         self.redis.publish(self.billing_event_pubsub_channel, broadcast_message)
 
         bound_logger.info("Successfully wrote billing entry to redis.")
+
+    def get_billing_event(
+        self, group_id: str, start_timestamp: int, stop_timestamp: int
+    ) -> List[str]:
+        """
+        billing stuff
+        """
+        bound_logger = self.logger.bind(body={"group_id": group_id})
+        bound_logger.trace("Fetching billing entries from redis by group id")
+
+        redis_key = f"billing:{group_id}"
+
+        entries: List[bytes] = self.redis.zrangebyscore(
+            redis_key, min=start_timestamp, max=stop_timestamp
+        )
+        entries_str: List[str] = [entry.decode() for entry in entries]
+
+        bound_logger.trace("Successfully fetched billing entries.")
+        return entries_str

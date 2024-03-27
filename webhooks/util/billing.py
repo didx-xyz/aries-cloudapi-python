@@ -1,12 +1,17 @@
 from logging import Logger
 from typing import Any, Dict
 
+from shared.constants import GOVERNANCE_LABEL
 from shared.models.endorsement import extract_operation_type_from_endorsement_payload
 
 
 def is_applicable_for_billing(
-    topic: str, payload: Dict[str, Any], logger: Logger
+    wallet_id: str, topic: str, payload: Dict[str, Any], logger: Logger
 ) -> bool:
+
+    if wallet_id == GOVERNANCE_LABEL:
+        return False
+
     state = payload.get("state")
     if topic not in ["proofs", "credentials", "endorsements", "issuer_cred_rev"]:
         logger.debug(f"Event topic: {topic} is not applicable for the billing service.")

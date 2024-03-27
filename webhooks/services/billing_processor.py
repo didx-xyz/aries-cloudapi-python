@@ -39,3 +39,11 @@ class BillingManager:
         self._client.headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
 
         self._LAGO_URL = LAGO_URL
+
+    def start(self) -> None:
+        """
+        Start the billing manager
+        """
+        asyncio.create_task(
+            self._listen_for_billing_events(), name="Listen for new billing events"
+        )

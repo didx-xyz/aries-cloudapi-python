@@ -47,3 +47,20 @@ class BillingManager:
         asyncio.create_task(
             self._listen_for_billing_events(), name="Listen for new billing events"
         )
+
+    async def stop(self) -> None:
+        """
+        Wait for tasks to complete and stop the billing manager
+        """
+        for task in self._tasks:
+            task.cancel()  # Request cancellation of the task
+            try:
+                await task  # Wait for the task to be cancelled
+            except asyncio.CancelledError:
+                pass
+        self._tasks.clear()  # Clear the list of tasks
+        logger.info("Billing manager stopped")
+
+        if self._pubsub:
+            self._pubsub.disconnect()
+            logger.info("Billing pubsub disconnected")

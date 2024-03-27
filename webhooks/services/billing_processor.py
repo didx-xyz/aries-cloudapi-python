@@ -122,3 +122,47 @@ class BillingManager:
                 "Attempt #{} to reconnect in {}s ...", retry_count, retry_duration
             )
             await asyncio.sleep(retry_duration)  # Wait a bit before retrying
+
+    async def _process_billing_event(self, message: Dict[str, Any]) -> None:
+        """
+        Process billing events. Convert them to LAGO events and post them to LAGO
+        """
+        message_data = message.get("data")
+        if isinstance(message_data, bytes):
+            message_data = message_data.decode("utf-8")
+
+        groub_id, timestamp_ns_str = message_data.split(":")
+        timestamp_ns = int(timestamp_ns_str)
+
+        events = self.redis_service.get_billing_event(
+            groub_id, timestamp_ns, timestamp_ns
+        )
+
+        if not events:
+            # there are duplicate done event bc of acapy to cloudapi conversion
+            # the score get updated and the event is not found with old score
+            logger.debug(
+                f"No events found for group_id: {groub_id} and timestamp: {timestamp_ns}"
+            )
+            return
+
+        event: Dict[str, Any] = json.loads(events[0])
+
+        if event.get("topic") == "credentials":
+            # handel credentials event
+            lago = self._convert_credential_event(event)
+
+        if event.get("topic") == "proofs":
+            # handel proofs event
+            lago = self._convert_proofs_event(event)
+
+        if event.get("topic") == "endorsements":
+            # handel endorsements event
+            lago = self._convert_endorsements_event(event)
+
+        if event.get("topic") == "issuer_cred_rev":
+            # handel issuer_cred_rev event
+            lago = self._convert_issuer_cred_rev_event(event)
+
+        # post billing event to LAGO
+        await self._post_billing_event(lago)

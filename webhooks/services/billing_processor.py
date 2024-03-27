@@ -82,3 +82,43 @@ class BillingManager:
                 if task.done():
                     logger.warning("Task `{}` is not running", task.get_name())
         return self._pubsub and all_running
+
+    async def _listen_for_billing_events(
+        self, max_retries=5, retry_duration=1
+    ) -> NoReturn:
+        """
+        Listen for billing events, passs them to the billing processor
+        """
+        retry_count = 0
+        sleep_duration = 1
+
+        while retry_count < max_retries:
+            try:
+                logger.info("Creating pubsub instance")
+                self._pubsub = self.redis_service.redis.pubsub()
+
+                logger.info("Subscribing to billing event channel")
+                self._pubsub.subscribe(self.redis_service.billing_event_pubsub_channel)
+
+                # reset retry count. Unlikely to need to reconnect to pubsub
+                retry_count = 0
+
+                logger.info("Listening for billing events")
+                while True:
+                    message = self._pubsub.get_message(ignore_subscribe_messages=True)
+                    if message:
+                        logger.debug(f"Received billing message: >>{message}<<")
+                        await self._process_billing_event(message)
+                    else:
+                        logger.trace("message is empty, retry in {}s", sleep_duration)
+                        await asyncio.sleep(sleep_duration)
+            except ConnectionError as e:
+                logger.error("ConnectionError detected: {}.", e)
+            except Exception:  # General exception catch
+                logger.exception("Unexpected error.")
+
+            retry_count += 1
+            logger.warning(
+                "Attempt #{} to reconnect in {}s ...", retry_count, retry_duration
+            )
+            await asyncio.sleep(retry_duration)  # Wait a bit before retrying

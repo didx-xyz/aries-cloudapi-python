@@ -164,6 +164,10 @@ class BillingManager:
             # handel issuer_cred_rev event
             lago = self._convert_issuer_cred_rev_event(event)
 
+        if not lago:
+            logger.error(f"Unknown billing event: {event}")
+            return
+
         # post billing event to LAGO
         await self._post_billing_event(lago)
 

@@ -166,3 +166,24 @@ class BillingManager:
 
         # post billing event to LAGO
         await self._post_billing_event(lago)
+
+    async def _post_billing_event(self, event: BillingEvent) -> None:
+        """
+        Post billing event to LAGO
+        """
+        logger.debug(f"Posting billing event: {event}")
+        try:
+            lago_response = await self._client.post(
+                url=self._LAGO_URL,
+                json={"event": event.model_dump()},
+            )
+
+            logger.error(f"Response from LAGO: {lago_response.json()}")
+            lago_response.raise_for_status()
+
+        except HTTPException as e:
+            if e.status_code == 422:
+                logger.error(f"Error posting billing event >>> : {e.detail}")
+                pass
+            logger.error(f"Error posting billing event: {e}")
+            raise e

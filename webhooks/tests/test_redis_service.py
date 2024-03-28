@@ -6,6 +6,7 @@ import pytest
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
 from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
 
+group_id = "group"
 wallet_id = "test_wallet"
 topic = "test_topic"
 payload = '"payload": {"test":"1"}'
@@ -38,7 +39,7 @@ async def test_add_cloudapi_webhook_event():
 
     # Call the method you want to test
     redis_service.add_cloudapi_webhook_event(
-        event_json, group_id=None, wallet_id=wallet_id, timestamp_ns=time.time_ns
+        event_json, group_id=group_id, wallet_id=wallet_id, timestamp_ns=time.time_ns
     )
 
     # Assert that the mocked methods were called as expected
@@ -130,17 +131,20 @@ async def test_get_json_cloudapi_events_by_timestamp():
     redis_client.zrangebyscore = Mock(return_value=[e.encode() for e in json_entries])
 
     redis_service = WebhooksRedisService(redis_client)
-    expected_key = f"{redis_service.cloudapi_redis_prefix}:{wallet_id}".encode()
+    expected_key = f"{redis_service.cloudapi_redis_prefix}:group:{group_id}:{wallet_id}"
 
-    redis_service.match_keys = Mock(return_value=[expected_key])
+    redis_service.match_keys = Mock(return_value=[expected_key.encode()])
 
     events = redis_service.get_json_cloudapi_events_by_timestamp(
-        wallet_id, start_timestamp, end_timestamp
+        group_id=group_id,
+        wallet_id=wallet_id,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
     )
 
     assert events == json_entries
     redis_client.zrangebyscore.assert_called_once_with(
-        f"{redis_service.cloudapi_redis_prefix}:{wallet_id}",
+        expected_key,
         min=start_timestamp,
         max=end_timestamp,
     )

@@ -97,7 +97,9 @@ class WebhooksRedisService(RedisService):
         redis_key = self.get_cloudapi_event_redis_key(wallet_id, group_id)
         self.redis.zadd(redis_key, {event_json: timestamp_ns})
 
-        broadcast_message = f"{wallet_id}:{timestamp_ns}"
+        group_id = "" if not group_id else group_id  # convert None to ""
+
+        broadcast_message = f"{group_id}:{wallet_id}:{timestamp_ns}"
         # publish that a new event has been added
         bound_logger.trace("Publish message on pubsub channel: {}", broadcast_message)
         self.redis.publish(self.sse_event_pubsub_channel, broadcast_message)
@@ -205,7 +207,11 @@ class WebhooksRedisService(RedisService):
         return result
 
     def get_json_cloudapi_events_by_timestamp(
-        self, wallet_id: str, start_timestamp: float, end_timestamp: float = "+inf"
+        self,
+        group_id: str,
+        wallet_id: str,
+        start_timestamp: float,
+        end_timestamp: float = "+inf",
     ) -> List[str]:
         """
         Retrieve all CloudAPI webhook event JSON strings for a specified wallet ID within a timestamp range.
@@ -221,7 +227,9 @@ class WebhooksRedisService(RedisService):
         bound_logger = self.logger.bind(body={"wallet_id": wallet_id})
         bound_logger.debug("Fetching entries from redis by timestamp for wallet")
 
-        redis_key = self.get_cloudapi_event_redis_key_unknown_group(wallet_id)
+        redis_key = self.get_cloudapi_event_redis_key(
+            wallet_id=wallet_id, group_id=group_id
+        )
         if not redis_key:
             bound_logger.debug("No entries found for wallet without matching redis key")
             return []

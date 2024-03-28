@@ -26,8 +26,11 @@ async def test_subscribe_wallet_id_and_topic(
     websocket = AsyncMock(spec=WebSocket)
     wallet_id = "test_wallet_id"
     topic = "test_topic"
+    group_id = "group"
 
-    await WebsocketManager.subscribe(websocket, wallet_id=wallet_id, topic=topic)
+    await WebsocketManager.subscribe(
+        websocket, group_id=group_id, wallet_id=wallet_id, topic=topic
+    )
 
     # Ensure `subscribe` was called once
     mock_pubsub_client.assert_called_once()

@@ -38,10 +38,12 @@ async def websocket_auth(
 
 async def handle_websocket(
     websocket: WebSocket,
+    *,
+    group_id: str,
     wallet_id: str,
     topic: str,
     auth: AcaPyAuthVerified,
-):
+) -> None:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
     bound_logger.debug("Accepting websocket")
     await websocket.accept()
@@ -60,11 +62,21 @@ async def handle_websocket(
         await websocket.send_text("Unauthorized")
         await websocket.close(code=1008)
         bound_logger.info("Unauthorized WebSocket connection closed")
+        return
+
+    if not group_id and not wallet_id and not topic:
+        bound_logger.debug("Notifying one of group, wallet, or topic must be specified")
+        await websocket.send_text("One of group, wallet, or topic must be specified")
+        await websocket.close(code=1008)
+        bound_logger.info("Closed WebSocket connection with bad request")
+        return
 
     uuid = None
     try:
         # Subscribe the WebSocket connection to the wallet / topic
-        uuid = await WebsocketManager.subscribe(websocket, wallet_id, topic)
+        uuid = await WebsocketManager.subscribe(
+            websocket, group_id=group_id, wallet_id=wallet_id, topic=topic
+        )
 
         # Keep the connection open until the client disconnects
         while True:

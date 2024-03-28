@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class LagoTopics(Enum):
+class LagoTopics(str, Enum):
     CREDENTIAL = "issue_done"
     PROOF = "proof_done"
     CRED_DEF = "cred_def"
@@ -20,28 +20,28 @@ class LagoEvent(BaseModel):
 
 
 class CredentialBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.CREDENTIAL] = Field(LagoTopics.CREDENTIAL)
+    code: Literal[LagoTopics.CREDENTIAL] = Field("issue_done")
 
 
 class ProofBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.PROOF] = Field(LagoTopics.PROOF)
+    code: Literal[LagoTopics.PROOF] = Field("proof_done")
 
 
 class CredDefBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.CRED_DEF] = Field(LagoTopics.CRED_DEF)
+    code: Literal[LagoTopics.CRED_DEF] = Field("cred_def")
 
 
 class RevRegDefBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.REV_REG_ENTRY] = Field(LagoTopics.REV_REG_DEF)
+    code: Literal[LagoTopics.REV_REG_DEF] = Field("rev_reg_def")
 
 
 class RevRegEntryBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.REV_REG_ENTRY] = Field(LagoTopics.REV_REG_ENTRY)
+    code: Literal[LagoTopics.REV_REG_ENTRY] = Field("rev_reg_entry")
 
 
 class AttribBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.ATTRIB] = Field(LagoTopics.ATTRIB)
+    code: Literal[LagoTopics.ATTRIB] = Field("attrib")
 
 
 class RevocationBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.REVOCATION] = Field(LagoTopics.REVOCATION)
+    code: Literal[LagoTopics.REVOCATION] = Field("revoked")

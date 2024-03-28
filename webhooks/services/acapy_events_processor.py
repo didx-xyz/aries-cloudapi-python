@@ -1,9 +1,10 @@
 import asyncio
 import datetime
-import orjson
 import sys
 from typing import Any, Dict, List, NoReturn
 from uuid import uuid4
+
+import orjson
 
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
@@ -356,7 +357,7 @@ class AcaPyEventsProcessor:
                 operation_type = get_operation_type(
                     payload=payload, logger=bound_logger
                 )
-                
+
                 endorse_event: Dict[str, Any] = orjson.loads(webhook_event_json)
                 endorse_event["payload"]["type"] = operation_type
                 webhook_event_for_billing = orjson.dumps(endorse_event)

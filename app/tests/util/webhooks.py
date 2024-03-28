@@ -20,7 +20,8 @@ def get_wallet_id_from_async_client(client: RichAsyncClient) -> str:
 async def check_webhook_state(
     client: RichAsyncClient,
     topic: CloudApiTopics,
-    filter_map: Dict[str, Optional[str]],
+    state: str,
+    filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 60,
     lookback_time: int = 1,
 ) -> bool:
@@ -30,27 +31,22 @@ async def check_webhook_state(
 
     listener = SseListener(wallet_id, topic)
 
-    desired_state = filter_map["state"]
-
-    other_keys = dict(filter_map)
-    other_keys.pop("state", None)
-
     # Check if there are any other keys
-    if other_keys:
+    if filter_map:
         # Assuming that filter_map contains max 1 other key-value pair
-        field, field_id = list(other_keys.items())[0]
+        field, field_id = list(filter_map.items())[0]
 
         event = await listener.wait_for_event(
             field=field,
             field_id=field_id,
-            desired_state=desired_state,
+            desired_state=state,
             timeout=max_duration,
             lookback_time=lookback_time,
         )
     else:
         # No other key means we are only asserting the state
         event = await listener.wait_for_state(
-            desired_state=desired_state,
+            desired_state=state,
             timeout=max_duration,
             lookback_time=lookback_time,
         )

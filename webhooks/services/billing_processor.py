@@ -105,7 +105,7 @@ class BillingManager:
                 while True:
                     message = self._pubsub.get_message(ignore_subscribe_messages=True)
                     if message:
-                        logger.debug(f"Received billing message: >>{message}<<")
+                        logger.debug("Received billing message: >>{}<<", message)
                         await self._process_billing_event(message)
                     else:
                         logger.trace("message is empty, retry in {}s", sleep_duration)
@@ -140,7 +140,9 @@ class BillingManager:
             # there are duplicate done event bc of acapy to cloudapi conversion
             # the score get updated and the event is not found with old score
             logger.debug(
-                f"No events found for group_id: {groub_id} and timestamp: {timestamp_ns}"
+                "No events found for group_id: {} and timestamp: {}",
+                group_id,
+                timestamp_ns,
             )
             return
 
@@ -180,22 +182,21 @@ class BillingManager:
         """
         Post billing event to LAGO
         """
-        logger.debug(f"Posting billing event: {event}")
+        logger.debug("Posting billing event: {}", event)
         try:
             lago_response = await self._client.post(
                 url=LAGO_URL,
                 json={"event": event.model_dump()},
             )
 
-            lago_response.raise_for_status()
-            logger.info(f"Response from LAGO: {lago_response.json()}")
+            logger.info("Response from LAGO: {}", lago_response.json())
 
         except HTTPException as e:
             if e.status_code == 422 and "value_already_exist" in e.detail:
-                logger.debug(f"Error posting billing event >>> : {e.detail}")
+                logger.debug("Error posting billing event >>> : {}", e.detail)
 
             else:
-                logger.error(f"Error posting billing event: {e}")
+                logger.error("Error posting billing event: {}", e)
                 raise e
 
     def _convert_credential_event(
@@ -204,7 +205,7 @@ class BillingManager:
         """
         Convert credential event to LAGO event
         """
-        logger.debug(f"Converting credential event: {event}")
+        logger.debug("Converting credential event: {}", event)
 
         # using thread_id as transaction_id
         payload: Dict[str, Any] = event.get("payload")
@@ -218,7 +219,7 @@ class BillingManager:
         """
         Convert proofs event to LAGO event
         """
-        logger.debug(f"Converting proofs event: {event}")
+        logger.debug("Converting proofs event: {}", event)
 
         # using thread_id as transaction_id
         payload: Dict[str, Any] = event.get("payload")
@@ -228,13 +229,11 @@ class BillingManager:
         )
         return lago_event
 
-    def _convert_endorsements_event(
-        self, event: Dict[str, Any]
-    ) -> EndorsementBillingEvent:
+    def _convert_endorsements_event(self, event: Dict[str, Any]) -> LagoEvent:
         """
         Convert endorsements event to LAGO event
         """
-        logger.debug(f"Converting endorsements event: {event}")
+        logger.debug("Converting endorsements event: {}", event)
 
         payload: Dict[str, Any] = event.get("payload")
 
@@ -248,28 +247,29 @@ class BillingManager:
             )
             return lago_event
 
-        if endorsement_type == "102":
+        elif endorsement_type == "102":
             lago_event = CredDefBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
 
-        if endorsement_type == "113":
+        elif endorsement_type == "113":
             lago_event = RevRegDefBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
 
-        if endorsement_type == "114":
+        elif endorsement_type == "114":
             lago_event = RevRegEntryBillingEvent(
                 transaction_id=payload.get("transaction_id"),
                 external_customer_id=event.get("group_id"),
             )
             return lago_event
 
-        raise ValueError(f"Unknown endorsement type: {endorsement_type}")
+        else:
+            logger.warning("Unknown endorsement type: {}", endorsement_type)
 
     def _convert_issuer_cred_rev_event(
         self, event: Dict[str, Any]
@@ -279,7 +279,7 @@ class BillingManager:
         """
 
         # using record_id as transaction_id
-        logger.debug(f"Converting issuer cred rev event: {event}")
+        logger.debug("Converting issuer cred rev event: {}", event)
         payload: Dict[str, Any] = event.get("payload")
         lago_event = RevocationBillingEvent(
             transaction_id=payload.get("record_id"),

@@ -35,10 +35,9 @@ class BillingManager:
 
         self._pubsub = None
 
-        self._client = RichAsyncClient(name="BillingManager")
-        self._client.headers = {"Authorization": f"Bearer {LAGO_API_KEY}"}
-
-        self._lago_url = LAGO_URL
+        self._client = RichAsyncClient(
+            name="BillingManager", headers={"Authorization": f"Bearer {LAGO_API_KEY}"}
+        )
 
     def start(self) -> None:
         """

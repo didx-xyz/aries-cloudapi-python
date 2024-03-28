@@ -1,6 +1,17 @@
+from enum import Enum
 from typing import Literal
 
 from pydantic import BaseModel, Field
+
+
+class LagoTopics(Enum):
+    CREDENTIAL = "issue_done"
+    PROOF = "proof_done"
+    CRED_DEF = "cred_def"
+    REV_REG_DEF = "rev_reg_def"
+    REV_REG_ENTRY = "rev_reg_entry"
+    ATTRIB = "attrib"
+    REVOCATION = "revoked"
 
 
 class LagoEvent(BaseModel):
@@ -9,28 +20,28 @@ class LagoEvent(BaseModel):
 
 
 class CredentialBillingEvent(LagoEvent):
-    code: Literal["issue_done"] = Field("issue_done")
+    code: Literal[LagoTopics.CREDENTIAL] = Field(LagoTopics.CREDENTIAL)
 
 
 class ProofBillingEvent(LagoEvent):
-    code: Literal["proof_done"] = Field("proof_done")
+    code: Literal[LagoTopics.PROOF] = Field(LagoTopics.PROOF)
 
 
 class CredDefBillingEvent(LagoEvent):
-    code: Literal["cred_def"] = Field("cred_def")
+    code: Literal[LagoTopics.CRED_DEF] = Field(LagoTopics.CRED_DEF)
 
 
 class RevRegDefBillingEvent(LagoEvent):
-    code: Literal["rev_reg_def"] = Field("rev_reg_def")
+    code: Literal[LagoTopics.REV_REG_ENTRY] = Field(LagoTopics.REV_REG_DEF)
 
 
 class RevRegEntryBillingEvent(LagoEvent):
-    code: Literal["rev_reg_entry"] = Field("rev_reg_entry")
+    code: Literal[LagoTopics.REV_REG_ENTRY] = Field(LagoTopics.REV_REG_ENTRY)
 
 
 class AttribBillingEvent(LagoEvent):
-    code: Literal["attrib"] = Field("attrib")
+    code: Literal[LagoTopics.ATTRIB] = Field(LagoTopics.ATTRIB)
 
 
 class RevocationBillingEvent(LagoEvent):
-    code: Literal["revoked"] = Field("revoked")
+    code: Literal[LagoTopics.REVOCATION] = Field(LagoTopics.REVOCATION)

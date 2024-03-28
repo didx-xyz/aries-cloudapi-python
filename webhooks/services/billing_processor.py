@@ -9,10 +9,9 @@ from shared.log_config import get_logger
 from shared.util.rich_async_client import RichAsyncClient
 from webhooks.models.billing_payloads import (
     AttribBillingEvent,
-    BillingEvent,
     CredDefBillingEvent,
     CredentialBillingEvent,
-    EndorsementBillingEvent,
+    LagoEvent,
     ProofBillingEvent,
     RevocationBillingEvent,
     RevRegDefBillingEvent,

@@ -131,11 +131,11 @@ class BillingManager:
         if isinstance(message_data, bytes):
             message_data = message_data.decode("utf-8")
 
-        groub_id, timestamp_ns_str = message_data.split(":")
+        group_id, timestamp_ns_str = message_data.split(":")
         timestamp_ns = int(timestamp_ns_str)
 
         events = self.redis_service.get_billing_event(
-            groub_id, timestamp_ns, timestamp_ns
+            group_id, timestamp_ns, timestamp_ns
         )
 
         if not events:

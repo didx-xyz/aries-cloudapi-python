@@ -8,7 +8,7 @@ from app.dependencies.auth import (
     acapy_auth_verified,
     verify_wallet_access,
 )
-from app.services.sse import (
+from app.services.event_handling.sse import (
     sse_subscribe_event_with_field_and_state,
     sse_subscribe_event_with_state,
     sse_subscribe_stream_with_fields,

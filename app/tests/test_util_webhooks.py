@@ -5,7 +5,6 @@ from httpx import HTTPError
 
 from app.tests.util.webhooks import check_webhook_state
 
-
 # pylint: disable=redefined-outer-name
 
 
@@ -25,7 +24,7 @@ def mock_sse_listener(mocker):
 
 
 @pytest.mark.anyio
-async def test_check_webhook_state_success(
+async def test_check_webhook_state_wait_for_event_success(
     mock_wallet_id,  # pylint: disable=unused-argument
     mock_sse_listener,
 ):
@@ -50,7 +49,7 @@ async def test_check_webhook_state_success(
 
 
 @pytest.mark.anyio
-async def test_check_webhook_state_success_after_retry(
+async def test_check_webhook_state_wait_for_event_success_after_retry(
     mock_wallet_id,  # pylint: disable=unused-argument
     mock_sse_listener,
 ):
@@ -71,7 +70,7 @@ async def test_check_webhook_state_success_after_retry(
 
 
 @pytest.mark.anyio
-async def test_check_webhook_state_fails_after_max_retries(
+async def test_check_webhook_state_wait_for_event_fails_after_max_retries(
     mock_wallet_id,  # pylint: disable=unused-argument
     mock_sse_listener,
 ):
@@ -87,4 +86,65 @@ async def test_check_webhook_state_fails_after_max_retries(
 
     assert (
         mock_sse_listener.wait_for_event.call_count == 2
+    ), "Should have retried the max number of times"
+
+
+@pytest.mark.anyio
+async def test_check_webhook_state_wait_for_state_success(
+    mock_wallet_id,  # pylint: disable=unused-argument
+    mock_sse_listener,
+):
+    client = MagicMock()
+    topic = "connections"
+    state = "desired_state"
+
+    expected_event = {"event": "details", "state": state}
+    mock_sse_listener.wait_for_state.return_value = expected_event
+
+    result = await check_webhook_state(client, topic, state)
+
+    assert result == expected_event
+    mock_sse_listener.wait_for_state.assert_awaited_once_with(
+        desired_state=state,
+        timeout=60,
+        lookback_time=1,
+    )
+
+
+@pytest.mark.anyio
+async def test_check_webhook_state_wait_for_state_success_after_retry(
+    mock_wallet_id,  # pylint: disable=unused-argument
+    mock_sse_listener,
+):
+    client = MagicMock()
+    topic = "some_topic"
+    state = "desired_state"
+
+    expected_event = {"event": "details", "state": state}
+    mock_sse_listener.wait_for_state.side_effect = [HTTPError(""), expected_event]
+
+    result = await check_webhook_state(client, topic, state, delay=0.01)
+
+    assert result == expected_event
+    assert (
+        mock_sse_listener.wait_for_state.call_count == 2
+    ), "Should have retried once after HTTPError"
+
+
+@pytest.mark.anyio
+async def test_check_webhook_state_wait_for_state_fails_after_max_retries(
+    mock_wallet_id,  # pylint: disable=unused-argument
+    mock_sse_listener,
+):
+    client = MagicMock()
+    topic = "some_topic"
+    state = "desired_state"
+
+    mock_sse_listener.wait_for_state.side_effect = HTTPError("")
+
+    with pytest.raises(HTTPError):
+        await check_webhook_state(client, topic, state, delay=0.01)
+
+    assert (
+        mock_sse_listener.wait_for_state.call_count == 2
     ), "Should have retried the max number of times"

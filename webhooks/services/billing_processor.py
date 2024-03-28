@@ -176,7 +176,7 @@ class BillingManager:
         # post billing event to LAGO
         await self._post_billing_event(lago)
 
-    async def _post_billing_event(self, event: BillingEvent) -> None:
+    async def _post_billing_event(self, event: LagoEvent) -> None:
         """
         Post billing event to LAGO
         """

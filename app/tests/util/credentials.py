@@ -37,9 +37,9 @@ async def issue_credential_to_alice(
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
             "connection_id": faber_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
         },
     )
 
@@ -53,9 +53,9 @@ async def issue_credential_to_alice(
     await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="done",
         filter_map={
             "credential_id": alice_credential_id,
-            "state": "done",
         },
     )
 
@@ -87,9 +87,9 @@ async def meld_co_issue_credential_to_alice(
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
             "connection_id": meld_co_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
         },
     )
 
@@ -103,9 +103,9 @@ async def meld_co_issue_credential_to_alice(
     await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="done",
         filter_map={
             "credential_id": alice_credential_id,
-            "state": "done",
         },
     )
 
@@ -162,9 +162,9 @@ async def issue_alice_creds_and_revoke_unpublished(
         await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
+            state="done",
             filter_map={
                 "credential_id": cred["credential_id"],
-                "state": "done",
             },
         )
 

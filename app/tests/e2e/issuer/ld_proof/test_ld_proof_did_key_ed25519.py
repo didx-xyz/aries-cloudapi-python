@@ -102,9 +102,9 @@ async def test_send_jsonld_key_ed25519(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
             "connection_id": alice_connection_id,
-            "state": "offer-received",
         },
     )
 
@@ -157,9 +157,9 @@ async def test_send_jsonld_oob(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
+        state="completed",
         filter_map={
             "connection_id": alice_connection_id,
-            "state": "completed",
         },
     )
 
@@ -194,9 +194,9 @@ async def test_send_jsonld_oob(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
             "connection_id": alice_connection_id,
-            "state": "offer-received",
         },
     )
 
@@ -228,9 +228,9 @@ async def test_send_jsonld_request(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
             "credential_id": credential_exchange["credential_id"],
-            "state": "offer-sent",
         },
         lookback_time=5,
     )
@@ -238,7 +238,7 @@ async def test_send_jsonld_request(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
-        filter_map={"state": "offer-received"},
+        state="offer-received",
         lookback_time=5,
     )
 
@@ -259,14 +259,14 @@ async def test_send_jsonld_request(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
-        filter_map={"state": "request-sent"},
+        state="request-sent",
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
-        filter_map={"state": "request-received"},
+        state="request-received",
         lookback_time=5,
     )
 
@@ -298,9 +298,9 @@ async def test_issue_jsonld_ed(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
             "credential_id": credential_exchange["credential_id"],
-            "state": "offer-sent",
         },
         lookback_time=5,
     )
@@ -308,7 +308,7 @@ async def test_issue_jsonld_ed(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
-        filter_map={"state": "offer-received"},
+        state="offer-received",
         lookback_time=5,
     )
 
@@ -329,14 +329,14 @@ async def test_issue_jsonld_ed(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
-        filter_map={"state": "done"},
+        state="done",
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
-        filter_map={"state": "done"},
+        state="done",
         lookback_time=5,
     )
 

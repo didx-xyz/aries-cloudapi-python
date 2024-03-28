@@ -62,7 +62,7 @@ async def test_accept_proof_request_v1(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={"state": "request-received"},
+        state="request-received",
     )
     proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
@@ -74,9 +74,9 @@ async def test_accept_proof_request_v1(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "request-received",
         },
     )
 
@@ -102,9 +102,9 @@ async def test_accept_proof_request_v1(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "done",
         },
         lookback_time=5,
     )
@@ -112,9 +112,9 @@ async def test_accept_proof_request_v1(
     assert await check_webhook_state(
         client=acme_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": acme_proof_id,
-            "state": "done",
         },
         lookback_time=5,
     )
@@ -168,9 +168,9 @@ async def test_accept_proof_request_oob_v1(
     alice_request_received = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "thread_id": thread_id,
-            "state": "request-received",
         },
     )
 
@@ -205,18 +205,18 @@ async def test_accept_proof_request_oob_v1(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="presentation-sent",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "presentation-sent",
         },
     )
 
     bob_presentation_received = await check_webhook_state(
         client=bob_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "thread_id": thread_id,
-            "state": "done",
         },
     )
     assert bob_presentation_received["role"] == "verifier"
@@ -261,9 +261,9 @@ async def test_accept_proof_request_oob_v2(
     alice_request_received = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "thread_id": thread_id,
-            "state": "request-received",
         },
     )
 
@@ -297,18 +297,18 @@ async def test_accept_proof_request_oob_v2(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="presentation-sent",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "presentation-sent",
         },
     )
 
     bob_presentation_received = await check_webhook_state(
         client=bob_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "thread_id": thread_id,
-            "state": "done",
         },
     )
     assert bob_presentation_received["role"] == "verifier"
@@ -351,9 +351,9 @@ async def test_accept_proof_request_v2(
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
 
@@ -384,9 +384,9 @@ async def test_accept_proof_request_v2(
     acme_proof_event = await check_webhook_state(
         client=acme_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": acme_proof_id,
-            "state": "done",
         },
     )
     assert acme_proof_event["verified"]
@@ -431,9 +431,9 @@ async def test_send_proof_request(
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_connection_event["protocol_version"] == "v1"
@@ -464,9 +464,9 @@ async def test_send_proof_request(
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_connection_event["protocol_version"] == "v2"
@@ -495,9 +495,9 @@ async def test_reject_proof_request(
     alice_exchange = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_exchange["protocol_version"] == "v1"
@@ -675,9 +675,9 @@ async def test_get_credentials_for_request(
     alice_exchange = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_exchange["protocol_version"] == "v1"
@@ -713,9 +713,9 @@ async def test_get_credentials_for_request(
     alice_exchange = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": acme_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_exchange["protocol_version"] == "v2"
@@ -759,7 +759,7 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={"state": "request-received"},
+        state="request-received",
     )
     proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
@@ -771,9 +771,9 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "request-received",
         },
     )
 
@@ -799,18 +799,18 @@ async def test_accept_proof_request_v1_verifier_has_issuer_role(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "done",
         },
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=meld_co_client,
+        state="done",
         filter_map={
             "proof_id": meld_co_proof_id,
-            "state": "done",
         },
         topic="proofs",
         lookback_time=5,
@@ -856,9 +856,9 @@ async def test_send_proof_request_verifier_has_issuer_role(
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": meld_co_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_connection_event["protocol_version"] == "v1"
@@ -889,9 +889,9 @@ async def test_send_proof_request_verifier_has_issuer_role(
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": meld_co_and_alice_connection.alice_connection_id,
-            "state": "request-received",
         },
     )
     assert alice_connection_event["protocol_version"] == "v2"
@@ -925,7 +925,7 @@ async def test_saving_of_presentation_exchange_records(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={"state": "request-received"},
+        state="request-received",
     )
     proof_records_alice = await alice_member_client.get(VERIFIER_BASE_PATH + "/proofs")
     alice_proof_id = proof_records_alice.json()[-1]["proof_id"]
@@ -937,7 +937,10 @@ async def test_saving_of_presentation_exchange_records(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={"state": "request-received", "proof_id": alice_proof_id},
+        state="request-received",
+        filter_map={
+            "proof_id": alice_proof_id,
+        },
     )
 
     referent = requested_credentials.json()[-1]["cred_info"]["referent"]
@@ -963,9 +966,9 @@ async def test_saving_of_presentation_exchange_records(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": alice_proof_id,
-            "state": "done",
         },
         lookback_time=5,
     )
@@ -973,9 +976,9 @@ async def test_saving_of_presentation_exchange_records(
     assert await check_webhook_state(
         client=acme_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": acme_proof_id,
-            "state": "done",
         },
         lookback_time=5,
     )
@@ -1030,9 +1033,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     await check_webhook_state(
         client=faber_client,
         topic="connections",
+        state="completed",
         filter_map={
             "connection_id": issuer_holder_connection_id,
-            "state": "completed",
         },
     )
 
@@ -1057,7 +1060,7 @@ async def test_accept_proof_request_verifier_no_public_did(
     payload = await check_webhook_state(
         client=acme_client,
         topic="connections",
-        filter_map={"state": "completed"},
+        state="completed",
     )
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
@@ -1108,9 +1111,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
             "connection_id": holder_issuer_connection_id,
-            "state": "offer-received",
         },
     )
 
@@ -1125,9 +1128,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="done",
         filter_map={
             "credential_id": issuer_credential_exchange_id,
-            "state": "done",
         },
     )
 
@@ -1163,9 +1166,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="request-received",
         filter_map={
             "connection_id": holder_verifier_connection_id,
-            "state": "request-received",
         },
     )
 
@@ -1200,9 +1203,9 @@ async def test_accept_proof_request_verifier_no_public_did(
     event = await check_webhook_state(
         client=acme_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": verifier_proof_exchange_id,
-            "state": "done",
         },
     )
     assert event["verified"]
@@ -1235,9 +1238,7 @@ async def test_get_proof_records(
     await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={
-            "state": "request-received",
-        },
+        state="request-received",
     )
 
     proof_exc = await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
@@ -1272,17 +1273,17 @@ async def test_get_proof_records(
     await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": proof_request["proof_id"],
-            "state": "done",
         },
     )
     await check_webhook_state(
         client=meld_co_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": proof_1["proof_id"],
-            "state": "done",
         },
     )
 

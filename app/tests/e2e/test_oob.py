@@ -75,9 +75,9 @@ async def test_oob_connect_via_public_did(
     assert await check_webhook_state(
         client=bob_member_client,
         topic="connections",
+        state="request-sent",
         filter_map={
             "connection_id": bob_oob_record["connection_id"],
-            "state": "request-sent",
         },
     )
 

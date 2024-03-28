@@ -49,9 +49,9 @@ async def test_accept_use_public_did(
     assert await check_webhook_state(
         client=meld_co_client,
         topic="connections",
+        state="completed",
         filter_map={
             "connection_id": connection_record["connection_id"],
-            "state": "completed",
         },
     )
 
@@ -94,8 +94,8 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
+        state="completed",
         filter_map={
             "connection_id": connection_record["connection_id"],
-            "state": "completed",
         },
     )

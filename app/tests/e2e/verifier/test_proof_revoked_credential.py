@@ -57,7 +57,7 @@ async def test_proof_revoked_credential(
     await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
-        filter_map={"state": "request-received"},
+        state="request-received",
         lookback_time=5,
     )
 
@@ -93,9 +93,9 @@ async def test_proof_revoked_credential(
     await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": alice_proof_exchange_id,
-            "state": "done",
         },
         lookback_time=5,
     )
@@ -103,9 +103,9 @@ async def test_proof_revoked_credential(
     await check_webhook_state(
         client=acme_client,
         topic="proofs",
+        state="done",
         filter_map={
             "proof_id": acme_proof_exchange_id,
-            "state": "done",
         },
         lookback_time=5,
     )

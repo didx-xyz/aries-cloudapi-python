@@ -44,9 +44,9 @@ async def test_issue_credential_with_save_exchange_record(
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
             "connection_id": faber_and_alice_connection.alice_connection_id,
-            "state": "offer-received",
         },
     )
 
@@ -60,9 +60,9 @@ async def test_issue_credential_with_save_exchange_record(
     await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="done",
         filter_map={
             "credential_id": alice_credential_id,
-            "state": "done",
         },
     )
 
@@ -151,9 +151,9 @@ async def test_get_cred_exchange_records(
         await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
+            state="done",
             filter_map={
                 "credential_id": cred["credential_id"],
-                "state": "done",
             },
         )
 

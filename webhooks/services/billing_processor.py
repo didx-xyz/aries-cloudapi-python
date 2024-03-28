@@ -183,7 +183,7 @@ class BillingManager:
         logger.debug(f"Posting billing event: {event}")
         try:
             lago_response = await self._client.post(
-                url=self._lago_url,
+                url=LAGO_URL,
                 json={"event": event.model_dump()},
             )
 

@@ -157,20 +157,20 @@ class BillingManager:
             # handel credentials event
             lago = self._convert_credential_event(event)
 
-        if topic == "proofs":
+        elif topic == "proofs":
             # handel proofs event
             lago = self._convert_proofs_event(event)
 
-        if topic == "endorsements":
+        elif topic == "endorsements":
             # handel endorsements event
             lago = self._convert_endorsements_event(event)
 
-        if topic == "issuer_cred_rev":
+        elif topic == "issuer_cred_rev":
             # handel issuer_cred_rev event
             lago = self._convert_issuer_cred_rev_event(event)
 
-        if not lago:
-            logger.error(f"Unknown billing event: {event}")
+        else:
+            logger.warning("Unknown billing event: {}", event)
             return
 
         # post billing event to LAGO

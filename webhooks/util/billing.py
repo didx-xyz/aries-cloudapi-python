@@ -6,10 +6,14 @@ from shared.models.endorsement import extract_operation_type_from_endorsement_pa
 
 
 def is_applicable_for_billing(
-    wallet_id: str, topic: str, payload: Dict[str, Any], logger: Logger
+    wallet_id: str, group_id: str, topic: str, payload: Dict[str, Any], logger: Logger
 ) -> bool:
 
     if wallet_id == GOVERNANCE_LABEL:
+        return False
+
+    if not group_id:
+        logger.warning("Can't bill for this event as group_id is missing")
         return False
 
     state = payload.get("state")

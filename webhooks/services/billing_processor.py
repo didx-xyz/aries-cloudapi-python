@@ -1,7 +1,7 @@
 import asyncio
-import json
 from typing import Any, Dict, List, NoReturn
 
+import orjson
 from fastapi import HTTPException
 
 from shared.constants import LAGO_API_KEY, LAGO_URL
@@ -146,7 +146,7 @@ class BillingManager:
             )
             return
 
-        event: Dict[str, Any] = json.loads(events[0])
+        event: Dict[str, Any] = orjson.loads(events[0])
         topic = event.get("topic")
         if topic == "credentials":
             # handel credentials event

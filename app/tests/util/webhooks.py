@@ -30,6 +30,8 @@ async def check_webhook_state(
     filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 60,
     lookback_time: int = 1,
+    max_tries: int = 2,
+    delay: float = 0.5,
 ) -> Dict[str, Any]:
     assert max_duration >= 0, "Poll duration cannot be negative"
 
@@ -41,8 +43,6 @@ async def check_webhook_state(
     # Retry logic in case of disconnect errors (don't retry on timeout errors)
     event = None
     attempt = 0
-    max_tries = 2
-    delay = 0.5
 
     while not event and attempt < max_tries:
         try:

@@ -128,7 +128,7 @@ async def get_sse_subscribe_event_with_state(
         "GET request received: Subscribe to wallet events by topic and desired state"
     )
 
-    verify_wallet_access(auth, wallet_id, group_id)
+    verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
         sse_subscribe_event_with_state(

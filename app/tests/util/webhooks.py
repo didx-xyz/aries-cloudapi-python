@@ -1,9 +1,15 @@
+import asyncio
 from typing import Dict, Optional
 
-from app.services.event_handling.sse_listener import SseListener
+from httpx import HTTPError
+
+from app.services.event_handling.sse_listener import SseListener, SseListenerTimeout
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
+from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiTopics
+
+logger = get_logger(__name__)
 
 
 def get_wallet_id_from_async_client(client: RichAsyncClient) -> str:
@@ -30,26 +36,59 @@ async def check_webhook_state(
     wallet_id = get_wallet_id_from_async_client(client)
 
     listener = SseListener(wallet_id, topic)
+    bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})
 
-    # Check if there are any other keys
-    if filter_map:
-        # Assuming that filter_map contains max 1 other key-value pair
-        field, field_id = list(filter_map.items())[0]
+    # Retry logic in case of disconnect errors (don't retry on timeout errors)
+    event = None
+    attempt = 0
+    max_tries = 2
+    delay = 0.5
 
-        event = await listener.wait_for_event(
-            field=field,
-            field_id=field_id,
-            desired_state=state,
-            timeout=max_duration,
-            lookback_time=lookback_time,
-        )
-    else:
-        # No other key means we are only asserting the state
-        event = await listener.wait_for_state(
-            desired_state=state,
-            timeout=max_duration,
-            lookback_time=lookback_time,
-        )
+    while not event and attempt < max_tries:
+        try:
+            if filter_map:
+                # Assuming that filter_map contains max 1 other key-value pair
+                field, field_id = list(filter_map.items())[0]
+
+                bound_logger.info(
+                    "Waiting for event with field:field_id {}:{}, and state {}",
+                    field,
+                    field_id,
+                    state,
+                )
+                event = await listener.wait_for_event(
+                    field=field,
+                    field_id=field_id,
+                    desired_state=state,
+                    timeout=max_duration,
+                    lookback_time=lookback_time + attempt,  # Increase per attempt
+                )
+            else:
+                # No other key means we are only asserting the state
+
+                bound_logger.info("Waiting for event with state {}", state)
+                event = await listener.wait_for_state(
+                    desired_state=state,
+                    timeout=max_duration,
+                    lookback_time=lookback_time + attempt,  # Increase per attempt
+                )
+        except SseListenerTimeout:
+            bound_logger.error(
+                "Encountered SSE Timeout (server didn't return expected event in time)."
+            )
+            raise
+        except HTTPError as e:
+            bound_logger.warning(
+                "Encountered HTTP Error while waiting for SSE Event: {}.", e
+            )
+            if attempt + 1 >= max_tries:
+                bound_logger.error("Encountered too many HTTPErrors waiting for event.")
+                raise
+
+        if not event:
+            attempt += 1
+            bound_logger.warning("Retrying SSE request in {}s", delay)
+            await asyncio.sleep(delay)
 
     if event:
         return event

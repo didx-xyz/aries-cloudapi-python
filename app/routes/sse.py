@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Request
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import StreamingResponse
 
 from app.dependencies.auth import (
@@ -20,12 +22,19 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/sse", tags=["sse"])
 
 
+group_id_field = Query(
+    default=None,
+    description="Group ID to which the wallet belongs",
+)
+
+
 @router.get(
     "/{wallet_id}", response_class=StreamingResponse, name="Subscribe to Wallet Events"
 )
 async def get_sse_subscribe_wallet(
     request: Request,
     wallet_id: str,
+    group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
@@ -34,14 +43,19 @@ async def get_sse_subscribe_wallet(
     Args:
         wallet_id: The ID of the wallet subscribing to the events.
     """
-    logger.bind(body={"wallet_id": wallet_id}).info(
+    logger.bind(body={"group_id": group_id, "wallet_id": wallet_id}).info(
         "GET request received: Subscribe to wallet events"
     )
 
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_wallet(request, wallet_id), media_type="text/event-stream"
+        sse_subscribe_wallet(
+            request=request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+        ),
+        media_type="text/event-stream",
     )
 
 
@@ -54,6 +68,7 @@ async def get_sse_subscribe_wallet_topic(
     request: Request,
     wallet_id: str,
     topic: str,
+    group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
@@ -63,14 +78,19 @@ async def get_sse_subscribe_wallet_topic(
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
     """
-    logger.bind(body={"wallet_id": wallet_id, "topic": topic}).info(
-        "GET request received: Subscribe to wallet events by topic"
-    )
+    logger.bind(
+        body={"group_id": group_id, "wallet_id": wallet_id, "topic": topic}
+    ).info("GET request received: Subscribe to wallet events by topic")
 
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_wallet_topic(request, wallet_id, topic),
+        sse_subscribe_wallet_topic(
+            request=request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+        ),
         media_type="text/event-stream",
     )
 
@@ -85,6 +105,7 @@ async def get_sse_subscribe_event_with_state(
     wallet_id: str,
     topic: str,
     desired_state: str,
+    group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
@@ -97,15 +118,26 @@ async def get_sse_subscribe_event_with_state(
         desired_state: The desired state to be reached.
     """
     logger.bind(
-        body={"wallet_id": wallet_id, "topic": topic, "desired_state": desired_state}
+        body={
+            "group_id": group_id,
+            "wallet_id": wallet_id,
+            "topic": topic,
+            "desired_state": desired_state,
+        }
     ).info(
         "GET request received: Subscribe to wallet events by topic and desired state"
     )
 
-    verify_wallet_access(auth, wallet_id)
+    verify_wallet_access(auth, wallet_id, group_id)
 
     return StreamingResponse(
-        sse_subscribe_event_with_state(request, wallet_id, topic, desired_state),
+        sse_subscribe_event_with_state(
+            request=request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            desired_state=desired_state,
+        ),
         media_type="text/event-stream",
     )
 
@@ -121,6 +153,7 @@ async def get_sse_subscribe_stream_with_fields(
     topic: str,
     field: str,
     field_id: str,
+    group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
@@ -133,14 +166,26 @@ async def get_sse_subscribe_stream_with_fields(
         field: The field to which the wallet is subscribing.
         field_id: The ID of the field subscribing to the events.
     """
-    logger.bind(body={"wallet_id": wallet_id, "topic": topic, field: field_id}).info(
-        "GET request received: Subscribe to wallet events by topic and select field"
-    )
+    logger.bind(
+        body={
+            "group_id": group_id,
+            "wallet_id": wallet_id,
+            "topic": topic,
+            field: field_id,
+        }
+    ).info("GET request received: Subscribe to wallet events by topic and select field")
 
     verify_wallet_access(auth, wallet_id)
 
     return StreamingResponse(
-        sse_subscribe_stream_with_fields(request, wallet_id, topic, field, field_id),
+        sse_subscribe_stream_with_fields(
+            request=request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            field=field,
+            field_id=field_id,
+        ),
         media_type="text/event-stream",
     )
 
@@ -157,6 +202,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
+    group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ):
     """
@@ -172,6 +218,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     """
     logger.bind(
         body={
+            "group_id": group_id,
             "wallet_id": wallet_id,
             "topic": topic,
             field: field_id,
@@ -183,7 +230,13 @@ async def get_sse_subscribe_event_with_field_and_state(
 
     return StreamingResponse(
         sse_subscribe_event_with_field_and_state(
-            request, wallet_id, topic, field, field_id, desired_state
+            request=request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            field=field,
+            field_id=field_id,
+            desired_state=desired_state,
         ),
         media_type="text/event-stream",
     )

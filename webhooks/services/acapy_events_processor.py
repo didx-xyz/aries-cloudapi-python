@@ -343,6 +343,7 @@ class AcaPyEventsProcessor:
 
         if is_applicable_for_billing(
             wallet_id=wallet_id,
+            group_id=group_id,
             topic=cloudapi_topic,
             payload=payload,
             logger=bound_logger,

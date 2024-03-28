@@ -243,30 +243,31 @@ class BillingManager:
         # use operation type to determine the endorsement type
         # using transaction_id asfor LAGO transaction_id
         endorsement_type = payload.get("type")
+        transaction_id = payload.get("transaction_id")
         if endorsement_type == "100":
             lago_event = AttribBillingEvent(
-                transaction_id=payload.get("transaction_id"),
+                transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event
 
         elif endorsement_type == "102":
             lago_event = CredDefBillingEvent(
-                transaction_id=payload.get("transaction_id"),
+                transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event
 
         elif endorsement_type == "113":
             lago_event = RevRegDefBillingEvent(
-                transaction_id=payload.get("transaction_id"),
+                transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event
 
         elif endorsement_type == "114":
             lago_event = RevRegEntryBillingEvent(
-                transaction_id=payload.get("transaction_id"),
+                transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event

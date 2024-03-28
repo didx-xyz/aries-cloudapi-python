@@ -34,21 +34,3 @@ class AttribBillingEvent(LagoEvent):
 
 class RevocationBillingEvent(LagoEvent):
     code: Literal["revoked"] = Field("revoked")
-
-
-class EndorsementBillingEvent(
-    CredDefBillingEvent,
-    RevRegDefBillingEvent,
-    RevRegEntryBillingEvent,
-    AttribBillingEvent,
-):
-    pass
-
-
-class BillingEvent(
-    CredentialBillingEvent,
-    ProofBillingEvent,
-    EndorsementBillingEvent,
-    RevocationBillingEvent,
-):
-    pass

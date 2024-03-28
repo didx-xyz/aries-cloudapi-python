@@ -14,7 +14,9 @@ def is_applicable_for_billing(
 
     state = payload.get("state")
     if topic not in ["proofs", "credentials", "endorsements", "issuer_cred_rev"]:
-        logger.debug(f"Event topic: {topic} is not applicable for the billing service.")
+        logger.debug(
+            "Event topic: {} is not applicable for the billing service.", topic
+        )
         return False
 
     if state not in [
@@ -24,18 +26,21 @@ def is_applicable_for_billing(
         "credential_acked",
         "presentation_acked",
     ]:
-        logger.debug(f"Event state: {state} is not applicable for the billing service.")
+        logger.debug(
+            "Event state: {} is not applicable for the billing service.", state
+        )
         return False
 
     if topic == "endorsements":
         operation_type = get_operation_type(payload=payload, logger=logger)
         if operation_type not in ["1", "100", "102", "113", "114"]:
             logger.debug(
-                f"Endorsement operation type: {operation_type} is not applicable for the billing service."
+                "Endorsement operation type: {} is not applicable for the billing service.",
+                operation_type,
             )
             return False
 
-    logger.debug("Event is applicable for the billing service.")  # info ?
+    logger.debug("Event is applicable for the billing service.")
     return True
 
 

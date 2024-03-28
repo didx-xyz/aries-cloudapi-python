@@ -24,6 +24,10 @@ class WebhooksRedisService(RedisService):
 
         self.sse_event_pubsub_channel = "new_sse_event"  # name of pub/sub channel
 
+        self.billing_event_pubsub_channel = (
+            "new_billing_event"  # name of pub/sub channel
+        )
+
         self.acapy_redis_prefix = "acapy-record-*"  # redis prefix for ACA-Py events
 
         self.cloudapi_redis_prefix = "cloudapi"  # redis prefix for CloudAPI events
@@ -356,3 +360,55 @@ class WebhooksRedisService(RedisService):
             "Validated that wallet {} belongs to group {}.", wallet_id, group_id
         )
         return True
+
+    def add_billing_event(
+        self,
+        event_json: str,
+        group_id: str,
+        wallet_id: str,
+        timestamp_ns: int,
+    ) -> None:
+        """
+        billing stuff
+        """
+        bound_logger = self.logger.bind(
+            body={
+                "wallet_id": wallet_id,
+                "group_id": group_id,
+                "timestamp_ns": timestamp_ns,
+            }
+        )
+        bound_logger.debug("Write billing entry to redis")
+
+        # Use the current timestamp as the score for the sorted set
+        redis_key = f"billing:{group_id}"
+        self.redis.zadd(name=redis_key, mapping={event_json: timestamp_ns})
+
+        broadcast_message = f"{group_id}:{timestamp_ns}"
+
+        # publish that a new event has been added
+        bound_logger.trace(
+            "Publish billing message on pubsub channel: {}", broadcast_message
+        )
+        self.redis.publish(self.billing_event_pubsub_channel, broadcast_message)
+
+        bound_logger.info("Successfully wrote billing entry to redis.")
+
+    def get_billing_event(
+        self, group_id: str, start_timestamp: int, stop_timestamp: int
+    ) -> List[str]:
+        """
+        billing stuff
+        """
+        bound_logger = self.logger.bind(body={"group_id": group_id})
+        bound_logger.trace("Fetching billing entries from redis by group id")
+
+        redis_key = f"billing:{group_id}"
+
+        entries: List[bytes] = self.redis.zrangebyscore(
+            redis_key, min=start_timestamp, max=stop_timestamp
+        )
+        entries_str: List[str] = [entry.decode() for entry in entries]
+
+        bound_logger.trace("Successfully fetched billing entries.")
+        return entries_str

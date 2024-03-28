@@ -146,6 +146,13 @@ class BillingManager:
             )
             return
 
+        if len(events) > 1:
+            logger.warning(
+                "Multiple events found for group_id: {} and timestamp: {}",
+                group_id,
+                timestamp_ns,
+            )
+
         event: Dict[str, Any] = orjson.loads(events[0])
         topic = event.get("topic")
         if topic == "credentials":

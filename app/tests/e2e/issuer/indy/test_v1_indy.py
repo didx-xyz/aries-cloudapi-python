@@ -3,11 +3,9 @@ import asyncio
 import pytest
 from assertpy import assert_that
 
-from app.models.tenants import CreateTenantResponse
 from app.routes.definitions import CredentialSchema
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
-from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from app.util.credentials import cred_id_no_version
@@ -80,8 +78,8 @@ async def test_send_credential_oob_v1(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
-            "state": "offer-received",
             "credential_definition_id": credential_definition_id,
         },
     )
@@ -128,8 +126,8 @@ async def test_send_credential(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
-            "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
     )
@@ -164,8 +162,8 @@ async def test_create_offer(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
-            "state": "offer-sent",
             "credential_id": data["credential_id"],
         },
     )
@@ -197,8 +195,8 @@ async def test_send_credential_request(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
-            "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
     )
@@ -213,8 +211,8 @@ async def test_send_credential_request(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
         topic="credentials",
+        state="offer-received",
     )
 
     request_response = await alice_member_client.post(
@@ -225,15 +223,15 @@ async def test_send_credential_request(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "request-sent"},
         topic="credentials",
+        state="request-sent",
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state": "request-received"},
         topic="credentials",
+        state="request-received",
         lookback_time=5,
     )
 
@@ -242,7 +240,6 @@ async def test_send_credential_request(
 async def test_revoke_credential(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
@@ -257,10 +254,6 @@ async def test_revoke_credential(
         },
     }
 
-    alice_credentials_listener = SseListener(
-        topic="credentials", wallet_id=alice_tenant.wallet_id
-    )
-
     # create and send credential offer: issuer
     faber_credential_id = (
         await faber_client.post(
@@ -269,10 +262,13 @@ async def test_revoke_credential(
         )
     ).json()["credential_id"]
 
-    payload = await alice_credentials_listener.wait_for_event(
-        field="connection_id",
-        field_id=faber_and_alice_connection.alice_connection_id,
-        desired_state="offer-received",
+    payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="offer-received",
+        filter_map={
+            "connection_id": faber_and_alice_connection.alice_connection_id,
+        },
     )
 
     alice_credential_id = payload["credential_id"]
@@ -282,10 +278,13 @@ async def test_revoke_credential(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
-    await alice_credentials_listener.wait_for_event(
-        field="credential_id",
-        field_id=alice_credential_id,
-        desired_state="done",
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="done",
+        filter_map={
+            "credential_id": alice_credential_id,
+        },
     )
 
     cred_id = cred_id_no_version(faber_credential_id)

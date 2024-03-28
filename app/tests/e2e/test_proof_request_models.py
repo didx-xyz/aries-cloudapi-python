@@ -7,10 +7,9 @@ from aries_cloudcontroller import (
 )
 from fastapi import HTTPException
 
-from app.models.tenants import CreateTenantResponse
 from app.routes.verifier import router as verifier_router
-from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.webhooks import check_webhook_state
 from shared.util.rich_async_client import RichAsyncClient
 
 VERIFIER_BASE_PATH = verifier_router.prefix
@@ -38,14 +37,11 @@ async def test_proof_model_failures(
     acme_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
     name: str,
     version: str,
     protocol_version: str,
 ):
-
     acme_connection_id = acme_and_alice_connection.acme_connection_id
-    alice_listener = SseListener(topic="proofs", wallet_id=alice_tenant.wallet_id)
 
     if protocol_version == "v1":
 
@@ -91,8 +87,10 @@ async def test_proof_model_failures(
 
         await acme_acapy_client.present_proof_v2_0.send_request_free(body=request_body)
 
-    await alice_listener.wait_for_state(
-        desired_state="request-received",
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        state="request-received",
         lookback_time=5,
     )
 

@@ -89,8 +89,8 @@ async def test_accept_invitation(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
+        state="completed",
         filter_map={
-            "state": "completed",
             "connection_id": connection_record["connection_id"],
         },
     )
@@ -211,8 +211,8 @@ async def test_bob_and_alice_connect(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="connections",
+        state="completed",
         filter_map={
-            "state": "completed",
             "connection_id": connection_record["connection_id"],
         },
     )

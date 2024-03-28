@@ -3,10 +3,9 @@ from typing import List
 
 import pytest
 
-from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
-from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import FaberAliceConnect, MeldCoAliceConnect
+from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
@@ -19,7 +18,6 @@ async def issue_credential_to_alice(
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
@@ -30,20 +28,19 @@ async def issue_credential_to_alice(
         },
     }
 
-    alice_credentials_listener = SseListener(
-        topic="credentials", wallet_id=alice_tenant.wallet_id
-    )
-
     # create and send credential offer- issuer
     await faber_client.post(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
 
-    payload = await alice_credentials_listener.wait_for_event(
-        field="connection_id",
-        field_id=faber_and_alice_connection.alice_connection_id,
-        desired_state="offer-received",
+    payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="offer-received",
+        filter_map={
+            "connection_id": faber_and_alice_connection.alice_connection_id,
+        },
     )
 
     alice_credential_id = payload["credential_id"]
@@ -53,8 +50,13 @@ async def issue_credential_to_alice(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
-    await alice_credentials_listener.wait_for_event(
-        field="credential_id", field_id=alice_credential_id, desired_state="done"
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="done",
+        filter_map={
+            "credential_id": alice_credential_id,
+        },
     )
 
     return response.json()
@@ -66,7 +68,6 @@ async def meld_co_issue_credential_to_alice(
     meld_co_credential_definition_id: str,
     meld_co_and_alice_connection: MeldCoAliceConnect,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
 ) -> CredentialExchange:
     credential = {
         "protocol_version": "v1",
@@ -77,20 +78,19 @@ async def meld_co_issue_credential_to_alice(
         },
     }
 
-    alice_credentials_listener = SseListener(
-        topic="credentials", wallet_id=alice_tenant.wallet_id
-    )
-
     # create and send credential offer- issuer
     await meld_co_client.post(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
 
-    payload = await alice_credentials_listener.wait_for_event(
-        field="connection_id",
-        field_id=meld_co_and_alice_connection.alice_connection_id,
-        desired_state="offer-received",
+    payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="offer-received",
+        filter_map={
+            "connection_id": meld_co_and_alice_connection.alice_connection_id,
+        },
     )
 
     alice_credential_id = payload["credential_id"]
@@ -100,8 +100,13 @@ async def meld_co_issue_credential_to_alice(
         f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
     )
 
-    await alice_credentials_listener.wait_for_event(
-        field="credential_id", field_id=alice_credential_id, desired_state="done"
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="done",
+        filter_map={
+            "credential_id": alice_credential_id,
+        },
     )
 
     return response.json()
@@ -111,7 +116,6 @@ async def meld_co_issue_credential_to_alice(
 async def issue_alice_creds_and_revoke_unpublished(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ) -> List[CredentialExchange]:
@@ -150,15 +154,18 @@ async def issue_alice_creds_and_revoke_unpublished(
             f"Expected 3 credentials to be issued; only got {num_credentials_returned}"
         )
 
-    listener = SseListener(topic="credentials", wallet_id=alice_tenant.wallet_id)
-
     for cred in alice_cred_ex_response:
         await alice_member_client.post(
             f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
         )
-        # add sse listener to wait for credential state "done" for each credential
-        await listener.wait_for_event(
-            field="credential_id", field_id=cred["credential_id"], desired_state="done"
+        # wait for credential state "done" for each credential
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="done",
+            filter_map={
+                "credential_id": cred["credential_id"],
+            },
         )
 
     cred_ex_response = (

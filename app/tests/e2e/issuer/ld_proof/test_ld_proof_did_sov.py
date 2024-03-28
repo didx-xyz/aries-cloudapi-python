@@ -107,8 +107,8 @@ async def test_send_jsonld_credential_sov(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
+        state="offer-received",
         filter_map={
-            "state": "offer-received",
             "connection_id": alice_connection_id,
         },
     )
@@ -197,9 +197,7 @@ async def test_send_jsonld_oob_sov(
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
-        filter_map={
-            "state": "offer-received",
-        },
+        state="offer-received",
     )
 
 
@@ -231,8 +229,8 @@ async def test_send_jsonld_request_sov(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
-            "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
     )
@@ -247,8 +245,8 @@ async def test_send_jsonld_request_sov(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
         topic="credentials",
+        state="offer-received",
     )
 
     request_response = await alice_member_client.post(
@@ -259,15 +257,15 @@ async def test_send_jsonld_request_sov(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "request-sent"},
         topic="credentials",
+        state="request-sent",
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state": "request-received"},
         topic="credentials",
+        state="request-received",
         lookback_time=5,
     )
 
@@ -300,8 +298,8 @@ async def test_issue_jsonld_sov(
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
+        state="offer-sent",
         filter_map={
-            "state": "offer-sent",
             "credential_id": credential_exchange["credential_id"],
         },
     )
@@ -316,8 +314,8 @@ async def test_issue_jsonld_sov(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "offer-received"},
         topic="credentials",
+        state="offer-received",
     )
 
     request_response = await alice_member_client.post(
@@ -328,14 +326,14 @@ async def test_issue_jsonld_sov(
 
     assert await check_webhook_state(
         client=alice_member_client,
-        filter_map={"state": "done"},
         topic="credentials",
+        state="done",
         lookback_time=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
-        filter_map={"state": "done"},
         topic="credentials",
+        state="done",
         lookback_time=5,
     )

@@ -3,11 +3,10 @@ from typing import List
 
 import pytest
 
-from app.models.tenants import CreateTenantResponse
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
-from app.services.event_handling.sse_listener import SseListener
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
@@ -22,20 +21,10 @@ async def test_proof_revoked_credential(
         CredentialExchange
     ],
     acme_client: RichAsyncClient,
-    acme_verifier: CreateTenantResponse,
     alice_member_client: RichAsyncClient,
-    alice_tenant: CreateTenantResponse,
     acme_and_alice_connection: AcmeAliceConnect,
     protocol_version: str,
 ):
-
-    alice_proofs_listener = SseListener(
-        topic="proofs", wallet_id=alice_tenant.wallet_id
-    )
-    acme_proofs_listener = SseListener(
-        topic="proofs", wallet_id=acme_verifier.wallet_id
-    )
-
     # Get current time
     unix_timestamp = int(time.time())
 
@@ -65,8 +54,10 @@ async def test_proof_revoked_credential(
         )
     ).json()["proof_id"]
 
-    await alice_proofs_listener.wait_for_state(
-        desired_state="request-received",
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        state="request-received",
         lookback_time=5,
     )
 
@@ -99,16 +90,23 @@ async def test_proof_revoked_credential(
         },
     )
 
-    await alice_proofs_listener.wait_for_event(
-        field="proof_id",
-        field_id=alice_proof_exchange_id,
-        desired_state="done",
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        state="done",
+        filter_map={
+            "proof_id": alice_proof_exchange_id,
+        },
         lookback_time=5,
     )
-    await acme_proofs_listener.wait_for_event(
-        field="proof_id",
-        field_id=acme_proof_exchange_id,
-        desired_state="done",
+
+    await check_webhook_state(
+        client=acme_client,
+        topic="proofs",
+        state="done",
+        filter_map={
+            "proof_id": acme_proof_exchange_id,
+        },
         lookback_time=5,
     )
 

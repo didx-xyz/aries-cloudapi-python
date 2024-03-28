@@ -1,5 +1,5 @@
 import asyncio
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from httpx import HTTPError
 
@@ -30,7 +30,7 @@ async def check_webhook_state(
     filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 60,
     lookback_time: int = 1,
-) -> bool:
+) -> Dict[str, Any]:
     assert max_duration >= 0, "Poll duration cannot be negative"
 
     wallet_id = get_wallet_id_from_async_client(client)
@@ -47,7 +47,7 @@ async def check_webhook_state(
     while not event and attempt < max_tries:
         try:
             if filter_map:
-                # Assuming that filter_map contains max 1 other key-value pair
+                # Assuming that filter_map contains 1 key-value pair
                 field, field_id = list(filter_map.items())[0]
 
                 bound_logger.info(
@@ -64,8 +64,6 @@ async def check_webhook_state(
                     lookback_time=lookback_time + attempt,  # Increase per attempt
                 )
             else:
-                # No other key means we are only asserting the state
-
                 bound_logger.info("Waiting for event with state {}", state)
                 event = await listener.wait_for_state(
                     desired_state=state,
@@ -78,12 +76,18 @@ async def check_webhook_state(
             )
             raise
         except HTTPError as e:
-            bound_logger.warning(
-                "Encountered HTTP Error while waiting for SSE Event: {}.", e
-            )
             if attempt + 1 >= max_tries:
-                bound_logger.error("Encountered too many HTTPErrors waiting for event.")
+                bound_logger.error(
+                    "Encountered {} HTTPErrors while waiting for SSE event. Failing",
+                    max_tries,
+                )
                 raise
+            else:
+                bound_logger.warning(
+                    "Attempt {}. Encountered HTTP Error while waiting for SSE Event: {}.",
+                    attempt + 1,
+                    e,
+                )
 
         if not event:
             attempt += 1

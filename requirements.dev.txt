@@ -1,8 +1,6 @@
 anyio>=3.7.1
 assertpy==1.1
-beautifulsoup4~=4.12.2
 black~=24.3.0
-httpx~=0.27.0
 isort~=5.13.2
 mockito~=1.5.0
 pre-commit~=3.7.0

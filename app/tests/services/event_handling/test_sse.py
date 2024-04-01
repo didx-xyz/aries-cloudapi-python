@@ -76,9 +76,9 @@ def configured_async_context_manager_mock(
 def exception_async_context_manager_mock(
     configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
 ) -> AsyncMock:
-    configured_async_context_manager_mock.__aenter__.side_effect = HTTPError(
+    configured_async_context_manager_mock.__aexit__.side_effect = HTTPError(
         stream_exception_msg
-    )
+    )  # Cause __aexit__ to raise HTTPError
     return configured_async_context_manager_mock
 
 
@@ -137,17 +137,14 @@ async def test_sse_subscribe_wallet_exception(
         mock_request.is_disconnected.return_value = False
 
         # Execute the function and handle the exception
-        try:
-            results = []
-            async for line in sse_subscribe_wallet(
+        with pytest.raises(HTTPError) as e:
+            async for _ in sse_subscribe_wallet(
                 request=mock_request, group_id=None, wallet_id=wallet_id
             ):
-                results.append(line)
-            # If no exception is raised, assert False to indicate the test should fail
-            assert False, "Expected HTTPError was not raised."
-        except HTTPError as e:
-            # Assert that an exception is caught, indicating the mocked exception was raised as expected
-            assert str(e) == stream_exception_msg
+                pass
+
+        # Assert that an exception is caught, indicating the mocked exception was raised as expected
+        assert str(e.value) == stream_exception_msg
 
 
 @pytest.mark.anyio
@@ -198,20 +195,17 @@ async def test_sse_subscribe_wallet_topic_exception(
         mock_request.is_disconnected.return_value = False
 
         # Execute the function and handle the exception
-        try:
-            results = []
-            async for line in sse_subscribe_wallet_topic(
+        with pytest.raises(HTTPError) as e:
+            async for _ in sse_subscribe_wallet_topic(
                 request=mock_request,
                 group_id=None,
                 wallet_id=wallet_id,
-                topic="some_topic",
+                topic=topic,
             ):
-                results.append(line)
-            # If no exception is raised, assert False to indicate the test should fail
-            assert False, "Expected HTTPError was not raised."
-        except HTTPError as e:
-            # Assert that an exception is caught, indicating the mocked exception was raised as expected
-            assert str(e) == stream_exception_msg
+                pass
+
+        # Assert that an exception is caught, indicating the mocked exception was raised as expected
+        assert str(e.value) == stream_exception_msg
 
 
 @pytest.mark.anyio
@@ -262,21 +256,18 @@ async def test_sse_subscribe_event_with_state_exception(
         mock_request.is_disconnected.return_value = False
 
         # Execute the function and handle the exception
-        try:
-            results = []
-            async for line in sse_subscribe_event_with_state(
+        with pytest.raises(HTTPError) as e:
+            async for _ in sse_subscribe_event_with_state(
                 request=mock_request,
                 group_id=None,
                 wallet_id=wallet_id,
                 topic=topic,
                 desired_state=state,
             ):
-                results.append(line)
-            # If no exception is raised, assert False to indicate the test should fail
-            assert False, "Expected HTTPError was not raised."
-        except HTTPError as e:
-            # Assert that an exception is caught, indicating the mocked exception was raised as expected
-            assert str(e) == stream_exception_msg
+                pass
+
+        # Assert that an exception is caught, indicating the mocked exception was raised as expected
+        assert str(e.value) == stream_exception_msg
 
 
 @pytest.mark.anyio
@@ -331,9 +322,8 @@ async def test_sse_subscribe_stream_with_fields_exception(
         mock_request.is_disconnected.return_value = False
 
         # Execute the function and handle the exception
-        try:
-            results = []
-            async for line in sse_subscribe_stream_with_fields(
+        with pytest.raises(HTTPError) as e:
+            async for _ in sse_subscribe_stream_with_fields(
                 request=mock_request,
                 group_id=None,
                 wallet_id=wallet_id,
@@ -341,12 +331,10 @@ async def test_sse_subscribe_stream_with_fields_exception(
                 field=field,
                 field_id=field_id,
             ):
-                results.append(line)
-            # If no exception is raised, assert False to indicate the test should fail
-            assert False, "Expected HTTPError was not raised."
-        except HTTPError as e:
-            # Assert that an exception is caught, indicating the mocked exception was raised as expected
-            assert str(e) == stream_exception_msg
+                pass
+
+        # Assert that an exception is caught, indicating the mocked exception was raised as expected
+        assert str(e.value) == stream_exception_msg
 
 
 @pytest.mark.anyio
@@ -402,9 +390,8 @@ async def test_sse_subscribe_event_with_field_and_state_exception(
         mock_request.is_disconnected.return_value = False
 
         # Execute the function and handle the exception
-        try:
-            results = []
-            async for line in sse_subscribe_event_with_field_and_state(
+        with pytest.raises(HTTPError) as e:
+            async for _ in sse_subscribe_event_with_field_and_state(
                 request=mock_request,
                 group_id=None,
                 wallet_id=wallet_id,
@@ -413,12 +400,10 @@ async def test_sse_subscribe_event_with_field_and_state_exception(
                 field_id=field_id,
                 desired_state=state,
             ):
-                results.append(line)
-            # If no exception is raised, assert False to indicate the test should fail
-            assert False, "Expected HTTPError was not raised."
-        except HTTPError as e:
-            # Assert that an exception is caught, indicating the mocked exception was raised as expected
-            assert str(e) == stream_exception_msg
+                pass
+
+        # Assert that an exception is caught, indicating the mocked exception was raised as expected
+        assert str(e.value) == stream_exception_msg
 
 
 @pytest.mark.anyio

@@ -36,9 +36,9 @@ def mock_verify_wallet_access():
 
 @pytest.mark.anyio
 async def test_get_sse_subscribe_wallet(
-    mock_request,
-    mock_auth,
-    mock_verify_wallet_access,
+    mock_request,  # pylint: disable=redefined-outer-name
+    mock_auth,  # pylint: disable=redefined-outer-name
+    mock_verify_wallet_access,  # pylint: disable=redefined-outer-name
 ):
     # Mock sse_subscribe_wallet function to not actually attempt to connect to an SSE stream
     sse_subscribe_wallet_mock = Mock()
@@ -65,9 +65,9 @@ async def test_get_sse_subscribe_wallet(
 
 @pytest.mark.anyio
 async def test_get_sse_subscribe_wallet_topic(
-    mock_request,
-    mock_auth,
-    mock_verify_wallet_access,
+    mock_request,  # pylint: disable=redefined-outer-name
+    mock_auth,  # pylint: disable=redefined-outer-name
+    mock_verify_wallet_access,  # pylint: disable=redefined-outer-name
 ):
     # Mock sse_subscribe_wallet_topic function to not actually attempt to connect to an SSE stream
     sse_subscribe_wallet_topic_mock = Mock()
@@ -98,9 +98,9 @@ async def test_get_sse_subscribe_wallet_topic(
 
 @pytest.mark.anyio
 async def test_get_sse_subscribe_event_with_state(
-    mock_request,
-    mock_auth,
-    mock_verify_wallet_access,
+    mock_request,  # pylint: disable=redefined-outer-name
+    mock_auth,  # pylint: disable=redefined-outer-name
+    mock_verify_wallet_access,  # pylint: disable=redefined-outer-name
 ):
     # Mock sse_subscribe_event_with_state function to not actually attempt to connect to an SSE stream
     sse_subscribe_event_with_state_mock = Mock()
@@ -134,9 +134,9 @@ async def test_get_sse_subscribe_event_with_state(
 
 @pytest.mark.anyio
 async def test_get_sse_subscribe_stream_with_fields(
-    mock_request,
-    mock_auth,
-    mock_verify_wallet_access,
+    mock_request,  # pylint: disable=redefined-outer-name
+    mock_auth,  # pylint: disable=redefined-outer-name
+    mock_verify_wallet_access,  # pylint: disable=redefined-outer-name
 ):
     # Mock sse_subscribe_stream_with_fields function to not actually attempt to connect to an SSE stream
     sse_subscribe_stream_with_fields_mock = Mock()
@@ -172,9 +172,9 @@ async def test_get_sse_subscribe_stream_with_fields(
 
 @pytest.mark.anyio
 async def test_get_sse_subscribe_event_with_field_and_state(
-    mock_request,
-    mock_auth,
-    mock_verify_wallet_access,
+    mock_request,  # pylint: disable=redefined-outer-name
+    mock_auth,  # pylint: disable=redefined-outer-name
+    mock_verify_wallet_access,  # pylint: disable=redefined-outer-name
 ):
     # Mock sse_subscribe_event_with_field_and_state function to not actually attempt to connect to an SSE stream
     sse_subscribe_event_with_field_and_state_mock = Mock()

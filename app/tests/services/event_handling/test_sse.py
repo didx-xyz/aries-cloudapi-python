@@ -94,17 +94,6 @@ def patch_yield_lines_with_disconnect_check(
         yield mocked_yield
 
 
-# Patching the stream method of RichAsyncClient to use configured_async_context_manager_mock
-@pytest.fixture
-def patch_stream(
-    configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
-) -> Generator[AsyncMock, Any, None]:
-    with patch.object(
-        RichAsyncClient, "stream", return_value=configured_async_context_manager_mock
-    ) as mock_stream:
-        yield mock_stream
-
-
 @pytest.mark.anyio
 async def test_yield_lines_with_disconnect_check_success(
     response_mock, mock_request  # pylint: disable=redefined-outer-name

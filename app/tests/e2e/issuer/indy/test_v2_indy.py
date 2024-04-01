@@ -196,6 +196,12 @@ async def test_send_credential_request(
         },
     )
 
+    assert await check_webhook_state(
+        client=alice_member_client,
+        topic="credentials",
+        state="offer-received",
+    )
+
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
@@ -203,12 +209,6 @@ async def test_send_credential_request(
     )
 
     credential_id = (response.json())[0]["credential_id"]
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-    )
 
     request_response = await alice_member_client.post(
         f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",

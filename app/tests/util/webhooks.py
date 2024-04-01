@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 from httpx import HTTPError
 
-from app.services.event_handling.sse_listener import SseListener, SseListenerTimeout
+from app.tests.util.sse_listener import SseListener, SseListenerTimeout
 from app.util.tenants import get_wallet_id_from_b64encoded_jwt
 from shared import RichAsyncClient
 from shared.log_config import get_logger

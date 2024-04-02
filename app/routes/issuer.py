@@ -148,7 +148,14 @@ async def send_credential(
             The response object from sending a credential
         status_code: 200
     """
-    bound_logger = logger.bind(body=credential)
+    bound_logger = logger.bind(
+        body={
+            # Do not log credential attributes:
+            "connection_id": credential.connection_id,
+            "protocol_version": credential.protocol_version,
+            "credential_type": credential.type,
+        }
+    )
     bound_logger.info("POST request received: Send credential")
 
     issuer = issuer_from_protocol_version(credential.protocol_version)
@@ -209,7 +216,13 @@ async def create_offer(
     --------
         The response object from sending a credential
     """
-    bound_logger = logger.bind(body=credential)
+    bound_logger = logger.bind(
+        body={
+            # Do not log credential attributes:
+            "protocol_version": credential.protocol_version,
+            "credential_type": credential.type,
+        }
+    )
     bound_logger.info("POST request received: Create credential offer")
 
     issuer = issuer_from_protocol_version(credential.protocol_version)

@@ -38,7 +38,13 @@ class IssuerV1(Issuer):
                 status_code=400,
             )
 
-        bound_logger = logger.bind(body=credential)
+        bound_logger = logger.bind(
+            body={
+                # Do not log credential attributes:
+                "connection_id": credential.connection_id,
+                "credential_type": credential.type,
+            }
+        )
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
             attributes=credential.indy_credential_detail.attributes
@@ -73,7 +79,13 @@ class IssuerV1(Issuer):
                 status_code=400,
             )
 
-        bound_logger = logger.bind(body=credential)
+        cred_def_id = credential.indy_credential_detail.credential_definition_id
+        bound_logger = logger.bind(
+            body={
+                # Do not log credential attributes:
+                "credential_definition_id": cred_def_id,
+            }
+        )
         bound_logger.debug("Getting credential preview from attributes")
         credential_preview = cls.__preview_from_attributes(
             attributes=credential.indy_credential_detail.attributes
@@ -85,7 +97,7 @@ class IssuerV1(Issuer):
             model_class=V10CredentialConnFreeOfferRequest,
             auto_remove=not credential.save_exchange_record,
             credential_preview=credential_preview,
-            cred_def_id=credential.indy_credential_detail.credential_definition_id,
+            cred_def_id=cred_def_id,
         )
 
         record = await handle_acapy_call(

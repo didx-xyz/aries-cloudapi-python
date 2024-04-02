@@ -31,7 +31,7 @@ class SseListener:
         self.topic = topic
 
     async def wait_for_state(
-        self, desired_state, timeout: int = DEFAULT_LISTENER_TIMEOUT, lookback_time=1
+        self, desired_state, timeout: int = DEFAULT_LISTENER_TIMEOUT, look_back=1
     ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
@@ -41,7 +41,7 @@ class SseListener:
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:
             async with client.stream(
-                "GET", url, params={"lookback_time": lookback_time}
+                "GET", url, params={"look_back": look_back}
             ) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
@@ -60,7 +60,7 @@ class SseListener:
         field_id,
         desired_state,
         timeout: int = DEFAULT_LISTENER_TIMEOUT,
-        lookback_time=1,
+        look_back=1,
     ) -> Dict[str, Any]:
         """
         Start listening for SSE events. When an event is received that matches the specified parameters.
@@ -70,7 +70,7 @@ class SseListener:
         timeout = Timeout(timeout)
         async with RichAsyncClient(timeout=timeout) as client:
             async with client.stream(
-                "GET", url, params={"lookback_time": lookback_time}
+                "GET", url, params={"look_back": look_back}
             ) as response:
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):

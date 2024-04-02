@@ -259,14 +259,14 @@ async def test_send_jsonld_request_sov(
         client=alice_member_client,
         topic="credentials",
         state="request-sent",
-        lookback_time=5,
+        look_back=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
         state="request-received",
-        lookback_time=5,
+        look_back=5,
     )
 
 
@@ -328,12 +328,12 @@ async def test_issue_jsonld_sov(
         client=alice_member_client,
         topic="credentials",
         state="done",
-        lookback_time=5,
+        look_back=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
         state="done",
-        lookback_time=5,
+        look_back=5,
     )

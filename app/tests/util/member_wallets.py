@@ -1,4 +1,4 @@
-from typing import Any, Generator
+from typing import Any, AsyncGenerator
 
 import pytest
 
@@ -14,7 +14,7 @@ from app.tests.util.tenants import (
 
 
 @pytest.fixture(scope="function")
-async def alice_tenant() -> Generator[CreateTenantResponse, Any, None]:
+async def alice_tenant() -> AsyncGenerator[CreateTenantResponse, Any]:
     async with get_tenant_admin_client() as admin_client:
         tenant = await create_tenant(admin_client, "alice")
 
@@ -24,7 +24,7 @@ async def alice_tenant() -> Generator[CreateTenantResponse, Any, None]:
 
 
 @pytest.fixture(scope="function")
-async def bob_tenant() -> Generator[CreateTenantResponse, Any, None]:
+async def bob_tenant() -> AsyncGenerator[CreateTenantResponse, Any]:
     async with get_tenant_admin_client() as admin_client:
         tenant = await create_tenant(admin_client, "bob")
 
@@ -34,7 +34,7 @@ async def bob_tenant() -> Generator[CreateTenantResponse, Any, None]:
 
 
 @pytest.fixture(scope="function")
-async def acme_verifier() -> Generator[CreateTenantResponse, Any, None]:
+async def acme_verifier() -> AsyncGenerator[CreateTenantResponse, Any]:
     async with get_tenant_admin_client() as admin_client:
         verifier_tenant = await create_verifier_tenant(admin_client, "acme")
 
@@ -44,7 +44,7 @@ async def acme_verifier() -> Generator[CreateTenantResponse, Any, None]:
 
 
 @pytest.fixture(scope="module")
-async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
+async def faber_issuer() -> AsyncGenerator[CreateTenantResponse, Any]:
     async with get_tenant_admin_client() as admin_client:
         issuer_tenant = await create_issuer_tenant(admin_client, "faber")
 
@@ -54,7 +54,7 @@ async def faber_issuer() -> Generator[CreateTenantResponse, Any, None]:
 
 
 @pytest.fixture(scope="module")
-async def meld_co_issuer_verifier() -> Generator[CreateTenantResponse, Any, None]:
+async def meld_co_issuer_verifier() -> AsyncGenerator[CreateTenantResponse, Any]:
     async with get_tenant_admin_client() as admin_client:
         issuer_and_verifier_tenant = await create_issuer_and_verifier_tenant(
             admin_client, "meldCo"

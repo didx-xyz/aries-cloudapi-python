@@ -387,7 +387,7 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
         json={
             "image_url": "https://image.ca",
             "wallet_label": uuid4().hex,
-            "group_id": "acdc",
+            "group_id": "ac-dc",
         },
     )
 
@@ -401,13 +401,13 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
     # Make sure created tenant is returned
     assert_that(tenants).extracting("wallet_id").contains(last_wallet_id)
-    assert_that(tenants).extracting("group_id").contains("acdc")
+    assert_that(tenants).extracting("group_id").contains("ac-dc")
 
 
 @pytest.mark.anyio
 async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     wallet_label = uuid4().hex
-    group_id = "backstreetboys"
+    group_id = "group"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -430,7 +430,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     assert_that(tenants).extracting("wallet_id").contains(wallet_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
-    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id=spicegirls")
+    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?group_id=other")
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) == 0
@@ -440,7 +440,7 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
 @pytest.mark.anyio
 async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
     wallet_name = uuid4().hex
-    group_id = "backstreetboys"
+    group_id = "group"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -466,9 +466,7 @@ async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
     assert_that(tenants).extracting("wallet_id").contains(wallet_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
-    response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}?wallet_name=spicegirls"
-    )
+    response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?wallet_name=other")
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) == 0
@@ -480,7 +478,7 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
     wallet_name = uuid4().hex
     wallet_label = "abc"
     image_url = "https://image.ca"
-    group_id = "backstreetboys"
+    group_id = "group"
     create_response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
@@ -535,7 +533,7 @@ async def test_delete_tenant(
     response = await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{wallet_id}")
     assert response.status_code == 200
 
-    # Actor doesn't exist anymore
+    # Actor doesn't exist any more
     actor = await trust_registry.fetch_actor_by_id(wallet_id)
     assert not actor
 

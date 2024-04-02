@@ -267,7 +267,7 @@ async def test_should_accept_endorsement_retries_on_http_exception(
         transaction_mock
     )
 
-    # Use the mocker to mock is_valid_issuer function behavior - first exception, then True
+    # Use the mocker to mock is_valid_issuer function behaviour - first exception, then True
     mock_is_valid_issuer = mocker.patch(
         "endorser.util.endorsement.is_valid_issuer",
         side_effect=[HTTPException(status_code=500), True],
@@ -312,7 +312,7 @@ async def test_should_accept_endorsement_fails_after_max_retries(
         transaction_mock
     )
 
-    # Use the mocker to mock is_valid_issuer function behavior - first exception, then True
+    # Use the mocker to mock is_valid_issuer function behaviour - first exception, then True
     mock_is_valid_issuer = mocker.patch(
         "endorser.util.endorsement.is_valid_issuer",
         side_effect=HTTPException(status_code=500),

@@ -15,7 +15,7 @@ from shared.util.rich_parsing import parse_json_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
 from webhooks.models.redis_payloads import AcaPyRedisEvent
-from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.services.webhooks_redis_service import WebhooksRedisService
 
 logger = get_logger(__name__)
 

@@ -1,7 +1,7 @@
 import asyncio
 import sys
 import time
-from collections import defaultdict as ddict
+from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, AsyncGenerator, Dict, List, NoReturn, Tuple
 
@@ -16,7 +16,7 @@ from shared.constants import (
 )
 from shared.log_config import get_logger
 from shared.models.webhook_events import WEBHOOK_TOPIC_ALL, CloudApiWebhookEventGeneric
-from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.services.webhooks_redis_service import WebhooksRedisService
 from webhooks.util.event_generator_wrapper import EventGeneratorWrapper
 from webhooks.web.routers.websocket import publish_event_on_websocket
 
@@ -36,20 +36,20 @@ class SseManager:
         self.incoming_events = asyncio.Queue()
 
         # The following nested defaultdict stores events per wallet_id, per topic
-        self.fifo_cache = ddict(
-            lambda: ddict(lambda: asyncio.Queue(maxsize=MAX_QUEUE_SIZE))
+        self.fifo_cache = defaultdict(
+            lambda: defaultdict(lambda: asyncio.Queue(maxsize=MAX_QUEUE_SIZE))
         )
-        self.lifo_cache = ddict(
-            lambda: ddict(lambda: asyncio.LifoQueue(maxsize=MAX_QUEUE_SIZE))
+        self.lifo_cache = defaultdict(
+            lambda: defaultdict(lambda: asyncio.LifoQueue(maxsize=MAX_QUEUE_SIZE))
         )
         # Last In First Out Queue is to be used for consumption, so that newest events are yielded first
         # FIFO Queue maintains order of events and is used to repopulate LIFO queue after consumption
 
         # Concurrency per wallet/topic
-        self.cache_locks = ddict(lambda: ddict(asyncio.Lock))
+        self.cache_locks = defaultdict(lambda: defaultdict(asyncio.Lock))
 
         # To clean up queues that are no longer used
-        self._cache_last_accessed = ddict(lambda: ddict(datetime.now))
+        self._cache_last_accessed = defaultdict(lambda: defaultdict(datetime.now))
 
         self._pubsub = None  # for managing redis pubsub connection
 
@@ -205,7 +205,7 @@ class SseManager:
                     )
                 except ValidationError as e:
                     error_message = (
-                        "Could not parse json event retreived from redis "
+                        "Could not parse json event retrieved from redis "
                         f"into a `CloudApiWebhookEventGeneric`. Error: `{str(e)}`."
                     )
                     logger.error(error_message)

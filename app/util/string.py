@@ -12,8 +12,8 @@ def random_string(length: int):
 
 def pad(val: str) -> str:
     """Pad base64 values if need be: JWT calls to omit trailing padding."""
-    padlen = 4 - len(val) % 4
-    return val if padlen > 2 else (val + "=" * padlen)
+    pad_length = 4 - len(val) % 4
+    return val if pad_length > 2 else (val + "=" * pad_length)
 
 
 def base64_to_json(value: str):

@@ -44,7 +44,7 @@ ExtraSettings = Literal[
 ]
 ExtraSettings_field = Field(
     None,
-    description="Optional per-tenant settings to configure wallet behavior for advanced users.",
+    description="Optional per-tenant settings to configure wallet behaviour for advanced users.",
     examples=[{"ACAPY_AUTO_PING_CONNECTION": True}],
 )
 

@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from shared.models.webhook_events.payloads import CloudApiWebhookEventGeneric
-from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.services.webhooks_redis_service import WebhooksRedisService
 
 group_id = "group"
 wallet_id = "test_wallet"

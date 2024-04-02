@@ -185,7 +185,7 @@ async def test_attempt_process_list_events_x(acapy_events_processor_mock):
 
 @pytest.mark.anyio
 async def test_process_list_events_with_data(acapy_events_processor_mock):
-    # Mock `lindex` to return a JSON string, and then None (signaling end of list)
+    # Mock `lindex` to return a JSON string, and then None (signalling end of list)
     acapy_events_processor_mock.redis_service.lindex = Mock(
         side_effect=[b'{"some":"data"}', None]
     )

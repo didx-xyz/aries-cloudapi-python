@@ -69,23 +69,23 @@ async def test_issue_credential_with_save_exchange_record(
     time.sleep(0.5)  # short sleep before fetching cred ex records; allow them to update
 
     # get exchange records from alice side -- should be empty regardless
-    alice_cred_ex_recs = (
+    alice_cred_ex_records = (
         await alice_member_client.get(f"{CREDENTIALS_BASE_PATH}")
     ).json()
 
-    # faber requesting auto_remove only removes their cred ex recs
-    # Alice cred ex recs should be empty regardless
-    assert len(alice_cred_ex_recs) == 0
+    # faber requesting auto_remove only removes their cred ex records
+    # Alice cred ex records should be empty regardless
+    assert len(alice_cred_ex_records) == 0
 
     # get exchange records from faber side:
-    faber_cred_ex_recs = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
+    faber_cred_ex_records = (await faber_client.get(f"{CREDENTIALS_BASE_PATH}")).json()
 
     if save_exchange_record:
-        assert len(faber_cred_ex_recs) == 1  # Save record is True, should be 1 record
-        cred_ex_id = faber_cred_ex_recs[0]["credential_id"]
+        assert len(faber_cred_ex_records) == 1  # Save record True, should be 1 record
+        cred_ex_id = faber_cred_ex_records[0]["credential_id"]
         await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}")  # Clean up
     else:
-        assert len(faber_cred_ex_recs) == 0  # default is to remove records
+        assert len(faber_cred_ex_records) == 0  # default is to remove records
 
 
 @pytest.mark.anyio

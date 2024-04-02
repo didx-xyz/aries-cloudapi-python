@@ -10,7 +10,7 @@ class WebhookEvent(BaseModel):
     group_id: Optional[str] = None
 
 
-# When reading json webhook events from redis and deserialising back into a CloudApiWebhookEvent,
+# When reading json webhook events from redis and deserializing back into a CloudApiWebhookEvent,
 # it does not always parse to the correct WebhookEventPayloadType for the payload.
 # So, use the generic version when parsing redis events
 class CloudApiWebhookEventGeneric(WebhookEvent):

@@ -116,7 +116,7 @@ async def test_set_notification_handler(endorsement_processor_mock):
 
     # Test with a non-matching message to ensure the set() method is not called
     non_matching_msg = mock_msg.copy()
-    non_matching_msg["data"] = b"nonmatching:sample_key"
+    non_matching_msg["data"] = b"non-matching:sample_key"
     endorsement_processor_mock._set_notification_handler(non_matching_msg)
 
     # Verify that set() method is still called only once from the first call

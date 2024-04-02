@@ -216,7 +216,7 @@ class MeldCoAliceConnect:
     meld_co_connection_id: str
 
 
-# Create fixture to handle parameters and return either meldco-alice connection fixture
+# Create fixture to handle parameters and return either meld_co-alice connection fixture
 @pytest.fixture(scope="function")
 async def meld_co_and_alice_connection(
     request,
@@ -227,9 +227,9 @@ async def meld_co_and_alice_connection(
 ) -> MeldCoAliceConnect:
     if hasattr(request, "param") and request.param == "trust_registry":
         # get invitation as on trust registry
-        meldco_label = meld_co_issuer_verifier.wallet_label
+        meld_co_label = meld_co_issuer_verifier.wallet_label
 
-        actor_record = await actors.fetch_actor_by_name(meldco_label)
+        actor_record = await actors.fetch_actor_by_name(meld_co_label)
 
         invitation = actor_record["didcomm_invitation"]
         invitation_json = base64_to_json(invitation.split("?oob=")[1])

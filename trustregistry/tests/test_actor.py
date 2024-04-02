@@ -63,9 +63,9 @@ async def test_register_actor():
         assert response.json() == json.loads(payload)
         assert response.status_code == 200
 
-        new_actor_resp = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
-        assert new_actor_resp.status_code == 200
-        new_actors = new_actor_resp.json()
+        new_actor_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+        assert new_actor_response.status_code == 200
+        new_actors = new_actor_response.json()
         assert new_actor["id"] in [actor["id"] for actor in new_actors]
 
         response = await client.post(
@@ -151,13 +151,13 @@ async def test_update_actor():
         assert response.status_code == 200
         assert response.json() == new_actor
 
-        new_actors_resp = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
-        assert new_actors_resp.status_code == 200
-        new_actors_list = new_actors_resp.json()
+        new_actors_response = await client.get(f"{TRUST_REGISTRY_URL}/registry/actors")
+        assert new_actors_response.status_code == 200
+        new_actors_list = new_actors_response.json()
         assert new_actor in new_actors_list
 
         response = await client.put(
-            f"{TRUST_REGISTRY_URL}/registry/actors/idonotexist",
+            f"{TRUST_REGISTRY_URL}/registry/actors/bad",
             json=new_actor,
         )
         assert response.status_code == 400

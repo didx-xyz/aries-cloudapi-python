@@ -91,7 +91,7 @@ async def test_handle_acapy_call_with_not_found_exception(acapy_call, mock_logge
 async def test_handle_acapy_call_with_validation_error(acapy_call, mock_logger):
     # Create a dummy ValidationError
     acapy_call.side_effect = ValidationError.from_exception_data(
-        "Foobar",
+        "Foo",
         [{"type": "greater_than", "loc": ("a", 2), "input": 4, "ctx": {"gt": 5}}],
     )
 

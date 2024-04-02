@@ -36,6 +36,7 @@ look_back_field: float = Query(
 group_id_field = Query(
     default=None,
     description="Group ID to which the wallet belongs",
+    include_in_schema=False,
 )
 
 

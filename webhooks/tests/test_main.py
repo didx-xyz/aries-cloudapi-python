@@ -29,9 +29,11 @@ async def test_app_lifespan():
     # Mocks for services and container
     acapy_events_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
     sse_manager_mock = MagicMock(start=Mock(), stop=AsyncMock())
+    billing_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
     container_mock = MagicMock(
         acapy_events_processor=MagicMock(return_value=acapy_events_processor_mock),
         sse_manager=MagicMock(return_value=sse_manager_mock),
+        billing_manager=MagicMock(return_value=billing_processor_mock),
         wire=MagicMock(),
         shutdown_resources=Mock(),
     )
@@ -48,9 +50,11 @@ async def test_app_lifespan():
         # Assert the endorsement_processor's start method was called
         sse_manager_mock.start.assert_called_once()
         acapy_events_processor_mock.start.assert_called_once()
-
+        billing_processor_mock.start.assert_called_once()
+        
         # Assert the shutdown logic was called correctly
         acapy_events_processor_mock.stop.assert_awaited_once()
         sse_manager_mock.stop.assert_awaited_once()
+        billing_processor_mock.stop.assert_called_once()
 
         container_mock.shutdown_resources.assert_called_once()

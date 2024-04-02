@@ -6,6 +6,7 @@ from fastapi import HTTPException
 
 from shared.constants import LAGO_API_KEY, LAGO_URL
 from shared.log_config import get_logger
+from shared.models.endorsement import TransactionTypes
 from shared.util.rich_async_client import RichAsyncClient
 from webhooks.models.billing_payloads import (
     AttribBillingEvent,
@@ -252,28 +253,28 @@ class BillingManager:
         # use operation type to determine the endorsement type
         # using transaction_id asfor LAGO transaction_id
 
-        if endorsement_type == "100":
+        if endorsement_type == TransactionTypes.ATTRIB:
             lago_event = AttribBillingEvent(
                 transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event
 
-        elif endorsement_type == "102":
+        elif endorsement_type == TransactionTypes.CLAIM_DEF:
             lago_event = CredDefBillingEvent(
                 transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event
 
-        elif endorsement_type == "113":
+        elif endorsement_type == TransactionTypes.REVOC_REG_DEF:
             lago_event = RevRegDefBillingEvent(
                 transaction_id=transaction_id,
                 external_customer_id=group_id,
             )
             return lago_event
 
-        elif endorsement_type == "114":
+        elif endorsement_type == TransactionTypes.REVOC_REG_ENTRY:
             lago_event = RevRegEntryBillingEvent(
                 transaction_id=transaction_id,
                 external_customer_id=group_id,

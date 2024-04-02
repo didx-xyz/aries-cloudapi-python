@@ -2,7 +2,10 @@ from logging import Logger
 from typing import Any, Dict
 
 from shared.constants import GOVERNANCE_LABEL
-from shared.models.endorsement import extract_operation_type_from_endorsement_payload
+from shared.models.endorsement import (
+    extract_operation_type_from_endorsement_payload,
+    valid_operation_types,
+)
 
 
 def is_applicable_for_billing(
@@ -37,7 +40,7 @@ def is_applicable_for_billing(
 
     if topic == "endorsements":
         operation_type = get_operation_type(payload=payload, logger=logger)
-        if operation_type not in ["1", "100", "102", "113", "114"]:
+        if operation_type not in valid_operation_types:
             logger.debug(
                 "Endorsement operation type: {} is not applicable for the billing service.",
                 operation_type,

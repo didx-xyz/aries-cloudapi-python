@@ -32,7 +32,10 @@ async def sign_jws(
     body: JWSCreateRequest,
     auth: AcaPyAuth = Depends(acapy_auth),
 ) -> JWSCreateResponse:
-    bound_logger = logger.bind(body=body)
+    bound_logger = logger.bind(
+        # Do not log payload:
+        body=body.model_dump(exclude="payload")
+    )
     bound_logger.info("POST request received: Sign JWS")
 
     try:

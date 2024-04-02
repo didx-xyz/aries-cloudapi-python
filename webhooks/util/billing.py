@@ -13,7 +13,7 @@ def is_applicable_for_billing(
         return False
 
     if not group_id:
-        logger.warning("Can't bill for this event as group_id is missing")
+        logger.warning("Can't bill for this event as group_id is missing. {} ", payload)
         return False
 
     state = payload.get("state")

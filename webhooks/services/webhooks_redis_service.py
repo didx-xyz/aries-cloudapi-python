@@ -1,5 +1,4 @@
 from typing import List, Optional
-from uuid import uuid4
 
 from redis import RedisCluster
 
@@ -177,9 +176,9 @@ class WebhooksRedisService(RedisService):
         Returns:
             A list of event JSON strings that match the specified topic.
         """
-        # Fetch maximum because we must post-filter to return `num` relevant topic entires
+        # Fetch maximum because we must post-filter to return `num` relevant topic entries
         entries = self.get_json_cloudapi_events_by_wallet(wallet_id, num=None)
-        # Filter the json entry for our requested topic without deserialising
+        # Filter the json entry for our requested topic without deserializing
         topic_str = f'"topic":"{topic}"'
         filtered_by_topic = [entry for entry in entries if topic_str in entry]
         result = filtered_by_topic[:num] if num else filtered_by_topic
@@ -200,7 +199,7 @@ class WebhooksRedisService(RedisService):
         Returns:
             A list of CloudApiWebhookEventGeneric instances that match the specified topic.
         """
-        # Fetch maximum because we must post-filter to return `num` relevant topic entires
+        # Fetch maximum because we must post-filter to return `num` relevant topic entries
         entries = self.get_cloudapi_events_by_wallet(wallet_id, num=None)
         filtered_by_topic = [entry for entry in entries if topic == entry.topic]
         result = filtered_by_topic[:num] if num else filtered_by_topic
@@ -320,7 +319,7 @@ class WebhooksRedisService(RedisService):
             "Write endorsement entry to redis for transaction id: {}", transaction_id
         )
 
-        # Define key for this transaction, using uuid4 to ensure uniqueness
+        # Define key for this transaction, using transaction_id to ensure uniqueness
         redis_key = f"{self.endorsement_redis_prefix}:{transaction_id}"
         result = self.set(key=redis_key, value=event_json)
 

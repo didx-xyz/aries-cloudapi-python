@@ -1,4 +1,4 @@
-from typing import Any, Generator
+from typing import Any, AsyncGenerator
 
 import pytest
 from aries_cloudcontroller import AcaPyClient
@@ -12,13 +12,13 @@ from shared import RichAsyncClient
 
 
 @pytest.fixture(scope="session")
-async def governance_acapy_client() -> Generator[AcaPyClient, Any, None]:
+async def governance_acapy_client() -> AsyncGenerator[AcaPyClient, Any]:
     async with get_governance_acapy_client() as acapy_client:
         yield acapy_client
 
 
 @pytest.fixture(scope="function")
-async def tenant_admin_acapy_client() -> Generator[AcaPyClient, Any, None]:
+async def tenant_admin_acapy_client() -> AsyncGenerator[AcaPyClient, Any]:
     async with get_tenant_admin_acapy_client() as acapy_client:
         yield acapy_client
 
@@ -33,7 +33,7 @@ def get_token(client):
 @pytest.fixture(scope="function")
 async def alice_acapy_client(
     alice_member_client: RichAsyncClient,
-) -> Generator[AcaPyClient, Any, None]:
+) -> AsyncGenerator[AcaPyClient, Any]:
     async with get_tenant_acapy_client(
         token=get_token(alice_member_client)
     ) as acapy_client:
@@ -43,7 +43,7 @@ async def alice_acapy_client(
 @pytest.fixture(scope="function")
 async def bob_acapy_client(
     bob_member_client: RichAsyncClient,
-) -> Generator[AcaPyClient, Any, None]:
+) -> AsyncGenerator[AcaPyClient, Any]:
     async with get_tenant_acapy_client(
         token=get_token(bob_member_client)
     ) as acapy_client:
@@ -53,7 +53,7 @@ async def bob_acapy_client(
 @pytest.fixture(scope="function")
 async def faber_acapy_client(
     faber_client: RichAsyncClient,
-) -> Generator[AcaPyClient, Any, None]:
+) -> AsyncGenerator[AcaPyClient, Any]:
     async with get_tenant_acapy_client(token=get_token(faber_client)) as acapy_client:
         yield acapy_client
 
@@ -61,7 +61,7 @@ async def faber_acapy_client(
 @pytest.fixture(scope="function")
 async def acme_acapy_client(
     acme_client: RichAsyncClient,
-) -> Generator[AcaPyClient, Any, None]:
+) -> AsyncGenerator[AcaPyClient, Any]:
     async with get_tenant_acapy_client(token=get_token(acme_client)) as acapy_client:
         yield acapy_client
 
@@ -69,6 +69,6 @@ async def acme_acapy_client(
 @pytest.fixture(scope="module")
 async def meld_co_acapy_client(
     meld_co_client: RichAsyncClient,
-) -> Generator[AcaPyClient, Any, None]:
+) -> AsyncGenerator[AcaPyClient, Any]:
     async with get_tenant_acapy_client(token=get_token(meld_co_client)) as acapy_client:
         yield acapy_client

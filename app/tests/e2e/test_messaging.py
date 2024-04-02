@@ -14,7 +14,7 @@ async def test_send_trust_ping(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient
 ):
     trustping_msg = TrustPingMsg(
-        connection_id=bob_and_alice_connection.alice_connection_id, comment="Donda"
+        connection_id=bob_and_alice_connection.alice_connection_id, comment="Asdf"
     )
 
     response = await alice_member_client.post(
@@ -31,7 +31,7 @@ async def test_send_message(
     bob_and_alice_connection: BobAliceConnect, alice_member_client: RichAsyncClient
 ):
     message = Message(
-        connection_id=bob_and_alice_connection.alice_connection_id, content="Donda"
+        connection_id=bob_and_alice_connection.alice_connection_id, content="Asdf"
     )
 
     response = await alice_member_client.post(

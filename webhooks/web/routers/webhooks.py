@@ -7,7 +7,7 @@ from shared import APIRouter
 from shared.log_config import get_logger
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from webhooks.services.dependency_injection.container import Container
-from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.services.webhooks_redis_service import WebhooksRedisService
 
 logger = get_logger(__name__)
 

@@ -237,11 +237,11 @@ async def get_schema_ids(
         for _, attr in presentation.requested_attributes.items()
         if attr.revealed
     ]
-    revealed_pred_cred_ids = [
-        pred.cred_id for _, pred in presentation.requested_predicates.items()
+    revealed_predicate_cred_ids = [
+        predicate.cred_id for _, predicate in presentation.requested_predicates.items()
     ]
 
-    revealed_cred_ids = set([*revealed_attr_cred_ids, *revealed_pred_cred_ids])
+    revealed_cred_ids = set([*revealed_attr_cred_ids, *revealed_predicate_cred_ids])
 
     logger.bind(body=revealed_cred_ids).debug(
         "Getting records from each of the revealed credential ids"

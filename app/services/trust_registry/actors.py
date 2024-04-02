@@ -16,7 +16,7 @@ async def register_actor(actor: Actor) -> None:
         actor (Actor): the actor to register
 
     Raises:
-        TrustRegistryException: If an error ocurred while registering the schema
+        TrustRegistryException: If an error occurred while registering the schema
     """
     bound_logger = logger.bind(body={"actor": actor})
     bound_logger.info("Registering actor on trust registry")

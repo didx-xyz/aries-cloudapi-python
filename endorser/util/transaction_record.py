@@ -35,7 +35,7 @@ def get_endorsement_request_attachment(
 
         json_payload = attachment["data"]["json"]
 
-        # Both dict and str encoding have ocurred for the attachment data
+        # Both dict and str encoding have occurred for the attachment data
         # Parse to dict if payload is of type str
         if isinstance(json_payload, str):
             logger.debug("Try cast attachment payload to json")

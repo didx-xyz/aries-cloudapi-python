@@ -387,8 +387,8 @@ async def test_validate_rev_reg_ids_success(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_validate_rev_reg_ids_nonexistent(mock_agent_controller: AcaPyClient):
-    # Mock ApiException for nonexistent revocation registry ID
+async def test_validate_rev_reg_ids_non_existent(mock_agent_controller: AcaPyClient):
+    # Mock ApiException for non-existent revocation registry ID
     when(mock_agent_controller.revocation).get_registry(
         rev_reg_id="invalid_rev_reg_id"
     ).thenRaise(ApiException(status=404, reason="Registry ID does not exist"))

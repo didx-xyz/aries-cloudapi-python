@@ -1,3 +1,5 @@
+from typing import AsyncGenerator
+
 import pytest
 from aries_cloudcontroller import AcaPyClient
 
@@ -31,7 +33,9 @@ logger = get_logger(__name__)
 
 # Governance should be provisioned with public did and registered for all e2e tests
 @pytest.fixture(autouse=True, scope="session")
-async def governance_public_did(governance_acapy_client: AcaPyClient) -> str:
+async def governance_public_did(
+    governance_acapy_client: AcaPyClient,
+) -> AsyncGenerator[str, None]:
     logger.info("Configuring public did for governance")
 
     try:

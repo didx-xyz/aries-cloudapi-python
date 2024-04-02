@@ -66,7 +66,7 @@ async def test_get_schema_by_id():
         assert response.status_code == 200
 
         response = await client.get(
-            f"{TRUST_REGISTRY_URL}/registry/schemas/i:donot:exist"
+            f"{TRUST_REGISTRY_URL}/registry/schemas/i:dont:exist"
         )
         assert response.status_code == 404
         assert "Schema with id " in response.json()["detail"]
@@ -98,7 +98,7 @@ async def test_update_schema():
         assert updated_schema_id == updated_schema["id"]
 
         response = await client.put(
-            f"{TRUST_REGISTRY_URL}/registry/schemas/i:donot:exist",
+            f"{TRUST_REGISTRY_URL}/registry/schemas/i:dont:exist",
             json=payload,
         )
         assert response.status_code == 405

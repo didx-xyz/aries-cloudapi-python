@@ -16,7 +16,7 @@ async def register_schema(schema_id: str) -> None:
         schema_id (str): the schema id to register
 
     Raises:
-        TrustRegistryException: If an error ocurred while registering the schema
+        TrustRegistryException: If an error occurred while registering the schema
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("Registering schema on trust registry")

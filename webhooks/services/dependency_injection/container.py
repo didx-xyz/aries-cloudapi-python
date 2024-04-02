@@ -7,7 +7,7 @@ from redis.cluster import ClusterNode
 from shared.services.redis_service import init_redis_cluster_pool, parse_redis_nodes
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 from webhooks.services.sse_manager import SseManager
-from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.services.webhooks_redis_service import WebhooksRedisService
 
 
 class Container(containers.DeclarativeContainer):

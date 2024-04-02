@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from random import random
+from typing import AsyncGenerator
 
 import pytest
 
@@ -44,7 +45,9 @@ class DidKey:
 
 
 @asynccontextmanager
-async def register_issuer_key(faber_client: RichAsyncClient, key_type: str) -> DidKey:
+async def register_issuer_key(
+    faber_client: RichAsyncClient, key_type: str
+) -> AsyncGenerator[DidKey, None]:
     did_create_options = {"method": "key", "options": {"key_type": key_type}}
 
     wallet_response = (
@@ -72,12 +75,16 @@ async def register_issuer_key(faber_client: RichAsyncClient, key_type: str) -> D
 
 
 @pytest.fixture(scope="function")
-async def register_issuer_key_ed25519(faber_client: RichAsyncClient) -> DidKey:
+async def register_issuer_key_ed25519(
+    faber_client: RichAsyncClient,
+) -> AsyncGenerator[DidKey, None]:
     async with register_issuer_key(faber_client, "ed25519") as did:
         yield did
 
 
 @pytest.fixture(scope="function")
-async def register_issuer_key_bbs(faber_client: RichAsyncClient) -> DidKey:
+async def register_issuer_key_bbs(
+    faber_client: RichAsyncClient,
+) -> AsyncGenerator[DidKey, None]:
     async with register_issuer_key(faber_client, "bls12381g2") as did:
         yield did

@@ -990,22 +990,26 @@ async def test_saving_of_presentation_exchange_records(
     assert response.status_code == 200
 
     # After proof request is complete, get exchange records from faber side:
-    acme_pres_ex_recs = (await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")).json()
+    acme_pres_ex_records = (
+        await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    ).json()
 
     # get exchange records from alice side
-    alice_pres_ex_recs = (
+    alice_pres_ex_records = (
         await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
     ).json()
 
     if alice_save_exchange_record:
-        assert len(alice_pres_ex_recs) == 1  # Save record is True, should be 1 record
+        assert (
+            len(alice_pres_ex_records) == 1
+        )  # Save record is True, should be 1 record
     else:
-        assert len(alice_pres_ex_recs) == 0  # default is to remove records
+        assert len(alice_pres_ex_records) == 0  # default is to remove records
 
     if acme_save_exchange_record:
-        assert len(acme_pres_ex_recs) == 1  # Save record is True, should be 1 record
+        assert len(acme_pres_ex_records) == 1  # Save record is True, should be 1 record
     else:
-        assert len(acme_pres_ex_recs) == 0  # default is to remove records
+        assert len(acme_pres_ex_records) == 0  # default is to remove records
 
 
 @pytest.mark.anyio
@@ -1296,7 +1300,7 @@ async def test_get_proof_records(
         if proof["proof_id"] == proof_1["proof_id"]:
             assert proof["state"] == "done"
 
-    # Meldco does proof request and alice does not respond
+    # Meld_co does proof request and alice does not respond
     proof = await meld_co_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={

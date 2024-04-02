@@ -360,7 +360,7 @@ async def test_send_jsonld_mismatch_ed_bbs(
     ] = register_issuer_key_ed25519
     credential["ld_credential_detail"]["options"] = {"proofType": "BbsBlsSignature2020"}
 
-    # Send credential must fail did:key made with ed25519 mismatch with prooftype:BbsBlsSignature2020
+    # Send credential must fail did:key made with ed25519 mismatch with proofType:BbsBlsSignature2020
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(
             CREDENTIALS_BASE_PATH,

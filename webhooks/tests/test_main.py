@@ -51,7 +51,7 @@ async def test_app_lifespan():
         sse_manager_mock.start.assert_called_once()
         acapy_events_processor_mock.start.assert_called_once()
         billing_processor_mock.start.assert_called_once()
-        
+
         # Assert the shutdown logic was called correctly
         acapy_events_processor_mock.stop.assert_awaited_once()
         sse_manager_mock.stop.assert_awaited_once()

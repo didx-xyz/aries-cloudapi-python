@@ -62,7 +62,7 @@ async def sse_subscribe_wallet(
     request: Request,
     background_tasks: BackgroundTasks,
     wallet_id: str,
-    look_back: int = look_back_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -127,7 +127,7 @@ async def sse_subscribe_wallet_topic(
     background_tasks: BackgroundTasks,
     wallet_id: str,
     topic: str,
-    look_back: int = look_back_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -195,7 +195,7 @@ async def sse_subscribe_event_with_state(
     wallet_id: str,
     topic: str,
     desired_state: str,
-    look_back: int = look_back_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -272,7 +272,7 @@ async def sse_subscribe_stream_with_fields(
     topic: str,
     field: str,
     field_id: str,
-    look_back: int = look_back_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -347,7 +347,7 @@ async def sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
-    look_back: int = look_back_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:

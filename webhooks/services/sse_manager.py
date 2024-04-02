@@ -291,7 +291,7 @@ class SseManager:
         wallet: str,
         topic: str,
         stop_event: asyncio.Event,
-        look_back: int = MAX_EVENT_AGE_SECONDS,
+        look_back: float = MAX_EVENT_AGE_SECONDS,
         duration: int = 0,
     ) -> EventGeneratorWrapper:
         """
@@ -355,7 +355,7 @@ class SseManager:
         wallet: str,
         topic: str,
         client_queue: asyncio.Queue,
-        look_back: int = MAX_EVENT_AGE_SECONDS,
+        look_back: float = MAX_EVENT_AGE_SECONDS,
     ) -> NoReturn:
         logger.trace(
             "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",

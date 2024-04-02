@@ -29,7 +29,7 @@ async def check_webhook_state(
     state: str,
     filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 60,
-    look_back: int = 1,
+    look_back: float = 1,
     max_tries: int = 2,
     delay: float = 0.5,
 ) -> Dict[str, Any]:

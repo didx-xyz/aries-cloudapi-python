@@ -291,7 +291,7 @@ class SseManager:
         wallet: str,
         topic: str,
         stop_event: asyncio.Event,
-        lookback_time: int = MAX_EVENT_AGE_SECONDS,
+        look_back: float = MAX_EVENT_AGE_SECONDS,
         duration: int = 0,
     ) -> EventGeneratorWrapper:
         """
@@ -301,7 +301,7 @@ class SseManager:
             wallet: The ID of the wallet subscribing to the topic.
             topic: The topic for which to create the event stream.
             stop_event: An asyncio.Event to signal a stop request
-            lookback_time: Duration (s) to look back for older events. 0 means from now
+            look_back: Duration (s) to look back for older events. 0 means from now
             duration: Timeout duration in seconds. 0 means no timeout.
         """
         client_queue = asyncio.Queue()
@@ -311,7 +311,7 @@ class SseManager:
                 wallet=wallet,
                 topic=topic,
                 client_queue=client_queue,
-                lookback_time=lookback_time,
+                look_back=look_back,
             )
         )
 
@@ -355,7 +355,7 @@ class SseManager:
         wallet: str,
         topic: str,
         client_queue: asyncio.Queue,
-        lookback_time: int = MAX_EVENT_AGE_SECONDS,
+        look_back: float = MAX_EVENT_AGE_SECONDS,
     ) -> NoReturn:
         logger.trace(
             "SSE Manager: start _populate_client_queue for wallet `{}` and topic `{}`",
@@ -365,7 +365,7 @@ class SseManager:
         event_log = []  # to keep track of events already added for this client queue
 
         now = time.time()
-        since_timestamp = now - lookback_time
+        since_timestamp = now - look_back
         while True:
             if topic == WEBHOOK_TOPIC_ALL:
                 for topic_key in self.lifo_cache[wallet].keys():

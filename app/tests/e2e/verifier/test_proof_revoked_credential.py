@@ -58,7 +58,7 @@ async def test_proof_revoked_credential(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
-        lookback_time=5,
+        look_back=5,
     )
 
     # Get proof exchange id
@@ -97,7 +97,7 @@ async def test_proof_revoked_credential(
         filter_map={
             "proof_id": alice_proof_exchange_id,
         },
-        lookback_time=5,
+        look_back=5,
     )
 
     await check_webhook_state(
@@ -107,7 +107,7 @@ async def test_proof_revoked_credential(
         filter_map={
             "proof_id": acme_proof_exchange_id,
         },
-        lookback_time=5,
+        look_back=5,
     )
 
     # Check proof

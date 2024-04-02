@@ -232,14 +232,14 @@ async def test_send_jsonld_request(
         filter_map={
             "credential_id": credential_exchange["credential_id"],
         },
-        lookback_time=5,
+        look_back=5,
     )
 
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
-        lookback_time=5,
+        look_back=5,
     )
 
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
@@ -260,14 +260,14 @@ async def test_send_jsonld_request(
         client=alice_member_client,
         topic="credentials",
         state="request-sent",
-        lookback_time=5,
+        look_back=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
         state="request-received",
-        lookback_time=5,
+        look_back=5,
     )
 
 
@@ -302,14 +302,14 @@ async def test_issue_jsonld_ed(
         filter_map={
             "credential_id": credential_exchange["credential_id"],
         },
-        lookback_time=5,
+        look_back=5,
     )
 
     assert await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
-        lookback_time=5,
+        look_back=5,
     )
 
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
@@ -330,14 +330,14 @@ async def test_issue_jsonld_ed(
         client=alice_member_client,
         topic="credentials",
         state="done",
-        lookback_time=5,
+        look_back=5,
     )
 
     assert await check_webhook_state(
         client=faber_client,
         topic="credentials",
         state="done",
-        lookback_time=5,
+        look_back=5,
     )
 
 

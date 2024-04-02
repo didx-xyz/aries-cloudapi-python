@@ -44,7 +44,7 @@ async def test_check_webhook_state_wait_for_event_success(
         field_id="field_id",
         desired_state=state,
         timeout=60,
-        lookback_time=1,
+        look_back=1,
     )
 
 
@@ -107,7 +107,7 @@ async def test_check_webhook_state_wait_for_state_success(
     mock_sse_listener.wait_for_state.assert_awaited_once_with(
         desired_state=state,
         timeout=60,
-        lookback_time=1,
+        look_back=1,
     )
 
 

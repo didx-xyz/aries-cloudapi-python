@@ -4,6 +4,7 @@ from fastapi import Request
 from httpx import HTTPError, Response, Timeout
 
 from shared import WEBHOOKS_URL
+from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
 from shared.util.rich_async_client import RichAsyncClient
 
@@ -25,7 +26,11 @@ async def yield_lines_with_disconnect_check(
 
 
 async def sse_subscribe_wallet(
-    *, request: Request, group_id: Optional[str], wallet_id: str
+    *,
+    request: Request,
+    group_id: Optional[str],
+    wallet_id: str,
+    look_back: float = MAX_EVENT_AGE_SECONDS,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID.
@@ -34,8 +39,20 @@ async def sse_subscribe_wallet(
         group_id: The group to which the wallet belongs.
         wallet_id: The ID of the wallet subscribing to the events.
     """
-    bound_logger = logger.bind(body={"group_id": group_id, "wallet_id": wallet_id})
-    params = {"group_id": group_id} if group_id else None
+    bound_logger = logger.bind(
+        body={
+            "group_id": group_id,
+            "wallet_id": wallet_id,
+            "look_back": look_back,
+        }
+    )
+
+    # Required param
+    params = {"look_back": look_back}
+
+    if group_id:  # Optional param
+        params["group_id"] = group_id
+
     try:
         async with RichAsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id")
@@ -50,7 +67,12 @@ async def sse_subscribe_wallet(
 
 
 async def sse_subscribe_wallet_topic(
-    *, request: Request, group_id: Optional[str], wallet_id: str, topic: str
+    *,
+    request: Request,
+    group_id: Optional[str],
+    wallet_id: str,
+    topic: str,
+    look_back: float = MAX_EVENT_AGE_SECONDS,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
@@ -61,9 +83,20 @@ async def sse_subscribe_wallet_topic(
         topic: The topic to which the wallet is subscribing.
     """
     bound_logger = logger.bind(
-        body={"group_id": group_id, "wallet_id": wallet_id, "topic": topic}
+        body={
+            "group_id": group_id,
+            "wallet_id": wallet_id,
+            "topic": topic,
+            "look_back": look_back,
+        }
     )
-    params = {"group_id": group_id} if group_id else None
+
+    # Required param
+    params = {"look_back": look_back}
+
+    if group_id:  # Optional param
+        params["group_id"] = group_id
+
     try:
         async with RichAsyncClient(timeout=default_timeout) as client:
             bound_logger.debug("Connecting stream to /sse/wallet_id/topic")
@@ -84,6 +117,7 @@ async def sse_subscribe_event_with_state(
     wallet_id: str,
     topic: str,
     desired_state: str,
+    look_back: float = MAX_EVENT_AGE_SECONDS,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
@@ -100,9 +134,16 @@ async def sse_subscribe_event_with_state(
             "wallet_id": wallet_id,
             "topic": topic,
             "state": desired_state,
+            "look_back": look_back,
         }
     )
-    params = {"group_id": group_id} if group_id else None
+
+    # Required param
+    params = {"look_back": look_back}
+
+    if group_id:  # Optional param
+        params["group_id"] = group_id
+
     try:
         async with RichAsyncClient(timeout=event_timeout) as client:
             bound_logger.debug(
@@ -128,6 +169,7 @@ async def sse_subscribe_stream_with_fields(
     topic: str,
     field: str,
     field_id: str,
+    look_back: float = MAX_EVENT_AGE_SECONDS,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
@@ -145,9 +187,16 @@ async def sse_subscribe_stream_with_fields(
             "wallet_id": wallet_id,
             "topic": topic,
             field: field_id,
+            "look_back": look_back,
         }
     )
-    params = {"group_id": group_id} if group_id else None
+
+    # Required param
+    params = {"look_back": look_back}
+
+    if group_id:  # Optional param
+        params["group_id"] = group_id
+
     try:
         async with RichAsyncClient(timeout=default_timeout) as client:
             bound_logger.debug(
@@ -174,6 +223,7 @@ async def sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
+    look_back: float = MAX_EVENT_AGE_SECONDS,
 ) -> AsyncGenerator[str, None]:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
@@ -193,9 +243,16 @@ async def sse_subscribe_event_with_field_and_state(
             "topic": topic,
             field: field_id,
             "state": desired_state,
+            "look_back": look_back,
         }
     )
-    params = {"group_id": group_id} if group_id else None
+
+    # Required param
+    params = {"look_back": look_back}
+
+    if group_id:  # Optional param
+        params["group_id"] = group_id
+
     try:
         async with RichAsyncClient(timeout=event_timeout) as client:
             bound_logger.debug(

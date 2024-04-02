@@ -20,16 +20,18 @@ router = APIRouter(
     tags=["sse"],
 )
 
-lookback_time_field = Query(
+look_back_field: float = Query(
     default=MAX_EVENT_AGE_SECONDS,
     description=(
-        "Duration in seconds to lookback in time to include past events "
+        "Duration in seconds to look back in time to include past events "
         f"(default is the max event age stored in SSE: {MAX_EVENT_AGE_SECONDS} seconds). "
         "Setting to 0 means only events after connection is established will be returned"
     ),
+    ge=0,
+    le=MAX_EVENT_AGE_SECONDS,
 )
 
-group_id_field = Query(
+group_id_field: Optional[str] = Query(
     default=None,
     description="Group ID to which the wallet belongs",
 )
@@ -62,7 +64,7 @@ async def sse_subscribe_wallet(
     request: Request,
     background_tasks: BackgroundTasks,
     wallet_id: str,
-    lookback_time: int = lookback_time_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -73,7 +75,13 @@ async def sse_subscribe_wallet(
         wallet_id: The ID of the wallet subscribing to the events.
         sse_manager: The SSEManager instance managing the server-sent events.
     """
-    bound_logger = logger.bind(body={"wallet_id": wallet_id, "group_id": group_id})
+    bound_logger = logger.bind(
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "look_back": look_back,
+        }
+    )
     bound_logger.info(
         "SSE: GET request received: Subscribe to wallet events on all topics"
     )
@@ -89,7 +97,7 @@ async def sse_subscribe_wallet(
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=WEBHOOK_TOPIC_ALL,
-                lookback_time=lookback_time,
+                look_back=look_back,
                 stop_event=stop_event,
             )
         )
@@ -127,7 +135,7 @@ async def sse_subscribe_wallet_topic(
     background_tasks: BackgroundTasks,
     wallet_id: str,
     topic: str,
-    lookback_time: int = lookback_time_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -140,7 +148,12 @@ async def sse_subscribe_wallet_topic(
         sse_manager: The SSEManager instance managing the server-sent events.
     """
     bound_logger = logger.bind(
-        body={"wallet_id": wallet_id, "group_id": group_id, "topic": topic}
+        body={
+            "wallet_id": wallet_id,
+            "group_id": group_id,
+            "topic": topic,
+            "look_back": look_back,
+        }
     )
     bound_logger.info("SSE: GET request received: Subscribe to wallet events by topic")
 
@@ -155,7 +168,7 @@ async def sse_subscribe_wallet_topic(
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                lookback_time=lookback_time,
+                look_back=look_back,
                 stop_event=stop_event,
             )
         )
@@ -195,7 +208,7 @@ async def sse_subscribe_event_with_state(
     wallet_id: str,
     topic: str,
     desired_state: str,
-    lookback_time: int = lookback_time_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -205,6 +218,7 @@ async def sse_subscribe_event_with_state(
             "group_id": group_id,
             "topic": topic,
             "desired_state": desired_state,
+            "look_back": look_back,
         }
     )
     bound_logger.info(
@@ -223,7 +237,7 @@ async def sse_subscribe_event_with_state(
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                lookback_time=lookback_time,
+                look_back=look_back,
                 stop_event=stop_event,
                 duration=SSE_TIMEOUT,
             )
@@ -272,7 +286,7 @@ async def sse_subscribe_stream_with_fields(
     topic: str,
     field: str,
     field_id: str,
-    lookback_time: int = lookback_time_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -282,6 +296,7 @@ async def sse_subscribe_stream_with_fields(
             "group_id": group_id,
             "topic": topic,
             field: field_id,
+            "look_back": look_back,
         }
     )
     bound_logger.info(
@@ -300,7 +315,7 @@ async def sse_subscribe_stream_with_fields(
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                lookback_time=lookback_time,
+                look_back=look_back,
                 stop_event=stop_event,
                 duration=SSE_TIMEOUT,
             )
@@ -347,7 +362,7 @@ async def sse_subscribe_event_with_field_and_state(
     field: str,
     field_id: str,
     desired_state: str,
-    lookback_time: int = lookback_time_field,
+    look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
@@ -358,6 +373,7 @@ async def sse_subscribe_event_with_field_and_state(
             "topic": topic,
             field: field_id,
             "desired_state": desired_state,
+            "look_back": look_back,
         }
     )
     bound_logger.info(
@@ -376,7 +392,7 @@ async def sse_subscribe_event_with_field_and_state(
             await sse_manager.sse_event_stream(
                 wallet=wallet_id,
                 topic=topic,
-                lookback_time=lookback_time,
+                look_back=look_back,
                 stop_event=stop_event,
                 duration=SSE_TIMEOUT,
             )

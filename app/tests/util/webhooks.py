@@ -29,7 +29,7 @@ async def check_webhook_state(
     state: str,
     filter_map: Optional[Dict[str, str]] = None,
     max_duration: int = 60,
-    lookback_time: int = 1,
+    look_back: float = 1,
     max_tries: int = 2,
     delay: float = 0.5,
 ) -> Dict[str, Any]:
@@ -61,14 +61,14 @@ async def check_webhook_state(
                     field_id=field_id,
                     desired_state=state,
                     timeout=max_duration,
-                    lookback_time=lookback_time + attempt,  # Increase per attempt
+                    look_back=look_back + attempt,  # Increase per attempt
                 )
             else:
                 bound_logger.info("Waiting for event with state {}", state)
                 event = await listener.wait_for_state(
                     desired_state=state,
                     timeout=max_duration,
-                    lookback_time=lookback_time + attempt,  # Increase per attempt
+                    look_back=look_back + attempt,  # Increase per attempt
                 )
         except SseListenerTimeout:
             bound_logger.error(

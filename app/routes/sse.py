@@ -55,7 +55,8 @@ async def get_sse_subscribe_wallet(
     """
     Subscribe to server-side events for a specific wallet ID.
 
-    Args:
+    Parameters:
+    -----------
         wallet_id: The ID of the wallet subscribing to the events.
         look_back: Specifies the look back window in seconds, to include events before connection established.
     """
@@ -96,7 +97,8 @@ async def get_sse_subscribe_wallet_topic(
     """
     Subscribe to server-side events for a specific wallet ID and topic.
 
-    Args:
+    Parameters:
+    -----------
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         look_back: Specifies the look back window in seconds, to include events before connection established.
@@ -142,7 +144,8 @@ async def get_sse_subscribe_event_with_state(
     Subscribe to server-side events for a specific wallet ID and topic,
     and wait for an event that matches the desired state.
 
-    Args:
+    Parameters:
+    -----------
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         desired_state: The desired state to be reached.
@@ -194,7 +197,8 @@ async def get_sse_subscribe_stream_with_fields(
     Subscribe to server-side events for a specific wallet ID and topic, and
     filter the events for payloads containing a specific field and field ID pair.
 
-    Args:
+    Parameters:
+    -----------
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         field: The field to which the wallet is subscribing.
@@ -247,7 +251,8 @@ async def get_sse_subscribe_event_with_field_and_state(
     Wait for a desired state to be reached for some event for this wallet and topic,
     filtering for payloads that contain `field:field_id`.
 
-    Args:
+    Parameters:
+    -----------
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         field: The field to which the wallet is subscribing.

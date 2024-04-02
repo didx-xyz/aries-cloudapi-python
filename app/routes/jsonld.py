@@ -20,7 +20,10 @@ async def sign_jsonld(
     """
     Sign a JSON-LD structure
     """
-    bound_logger = logger.bind(body=body)
+    bound_logger = logger.bind(
+        # Do not log credential data:
+        body=body.model_dump(exclude="credential")
+    )
     bound_logger.info("POST request received: Sign JsonLD")
 
     async with client_from_auth(auth) as aries_controller:

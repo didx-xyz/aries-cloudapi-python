@@ -35,7 +35,13 @@ class IssuerV2(Issuer):
     async def send_credential(
         cls, controller: AcaPyClient, credential: CredentialWithConnection
     ) -> CredentialExchange:
-        bound_logger = logger.bind(body=credential)
+        bound_logger = logger.bind(
+            body={
+                # Do not log credential attributes:
+                "connection_id": credential.connection_id,
+                "credential_type": credential.type,
+            }
+        )
 
         credential_preview = None
         # Determine the appropriate filter based on the type
@@ -78,7 +84,12 @@ class IssuerV2(Issuer):
     async def create_offer(
         cls, controller: AcaPyClient, credential: CredentialBase
     ) -> CredentialExchange:
-        bound_logger = logger.bind(body=credential)
+        bound_logger = logger.bind(
+            body={
+                # Do not log credential attributes:
+                "credential_type": credential.type,
+            }
+        )
 
         credential_preview = None
         # Determine the appropriate filter based on the type

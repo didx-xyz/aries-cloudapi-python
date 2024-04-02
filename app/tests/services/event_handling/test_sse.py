@@ -13,7 +13,7 @@ from app.services.event_handling.sse import (
     sse_subscribe_wallet_topic,
     yield_lines_with_disconnect_check,
 )
-from shared.constants import WEBHOOKS_URL
+from shared.constants import MAX_EVENT_AGE_SECONDS, WEBHOOKS_URL
 from shared.util.rich_async_client import RichAsyncClient
 
 wallet_id = "some_wallet"
@@ -149,12 +149,18 @@ async def test_sse_subscribe_wallet_exception(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "some_group"])
+@pytest.mark.parametrize("look_back", [MAX_EVENT_AGE_SECONDS, 0.0])
 async def test_sse_subscribe_wallet_success(
     configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
     mock_request,  # pylint: disable=redefined-outer-name
     patch_yield_lines_with_disconnect_check,  # pylint: disable=redefined-outer-name
     group_id: Optional[str],
+    look_back: float,
 ):
+    expected_params = {"look_back": look_back}
+    if group_id:  # Optional param
+        expected_params["group_id"] = group_id
+
     with patch.object(
         RichAsyncClient,
         "stream",
@@ -163,7 +169,10 @@ async def test_sse_subscribe_wallet_success(
         # Execute the sse_subscribe_wallet and collect results
         results = []
         async for line in sse_subscribe_wallet(
-            request=mock_request, group_id=group_id, wallet_id=wallet_id
+            request=mock_request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            look_back=look_back,
         ):
             results.append(line)
 
@@ -177,7 +186,7 @@ async def test_sse_subscribe_wallet_success(
         mock_stream.assert_called_with(
             "GET",
             f"{WEBHOOKS_URL}/sse/{wallet_id}",
-            params={"group_id": group_id} if group_id else None,
+            params=expected_params,
         )
 
 
@@ -210,12 +219,18 @@ async def test_sse_subscribe_wallet_topic_exception(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "some_group"])
+@pytest.mark.parametrize("look_back", [MAX_EVENT_AGE_SECONDS, 0.0])
 async def test_sse_subscribe_wallet_topic_success(
     configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
     mock_request,  # pylint: disable=redefined-outer-name
     patch_yield_lines_with_disconnect_check,  # pylint: disable=redefined-outer-name
     group_id: Optional[str],
+    look_back: float,
 ):
+    expected_params = {"look_back": look_back}
+    if group_id:  # Optional param
+        expected_params["group_id"] = group_id
+
     with patch.object(
         RichAsyncClient,
         "stream",
@@ -224,7 +239,11 @@ async def test_sse_subscribe_wallet_topic_success(
         # Execute the sse_subscribe_wallet_topic and collect results
         results = []
         async for line in sse_subscribe_wallet_topic(
-            request=mock_request, group_id=group_id, wallet_id=wallet_id, topic=topic
+            request=mock_request,
+            group_id=group_id,
+            wallet_id=wallet_id,
+            topic=topic,
+            look_back=look_back,
         ):
             results.append(line)
 
@@ -238,7 +257,7 @@ async def test_sse_subscribe_wallet_topic_success(
         mock_stream.assert_called_with(
             "GET",
             f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}",
-            params={"group_id": group_id} if group_id else None,
+            params=expected_params,
         )
 
 
@@ -272,12 +291,18 @@ async def test_sse_subscribe_event_with_state_exception(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "some_group"])
+@pytest.mark.parametrize("look_back", [MAX_EVENT_AGE_SECONDS, 0.0])
 async def test_sse_subscribe_event_with_state_success(
     configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
     mock_request,  # pylint: disable=redefined-outer-name
     patch_yield_lines_with_disconnect_check,  # pylint: disable=redefined-outer-name
     group_id: Optional[str],
+    look_back: float,
 ):
+    expected_params = {"look_back": look_back}
+    if group_id:  # Optional param
+        expected_params["group_id"] = group_id
+
     with patch.object(
         RichAsyncClient,
         "stream",
@@ -291,6 +316,7 @@ async def test_sse_subscribe_event_with_state_success(
             wallet_id=wallet_id,
             topic=topic,
             desired_state=state,
+            look_back=look_back,
         ):
             results.append(line)
 
@@ -304,7 +330,7 @@ async def test_sse_subscribe_event_with_state_success(
         mock_stream.assert_called_with(
             "GET",
             f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{state}",
-            params={"group_id": group_id} if group_id else None,
+            params=expected_params,
         )
 
 
@@ -339,12 +365,18 @@ async def test_sse_subscribe_stream_with_fields_exception(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "some_group"])
+@pytest.mark.parametrize("look_back", [MAX_EVENT_AGE_SECONDS, 0.0])
 async def test_sse_subscribe_stream_with_fields_success(
     configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
     mock_request,  # pylint: disable=redefined-outer-name
     patch_yield_lines_with_disconnect_check,  # pylint: disable=redefined-outer-name
     group_id: Optional[str],
+    look_back: float,
 ):
+    expected_params = {"look_back": look_back}
+    if group_id:  # Optional param
+        expected_params["group_id"] = group_id
+
     with patch.object(
         RichAsyncClient,
         "stream",
@@ -359,6 +391,7 @@ async def test_sse_subscribe_stream_with_fields_success(
             topic=topic,
             field=field,
             field_id=field_id,
+            look_back=look_back,
         ):
             results.append(line)
 
@@ -372,7 +405,7 @@ async def test_sse_subscribe_stream_with_fields_success(
         mock_stream.assert_called_with(
             "GET",
             f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}",
-            params={"group_id": group_id} if group_id else None,
+            params=expected_params,
         )
 
 
@@ -408,12 +441,18 @@ async def test_sse_subscribe_event_with_field_and_state_exception(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "some_group"])
+@pytest.mark.parametrize("look_back", [MAX_EVENT_AGE_SECONDS, 0.0])
 async def test_sse_subscribe_event_with_field_and_state_success(
     configured_async_context_manager_mock,  # pylint: disable=redefined-outer-name
     mock_request,  # pylint: disable=redefined-outer-name
     patch_yield_lines_with_disconnect_check,  # pylint: disable=redefined-outer-name
     group_id: Optional[str],
+    look_back: float,
 ):
+    expected_params = {"look_back": look_back}
+    if group_id:  # Optional param
+        expected_params["group_id"] = group_id
+
     with patch.object(
         RichAsyncClient,
         "stream",
@@ -429,6 +468,7 @@ async def test_sse_subscribe_event_with_field_and_state_success(
             field=field,
             field_id=field_id,
             desired_state=state,
+            look_back=look_back,
         ):
             results.append(line)
 
@@ -439,8 +479,9 @@ async def test_sse_subscribe_event_with_field_and_state_success(
 
         # Additionally, assert that the stream was opened with the correct parameters
         configured_async_context_manager_mock.__aenter__.assert_called()
+
         mock_stream.assert_called_with(
             "GET",
             f"{WEBHOOKS_URL}/sse/{wallet_id}/{topic}/{field}/{field_id}/{state}",
-            params={"group_id": group_id} if group_id else None,
+            params=expected_params,
         )

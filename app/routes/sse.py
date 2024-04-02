@@ -27,10 +27,12 @@ look_back_field: float = Query(
     default=MAX_EVENT_AGE_SECONDS,
     description=(
         "The duration in seconds to look back in time, defining the window of additional webhook events that should "
-        "be included before the initial connection of the stream. The default value will include events up to "
-        f"{MAX_EVENT_AGE_SECONDS} seconds ago. "
-        "Setting to 0 means only events after connection is established will be returned."
+        "be included, prior to the initial connection of the stream. The default value will include events up to "
+        f"{MAX_EVENT_AGE_SECONDS} seconds ago, and represents the maximum value for this setting. "
+        "Setting to 0 means only events after the connection is established will be returned."
     ),
+    ge=0.0,
+    le=MAX_EVENT_AGE_SECONDS,
 )
 
 group_id_field = Query(

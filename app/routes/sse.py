@@ -35,7 +35,7 @@ look_back_field: float = Query(
     le=MAX_EVENT_AGE_SECONDS,
 )
 
-group_id_field = Query(
+group_id_field: Optional[str] = Query(
     default=None,
     description="Group ID to which the wallet belongs",
     include_in_schema=False,
@@ -43,7 +43,9 @@ group_id_field = Query(
 
 
 @router.get(
-    "/{wallet_id}", response_class=StreamingResponse, name="Subscribe to Wallet Events"
+    "/{wallet_id}",
+    response_class=StreamingResponse,
+    name="Subscribe to Wallet Events",
 )
 async def get_sse_subscribe_wallet(
     request: Request,
@@ -51,7 +53,7 @@ async def get_sse_subscribe_wallet(
     look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> StreamingResponse:
     """
     Subscribe to server-side events for a specific wallet ID.
 
@@ -93,7 +95,7 @@ async def get_sse_subscribe_wallet_topic(
     look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> StreamingResponse:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
 
@@ -139,7 +141,7 @@ async def get_sse_subscribe_event_with_state(
     look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> StreamingResponse:
     """
     Subscribe to server-side events for a specific wallet ID and topic,
     and wait for an event that matches the desired state.
@@ -192,7 +194,7 @@ async def get_sse_subscribe_stream_with_fields(
     look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> StreamingResponse:
     """
     Subscribe to server-side events for a specific wallet ID and topic, and
     filter the events for payloads containing a specific field and field ID pair.
@@ -246,7 +248,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     look_back: float = look_back_field,
     group_id: Optional[str] = group_id_field,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
-):
+) -> StreamingResponse:
     """
     Wait for a desired state to be reached for some event for this wallet and topic,
     filtering for payloads that contain `field:field_id`.

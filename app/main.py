@@ -41,21 +41,29 @@ ROOT_PATH = os.getenv("ROOT_PATH", "")
 cloud_api_docs_description = """
 Welcome to the Aries CloudAPI Python project.
 
-In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for real-time interfacing with webhook events.
+In addition to the traditional HTTP-based endpoints described below, we also offer WebSocket endpoints for
+real-time interfacing with webhook events.
 
-WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the ability to subscribe by topic, or to any wallet.
+WebSocket endpoints are authenticated. This means that only users with valid authentication tokens can establish
+a WebSocket connection, and they can only subscribe to their own wallet's events. However, Admin users have the
+ability to subscribe by topic, or to any wallet in their group.
 
 Our WebSocket endpoints are as follows:
 
-1. `/v1/ws/topic/{topic}`: (Admin only) This endpoint allows admins to receive all webhook events on a specific topic (e.g. `connections`, `credentials`, `proofs`, `endorsements`).
+1. `/v1/ws/`: This endpoint allows admins to receive all webhook events for their group.
 
-2. `/v1/ws/{wallet_id}`: This endpoint allows authenticated users to receive webhook events associated with a specific wallet ID.
+2. `/v1/ws/{wallet_id}`: This endpoint allows admins (or authenticated users holding this wallet) to receive webhook
+events for a specific wallet ID.
 
-3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but with topic-specific subscription.
+3. `/v1/ws/{wallet_id}/{topic}`: Similar to above, but subscribing to a specific topic.
+
+4. `/v1/ws/topic/{topic}`: This endpoint allows admins to receive all webhook events on a specific topic (e.g.
+`connections`, `credentials`, `proofs`, `endorsements`).
 
 For authentication, the WebSocket headers should include `x-api-key`: `<your key>`.
 
-Please refer to our API documentation for more details about our authentication mechanism, as well as for information about the available topics.
+Please refer to our API documentation for more details about our authentication mechanism, as well as for information
+about the available topics.
 """
 
 default_docs_description = """

@@ -10,6 +10,9 @@ from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL, LAGO_API_KEY
 from shared.log_config import get_logger
 from shared.models.endorsement import (
+    extract_operation_type_from_endorsement_payload as get_operation_type,
+)
+from shared.models.endorsement import (
     obfuscate_primary_data_in_payload,
     payload_is_applicable_for_endorser,
 )
@@ -18,7 +21,7 @@ from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
 from webhooks.models.redis_payloads import AcaPyRedisEvent
 from webhooks.services.webhooks_redis_service import WebhooksRedisService
-from webhooks.util.billing import get_operation_type, is_applicable_for_billing
+from webhooks.util.billing import is_applicable_for_billing
 
 logger = get_logger(__name__)
 

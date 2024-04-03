@@ -466,7 +466,17 @@ async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
     assert_that(tenants).extracting("wallet_id").contains(wallet_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
+    # Does not return when wallet_name = other
     response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?wallet_name=other")
+    assert response.status_code == 200
+    tenants = response.json()
+    assert len(tenants) == 0
+    assert tenants == []
+
+    # Does not return when group_id = other
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}?wallet_name={wallet_name}&group_id=other"
+    )
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) == 0

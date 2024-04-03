@@ -34,7 +34,10 @@ from app.services.trust_registry.actors import (
     remove_actor_by_id,
 )
 from app.services.trust_registry.util.actor import assert_actor_name
-from app.util.tenants import tenant_from_wallet_record
+from app.util.tenants import (
+    get_wallet_and_assert_valid_group,
+    tenant_from_wallet_record,
+)
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -188,22 +191,12 @@ async def delete_tenant_by_id(
     bound_logger.info("DELETE request received: Deleting tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        bound_logger.debug("Retrieving the wallet")
-        wallet = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=admin_controller.multitenancy.get_wallet,
+        wallet = await get_wallet_and_assert_valid_group(
+            admin_controller=admin_controller,
+            group_id=group_id,
             wallet_id=wallet_id,
+            logger=bound_logger,
         )
-        if not wallet:
-            bound_logger.info("Bad request: Wallet not found.")
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
-
-        if group_id and wallet.settings.get("wallet.group_id") != group_id:
-            bound_logger.info(
-                "Bad request: Admin cannot act on wallet outside of their group."
-            )
-            # 404 instead of 403, to obscure the existence of wallet_id outside their group
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         # wallet_id is the id of the actor in the trust registry.
         # This makes it a lot easier to link a tenant to an actor
@@ -236,22 +229,12 @@ async def get_wallet_auth_token(
     bound_logger.info("GET request received: Access token for tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        bound_logger.debug("Retrieving the wallet")
-        wallet = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=admin_controller.multitenancy.get_wallet,
+        wallet = await get_wallet_and_assert_valid_group(
+            admin_controller=admin_controller,
+            group_id=group_id,
             wallet_id=wallet_id,
+            logger=bound_logger,
         )
-        if not wallet:
-            bound_logger.info("Bad request: Wallet not found.")
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
-
-        if group_id and wallet.settings.get("wallet.group_id") != group_id:
-            bound_logger.info(
-                "Bad request: Admin cannot act on wallet outside of their group."
-            )
-            # 404 instead of 403, to obscure the existence of wallet_id outside their group
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         bound_logger.debug("Getting auth token for wallet")
         response = await handle_acapy_call(
@@ -278,23 +261,12 @@ async def update_tenant(
     bound_logger.info("PUT request received: Update tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        bound_logger.debug("Retrieving the wallet")
-        wallet = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=admin_controller.multitenancy.get_wallet,
+        await get_wallet_and_assert_valid_group(
+            admin_controller=admin_controller,
+            group_id=group_id,
             wallet_id=wallet_id,
+            logger=bound_logger,
         )
-
-        if not wallet:
-            bound_logger.info("Bad request: Wallet not found.")
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
-
-        if group_id and wallet.settings.get("wallet.group_id") != group_id:
-            bound_logger.info(
-                "Bad request: Admin cannot act on wallet outside of their group."
-            )
-            # 404 instead of 403, to obscure the existence of wallet_id outside their group
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         wallet = await handle_tenant_update(
             admin_controller=admin_controller, wallet_id=wallet_id, update_request=body
@@ -316,22 +288,12 @@ async def get_tenant(
     bound_logger.info("GET request received: Fetch tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        bound_logger.debug("Retrieving the wallet")
-        wallet = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=admin_controller.multitenancy.get_wallet,
+        wallet = await get_wallet_and_assert_valid_group(
+            admin_controller=admin_controller,
+            group_id=group_id,
             wallet_id=wallet_id,
+            logger=bound_logger,
         )
-        if not wallet:
-            bound_logger.info("Bad request: Wallet not found.")
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
-
-        if group_id and wallet.settings.get("wallet.group_id") != group_id:
-            bound_logger.info(
-                "Bad request: Admin cannot act on wallet outside of their group."
-            )
-            # 404 instead of 403, to obscure the existence of wallet_id outside their group
-            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
     response = tenant_from_wallet_record(wallet)
     bound_logger.info("Successfully fetched tenant from wallet record.")
@@ -351,7 +313,6 @@ async def get_tenants(
     )
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        bound_logger.info("Fetching wallets")
         wallets = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=admin_controller.multitenancy.get_wallets,

@@ -61,16 +61,16 @@ async def get_wallet_label_from_controller(aries_controller: AcaPyClient) -> str
 
 async def get_wallet_and_assert_valid_group(
     admin_controller: AcaPyClient,
-    group_id: Optional[str],
     wallet_id: str,
+    group_id: Optional[str],
     logger: Logger,
 ) -> WalletRecordWithGroups:
     """Fetch the wallet record for wallet_id, and assert it exists and belongs to group.
 
     Args:
         admin_controller (AcaPyClient): Admin AcaPyClient instance.
-        group_id (Optional[str]): The group_id to assert against.
         wallet_id (str): The wallet_id we want to fetch.
+        group_id (Optional[str]): The group_id to assert against.
         logger (Logger): A logger object.
 
     Raises:
@@ -91,7 +91,7 @@ async def get_wallet_and_assert_valid_group(
         raise WalletNotFoundException(wallet_id=wallet_id)
 
     assert_valid_group(
-        wallet=wallet, group_id=group_id, wallet_id=wallet_id, logger=logger
+        wallet=wallet, wallet_id=wallet_id, group_id=group_id, logger=logger
     )
 
     return wallet
@@ -99,16 +99,16 @@ async def get_wallet_and_assert_valid_group(
 
 def assert_valid_group(
     wallet: WalletRecordWithGroups,
-    group_id: Optional[str],
     wallet_id: str,
+    group_id: Optional[str],
     logger: Logger,
 ) -> None:
     """Assert that wallet record belongs to group, and raise exception if not.
 
     Args:
         wallet (WalletRecordWithGroups): The wallet record to check.
-        group_id (Optional[str]): The group to validate against.
         wallet_id (str): The wallet id for the wallet record.
+        group_id (Optional[str]): The group to validate against.
         logger (Logger): A logger object.
 
     Raises:

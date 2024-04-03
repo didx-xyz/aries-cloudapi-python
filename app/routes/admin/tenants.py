@@ -193,8 +193,8 @@ async def delete_tenant_by_id(
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         wallet = await get_wallet_and_assert_valid_group(
             admin_controller=admin_controller,
-            group_id=group_id,
             wallet_id=wallet_id,
+            group_id=group_id,
             logger=bound_logger,
         )
 
@@ -231,8 +231,8 @@ async def get_wallet_auth_token(
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         wallet = await get_wallet_and_assert_valid_group(
             admin_controller=admin_controller,
-            group_id=group_id,
             wallet_id=wallet_id,
+            group_id=group_id,
             logger=bound_logger,
         )
 
@@ -263,8 +263,8 @@ async def update_tenant(
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         await get_wallet_and_assert_valid_group(
             admin_controller=admin_controller,
-            group_id=group_id,
             wallet_id=wallet_id,
+            group_id=group_id,
             logger=bound_logger,
         )
 
@@ -290,8 +290,8 @@ async def get_tenant(
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
         wallet = await get_wallet_and_assert_valid_group(
             admin_controller=admin_controller,
-            group_id=group_id,
             wallet_id=wallet_id,
+            group_id=group_id,
             logger=bound_logger,
         )
 

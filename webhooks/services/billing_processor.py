@@ -64,14 +64,14 @@ class BillingManager:
             self._pubsub.disconnect()
             logger.info("Billing pubsub disconnected")
 
-    def are_task_running(self) -> bool:
+    def are_tasks_running(self) -> bool:
         """
         Check if tasks are running
         """
         logger.debug("Checking if tasks are running")
 
         if not self._pubsub:
-            logger.error("Pubsub is not running")
+            logger.warning("Pubsub is not running")
 
         all_running = self._tasks and all(not task.done() for task in self._tasks)
         logger.debug("All tasks running: {}", all_running)

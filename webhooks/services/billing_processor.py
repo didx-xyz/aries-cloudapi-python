@@ -199,8 +199,14 @@ class BillingManager:
 
         elif topic == "issuer_cred_rev":
             record_id = payload.get("record_id")
-            lago = self._convert_issuer_cred_rev_event(
-                group_id=group_id, record_id=record_id
+
+            if not record_id:
+                logger.warning("No record_id found for revocation event: {}", event)
+                return
+
+            lago = RevocationBillingEvent(
+                transaction_id=record_id,
+                external_customer_id=group_id,
             )
 
         else:

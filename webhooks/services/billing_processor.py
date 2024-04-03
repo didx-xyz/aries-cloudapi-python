@@ -213,7 +213,6 @@ class BillingManager:
             logger.warning("Unknown topic for event: {}", event)
             return
 
-        # post billing event to LAGO
         await self._post_billing_event(lago)
 
     async def _post_billing_event(self, event: LagoEvent) -> None:
@@ -231,35 +230,11 @@ class BillingManager:
 
         except HTTPException as e:
             if e.status_code == 422 and "value_already_exist" in e.detail:
-                logger.debug("Error posting billing event >>> : {}", e.detail)
-
-    def _convert_credential_event(
-        self, group_id: str, thread_id: str
-    ) -> CredentialBillingEvent:
-        """
-        Convert credential event to LAGO event
-        """
-        logger.debug("Converting credential event with thread_id: {}", thread_id)
-
-        # using thread_id as transaction_id
-        lago_event = CredentialBillingEvent(
-            transaction_id=thread_id,
-            external_customer_id=group_id,
-        )
-        return lago_event
-
-    def _convert_proofs_event(self, group_id: str, thread_id: str) -> ProofBillingEvent:
-        """
-        Convert proofs event to LAGO event
-        """
-        logger.debug("Converting proofs event with thread_id: {}", thread_id)
-
-        # using thread_id as transaction_id
-        lago_event = ProofBillingEvent(
-            transaction_id=thread_id,
-            external_customer_id=group_id,
-        )
-        return lago_event
+                logger.debug(
+                    "LAGO indicating transaction already received : {}", e.detail
+                )
+            else:
+                logger.error("Error posting billing event to LAGO: {}", e.detail)
 
     def _convert_endorsements_event(
         self, group_id: str, transaction_id: str, endorsement_type: str

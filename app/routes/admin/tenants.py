@@ -301,15 +301,14 @@ async def get_tenants(
     )
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        if wallet_name:
+        if wallet_name or group_id:
             bound_logger.info("Fetching wallet by wallet name")
             wallets = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=admin_controller.multitenancy.get_wallets,
                 wallet_name=wallet_name,
+                group_id=group_id,
             )
-            # TODO: fetching by wallet_name still returns all wallets ... bug in cc or group_id plugin?
-            # Filtering result as workaround:
             if not wallets.results:
                 bound_logger.info("No wallets found.")
                 return []
@@ -322,13 +321,6 @@ async def get_tenants(
             ]
             bound_logger.info("Successfully fetched wallets by wallet name.")
             return response
-        elif group_id:
-            bound_logger.info("Fetching wallets by group_id")
-            wallets = await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=admin_controller.multitenancy.get_wallets,
-                group_id=group_id,
-            )
         else:
             bound_logger.info("Fetching all wallets")
             wallets = await handle_acapy_call(

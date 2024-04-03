@@ -249,7 +249,7 @@ class BillingManager:
         )
 
         lago_model = None
-
+        lago = None
         if not transaction_id:
             logger.warning("No transaction_id found for endorsements event")
             return

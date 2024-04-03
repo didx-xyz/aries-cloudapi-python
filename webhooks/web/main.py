@@ -83,7 +83,7 @@ async def health_check(
     if (
         acapy_events_processor.are_tasks_running()
         and sse_manager.are_tasks_running()
-        and billing_manager.are_task_running()
+        and billing_manager.are_tasks_running()
     ):
         return {"status": "healthy"}
     else:

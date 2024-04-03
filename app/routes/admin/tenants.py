@@ -340,46 +340,27 @@ async def get_tenants(
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
-    """Get all tenants, or fetch by wallet name and/or group id."""
+    """Get all tenants, or fetch by wallet name."""
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
     bound_logger.info(
         "GET request received: Fetch tenants by wallet name and/or group id"
     )
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        if wallet_name or group_id:
-            bound_logger.info("Fetching wallet by wallet name")
-            wallets = await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=admin_controller.multitenancy.get_wallets,
-                wallet_name=wallet_name,
-                group_id=group_id,
-            )
-            if not wallets.results:
-                bound_logger.info("No wallets found.")
-                return []
-            wallet_list = wallets.results
-            wallets = [
-                w for w in wallet_list if w.settings["wallet.name"] == wallet_name
-            ]
-            response = [
-                tenant_from_wallet_record(wallet_record) for wallet_record in wallets
-            ]
-            bound_logger.info("Successfully fetched wallets by wallet name.")
-            return response
-        else:
-            bound_logger.info("Fetching all wallets")
-            wallets = await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=admin_controller.multitenancy.get_wallets,
-            )
+        bound_logger.info("Fetching wallets")
+        wallets = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.get_wallets,
+            wallet_name=wallet_name,
+            group_id=group_id,
+        )
 
-    if not wallets.results:
+    wallets_list = wallets.results
+
+    if not wallets_list:
         bound_logger.info("No wallets found.")
         return []
 
-    response = [
-        tenant_from_wallet_record(wallet_record) for wallet_record in wallets.results
-    ]
-    bound_logger.info("Successfully fetched wallets by wallet name and/or group id.")
+    response = [tenant_from_wallet_record(record) for record in wallets_list]
+    bound_logger.info("Successfully fetched wallets.")
     return response

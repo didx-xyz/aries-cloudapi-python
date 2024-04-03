@@ -3,9 +3,9 @@ from typing import Any, Dict
 
 from shared.constants import GOVERNANCE_LABEL
 from shared.models.endorsement import (
-    extract_operation_type_from_endorsement_payload,
-    valid_operation_types,
+    extract_operation_type_from_endorsement_payload as get_operation_type,
 )
+from shared.models.endorsement import valid_operation_types
 
 
 def is_applicable_for_billing(
@@ -49,10 +49,3 @@ def is_applicable_for_billing(
 
     logger.debug("Event is applicable for the billing service.")
     return True
-
-
-def get_operation_type(payload: Dict[str, Any], logger: Logger) -> str:
-
-    return extract_operation_type_from_endorsement_payload(
-        payload=payload, logger=logger
-    )

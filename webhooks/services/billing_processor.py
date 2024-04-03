@@ -254,6 +254,10 @@ class BillingManager:
             logger.warning("No transaction_id found for endorsements event")
             return
 
+        lago_model = LagoEvent(
+            transaction_id=transaction_id,
+            external_customer_id=group_id,
+        )
 
         # use operation type to determine the endorsement type
         # using transaction_id asfor LAGO transaction_id

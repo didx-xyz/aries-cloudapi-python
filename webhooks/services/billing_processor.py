@@ -204,7 +204,7 @@ class BillingManager:
             )
 
         else:
-            logger.warning("Unknown billing event: {}", event)
+            logger.warning("Unknown topic for event: {}", event)
             return
 
         # post billing event to LAGO

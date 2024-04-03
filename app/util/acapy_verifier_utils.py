@@ -12,7 +12,7 @@ from app.services.trust_registry.schemas import fetch_schemas
 from app.services.verifier.acapy_verifier import Verifier
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
-from app.util.did import ed25519_verkey_to_did_key
+from app.util.did import ed25519_verkey_to_did_key, qualified_did_sov
 from app.util.tenants import get_wallet_label_from_controller
 from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
@@ -76,7 +76,7 @@ async def assert_valid_prover(
 
     # Case 1: connection made with public DID
     if connection_record.their_public_did:
-        public_did = f"did:sov:{connection_record.their_public_did}"
+        public_did = qualified_did_sov(connection_record.their_public_did)
     # Case 2: connection made without public DID
     elif connection_record.invitation_key:
         invitation_key = connection_record.invitation_key

@@ -30,21 +30,11 @@ async def handle_tenant_update(
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.bind(body=update_request).info("Handling tenant update")
 
-    bound_logger.debug("Retrieving the wallet")
-    wallet = await handle_acapy_call(
-        logger=bound_logger,
-        acapy_call=admin_controller.multitenancy.get_wallet,
-        wallet_id=wallet_id,
-    )
-    if not wallet:
-        bound_logger.info("Bad request: Wallet not found.")
-        raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
-
     new_roles = update_request.roles
     new_label = update_request.wallet_label
 
     # See if this wallet belongs to an actor
-    actor = await fetch_actor_by_id(wallet.wallet_id)
+    actor = await fetch_actor_by_id(wallet_id)
     if not actor and new_roles:
         bound_logger.info(
             "Bad request: Tenant not found in trust registry. "

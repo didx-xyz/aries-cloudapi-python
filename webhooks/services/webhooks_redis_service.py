@@ -368,7 +368,12 @@ class WebhooksRedisService(RedisService):
         timestamp_ns: int,
     ) -> None:
         """
-        billing stuff
+        Add a billing event to Redis and publish a notification.
+        Args:
+            event_json: The JSON string representation of the billing event.
+            group_id: The group_id to which this wallet_id belongs. Used as redis key.
+            wallet_id: The identifier of the wallet associated with the event. Only used for logging.
+            timestamp_ns: The timestamp (in nanoseconds) of the event.
         """
         bound_logger = self.logger.bind(
             body={
@@ -385,7 +390,6 @@ class WebhooksRedisService(RedisService):
 
         broadcast_message = f"{group_id}:{timestamp_ns}"
 
-        # publish that a new event has been added
         bound_logger.trace(
             "Publish billing message on pubsub channel: {}", broadcast_message
         )
@@ -397,7 +401,12 @@ class WebhooksRedisService(RedisService):
         self, group_id: str, start_timestamp: int, stop_timestamp: int
     ) -> List[str]:
         """
-        billing stuff
+        Retrieve billing events from Redis for a specified group ID within a timestamp range.
+        Args:
+            group_id: The group_id to which the billing events belong.
+            start_timestamp: The start of the timestamp range.
+            stop_timestamp: The end of the timestamp range.
+
         """
         bound_logger = self.logger.bind(body={"group_id": group_id})
         bound_logger.trace("Fetching billing entries from redis by group id")

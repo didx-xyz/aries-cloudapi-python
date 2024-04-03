@@ -187,7 +187,7 @@ async def delete_tenant_by_id(
             wallet_id=wallet_id,
         )
         if not wallet:
-            bound_logger.error("Bad request: Wallet not found.")
+            bound_logger.info("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         # wallet_id is the id of the actor in the trust registry.
@@ -227,7 +227,7 @@ async def get_wallet_auth_token(
             wallet_id=wallet_id,
         )
         if not wallet:
-            bound_logger.error("Bad request: Wallet not found.")
+            bound_logger.info("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         bound_logger.debug("Getting auth token for wallet")
@@ -280,7 +280,7 @@ async def get_tenant(
             wallet_id=wallet_id,
         )
         if not wallet:
-            bound_logger.error("Bad request: Wallet not found.")
+            bound_logger.info("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
     response = tenant_from_wallet_record(wallet)

@@ -170,9 +170,15 @@ class BillingManager:
             )
 
         elif topic == "proofs":
-            # handel proofs event
             thread_id = payload.get("thread_id")
-            lago = self._convert_proofs_event(group_id=group_id, thread_id=thread_id)
+            if not thread_id:
+                logger.warning("No thread_id found for proof event: {}", event)
+                return
+
+            lago = ProofBillingEvent(
+                transaction_id=thread_id,
+                external_customer_id=group_id,
+            )
 
         elif topic == "endorsements":
             # handel endorsements event

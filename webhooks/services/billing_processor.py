@@ -181,17 +181,23 @@ class BillingManager:
             )
 
         elif topic == "endorsements":
-            # handel endorsements event
+
             endorsement_type = payload.get("type")
             transaction_id = payload.get("transaction_id")
+
             lago = self._convert_endorsements_event(
                 group_id=group_id,
                 endorsement_type=endorsement_type,
                 transaction_id=transaction_id,
             )
 
+            if not lago:
+                logger.warning(
+                    "No LAGO event created for endorsements event: {}", event
+                )
+                return
+
         elif topic == "issuer_cred_rev":
-            # handel issuer_cred_rev event
             record_id = payload.get("record_id")
             lago = self._convert_issuer_cred_rev_event(
                 group_id=group_id, record_id=record_id

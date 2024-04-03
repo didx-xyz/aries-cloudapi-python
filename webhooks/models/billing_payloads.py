@@ -20,28 +20,28 @@ class LagoEvent(BaseModel):
 
 
 class CredentialBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.CREDENTIAL] = Field("issue_done")
+    code: Literal[LagoTopics.CREDENTIAL] = Field(LagoTopics.CREDENTIAL)
 
 
 class ProofBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.PROOF] = Field("proof_done")
+    code: Literal[LagoTopics.PROOF] = Field(LagoTopics.PROOF)
 
 
 class CredDefBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.CRED_DEF] = Field("cred_def")
+    code: Literal[LagoTopics.CRED_DEF] = Field(LagoTopics.CRED_DEF)
 
 
 class RevRegDefBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.REV_REG_DEF] = Field("rev_reg_def")
+    code: Literal[LagoTopics.REV_REG_DEF] = Field(LagoTopics.REV_REG_DEF)
 
 
 class RevRegEntryBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.REV_REG_ENTRY] = Field("rev_reg_entry")
+    code: Literal[LagoTopics.REV_REG_ENTRY] = Field(LagoTopics.REV_REG_ENTRY)
 
 
 class AttribBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.ATTRIB] = Field("attrib")
+    code: Literal[LagoTopics.ATTRIB] = Field(LagoTopics.ATTRIB)
 
 
 class RevocationBillingEvent(LagoEvent):
-    code: Literal[LagoTopics.REVOCATION] = Field("revoked")
+    code: Literal[LagoTopics.REVOCATION] = Field(LagoTopics.REVOCATION)

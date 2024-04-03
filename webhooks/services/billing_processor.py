@@ -18,7 +18,7 @@ from webhooks.models.billing_payloads import (
     RevRegDefBillingEvent,
     RevRegEntryBillingEvent,
 )
-from webhooks.services.webhooks_redis_serivce import WebhooksRedisService
+from webhooks.services.webhooks_redis_service import WebhooksRedisService
 
 logger = get_logger(__name__)
 

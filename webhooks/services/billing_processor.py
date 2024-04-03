@@ -238,7 +238,7 @@ class BillingManager:
 
     def _convert_endorsements_event(
         self, group_id: str, transaction_id: str, endorsement_type: str
-    ) -> LagoEvent | None:
+    ) -> LagoEvent:
         """
         Convert endorsements event to LAGO event
         """
@@ -263,48 +263,18 @@ class BillingManager:
         # using transaction_id asfor LAGO transaction_id
 
         if endorsement_type == TransactionTypes.ATTRIB:
-            lago_event = AttribBillingEvent(
-                transaction_id=transaction_id,
-                external_customer_id=group_id,
-            )
-            return lago_event
+            lago = AttribBillingEvent(**lago_model.model_dump())
 
         elif endorsement_type == TransactionTypes.CLAIM_DEF:
-            lago_event = CredDefBillingEvent(
-                transaction_id=transaction_id,
-                external_customer_id=group_id,
-            )
-            return lago_event
+            lago = CredDefBillingEvent(**lago_model.model_dump())
 
         elif endorsement_type == TransactionTypes.REVOC_REG_DEF:
-            lago_event = RevRegDefBillingEvent(
-                transaction_id=transaction_id,
-                external_customer_id=group_id,
-            )
-            return lago_event
+            lago = RevRegDefBillingEvent(**lago_model.model_dump())
 
         elif endorsement_type == TransactionTypes.REVOC_REG_ENTRY:
-            lago_event = RevRegEntryBillingEvent(
-                transaction_id=transaction_id,
-                external_customer_id=group_id,
-            )
-            return lago_event
+            lago = RevRegEntryBillingEvent(**lago_model.model_dump())
 
         else:
             logger.warning("Unknown endorsement type: {}", endorsement_type)
-            return None
 
-    def _convert_issuer_cred_rev_event(
-        self, group_id: str, record_id: str
-    ) -> RevocationBillingEvent:
-        """
-        Convert issuer cred rev event to LAGO event
-        """
-
-        # using record_id as transaction_id
-        logger.debug("Converting issuer cred_rev_event with record_id: {}", record_id)
-        lago_event = RevocationBillingEvent(
-            transaction_id=record_id,
-            external_customer_id=group_id,
-        )
-        return lago_event
+        return lago

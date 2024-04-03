@@ -108,7 +108,7 @@ async def test_get_connections(
     assert_that(len(alice_connections)).is_greater_than_or_equal_to(1)
     assert_that(len(bob_connections)).is_greater_than_or_equal_to(1)
 
-    alice_initation_msg_id = alice_connections["invitation_msg_id"]
+    alice_invitation_msg_id = alice_connections["invitation_msg_id"]
     alice_did = alice_connections["my_did"]
 
     alice_alias = (await alice_member_client.get(f"{BASE_PATH}?alias=alice")).json()[0][
@@ -130,10 +130,10 @@ async def test_get_connections(
 
     alice_invitation_msg_id = (
         await alice_member_client.get(
-            f"{BASE_PATH}?invitation_msg_id={alice_initation_msg_id}"
+            f"{BASE_PATH}?invitation_msg_id={alice_invitation_msg_id}"
         )
     ).json()[0]["invitation_msg_id"]
-    assert alice_invitation_msg_id == alice_initation_msg_id
+    assert alice_invitation_msg_id == alice_invitation_msg_id
 
     alice_my_did = (
         await alice_member_client.get(f"{BASE_PATH}?my_did={alice_did}")

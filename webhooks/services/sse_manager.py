@@ -196,7 +196,7 @@ class SseManager:
                     await self.incoming_events.put(parsed_event)
 
                     # Also publish event to websocket
-                    # Doing it here makes websockets stateless as well
+                    # Doing it here makes websocket stateless as well
                     await publish_event_on_websocket(
                         event_json=json_event,
                         group_id=group_id,

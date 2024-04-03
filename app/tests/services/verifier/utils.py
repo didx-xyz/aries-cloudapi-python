@@ -7,9 +7,6 @@ from aries_cloudcontroller import (
     AttachDecoratorData,
     ConnRecord,
     IndyCredInfo,
-    IndyPresAttrSpec,
-    IndyPresPredSpec,
-    IndyPresPreview,
     IndyPresSpec,
     IndyProof,
     IndyProofProof,
@@ -19,7 +16,6 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedAttr,
     IndyRequestedCredsRequestedPred,
     V10PresentationExchange,
-    V10PresentationProposalRequest,
     V20Pres,
     V20PresExRecord,
     V20PresExRecordByFormat,
@@ -88,15 +84,6 @@ v10_presentation_exchange_records = [
         verified="false",
     ),
 ]
-
-v10_presentation_proposal_request = V10PresentationProposalRequest(
-    connection_id="xyz",
-    presentation_proposal=IndyPresPreview(
-        attributes=[IndyPresAttrSpec(name="abc")],
-        predicates=[IndyPresPredSpec(name="abc", predicate=">", threshold=1)],
-    ),
-    auto_present=True,
-)
 
 indy_proof_request = IndyProofRequest(
     name="string",

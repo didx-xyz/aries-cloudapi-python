@@ -8,7 +8,11 @@ logger = get_logger(__name__)
 router = APIRouter()
 
 
-group_id_query = Query(default="", description="Group ID to which the wallet belongs")
+group_id_query = Query(
+    default="",
+    description="Group ID to which the wallet belongs",
+    include_in_schema=False,
+)
 
 
 @router.websocket("/v1/ws/")

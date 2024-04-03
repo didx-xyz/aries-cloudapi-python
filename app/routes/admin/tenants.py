@@ -202,7 +202,8 @@ async def delete_tenant_by_id(
             bound_logger.info(
                 "Bad request: Admin cannot act on wallet outside of their group."
             )
-            raise HTTPException(403)
+            # 404 instead of 403, to obscure the existence of wallet_id outside their group
+            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         # wallet_id is the id of the actor in the trust registry.
         # This makes it a lot easier to link a tenant to an actor
@@ -249,7 +250,8 @@ async def get_wallet_auth_token(
             bound_logger.info(
                 "Bad request: Admin cannot act on wallet outside of their group."
             )
-            raise HTTPException(403)
+            # 404 instead of 403, to obscure the existence of wallet_id outside their group
+            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         bound_logger.debug("Getting auth token for wallet")
         response = await handle_acapy_call(
@@ -291,7 +293,8 @@ async def update_tenant(
             bound_logger.info(
                 "Bad request: Admin cannot act on wallet outside of their group."
             )
-            raise HTTPException(403)
+            # 404 instead of 403, to obscure the existence of wallet_id outside their group
+            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
         wallet = await handle_tenant_update(
             admin_controller=admin_controller, wallet_id=wallet_id, update_request=body
@@ -327,7 +330,8 @@ async def get_tenant(
             bound_logger.info(
                 "Bad request: Admin cannot act on wallet outside of their group."
             )
-            raise HTTPException(403)
+            # 404 instead of 403, to obscure the existence of wallet_id outside their group
+            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
     response = tenant_from_wallet_record(wallet)
     bound_logger.info("Successfully fetched tenant from wallet record.")

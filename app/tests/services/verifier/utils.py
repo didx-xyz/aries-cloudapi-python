@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from aries_cloudcontroller import (
@@ -152,22 +152,32 @@ indy_pres_spec = IndyPresSpec(
 
 
 @pytest.mark.anyio
-async def test_are_valid_schemas(mock_async_client):
+@pytest.mark.parametrize(
+    "mock_async_client", ["app.services.trust_registry.schemas"], indirect=True
+)
+async def test_are_valid_schemas(mock_async_client: Mock):
     # schemas are valid
-    schemas = {
-        [
-            "NR6Y28AiZ893utPSfoQRrz:2:test_schema:0.3",
-            "U8BpHgzm5H5WbmDqeQRnxh:2:test_schema:0.3",
-            "WoWSMfxTHA14GR2FdJJcHk:2:test_schema:0.3",
-        ]
-    }
+    schemas = [
+        {
+            "did": "9L2b2nqUFmY1rVMWwVVZ9y",
+            "name": "test_schema",
+            "version": "100.72.97",
+            "id": "9L2b2nqUFmY1rVMWwVVZ9y:2:test_schema:100.72.97",
+        },
+        {
+            "did": "9L2b2nqUFmY1rVMWwVVZ9y",
+            "name": "test_schema_alt",
+            "version": "53.86.35",
+            "id": "9L2b2nqUFmY1rVMWwVVZ9y:2:test_schema_alt:53.86.35",
+        },
+    ]
+    schema_ids = [schema["id"] for schema in schemas]
+
     mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
 
-    assert await are_valid_schemas(schema_ids=schemas) is True
+    assert await are_valid_schemas(schema_ids=schema_ids) is True
 
     # has invalid schema
-    mock_async_client.get = AsyncMock(return_value=Response(200, json=schemas))
-
     assert (
         await are_valid_schemas(schema_ids=["SomeRandomDid:2:test_schema:0.3"]) is False
     )
@@ -244,7 +254,10 @@ async def test_is_verifier():
 
 
 @pytest.mark.anyio
-async def test_get_actor(mock_async_client):
+@pytest.mark.parametrize(
+    "mock_async_client", ["app.services.trust_registry.actors"], indirect=True
+)
+async def test_get_actor(mock_async_client: Mock):
     # gets actor
     actor = Actor(id="abcde", name="Flint", roles=["verifier"], did="did:sov:abcde")
     mock_async_client.get = AsyncMock(return_value=Response(200, json=actor))
@@ -254,7 +267,9 @@ async def test_get_actor(mock_async_client):
     # no actor
     mock_async_client.get = AsyncMock(return_value=Response(200, json={}))
 
-    with pytest.raises(CloudApiException, match=f"No actor with DID {actor['did']}"):
+    with pytest.raises(
+        CloudApiException, match=f"404: No verifier with DID `{actor['did']}`"
+    ):
         await get_actor(did=actor["did"])
 
 

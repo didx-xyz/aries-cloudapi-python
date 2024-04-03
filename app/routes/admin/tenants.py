@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import base58
 from aries_cloudcontroller import CreateWalletTokenRequest
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.dependencies.acapy_clients import get_tenant_admin_controller
 from app.dependencies.auth import (
@@ -40,6 +40,13 @@ from shared.log_config import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/v1/tenants", tags=["admin: tenants"])
+
+
+group_id_query: Optional[str] = Query(
+    default=None,
+    description="Group ID to which the wallet belongs",
+    include_in_schema=False,
+)
 
 
 @router.post("", response_model=CreateTenantResponse)
@@ -173,6 +180,7 @@ async def create_tenant(
 @router.delete("/{wallet_id}")
 async def delete_tenant_by_id(
     wallet_id: str,
+    group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     """Delete tenant by id."""
@@ -189,6 +197,12 @@ async def delete_tenant_by_id(
         if not wallet:
             bound_logger.info("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
+
+        if group_id and wallet.settings.get("wallet.group_id") != group_id:
+            bound_logger.info(
+                "Bad request: Admin cannot act on wallet outside of their group."
+            )
+            raise HTTPException(403)
 
         # wallet_id is the id of the actor in the trust registry.
         # This makes it a lot easier to link a tenant to an actor
@@ -214,6 +228,7 @@ async def delete_tenant_by_id(
 @router.get("/{wallet_id}/access-token", response_model=TenantAuth)
 async def get_wallet_auth_token(
     wallet_id: str,
+    group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
@@ -229,6 +244,12 @@ async def get_wallet_auth_token(
         if not wallet:
             bound_logger.info("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
+
+        if group_id and wallet.settings.get("wallet.group_id") != group_id:
+            bound_logger.info(
+                "Bad request: Admin cannot act on wallet outside of their group."
+            )
+            raise HTTPException(403)
 
         bound_logger.debug("Getting auth token for wallet")
         response = await handle_acapy_call(
@@ -247,6 +268,7 @@ async def get_wallet_auth_token(
 async def update_tenant(
     wallet_id: str,
     body: UpdateTenantRequest,
+    group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Update tenant by id."""
@@ -254,6 +276,23 @@ async def update_tenant(
     bound_logger.info("PUT request received: Update tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
+        bound_logger.debug("Retrieving the wallet")
+        wallet = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=admin_controller.multitenancy.get_wallet,
+            wallet_id=wallet_id,
+        )
+
+        if not wallet:
+            bound_logger.info("Bad request: Wallet not found.")
+            raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
+
+        if group_id and wallet.settings.get("wallet.group_id") != group_id:
+            bound_logger.info(
+                "Bad request: Admin cannot act on wallet outside of their group."
+            )
+            raise HTTPException(403)
+
         wallet = await handle_tenant_update(
             admin_controller=admin_controller, wallet_id=wallet_id, update_request=body
         )
@@ -266,6 +305,7 @@ async def update_tenant(
 @router.get("/{wallet_id}", response_model=Tenant)
 async def get_tenant(
     wallet_id: str,
+    group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """Get tenant by id."""
@@ -283,6 +323,12 @@ async def get_tenant(
             bound_logger.info("Bad request: Wallet not found.")
             raise HTTPException(404, f"Wallet with id `{wallet_id}` not found.")
 
+        if group_id and wallet.settings.get("wallet.group_id") != group_id:
+            bound_logger.info(
+                "Bad request: Admin cannot act on wallet outside of their group."
+            )
+            raise HTTPException(403)
+
     response = tenant_from_wallet_record(wallet)
     bound_logger.info("Successfully fetched tenant from wallet record.")
     return response
@@ -291,7 +337,7 @@ async def get_tenant(
 @router.get("", response_model=List[Tenant])
 async def get_tenants(
     wallet_name: Optional[str] = None,
-    group_id: Optional[str] = None,
+    group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """Get all tenants, or fetch by wallet name and/or group id."""

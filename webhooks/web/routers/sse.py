@@ -31,7 +31,7 @@ look_back_field: float = Query(
     le=MAX_EVENT_AGE_SECONDS,
 )
 
-group_id_field: Optional[str] = Query(
+group_id_query: Optional[str] = Query(
     default=None,
     description="Group ID to which the wallet belongs",
 )
@@ -65,7 +65,7 @@ async def sse_subscribe_wallet(
     background_tasks: BackgroundTasks,
     wallet_id: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     """
@@ -136,7 +136,7 @@ async def sse_subscribe_wallet_topic(
     wallet_id: str,
     topic: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     """
@@ -209,7 +209,7 @@ async def sse_subscribe_event_with_state(
     topic: str,
     desired_state: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(
@@ -287,7 +287,7 @@ async def sse_subscribe_stream_with_fields(
     field: str,
     field_id: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(
@@ -363,7 +363,7 @@ async def sse_subscribe_event_with_field_and_state(
     field_id: str,
     desired_state: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     sse_manager: SseManager = Depends(Provide[Container.sse_manager]),
 ) -> EventSourceResponse:
     bound_logger = logger.bind(

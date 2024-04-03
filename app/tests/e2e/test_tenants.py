@@ -17,12 +17,13 @@ TENANTS_BASE_PATH = router.prefix
 
 @pytest.mark.anyio
 async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
+    group_id = "TestGroup"
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
         json={
             "image_url": "https://image.ca",
             "wallet_label": uuid4().hex,
-            "group_id": "TestGroup",
+            "group_id": group_id,
         },
     )
 
@@ -31,8 +32,21 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
     tenant = response.json()
     wallet_id = tenant["wallet_id"]
 
+    # Attempting to access with incorrect wallet_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.get(f"{TENANTS_BASE_PATH}/bad_wallet_id/access-token")
+    assert exc.value.status_code == 404
+
+    # Attempting to access with incorrect group_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.get(
+            f"{TENANTS_BASE_PATH}/{wallet_id}/access-token?group_id=wrong_group"
+        )
+    assert exc.value.status_code == 404
+
+    # Successfully get access-token with correct group_id
     response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}/{wallet_id}/access-token"
+        f"{TENANTS_BASE_PATH}/{wallet_id}/access-token?group_id={group_id}"
     )
     assert response.status_code == 200
 
@@ -306,13 +320,30 @@ async def test_update_tenant_verifier_to_issuer(
     new_image_url = "https://some-ssi-site.org/image.png"
     new_roles = ["issuer", "verifier"]
 
+    json_request = {
+        "image_url": new_image_url,
+        "wallet_label": new_wallet_label,
+        "roles": new_roles,
+    }
+    # Attempting to update with incorrect wallet_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.put(
+            f"{TENANTS_BASE_PATH}/bad_wallet_id", json=json_request
+        )
+    assert exc.value.status_code == 404
+
+    # Attempting to update with incorrect group_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.put(
+            f"{TENANTS_BASE_PATH}/{verifier_wallet_id}?group_id=wrong_group",
+            json=json_request,
+        )
+    assert exc.value.status_code == 404
+
+    # Successful update with correct group
     update_response = await tenant_admin_client.put(
-        f"{TENANTS_BASE_PATH}/{verifier_wallet_id}",
-        json={
-            "image_url": new_image_url,
-            "wallet_label": new_wallet_label,
-            "roles": new_roles,
-        },
+        f"{TENANTS_BASE_PATH}/{verifier_wallet_id}?group_id={group_id}",
+        json=json_request,
     )
     new_tenant = update_response.json()
     assert_that(new_tenant).has_wallet_id(wallet.wallet_id)
@@ -466,7 +497,17 @@ async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
     assert_that(tenants).extracting("wallet_id").contains(wallet_id)
     assert_that(tenants).extracting("group_id").contains(group_id)
 
+    # Does not return when wallet_name = other
     response = await tenant_admin_client.get(f"{TENANTS_BASE_PATH}?wallet_name=other")
+    assert response.status_code == 200
+    tenants = response.json()
+    assert len(tenants) == 0
+    assert tenants == []
+
+    # Does not return when group_id = other
+    response = await tenant_admin_client.get(
+        f"{TENANTS_BASE_PATH}?wallet_name={wallet_name}&group_id=other"
+    )
     assert response.status_code == 200
     tenants = response.json()
     assert len(tenants) == 0
@@ -493,8 +534,21 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
     created_tenant = create_response.json()
     wallet_id = created_tenant["wallet_id"]
 
+    # Attempting to get with incorrect wallet_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.get(f"{TENANTS_BASE_PATH}/bad_wallet_id")
+    assert exc.value.status_code == 404
+
+    # Attempting to get with incorrect group_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.get(
+            f"{TENANTS_BASE_PATH}/{wallet_id}?group_id=wrong_group"
+        )
+    assert exc.value.status_code == 404
+
+    # Successful get with correct group_id
     get_tenant_response = await tenant_admin_client.get(
-        f"{TENANTS_BASE_PATH}/{wallet_id}"
+        f"{TENANTS_BASE_PATH}/{wallet_id}?group_id={group_id}"
     )
     assert get_tenant_response.status_code == 200
     tenant = get_tenant_response.json()
@@ -512,6 +566,7 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
 async def test_delete_tenant(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
+    group_id = "delete_group"
     wallet_label = uuid4().hex
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
@@ -519,6 +574,7 @@ async def test_delete_tenant(
             "image_url": "https://image.ca",
             "wallet_label": wallet_label,
             "roles": ["verifier"],
+            "group_id": group_id,
         },
     )
 
@@ -530,7 +586,22 @@ async def test_delete_tenant(
     actor = await trust_registry.fetch_actor_by_id(wallet_id)
     assert actor
 
-    response = await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/{wallet_id}")
+    # Attempting to delete with incorrect wallet_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.delete(f"{TENANTS_BASE_PATH}/bad_wallet_id")
+    assert exc.value.status_code == 404
+
+    # Attempting to delete with incorrect group_id will fail with 404
+    with pytest.raises(HTTPException) as exc:
+        await tenant_admin_client.delete(
+            f"{TENANTS_BASE_PATH}/{wallet_id}?group_id=wrong_group"
+        )
+    assert exc.value.status_code == 404
+
+    # Successful delete with correct group_id:
+    response = await tenant_admin_client.delete(
+        f"{TENANTS_BASE_PATH}/{wallet_id}?group_id={group_id}"
+    )
     assert response.status_code == 200
 
     # Actor doesn't exist any more

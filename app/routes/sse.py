@@ -35,7 +35,7 @@ look_back_field: float = Query(
     le=MAX_EVENT_AGE_SECONDS,
 )
 
-group_id_field: Optional[str] = Query(
+group_id_query: Optional[str] = Query(
     default=None,
     description="Group ID to which the wallet belongs",
     include_in_schema=False,
@@ -51,7 +51,7 @@ async def get_sse_subscribe_wallet(
     request: Request,
     wallet_id: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
@@ -93,7 +93,7 @@ async def get_sse_subscribe_wallet_topic(
     wallet_id: str,
     topic: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
@@ -139,7 +139,7 @@ async def get_sse_subscribe_event_with_state(
     topic: str,
     desired_state: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
@@ -192,7 +192,7 @@ async def get_sse_subscribe_stream_with_fields(
     field: str,
     field_id: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
@@ -246,7 +246,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     field_id: str,
     desired_state: str,
     look_back: float = look_back_field,
-    group_id: Optional[str] = group_id_field,
+    group_id: Optional[str] = group_id_query,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """

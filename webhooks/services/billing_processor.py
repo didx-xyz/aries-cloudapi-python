@@ -157,11 +157,16 @@ class BillingManager:
         event: Dict[str, Any] = orjson.loads(events[0])
         topic = event.get("topic")
         payload: Dict[str, Any] = event.get("payload")
+
         if topic == "credentials":
-            # handel credentials event
             thread_id = payload.get("thread_id")
-            lago = self._convert_credential_event(
-                group_id=group_id, thread_id=thread_id
+            if not thread_id:
+                logger.warning("No thread_id found for proof event: {}", event)
+                return
+
+            lago = CredentialBillingEvent(
+                transaction_id=thread_id,
+                external_customer_id=group_id,
             )
 
         elif topic == "proofs":

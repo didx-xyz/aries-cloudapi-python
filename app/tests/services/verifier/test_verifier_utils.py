@@ -406,7 +406,7 @@ async def test_assert_valid_prover_could_not_fetch_actor_recover_label(
         "app.util.acapy_verifier_utils.fetch_actor_by_did",
         return_value=None,
     ), patch(
-        "app.util.acapy_verifier_utils.get_actor_by_name",
+        "app.util.acapy_verifier_utils.fetch_actor_by_name",
         return_value=sample_actor,
     ), patch(
         "app.util.acapy_verifier_utils.get_schema_ids",
@@ -531,6 +531,43 @@ async def test_assert_valid_prover_x_invalid_schemas(
     ), patch(
         "app.util.acapy_verifier_utils.are_valid_schemas",
         return_value=False,
+    ):
+        with pytest.raises(
+            CloudApiException,
+            match="Presentation is using schemas not registered in trust registry",
+        ):
+            await assert_valid_prover(
+                aries_controller=mock_agent_controller,
+                presentation=AcceptProofRequest(
+                    proof_id=pres_exchange.proof_id,
+                    indy_presentation_spec=indy_pres_spec,
+                ),
+                verifier=verifier,
+            )
+
+
+@pytest.mark.anyio
+async def test_assert_valid_prover_x_no_schemas(
+    mock_agent_controller: AcaPyClient,
+):
+    conn_record = ConnRecord(
+        connection_id=pres_exchange.connection_id, their_public_did="xxx"
+    )
+
+    verifier = mock(Verifier)
+
+    when(verifier).get_proof_record(
+        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
+    ).thenReturn(to_async(pres_exchange))
+    when(mock_agent_controller.connection).get_connection(
+        conn_id=pres_exchange.connection_id
+    ).thenReturn(to_async(conn_record))
+
+    with patch(
+        "app.util.acapy_verifier_utils.get_actor", return_value=sample_actor
+    ), patch(
+        "app.util.acapy_verifier_utils.get_schema_ids",
+        return_value=[],
     ):
         with pytest.raises(
             CloudApiException,
@@ -714,6 +751,149 @@ async def test_assert_valid_verifier_x_not_verifier(
             CloudApiException,
             match="Flint is not a valid verifier in the trust registry.",
         ):
+            await assert_valid_verifier(
+                aries_controller=mock_agent_controller,
+                proof_request=SendProofRequest(
+                    protocol_version=protocol_version,
+                    connection_id="a-connection-id",
+                    indy_proof_request=indy_proof_request,
+                ),
+            )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
+    mock_agent_controller: AcaPyClient, protocol_version: str
+):
+    # valid with recovery from actor not found, using label
+    with patch(
+        "app.util.acapy_verifier_utils.assert_public_did",
+        return_value="did:sov:something",
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_did",
+        return_value=None,
+    ), patch(
+        "app.util.acapy_verifier_utils.get_wallet_label_from_controller",
+        return_value="some_label",
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_name",
+        return_value=sample_actor,
+    ):
+        await assert_valid_verifier(
+            aries_controller=mock_agent_controller,
+            proof_request=SendProofRequest(
+                protocol_version=protocol_version,
+                connection_id="a-connection-id",
+                indy_proof_request=indy_proof_request,
+            ),
+        )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
+    mock_agent_controller: AcaPyClient, protocol_version: str
+):
+    # failure to attempt recovery by reading wallet_label: No actor
+    with patch(
+        "app.util.acapy_verifier_utils.assert_public_did",
+        return_value="did:sov:something",
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_did",
+        return_value=None,
+    ), patch(
+        "app.util.acapy_verifier_utils.get_wallet_label_from_controller",
+        return_value=None,
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_name",
+        return_value=None,
+    ):
+        with pytest.raises(
+            CloudApiException,
+            match="No verifier with name",
+        ):
+            await assert_valid_verifier(
+                aries_controller=mock_agent_controller,
+                proof_request=SendProofRequest(
+                    protocol_version=protocol_version,
+                    connection_id="a-connection-id",
+                    indy_proof_request=indy_proof_request,
+                ),
+            )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
+    mock_agent_controller: AcaPyClient, protocol_version: str
+):
+    # failure to attempt recovery by reading wallet_label
+    with patch(
+        "app.util.acapy_verifier_utils.assert_public_did",
+        return_value="did:sov:something",
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_did",
+        return_value=None,
+    ), patch(
+        "app.util.acapy_verifier_utils.get_wallet_label_from_controller",
+        side_effect=KeyError("Oops"),
+    ):
+        with pytest.raises(
+            CloudApiException,
+            match="No verifier with DID",
+        ):
+            await assert_valid_verifier(
+                aries_controller=mock_agent_controller,
+                proof_request=SendProofRequest(
+                    protocol_version=protocol_version,
+                    connection_id="a-connection-id",
+                    indy_proof_request=indy_proof_request,
+                ),
+            )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
+    mock_agent_controller: AcaPyClient, protocol_version: str
+):
+    # failure to attempt recovery by reading wallet_label
+    with patch(
+        "app.util.acapy_verifier_utils.assert_public_did",
+        return_value="did:sov:something",
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_did",
+        side_effect=CloudApiException("Error.", 500),
+    ):
+        with pytest.raises(
+            CloudApiException,
+            match="An error occurred while asserting valid verifier. Please try again.",
+        ):
+            await assert_valid_verifier(
+                aries_controller=mock_agent_controller,
+                proof_request=SendProofRequest(
+                    protocol_version=protocol_version,
+                    connection_id="a-connection-id",
+                    indy_proof_request=indy_proof_request,
+                ),
+            )
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+async def test_assert_valid_verifier_x_could_not_fetch_actor_exc4(
+    mock_agent_controller: AcaPyClient, protocol_version: str
+):
+    # failure to attempt recovery by reading wallet_label
+    with patch(
+        "app.util.acapy_verifier_utils.assert_public_did",
+        return_value="did:sov:something",
+    ), patch(
+        "app.util.acapy_verifier_utils.fetch_actor_by_did",
+        side_effect=Exception("Error."),
+    ):
+        with pytest.raises(Exception, match="Error."):
             await assert_valid_verifier(
                 aries_controller=mock_agent_controller,
                 proof_request=SendProofRequest(

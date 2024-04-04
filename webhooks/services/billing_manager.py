@@ -48,7 +48,7 @@ class BillingManager:
                 self._listen_for_billing_events(), name="Listen for new billing events"
             )
         )
-        
+
     async def stop(self) -> None:
         """
         Wait for tasks to complete and stop the billing manager

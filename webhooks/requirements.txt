@@ -8,6 +8,5 @@ orjson~=3.9.15
 pydantic~=2.6.4
 redis~=5.1.0b4
 sse-starlette~=2.0.0
-starlette>=0.27.0
 typing-extensions~=4.10.0
 uvicorn[standard]~=0.29.0

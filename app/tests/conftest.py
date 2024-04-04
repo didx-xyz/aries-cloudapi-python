@@ -27,6 +27,7 @@ from app.tests.util.member_async_clients import (
     faber_client,
     governance_client,
     meld_co_client,
+    mock_async_client,
     tenant_admin_client,
     trust_registry_client,
 )

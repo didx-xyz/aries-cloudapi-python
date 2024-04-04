@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from app.routes.verifier import router as verifier_router
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state
+from shared.models.credential_exchange import CredentialExchange
 from shared.util.rich_async_client import RichAsyncClient
 
 VERIFIER_BASE_PATH = verifier_router.prefix
@@ -33,7 +34,7 @@ VERIFIER_BASE_PATH = verifier_router.prefix
     ],
 )
 async def test_proof_model_failures(
-    issue_credential_to_alice: list,  # pylint: disable=unused-argument
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_acapy_client: AcaPyClient,
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,

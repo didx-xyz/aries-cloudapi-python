@@ -1,6 +1,9 @@
 from typing import Any, AsyncGenerator
+from unittest.mock import AsyncMock, Mock
 
 import pytest
+from fastapi import Response
+from pytest_mock import MockerFixture
 
 from app.models.tenants import CreateTenantResponse
 from app.tests.util.client import (
@@ -70,3 +73,17 @@ async def meld_co_client(
         token=meld_co_issuer_verifier.access_token
     ) as meld_co_async_client:
         yield meld_co_async_client
+
+
+@pytest.fixture
+def mock_async_client(mocker: MockerFixture, request) -> Mock:
+    """Patching RichAsyncClient in variable modules"""
+    module_path = request.param
+    patch_async_client = mocker.patch(f"{module_path}.RichAsyncClient")
+
+    mocked_async_client = Mock()
+    response = Response(status_code=200)
+    mocked_async_client.get = AsyncMock(return_value=response)
+    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
+
+    return mocked_async_client

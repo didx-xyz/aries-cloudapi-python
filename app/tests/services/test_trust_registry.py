@@ -28,19 +28,6 @@ from app.services.trust_registry.util.schema import registry_has_schema
 from shared.constants import TRUST_REGISTRY_URL
 
 
-@pytest.fixture
-def mock_async_client(mocker: MockerFixture, request) -> Mock:
-    module_path = request.param
-    patch_async_client = mocker.patch(f"{module_path}.RichAsyncClient")
-
-    mocked_async_client = Mock()
-    response = Response(status_code=200)
-    mocked_async_client.get = AsyncMock(return_value=response)
-    patch_async_client.return_value.__aenter__.return_value = mocked_async_client
-
-    return mocked_async_client
-
-
 @pytest.mark.anyio
 async def test_assert_valid_issuer(
     mocker: MockerFixture,

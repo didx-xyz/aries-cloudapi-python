@@ -16,7 +16,7 @@ group_id_query = Query(
 
 
 @router.websocket("/v1/ws/")
-async def websocket_endpoint_wallet(
+async def websocket_endpoint(
     websocket: WebSocket,
     group_id: str = group_id_query,
     auth: AcaPyAuthVerified = Depends(websocket_auth),

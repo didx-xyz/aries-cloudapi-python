@@ -1,4 +1,4 @@
-aries-cloudcontroller==0.11.0.post0
+aries-cloudcontroller==0.11.0.post3
 dependency-injector~=4.41.0
 fastapi~=0.110.0
 fastapi_websocket_pubsub~=0.3.8

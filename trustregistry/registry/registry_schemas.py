@@ -44,9 +44,9 @@ async def register_schema(
                 id=schema_id.schema_id,
             ),
         )
-    except crud.SchemaAlreadyExistsException:
+    except crud.SchemaAlreadyExistsException as e:
         bound_logger.info("Bad request: Schema already exists.")
-        raise HTTPException(status_code=405, detail="Schema already exists.")
+        raise HTTPException(status_code=405, detail="Schema already exists.") from e
 
     return create_schema_res
 
@@ -82,12 +82,12 @@ async def update_schema(
             schema=new_schema,
             schema_id=schema_id,
         )
-    except crud.SchemaDoesNotExistException:
+    except crud.SchemaDoesNotExistException as e:
         bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=405,
             detail="Schema not found.",
-        )
+        ) from e
 
     return update_schema_res
 
@@ -98,12 +98,12 @@ async def get_schema(schema_id: str, db_session: Session = Depends(get_db)) -> S
     bound_logger.info("GET request received: Fetch schema")
     try:
         schema = crud.get_schema_by_id(db_session, schema_id=schema_id)
-    except crud.SchemaDoesNotExistException:
+    except crud.SchemaDoesNotExistException as e:
         bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=404,
             detail=f"Schema with id {schema_id} not found.",
-        )
+        ) from e
 
     return schema
 
@@ -114,12 +114,12 @@ async def remove_schema(schema_id: str, db_session: Session = Depends(get_db)) -
     bound_logger.info("DELETE request received: Delete schema")
     try:
         crud.delete_schema(db_session, schema_id=schema_id)
-    except crud.SchemaDoesNotExistException:
+    except crud.SchemaDoesNotExistException as e:
         bound_logger.info("Bad request: Schema not found.")
         raise HTTPException(
             status_code=404,
             detail="Schema not found.",
-        )
+        ) from e
 
 
 def _get_schema_attrs(schema_id: SchemaID) -> List[str]:

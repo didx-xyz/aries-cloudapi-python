@@ -547,43 +547,6 @@ async def test_assert_valid_prover_x_invalid_schemas(
 
 
 @pytest.mark.anyio
-async def test_assert_valid_prover_x_no_schemas(
-    mock_agent_controller: AcaPyClient,
-):
-    conn_record = ConnRecord(
-        connection_id=pres_exchange.connection_id, their_public_did="xxx"
-    )
-
-    verifier = mock(Verifier)
-
-    when(verifier).get_proof_record(
-        controller=mock_agent_controller, proof_id=pres_exchange.proof_id
-    ).thenReturn(to_async(pres_exchange))
-    when(mock_agent_controller.connection).get_connection(
-        conn_id=pres_exchange.connection_id
-    ).thenReturn(to_async(conn_record))
-
-    with patch(
-        "app.util.acapy_verifier_utils.get_actor", return_value=sample_actor
-    ), patch(
-        "app.util.acapy_verifier_utils.get_schema_ids",
-        return_value=[],
-    ):
-        with pytest.raises(
-            CloudApiException,
-            match="Presentation is using schemas not registered in trust registry",
-        ):
-            await assert_valid_prover(
-                aries_controller=mock_agent_controller,
-                presentation=AcceptProofRequest(
-                    proof_id=pres_exchange.proof_id,
-                    indy_presentation_spec=indy_pres_spec,
-                ),
-                verifier=verifier,
-            )
-
-
-@pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_assert_valid_prover_x_no_connection_id(
     mock_agent_controller: AcaPyClient, protocol_version: str

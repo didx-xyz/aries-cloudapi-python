@@ -122,9 +122,6 @@ async def assert_valid_prover(
             presentation=presentation.indy_presentation_spec,
         )
 
-        if not schema_ids:
-            bound_logger.warning("No schema_ids associated with proof request.")
-
         # Verify the schemas are actually in the list from TR
         if not await are_valid_schemas(schema_ids=schema_ids):
             raise CloudApiException(
@@ -200,9 +197,6 @@ async def assert_valid_verifier(
 
 
 async def are_valid_schemas(schema_ids: List[str]) -> bool:
-    if not schema_ids:
-        return False
-
     schemas_from_tr = await fetch_schemas()
     schemas_ids_from_tr = [schema["id"] for schema in schemas_from_tr]
     schemas_valid_list = [id in schemas_ids_from_tr for id in schema_ids]

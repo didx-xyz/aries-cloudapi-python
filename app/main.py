@@ -117,7 +117,7 @@ def routes_for_role(role: str) -> list:
 
 
 def cloud_api_description(role: str) -> str:
-    if role in ("governance", "tenant", "*"):
+    if role in ("governance", "tenant", "tenant-admin", "*"):
         return cloud_api_docs_description
     else:
         return default_docs_description

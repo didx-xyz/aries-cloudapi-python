@@ -1,4 +1,4 @@
-anyio>=3.7.1
+anyio~=4.3.0
 assertpy==1.1
 black~=24.3.0
 isort~=5.13.2

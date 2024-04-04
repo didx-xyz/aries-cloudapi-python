@@ -5,7 +5,7 @@ COPY shared /shared
 
 WORKDIR /webhooks
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --upgrade
 
 EXPOSE 3010
 

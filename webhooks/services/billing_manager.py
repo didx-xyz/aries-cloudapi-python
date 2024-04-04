@@ -43,10 +43,12 @@ class BillingManager:
         """
         Start the billing manager
         """
-        asyncio.create_task(
-            self._listen_for_billing_events(), name="Listen for new billing events"
+        self._tasks.append(
+            asyncio.create_task(
+                self._listen_for_billing_events(), name="Listen for new billing events"
+            )
         )
-
+        
     async def stop(self) -> None:
         """
         Wait for tasks to complete and stop the billing manager
@@ -243,7 +245,7 @@ class BillingManager:
         Convert endorsements event to LAGO event
         """
         logger.debug(
-            "Converting endorsements event with transaction_id: {} and endorsement_type",
+            "Converting endorsements event with transaction_id: {} and endorsement_type: {}",
             transaction_id,
             endorsement_type,
         )

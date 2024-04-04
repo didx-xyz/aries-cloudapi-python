@@ -6,7 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from shared.log_config import get_logger
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
-from webhooks.services.billing_processor import BillingManager
+from webhooks.services.billing_manager import BillingManager
 from webhooks.services.dependency_injection.container import Container, get_container
 from webhooks.services.sse_manager import SseManager
 from webhooks.web.routers import sse, webhooks, websocket

@@ -35,7 +35,10 @@ create_tenant_body = CreateTenantRequest(
 
 
 @pytest.mark.anyio
-async def test_create_tenant_success():
+@pytest.mark.parametrize(
+    "roles", [[], ["issuer"], ["verifier"], ["issuer", "verifier"]]
+)
+async def test_create_tenant_success(roles):
     # Mock the dependencies
     mock_admin_controller = AsyncMock()
     mock_admin_controller.multitenancy.create_wallet = AsyncMock(
@@ -59,14 +62,17 @@ async def test_create_tenant_success():
         )
 
         response = await create_tenant(
-            body=create_tenant_body, admin_auth=TENANT_ADMIN_AUTHED
+            body=create_tenant_body.model_copy(update={"roles": roles}),
+            admin_auth=TENANT_ADMIN_AUTHED,
         )
 
-        assert response.wallet_label == "Test Wallet"
-        assert response.group_id == "test_group"
+        assert response.wallet_label == create_tenant_body.wallet_label
+        assert response.group_id == create_tenant_body.group_id
         mock_admin_controller.multitenancy.create_wallet.assert_awaited()
-        mock_onboard_tenant.assert_awaited()
-        mock_register_actor.assert_awaited()
+
+        if roles:
+            mock_onboard_tenant.assert_awaited()
+            mock_register_actor.assert_awaited()
 
 
 @pytest.mark.anyio
@@ -83,7 +89,11 @@ async def test_create_tenant_fail_trust_registry_error():
 
 
 @pytest.mark.anyio
-async def test_create_tenant_fail_actor_exists():
+@pytest.mark.parametrize(
+    "roles",
+    [[], ["issuer"], ["verifier"], ["issuer", "verifier"]],
+)
+async def test_create_tenant_fail_actor_exists(roles):
     wallet_label = "abc"
     with patch(
         "app.routes.admin.tenants.assert_actor_name",
@@ -96,13 +106,20 @@ async def test_create_tenant_fail_actor_exists():
         ),
     ) as exc:
         await create_tenant(
-            body=Mock(wallet_label=wallet_label), admin_auth=TENANT_ADMIN_AUTHED
+            body=create_tenant_body.model_copy(
+                update={"roles": roles, "wallet_label": wallet_label}
+            ),
+            admin_auth=TENANT_ADMIN_AUTHED,
         )
     assert exc.value.status_code == 409
 
 
 @pytest.mark.anyio
-async def test_create_tenant_fail_wallet_name_exists():
+@pytest.mark.parametrize(
+    "roles",
+    [[], ["issuer"], ["verifier"], ["issuer", "verifier"]],
+)
+async def test_create_tenant_fail_wallet_name_exists(roles):
     with patch(
         "app.routes.admin.tenants.handle_acapy_call",
         side_effect=CloudApiException(status_code=400, detail="already exists"),
@@ -116,14 +133,21 @@ async def test_create_tenant_fail_wallet_name_exists():
             "The wallet name must be unique."
         ),
     ) as exc:
-        await create_tenant(body=create_tenant_body, admin_auth=TENANT_ADMIN_AUTHED)
+        await create_tenant(
+            body=create_tenant_body.model_copy(update={"roles": roles}),
+            admin_auth=TENANT_ADMIN_AUTHED,
+        )
     assert exc.value.status_code == 409
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("status_code", [400, 500])
 @pytest.mark.parametrize("error_msg", ["Error1", "Error2"])
-async def test_create_tenant_fail_wallet_creation(status_code, error_msg):
+@pytest.mark.parametrize(
+    "roles",
+    [[], ["issuer"], ["verifier"], ["issuer", "verifier"]],
+)
+async def test_create_tenant_fail_wallet_creation(status_code, error_msg, roles):
     # Create tenant should raise the same error message / status code of create wallet failure
     with patch(
         "app.routes.admin.tenants.handle_acapy_call",
@@ -133,15 +157,23 @@ async def test_create_tenant_fail_wallet_creation(status_code, error_msg):
     ), pytest.raises(
         HTTPException, match=error_msg
     ) as exc:
-        await create_tenant(body=create_tenant_body, admin_auth=TENANT_ADMIN_AUTHED)
+        await create_tenant(
+            body=create_tenant_body.model_copy(update={"roles": roles}),
+            admin_auth=TENANT_ADMIN_AUTHED,
+        )
     assert exc.value.status_code == status_code
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "exception", [HTTPException(status_code=500, detail="Error"), Exception("Error")]
+    "exception",
+    [HTTPException(status_code=500, detail="Error"), Exception("Error")],
 )
-async def test_create_tenant_fail_onboard_exception(exception):
+@pytest.mark.parametrize(
+    "roles",
+    [["issuer"], ["verifier"], ["issuer", "verifier"]],
+)
+async def test_create_tenant_fail_onboard_exception(exception, roles):
     mock_admin_controller = AsyncMock()
     mock_admin_controller.multitenancy.create_wallet = AsyncMock(
         return_value=create_wallet_response
@@ -153,7 +185,7 @@ async def test_create_tenant_fail_onboard_exception(exception):
     ) as mock_get_admin_controller, patch(
         "app.routes.admin.tenants.onboard_tenant",
         side_effect=exception,
-    ), patch(
+    ) as mock_onboard, patch(
         "app.routes.admin.tenants.assert_actor_name",
         return_value=False,
     ), pytest.raises(
@@ -162,9 +194,13 @@ async def test_create_tenant_fail_onboard_exception(exception):
         mock_get_admin_controller.return_value.__aenter__.return_value = (
             mock_admin_controller
         )
-        await create_tenant(body=create_tenant_body, admin_auth=TENANT_ADMIN_AUTHED)
+        await create_tenant(
+            body=create_tenant_body.model_copy(update={"roles": roles}),
+            admin_auth=TENANT_ADMIN_AUTHED,
+        )
 
     # Assert created wallet is deleted if something went wrong in onboarding
+    mock_onboard.assert_awaited_once()
     mock_admin_controller.multitenancy.delete_wallet.assert_awaited_once_with(
         wallet_id=wallet_id
     )

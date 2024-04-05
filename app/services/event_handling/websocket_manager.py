@@ -38,10 +38,11 @@ class WebsocketManager:
         if topic:
             subscribed_topic += f":{topic}"
 
-        async def callback(data: str, _: str) -> None:
+        async def callback(data: str, topic: str) -> None:
             """
             Callback function for handling received webhook events.
             """
+            logger.debug("Handling Websocket callback on topic: {}", topic)
             await websocket.send_text(data)
 
         client = PubSubClient()

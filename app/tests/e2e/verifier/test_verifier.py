@@ -425,15 +425,15 @@ async def test_send_proof_request(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = result["thread_id"]
+    assert thread_id
+
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_connection_event["protocol_version"] == "v1"
@@ -457,16 +457,15 @@ async def test_send_proof_request(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = result["thread_id"]
+    assert thread_id
 
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_connection_event["protocol_version"] == "v2"
@@ -488,16 +487,15 @@ async def test_reject_proof_request(
         },
     )
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = response.json()["thread_id"]
+    assert thread_id
 
     alice_exchange = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_exchange["protocol_version"] == "v1"
@@ -659,7 +657,7 @@ async def test_get_credentials_for_request(
     alice_member_client: RichAsyncClient,
 ):
     # V1
-    await acme_client.post(
+    response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
@@ -668,16 +666,15 @@ async def test_get_credentials_for_request(
         },
     )
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = response.json()["thread_id"]
+    assert thread_id
 
     alice_exchange = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_exchange["protocol_version"] == "v1"
@@ -697,7 +694,7 @@ async def test_get_credentials_for_request(
     ]
 
     # V2
-    await acme_client.post(
+    response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
         json={
             "connection_id": acme_and_alice_connection.acme_connection_id,
@@ -706,16 +703,15 @@ async def test_get_credentials_for_request(
         },
     )
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = response.json()["thread_id"]
+    assert thread_id
 
     alice_exchange = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_exchange["protocol_version"] == "v2"
@@ -850,15 +846,15 @@ async def test_send_proof_request_verifier_has_issuer_role(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = result["thread_id"]
+    assert thread_id
+
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": meld_co_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_connection_event["protocol_version"] == "v1"
@@ -882,16 +878,15 @@ async def test_send_proof_request_verifier_has_issuer_role(
     assert result["role"] == "verifier"
     assert result["state"]
 
-    time.sleep(0.5)
-    # Allow webhook event to be registered in SSE before querying. Only necessary because
-    # we are querying by connection_id, and will return previous result if we don't add short wait
+    thread_id = result["thread_id"]
+    assert thread_id
 
     alice_connection_event = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": meld_co_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
     assert alice_connection_event["protocol_version"] == "v2"

@@ -7,6 +7,6 @@ loguru~=0.7.2
 orjson~=3.9.15
 pydantic~=2.6.4
 redis~=5.1.0b4
-sse-starlette~=2.0.0
+sse-starlette~=2.1.0
 typing-extensions~=4.11.0
 uvicorn[standard]~=0.29.0

@@ -9,5 +9,5 @@ orjson~=3.9.15
 pydantic~=2.6.4
 pyjwt~=2.8.0
 PyYAML~=6.0
-typing-extensions~=4.10.0
+typing-extensions~=4.11.0
 uvicorn[standard]~=0.29.0

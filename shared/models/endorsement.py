@@ -110,10 +110,13 @@ def payload_is_applicable_for_endorser(payload: Dict[str, Any], logger: Logger) 
 
     is_applicable = operation_type in valid_operation_types
     if is_applicable:
-        logger.debug("Endorsement payload is applicable for the endorser service.")
+        logger.info(
+            "Payload is applicable for endorsement, with operation type: {}.",
+            operation_type,
+        )
     else:
-        logger.debug(
-            "Endorsement payload is not applicable for the endorser service, with operation type {}.",
+        logger.warning(  # Because we should only receive applicable operation types
+            "Payload is NOT applicable for endorsement, with operation type {}.",
             operation_type,
         )
     return is_applicable

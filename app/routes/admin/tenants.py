@@ -191,7 +191,7 @@ async def delete_tenant_by_id(
     bound_logger.info("DELETE request received: Deleting tenant by id")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        wallet = await get_wallet_and_assert_valid_group(
+        await get_wallet_and_assert_valid_group(
             admin_controller=admin_controller,
             wallet_id=wallet_id,
             group_id=group_id,
@@ -203,12 +203,12 @@ async def delete_tenant_by_id(
         # in the trust registry, especially if the tenant does not have
         # a public did.
         bound_logger.debug("Retrieving tenant from trust registry")
-        actor = await fetch_actor_by_id(wallet.wallet_id)
+        actor = await fetch_actor_by_id(wallet_id)
 
         # Remove actor if found
         if actor:
             bound_logger.debug("Actor found, removing from trust registry")
-            await remove_actor_by_id(wallet.wallet_id)
+            await remove_actor_by_id(wallet_id)
 
         bound_logger.debug("Deleting wallet")
         await handle_acapy_call(
@@ -229,7 +229,7 @@ async def get_wallet_auth_token(
     bound_logger.info("GET request received: Access token for tenant")
 
     async with get_tenant_admin_controller(admin_auth) as admin_controller:
-        wallet = await get_wallet_and_assert_valid_group(
+        await get_wallet_and_assert_valid_group(
             admin_controller=admin_controller,
             wallet_id=wallet_id,
             group_id=group_id,
@@ -240,7 +240,7 @@ async def get_wallet_auth_token(
         response = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=admin_controller.multitenancy.get_auth_token,
-            wallet_id=wallet.wallet_id,
+            wallet_id=wallet_id,
             body=CreateWalletTokenRequest(),
         )
 

@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import ANY, AsyncMock, Mock
+from unittest.mock import ANY, AsyncMock, Mock, patch
 
 import pytest
 from fastapi import BackgroundTasks, Request
@@ -324,18 +324,30 @@ async def test_sse_subscribe_wallet(
         # Exception assertions:
         assert exc.value.status_code == 404
     else:
-        response = await sse_subscribe_wallet(
-            request=request,
-            background_tasks=background_tasks,
-            wallet_id=wallet_id,
-            look_back=0,
-            group_id=group_id,
-            sse_manager=sse_manager_mock,
-        )
+        with patch(
+            "webhooks.web.routers.sse.sse_event_stream_generator"
+        ) as sse_event_stream_generator:
+            response = await sse_subscribe_wallet(
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                look_back=0,
+                group_id=group_id,
+                sse_manager=sse_manager_mock,
+            )
 
-        # Assertions
-        assert isinstance(response, EventSourceResponse)
-        assert response.status_code == 200
+            # Assertions
+            assert isinstance(response, EventSourceResponse)
+            assert response.status_code == 200
+
+            sse_event_stream_generator.assert_called_once_with(
+                sse_manager=sse_manager_mock,
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                look_back=0,
+                logger=ANY,
+            )
 
 
 @pytest.mark.anyio
@@ -369,19 +381,32 @@ async def test_sse_subscribe_wallet_topic(
         # Exception assertions:
         assert exc.value.status_code == 404
     else:
-        response = await sse_subscribe_wallet_topic(
-            request=request,
-            background_tasks=background_tasks,
-            wallet_id=wallet_id,
-            topic=topic,
-            look_back=0,
-            group_id=group_id,
-            sse_manager=sse_manager_mock,
-        )
+        with patch(
+            "webhooks.web.routers.sse.sse_event_stream_generator"
+        ) as sse_event_stream_generator:
+            response = await sse_subscribe_wallet_topic(
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                look_back=0,
+                group_id=group_id,
+                sse_manager=sse_manager_mock,
+            )
 
-        # Assertions
-        assert isinstance(response, EventSourceResponse)
-        assert response.status_code == 200
+            # Assertions
+            assert isinstance(response, EventSourceResponse)
+            assert response.status_code == 200
+
+            sse_event_stream_generator.assert_called_once_with(
+                sse_manager=sse_manager_mock,
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                look_back=0,
+                logger=ANY,
+            )
 
 
 @pytest.mark.anyio
@@ -416,20 +441,34 @@ async def test_sse_subscribe_event_with_state(
         # Exception assertions:
         assert exc.value.status_code == 404
     else:
-        response = await sse_subscribe_event_with_state(
-            request=request,
-            background_tasks=background_tasks,
-            wallet_id=wallet_id,
-            topic=topic,
-            desired_state=desired_state,
-            look_back=0,
-            group_id=group_id,
-            sse_manager=sse_manager_mock,
-        )
+        with patch(
+            "webhooks.web.routers.sse.sse_event_stream_generator"
+        ) as sse_event_stream_generator:
+            response = await sse_subscribe_event_with_state(
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                desired_state=desired_state,
+                look_back=0,
+                group_id=group_id,
+                sse_manager=sse_manager_mock,
+            )
 
-        # Assertions
-        assert isinstance(response, EventSourceResponse)
-        assert response.status_code == 200
+            # Assertions
+            assert isinstance(response, EventSourceResponse)
+            assert response.status_code == 200
+
+            sse_event_stream_generator.assert_called_once_with(
+                sse_manager=sse_manager_mock,
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                desired_state=desired_state,
+                look_back=0,
+                logger=ANY,
+            )
 
 
 @pytest.mark.anyio
@@ -465,21 +504,36 @@ async def test_sse_subscribe_stream_with_fields(
         # Exception assertions:
         assert exc.value.status_code == 404
     else:
-        response = await sse_subscribe_stream_with_fields(
-            request=request,
-            background_tasks=background_tasks,
-            wallet_id=wallet_id,
-            topic=topic,
-            field=field,
-            field_id=field_id,
-            look_back=0,
-            group_id=group_id,
-            sse_manager=sse_manager_mock,
-        )
+        with patch(
+            "webhooks.web.routers.sse.sse_event_stream_generator"
+        ) as sse_event_stream_generator:
+            response = await sse_subscribe_stream_with_fields(
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                field=field,
+                field_id=field_id,
+                look_back=0,
+                group_id=group_id,
+                sse_manager=sse_manager_mock,
+            )
 
-        # Assertions
-        assert isinstance(response, EventSourceResponse)
-        assert response.status_code == 200
+            # Assertions
+            assert isinstance(response, EventSourceResponse)
+            assert response.status_code == 200
+
+            sse_event_stream_generator.assert_called_once_with(
+                sse_manager=sse_manager_mock,
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                field=field,
+                field_id=field_id,
+                look_back=0,
+                logger=ANY,
+            )
 
 
 @pytest.mark.anyio
@@ -516,19 +570,35 @@ async def test_sse_subscribe_event_with_field_and_state(
         # Exception assertions:
         assert exc.value.status_code == 404
     else:
-        response = await sse_subscribe_event_with_field_and_state(
-            request=request,
-            background_tasks=background_tasks,
-            wallet_id=wallet_id,
-            topic=topic,
-            field=field,
-            field_id=field_id,
-            desired_state=desired_state,
-            look_back=0,
-            group_id=group_id,
-            sse_manager=sse_manager_mock,
-        )
+        with patch(
+            "webhooks.web.routers.sse.sse_event_stream_generator"
+        ) as sse_event_stream_generator:
+            response = await sse_subscribe_event_with_field_and_state(
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                field=field,
+                field_id=field_id,
+                desired_state=desired_state,
+                look_back=0,
+                group_id=group_id,
+                sse_manager=sse_manager_mock,
+            )
 
-        # Assertions
-        assert isinstance(response, EventSourceResponse)
-        assert response.status_code == 200
+            # Assertions
+            assert isinstance(response, EventSourceResponse)
+            assert response.status_code == 200
+
+            sse_event_stream_generator.assert_called_once_with(
+                sse_manager=sse_manager_mock,
+                request=request,
+                background_tasks=background_tasks,
+                wallet_id=wallet_id,
+                topic=topic,
+                field=field,
+                field_id=field_id,
+                desired_state=desired_state,
+                look_back=0,
+                logger=ANY,
+            )

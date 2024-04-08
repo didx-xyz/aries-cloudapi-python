@@ -36,7 +36,7 @@ from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
 )
-from app.util.retry_method import coroutine_with_retry_until_value
+from app.util.retry_method import coroutine_with_retry, coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
 from shared.log_config import get_logger
 
@@ -353,7 +353,15 @@ async def create_credential_definition(
     # ACA-Py only returns the id after creating a credential definition
     # We want consistent return types across all endpoints, so retrieving the credential
     # definition here.
-    result = await get_credential_definition_by_id(credential_definition_id, auth)
+
+    # Retry logic to avoid race condition, as it can return 404
+    result = await coroutine_with_retry(
+        coroutine_func=get_credential_definition_by_id,
+        args=(credential_definition_id, auth),
+        logger=bound_logger,
+        max_attempts=3,
+        retry_delay=0.5,
+    )
     bound_logger.info("Successfully created credential definition.")
     return result
 

@@ -75,6 +75,10 @@ class BillingManager:
         Check if tasks are running
         """
         logger.debug("Checking if tasks are running")
+        # This is so that the health check can return True if the LAGO API key is not set
+        # This is useful for local development and testing
+        if not self.lago_api_key:
+            return True
 
         if not self._pubsub:
             logger.warning("Pubsub is not running")

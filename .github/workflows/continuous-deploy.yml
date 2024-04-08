@@ -317,9 +317,9 @@ jobs:
     timeout-minutes: 30
 
     env:
-      TAILSCALE_VERSION: 1.58.2
-      HELMFILE_VERSION: v0.161.0
-      HELM_VERSION: v3.14.0
+      TAILSCALE_VERSION: 1.62.1
+      HELMFILE_VERSION: v0.163.1
+      HELM_VERSION: v3.14.3
       OUTPUT_FILE: test_output.xml
       COVERAGE_FILE: test_coverage.txt
       PYTEST_COMPLETIONS: 1

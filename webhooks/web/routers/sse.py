@@ -117,10 +117,10 @@ async def sse_event_stream_generator(
         all events related to the wallet ID. Specifying a desired state implies a
         subscription to a single event, after which the generator will stop.
     """
-    if not topic:
+    if topic is None:
         topic = WEBHOOK_TOPIC_ALL
 
-    if desired_state:
+    if desired_state is not None:
         yield_single_event = True
     else:
         yield_single_event = False

@@ -56,18 +56,19 @@ class BillingManager:
         """
         Wait for tasks to complete and stop the billing manager
         """
-        for task in self._tasks:
-            task.cancel()  # Request cancellation of the task
-            try:
-                await task  # Wait for the task to be cancelled
-            except asyncio.CancelledError:
-                pass
-        self._tasks.clear()  # Clear the list of tasks
-        logger.info("Billing manager stopped")
+        if self.lago_api_key:
+            for task in self._tasks:
+                task.cancel()  # Request cancellation of the task
+                try:
+                    await task  # Wait for the task to be cancelled
+                except asyncio.CancelledError:
+                    pass
+            self._tasks.clear()  # Clear the list of tasks
+            logger.info("Billing manager stopped")
 
-        if self._pubsub:
-            self._pubsub.disconnect()
-            logger.info("Billing pubsub disconnected")
+            if self._pubsub:
+                self._pubsub.disconnect()
+                logger.info("Billing pubsub disconnected")
 
     def are_tasks_running(self) -> bool:
         """

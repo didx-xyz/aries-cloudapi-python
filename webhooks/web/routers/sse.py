@@ -120,10 +120,7 @@ async def sse_event_stream_generator(
     if topic is None:
         topic = WEBHOOK_TOPIC_ALL
 
-    if desired_state is not None:
-        yield_single_event = True
-    else:
-        yield_single_event = False
+    yield_single_event = bool(desired_state)  # True if exists, False otherwise
 
     stop_event = asyncio.Event()
     event_generator_wrapper: EventGeneratorWrapper = await sse_manager.sse_event_stream(

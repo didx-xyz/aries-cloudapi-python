@@ -44,11 +44,13 @@ class BillingManager:
         """
         Start the billing manager
         """
-        self._tasks.append(
-            asyncio.create_task(
-                self._listen_for_billing_events(), name="Listen for new billing events"
+        if self.lago_api_key:
+            self._tasks.append(
+                asyncio.create_task(
+                    self._listen_for_billing_events(),
+                    name="Listen for new billing events",
+                )
             )
-        )
 
     async def stop(self) -> None:
         """

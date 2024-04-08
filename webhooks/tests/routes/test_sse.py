@@ -103,9 +103,9 @@ async def test_check_disconnection_stop_event():
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id(
-    async_generator_mock,
-    sse_manager_mock,
-    request_mock,
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     # Configure the sse_manager mock
     sse_manager_mock.sse_event_stream.return_value = EventGeneratorWrapper(
@@ -135,9 +135,9 @@ async def test_sse_event_stream_generator_wallet_id(
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic(
-    async_generator_mock,
-    sse_manager_mock,
-    request_mock,
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     # Configure the sse_manager mock
     sse_manager_mock.sse_event_stream.return_value = EventGeneratorWrapper(
@@ -168,9 +168,9 @@ async def test_sse_event_stream_generator_wallet_id_topic(
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic_desired_state(
-    async_generator_mock,
-    sse_manager_mock,
-    request_mock,
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     expected_cloudapi_event = CloudApiWebhookEventGeneric(
         wallet_id=wallet_id,
@@ -209,9 +209,9 @@ async def test_sse_event_stream_generator_wallet_id_topic_desired_state(
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic_field(
-    async_generator_mock,
-    sse_manager_mock,
-    request_mock,
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     expected_cloudapi_event = CloudApiWebhookEventGeneric(
         wallet_id=wallet_id,
@@ -252,9 +252,9 @@ async def test_sse_event_stream_generator_wallet_id_topic_field(
 
 @pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
-    async_generator_mock,
-    sse_manager_mock,
-    request_mock,
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
 ):
     expected_cloudapi_event = CloudApiWebhookEventGeneric(
         wallet_id=wallet_id,

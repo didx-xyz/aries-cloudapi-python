@@ -4,9 +4,11 @@ import pytest
 from fastapi import BackgroundTasks, Request
 from sse_starlette import EventSourceResponse
 
+from shared.constants import DISCONNECT_CHECK_PERIOD
 from webhooks.services.sse_manager import SseManager
 from webhooks.web.routers.sse import (
     BadGroupIdException,
+    check_disconnection,
     sse_subscribe_event_with_field_and_state,
     sse_subscribe_event_with_state,
     sse_subscribe_stream_with_fields,
@@ -19,6 +21,56 @@ from webhooks.web.routers.sse import (
 def sse_manager_mock():
     mock = AsyncMock(spec=SseManager)
     return mock
+
+
+import asyncio
+from unittest.mock import AsyncMock
+
+import pytest
+from fastapi import Request
+
+
+@pytest.mark.anyio
+async def test_check_disconnection_disconnects():
+    # Mock Request to simulate disconnection
+    request = AsyncMock(spec=Request)
+    request.is_disconnected.return_value = True
+
+    stop_event = asyncio.Event()
+
+    # Run check_disconnection in a background task
+    task = asyncio.create_task(check_disconnection(request, stop_event))
+
+    # Give it enough time to check for disconnection and set the stop event
+    await asyncio.sleep(DISCONNECT_CHECK_PERIOD * 1.1)
+
+    assert stop_event.is_set()  # Expect stop_event to be set upon disconnection
+    assert task.done() is True
+
+
+@pytest.mark.anyio
+async def test_check_disconnection_stop_event():
+    # Mock Request to stay connected
+    request = AsyncMock(spec=Request)
+    request.is_disconnected.return_value = False
+
+    stop_event = asyncio.Event()
+
+    # Run check_disconnection in a background task
+    task = asyncio.create_task(check_disconnection(request, stop_event))
+
+    # Assert still running after one check period
+    await asyncio.sleep(DISCONNECT_CHECK_PERIOD * 1.1)
+    assert task.done() is False
+
+    # Simulate an external event causing the stop
+    stop_event.set()
+
+    # Wait a bit more to ensure the task respects the stop event
+    await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
+
+    assert stop_event.is_set()  # The stop_event should still be set
+    assert task.done() is True
 
 
 @pytest.mark.anyio

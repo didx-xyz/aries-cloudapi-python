@@ -23,7 +23,10 @@ def sse_manager_mock():
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-async def test_sse_subscribe_wallet(sse_manager_mock, group_id):
+async def test_sse_subscribe_wallet(
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    group_id,
+):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
     else:
@@ -64,7 +67,10 @@ async def test_sse_subscribe_wallet(sse_manager_mock, group_id):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-async def test_sse_subscribe_wallet_topic(sse_manager_mock, group_id):
+async def test_sse_subscribe_wallet_topic(
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    group_id,
+):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
     else:
@@ -107,7 +113,10 @@ async def test_sse_subscribe_wallet_topic(sse_manager_mock, group_id):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-async def test_sse_subscribe_event_with_state(sse_manager_mock, group_id):
+async def test_sse_subscribe_event_with_state(
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    group_id,
+):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
     else:
@@ -152,7 +161,10 @@ async def test_sse_subscribe_event_with_state(sse_manager_mock, group_id):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-async def test_sse_subscribe_stream_with_fields(sse_manager_mock, group_id):
+async def test_sse_subscribe_stream_with_fields(
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    group_id,
+):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
     else:
@@ -199,7 +211,10 @@ async def test_sse_subscribe_stream_with_fields(sse_manager_mock, group_id):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
-async def test_sse_subscribe_event_with_field_and_state(sse_manager_mock, group_id):
+async def test_sse_subscribe_event_with_field_and_state(
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    group_id,
+):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
     else:

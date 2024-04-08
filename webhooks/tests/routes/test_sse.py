@@ -328,7 +328,7 @@ async def test_sse_subscribe_wallet(
     else:
         with patch(
             "webhooks.web.routers.sse.sse_event_stream_generator"
-        ) as sse_event_stream_generator:
+        ) as event_stream_generator:
             response = await sse_subscribe_wallet(
                 request=request,
                 background_tasks=background_tasks,
@@ -342,7 +342,7 @@ async def test_sse_subscribe_wallet(
             assert isinstance(response, EventSourceResponse)
             assert response.status_code == 200
 
-            sse_event_stream_generator.assert_called_once_with(
+            event_stream_generator.assert_called_once_with(
                 sse_manager=sse_manager_mock,
                 request=request,
                 background_tasks=background_tasks,
@@ -387,7 +387,7 @@ async def test_sse_subscribe_wallet_topic(
     else:
         with patch(
             "webhooks.web.routers.sse.sse_event_stream_generator"
-        ) as sse_event_stream_generator:
+        ) as event_stream_generator:
             response = await sse_subscribe_wallet_topic(
                 request=request,
                 background_tasks=background_tasks,
@@ -402,7 +402,7 @@ async def test_sse_subscribe_wallet_topic(
             assert isinstance(response, EventSourceResponse)
             assert response.status_code == 200
 
-            sse_event_stream_generator.assert_called_once_with(
+            event_stream_generator.assert_called_once_with(
                 sse_manager=sse_manager_mock,
                 request=request,
                 background_tasks=background_tasks,
@@ -449,7 +449,7 @@ async def test_sse_subscribe_event_with_state(
     else:
         with patch(
             "webhooks.web.routers.sse.sse_event_stream_generator"
-        ) as sse_event_stream_generator:
+        ) as event_stream_generator:
             response = await sse_subscribe_event_with_state(
                 request=request,
                 background_tasks=background_tasks,
@@ -465,7 +465,7 @@ async def test_sse_subscribe_event_with_state(
             assert isinstance(response, EventSourceResponse)
             assert response.status_code == 200
 
-            sse_event_stream_generator.assert_called_once_with(
+            event_stream_generator.assert_called_once_with(
                 sse_manager=sse_manager_mock,
                 request=request,
                 background_tasks=background_tasks,
@@ -514,7 +514,7 @@ async def test_sse_subscribe_stream_with_fields(
     else:
         with patch(
             "webhooks.web.routers.sse.sse_event_stream_generator"
-        ) as sse_event_stream_generator:
+        ) as event_stream_generator:
             response = await sse_subscribe_stream_with_fields(
                 request=request,
                 background_tasks=background_tasks,
@@ -531,7 +531,7 @@ async def test_sse_subscribe_stream_with_fields(
             assert isinstance(response, EventSourceResponse)
             assert response.status_code == 200
 
-            sse_event_stream_generator.assert_called_once_with(
+            event_stream_generator.assert_called_once_with(
                 sse_manager=sse_manager_mock,
                 request=request,
                 background_tasks=background_tasks,
@@ -582,7 +582,7 @@ async def test_sse_subscribe_event_with_field_and_state(
     else:
         with patch(
             "webhooks.web.routers.sse.sse_event_stream_generator"
-        ) as sse_event_stream_generator:
+        ) as event_stream_generator:
             response = await sse_subscribe_event_with_field_and_state(
                 request=request,
                 background_tasks=background_tasks,
@@ -600,7 +600,7 @@ async def test_sse_subscribe_event_with_field_and_state(
             assert isinstance(response, EventSourceResponse)
             assert response.status_code == 200
 
-            sse_event_stream_generator.assert_called_once_with(
+            event_stream_generator.assert_called_once_with(
                 sse_manager=sse_manager_mock,
                 request=request,
                 background_tasks=background_tasks,

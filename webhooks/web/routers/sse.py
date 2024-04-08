@@ -84,7 +84,7 @@ async def sse_event_stream_generator(
     field_id: Optional[str] = None,
     desired_state: Optional[str] = None,
     look_back: float = MAX_EVENT_AGE_SECONDS,
-    logger: Logger,
+    logger: Logger,  # pylint: disable=redefined-outer-name
 ) -> AsyncGenerator[str, None]:
     """
     Asynchronously generates a stream of Server-Sent Events (SSE) for a specific wallet,

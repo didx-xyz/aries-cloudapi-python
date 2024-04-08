@@ -296,9 +296,11 @@ async def test_sse_event_stream_generator_wallet_id_topic_field_desired_state(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
+@pytest.mark.parametrize("look_back", [0.0, 15.0])
 async def test_sse_subscribe_wallet(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
+    look_back,
 ):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
@@ -316,7 +318,7 @@ async def test_sse_subscribe_wallet(
                 request=request,
                 background_tasks=background_tasks,
                 wallet_id=wallet_id,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -331,7 +333,7 @@ async def test_sse_subscribe_wallet(
                 request=request,
                 background_tasks=background_tasks,
                 wallet_id=wallet_id,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -345,16 +347,18 @@ async def test_sse_subscribe_wallet(
                 request=request,
                 background_tasks=background_tasks,
                 wallet_id=wallet_id,
-                look_back=0,
+                look_back=look_back,
                 logger=ANY,
             )
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
+@pytest.mark.parametrize("look_back", [0.0, 15.0])
 async def test_sse_subscribe_wallet_topic(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
+    look_back,
 ):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
@@ -373,7 +377,7 @@ async def test_sse_subscribe_wallet_topic(
                 background_tasks=background_tasks,
                 wallet_id=wallet_id,
                 topic=topic,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -389,7 +393,7 @@ async def test_sse_subscribe_wallet_topic(
                 background_tasks=background_tasks,
                 wallet_id=wallet_id,
                 topic=topic,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -404,16 +408,18 @@ async def test_sse_subscribe_wallet_topic(
                 background_tasks=background_tasks,
                 wallet_id=wallet_id,
                 topic=topic,
-                look_back=0,
+                look_back=look_back,
                 logger=ANY,
             )
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
+@pytest.mark.parametrize("look_back", [0.0, 15.0])
 async def test_sse_subscribe_event_with_state(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
+    look_back,
 ):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
@@ -433,7 +439,7 @@ async def test_sse_subscribe_event_with_state(
                 wallet_id=wallet_id,
                 topic=topic,
                 desired_state=desired_state,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -450,7 +456,7 @@ async def test_sse_subscribe_event_with_state(
                 wallet_id=wallet_id,
                 topic=topic,
                 desired_state=desired_state,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -466,16 +472,18 @@ async def test_sse_subscribe_event_with_state(
                 wallet_id=wallet_id,
                 topic=topic,
                 desired_state=desired_state,
-                look_back=0,
+                look_back=look_back,
                 logger=ANY,
             )
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
+@pytest.mark.parametrize("look_back", [0.0, 15.0])
 async def test_sse_subscribe_stream_with_fields(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
+    look_back,
 ):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
@@ -496,7 +504,7 @@ async def test_sse_subscribe_stream_with_fields(
                 topic=topic,
                 field=field,
                 field_id=field_id,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -514,7 +522,7 @@ async def test_sse_subscribe_stream_with_fields(
                 topic=topic,
                 field=field,
                 field_id=field_id,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -531,16 +539,18 @@ async def test_sse_subscribe_stream_with_fields(
                 topic=topic,
                 field=field,
                 field_id=field_id,
-                look_back=0,
+                look_back=look_back,
                 logger=ANY,
             )
 
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("group_id", [None, "correct_group", "wrong_group"])
+@pytest.mark.parametrize("look_back", [0.0, 15.0])
 async def test_sse_subscribe_event_with_field_and_state(
     sse_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
+    look_back,
 ):
     if group_id == "wrong_group":
         sse_manager_mock.check_wallet_belongs_to_group.return_value = False
@@ -562,7 +572,7 @@ async def test_sse_subscribe_event_with_field_and_state(
                 field=field,
                 field_id=field_id,
                 desired_state=desired_state,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -581,7 +591,7 @@ async def test_sse_subscribe_event_with_field_and_state(
                 field=field,
                 field_id=field_id,
                 desired_state=desired_state,
-                look_back=0,
+                look_back=look_back,
                 group_id=group_id,
                 sse_manager=sse_manager_mock,
             )
@@ -599,6 +609,6 @@ async def test_sse_subscribe_event_with_field_and_state(
                 field=field,
                 field_id=field_id,
                 desired_state=desired_state,
-                look_back=0,
+                look_back=look_back,
                 logger=ANY,
             )

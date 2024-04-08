@@ -48,6 +48,24 @@ class BadGroupIdException(HTTPException):
 
 
 async def check_disconnection(request: Request, stop_event: asyncio.Event) -> None:
+    """
+    Periodically checks if the client connected to the SSE stream has disconnected.
+
+    Args:
+        request (Request): The FastAPI request object from which the client's connection
+                           status can be determined.
+        stop_event (asyncio.Event): An event that, when set, indicates that the client
+                                    has disconnected and the stream should be stopped.
+
+    This function is typically run as a background task during the lifespan of an SSE
+    stream. It allows the server to gracefully terminate the event stream and clean up
+    resources when the client disconnects.
+
+    Note:
+        DISCONNECT_CHECK_PERIOD is a constant that defines how often (in seconds) the
+        function checks for client disconnection. Adjust this value based on the desired
+        balance between responsiveness and resource usage.
+    """
     while not stop_event.is_set():
         if await request.is_disconnected():
             logger.debug("SSE check_disconnection: request has disconnected.")
@@ -68,6 +86,37 @@ async def sse_event_stream_generator(
     look_back: float = MAX_EVENT_AGE_SECONDS,
     logger: Logger,
 ) -> AsyncGenerator[str, None]:
+    """
+    Asynchronously generates a stream of Server-Sent Events (SSE) for a specific wallet,
+    optionally filtered by topic, field, field ID, and/or desired state.
+
+    Args:
+        sse_manager (SseManager): The SSE manager instance managing events.
+        request (Request): The incoming request object, to detect client disconnects.
+        background_tasks (BackgroundTasks): Background tasks dependency for adding new tasks.
+        wallet_id (str): The wallet ID for which to generate event stream.
+        topic (Optional[str]): The specific topic to subscribe to. Defaults to all topics.
+        field (Optional[str]): The specific field to filter events by.
+        field_id (Optional[str]): The ID of the field to match for filtering.
+        desired_state (Optional[str]): The desired state to filter events by.
+        look_back (float): How far back to look for events in seconds. Defaults to a predefined maximum.
+        logger (Logger): The logger for logging information about the event stream.
+
+    Yields:
+        str: A JSON string representation of the SSE event that matches the subscription criteria.
+
+    This generator listens for events related to the specified wallet ID, filtering them
+    based on the provided criteria (topic, field, field ID, and desired state). It yields
+    events as they occur, formatting them into JSON strings.
+
+    It also monitors the request connection status, terminating the event stream if the
+    client disconnects. A background task is used to check for disconnections.
+
+    Note:
+        If neither topic nor desired state is specified, the generator will listen for
+        all events related to the wallet ID. Specifying a desired state implies a
+        subscription to a single event, after which the generator will stop.
+    """
     if not topic:
         topic = WEBHOOK_TOPIC_ALL
 

@@ -1,4 +1,5 @@
 import asyncio
+from logging import Logger
 from typing import AsyncGenerator, Optional
 
 from dependency_injector.wiring import Provide, inject
@@ -54,6 +55,77 @@ async def check_disconnection(request: Request, stop_event: asyncio.Event) -> No
         await asyncio.sleep(DISCONNECT_CHECK_PERIOD)
 
 
+async def sse_event_stream_generator(
+    *,
+    sse_manager: SseManager,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    wallet_id: str,
+    topic: Optional[str] = None,
+    field: Optional[str] = None,
+    field_id: Optional[str] = None,
+    desired_state: Optional[str] = None,
+    look_back: float = MAX_EVENT_AGE_SECONDS,
+    logger: Logger,
+) -> AsyncGenerator[str, None]:
+    if not topic:
+        topic = WEBHOOK_TOPIC_ALL
+
+    if desired_state:
+        yield_single_event = True
+    else:
+        yield_single_event = False
+
+    stop_event = asyncio.Event()
+    event_generator_wrapper: EventGeneratorWrapper = await sse_manager.sse_event_stream(
+        wallet=wallet_id,
+        topic=topic,
+        look_back=look_back,
+        stop_event=stop_event,
+        duration=SSE_TIMEOUT if desired_state else 0,
+    )
+    async with event_generator_wrapper as event_generator:
+        background_tasks.add_task(check_disconnection, request, stop_event)
+
+        async for event in event_generator:
+            if await request.is_disconnected():
+                logger.info("SSE event_stream: client disconnected.")
+                stop_event.set()
+                break
+            try:
+                should_yield_event = True
+                # Determine if event matches subscription:
+                if field or desired_state:
+                    payload = dict(event.payload)  # to check if field or state exists
+
+                    if (
+                        field
+                        and field_id
+                        and (field not in payload or payload[field] != field_id)
+                    ):
+                        should_yield_event = False
+
+                    if desired_state and payload.get("state") != desired_state:
+                        should_yield_event = False
+
+                if should_yield_event:
+                    # Dump event model to json:
+                    result = event.model_dump_json()
+                    logger.trace("Yielding SSE event: {}", result)
+                    yield result  # Send the event
+
+                    if yield_single_event:
+                        stop_event.set()
+                        break  # End the generator
+            except asyncio.QueueEmpty:
+                await asyncio.sleep(QUEUE_POLL_PERIOD)
+            except asyncio.CancelledError:
+                # This exception is thrown when the client disconnects.
+                logger.info("SSE event stream cancelled.")
+                stop_event.set()
+                break
+
+
 @router.get(
     "/{wallet_id}",
     response_class=EventSourceResponse,
@@ -91,37 +163,16 @@ async def sse_subscribe_wallet(
     ):
         raise BadGroupIdException()
 
-    async def event_stream() -> AsyncGenerator[str, None]:
-        stop_event = asyncio.Event()
-        event_generator_wrapper: EventGeneratorWrapper = (
-            await sse_manager.sse_event_stream(
-                wallet=wallet_id,
-                topic=WEBHOOK_TOPIC_ALL,
-                look_back=look_back,
-                stop_event=stop_event,
-            )
-        )
-        async with event_generator_wrapper as event_generator:
-            background_tasks.add_task(check_disconnection, request, stop_event)
+    event_stream = sse_event_stream_generator(
+        sse_manager=sse_manager,
+        request=request,
+        background_tasks=background_tasks,
+        wallet_id=wallet_id,
+        look_back=look_back,
+        logger=bound_logger,
+    )
 
-            async for event in event_generator:
-                if await request.is_disconnected():
-                    bound_logger.info("SSE event_stream: client disconnected.")
-                    stop_event.set()
-                    break
-                try:
-                    result = event.model_dump_json()
-                    bound_logger.trace("Yielding SSE event: {}", result)
-                    yield result
-                except asyncio.QueueEmpty:
-                    await asyncio.sleep(QUEUE_POLL_PERIOD)
-                except asyncio.CancelledError:
-                    # This exception is thrown when the client disconnects.
-                    bound_logger.info("SSE event stream cancelled.")
-                    stop_event.set()
-                    break
-
-    return EventSourceResponse(event_stream())
+    return EventSourceResponse(event_stream)
 
 
 @router.get(
@@ -162,37 +213,17 @@ async def sse_subscribe_wallet_topic(
     ):
         raise BadGroupIdException()
 
-    async def event_stream() -> AsyncGenerator[str, None]:
-        stop_event = asyncio.Event()
-        event_generator_wrapper: EventGeneratorWrapper = (
-            await sse_manager.sse_event_stream(
-                wallet=wallet_id,
-                topic=topic,
-                look_back=look_back,
-                stop_event=stop_event,
-            )
-        )
-        async with event_generator_wrapper as event_generator:
-            background_tasks.add_task(check_disconnection, request, stop_event)
+    event_stream = sse_event_stream_generator(
+        sse_manager=sse_manager,
+        request=request,
+        background_tasks=background_tasks,
+        wallet_id=wallet_id,
+        topic=topic,
+        look_back=look_back,
+        logger=bound_logger,
+    )
 
-            async for event in event_generator:
-                if await request.is_disconnected():
-                    bound_logger.info("SSE event_stream: client disconnected.")
-                    stop_event.set()
-                    break
-                try:
-                    result = event.model_dump_json()
-                    bound_logger.trace("Yielding SSE event: {}", result)
-                    yield result
-                except asyncio.QueueEmpty:
-                    await asyncio.sleep(QUEUE_POLL_PERIOD)
-                except asyncio.CancelledError:
-                    # This exception is thrown when the client disconnects.
-                    bound_logger.info("SSE event stream cancelled.")
-                    stop_event.set()
-                    break
-
-    return EventSourceResponse(event_stream())
+    return EventSourceResponse(event_stream)
 
 
 @router.get(
@@ -231,43 +262,18 @@ async def sse_subscribe_event_with_state(
     ):
         raise BadGroupIdException()
 
-    async def event_stream() -> AsyncGenerator[str, None]:
-        stop_event = asyncio.Event()
-        event_generator_wrapper: EventGeneratorWrapper = (
-            await sse_manager.sse_event_stream(
-                wallet=wallet_id,
-                topic=topic,
-                look_back=look_back,
-                stop_event=stop_event,
-                duration=SSE_TIMEOUT,
-            )
-        )
-        async with event_generator_wrapper as event_generator:
-            background_tasks.add_task(check_disconnection, request, stop_event)
+    event_stream = sse_event_stream_generator(
+        sse_manager=sse_manager,
+        request=request,
+        background_tasks=background_tasks,
+        wallet_id=wallet_id,
+        topic=topic,
+        desired_state=desired_state,
+        look_back=look_back,
+        logger=bound_logger,
+    )
 
-            async for event in event_generator:
-                if await request.is_disconnected():
-                    bound_logger.info("SSE event_stream: client disconnected.")
-                    stop_event.set()
-                    break
-                try:
-                    payload = dict(event.payload)  # to check if keys exist in payload
-
-                    if "state" in payload and payload["state"] == desired_state:
-                        result = event.model_dump_json()
-                        bound_logger.trace("Yielding SSE event: {}", result)
-                        yield result  # Send the event
-                        stop_event.set()
-                        break  # End the generator
-                except asyncio.QueueEmpty:
-                    await asyncio.sleep(QUEUE_POLL_PERIOD)
-                except asyncio.CancelledError:
-                    # This exception is thrown when the client disconnects.
-                    bound_logger.info("SSE event stream cancelled.")
-                    stop_event.set()
-                    break
-
-    return EventSourceResponse(event_stream())
+    return EventSourceResponse(event_stream)
 
 
 @router.get(
@@ -309,40 +315,19 @@ async def sse_subscribe_stream_with_fields(
     ):
         raise BadGroupIdException()
 
-    async def event_stream() -> AsyncGenerator[str, None]:
-        stop_event = asyncio.Event()
-        event_generator_wrapper: EventGeneratorWrapper = (
-            await sse_manager.sse_event_stream(
-                wallet=wallet_id,
-                topic=topic,
-                look_back=look_back,
-                stop_event=stop_event,
-                duration=SSE_TIMEOUT,
-            )
-        )
-        async with event_generator_wrapper as event_generator:
-            background_tasks.add_task(check_disconnection, request, stop_event)
+    event_stream = sse_event_stream_generator(
+        sse_manager=sse_manager,
+        request=request,
+        background_tasks=background_tasks,
+        wallet_id=wallet_id,
+        topic=topic,
+        field=field,
+        field_id=field_id,
+        look_back=look_back,
+        logger=bound_logger,
+    )
 
-            async for event in event_generator:
-                if await request.is_disconnected():
-                    bound_logger.info("SSE event_stream: client disconnected.")
-                    stop_event.set()
-                    break
-                try:
-                    payload = dict(event.payload)  # to check if keys exist in payload
-                    if field in payload and payload[field] == field_id:
-                        result = event.model_dump_json()
-                        bound_logger.trace("Yielding SSE event: {}", result)
-                        yield result  # Send the event
-                except asyncio.QueueEmpty:
-                    await asyncio.sleep(QUEUE_POLL_PERIOD)
-                except asyncio.CancelledError:
-                    # This exception is thrown when the client disconnects.
-                    bound_logger.info("SSE event stream cancelled.")
-                    stop_event.set()
-                    break
-
-    return EventSourceResponse(event_stream())
+    return EventSourceResponse(event_stream)
 
 
 @router.get(
@@ -386,43 +371,17 @@ async def sse_subscribe_event_with_field_and_state(
     ):
         raise BadGroupIdException()
 
-    async def event_stream() -> AsyncGenerator[str, None]:
-        stop_event = asyncio.Event()
-        event_generator_wrapper: EventGeneratorWrapper = (
-            await sse_manager.sse_event_stream(
-                wallet=wallet_id,
-                topic=topic,
-                look_back=look_back,
-                stop_event=stop_event,
-                duration=SSE_TIMEOUT,
-            )
-        )
-        async with event_generator_wrapper as event_generator:
-            background_tasks.add_task(check_disconnection, request, stop_event)
+    event_stream = sse_event_stream_generator(
+        sse_manager=sse_manager,
+        request=request,
+        background_tasks=background_tasks,
+        wallet_id=wallet_id,
+        topic=topic,
+        field=field,
+        field_id=field_id,
+        desired_state=desired_state,
+        look_back=look_back,
+        logger=bound_logger,
+    )
 
-            async for event in event_generator:
-                if await request.is_disconnected():
-                    bound_logger.info("SSE event_stream: client disconnected.")
-                    stop_event.set()
-                    break
-                try:
-                    payload = dict(event.payload)  # to check if keys exist in payload
-                    if (
-                        field in payload
-                        and payload[field] == field_id
-                        and payload["state"] == desired_state
-                    ):
-                        result = event.model_dump_json()
-                        bound_logger.trace("Yielding SSE event: {}", result)
-                        yield result  # Send the event
-                        stop_event.set()
-                        break  # End the generator
-                except asyncio.QueueEmpty:
-                    await asyncio.sleep(QUEUE_POLL_PERIOD)
-                except asyncio.CancelledError:
-                    # This exception is thrown when the client disconnects.
-                    bound_logger.info("SSE event stream cancelled.")
-                    stop_event.set()
-                    break
-
-    return EventSourceResponse(event_stream())
+    return EventSourceResponse(event_stream)

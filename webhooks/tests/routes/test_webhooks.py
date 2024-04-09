@@ -9,7 +9,6 @@ from webhooks.web.routers.webhooks import (
     get_webhooks_by_wallet_and_topic,
 )
 
-
 wallet_id = "wallet123"
 topic = "test_topic"
 cloud_api_event = CloudApiWebhookEventGeneric(

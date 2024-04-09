@@ -31,7 +31,7 @@ def redis_service_mock():
 
 
 @pytest.fixture
-def billing_manager_mock(redis_service_mock):
+def billing_manager_mock(redis_service_mock):  # pylint: disable=redefined-outer-name
     billing_manager = BillingManager(redis_service=redis_service_mock)
     billing_manager._pubsub = Mock(spec=ClusterPubSub)
     billing_manager._client.post = AsyncMock(return_value=Response(200, json="Success"))

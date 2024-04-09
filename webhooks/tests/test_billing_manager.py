@@ -20,6 +20,8 @@ from webhooks.models.billing_payloads import (
 )
 from webhooks.services.billing_manager import BillingManager
 
+# pylint: disable=protected-access
+
 
 @pytest.fixture
 def redis_service_mock():

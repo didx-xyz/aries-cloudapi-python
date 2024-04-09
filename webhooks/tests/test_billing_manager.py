@@ -2,12 +2,12 @@ import asyncio
 from itertools import chain, repeat
 from unittest.mock import AsyncMock, MagicMock, Mock
 
+import pytest
 from fastapi import HTTPException
 from httpx import Response
-import pytest
 from redis.cluster import ClusterPubSub
+
 from shared.constants import LAGO_URL
-from webhooks.services.billing_manager import BillingManager
 from webhooks.models.billing_payloads import (
     AttribBillingEvent,
     CredDefBillingEvent,
@@ -18,6 +18,7 @@ from webhooks.models.billing_payloads import (
     RevRegDefBillingEvent,
     RevRegEntryBillingEvent,
 )
+from webhooks.services.billing_manager import BillingManager
 
 
 @pytest.fixture
@@ -274,12 +275,17 @@ async def test_post_billing_event(billing_manager_mock):
         url=LAGO_URL, json={"event": event.model_dump()}
     )
 
+
 @pytest.mark.anyio
-@pytest.mark.parametrize("status_code, detail", [(422, "value_already_exist"), (500, "server_error")])
-async def test_post_billing_event_x(billing_manager_mock,status_code,detail):
+@pytest.mark.parametrize(
+    "status_code, detail", [(422, "value_already_exist"), (500, "server_error")]
+)
+async def test_post_billing_event_x(billing_manager_mock, status_code, detail):
     event = LagoEvent(transaction_id="123", external_customer_id="456")
 
-    billing_manager_mock._client.post = AsyncMock(side_effect=HTTPException(status_code,detail=detail))
+    billing_manager_mock._client.post = AsyncMock(
+        side_effect=HTTPException(status_code, detail=detail)
+    )
 
     await billing_manager_mock._post_billing_event(event)
 

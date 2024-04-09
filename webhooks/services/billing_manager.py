@@ -56,7 +56,7 @@ class BillingManager:
         """
         Wait for tasks to complete and stop the billing manager
         """
-        
+
         for task in self._tasks:
             task.cancel()  # Request cancellation of the task
             try:

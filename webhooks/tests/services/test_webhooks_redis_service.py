@@ -1,5 +1,5 @@
-from itertools import chain
 import time
+from itertools import chain
 from unittest.mock import Mock
 
 import pytest

@@ -37,7 +37,9 @@ def billing_manager_mock(redis_service_mock):
 
 
 @pytest.mark.anyio
-async def test_start_and_tasks_are_running(billing_manager_mock):
+async def test_start_and_tasks_are_running(
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+):
     billing_manager_mock._listen_for_billing_events = AsyncMock()
 
     billing_manager_mock.start()
@@ -47,7 +49,7 @@ async def test_start_and_tasks_are_running(billing_manager_mock):
 
 
 @pytest.mark.anyio
-async def test_stop(billing_manager_mock):
+async def test_stop(billing_manager_mock):  # pylint: disable=redefined-outer-name
     mock_task = asyncio.create_task(asyncio.sleep(1))
     billing_manager_mock._tasks.append(mock_task)
 
@@ -63,7 +65,9 @@ async def test_stop(billing_manager_mock):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("message", [{"data": b"GroupA:123456789"}, {}])
-async def test_listen_for_billing_events(billing_manager_mock, message):
+async def test_listen_for_billing_events(
+    billing_manager_mock, message  # pylint: disable=redefined-outer-name
+):
     pubsub_mock = billing_manager_mock.redis_service.redis.pubsub.return_value
     pubsub_mock.subscribe = Mock()
     pubsub_mock.get_message = Mock(side_effect=chain([message], repeat(None)))
@@ -120,7 +124,11 @@ async def test_listen_for_billing_events(billing_manager_mock, message):
     ],
 )
 async def test_process_billing_event(
-    billing_manager_mock, topic, payload_id, transaction_id, expected_lago_event
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+    topic,
+    payload_id,
+    transaction_id,
+    expected_lago_event,
 ):
     billing_manager_mock._post_billing_event = AsyncMock()
     dummy_message = {"data": b"GroupA:123456789"}
@@ -145,7 +153,9 @@ async def test_process_billing_event(
 
 
 @pytest.mark.anyio
-async def test_process_billing_event_x(billing_manager_mock):
+async def test_process_billing_event_x(
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+):
     billing_manager_mock._post_billing_event = AsyncMock()
     dummy_message = {"data": b"GroupA:123456789"}
     billing_manager_mock.redis_service.get_billing_event.return_value = None
@@ -159,7 +169,9 @@ async def test_process_billing_event_x(billing_manager_mock):
 
 
 @pytest.mark.anyio
-async def test_process_2_billing_events(billing_manager_mock):
+async def test_process_2_billing_events(
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+):
     billing_manager_mock._post_billing_event = AsyncMock()
     dummy_message = {"data": b"GroupA:123456789"}
     dummy_event_data = [
@@ -191,7 +203,9 @@ async def test_process_2_billing_events(billing_manager_mock):
     ],
 )
 async def test_process_endorsements_event(
-    billing_manager_mock, payload_type, expected_event_type
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+    payload_type,
+    expected_event_type,
 ):
     billing_manager_mock._post_billing_event = AsyncMock()
     dummy_message = {"data": b"GroupA:123456789"}
@@ -241,7 +255,7 @@ async def test_process_endorsements_event(
     ],
 )
 async def test_convert_endorsements_event(
-    billing_manager_mock,
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
     group_id,
     endorsement_type,
     transaction_id,
@@ -266,7 +280,9 @@ async def test_convert_endorsements_event(
 
 
 @pytest.mark.anyio
-async def test_post_billing_event(billing_manager_mock):
+async def test_post_billing_event(
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+):
     event = LagoEvent(transaction_id="123", external_customer_id="456")
 
     await billing_manager_mock._post_billing_event(event)
@@ -280,7 +296,9 @@ async def test_post_billing_event(billing_manager_mock):
 @pytest.mark.parametrize(
     "status_code, detail", [(422, "value_already_exist"), (500, "server_error")]
 )
-async def test_post_billing_event_x(billing_manager_mock, status_code, detail):
+async def test_post_billing_event_x(
+    billing_manager_mock, status_code, detail  # pylint: disable=redefined-outer-name
+):
     event = LagoEvent(transaction_id="123", external_customer_id="456")
 
     billing_manager_mock._client.post = AsyncMock(

@@ -87,7 +87,7 @@ async def test_get_json_cloudapi_events_by_wallet_defaults_max():
     redis_service = WebhooksRedisService(redis_client)
     redis_service.match_keys = Mock(return_value=[b"dummy_key"])
 
-    events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id, num=None)
+    redis_service.get_json_cloudapi_events_by_wallet(wallet_id, num=None)
 
     redis_client.zrevrangebyscore.assert_called_once_with(
         name="dummy_key", max="+inf", min="-inf", start=0, num=10000  # default max num

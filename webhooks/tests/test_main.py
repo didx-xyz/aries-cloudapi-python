@@ -26,11 +26,23 @@ def test_create_app():
         assert route in routes
 
 
+@pytest.fixture
+def acapy_events_processor_mock():
+    mock = AsyncMock(spec=AcaPyEventsProcessor)
+    return mock
+
+
+@pytest.fixture
+def sse_manager_mock():
+    mock = AsyncMock(spec=SseManager)
+    return mock
+
+
 @pytest.mark.anyio
-async def test_app_lifespan():
-    # Mocks for services and container
-    acapy_events_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
-    sse_manager_mock = MagicMock(start=Mock(), stop=AsyncMock())
+async def test_app_lifespan(
+    acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+):
     container_mock = MagicMock(
         acapy_events_processor=MagicMock(return_value=acapy_events_processor_mock),
         sse_manager=MagicMock(return_value=sse_manager_mock),
@@ -56,18 +68,6 @@ async def test_app_lifespan():
         sse_manager_mock.stop.assert_awaited_once()
 
         container_mock.shutdown_resources.assert_called_once()
-
-
-@pytest.fixture
-def acapy_events_processor_mock():
-    mock = AsyncMock(spec=AcaPyEventsProcessor)
-    return mock
-
-
-@pytest.fixture
-def sse_manager_mock():
-    mock = AsyncMock(spec=SseManager)
-    return mock
 
 
 @pytest.mark.anyio

@@ -1,7 +1,6 @@
 from unittest.mock import Mock
 
 import pytest
-from fastapi import Depends
 
 from shared.models.webhook_events import CloudApiWebhookEventGeneric
 from webhooks.web.routers.webhooks import (

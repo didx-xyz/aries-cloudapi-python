@@ -38,8 +38,8 @@ async def test_app_lifespan():
         shutdown_resources=Mock(),
     )
 
-    # Patch the get_container function to return the mocked container
-    with patch("webhooks.web.main.get_container", return_value=container_mock):
+    # Patch the Container to return the mocked container
+    with patch("webhooks.web.main.Container", return_value=container_mock):
         # Run the app_lifespan context manager
         async with app_lifespan(FastAPI()):
             pass

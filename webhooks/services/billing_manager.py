@@ -234,12 +234,15 @@ class BillingManager:
                 url=LAGO_URL,
                 json={"event": event.model_dump()},
             )
+            lago_response_json = lago_response.json()
 
-            logger.info("Response from LAGO: {}", lago_response.json())
+            logger.info(
+                "Response for event {} from LAGO: {}", event, lago_response_json
+            )
 
         except HTTPException as e:
             if e.status_code == 422 and "value_already_exist" in e.detail:
-                logger.debug(
+                logger.warning(
                     "LAGO indicating transaction already received : {}", e.detail
                 )
             else:

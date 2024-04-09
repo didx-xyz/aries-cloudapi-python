@@ -114,7 +114,8 @@ def assert_valid_group(
     Raises:
         HTTPException: If the wallet does not belong to the group_id.
     """
-    if group_id and wallet.settings.get("wallet.group_id") != group_id:
+    wallet_group_id = wallet.settings.get("wallet.group_id")
+    if group_id and wallet_group_id and wallet_group_id != group_id:
         logger.info("Bad request: wallet_id does not belong to group_id.")
 
         # 404 instead of 403, obscure existence of wallet_id outside group

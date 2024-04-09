@@ -1,3 +1,4 @@
+from itertools import chain
 import time
 from unittest.mock import Mock
 
@@ -60,6 +61,37 @@ async def test_get_json_cloudapi_events_by_wallet():
 
     assert events == json_entries
     redis_client.zrevrangebyscore.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_get_json_cloudapi_events_by_wallet_no_events():
+    redis_client = Mock()
+    redis_client.zrevrangebyscore = Mock(
+        return_value=[e.encode() for e in json_entries]
+    )
+    redis_service = WebhooksRedisService(redis_client)
+    redis_service.match_keys = Mock(return_value=[])
+
+    events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id)
+
+    assert events == []
+    redis_client.zrevrangebyscore.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_get_json_cloudapi_events_by_wallet_defaults_max():
+    redis_client = Mock()
+    redis_client.zrevrangebyscore = Mock(
+        return_value=[e.encode() for e in json_entries]
+    )
+    redis_service = WebhooksRedisService(redis_client)
+    redis_service.match_keys = Mock(return_value=[b"dummy_key"])
+
+    events = redis_service.get_json_cloudapi_events_by_wallet(wallet_id, num=None)
+
+    redis_client.zrevrangebyscore.assert_called_once_with(
+        name="dummy_key", max="+inf", min="-inf", start=0, num=10000  # default max num
+    )
 
 
 @pytest.mark.anyio
@@ -151,6 +183,27 @@ async def test_get_json_cloudapi_events_by_timestamp():
 
 
 @pytest.mark.anyio
+async def test_get_json_cloudapi_events_by_timestamp_no_events():
+    start_timestamp = 1609459200
+    end_timestamp = 1609545600
+
+    redis_client = Mock()
+    redis_client.zrangebyscore = Mock(return_value=[])
+    redis_service = WebhooksRedisService(redis_client)
+
+    redis_service.match_keys = Mock(return_value=[])
+
+    events = redis_service.get_json_cloudapi_events_by_timestamp(
+        group_id=group_id,
+        wallet_id=wallet_id,
+        start_timestamp=start_timestamp,
+        end_timestamp=end_timestamp,
+    )
+
+    assert events == []
+
+
+@pytest.mark.anyio
 async def test_get_cloudapi_events_by_timestamp(mocker):
     start_timestamp = 1609459200
     end_timestamp = 1609545600
@@ -193,6 +246,86 @@ async def test_get_all_cloudapi_wallet_ids():
 
     assert set(wallet_ids) == set(expected_wallet_ids)
     assert redis_client.scan.call_count == 2
+
+
+@pytest.mark.anyio
+async def test_get_all_cloudapi_wallet_ids_no_wallets():
+    scan_results = [({"localhost:6379": 1}, []), ({"localhost:6379": 0}, [])]
+
+    redis_client = Mock()
+    redis_client.scan = Mock(side_effect=scan_results)
+
+    redis_service = WebhooksRedisService(redis_client)
+
+    wallet_ids = redis_service.get_all_cloudapi_wallet_ids()
+
+    assert wallet_ids == []
+    assert redis_client.scan.call_count == 2
+
+
+@pytest.mark.anyio
+async def test_get_all_cloudapi_wallet_ids_handles_exception():
+    expected_wallet_ids = ["wallet1", "wallet2"]
+
+    # Adjust the mock to raise an Exception on the first call
+    redis_client = Mock()
+    redis_client.scan.side_effect = chain(
+        [
+            (
+                {"localhost:6379": 1},
+                [f"cloudapi:{wallet_id}".encode() for wallet_id in expected_wallet_ids],
+            )
+        ],
+        Exception("Test exception"),
+    )
+
+    redis_service = WebhooksRedisService(redis_client)
+
+    wallet_ids = redis_service.get_all_cloudapi_wallet_ids()
+
+    assert set(wallet_ids) == set(expected_wallet_ids)
+
+
+@pytest.mark.anyio
+async def test_add_endorsement_event():
+    event_json = '{"data": "value"}'
+    transaction_id = "transaction123"
+
+    # Mock the Redis client
+    redis_client = Mock()
+    redis_service = WebhooksRedisService(redis_client)
+
+    # Mock Redis 'set' operation to return True to simulate a successful operation
+    redis_client.set = Mock(return_value=True)
+
+    redis_service.add_endorsement_event(event_json, transaction_id)
+
+    # Verify Redis 'set' was called correctly
+    redis_client.set.assert_called_once_with(
+        f"{redis_service.endorsement_redis_prefix}:{transaction_id}",
+        value=event_json,
+    )
+
+
+@pytest.mark.anyio
+async def test_add_endorsement_event_key_exists():
+    event_json = '{"data": "value"}'
+    transaction_id = "transaction123"
+
+    # Mock the Redis client
+    redis_client = Mock()
+    redis_service = WebhooksRedisService(redis_client)
+
+    # Mock Redis 'set' operation to return False to simulate a key already exists
+    redis_client.set = Mock(return_value=False)
+
+    redis_service.add_endorsement_event(event_json, transaction_id)
+
+    # Verify Redis 'set' was called correctly
+    redis_client.set.assert_called_once_with(
+        f"{redis_service.endorsement_redis_prefix}:{transaction_id}",
+        value=event_json,
+    )
 
 
 @pytest.mark.anyio

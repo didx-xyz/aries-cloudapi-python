@@ -134,6 +134,42 @@ async def test_sse_event_stream_generator_wallet_id(
 
 
 @pytest.mark.anyio
+async def test_sse_event_stream_generator_wallet_id_disconnect(
+    async_generator_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+    request_mock,  # pylint: disable=redefined-outer-name
+):
+    request_mock.is_disconnected.return_value = AsyncMock(True)
+
+    # Configure the sse_manager mock
+    sse_manager_mock.sse_event_stream.return_value = EventGeneratorWrapper(
+        generator=async_generator_mock([dummy_cloudapi_event]),
+        populate_task=Mock(),
+    )
+
+    background_tasks = BackgroundTasks()
+
+    # Convert generator to a list to force evaluation
+    events = [
+        event
+        async for event in sse_event_stream_generator(
+            sse_manager=sse_manager_mock,
+            request=request_mock,
+            background_tasks=background_tasks,
+            wallet_id=wallet_id,
+            logger=Mock(),
+        )
+    ]
+
+    # Assertions
+    assert len(events) == 0, "Expected no events to be yielded after disconnection."
+    request_mock.is_disconnected.assert_awaited()
+    assert (
+        len(background_tasks.tasks) > 0
+    ), "Expected at least one background task for disconnection check."
+
+
+@pytest.mark.anyio
 async def test_sse_event_stream_generator_wallet_id_topic(
     async_generator_mock,  # pylint: disable=redefined-outer-name
     sse_manager_mock,  # pylint: disable=redefined-outer-name

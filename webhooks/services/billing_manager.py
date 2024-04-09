@@ -250,7 +250,7 @@ class BillingManager:
 
     def _convert_endorsements_event(
         self, group_id: str, transaction_id: str, endorsement_type: str
-    ) -> LagoEvent:
+    ) -> LagoEvent | None:
         """
         Convert endorsements event to LAGO event
         """
@@ -264,7 +264,7 @@ class BillingManager:
         lago = None
         if not transaction_id:
             logger.warning("No transaction_id found for endorsements event")
-            return
+            return None
 
         lago_model = LagoEvent(
             transaction_id=transaction_id,

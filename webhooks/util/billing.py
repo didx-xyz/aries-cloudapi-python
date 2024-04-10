@@ -1,7 +1,7 @@
 from logging import Logger
 from typing import Any, Dict
 
-from shared.constants import GOVERNANCE_LABEL
+from shared.constants import GOVERNANCE_LABEL, LAGO_API_KEY, LAGO_URL
 from shared.models.endorsement import (
     extract_operation_type_from_endorsement_payload as get_operation_type,
 )
@@ -11,6 +11,8 @@ from shared.models.endorsement import valid_operation_types
 def is_applicable_for_billing(
     wallet_id: str, group_id: str, topic: str, payload: Dict[str, Any], logger: Logger
 ) -> bool:
+    if not LAGO_API_KEY or not LAGO_URL:
+        return False  # Only process billable events if Lago is configured
 
     if wallet_id == GOVERNANCE_LABEL:
         return False

@@ -6,7 +6,6 @@ from fastapi import HTTPException
 from endorser.util.endorsement import accept_endorsement, should_accept_endorsement
 from shared.models.endorsement import Endorsement
 
-
 valid_endorsement = Endorsement(
     state="request-received", transaction_id="test-transaction"
 )
@@ -64,6 +63,13 @@ async def test_should_accept_endorsement_fail_not_claim_def(mock_acapy_client, m
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_no_attach(mock_acapy_client, mocker):
+    # Mock transaction response
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
     # Assume the transaction has no attachments
     mocker.patch(
         "endorser.util.endorsement.get_endorsement_request_attachment",
@@ -77,6 +83,13 @@ async def test_should_accept_endorsement_fail_no_attach(mock_acapy_client, mocke
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_no_operation(mock_acapy_client, mocker):
+    # Mock transaction response
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
     # Assume the transaction has no operation field
     mocker.patch(
         "endorser.util.endorsement.get_endorsement_request_attachment",
@@ -90,6 +103,13 @@ async def test_should_accept_endorsement_fail_no_operation(mock_acapy_client, mo
 
 @pytest.mark.anyio
 async def test_should_accept_endorsement_fail_no_type(mock_acapy_client, mocker):
+    # Mock transaction response
+    transaction_mock = MagicMock()
+    transaction_mock.state = "request_received"
+    mock_acapy_client.endorse_transaction.get_transaction.return_value = (
+        transaction_mock
+    )
+
     # Assume the transaction has no type field
     mocker.patch(
         "endorser.util.endorsement.get_endorsement_request_attachment",
@@ -199,12 +219,8 @@ async def test_should_accept_endorsement_fail_not_valid_issuer(
         "endorser.util.endorsement.get_endorsement_request_attachment",
         return_value={
             "identifier": "test-identifier",
-            "operation": {"ref": "test-ref"},
+            "operation": {"ref": "test-ref", "type": "102"},
         },
-    )
-    mocker.patch(
-        "endorser.util.endorsement.is_credential_definition_transaction",
-        return_value=True,
     )
     mocker.patch(
         "endorser.util.endorsement.get_did_and_schema_id_from_cred_def_attachment",

@@ -1,7 +1,7 @@
 import re
 from typing import Dict, List, Literal, Optional
 
-from aries_cloudcontroller import CreateWalletRequest
+from aries_cloudcontroller import CreateWalletRequest, UpdateWalletRequest
 from pydantic import BaseModel, Field, field_validator
 
 from app.models.trust_registry import TrustRegistryRole
@@ -136,6 +136,12 @@ class UpdateTenantRequest(BaseModel):
                 f"spaces, and the following special characters are allowed: {allowable_special_chars}"
             )
         return v
+
+
+class UpdateWalletRequestWithGroupId(UpdateWalletRequest):
+    """Adds group_id to the default UpdateWalletRequest body"""
+
+    group_id: Optional[str] = Field(default=None, examples=["some_group_id"])
 
 
 class Tenant(BaseModel):

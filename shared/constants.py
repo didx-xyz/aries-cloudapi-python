@@ -65,9 +65,6 @@ MAX_NUM_RETRIES = int(os.getenv("MAX_NUM_RETRIES", "3"))
 # timeout for waiting for registries to be created
 REGISTRY_CREATION_TIMEOUT = int(os.getenv("REGISTRY_CREATION_TIMEOUT", "60"))
 
-
-LAGO_URL = os.getenv(
-    "LAGO_URL", "http://192.168.0.186:3000/api/v1/events"
-)  # use pc ip address
+# Billing Service
+LAGO_URL = os.getenv("LAGO_URL", "")
 LAGO_API_KEY = os.getenv("LAGO_API_KEY", "")
-# cb131628-c605-49bd-8aa3-93fe0289e1a3

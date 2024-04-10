@@ -6,7 +6,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import BackgroundTasks, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
-from shared import DISCONNECT_CHECK_PERIOD, QUEUE_POLL_PERIOD, SSE_TIMEOUT, APIRouter
+from shared import DISCONNECT_CHECK_PERIOD, SSE_TIMEOUT, APIRouter
 from shared.constants import MAX_EVENT_AGE_SECONDS
 from shared.log_config import get_logger
 from shared.models.webhook_events import WEBHOOK_TOPIC_ALL
@@ -130,15 +130,16 @@ async def sse_event_stream_generator(
         stop_event=stop_event,
         duration=SSE_TIMEOUT if desired_state else 0,
     )
-    async with event_generator_wrapper as event_generator:
-        background_tasks.add_task(check_disconnection, request, stop_event)
+    try:
+        async with event_generator_wrapper as event_generator:
+            background_tasks.add_task(check_disconnection, request, stop_event)
 
-        async for event in event_generator:
-            if await request.is_disconnected():
-                logger.info("SSE event_stream: client disconnected.")
-                stop_event.set()
-                break
-            try:
+            async for event in event_generator:
+                if await request.is_disconnected():
+                    logger.info("SSE event_stream: client disconnected.")
+                    stop_event.set()
+                    break
+
                 should_yield_event = True
                 # Determine if event matches subscription:
                 if field or desired_state:
@@ -163,13 +164,11 @@ async def sse_event_stream_generator(
                     if yield_single_event:
                         stop_event.set()
                         break  # End the generator
-            except asyncio.QueueEmpty:
-                await asyncio.sleep(QUEUE_POLL_PERIOD)
-            except asyncio.CancelledError:
-                # This exception is thrown when the client disconnects.
-                logger.info("SSE event stream cancelled.")
-                stop_event.set()
-                break
+
+    except asyncio.CancelledError:
+        # This exception is thrown when the client disconnects.
+        logger.info("SSE event stream cancelled.")
+        stop_event.set()
 
 
 @router.get(

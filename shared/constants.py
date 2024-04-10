@@ -54,9 +54,6 @@ CLIENT_QUEUE_POLL_PERIOD = float(os.getenv("CLIENT_QUEUE_POLL_PERIOD", "0.2"))
 SSE_TIMEOUT = int(
     os.getenv("SSE_TIMEOUT", "150")
 )  # maximum duration of an SSE connection
-QUEUE_POLL_PERIOD = float(
-    os.getenv("QUEUE_POLL_PERIOD", "0.1")
-)  # period in seconds to retry reading empty queues
 DISCONNECT_CHECK_PERIOD = float(
     os.getenv("DISCONNECT_CHECK_PERIOD", "0.2")
 )  # period in seconds to check for disconnection

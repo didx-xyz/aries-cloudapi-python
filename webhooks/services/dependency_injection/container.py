@@ -56,13 +56,3 @@ class Container(containers.DeclarativeContainer):
         BillingManager,
         redis_service=redis_service,
     )
-
-
-def get_container() -> Container:
-    """
-    Creates a configured instance of the dependency injection container for the application.
-
-    Returns:
-        An instance of the configured Container.
-    """
-    return Container()

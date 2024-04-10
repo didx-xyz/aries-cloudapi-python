@@ -7,7 +7,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from shared.log_config import get_logger
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 from webhooks.services.billing_manager import BillingManager
-from webhooks.services.dependency_injection.container import Container, get_container
+from webhooks.services.dependency_injection.container import Container
 from webhooks.services.sse_manager import SseManager
 from webhooks.web.routers import sse, webhooks, websocket
 
@@ -19,7 +19,7 @@ async def app_lifespan(_: FastAPI):
     logger.info("Webhooks Service startup")
 
     # Initialize the container
-    container = get_container()
+    container = Container()
     container.wire(modules=[__name__, sse, webhooks])
 
     # Start singleton services

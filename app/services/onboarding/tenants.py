@@ -30,7 +30,7 @@ async def handle_tenant_update(
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.bind(body=update_request).info("Handling tenant update")
 
-    new_roles = update_request.roles
+    new_roles = update_request.roles or []
     new_label = update_request.wallet_label
 
     # See if this wallet belongs to an actor

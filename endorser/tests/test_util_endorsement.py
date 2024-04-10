@@ -273,7 +273,9 @@ async def test_should_accept_endorsement_retries_on_http_exception(
         side_effect=[HTTPException(status_code=500), True],
     )
 
-    result = await should_accept_endorsement(mock_acapy_client, valid_endorsement)
+    result = await should_accept_endorsement(
+        mock_acapy_client, valid_endorsement, retry_delay=0.01
+    )
 
     # Assertions
     assert (
@@ -319,7 +321,7 @@ async def test_should_accept_endorsement_fails_after_max_retries(
     )
 
     result = await should_accept_endorsement(
-        mock_acapy_client, valid_endorsement  # pylint: disable=redefined-outer-name
+        mock_acapy_client, valid_endorsement, retry_delay=0.01
     )
 
     # Assertions

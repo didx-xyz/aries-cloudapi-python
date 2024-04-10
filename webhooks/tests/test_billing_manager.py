@@ -74,7 +74,9 @@ async def test_stop(billing_manager_mock):  # pylint: disable=redefined-outer-na
 
 
 @pytest.mark.anyio
-async def test_are_tasks_running_x(billing_manager_mock):
+async def test_are_tasks_running_x(
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
+):
     # Simulate no active billing manager
     billing_manager_mock.lago_api_key = ""
     billing_manager_mock.lago_url = ""

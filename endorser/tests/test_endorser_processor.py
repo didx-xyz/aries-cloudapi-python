@@ -282,7 +282,9 @@ async def test_process_endorsement_event_governance(endorsement_processor_mock):
 
 
 @pytest.mark.anyio
-async def test_process_endorsement_event_governance(endorsement_processor_mock):
+async def test_process_endorsement_event_governance_no_accept(
+    endorsement_processor_mock,
+):
     governance = GOVERNANCE_LABEL
     event_dict = {
         "origin": governance,

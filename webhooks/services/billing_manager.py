@@ -95,7 +95,7 @@ class BillingManager:
         self, max_retries=5, retry_duration=1
     ) -> NoReturn:
         """
-        Listen for billing events, passs them to the billing processor
+        Listen for billing events, pass them to the billing processor
         """
         retry_count = 0
         sleep_duration = 1
@@ -272,7 +272,7 @@ class BillingManager:
         )
 
         # use operation type to determine the endorsement type
-        # using transaction_id asfor LAGO transaction_id
+        # using transaction_id for LAGO transaction_id
 
         if endorsement_type == TransactionTypes.ATTRIB:
             lago = AttribBillingEvent(**lago_model.model_dump())

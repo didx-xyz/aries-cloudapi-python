@@ -36,6 +36,7 @@
     "isort",
     "jsonld",
     "keyevent",
+    "Lago",
     "levelname",
     "lindex",
     "loguru",

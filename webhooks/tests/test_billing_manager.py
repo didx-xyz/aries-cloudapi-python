@@ -252,7 +252,7 @@ async def test_process_endorsements_event(
         ("GroupA", "102", "123456789", CredDefBillingEvent),
         ("GroupA", "113", "123456789", RevRegDefBillingEvent),
         ("GroupA", "114", "123456789", RevRegEntryBillingEvent),
-        ("GroupA", "notanumber", "123456789", None),
+        ("GroupA", "not_a_number", "123456789", None),
         ("GroupA", "100", None, None),
     ],
 )

@@ -1,5 +1,5 @@
 from logging import Logger
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 
 from shared.constants import GOVERNANCE_LABEL, LAGO_API_KEY, LAGO_URL
 from shared.models.endorsement import (
@@ -10,20 +10,20 @@ from shared.models.endorsement import valid_operation_types
 
 def is_applicable_for_billing(
     wallet_id: str, group_id: str, topic: str, payload: Dict[str, Any], logger: Logger
-) -> bool:
+) -> Tuple[bool, Optional[str]]:
     if not LAGO_API_KEY or not LAGO_URL:
-        return False  # Only process billable events if Lago is configured
+        return False, None  # Only process billable events if Lago is configured
 
     if wallet_id == GOVERNANCE_LABEL:
-        return False
+        return False, None
 
     if not group_id:
         logger.warning("Can't bill for this event as group_id is missing: {}", payload)
-        return False
+        return False, None
 
     if topic not in ["proofs", "credentials", "endorsements", "issuer_cred_rev"]:
         logger.debug("Event topic {} is not applicable for the billing service.", topic)
-        return False
+        return False, None
 
     state = payload.get("state")
     if state not in [
@@ -34,8 +34,9 @@ def is_applicable_for_billing(
         "presentation_acked",
     ]:
         logger.debug("Event state {} is not applicable for the billing service.", state)
-        return False
+        return False, None
 
+    operation_type = None
     if topic == "endorsements":
         operation_type = get_operation_type(payload=payload, logger=logger)
         if operation_type not in valid_operation_types:
@@ -43,7 +44,7 @@ def is_applicable_for_billing(
                 "Endorsement operation type {} is not applicable for billing.",
                 operation_type,
             )
-            return False
+            return False, None
 
     logger.debug("Event is applicable for the billing service.")
-    return True
+    return True, operation_type

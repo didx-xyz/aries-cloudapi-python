@@ -344,24 +344,22 @@ class AcaPyEventsProcessor:
                 event_json=webhook_event_json, transaction_id=transaction_id
             )
 
-        if is_applicable_for_billing(
+        # Check if event is billable, and get operation_type if it is an endorsement event
+        is_billable, operation_type = is_applicable_for_billing(
             wallet_id=wallet_id,
             group_id=group_id,
             topic=cloudapi_topic,
             payload=payload,
             logger=bound_logger,
-        ):
+        )
+
+        if is_billable:
             bound_logger.debug(
                 "Forwarding billing event for Billing service",
             )
             if cloudapi_topic == "endorsements":
                 # Add the operation type to the payload for endorsements
                 # Simplifies the billing service's logic for determining the operation type
-
-                operation_type = get_operation_type(
-                    payload=payload, logger=bound_logger
-                )
-
                 endorse_event: Dict[str, Any] = orjson.loads(webhook_event_json)
                 endorse_event["payload"]["type"] = operation_type
                 webhook_event_for_billing = orjson.dumps(endorse_event)

@@ -31,20 +31,23 @@ class BillingManager:
     def __init__(self, redis_service: WebhooksRedisService) -> None:
         self.redis_service = redis_service
 
+        self.lago_api_key = LAGO_API_KEY
+        self.lago_url = LAGO_URL
+
         self._tasks: List[asyncio.Task] = []
 
         self._pubsub = None
 
         self._client = RichAsyncClient(
-            name="BillingManager", headers={"Authorization": f"Bearer {LAGO_API_KEY}"}
+            name="BillingManager",
+            headers={"Authorization": f"Bearer {self.lago_api_key}"},
         )
-        self.lago_api_key = LAGO_API_KEY
 
     def start(self) -> None:
         """
         Start the billing manager
         """
-        if self.lago_api_key:
+        if self.lago_url and self.lago_api_key:
             self._tasks.append(
                 asyncio.create_task(
                     self._listen_for_billing_events(),
@@ -56,29 +59,29 @@ class BillingManager:
         """
         Wait for tasks to complete and stop the billing manager
         """
-
-        for task in self._tasks:
-            task.cancel()  # Request cancellation of the task
-            try:
-                await task  # Wait for the task to be cancelled
-            except asyncio.CancelledError:
-                pass
-        self._tasks.clear()  # Clear the list of tasks
-        logger.info("Billing manager stopped")
-        if self._pubsub:
-            self._pubsub.disconnect()
-            logger.info("Billing pubsub disconnected")
+        if self.lago_url and self.lago_api_key:
+            for task in self._tasks:
+                task.cancel()  # Request cancellation of the task
+                try:
+                    await task  # Wait for the task to be cancelled
+                except asyncio.CancelledError:
+                    pass
+            self._tasks.clear()  # Clear the list of tasks
+            logger.info("Billing manager stopped")
+            if self._pubsub:
+                self._pubsub.disconnect()
+                logger.info("Billing pubsub disconnected")
 
     def are_tasks_running(self) -> bool:
         """
         Check if tasks are running
         """
-        logger.debug("Checking if tasks are running")
         # This is so that the health check can return True if the LAGO API key is not set
         # This is useful for local development and testing
-        if not self.lago_api_key:
+        if not self.lago_api_key or not self.lago_url:
             return True
 
+        logger.debug("Checking if tasks are running")
         if not self._pubsub:
             logger.warning("Pubsub is not running")
 
@@ -231,7 +234,7 @@ class BillingManager:
         logger.debug("Posting billing event: {}", event)
         try:
             lago_response = await self._client.post(
-                url=LAGO_URL,
+                url=self.lago_url,
                 json={"event": event.model_dump()},
             )
             lago_response_json = lago_response.json()

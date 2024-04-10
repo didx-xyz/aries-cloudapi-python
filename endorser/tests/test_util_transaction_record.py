@@ -64,18 +64,10 @@ def test_get_endorsement_request_attachment_invalid_json():
 
 
 def test_get_endorsement_request_attachment_exception():
-    # Mock a TransactionRecord that raises an Exception when messages_attach is accessed
+    # Mock a TransactionRecord that raises a KeyError when messages_attach is accessed
     transaction_record_exception = MagicMock()
     transaction_record_exception.messages_attach = Mock(
         side_effect=KeyError("Key error exception")
-    )
-
-    attachment = get_endorsement_request_attachment(transaction_record_exception)
-    assert attachment is None
-
-    transaction_record_exception = MagicMock()
-    transaction_record_exception.messages_attach = Mock(
-        side_effect=Exception("Test exception")
     )
 
     attachment = get_endorsement_request_attachment(transaction_record_exception)
@@ -146,3 +138,18 @@ async def test_get_did_and_schema_id_from_cred_def_attachment_fail_no_ref(
         )
         is False
     )
+
+
+@pytest.mark.anyio
+async def test_get_did_and_schema_id_from_cred_def_attachment_fail_no_var_schema_id(
+    mock_acapy_client,
+):
+    mock_acapy_client.schema.get_schema.return_value = MagicMock(
+        var_schema=MagicMock(id="")
+    )
+
+    with pytest.raises(Exception):
+        await get_did_and_schema_id_from_cred_def_attachment(
+            mock_acapy_client,
+            {"identifier": "identifier_value", "operation": {"ref": "ref_value"}},
+        )

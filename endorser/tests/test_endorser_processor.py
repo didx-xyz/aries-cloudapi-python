@@ -182,9 +182,66 @@ async def test_attempt_process_endorsement(endorsement_processor_mock):
         key=lock_key, px=1000
     )
     endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
+    endorsement_processor_mock.redis_service.delete_key.assert_called_with(event_key)
     endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
         "event_json1"
     )
+
+
+@pytest.mark.anyio
+async def test_attempt_process_endorsement_no_event(endorsement_processor_mock):
+    event_key = "endorse:key"
+    lock_key = f"lock:{event_key}"
+    endorsement_processor_mock.redis_service.set_lock.return_value = True
+    endorsement_processor_mock._process_endorsement_event = AsyncMock()
+
+    endorsement_processor_mock.redis_service.get = Mock(return_value=[])
+
+    await endorsement_processor_mock._attempt_process_endorsement(event_key)
+
+    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
+        key=lock_key, px=1000
+    )
+    endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
+    endorsement_processor_mock._process_endorsement_event.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_attempt_process_endorsement_delete_failure(endorsement_processor_mock):
+    event_key = "endorse:key"
+    lock_key = f"lock:{event_key}"
+    endorsement_processor_mock.redis_service.set_lock.return_value = True
+    endorsement_processor_mock._process_endorsement_event = AsyncMock()
+
+    endorsement_processor_mock.redis_service.delete_key = Mock(return_value=False)
+
+    await endorsement_processor_mock._attempt_process_endorsement(event_key)
+
+    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
+        key=lock_key, px=1000
+    )
+    endorsement_processor_mock.redis_service.get.assert_called_with(event_key)
+    endorsement_processor_mock._process_endorsement_event.assert_called_once_with(
+        "event_json1"
+    )
+
+
+@pytest.mark.anyio
+async def test_attempt_process_endorsement_key_locked(endorsement_processor_mock):
+    event_key = "endorse:key"
+    lock_key = f"lock:{event_key}"
+    endorsement_processor_mock.redis_service.set_lock.return_value = False
+    endorsement_processor_mock._process_endorsement_event = AsyncMock()
+
+    endorsement_processor_mock.redis_service.delete_key = Mock(return_value=False)
+
+    await endorsement_processor_mock._attempt_process_endorsement(event_key)
+
+    endorsement_processor_mock.redis_service.set_lock.assert_called_with(
+        key=lock_key, px=1000
+    )
+    endorsement_processor_mock.redis_service.get.assert_not_called()
+    endorsement_processor_mock._process_endorsement_event.assert_not_called()
 
 
 @pytest.mark.anyio
@@ -222,6 +279,57 @@ async def test_process_endorsement_event_governance(endorsement_processor_mock):
 
         mock_should_accept_endorsement.assert_called_once()
         mock_accept_endorsement.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_process_endorsement_event_governance(endorsement_processor_mock):
+    governance = GOVERNANCE_LABEL
+    event_dict = {
+        "origin": governance,
+        "wallet_id": governance,
+        "topic": "endorsements",
+        "payload": {"state": "request-received", "transaction_id": "txn1"},
+    }
+
+    event_json = json.dumps(event_dict)
+
+    with patch(
+        "endorser.services.endorsement_processor.should_accept_endorsement"
+    ) as mock_should_accept_endorsement, patch(
+        "endorser.services.endorsement_processor.accept_endorsement"
+    ) as mock_accept_endorsement:
+        mock_should_accept_endorsement.return_value = False
+        mock_accept_endorsement.return_value = AsyncMock()
+        await endorsement_processor_mock._process_endorsement_event(event_json)
+
+        mock_should_accept_endorsement.assert_called_once()
+        # Assert not accepted:
+        mock_accept_endorsement.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_process_endorsement_event_not_governance(endorsement_processor_mock):
+    event_dict = {
+        "origin": "not_governance",
+        "wallet_id": "not_governance",
+        "topic": "endorsements",
+        "payload": {"state": "request-received", "transaction_id": "txn1"},
+    }
+
+    event_json = json.dumps(event_dict)
+
+    with patch(
+        "endorser.services.endorsement_processor.should_accept_endorsement"
+    ) as mock_should_accept_endorsement, patch(
+        "endorser.services.endorsement_processor.accept_endorsement"
+    ) as mock_accept_endorsement:
+        mock_should_accept_endorsement.return_value = True
+        mock_accept_endorsement.return_value = AsyncMock()
+        await endorsement_processor_mock._process_endorsement_event(event_json)
+
+        # Wallet is not governance; should not call:
+        mock_should_accept_endorsement.assert_not_called()
+        mock_accept_endorsement.assert_not_called()
 
 
 @pytest.mark.anyio

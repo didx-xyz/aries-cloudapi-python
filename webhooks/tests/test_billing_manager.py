@@ -73,7 +73,6 @@ async def test_stop(billing_manager_mock):  # pylint: disable=redefined-outer-na
     billing_manager_mock._pubsub.disconnect.assert_called_once()
 
 
-# Sample test for checking if tasks are running
 @pytest.mark.anyio
 async def test_are_tasks_running_x(billing_manager_mock):
     # Simulate no active billing manager

@@ -70,7 +70,6 @@ async def test_stop(endorsement_processor_mock):
     endorsement_processor_mock._pubsub.disconnect.assert_called_once()
 
 
-# Sample test for checking if tasks are running
 @pytest.mark.anyio
 async def test_are_tasks_running_x(endorsement_processor_mock):
     endorsement_processor_mock._tasks = []

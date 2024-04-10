@@ -1,6 +1,6 @@
 import asyncio
 from itertools import chain, repeat
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -307,8 +307,21 @@ async def test_post_billing_event_x(
         side_effect=HTTPException(status_code, detail=detail)
     )
 
-    await billing_manager_mock._post_billing_event(event)
+    with patch(
+        "webhooks.services.billing_manager.logger", return_value=Mock()
+    ) as logger_mock:
+        await billing_manager_mock._post_billing_event(event)
 
-    billing_manager_mock._client.post.assert_called_once_with(
-        url=LAGO_URL, json={"event": event.model_dump()}
-    )
+        billing_manager_mock._client.post.assert_called_once_with(
+            url=LAGO_URL, json={"event": event.model_dump()}
+        )
+
+        # No exception raised; assert that it was logged correctly
+        if status_code == 422 and "value_already_exist" in detail:
+            logger_mock.warning.assert_called_once_with(
+                "LAGO indicating transaction already received : {}", detail
+            )
+        else:
+            logger_mock.error.assert_called_once_with(
+                "Error posting billing event to LAGO: {}", detail
+            )

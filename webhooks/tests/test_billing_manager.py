@@ -44,15 +44,23 @@ async def test_start_and_tasks_are_running(
 ):
     billing_manager_mock._listen_for_billing_events = AsyncMock()
 
+    # Populate api_key and url to simulate active billing manager
+    billing_manager_mock.lago_api_key = "some_api_key"
+    billing_manager_mock.lago_url = "some_url"
+
     billing_manager_mock.start()
-    if billing_manager_mock.lago_api_key:
-        assert len(billing_manager_mock._tasks) > 0
+
+    assert len(billing_manager_mock._tasks) > 0
     assert billing_manager_mock.are_tasks_running()
 
 
 @pytest.mark.anyio
 async def test_stop(billing_manager_mock):  # pylint: disable=redefined-outer-name
-    mock_task = asyncio.create_task(asyncio.sleep(1))
+    # Populate api_key and url to simulate active billing manager
+    billing_manager_mock.lago_api_key = "some_api_key"
+    billing_manager_mock.lago_url = "some_url"
+
+    mock_task = asyncio.create_task(asyncio.sleep(0.1))
     billing_manager_mock._tasks.append(mock_task)
 
     billing_manager_mock._pubsub = Mock()
@@ -63,6 +71,26 @@ async def test_stop(billing_manager_mock):  # pylint: disable=redefined-outer-na
     assert len(billing_manager_mock._tasks) == 0
 
     billing_manager_mock._pubsub.disconnect.assert_called_once()
+
+
+# Sample test for checking if tasks are running
+@pytest.mark.anyio
+async def test_are_tasks_running_x(billing_manager_mock):
+    # Simulate no active billing manager
+    billing_manager_mock.lago_api_key = ""
+    billing_manager_mock.lago_url = ""
+
+    billing_manager_mock._tasks = []
+    # Should be true as billing manager is never started (for health check)
+    assert billing_manager_mock.are_tasks_running()
+
+    # Simulate active billing manager
+    billing_manager_mock.lago_api_key = "some_api_key"
+    billing_manager_mock.lago_url = "some_url"
+
+    billing_manager_mock._tasks = []
+    # Should be false as billing manager is started, but tasks is empty
+    assert not billing_manager_mock.are_tasks_running()
 
 
 @pytest.mark.anyio
@@ -76,7 +104,7 @@ async def test_listen_for_billing_events(
 
     try:
         await asyncio.wait_for(
-            billing_manager_mock._listen_for_billing_events(), timeout=0.5
+            billing_manager_mock._listen_for_billing_events(), timeout=0.1
         )
     except asyncio.TimeoutError:
         pass
@@ -263,7 +291,6 @@ async def test_convert_endorsements_event(
     transaction_id,
     expected_event_type,
 ):
-
     lago = billing_manager_mock._convert_endorsements_event(
         group_id=group_id,
         endorsement_type=endorsement_type,
@@ -272,13 +299,11 @@ async def test_convert_endorsements_event(
 
     if not expected_event_type or not transaction_id:
         assert lago is None
-        return
-
-    expected_lago = expected_event_type(
-        transaction_id="123456789", external_customer_id="GroupA"
-    )
-
-    assert lago == expected_lago
+    else:
+        expected_lago = expected_event_type(
+            transaction_id="123456789", external_customer_id="GroupA"
+        )
+        assert lago == expected_lago
 
 
 @pytest.mark.anyio

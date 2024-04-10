@@ -1,9 +1,11 @@
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
-from webhooks.web.main import app, app_lifespan
+from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
+from webhooks.services.sse_manager import SseManager
+from webhooks.web.main import app, app_lifespan, health_check
 from webhooks.web.routers import sse, webhooks, websocket
 
 
@@ -24,11 +26,23 @@ def test_create_app():
         assert route in routes
 
 
+@pytest.fixture
+def acapy_events_processor_mock():
+    mock = AsyncMock(spec=AcaPyEventsProcessor)
+    return mock
+
+
+@pytest.fixture
+def sse_manager_mock():
+    mock = AsyncMock(spec=SseManager)
+    return mock
+
+
 @pytest.mark.anyio
-async def test_app_lifespan():
-    # Mocks for services and container
-    acapy_events_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
-    sse_manager_mock = MagicMock(start=Mock(), stop=AsyncMock())
+async def test_app_lifespan(
+    acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+):
     container_mock = MagicMock(
         acapy_events_processor=MagicMock(return_value=acapy_events_processor_mock),
         sse_manager=MagicMock(return_value=sse_manager_mock),
@@ -36,8 +50,8 @@ async def test_app_lifespan():
         shutdown_resources=Mock(),
     )
 
-    # Patch the get_container function to return the mocked container
-    with patch("webhooks.web.main.get_container", return_value=container_mock):
+    # Patch the Container to return the mocked container
+    with patch("webhooks.web.main.Container", return_value=container_mock):
         # Run the app_lifespan context manager
         async with app_lifespan(FastAPI()):
             pass
@@ -54,3 +68,43 @@ async def test_app_lifespan():
         sse_manager_mock.stop.assert_awaited_once()
 
         container_mock.shutdown_resources.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_health_check_healthy(
+    acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+):
+    acapy_events_processor_mock.are_tasks_running.return_value = True
+    sse_manager_mock.are_tasks_running.return_value = True
+
+    response = await health_check(
+        acapy_events_processor=acapy_events_processor_mock, sse_manager=sse_manager_mock
+    )
+    assert response == {"status": "healthy"}
+
+
+@pytest.mark.anyio
+async def test_health_check_unhealthy(
+    acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
+    sse_manager_mock,  # pylint: disable=redefined-outer-name
+):
+    acapy_events_processor_mock.are_tasks_running.return_value = False
+    sse_manager_mock.are_tasks_running.return_value = True
+    with pytest.raises(HTTPException) as exc_info:
+        await health_check(
+            acapy_events_processor=acapy_events_processor_mock,
+            sse_manager=sse_manager_mock,
+        )
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == "One or more background tasks are not running."
+
+    acapy_events_processor_mock.are_tasks_running.return_value = True
+    sse_manager_mock.are_tasks_running.return_value = False
+    with pytest.raises(HTTPException) as exc_info:
+        await health_check(
+            acapy_events_processor=acapy_events_processor_mock,
+            sse_manager=sse_manager_mock,
+        )
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == "One or more background tasks are not running."

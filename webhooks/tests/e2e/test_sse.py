@@ -114,13 +114,10 @@ async def get_sse_stream_response(url, duration=2) -> Response:
         async with RichAsyncClient(timeout=timeout) as client:
             async with client.stream("GET", url) as response:
                 response_text = ""
-                try:
-                    async for line in response.aiter_lines():
-                        response_text += line
-                except TimeoutError:
-                    pass  # Timeout reached, return the response text read so far
-    except ReadTimeout:
-        # Closing connection gracefully, as event_stream is infinite
+                async for line in response.aiter_lines():
+                    response_text += line
+    except (TimeoutError, ReadTimeout):
+        # Closing connection gracefully, return the response text read so far
         pass
     finally:
         return response_text
@@ -144,7 +141,3 @@ async def listen_for_event(url, duration=10):
                 if line.startswith("data: "):
                     data = line[6:]
                     return json.loads(data)
-                elif line == "" or line.startswith(": ping"):
-                    pass  # ignore newlines and pings
-                else:
-                    logger.warning("Unexpected SSE line: %s", line)

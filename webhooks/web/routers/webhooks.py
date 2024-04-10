@@ -43,8 +43,8 @@ async def get_webhooks_by_wallet(
 )
 @inject
 async def get_webhooks_by_wallet_and_topic(
-    topic: str,
     wallet_id: str,
+    topic: str,
     redis_service: WebhooksRedisService = Depends(Provide[Container.redis_service]),
 ) -> List[CloudApiWebhookEventGeneric]:
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "topic": topic})

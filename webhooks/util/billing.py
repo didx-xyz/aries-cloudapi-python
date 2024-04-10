@@ -18,16 +18,14 @@ def is_applicable_for_billing(
         return False
 
     if not group_id:
-        logger.warning("Can't bill for this event as group_id is missing. {} ", payload)
+        logger.warning("Can't bill for this event as group_id is missing: {}", payload)
+        return False
+
+    if topic not in ["proofs", "credentials", "endorsements", "issuer_cred_rev"]:
+        logger.debug("Event topic {} is not applicable for the billing service.", topic)
         return False
 
     state = payload.get("state")
-    if topic not in ["proofs", "credentials", "endorsements", "issuer_cred_rev"]:
-        logger.debug(
-            "Event topic: {} is not applicable for the billing service.", topic
-        )
-        return False
-
     if state not in [
         "done",
         "transaction_acked",
@@ -35,16 +33,14 @@ def is_applicable_for_billing(
         "credential_acked",
         "presentation_acked",
     ]:
-        logger.debug(
-            "Event state: {} is not applicable for the billing service.", state
-        )
+        logger.debug("Event state {} is not applicable for the billing service.", state)
         return False
 
     if topic == "endorsements":
         operation_type = get_operation_type(payload=payload, logger=logger)
         if operation_type not in valid_operation_types:
             logger.debug(
-                "Endorsement operation type: {} is not applicable for the billing service.",
+                "Endorsement operation type {} is not applicable for billing.",
                 operation_type,
             )
             return False

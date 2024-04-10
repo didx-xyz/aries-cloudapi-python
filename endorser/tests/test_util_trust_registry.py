@@ -41,6 +41,21 @@ async def test_is_valid_issuer_did_not_found():
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize("roles", [[], ["verifier"]])
+async def test_is_valid_issuer_actor_not_issuer(roles):
+    actor_response = {"roles": roles}
+
+    with patch(
+        "endorser.util.trust_registry.RichAsyncClient.get",
+        return_value=Response(200, json=actor_response),
+    ) as mock_get:
+        result = await is_valid_issuer("did:sov:xxxx", "test-schema-id")
+
+        assert result is False
+        mock_get.assert_called_once()
+
+
+@pytest.mark.anyio
 async def test_is_valid_issuer_schema_not_registered():
     # Mock responses to simulate the trust registry responses, first for the actor, then a 404 for the schema
     actor_response = {"roles": ["issuer"]}
@@ -60,8 +75,8 @@ async def test_is_valid_issuer_schema_not_registered():
 
 
 @pytest.mark.anyio
-async def test_is_valid_issuer_http_error():
-    # Simulate an HTTP error during the DID check
+async def test_is_valid_issuer_http_error_on_actor():
+    # Simulate an HTTP error during the actor fetch
     with patch(
         "endorser.util.trust_registry.RichAsyncClient.get",
         side_effect=HTTPException(status_code=500, detail="Server Error"),
@@ -70,3 +85,20 @@ async def test_is_valid_issuer_http_error():
             await is_valid_issuer("did:sov:xxxx", "test-schema-id")
 
         mock_get.assert_called_once()  # Ensure the call was made once before the exception
+
+
+@pytest.mark.anyio
+async def test_is_valid_issuer_http_error_on_schema():
+    # Simulate an HTTP error during the schema fetch
+    actor_response = {"roles": ["issuer"]}
+    with patch(
+        "endorser.util.trust_registry.RichAsyncClient.get",
+        side_effect=[
+            Response(200, json=actor_response),
+            HTTPException(status_code=500, detail="Server Error"),
+        ],
+    ) as mock_get:
+        with pytest.raises(HTTPException):
+            await is_valid_issuer("did:sov:xxxx", "test-schema-id")
+
+        assert mock_get.call_count == 2

@@ -1,7 +1,8 @@
 from unittest.mock import Mock, patch
 
 import pytest
-#from sqlalchemy import ScalarResult
+
+# from sqlalchemy import ScalarResult
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -224,7 +225,7 @@ def test_delete_actor(db_session_mock: Session, actor, actor_id):
     ],
 )
 def test_update_actor(db_session_mock: Session, new_actor: Actor, old_actor: db.Actor):
-    #actor = db.Actor(**new_actor.model_dump())
+    # actor = db.Actor(**new_actor.model_dump())
 
     db_session_mock.scalars.return_value.one_or_none.return_value = old_actor
 
@@ -360,7 +361,7 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
     ],
 )
 def test_update_schema(db_session_mock: Session, new_schema, old_schema):
-    #schema = db.Schema(**new_schema.model_dump())
+    # schema = db.Schema(**new_schema.model_dump())
     db_session_mock.scalars.return_value.one_or_none.return_value = old_schema
     if not old_schema:
         with pytest.raises(SchemaDoesNotExistException):

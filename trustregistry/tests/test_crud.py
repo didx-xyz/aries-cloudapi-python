@@ -228,21 +228,18 @@ def test_update_actor(db_session_mock: Session, new_actor: Actor, old_actor: db.
 
     db_session_mock.scalars.return_value.one_or_none.return_value = old_actor
 
-    db_session_mock.scalars.retrun_value = ScalarResult[actor]
     if not old_actor:
         with pytest.raises(ActorDoesNotExistException):
             crud.update_actor(db_session_mock, new_actor)
     else:
         with patch("trustregistry.crud.update") as update_mock:
-            result = crud.update_actor(db_session_mock, new_actor)
+            crud.update_actor(db_session_mock, new_actor)
 
             update_mock.assert_called_once_with(db.Actor)
             update_mock(db.Actor).where.assert_called()
             update_mock(db.Actor).where().values.assert_called()
 
             db_session_mock.commit.assert_called_once()
-
-            # assert result == actor
 
 
 @pytest.mark.anyio
@@ -370,15 +367,13 @@ def test_update_schema(db_session_mock: Session, new_schema, old_schema):
             crud.update_schema(db_session_mock, new_schema, new_schema.id)
     else:
         with patch("trustregistry.crud.update") as update_mock:
-            result = crud.update_schema(db_session_mock, new_schema, new_schema.id)
+            crud.update_schema(db_session_mock, new_schema, new_schema.id)
 
             update_mock.assert_called_once_with(db.Schema)
             update_mock(db.Schema).where.assert_called()
             update_mock(db.Schema).where().values.assert_called()
 
             db_session_mock.commit.assert_called_once()
-
-            # assert result == schema
 
 
 @pytest.mark.anyio

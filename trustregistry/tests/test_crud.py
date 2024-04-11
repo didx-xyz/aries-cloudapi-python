@@ -49,7 +49,7 @@ def test_get_actors(db_session_mock: Session, expected, skip, limit):
     "expected, actor_did",
     [
         (db.Actor(id="1", name="Alice", did="did:123"), "did:123"),
-        (None, "did:notindb"),
+        (None, "did:not_in_db"),
     ],
 )
 def test_get_actor_by_did(db_session_mock: Session, expected, actor_did):
@@ -145,7 +145,7 @@ def test_create_actor(db_session_mock: Session):
         "ix_actors_name",
         "ix_actors_didcomm_invitation",
         "ix_actors_did",
-        "unkonwn_orig",
+        "unknown_orig",
     ],
 )
 def test_create_actor_already_exists(db_session_mock: Session, orig: str):
@@ -273,7 +273,7 @@ def test_get_schemas(db_session_mock: Session, expected, skip, limit):
     "expected, schema_id",
     [
         (db.Schema(id="123", name="schema1", version="1.0"), "123"),
-        (None, "idnotindb"),
+        (None, "id_not_in_db"),
     ],
 )
 def test_get_schema_by_id(db_session_mock: Session, expected, schema_id):
@@ -369,7 +369,7 @@ def test_update_schema(db_session_mock: Session, new_schema, old_schema):
             db.Schema(did="did123", name="schema1", version="1.0"),
             "did123:2:schema1:1.0",
         ),
-        (None, "notindb"),
+        (None, "not_in_db"),
     ],
 )
 def test_delete_schema(db_session_mock: Session, schema, schema_id):

@@ -11,19 +11,10 @@ updates:
     schedule:
       interval: weekly
 
+  # Maintain dependencies for Python
   - package-ecosystem: pip
     directory: /
     schedule:
       interval: weekly
       day: saturday
-      time: "12:00"
-
-#   - package-ecosystem: "pip"
-#     directory: "/"
-#     schedule:
-#       interval: "daily"
-#       time: "00:00"
-#     allow:
-#       - dependency-name: "fastapi"
-#       - dependency-name: "starlette"
-#       - dependency-name: "httpx"
+      time: "07:00"

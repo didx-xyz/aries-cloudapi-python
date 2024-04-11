@@ -10,9 +10,6 @@ from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
 from shared.models.endorsement import (
-    extract_operation_type_from_endorsement_payload as get_operation_type,
-)
-from shared.models.endorsement import (
     obfuscate_primary_data_in_payload,
     payload_is_applicable_for_endorser,
 )

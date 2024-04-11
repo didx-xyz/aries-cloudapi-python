@@ -143,6 +143,7 @@ def test_create_actor(db_session_mock: Session):
     assert result.name == db_actor.name
     assert result.roles == db_actor.roles
 
+
 @pytest.mark.anyio
 @pytest.mark.parametrize(
     "orig",
@@ -344,9 +345,14 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
     [
         (
             Schema(
-                did="did123", name="schema_new", version="1.0", id="did123:2:schema_new:1.0"
+                did="did123",
+                name="schema_new",
+                version="1.0",
+                id="did123:2:schema_new:1.0",
             ),
-            db.Schema(did="did123", name="schema1", version="1.0", id="did123:2:schema1:1.0"),
+            db.Schema(
+                did="did123", name="schema1", version="1.0", id="did123:2:schema1:1.0"
+            ),
         ),
         (
             Schema(

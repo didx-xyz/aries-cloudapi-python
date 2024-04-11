@@ -37,7 +37,7 @@ def test_get_actors(db_session_mock: Session, expected, skip, limit):
 
         actors = crud.get_actors(db_session_mock, skip=skip, limit=limit)
 
-        db_session_mock.scalars.assert_called()
+        db_session_mock.scalars.assert_called_once()
         assert actors == expected
 
         select_mock.assert_called_once_with(db.Actor)
@@ -60,7 +60,7 @@ def test_get_actor_by_did(db_session_mock: Session, expected, actor_did):
         if expected:
             actor = crud.get_actor_by_did(db_session_mock, actor_did=actor_did)
 
-            db_session_mock.scalars.assert_called()
+            db_session_mock.scalars.assert_called_once()
 
             assert actor == expected
         else:
@@ -68,9 +68,7 @@ def test_get_actor_by_did(db_session_mock: Session, expected, actor_did):
                 actor = crud.get_actor_by_did(db_session_mock, actor_did=actor_did)
 
         select_mock.assert_called_once_with(db.Actor)
-        select_mock(
-            db.Actor
-        ).where.assert_called()  # once_with(db.Actor.did == actor_did)
+        select_mock(db.Actor).where.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -87,16 +85,14 @@ def test_get_actor_by_name(db_session_mock: Session, expected, actor_name):
         if expected:
             result = crud.get_actor_by_name(db_session_mock, actor_name=actor_name)
 
-            db_session_mock.scalars.assert_called()
+            db_session_mock.scalars.assert_called_once()
             assert result == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
                 result = crud.get_actor_by_name(db_session_mock, actor_name=actor_name)
 
         select_mock.assert_called_once_with(db.Actor)
-        select_mock(
-            db.Actor
-        ).where.assert_called()  # _once_with(db.Actor.name == actor_name)
+        select_mock(db.Actor).where.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -113,14 +109,14 @@ def test_get_actor_by_id(db_session_mock: Session, expected, actor_id):
         if expected:
             result = crud.get_actor_by_id(db_session_mock, actor_id=actor_id)
 
-            db_session_mock.scalars.assert_called()
+            db_session_mock.scalars.assert_called_once()
             assert result == expected
         else:
             with pytest.raises(ActorDoesNotExistException):
                 result = crud.get_actor_by_id(db_session_mock, actor_id=actor_id)
 
         select_mock.assert_called_once_with(db.Actor)
-        select_mock(db.Actor).where.assert_called()
+        select_mock(db.Actor).where.assert_called_once()
 
 
 def test_create_actor(db_session_mock: Session):
@@ -129,9 +125,9 @@ def test_create_actor(db_session_mock: Session):
 
     result = crud.create_actor(db_session_mock, actor)
 
-    db_session_mock.add.assert_called()  # _once_with(db_actor)
+    db_session_mock.add.assert_called_once()
     db_session_mock.commit.assert_called_once()
-    db_session_mock.refresh.assert_called()  # _once_with(db_actor)
+    db_session_mock.refresh.assert_called_once()
 
     assert result.did == db_actor.did
     assert result.name == db_actor.name
@@ -185,14 +181,10 @@ def test_delete_actor(db_session_mock: Session, actor, actor_id):
             result = crud.delete_actor(db_session_mock, actor_id=actor_id)
 
             select_mock.assert_called_once_with(db.Actor)
-            select_mock(
-                db.Actor
-            ).where.assert_called()  # _once_with(db.Actor.id == actor_id)
+            select_mock(db.Actor).where.assert_called_once()
 
             delete_mock.assert_called_once_with(db.Actor)
-            delete_mock(
-                db.Actor
-            ).where.assert_called()  # _once_with(db.Actor.id == actor_id)
+            delete_mock(db.Actor).where.assert_called_once()
 
             db_session_mock.execute.assert_called_once()
             db_session_mock.commit.assert_called_once()
@@ -226,8 +218,8 @@ def test_update_actor(db_session_mock: Session, new_actor: Actor, old_actor: db.
             crud.update_actor(db_session_mock, new_actor)
 
             update_mock.assert_called_once_with(db.Actor)
-            update_mock(db.Actor).where.assert_called()
-            update_mock(db.Actor).where().values.assert_called()
+            update_mock(db.Actor).where.assert_called_once()
+            update_mock(db.Actor).where().values.assert_called_once()
 
             db_session_mock.commit.assert_called_once()
 
@@ -261,7 +253,7 @@ def test_get_schemas(db_session_mock: Session, expected, skip, limit):
 
         schemas = crud.get_schemas(db_session_mock, skip=skip, limit=limit)
 
-        db_session_mock.scalars.assert_called()
+        db_session_mock.scalars.assert_called_once()
         assert schemas == expected
 
         select_mock.assert_called_once_with(db.Schema)
@@ -284,7 +276,7 @@ def test_get_schema_by_id(db_session_mock: Session, expected, schema_id):
         if expected:
             schema = crud.get_schema_by_id(db_session_mock, schema_id=schema_id)
 
-            db_session_mock.scalars.assert_called()
+            db_session_mock.scalars.assert_called_once()
 
             assert schema == expected
         else:
@@ -292,7 +284,7 @@ def test_get_schema_by_id(db_session_mock: Session, expected, schema_id):
                 schema = crud.get_schema_by_id(db_session_mock, schema_id=schema_id)
 
         select_mock.assert_called_once_with(db.Schema)
-        select_mock(db.Schema).where.assert_called()
+        select_mock(db.Schema).where.assert_called_once()
 
 
 @pytest.mark.parametrize(
@@ -313,9 +305,9 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
             crud.create_schema(db_session_mock, new_schema)
     else:
         result = crud.create_schema(db_session_mock, new_schema)
-        db_session_mock.add.assert_called()  # _once_with(schema)
+        db_session_mock.add.assert_called_once()
         db_session_mock.commit.assert_called_once()
-        db_session_mock.refresh.assert_called()  # _once_with(schema)
+        db_session_mock.refresh.assert_called_once()
 
         assert result.id == schema.id
         assert result.did == schema.did
@@ -356,8 +348,8 @@ def test_update_schema(db_session_mock: Session, new_schema, old_schema):
             crud.update_schema(db_session_mock, new_schema, new_schema.id)
 
             update_mock.assert_called_once_with(db.Schema)
-            update_mock(db.Schema).where.assert_called()
-            update_mock(db.Schema).where().values.assert_called()
+            update_mock(db.Schema).where.assert_called_once()
+            update_mock(db.Schema).where().values.assert_called_once()
 
             db_session_mock.commit.assert_called_once()
 
@@ -381,10 +373,10 @@ def test_delete_schema(db_session_mock: Session, schema, schema_id):
             result = crud.delete_schema(db_session_mock, schema_id)
 
             select_mock.assert_called_once_with(db.Schema)
-            select_mock(db.Schema).where.assert_called()
+            select_mock(db.Schema).where.assert_called_once()
 
             delete_mock.assert_called_once_with(db.Schema)
-            delete_mock(db.Schema).where.assert_called()
+            delete_mock(db.Schema).where.assert_called_once()
 
             db_session_mock.execute.assert_called_once()
             db_session_mock.commit.assert_called_once()

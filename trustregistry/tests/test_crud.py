@@ -139,6 +139,9 @@ def test_create_actor(db_session_mock: Session):
     db_session_mock.commit.assert_called_once()
     db_session_mock.refresh.assert_called()  # _once_with(db_actor)
 
+    assert result.did == db_actor.did
+    assert result.name == db_actor.name
+    assert result.roles == db_actor.roles
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
@@ -329,7 +332,10 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
         db_session_mock.commit.assert_called_once()
         db_session_mock.refresh.assert_called()  # _once_with(schema)
 
-    # assert result == schema
+        assert result.id == schema.id
+        assert result.did == schema.did
+        assert result.name == schema.name
+        assert result.version == schema.version
 
 
 @pytest.mark.anyio
@@ -338,9 +344,9 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
     [
         (
             Schema(
-                did="did123", name="schema1", version="1.0", id="did123:2:schema1:1.0"
+                did="did123", name="schema_new", version="1.0", id="did123:2:schema_new:1.0"
             ),
-            db.Schema(did="did123", name="schema1", version="1.0"),
+            db.Schema(did="did123", name="schema1", version="1.0", id="did123:2:schema1:1.0"),
         ),
         (
             Schema(

@@ -121,8 +121,7 @@ async def test_remove_schema():
         assert "Schema not found" in response.json()["detail"]
 
 
-@pytest.mark.anyio
-async def test__get_schema_attrs():
+def test__get_schema_attrs():
     res = _get_schema_attrs(schema_id=SchemaID(schema_id="abc:2:Peter Parker:0.4.20"))
 
     assert res == ["abc", "2", "Peter Parker", "0.4.20"]

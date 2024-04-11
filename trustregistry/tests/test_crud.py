@@ -1,8 +1,6 @@
 from unittest.mock import Mock, patch
 
 import pytest
-
-# from sqlalchemy import ScalarResult
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -24,7 +22,6 @@ def db_session_mock():
     return session
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "expected, skip, limit",
     [
@@ -48,7 +45,6 @@ def test_get_actors(db_session_mock: Session, expected, skip, limit):
         select_mock(db.Actor).offset(skip).limit.assert_called_once_with(limit)
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "expected, actor_did",
     [
@@ -77,7 +73,6 @@ def test_get_actor_by_did(db_session_mock: Session, expected, actor_did):
         ).where.assert_called()  # once_with(db.Actor.did == actor_did)
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "expected, actor_name",
     [
@@ -104,7 +99,6 @@ def test_get_actor_by_name(db_session_mock: Session, expected, actor_name):
         ).where.assert_called()  # _once_with(db.Actor.name == actor_name)
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "expected, actor_id",
     [
@@ -129,7 +123,6 @@ def test_get_actor_by_id(db_session_mock: Session, expected, actor_id):
         select_mock(db.Actor).where.assert_called()
 
 
-@pytest.mark.anyio
 def test_create_actor(db_session_mock: Session):
     actor = Actor(id="1", name="Alice", did="did:123", roles=["role1", "role2"])
     db_actor = db.Actor(**actor.model_dump())
@@ -145,7 +138,6 @@ def test_create_actor(db_session_mock: Session):
     assert result.roles == db_actor.roles
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "orig",
     [
@@ -167,7 +159,6 @@ def test_create_actor_already_exists(db_session_mock: Session, orig: str):
         crud.create_actor(db_session_mock, actor)
 
 
-@pytest.mark.anyio
 def test_create_actor_exception(db_session_mock: Session):
     actor = Actor(id="1", name="Alice", did="did:123", roles=["role1", "role2"])
 
@@ -177,7 +168,6 @@ def test_create_actor_exception(db_session_mock: Session):
         crud.create_actor(db_session_mock, actor)
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "actor, actor_id",
     [
@@ -213,7 +203,6 @@ def test_delete_actor(db_session_mock: Session, actor, actor_id):
                 crud.delete_actor(db_session_mock, actor_id=actor_id)
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "new_actor, old_actor ",
     [
@@ -243,7 +232,6 @@ def test_update_actor(db_session_mock: Session, new_actor: Actor, old_actor: db.
             db_session_mock.commit.assert_called_once()
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "expected, skip, limit",
     [
@@ -281,7 +269,6 @@ def test_get_schemas(db_session_mock: Session, expected, skip, limit):
         select_mock(db.Schema).offset(skip).limit.assert_called_once_with(limit)
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "expected, schema_id",
     [
@@ -308,7 +295,6 @@ def test_get_schema_by_id(db_session_mock: Session, expected, schema_id):
         select_mock(db.Schema).where.assert_called()
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "old_schema, new_schema",
     [
@@ -337,7 +323,6 @@ def test_create_schema(db_session_mock: Session, old_schema, new_schema):
         assert result.version == schema.version
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "new_schema, old_schema",
     [
@@ -377,7 +362,6 @@ def test_update_schema(db_session_mock: Session, new_schema, old_schema):
             db_session_mock.commit.assert_called_once()
 
 
-@pytest.mark.anyio
 @pytest.mark.parametrize(
     "schema, schema_id",
     [

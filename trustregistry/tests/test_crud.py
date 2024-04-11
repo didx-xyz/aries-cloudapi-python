@@ -14,6 +14,8 @@ from trustregistry.crud import (
     SchemaDoesNotExistException,
 )
 
+# pylint: disable=redefined-outer-name
+
 
 @pytest.fixture
 def db_session_mock():

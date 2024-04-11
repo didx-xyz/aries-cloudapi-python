@@ -1,6 +1,6 @@
-import json
 from typing import Any, Dict, Optional
 
+import orjson
 from aries_cloudcontroller import AcaPyClient, TransactionRecord
 
 from shared.log_config import get_logger
@@ -14,45 +14,26 @@ def get_endorsement_request_attachment(
 ) -> Optional[Dict[str, Any]]:
     try:
         if not transaction.messages_attach:
-            logger.debug("No message attachments in transaction")
+            logger.warning("No message attachments in transaction")
             return None
 
         attachment: Dict = transaction.messages_attach[0]
-
-        if "data" not in attachment:
-            logger.debug(
-                "Attachment does not contain expected key `data`. Got attachment: `{}`.",
-                attachment,
-            )
-            return None
-
-        if not isinstance(attachment["data"], dict) or "json" not in attachment["data"]:
-            logger.debug(
-                "Attachment data does not contain expected keys `json`. Got attachment data: `{}`.",
-                attachment["data"],
-            )
-            return None
-
         json_payload = attachment["data"]["json"]
 
         # Both dict and str encoding have occurred for the attachment data
         # Parse to dict if payload is of type str
         if isinstance(json_payload, str):
             logger.debug("Try cast attachment payload to json")
-            try:
-                json_payload = json.loads(json_payload)
-                logger.debug("Payload is valid JSON.")
-            except json.JSONDecodeError:
-                logger.warning("Failed to decode attachment payload. Invalid JSON.")
-                json_payload = None
+            json_payload = orjson.loads(json_payload)
+            logger.debug("Payload is valid JSON.")
 
         return json_payload
-    except (TypeError, KeyError):
+
+    except (IndexError, KeyError, TypeError):
         logger.warning("Could not read attachment from transaction: `{}`.", transaction)
-    except Exception:
-        logger.exception(
-            "Exception caught while running `get_endorsement_request_attachment`."
-        )
+    except orjson.JSONDecodeError:
+        logger.warning("Failed to decode attachment payload. Invalid JSON.")
+
     return None
 
 

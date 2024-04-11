@@ -1,9 +1,9 @@
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
-from endorser.main import app, app_lifespan
+from endorser.main import app, app_lifespan, health_check
 
 
 def test_create_app():
@@ -28,8 +28,8 @@ async def test_app_lifespan():
         shutdown_resources=Mock(),
     )
 
-    # Patch the get_container function to return the mocked container
-    with patch("endorser.main.get_container", return_value=container_mock):
+    # Patch the Container to return the mocked container
+    with patch("endorser.main.Container", return_value=container_mock):
         # Run the app_lifespan context manager
         async with app_lifespan(FastAPI()):
             pass
@@ -43,3 +43,23 @@ async def test_app_lifespan():
         # Assert the shutdown logic was called correctly
         endorsement_processor_mock.stop.assert_awaited_once()
         container_mock.shutdown_resources.assert_called_once()
+
+
+@pytest.mark.anyio
+async def test_health_check_healthy():
+    endorsement_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
+    endorsement_processor_mock.are_tasks_running.return_value = True
+
+    response = await health_check(endorsement_processor=endorsement_processor_mock)
+    assert response == {"status": "healthy"}
+
+
+@pytest.mark.anyio
+async def test_health_check_unhealthy():
+    endorsement_processor_mock = MagicMock(start=Mock(), stop=AsyncMock())
+    endorsement_processor_mock.are_tasks_running.return_value = False
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_check(endorsement_processor=endorsement_processor_mock)
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == "One or more background tasks are not running."

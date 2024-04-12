@@ -1,5 +1,4 @@
 import json
-import time
 
 import pytest
 from aries_cloudcontroller import (

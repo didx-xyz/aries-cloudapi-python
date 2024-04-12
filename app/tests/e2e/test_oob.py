@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
@@ -63,8 +61,6 @@ async def test_oob_connect_via_public_did(
     bob_member_client: RichAsyncClient,
     faber_acapy_client: AcaPyClient,
 ):
-    time.sleep(4)  # Todo replace with listener
-
     faber_public_did = await faber_acapy_client.wallet.get_public_did()
     connect_response = await bob_member_client.post(
         OOB_BASE_PATH + "/connect-public-did",

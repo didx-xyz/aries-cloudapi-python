@@ -1,5 +1,3 @@
-import time
-
 import pytest
 from assertpy import assert_that
 
@@ -16,7 +14,6 @@ async def test_accept_use_public_did(
     faber_client: RichAsyncClient,  # issuer has public did
     meld_co_client: RichAsyncClient,  # also has public did
 ):
-    time.sleep(5)  # sleep to allow ledger op to register public did ...
     invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(
@@ -61,7 +58,6 @@ async def test_accept_use_public_did_between_issuer_and_holder(
     faber_client: RichAsyncClient,  # issuer has public did
     alice_member_client: RichAsyncClient,  # no public did
 ):
-    time.sleep(10)  # sleep to allow ledger op to register public did ...
     invite_json = CreateInvitation(use_public_did=True).model_dump()
 
     response = await faber_client.post(

@@ -32,6 +32,7 @@ def is_applicable_for_billing(
         "revoked",
         "credential_acked",
         "presentation_acked",
+        "verified",
     ]:
         logger.debug("Event state {} is not applicable for the billing service.", state)
         return False, None
@@ -44,6 +45,12 @@ def is_applicable_for_billing(
                 "Endorsement operation type {} is not applicable for billing.",
                 operation_type,
             )
+            return False, None
+
+    if topic == "proofs":
+        role = payload.get("role")
+        if role != "verifier":
+            logger.debug("Proof role {} is not applicable for billing.", role)
             return False, None
 
     logger.debug("Event is applicable for the billing service.")

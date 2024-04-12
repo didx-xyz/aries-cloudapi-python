@@ -246,9 +246,9 @@ class EndorsementProcessor:
         async with AcaPyClient(
             base_url=GOVERNANCE_AGENT_URL, api_key=GOVERNANCE_AGENT_API_KEY
         ) as client:
-            # Not interested in this endorsement request
+            # Check if endorsement request is indeed applicable
             if not await should_accept_endorsement(client, endorsement):
-                logger.info(  # should_accept_endorsement already logs reason as warning
+                logger.info(  # check already logged the reason as warning
                     "Endorsement request with transaction id `{}` is not applicable for endorsement.",
                     endorsement.transaction_id,
                 )

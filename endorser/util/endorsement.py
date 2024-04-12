@@ -18,7 +18,10 @@ logger = get_logger(__name__)
 
 
 async def should_accept_endorsement(
-    client: AcaPyClient, endorsement: Endorsement
+    client: AcaPyClient,
+    endorsement: Endorsement,
+    max_retries: int = 5,
+    retry_delay: float = 1.0,
 ) -> bool:
     """Check whether a transaction endorsement request should be endorsed.
 
@@ -29,6 +32,8 @@ async def should_accept_endorsement(
 
     Args:
         endorsement (Endorsement): The endorsement event model
+        max_retries: The max number of times to attempt fetching from the trust registry
+        retry_delay: The time delay in seconds between fetching from the trust registry
 
     Returns:
         bool: Whether the endorsement request should be accepted
@@ -82,9 +87,6 @@ async def should_accept_endorsement(
     did, schema_id = await get_did_and_schema_id_from_cred_def_attachment(
         client, attachment
     )
-
-    max_retries = 5
-    retry_delay = 1  # in seconds
 
     for attempt in range(max_retries):
         try:

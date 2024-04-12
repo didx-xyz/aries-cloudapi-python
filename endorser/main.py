@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, FastAPI, HTTPException
 
-from endorser.services.dependency_injection.container import Container, get_container
+from endorser.services.dependency_injection.container import Container
 from endorser.services.endorsement_processor import EndorsementProcessor
 from shared.log_config import get_logger
 
@@ -16,7 +16,7 @@ async def app_lifespan(_: FastAPI):
     logger.info("Endorser Service startup")
 
     # Initialize the container
-    container = get_container()
+    container = Container()
     container.wire(modules=[__name__])
 
     # Start singleton services

@@ -156,7 +156,7 @@ async def test_delete_actor():
         mock_crud.return_value = None
         result = await registry_actors.remove_actor("1")
         mock_crud.assert_called_once()
-        assert result == None
+        assert result is None
 
 
 @pytest.mark.anyio

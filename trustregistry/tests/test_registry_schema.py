@@ -160,8 +160,11 @@ async def test_remove_schema():
             id="WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0",
         )
         mock_crud.return_value = schema
-        await registry_schemas.remove_schema("WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0")
+        result = await registry_schemas.remove_schema(
+            "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
+        )
         mock_crud.assert_called_once()
+        result is None
 
 
 @pytest.mark.anyio

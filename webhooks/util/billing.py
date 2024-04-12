@@ -32,6 +32,7 @@ def is_applicable_for_billing(
         "revoked",
         "credential_acked",
         "presentation_acked",
+        "verified",
     ]:
         logger.debug("Event state {} is not applicable for the billing service.", state)
         return False, None

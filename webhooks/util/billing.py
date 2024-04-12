@@ -47,5 +47,11 @@ def is_applicable_for_billing(
             )
             return False, None
 
+    if topic == "proofs":
+        role = payload.get("role")
+        if role != "verifier":
+            logger.debug("Proof role {} is not applicable for billing.", role)
+            return False, None
+
     logger.debug("Event is applicable for the billing service.")
     return True, operation_type

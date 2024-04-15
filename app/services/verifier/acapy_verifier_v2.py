@@ -60,7 +60,7 @@ class VerifierV2(Verifier):
             trace=create_proof_request.trace,
         )
         try:
-            proof_record = await handle_acapy_call(
+            presentation_exchange = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=controller.present_proof_v2_0.create_proof_request,
                 body=request_body,
@@ -70,11 +70,8 @@ class VerifierV2(Verifier):
                 f"Failed to create presentation request: {e.detail}.", e.status_code
             ) from e
 
-        result = record_to_model(proof_record)
-        if result:
-            bound_logger.debug("Successfully created v2 presentation request.")
-        else:
-            bound_logger.warning("No result from creating v2 presentation request.")
+        result = record_to_model(presentation_exchange)
+        bound_logger.debug("Successfully created v2 presentation request.")
         return result
 
     @classmethod
@@ -119,10 +116,7 @@ class VerifierV2(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-        if result:
-            bound_logger.debug("Successfully sent v2 presentation request.")
-        else:
-            bound_logger.warning("No result from sending v2 presentation request.")
+        bound_logger.debug("Successfully created v2 presentation request.")
         return result
 
     @classmethod
@@ -150,7 +144,7 @@ class VerifierV2(Verifier):
 
         try:
             bound_logger.debug("Send v2 proof presentation")
-            presentation_record = await handle_acapy_call(
+            presentation_exchange = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=controller.present_proof_v2_0.send_presentation,
                 pres_ex_id=pres_ex_id,
@@ -162,11 +156,8 @@ class VerifierV2(Verifier):
                 f"Failed to send proof presentation: {e.detail}.", e.status_code
             ) from e
 
-        result = record_to_model(presentation_record)
-        if result:
-            bound_logger.debug("Successfully sent v2 proof presentation.")
-        else:
-            bound_logger.warning("No result from sending v2 proof presentation.")
+        result = record_to_model(presentation_exchange)
+        bound_logger.debug("Successfully created v2 presentation request.")
         return result
 
     @classmethod
@@ -234,11 +225,7 @@ class VerifierV2(Verifier):
             ) from e
 
         result = [record_to_model(rec) for rec in presentation_exchange.results or []]
-
-        if result:
-            logger.debug("Successfully got v2 present-proof records.")
-        else:
-            logger.info("No v2 present-proof records obtained.")
+        logger.debug("Successfully got v2 present-proof records.")
         return result
 
     @classmethod
@@ -262,10 +249,7 @@ class VerifierV2(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-        if result:
-            bound_logger.debug("Successfully got v2 present-proof record.")
-        else:
-            bound_logger.info("No v2 present-proof record obtained.")
+        bound_logger.debug("Successfully got v2 present-proof record.")
         return result
 
     @classmethod

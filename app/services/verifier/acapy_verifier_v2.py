@@ -46,7 +46,7 @@ class VerifierV2(Verifier):
             )
         else:
             raise CloudApiException(
-                f"Unsupported credential type: {create_proof_request.type}",
+                f"Unsupported credential type: {create_proof_request.type.value}",
                 status_code=501,
             )
 
@@ -90,7 +90,7 @@ class VerifierV2(Verifier):
             )
         else:
             raise CloudApiException(
-                f"Unsupported credential type: {send_proof_request.type}",
+                f"Unsupported credential type: {send_proof_request.type.value}",
                 status_code=501,
             )
 
@@ -135,7 +135,7 @@ class VerifierV2(Verifier):
             )
         else:
             raise CloudApiException(
-                f"Unsupported credential type: {accept_proof_request.type}",
+                f"Unsupported credential type: {accept_proof_request.type.value}",
                 status_code=501,
             )
 

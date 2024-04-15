@@ -39,8 +39,9 @@ async def test_register_actor_x(exeption, status_code):
         mock_crud.side_effect = exeption()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.register_actor(actor)
-            mock_crud.assert_called_once()
-            assert ex.status_code == status_code
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == status_code
 
 
 @pytest.mark.anyio
@@ -59,8 +60,10 @@ async def test_update_actor(actor_id, actor):
         if actor_id != actor.id:
             with pytest.raises(HTTPException) as ex:
                 await registry_actors.update_actor(actor_id, actor)
-                mock_crud.assert_not_called()
-                assert ex.status_code == 400
+
+            mock_crud.assert_not_called()
+            assert ex.value.status_code == 400
+
         else:
             result = await registry_actors.update_actor(actor_id, actor)
             mock_crud.assert_called_once()
@@ -74,8 +77,9 @@ async def test_update_actor_x():
         mock_crud.side_effect = ActorDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.update_actor("1", actor)
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -98,8 +102,9 @@ async def test_get_actor_by_did_x():
         mock_crud.side_effect = ActorDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.get_actor_by_did("did:sov:1234")
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+        
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -122,8 +127,9 @@ async def test_get_actor_by_id_x():
         mock_crud.side_effect = ActorDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.get_actor_by_id("1")
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -146,8 +152,9 @@ async def test_get_actor_by_name_x():
         mock_crud.side_effect = ActorDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.get_actor_by_name("Alice")
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -165,5 +172,6 @@ async def test_delete_actor_x():
         mock_crud.side_effect = ActorDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.remove_actor("1")
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404

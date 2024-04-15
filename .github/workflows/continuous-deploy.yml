@@ -294,7 +294,7 @@ jobs:
           coverage combine
           coverage report
       - name: Generate XML coverage report
-        run: coverage xml --omit="*/test_*,*/tests/*"
+        run: coverage xml
       - name: Upload coverage to Codacy
         run: bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r coverage.xml
         env:

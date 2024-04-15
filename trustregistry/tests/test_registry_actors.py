@@ -102,7 +102,7 @@ async def test_get_actor_by_did_x():
         mock_crud.side_effect = ActorDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.get_actor_by_did("did:sov:1234")
-        
+
         mock_crud.assert_called_once()
         assert ex.value.status_code == 404
 

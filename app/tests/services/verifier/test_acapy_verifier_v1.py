@@ -1,5 +1,11 @@
 import pytest
-from aries_cloudcontroller import AcaPyClient, ApiException, IndyPresSpec
+from aries_cloudcontroller import (
+    AcaPyClient,
+    ApiException,
+    IndyCredPrecis,
+    IndyPresSpec,
+    V10PresentationExchangeList,
+)
 from mockito import when
 
 from app.exceptions.cloudapi_exception import CloudApiException
@@ -17,6 +23,9 @@ from app.tests.services.verifier.utils import (
 )
 from app.tests.util.mock import to_async
 from shared.models.presentation_exchange import PresentationExchange
+from shared.models.presentation_exchange import (
+    presentation_record_to_model as record_to_model,
+)
 from shared.models.protocol import PresentProofProtocolVersion
 
 
@@ -242,6 +251,22 @@ async def test_reject_proof_reject_exception_delete(
 
 
 @pytest.mark.anyio
+async def test_get_proof_records(mock_agent_controller: AcaPyClient):
+    when(mock_agent_controller.present_proof_v1_0).get_records(...).thenReturn(
+        to_async(V10PresentationExchangeList(results=v10_presentation_exchange_records))
+    )
+
+    proof_records = await VerifierV1.get_proof_records(
+        controller=mock_agent_controller,
+    )
+
+    expected_result = [
+        record_to_model(rec) for rec in v10_presentation_exchange_records
+    ]
+    assert proof_records == expected_result
+
+
+@pytest.mark.anyio
 @pytest.mark.parametrize("status_code", [400, 500])
 @pytest.mark.parametrize("error_detail", ["Error msg", "is dynamic"])
 async def test_get_proof_records_exception(
@@ -260,6 +285,20 @@ async def test_get_proof_records_exception(
         )
 
     assert exc.value.status_code == status_code
+
+
+@pytest.mark.anyio
+async def test_get_proof_record(mock_agent_controller: AcaPyClient):
+    when(mock_agent_controller.present_proof_v1_0).get_record(...).thenReturn(
+        to_async(v10_presentation_exchange_records[0])
+    )
+
+    proof_record = await VerifierV1.get_proof_record(
+        controller=mock_agent_controller, proof_id="v1-abc"
+    )
+
+    expected_result = record_to_model(v10_presentation_exchange_records[0])
+    assert proof_record == expected_result
 
 
 @pytest.mark.anyio
@@ -284,6 +323,17 @@ async def test_get_proof_record_exception(
 
 
 @pytest.mark.anyio
+async def test_delete_proof(mock_agent_controller: AcaPyClient):
+    when(mock_agent_controller.present_proof_v1_0).delete_record(...).thenReturn(
+        to_async()
+    )
+    result = await VerifierV1.delete_proof(
+        controller=mock_agent_controller, proof_id="v1-abc"
+    )
+    assert result is None
+
+
+@pytest.mark.anyio
 @pytest.mark.parametrize("status_code", [400, 500])
 @pytest.mark.parametrize("error_detail", ["Error msg", "is dynamic"])
 async def test_delete_proof_exception(
@@ -302,6 +352,25 @@ async def test_delete_proof_exception(
         )
 
     assert exc.value.status_code == status_code
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("empty_result", [True, False])
+async def test_get_credentials_by_proof_id(
+    mock_agent_controller: AcaPyClient, empty_result: bool
+):
+    when(mock_agent_controller.present_proof_v1_0).get_matching_credentials(
+        ...
+    ).thenReturn(to_async([] if empty_result else [IndyCredPrecis()]))
+
+    creds = await VerifierV1.get_credentials_by_proof_id(
+        controller=mock_agent_controller, proof_id="v1-abc"
+    )
+
+    assert isinstance(creds, list)
+
+    if not empty_result:
+        assert isinstance(creds[0], IndyCredPrecis)
 
 
 @pytest.mark.anyio

@@ -2,6 +2,8 @@ import pytest
 from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 from mockito import when
 
+from app.exceptions.cloudapi_exception import CloudApiException
+from app.models.verifier import ProofRequestType
 from app.routes.verifier import (
     AcceptProofRequest,
     CreateProofRequest,
@@ -120,3 +122,50 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
             controller=mock_agent_controller,
             reject_proof_request="v1-abc",
         )
+
+
+@pytest.mark.anyio
+async def test_create_proof_request_is_indy_only(mock_agent_controller: AcaPyClient):
+    with pytest.raises(
+        CloudApiException, match="Only Indy credential types are supported in v1."
+    ) as exc:
+        await VerifierV1.create_proof_request(
+            controller=mock_agent_controller,
+            create_proof_request=CreateProofRequest(
+                type=ProofRequestType.LD_PROOF,
+                protocol_version=PresentProofProtocolVersion.v1,
+            ),
+        )
+    assert exc.value.status_code == 400
+
+
+@pytest.mark.anyio
+async def test_send_proof_request_is_indy_only(mock_agent_controller: AcaPyClient):
+    with pytest.raises(
+        CloudApiException, match="Only Indy credential types are supported in v1."
+    ) as exc:
+        await VerifierV1.send_proof_request(
+            controller=mock_agent_controller,
+            send_proof_request=SendProofRequest(
+                type=ProofRequestType.LD_PROOF,
+                protocol_version=PresentProofProtocolVersion.v1,
+                connection_id="abc",
+            ),
+        )
+    assert exc.value.status_code == 400
+
+
+@pytest.mark.anyio
+async def test_accept_proof_request_is_indy_only(mock_agent_controller: AcaPyClient):
+    with pytest.raises(
+        CloudApiException, match="Only Indy credential types are supported in v1."
+    ) as exc:
+        await VerifierV1.accept_proof_request(
+            controller=mock_agent_controller,
+            accept_proof_request=AcceptProofRequest(
+                type=ProofRequestType.LD_PROOF,
+                protocol_version=PresentProofProtocolVersion.v1,
+                proof_id="abc",
+            ),
+        )
+    assert exc.value.status_code == 400

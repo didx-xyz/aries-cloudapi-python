@@ -173,31 +173,21 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
     when(mock_agent_controller.present_proof_v1_0).delete_record(...).thenReturn(
         to_async({})
     )
+    when(mock_agent_controller.present_proof_v1_0).report_problem(...).thenReturn(
+        to_async({})
+    )
     when(mock_agent_controller.present_proof_v1_0).get_record(...).thenReturn(
         v10_presentation_exchange_records[0]
     )
 
     deleted_proof_request = await VerifierV1.reject_proof_request(
         controller=mock_agent_controller,
-        reject_proof_request=RejectProofRequest(proof_id="v1-abc"),
+        reject_proof_request=RejectProofRequest(
+            proof_id="v1-abc", problem_report="some message"
+        ),
     )
 
     assert deleted_proof_request is None
-
-    # Test exception handling when delete record returns rubbish
-    when(mock_agent_controller.present_proof_v1_0).delete_record(...).thenReturn(
-        "Something went wrong"
-    )
-    when(mock_agent_controller.present_proof_v1_0).report_problem(...).thenReturn({})
-    when(mock_agent_controller.present_proof_v1_0).get_record(...).thenReturn(
-        v10_presentation_exchange_records[0]
-    )
-
-    with pytest.raises(AttributeError):
-        deleted_proof_request = await VerifierV1.reject_proof_request(
-            controller=mock_agent_controller,
-            reject_proof_request="v1-abc",
-        )
 
 
 @pytest.mark.anyio

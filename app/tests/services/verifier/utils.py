@@ -1,6 +1,7 @@
 from aries_cloudcontroller import (
     AttachDecorator,
     AttachDecoratorData,
+    DIFProofRequest,
     IndyPresSpec,
     IndyProof,
     IndyProofProof,
@@ -9,6 +10,7 @@ from aries_cloudcontroller import (
     IndyProofRequestNonRevoked,
     IndyRequestedCredsRequestedAttr,
     IndyRequestedCredsRequestedPred,
+    PresentationDefinition,
     V10PresentationExchange,
     V20Pres,
     V20PresExRecord,
@@ -67,6 +69,9 @@ indy_proof_request = IndyProofRequest(
     version="1.0",
 )
 
+dif_proof_request = DIFProofRequest(
+    options=None, presentation_definition=PresentationDefinition()
+)
 
 v20_presentation_exchange_records = [
     V20PresExRecord(

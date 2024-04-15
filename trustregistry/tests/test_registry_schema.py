@@ -55,8 +55,9 @@ async def test_register_schema_x():
         mock_crud.side_effect = SchemaAlreadyExistsException()
         with pytest.raises(HTTPException) as ex:
             await registry_schemas.register_schema(schema_id)
-            mock_crud.assert_called_once()
-            assert ex.status_code == 405
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 405
 
 
 @pytest.mark.anyio
@@ -90,8 +91,9 @@ async def test_update_schema(schema_id, new_schema_id):
         if schema_id == new_schema_id.schema_id:
             with pytest.raises(HTTPException) as ex:
                 await registry_schemas.update_schema(schema_id, new_schema_id)
-                mock_crud.assert_not_called()
-                assert ex.status_code == 400
+
+            mock_crud.assert_not_called()
+            assert ex.value.status_code == 400
         else:
             mock_crud.return_value = schema
             result = await registry_schemas.update_schema(schema_id, new_schema_id)
@@ -111,8 +113,9 @@ async def test_update_schema_x():
         mock_crud.side_effect = SchemaDoesNotExistException()
         with pytest.raises(HTTPException) as ex:
             await registry_schemas.update_schema(schema_id, new_schema_id)
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 405
 
 
 @pytest.mark.anyio
@@ -144,8 +147,9 @@ async def test_get_schema_by_id_x():
             await registry_schemas.get_schema(
                 "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
             )
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -177,5 +181,6 @@ async def test_remove_schema_x():
             await registry_schemas.remove_schema(
                 "WgWxqztrNooG92RXvxSTWv:2:schema_name:1.0"
             )
-            mock_crud.assert_called_once()
-            assert ex.status_code == 404
+
+        mock_crud.assert_called_once()
+        assert ex.value.status_code == 404

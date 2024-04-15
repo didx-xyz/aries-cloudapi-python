@@ -30,13 +30,13 @@ async def test_register_actor():
 
 @pytest.mark.anyio
 @pytest.mark.parametrize(
-    "exeption, status_code", [(ActorAlreadyExistsException, 409), (Exception, 500)]
+    "exception, status_code", [(ActorAlreadyExistsException, 409), (Exception, 500)]
 )
-async def test_register_actor_x(exeption, status_code):
+async def test_register_actor_x(exception, status_code):
 
     with patch("trustregistry.registry.registry_actors.crud.create_actor") as mock_crud:
         actor = Actor(id="1", name="Alice", roles=["role"], did="did:sov:1234")
-        mock_crud.side_effect = exeption()
+        mock_crud.side_effect = exception()
         with pytest.raises(HTTPException) as ex:
             await registry_actors.register_actor(actor)
 

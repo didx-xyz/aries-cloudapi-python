@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from httpx import Response
 from redis.cluster import ClusterPubSub
 
-from shared.constants import LAGO_URL
+from shared.constants import GOVERNANCE_LABEL, LAGO_URL
 from webhooks.models.billing_payloads import (
     AttribBillingEvent,
     CredDefBillingEvent,
@@ -18,7 +18,7 @@ from webhooks.models.billing_payloads import (
     RevRegDefBillingEvent,
     RevRegEntryBillingEvent,
 )
-from webhooks.services.billing_manager import BillingManager
+from webhooks.services.billing_manager import BillingManager, is_applicable_for_billing
 
 # pylint: disable=protected-access
 
@@ -351,3 +351,243 @@ async def test_post_billing_event_x(
             logger_mock.error.assert_called_once_with(
                 "Error posting billing event to LAGO: {}", detail
             )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "")
+@patch("webhooks.services.billing_manager.LAGO_URL", "")
+def test_is_applicable_for_billing_lago_not_configured():
+    wallet_id = "wallet_id"
+    group_id = "group_id"
+    topic = "topic"
+    payload = {}
+    logger = MagicMock()
+    assert is_applicable_for_billing(wallet_id, group_id, topic, payload, logger) == (
+        False,
+        None,
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+def test_is_applicable_for_billing_is_governance_label():
+    wallet_id = GOVERNANCE_LABEL
+    group_id = "group_id"
+    topic = "topic"
+    payload = {}
+    logger = MagicMock()
+    assert is_applicable_for_billing(wallet_id, group_id, topic, payload, logger) == (
+        False,
+        None,
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+def test_is_applicable_for_billing_missing_group_id():
+    wallet_id = "wallet_id"
+    group_id = ""
+    topic = "topic"
+    payload = {}
+    logger = MagicMock()
+    assert is_applicable_for_billing(wallet_id, group_id, topic, payload, logger) == (
+        False,
+        None,
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+def test_is_applicable_for_billing_not_applicable_topic():
+    wallet_id = "wallet_id"
+    group_id = "group_id"
+    topic = "not_applicable_topic"
+    payload = {}
+    logger = MagicMock()
+    assert is_applicable_for_billing(wallet_id, group_id, topic, payload, logger) == (
+        False,
+        None,
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+def test_is_applicable_for_billing_not_applicable_state():
+    wallet_id = "wallet_id"
+    group_id = "group_id"
+    topic = "proofs"
+    payload = {"state": "not_applicable_state"}
+    logger = MagicMock()
+    assert is_applicable_for_billing(wallet_id, group_id, topic, payload, logger) == (
+        False,
+        None,
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+@pytest.mark.parametrize(
+    "wallet_id, group_id, topic, payload, expected",
+    [
+        (
+            "wallet_id",
+            "group_id",
+            "proofs",
+            {"role": "verifier", "state": "done"},
+            (True, None),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "proofs",
+            {"role": "verifier", "state": "presentation_acked"},
+            (True, None),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "proofs",
+            {"role": "verifier", "state": "verified"},
+            (True, None),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "proofs",
+            {"role": "not_applicable_role", "state": "done"},
+            (False, None),
+        ),
+    ],
+)
+def test_is_applicable_for_billing_applicable_proof(
+    wallet_id, group_id, topic, payload, expected
+):
+    logger = MagicMock()
+    assert (
+        is_applicable_for_billing(wallet_id, group_id, topic, payload, logger)
+        == expected
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+@pytest.mark.parametrize(
+    "wallet_id, group_id, topic, payload, operation_type, expected",
+    [
+        (
+            "wallet_id",
+            "group_id",
+            "endorsements",
+            {"state": "transaction_acked"},
+            "100",
+            (True, "100"),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "endorsements",
+            {"state": "transaction_acked"},
+            "102",
+            (True, "102"),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "endorsements",
+            {"state": "transaction_acked"},
+            "113",
+            (True, "113"),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "endorsements",
+            {"state": "transaction_acked"},
+            "114",
+            (True, "114"),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "endorsements",
+            {"state": "transaction_acked"},
+            "not_applicable_operation_type",
+            (False, None),
+        ),
+    ],
+)
+def test_is_applicable_for_billing_applicable_endorsement_operation_type(
+    wallet_id, group_id, topic, payload, operation_type, expected
+):
+    logger = MagicMock()
+    with patch(
+        "webhooks.services.billing_manager.get_operation_type"
+    ) as mock_get_operation_type:
+        mock_get_operation_type.return_value = operation_type
+        assert (
+            is_applicable_for_billing(wallet_id, group_id, topic, payload, logger)
+            == expected
+        )
+        mock_get_operation_type.assert_called_once_with(payload=payload, logger=logger)
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+@pytest.mark.parametrize(
+    "wallet_id, group_id, topic, payload, expected",
+    [
+        ("wallet_id", "group_id", "credentials", {"state": "done"}, (True, None)),
+        (
+            "wallet_id",
+            "group_id",
+            "credentials",
+            {"state": "credential_acked"},
+            (True, None),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "credentials",
+            {"state": "not_applicable_state"},
+            (False, None),
+        ),
+    ],
+)
+def test_is_applicable_for_billing_credentials_state(
+    wallet_id, group_id, topic, payload, expected
+):
+    logger = MagicMock()
+    assert (
+        is_applicable_for_billing(wallet_id, group_id, topic, payload, logger)
+        == expected
+    )
+
+
+@patch("webhooks.services.billing_manager.LAGO_API_KEY", "NOT_EMPTY")
+@patch("webhooks.services.billing_manager.LAGO_URL", "NOT_EMPTY")
+@pytest.mark.parametrize(
+    "wallet_id, group_id, topic, payload, expected",
+    [
+        (
+            "wallet_id",
+            "group_id",
+            "issuer_cred_rev",
+            {"state": "revoked"},
+            (True, None),
+        ),
+        (
+            "wallet_id",
+            "group_id",
+            "issuer_cred_rev",
+            {"state": "not_applicable_state"},
+            (False, None),
+        ),
+    ],
+)
+def test_is_applicable_for_billing_issuer_cred_rev(
+    wallet_id, group_id, topic, payload, expected
+):
+    logger = MagicMock()
+    assert (
+        is_applicable_for_billing(wallet_id, group_id, topic, payload, logger)
+        == expected
+    )

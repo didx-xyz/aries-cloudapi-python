@@ -581,11 +581,63 @@ services:
       governance-multitenant-web:
         condition: service_started
 
+  nats-1:
+    image: nats:alpine
+    ports:
+      - "8222:8222"
+      - "4222:4222"
+    command: "-c /etc/nats/nats.conf --server_name nats-1"
+    volumes:
+      - nats-data-1:/nats-data
+      - ./resources/nats-local.conf:/etc/nats/nats.conf
+    networks:
+      - nats
+    labels:
+      app: nats
+      tier: infra
+    healthcheck:
+      test: ["CMD-SHELL", 'wget -qO- localhost:8222/healthz | grep ''"status":"ok"'' || exit 1']
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+  nats-2:
+    image: nats
+    command: "-c /etc/nats/nats.conf --server_name nats-2"
+    volumes:
+      - nats-data-2:/nats-data
+      - ./resources/nats-local.conf:/etc/nats/nats.conf
+    networks:
+      - nats
+    depends_on:
+      nats-1:
+        condition: service_started
+    labels:
+      app: nats
+      tier: infra
+  nats-3:
+    image: nats
+    command: "-c /etc/nats/nats.conf --server_name nats-3"
+    volumes:
+      - nats-data-3:/nats-data
+      - ./resources/nats-local.conf:/etc/nats/nats.conf
+    networks:
+      - nats
+    depends_on:
+      nats-1:
+        condition: service_started
+    labels:
+      app: nats
+      tier: infra
+
 volumes:
   webserver-cli:
   webserver-ledger:
   nodes-data:
   data:
+  nats-data-1:
+  nats-data-2:
+  nats-data-3:
 
 networks:
   governance-multitenant:
@@ -599,3 +651,4 @@ networks:
       config:
         - subnet: 172.29.0.0/24
           gateway: 172.29.0.1
+  nats:

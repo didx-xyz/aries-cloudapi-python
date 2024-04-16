@@ -64,10 +64,7 @@ class VerifierV1(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-        if result:
-            bound_logger.debug("Successfully created v1 presentation request.")
-        else:
-            bound_logger.warning("No result from creating v1 presentation request.")
+        bound_logger.debug("Successfully created v1 presentation request.")
         return result
 
     @classmethod
@@ -105,10 +102,7 @@ class VerifierV1(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-        if result:
-            bound_logger.debug("Successfully sent v1 presentation request.")
-        else:
-            bound_logger.warning("No result from sending v1 presentation request.")
+        bound_logger.debug("Successfully created v1 presentation request.")
         return result
 
     @classmethod
@@ -135,7 +129,7 @@ class VerifierV1(Verifier):
         )
 
         try:
-            presentation_record = await handle_acapy_call(
+            presentation_exchange = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=controller.present_proof_v1_0.send_presentation,
                 pres_ex_id=proof_id,
@@ -146,11 +140,8 @@ class VerifierV1(Verifier):
                 f"Failed to send proof presentation: {e.detail}.", e.status_code
             ) from e
 
-        result = record_to_model(presentation_record)
-        if result:
-            bound_logger.debug("Successfully sent v1 proof presentation.")
-        else:
-            bound_logger.warning("No result from sending v1 proof presentation.")
+        result = record_to_model(presentation_exchange)
+        bound_logger.debug("Successfully created v1 presentation request.")
         return result
 
     @classmethod
@@ -220,11 +211,7 @@ class VerifierV1(Verifier):
             ) from e
 
         result = [record_to_model(rec) for rec in presentation_exchange.results or []]
-
-        if result:
-            logger.debug("Successfully got v1 present-proof records.")
-        else:
-            logger.info("No v1 present-proof records obtained.")
+        logger.debug("Successfully got v1 present-proof records.")
         return result
 
     @classmethod
@@ -248,11 +235,7 @@ class VerifierV1(Verifier):
             ) from e
 
         result = record_to_model(presentation_exchange)
-
-        if result:
-            bound_logger.debug("Successfully got v1 present-proof record.")
-        else:
-            bound_logger.info("No v1 present-proof record obtained.")
+        bound_logger.debug("Successfully created v1 presentation request.")
         return result
 
     @classmethod

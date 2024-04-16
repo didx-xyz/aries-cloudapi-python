@@ -4,6 +4,8 @@ import sys
 from typing import Any, Dict, List, NoReturn
 from uuid import uuid4
 
+import orjson
+
 from shared import APIRouter
 from shared.constants import GOVERNANCE_LABEL
 from shared.log_config import get_logger
@@ -15,6 +17,7 @@ from shared.util.rich_parsing import parse_json_with_error_handling
 from webhooks.models import AcaPyWebhookEvent, topic_mapping
 from webhooks.models.conversions import acapy_to_cloudapi_event
 from webhooks.models.redis_payloads import AcaPyRedisEvent
+from webhooks.services.billing_manager import is_applicable_for_billing
 from webhooks.services.webhooks_redis_service import WebhooksRedisService
 
 logger = get_logger(__name__)
@@ -313,6 +316,7 @@ class AcaPyEventsProcessor:
             wallet_id=wallet_id,
             acapy_topic=acapy_topic,
             topic=cloudapi_topic,
+            group_id=group_id,
             origin=origin,
         )
 
@@ -325,7 +329,6 @@ class AcaPyEventsProcessor:
             return
 
         webhook_event_json = cloudapi_webhook_event.model_dump_json()
-
         # Check if this webhook event should be forwarded to the Endorser service
         if (
             wallet_id == GOVERNANCE_LABEL  # represents event for the governance agent
@@ -336,6 +339,36 @@ class AcaPyEventsProcessor:
             transaction_id = payload["transaction_id"]  # check has asserted key exists
             self.redis_service.add_endorsement_event(
                 event_json=webhook_event_json, transaction_id=transaction_id
+            )
+
+        # Check if event is billable, and get operation_type if it is an endorsement event
+        is_billable, operation_type = is_applicable_for_billing(
+            wallet_id=wallet_id,
+            group_id=group_id,
+            topic=cloudapi_topic,
+            payload=payload,
+            logger=bound_logger,
+        )
+
+        if is_billable:
+            bound_logger.debug(
+                "Forwarding billing event for Billing service",
+            )
+            if cloudapi_topic == "endorsements":
+                # Add the operation type to the payload for endorsements
+                # Simplifies the billing service's logic for determining the operation type
+                endorse_event: Dict[str, Any] = orjson.loads(webhook_event_json)
+                endorse_event["payload"]["type"] = operation_type
+                webhook_event_for_billing = orjson.dumps(endorse_event)
+
+            else:
+                webhook_event_for_billing = webhook_event_json
+
+            self.redis_service.add_billing_event(
+                event_json=webhook_event_for_billing,
+                group_id=group_id,
+                wallet_id=wallet_id,
+                timestamp_ns=event.metadata.time_ns,
             )
 
         # Add data to redis, which publishes to a redis pubsub channel that SseManager listens to

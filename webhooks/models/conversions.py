@@ -157,6 +157,7 @@ def acapy_to_cloudapi_event(
             topic=acapy_event.topic,
             wallet_id=acapy_event.wallet_id,
             origin=acapy_event.origin,
+            group_id=acapy_event.group_id,
             payload=transformed_payload,
         )
 

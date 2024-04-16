@@ -4,6 +4,7 @@ import pytest
 from fastapi import FastAPI, HTTPException
 
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
+from webhooks.services.billing_manager import BillingManager
 from webhooks.services.sse_manager import SseManager
 from webhooks.web.main import app, app_lifespan, health_check
 from webhooks.web.routers import sse, webhooks, websocket
@@ -38,14 +39,22 @@ def sse_manager_mock():
     return mock
 
 
+@pytest.fixture
+def billing_manager_mock():
+    mock = AsyncMock(spec=BillingManager)
+    return mock
+
+
 @pytest.mark.anyio
 async def test_app_lifespan(
     acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
     sse_manager_mock,  # pylint: disable=redefined-outer-name
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
 ):
     container_mock = MagicMock(
         acapy_events_processor=MagicMock(return_value=acapy_events_processor_mock),
         sse_manager=MagicMock(return_value=sse_manager_mock),
+        billing_manager=MagicMock(return_value=billing_manager_mock),
         wire=MagicMock(),
         shutdown_resources=Mock(),
     )
@@ -62,10 +71,12 @@ async def test_app_lifespan(
         # Assert the endorsement_processor's start method was called
         sse_manager_mock.start.assert_called_once()
         acapy_events_processor_mock.start.assert_called_once()
+        billing_manager_mock.start.assert_called_once()
 
         # Assert the shutdown logic was called correctly
         acapy_events_processor_mock.stop.assert_awaited_once()
         sse_manager_mock.stop.assert_awaited_once()
+        billing_manager_mock.stop.assert_called_once()
 
         container_mock.shutdown_resources.assert_called_once()
 
@@ -74,12 +85,16 @@ async def test_app_lifespan(
 async def test_health_check_healthy(
     acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
     sse_manager_mock,  # pylint: disable=redefined-outer-name
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
 ):
     acapy_events_processor_mock.are_tasks_running.return_value = True
     sse_manager_mock.are_tasks_running.return_value = True
+    billing_manager_mock.are_tasks_running.return_value = True
 
     response = await health_check(
-        acapy_events_processor=acapy_events_processor_mock, sse_manager=sse_manager_mock
+        acapy_events_processor=acapy_events_processor_mock,
+        sse_manager=sse_manager_mock,
+        billing_manager=billing_manager_mock,
     )
     assert response == {"status": "healthy"}
 
@@ -88,23 +103,43 @@ async def test_health_check_healthy(
 async def test_health_check_unhealthy(
     acapy_events_processor_mock,  # pylint: disable=redefined-outer-name
     sse_manager_mock,  # pylint: disable=redefined-outer-name
+    billing_manager_mock,  # pylint: disable=redefined-outer-name
 ):
     acapy_events_processor_mock.are_tasks_running.return_value = False
     sse_manager_mock.are_tasks_running.return_value = True
+    billing_manager_mock.are_tasks_running.return_value = True
+
     with pytest.raises(HTTPException) as exc_info:
         await health_check(
             acapy_events_processor=acapy_events_processor_mock,
             sse_manager=sse_manager_mock,
+            billing_manager=billing_manager_mock,
         )
     assert exc_info.value.status_code == 503
     assert exc_info.value.detail == "One or more background tasks are not running."
 
     acapy_events_processor_mock.are_tasks_running.return_value = True
     sse_manager_mock.are_tasks_running.return_value = False
+    billing_manager_mock.are_tasks_running.return_value = True
+
     with pytest.raises(HTTPException) as exc_info:
         await health_check(
             acapy_events_processor=acapy_events_processor_mock,
             sse_manager=sse_manager_mock,
+            billing_manager=billing_manager_mock,
+        )
+    assert exc_info.value.status_code == 503
+    assert exc_info.value.detail == "One or more background tasks are not running."
+
+    acapy_events_processor_mock.are_tasks_running.return_value = True
+    sse_manager_mock.are_tasks_running.return_value = True
+    billing_manager_mock.are_tasks_running.return_value = False
+
+    with pytest.raises(HTTPException) as exc_info:
+        await health_check(
+            acapy_events_processor=acapy_events_processor_mock,
+            sse_manager=sse_manager_mock,
+            billing_manager=billing_manager_mock,
         )
     assert exc_info.value.status_code == 503
     assert exc_info.value.detail == "One or more background tasks are not running."

@@ -301,7 +301,11 @@ class BillingManager:
 
 
 def is_applicable_for_billing(
-    wallet_id: str, group_id: str, topic: str, payload: Dict[str, Any], logger: Logger
+    wallet_id: str,
+    group_id: str,
+    topic: str,
+    payload: Dict[str, Any],
+    logger: Logger,  # pylint: disable=redefined-outer-name
 ) -> Tuple[bool, Optional[str]]:
     if not LAGO_API_KEY or not LAGO_URL:
         return False, None  # Only process billable events if Lago is configured

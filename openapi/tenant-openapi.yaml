@@ -2633,6 +2633,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/AttachDecoratorDataJWS-Input'
           - type: 'null'
+          description: Detached Java Web Signature
         links:
           anyOf:
           - items:
@@ -2671,6 +2672,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/AttachDecoratorDataJWS-Output'
           - type: 'null'
+          description: Detached Java Web Signature
         links:
           anyOf:
           - items:
@@ -2810,38 +2812,32 @@ components:
       properties:
         jwt:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Jwt
         jwt_vc:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Jwt Vc
         jwt_vp:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Jwt Vp
         ldp:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Ldp
         ldp_vc:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Ldp Vc
         ldp_vp:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Ldp Vp
       type: object
@@ -3313,9 +3309,7 @@ components:
           title: '@Context'
           description: The JSON-LD context of the credential
         credentialSubject:
-          anyOf:
-          - type: string
-          - {}
+          type: object
           title: Credentialsubject
         expirationDate:
           anyOf:
@@ -3343,6 +3337,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/LinkedDataProof'
           - type: 'null'
+          description: The proof of the credential
         type:
           items:
             type: string
@@ -3577,6 +3572,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/DIDCreateOptions'
           - type: 'null'
+          description: To define a key type and/or a did depending on chosen DID method.
         seed:
           anyOf:
           - type: string
@@ -3707,16 +3703,14 @@ components:
           - type: 'null'
         record_ids:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Record Ids
           description: Mapping of input_descriptor id to list of stored W3C credential
             record_id
         reveal_doc:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Reveal Doc
           description: reveal doc [JSON-LD frame] dict used to derive the credential
@@ -3886,10 +3880,12 @@ components:
           anyOf:
           - $ref: '#/components/schemas/IndyCredInfo'
           - type: 'null'
+          description: Credential info
         interval:
           anyOf:
           - $ref: '#/components/schemas/IndyNonRevocationInterval'
           - type: 'null'
+          description: Non-revocation interval from presentation request
         presentation_referents:
           anyOf:
           - items:
@@ -4104,10 +4100,12 @@ components:
           anyOf:
           - $ref: '#/components/schemas/IndyProofProof'
           - type: 'null'
+          description: Indy proof.proof content
         requested_proof:
           anyOf:
           - $ref: '#/components/schemas/IndyProofRequestedProof'
           - type: 'null'
+          description: Indy proof.requested_proof content
       type: object
       title: IndyProof
       description: IndyProof
@@ -4148,6 +4146,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/IndyProofProofAggregatedProof'
           - type: 'null'
+          description: Indy proof aggregated proof
         proofs:
           anyOf:
           - items:
@@ -4190,6 +4189,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/IndyPrimaryProof'
           - type: 'null'
+          description: Indy primary proof
       type: object
       title: IndyProofProofProofsProof
       description: IndyProofProofProofsProof
@@ -4458,15 +4458,13 @@ components:
           description: Proof requested proof revealed attributes
         self_attested_attrs:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Self Attested Attrs
           description: Proof requested proof self-attested attributes
         unrevealed_attrs:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Unrevealed Attrs
           description: Unrevealed attributes
@@ -4585,8 +4583,7 @@ components:
           description: ID
         metadata:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Metadata
           description: Metadata dictionary
@@ -4606,6 +4603,8 @@ components:
           anyOf:
           - $ref: '#/components/schemas/SchemasInputDescriptorFilter'
           - type: 'null'
+          description: Accepts a list of schema or a dict containing filters like
+            oneof_filter.
       type: object
       title: InputDescriptors
       description: InputDescriptors
@@ -4779,6 +4778,7 @@ components:
           anyOf:
           - $ref: '#/components/schemas/InvitationMessage-Output'
           - type: 'null'
+          description: Out of band invitation message
         invitation_id:
           anyOf:
           - type: string
@@ -5039,9 +5039,13 @@ components:
     LDProofVCDetail:
       properties:
         credential:
-          $ref: '#/components/schemas/Credential'
+          allOf:
+          - $ref: '#/components/schemas/Credential'
+          description: Detail of the JSON-LD Credential to be issued
         options:
-          $ref: '#/components/schemas/LDProofVCDetailOptions'
+          allOf:
+          - $ref: '#/components/schemas/LDProofVCDetailOptions'
+          description: Options for specifying how the linked data proof is created.
       type: object
       required:
       - credential
@@ -5068,6 +5072,9 @@ components:
           anyOf:
           - $ref: '#/components/schemas/CredentialStatusOptions'
           - type: 'null'
+          description: The credential status mechanism to use for the credential.
+            Omitting the property indicates the issued credential will not include
+            a credential status
         domain:
           anyOf:
           - type: string
@@ -5188,7 +5195,9 @@ components:
           title: Invi Msg Id
           description: Invitation message identifier
         invitation:
-          $ref: '#/components/schemas/InvitationMessage-Output'
+          allOf:
+          - $ref: '#/components/schemas/InvitationMessage-Output'
+          description: Out of band invitation message
         oob_id:
           type: string
           title: Oob Id
@@ -5772,8 +5781,7 @@ components:
           description: Error text
         signed_doc:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Signed Doc
           description: Signed document
@@ -5894,8 +5902,7 @@ components:
           title: Cred Tags
         cred_value:
           anyOf:
-          - type: string
-          - {}
+          - type: object
           - type: 'null'
           title: Cred Value
           description: (JSON-serializable) credential value

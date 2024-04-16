@@ -2037,7 +2037,10 @@
             "title": "Json",
             "description": "JSON-serialized data"
           },
-          "jws": { "anyOf": [{ "$ref": "#/components/schemas/AttachDecoratorDataJWS-Input" }, { "type": "null" }] },
+          "jws": {
+            "anyOf": [{ "$ref": "#/components/schemas/AttachDecoratorDataJWS-Input" }, { "type": "null" }],
+            "description": "Detached Java Web Signature"
+          },
           "links": {
             "anyOf": [{ "items": { "type": "string" }, "type": "array" }, { "type": "null" }],
             "title": "Links",
@@ -2065,7 +2068,10 @@
             "title": "Json",
             "description": "JSON-serialized data"
           },
-          "jws": { "anyOf": [{ "$ref": "#/components/schemas/AttachDecoratorDataJWS-Output" }, { "type": "null" }] },
+          "jws": {
+            "anyOf": [{ "$ref": "#/components/schemas/AttachDecoratorDataJWS-Output" }, { "type": "null" }],
+            "description": "Detached Java Web Signature"
+          },
           "links": {
             "anyOf": [{ "items": { "type": "string" }, "type": "array" }, { "type": "null" }],
             "title": "Links",
@@ -2187,12 +2193,12 @@
       },
       "ClaimFormat": {
         "properties": {
-          "jwt": { "anyOf": [{ "type": "string" }, {}, { "type": "null" }], "title": "Jwt" },
-          "jwt_vc": { "anyOf": [{ "type": "string" }, {}, { "type": "null" }], "title": "Jwt Vc" },
-          "jwt_vp": { "anyOf": [{ "type": "string" }, {}, { "type": "null" }], "title": "Jwt Vp" },
-          "ldp": { "anyOf": [{ "type": "string" }, {}, { "type": "null" }], "title": "Ldp" },
-          "ldp_vc": { "anyOf": [{ "type": "string" }, {}, { "type": "null" }], "title": "Ldp Vc" },
-          "ldp_vp": { "anyOf": [{ "type": "string" }, {}, { "type": "null" }], "title": "Ldp Vp" }
+          "jwt": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Jwt" },
+          "jwt_vc": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Jwt Vc" },
+          "jwt_vp": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Jwt Vp" },
+          "ldp": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Ldp" },
+          "ldp_vc": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Ldp Vc" },
+          "ldp_vp": { "anyOf": [{ "type": "object" }, { "type": "null" }], "title": "Ldp Vp" }
         },
         "type": "object",
         "title": "ClaimFormat",
@@ -2493,7 +2499,7 @@
             "title": "@Context",
             "description": "The JSON-LD context of the credential"
           },
-          "credentialSubject": { "anyOf": [{ "type": "string" }, {}], "title": "Credentialsubject" },
+          "credentialSubject": { "type": "object", "title": "Credentialsubject" },
           "expirationDate": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Expirationdate",
@@ -2506,7 +2512,10 @@
             "title": "Issuer",
             "description": "The JSON-LD Verifiable Credential Issuer. Either string of object with id field."
           },
-          "proof": { "anyOf": [{ "$ref": "#/components/schemas/LinkedDataProof" }, { "type": "null" }] },
+          "proof": {
+            "anyOf": [{ "$ref": "#/components/schemas/LinkedDataProof" }, { "type": "null" }],
+            "description": "The proof of the credential"
+          },
           "type": {
             "items": { "type": "string" },
             "type": "array",
@@ -2651,7 +2660,10 @@
             "title": "Method",
             "description": "Method for the requested DID.Supported methods are 'key', 'sov', and any other registered method."
           },
-          "options": { "anyOf": [{ "$ref": "#/components/schemas/DIDCreateOptions" }, { "type": "null" }] },
+          "options": {
+            "anyOf": [{ "$ref": "#/components/schemas/DIDCreateOptions" }, { "type": "null" }],
+            "description": "To define a key type and/or a did depending on chosen DID method."
+          },
           "seed": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Seed",
@@ -2761,12 +2773,12 @@
             "anyOf": [{ "$ref": "#/components/schemas/PresentationDefinition" }, { "type": "null" }]
           },
           "record_ids": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Record Ids",
             "description": "Mapping of input_descriptor id to list of stored W3C credential record_id"
           },
           "reveal_doc": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Reveal Doc",
             "description": "reveal doc [JSON-LD frame] dict used to derive the credential when selective disclosure is required"
           }
@@ -2891,8 +2903,14 @@
       },
       "IndyCredPrecis": {
         "properties": {
-          "cred_info": { "anyOf": [{ "$ref": "#/components/schemas/IndyCredInfo" }, { "type": "null" }] },
-          "interval": { "anyOf": [{ "$ref": "#/components/schemas/IndyNonRevocationInterval" }, { "type": "null" }] },
+          "cred_info": {
+            "anyOf": [{ "$ref": "#/components/schemas/IndyCredInfo" }, { "type": "null" }],
+            "description": "Credential info"
+          },
+          "interval": {
+            "anyOf": [{ "$ref": "#/components/schemas/IndyNonRevocationInterval" }, { "type": "null" }],
+            "description": "Non-revocation interval from presentation request"
+          },
           "presentation_referents": {
             "anyOf": [{ "items": { "type": "string" }, "type": "array" }, { "type": "null" }],
             "title": "Presentation Referents"
@@ -3045,9 +3063,13 @@
             "title": "Identifiers",
             "description": "Indy proof.identifiers content"
           },
-          "proof": { "anyOf": [{ "$ref": "#/components/schemas/IndyProofProof" }, { "type": "null" }] },
+          "proof": {
+            "anyOf": [{ "$ref": "#/components/schemas/IndyProofProof" }, { "type": "null" }],
+            "description": "Indy proof.proof content"
+          },
           "requested_proof": {
-            "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequestedProof" }, { "type": "null" }]
+            "anyOf": [{ "$ref": "#/components/schemas/IndyProofRequestedProof" }, { "type": "null" }],
+            "description": "Indy proof.requested_proof content"
           }
         },
         "type": "object",
@@ -3084,7 +3106,8 @@
       "IndyProofProof": {
         "properties": {
           "aggregated_proof": {
-            "anyOf": [{ "$ref": "#/components/schemas/IndyProofProofAggregatedProof" }, { "type": "null" }]
+            "anyOf": [{ "$ref": "#/components/schemas/IndyProofProofAggregatedProof" }, { "type": "null" }],
+            "description": "Indy proof aggregated proof"
           },
           "proofs": {
             "anyOf": [
@@ -3124,7 +3147,10 @@
           "non_revoc_proof": {
             "anyOf": [{ "$ref": "#/components/schemas/IndyProofProofProofsProofNonRevocProof" }, { "type": "null" }]
           },
-          "primary_proof": { "anyOf": [{ "$ref": "#/components/schemas/IndyPrimaryProof" }, { "type": "null" }] }
+          "primary_proof": {
+            "anyOf": [{ "$ref": "#/components/schemas/IndyPrimaryProof" }, { "type": "null" }],
+            "description": "Indy primary proof"
+          }
         },
         "type": "object",
         "title": "IndyProofProofProofsProof",
@@ -3341,12 +3367,12 @@
             "description": "Proof requested proof revealed attributes"
           },
           "self_attested_attrs": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Self Attested Attrs",
             "description": "Proof requested proof self-attested attributes"
           },
           "unrevealed_attrs": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Unrevealed Attrs",
             "description": "Unrevealed attributes"
           }
@@ -3450,7 +3476,7 @@
           },
           "id": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Id", "description": "ID" },
           "metadata": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Metadata",
             "description": "Metadata dictionary"
           },
@@ -3460,7 +3486,10 @@
             "title": "Purpose",
             "description": "Purpose"
           },
-          "schema": { "anyOf": [{ "$ref": "#/components/schemas/SchemasInputDescriptorFilter" }, { "type": "null" }] }
+          "schema": {
+            "anyOf": [{ "$ref": "#/components/schemas/SchemasInputDescriptorFilter" }, { "type": "null" }],
+            "description": "Accepts a list of schema or a dict containing filters like oneof_filter."
+          }
         },
         "type": "object",
         "title": "InputDescriptors",
@@ -3600,7 +3629,10 @@
             "title": "Invi Msg Id",
             "description": "Invitation message identifier"
           },
-          "invitation": { "anyOf": [{ "$ref": "#/components/schemas/InvitationMessage-Output" }, { "type": "null" }] },
+          "invitation": {
+            "anyOf": [{ "$ref": "#/components/schemas/InvitationMessage-Output" }, { "type": "null" }],
+            "description": "Out of band invitation message"
+          },
           "invitation_id": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Invitation Id",
@@ -3817,8 +3849,14 @@
       },
       "LDProofVCDetail": {
         "properties": {
-          "credential": { "$ref": "#/components/schemas/Credential" },
-          "options": { "$ref": "#/components/schemas/LDProofVCDetailOptions" }
+          "credential": {
+            "allOf": [{ "$ref": "#/components/schemas/Credential" }],
+            "description": "Detail of the JSON-LD Credential to be issued"
+          },
+          "options": {
+            "allOf": [{ "$ref": "#/components/schemas/LDProofVCDetailOptions" }],
+            "description": "Options for specifying how the linked data proof is created."
+          }
         },
         "type": "object",
         "required": ["credential", "options"],
@@ -3838,7 +3876,8 @@
             "description": "The date and time of the proof (with a maximum accuracy in seconds). Defaults to current system time"
           },
           "credentialStatus": {
-            "anyOf": [{ "$ref": "#/components/schemas/CredentialStatusOptions" }, { "type": "null" }]
+            "anyOf": [{ "$ref": "#/components/schemas/CredentialStatusOptions" }, { "type": "null" }],
+            "description": "The credential status mechanism to use for the credential. Omitting the property indicates the issued credential will not include a credential status"
           },
           "domain": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
@@ -3937,7 +3976,10 @@
             "description": "Time of record creation"
           },
           "invi_msg_id": { "type": "string", "title": "Invi Msg Id", "description": "Invitation message identifier" },
-          "invitation": { "$ref": "#/components/schemas/InvitationMessage-Output" },
+          "invitation": {
+            "allOf": [{ "$ref": "#/components/schemas/InvitationMessage-Output" }],
+            "description": "Out of band invitation message"
+          },
           "oob_id": { "type": "string", "title": "Oob Id", "description": "Oob record identifier" },
           "our_recipient_key": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
@@ -4374,7 +4416,7 @@
             "description": "Error text"
           },
           "signed_doc": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Signed Doc",
             "description": "Signed document"
           }
@@ -4445,7 +4487,7 @@
             "title": "Cred Tags"
           },
           "cred_value": {
-            "anyOf": [{ "type": "string" }, {}, { "type": "null" }],
+            "anyOf": [{ "type": "object" }, { "type": "null" }],
             "title": "Cred Value",
             "description": "(JSON-serializable) credential value"
           },

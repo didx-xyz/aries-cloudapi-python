@@ -9,9 +9,6 @@ COPY endorser/requirements.txt endorser/
 COPY trustregistry/requirements.txt trustregistry/
 COPY webhooks/requirements.txt webhooks/
 
-RUN apt-get -y update
-RUN apt-get -y install git
-
 RUN pip install --no-cache-dir -r requirements.txt --upgrade
 
 COPY . .

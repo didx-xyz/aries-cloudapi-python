@@ -44,7 +44,7 @@ async def test_lifespan(mock_engine, mock_inspect):
 
 
 @pytest.mark.anyio
-async def test_root():
+async def test_root(db_session_mock):
     schemas = [
         db.Schema(id="123", did="did:123", name="schema1", version="1.0"),
         db.Schema(id="456", did="did:123", name="schema2", version="1.0"),
@@ -65,7 +65,7 @@ async def test_root():
 
 
 @pytest.mark.anyio
-async def test_registry():
+async def test_registry(db_session_mock):
     with patch("trustregistry.main.root") as mock_root:
         mock_root.return_value = {"actors": "actors", "schemas": "schemas"}
 

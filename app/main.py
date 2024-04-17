@@ -106,12 +106,12 @@ tenant_routes = [
 def routes_for_role(role: str) -> list:
     if role in ("governance", "tenant"):
         return tenant_routes
-    elif ROLE == "tenant-admin":
+    elif role == "tenant-admin":
         return tenant_admin_routes
-    elif ROLE == "public":
+    elif role == "public":
         return trust_registry_routes
-    elif ROLE == "*":
-        return tenant_admin_routes + tenant_routes + trust_registry_routes
+    elif role == "*":
+        return set(tenant_admin_routes + tenant_routes + trust_registry_routes)
     else:
         return []
 

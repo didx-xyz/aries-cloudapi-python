@@ -1,5 +1,5 @@
 aiohttp~=3.9.2
-git+https://github.com/didx-xyz/aries-cloudcontroller-python@64df6e06d065814bc766394e85bfef9f63628f28
+aries-cloudcontroller==0.11.0.post5
 base58~=2.1.1
 fastapi~=0.110.0
 fastapi_websocket_pubsub~=0.3.8

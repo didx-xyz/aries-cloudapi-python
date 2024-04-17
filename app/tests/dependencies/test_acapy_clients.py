@@ -1,33 +1,56 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from aries_cloudcontroller import AcaPyClient
 from fastapi import HTTPException
 
 from app.dependencies.acapy_clients import (
     AcaPyAuthVerified,
     AcaPyClient,
-    Role,
     client_from_auth,
     get_governance_controller,
     get_tenant_admin_controller,
     get_tenant_controller,
 )
 from app.dependencies.auth import AcaPyAuth
+from app.dependencies.role import Role
+from app.tests.util.client import get_tenant_acapy_client
+from shared import GOVERNANCE_ACAPY_API_KEY, TENANT_ACAPY_API_KEY
 
 
-# Mock classes and data as needed
-class MockRole:
-    GOVERNANCE = Role.GOVERNANCE
-    TENANT_ADMIN = Role.TENANT_ADMIN
-    TENANT = Role.TENANT
+@pytest.mark.anyio
+async def test_governance_agent(governance_acapy_client: AcaPyClient):
+    assert isinstance(governance_acapy_client, AcaPyClient)
+    assert (
+        governance_acapy_client.configuration.host
+        == Role.GOVERNANCE.agent_type.base_url
+    )
+    assert governance_acapy_client.api_key == GOVERNANCE_ACAPY_API_KEY
+    assert "Authorization" not in governance_acapy_client.api_client.default_headers
+
+
+@pytest.mark.anyio
+async def test_tenant_agent():
+    alice_acapy_client = get_tenant_acapy_client(token="Alice")
+    assert isinstance(alice_acapy_client, AcaPyClient)
+    assert alice_acapy_client.configuration.host == Role.TENANT.agent_type.base_url
+    assert "Bearer " in alice_acapy_client.api_client.default_headers["Authorization"]
+    assert alice_acapy_client.api_key == TENANT_ACAPY_API_KEY
+
+
+@pytest.mark.anyio
+async def test_tenant_admin_agent(tenant_admin_acapy_client):
+    assert isinstance(tenant_admin_acapy_client, AcaPyClient)
+    assert tenant_admin_acapy_client.api_key == TENANT_ACAPY_API_KEY
+    assert "Authorization" not in tenant_admin_acapy_client.api_client.default_headers
 
 
 def test_get_governance_controller():
     with patch("app.dependencies.acapy_clients.AcaPyClient") as MockAcaPyClient:
         get_governance_controller()
         MockAcaPyClient.assert_called_with(
-            base_url=MockRole.GOVERNANCE.agent_type.base_url,
-            api_key=MockRole.GOVERNANCE.agent_type.x_api_key,
+            base_url=Role.GOVERNANCE.agent_type.base_url,
+            api_key=Role.GOVERNANCE.agent_type.x_api_key,
         )
 
 
@@ -35,8 +58,8 @@ def test_get_tenant_admin_controller():
     with patch("app.dependencies.acapy_clients.AcaPyClient") as MockAcaPyClient:
         get_tenant_admin_controller()
         MockAcaPyClient.assert_called_with(
-            base_url=MockRole.TENANT_ADMIN.agent_type.base_url,
-            api_key=MockRole.TENANT_ADMIN.agent_type.x_api_key,
+            base_url=Role.TENANT_ADMIN.agent_type.base_url,
+            api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
         )
 
 
@@ -45,8 +68,8 @@ def test_get_tenant_controller():
     with patch("app.dependencies.acapy_clients.AcaPyClient") as MockAcaPyClient:
         get_tenant_controller(auth_token)
         MockAcaPyClient.assert_called_with(
-            base_url=MockRole.TENANT.agent_type.base_url,
-            api_key=MockRole.TENANT.agent_type.x_api_key,
+            base_url=Role.TENANT.agent_type.base_url,
+            api_key=Role.TENANT.agent_type.x_api_key,
             tenant_jwt=auth_token,
         )
 

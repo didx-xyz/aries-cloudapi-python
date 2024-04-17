@@ -164,19 +164,6 @@ async def universal_exception_handler(_: Request, exception: Exception) -> JSONR
             status_code=exception.status_code,
         )
 
-    if isinstance(exception, ApiException):
-        return JSONResponse(
-            {"detail": exception.reason, **stacktrace},
-            status_code=exception.status,
-        )
-
-    if isinstance(exception, HTTPException):
-        return JSONResponse(
-            {**exception.detail, **stacktrace},
-            status_code=exception.status_code,
-            headers=exception.headers,
-        )
-
     if isinstance(exception, CloudApiValueError):
         return JSONResponse(
             {"detail": exception.detail, **stacktrace},
@@ -187,6 +174,19 @@ async def universal_exception_handler(_: Request, exception: Exception) -> JSONR
         return JSONResponse(
             {"detail": exception.errors(), **stacktrace},
             status_code=422,
+        )
+
+    if isinstance(exception, ApiException):
+        return JSONResponse(
+            {"detail": exception.reason, **stacktrace},
+            status_code=exception.status,
+        )
+
+    if isinstance(exception, HTTPException):
+        return JSONResponse(
+            {"detail": exception.detail, **stacktrace},
+            status_code=exception.status_code,
+            headers=exception.headers,
         )
 
     return JSONResponse(

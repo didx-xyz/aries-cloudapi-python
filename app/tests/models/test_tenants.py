@@ -9,6 +9,8 @@ from shared.exceptions.cloudapi_value_error import CloudApiValueError
 
 
 def test_create_tenant_model_wallet_label():
+    CreateTenantRequest(wallet_label="a")
+
     with pytest.raises(CloudApiValueError) as exc:
         CreateTenantRequest(wallet_label="a" * 101)
     assert exc.value.detail == "wallet_label has a max length of 100 characters"
@@ -23,6 +25,8 @@ def test_create_tenant_model_wallet_label():
 
 
 def test_create_tenant_model_wallet_name():
+    CreateTenantRequest(wallet_label="a", wallet_name="a")
+
     with pytest.raises(CloudApiValueError) as exc:
         CreateTenantRequest(wallet_label="a", wallet_name="a" * 101)
     assert exc.value.detail == "wallet_name has a max length of 100 characters"
@@ -37,6 +41,8 @@ def test_create_tenant_model_wallet_name():
 
 
 def test_create_tenant_model_group_id():
+    CreateTenantRequest(wallet_label="a", group_id="a")
+
     with pytest.raises(CloudApiValueError) as exc:
         CreateTenantRequest(wallet_label="a", group_id="a" * 51)
     assert exc.value.detail == "group_id has a max length of 50 characters"

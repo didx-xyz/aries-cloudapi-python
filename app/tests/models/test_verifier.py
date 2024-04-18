@@ -3,6 +3,8 @@ from aries_cloudcontroller import DIFProofRequest, PresentationDefinition
 
 from app.models.verifier import (
     AcceptProofRequest,
+    DIFPresSpec,
+    IndyPresSpec,
     IndyProofRequest,
     ProofRequestBase,
     ProofRequestType,
@@ -51,8 +53,31 @@ def test_proof_request_base_model():
         "dif_proof_request must be populated if `ld_proof` type is selected"
     )
 
+    ProofRequestBase.check_indy_proof_request(
+        values=ProofRequestBase(
+            indy_proof_request=IndyProofRequest(
+                requested_attributes={}, requested_predicates={}
+            )
+        )
+    )
+
 
 def test_accept_proof_request_model():
+    AcceptProofRequest(
+        proof_id="abc",
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    AcceptProofRequest(
+        proof_id="abc",
+        type=ProofRequestType.LD_PROOF,
+        dif_presentation_spec=DIFPresSpec(),
+    )
+
     with pytest.raises(CloudApiValueError) as exc:
         AcceptProofRequest(type=ProofRequestType.INDY, indy_presentation_spec=None)
     assert exc.value.detail == (

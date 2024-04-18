@@ -5,6 +5,9 @@ from shared.exceptions.cloudapi_value_error import CloudApiValueError
 
 
 def test_json_ld_sign_request():
+    # Valid:
+    JsonLdSignRequest(credential_id="abc")
+
     # Only of credential or credential_id must be populated
     with pytest.raises(CloudApiValueError) as exc:
         JsonLdSignRequest(credential=None, credential_id=None)

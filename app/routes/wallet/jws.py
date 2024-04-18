@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from pydantic import ValidationError
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.jws import (
     JWSCreateRequest,
@@ -30,7 +30,7 @@ See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.""",
 )
 async def sign_jws(
     body: JWSCreateRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> JWSCreateResponse:
     bound_logger = logger.bind(
         # Do not log payload:
@@ -71,7 +71,7 @@ See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.""",
 )
 async def verify_jws(
     body: JWSVerifyRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> JWSVerifyResponse:
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Verify JWS")

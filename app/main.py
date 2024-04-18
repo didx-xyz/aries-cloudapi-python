@@ -106,12 +106,12 @@ tenant_routes = [
 def routes_for_role(role: str) -> list:
     if role in ("governance", "tenant"):
         return tenant_routes
-    elif ROLE == "tenant-admin":
+    elif role == "tenant-admin":
         return tenant_admin_routes
-    elif ROLE == "public":
+    elif role == "public":
         return trust_registry_routes
-    elif ROLE == "*":
-        return tenant_admin_routes + tenant_routes + trust_registry_routes
+    elif role == "*":
+        return set(tenant_admin_routes + tenant_routes + trust_registry_routes)
     else:
         return []
 
@@ -155,36 +155,41 @@ def read_openapi_yaml() -> Response:
 
 
 @app.exception_handler(Exception)
-async def client_response_error_exception_handler(
-    _: Request, exception: Exception
-) -> JSONResponse:
-    stacktrace = {"stack": traceback.format_exc()}
+async def universal_exception_handler(_: Request, exception: Exception) -> JSONResponse:
+    stacktrace = {"traceback": traceback.format_exc()} if debug else {}
 
     if isinstance(exception, CloudApiException):
         return JSONResponse(
-            {"detail": exception.detail, **(stacktrace if debug else {})},
-            exception.status_code,
+            content={"detail": exception.detail, **stacktrace},
+            status_code=exception.status_code,
         )
 
     if isinstance(exception, CloudApiValueError):
-        return JSONResponse({"detail": exception.detail}, status_code=422)
+        return JSONResponse(
+            {"detail": exception.detail, **stacktrace},
+            status_code=422,
+        )
+
+    if isinstance(exception, pydantic.ValidationError):
+        return JSONResponse(
+            {"detail": exception.errors(), **stacktrace},
+            status_code=422,
+        )
 
     if isinstance(exception, ApiException):
         return JSONResponse(
-            {"detail": exception.reason, **(stacktrace if debug else {})},
-            exception.status,
+            {"detail": exception.reason, **stacktrace},
+            status_code=exception.status,
         )
 
     if isinstance(exception, HTTPException):
         return JSONResponse(
-            {**exception.detail, **(stacktrace if debug else {})},
-            exception.status_code,
-            exception.headers,
+            {"detail": exception.detail, **stacktrace},
+            status_code=exception.status_code,
+            headers=exception.headers,
         )
 
-    if isinstance(exception, pydantic.ValidationError):
-        return JSONResponse({"detail": exception.errors()}, status_code=422)
-
     return JSONResponse(
-        {"detail": "Internal server error", "exception": str(exception)}, 500
+        {"detail": "Internal server error", "exception": str(exception), **stacktrace},
+        status_code=500,
     )

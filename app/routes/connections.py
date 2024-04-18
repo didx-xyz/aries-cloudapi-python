@@ -4,7 +4,7 @@ from aries_cloudcontroller import CreateInvitationRequest, InvitationResult
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call
 from app.models.connections import AcceptInvitation, CreateInvitation
 from shared.log_config import get_logger
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/v1/connections", tags=["connections"])
 @router.post("/create-invitation", response_model=InvitationResult)
 async def create_invitation(
     body: Optional[CreateInvitation] = None,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> InvitationResult:
     """
     Create connection invitation.
@@ -51,7 +51,7 @@ async def create_invitation(
 @router.post("/accept-invitation", response_model=Connection)
 async def accept_invitation(
     body: AcceptInvitation,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
     Accept connection invitation.
@@ -87,7 +87,7 @@ async def get_connections(
     their_did: Optional[str] = None,
     their_public_did: Optional[str] = None,
     their_role: Optional[Role] = None,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[Connection]:
     """
     Retrieve list of connections.
@@ -141,7 +141,7 @@ async def get_connections(
 @router.get("/{connection_id}", response_model=Connection)
 async def get_connection_by_id(
     connection_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
     Retrieve connection by id.
@@ -176,7 +176,7 @@ async def get_connection_by_id(
 @router.delete("/{connection_id}", status_code=200)
 async def delete_connection_by_id(
     connection_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
     Delete connection by id.

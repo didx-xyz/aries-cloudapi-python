@@ -1,6 +1,10 @@
 import pytest
 
-from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
+from app.dependencies.auth import (
+    AcaPyAuthVerified,
+    acapy_auth_from_header,
+    acapy_auth_verified,
+)
 from app.routes.definitions import (
     CreateCredentialDefinition,
     CreateSchema,
@@ -52,7 +56,9 @@ async def credential_definition_id(
         tag="tag", schema_id=schema_definition.id, support_revocation=False
     )
 
-    auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
+    auth = acapy_auth_verified(
+        acapy_auth_from_header(faber_client.headers["x-api-key"])
+    )
     result = await create_credential_definition(
         credential_definition=definition, auth=auth
     )
@@ -74,7 +80,9 @@ async def credential_definition_id_revocable(
         revocation_registry_size=2000,
     )
 
-    auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
+    auth = acapy_auth_verified(
+        acapy_auth_from_header(faber_client.headers["x-api-key"])
+    )
     result = await create_credential_definition(
         credential_definition=definition, auth=auth
     )
@@ -95,7 +103,9 @@ async def meld_co_credential_definition_id(
         tag="tag", schema_id=schema_definition.id, support_revocation=False
     )
 
-    auth = acapy_auth_verified(acapy_auth(meld_co_client.headers["x-api-key"]))
+    auth = acapy_auth_verified(
+        acapy_auth_from_header(meld_co_client.headers["x-api-key"])
+    )
     result = await create_credential_definition(
         credential_definition=definition, auth=auth
     )

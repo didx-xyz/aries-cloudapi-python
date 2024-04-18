@@ -4,7 +4,7 @@ from aries_cloudcontroller import InvitationCreateRequest, InvitationRecord, Oob
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call, handle_model_with_validation
 from app.models.oob import AcceptOobInvitation, ConnectToPublicDid, CreateOobInvitation
 from app.util.credentials import strip_protocol_prefix
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/v1/oob", tags=["out-of-band"])
 @router.post("/create-invitation", response_model=InvitationRecord)
 async def create_oob_invitation(
     body: Optional[CreateOobInvitation] = None,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> InvitationRecord:
     """
     Create connection invitation out-of-band.
@@ -71,7 +71,7 @@ async def create_oob_invitation(
 @router.post("/accept-invitation", response_model=OobRecord)
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> OobRecord:
     """
     Receive out-of-band invitation.
@@ -95,7 +95,7 @@ async def accept_oob_invitation(
 @router.post("/connect-public-did", response_model=Connection)
 async def connect_to_public_did(
     body: ConnectToPublicDid,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
     Connect using public DID as implicit invitation.

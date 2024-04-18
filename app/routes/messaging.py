@@ -2,7 +2,7 @@ from aries_cloudcontroller import PingRequest, PingRequestResponse, SendMessage
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions.handle_acapy_call import handle_acapy_call
 from app.models.messaging import Message, TrustPingMsg
 from shared.log_config import get_logger
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/v1/messaging", tags=["messaging"])
 @router.post("/send-message")
 async def send_messages(
     message: Message,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
     Send basic message.
@@ -44,7 +44,7 @@ async def send_messages(
 @router.post("/trust-ping", response_model=PingRequestResponse)
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
     Trust ping

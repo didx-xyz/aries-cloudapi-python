@@ -22,7 +22,7 @@ class AcaPyAuthVerified(AcaPyAuth):
     wallet_id: str
 
 
-def acapy_auth(api_key: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
+def acapy_auth_from_header(api_key: str = Depends(x_api_key_scheme)) -> AcaPyAuth:
     return get_acapy_auth(api_key)
 
 
@@ -30,12 +30,9 @@ def get_acapy_auth(api_key: str) -> AcaPyAuth:
     if "." not in api_key:
         raise HTTPException(401, "Unauthorized")
 
-    try:
-        [role_str, token] = api_key.split(".", maxsplit=1)
+    [role_str, token] = api_key.split(".", maxsplit=1)
 
-        role = Role.from_str(role_str)
-    except Exception:
-        raise HTTPException(401, "Unauthorized")
+    role = Role.from_str(role_str)
 
     if not role:
         raise HTTPException(401, "Unauthorized")
@@ -43,7 +40,9 @@ def get_acapy_auth(api_key: str) -> AcaPyAuth:
     return AcaPyAuth(role=role, token=token)
 
 
-def acapy_auth_verified(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+def acapy_auth_verified(
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> AcaPyAuthVerified:
     return get_acapy_auth_verified(auth)
 
 
@@ -70,7 +69,9 @@ def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
     return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id=wallet_id)
 
 
-def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+def acapy_auth_governance(
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> AcaPyAuthVerified:
     if auth.role == Role.GOVERNANCE:
         return AcaPyAuthVerified(
             role=auth.role, token=auth.token, wallet_id=GOVERNANCE_LABEL
@@ -79,7 +80,9 @@ def acapy_auth_governance(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVer
         raise HTTPException(403, "Unauthorized")
 
 
-def acapy_auth_tenant_admin(auth: AcaPyAuth = Depends(acapy_auth)) -> AcaPyAuthVerified:
+def acapy_auth_tenant_admin(
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> AcaPyAuthVerified:
     if auth.role == Role.TENANT_ADMIN:
         return AcaPyAuthVerified(role=auth.role, token=auth.token, wallet_id="admin")
     else:

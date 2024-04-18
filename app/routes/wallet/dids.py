@@ -4,7 +4,7 @@ from aries_cloudcontroller import DID, DIDCreate, DIDEndpoint, DIDEndpointWithTy
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import (
     CloudApiException,
     handle_acapy_call,
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/v1/wallet/dids", tags=["wallet"])
 @router.post("", response_model=DID)
 async def create_did(
     did_create: Optional[DIDCreate] = None,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """Create Local DID."""
     logger.info("POST request received: Create DID")
@@ -39,7 +39,7 @@ async def create_did(
 
 @router.get("", response_model=List[DID])
 async def list_dids(
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[DID]:
     """
     Retrieve list of DIDs.
@@ -62,7 +62,7 @@ async def list_dids(
 
 @router.get("/public", response_model=DID)
 async def get_public_did(
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """
     Fetch the current public DID.
@@ -86,7 +86,7 @@ async def get_public_did(
 @router.put("/public", response_model=DID)
 async def set_public_did(
     did: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """Set the current public DID."""
     logger.info("PUT request received: Set public DID")
@@ -102,7 +102,7 @@ async def set_public_did(
 @router.patch("/{did}/rotate-keypair", status_code=204)
 async def rotate_keypair(
     did: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     bound_logger = logger.bind(body={"did": did})
     bound_logger.info("PATCH request received: Rotate keypair for DID")
@@ -118,7 +118,7 @@ async def rotate_keypair(
 @router.get("/{did}/endpoint", response_model=DIDEndpoint)
 async def get_did_endpoint(
     did: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DIDEndpoint:
     """Get DID endpoint."""
     bound_logger = logger.bind(body={"did": did})
@@ -137,7 +137,7 @@ async def get_did_endpoint(
 async def set_did_endpoint(
     did: str,
     body: SetDidEndpointRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """Update Endpoint in wallet and on ledger if posted to it."""
 

@@ -51,6 +51,8 @@ def test_create_tenant_model_group_id():
 
 
 def test_update_tenant_model_wallet_label():
+    UpdateTenantRequest(wallet_label="abc")  # only wallet_label required
+
     with pytest.raises(CloudApiValueError) as exc:
         UpdateTenantRequest(wallet_label="a" * 101)
     assert exc.value.detail == "wallet_label has a max length of 100 characters"

@@ -22,6 +22,9 @@ def test_json_ld_sign_request():
 
 
 def test_json_ld_verify_request():
+    # Valid:
+    JsonLdVerifyRequest(doc={}, verkey="abc", public_did=None)
+
     # Only one of verkey or pub_did should be provided
     with pytest.raises(CloudApiValueError) as exc:
         JsonLdVerifyRequest(doc={}, verkey="abc", public_did="abc")

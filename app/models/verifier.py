@@ -28,6 +28,7 @@ class ProofRequestBase(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def check_indy_proof_request(cls, values: Union[dict, "ProofRequestBase"]):
+        # pydantic v2 removed safe way to get key, because `values` can be a dict or this type
         if not isinstance(values, dict):
             values = values.__dict__
 

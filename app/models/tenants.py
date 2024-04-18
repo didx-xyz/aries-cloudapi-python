@@ -126,9 +126,7 @@ class UpdateTenantRequest(BaseModel):
     @classmethod
     def validate_wallet_label(cls, v):
         if len(v) > 100:
-            raise CloudApiValueError(
-                "wallet_label must be less than 100 characters long"
-            )
+            raise CloudApiValueError("wallet_label has a max length of 100 characters")
 
         if not re.match(rf"^[a-zA-Z0-9 {allowable_special_chars}]+$", v):
             raise CloudApiValueError(

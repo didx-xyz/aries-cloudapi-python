@@ -2,7 +2,7 @@ from aries_cloudcontroller import Doc, SignRequest, SignResponse, VerifyRequest
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.jsonld import JsonLdSignRequest, JsonLdVerifyRequest
 from shared.log_config import get_logger
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/v1/jsonld", tags=["jsonld"])
 @router.post("/sign", response_model=SignResponse)
 async def sign_jsonld(
     body: JsonLdSignRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
     Sign a JSON-LD structure
@@ -96,7 +96,7 @@ async def sign_jsonld(
 @router.post("/verify", status_code=204)
 async def verify_jsonld(
     body: JsonLdVerifyRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
     Verify a JSON-LD structure

@@ -12,7 +12,7 @@ from app.dependencies.acapy_clients import client_from_auth, get_governance_cont
 from app.dependencies.auth import (
     AcaPyAuth,
     AcaPyAuthVerified,
-    acapy_auth,
+    acapy_auth_from_header,
     acapy_auth_governance,
     acapy_auth_verified,
 )
@@ -56,7 +56,7 @@ async def get_credential_definitions(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialDefinition]:
     """
         Get agent-created credential definitions
@@ -142,7 +142,7 @@ async def get_credential_definitions(
 )
 async def get_credential_definition_by_id(
     credential_definition_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialDefinition:
     """
         Get credential definition by id.
@@ -372,7 +372,7 @@ async def get_schemas(
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialSchema]:
     """
         Retrieve schemas that the current agent created.
@@ -448,7 +448,7 @@ async def get_schemas(
 @router.get("/schemas/{schema_id}", response_model=CredentialSchema)
 async def get_schema(
     schema_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialSchema:
     """
         Retrieve schema by id.

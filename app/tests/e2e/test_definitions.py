@@ -2,7 +2,11 @@ import pytest
 from aries_cloudcontroller import AcaPyClient
 from assertpy import assert_that
 
-from app.dependencies.auth import AcaPyAuthVerified, acapy_auth, acapy_auth_verified
+from app.dependencies.auth import (
+    AcaPyAuthVerified,
+    acapy_auth_from_header,
+    acapy_auth_verified,
+)
 from app.routes import definitions
 from app.routes.definitions import (
     CreateCredentialDefinition,
@@ -139,7 +143,9 @@ async def test_create_credential_definition_issuer_tenant(
         support_revocation=support_revocation,
     )
 
-    auth = acapy_auth_verified(acapy_auth(faber_client.headers["x-api-key"]))
+    auth = acapy_auth_verified(
+        acapy_auth_from_header(faber_client.headers["x-api-key"])
+    )
 
     result = (
         await definitions.create_credential_definition(

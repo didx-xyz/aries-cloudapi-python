@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from pydantic import ValidationError
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import CloudApiException, handle_acapy_call
 from app.models.sd_jws import (
     SDJWSCreateRequest,
@@ -31,7 +31,7 @@ See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07
 )
 async def sign_sd_jws(
     body: SDJWSCreateRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSCreateResponse:
     bound_logger = logger.bind(
         # Do not log payload:
@@ -73,7 +73,7 @@ See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07
 )
 async def verify_sd_jws(
     body: SDJWSVerifyRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSVerifyResponse:
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Verify SD-JWS")

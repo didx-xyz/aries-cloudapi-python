@@ -5,7 +5,7 @@ from aries_cloudcontroller import IndyCredPrecis
 from fastapi import APIRouter, Depends
 
 from app.dependencies.acapy_clients import client_from_auth
-from app.dependencies.auth import AcaPyAuth, acapy_auth
+from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import CloudApiException
 from app.models.verifier import (
     AcceptProofRequest,
@@ -35,7 +35,7 @@ router = APIRouter(prefix="/v1/verifier", tags=["verifier"])
 @router.post("/create-request", response_model=PresentationExchange)
 async def create_proof_request(
     body: CreateProofRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
     Create proof request.
@@ -75,7 +75,7 @@ async def create_proof_request(
 @router.post("/send-request", response_model=PresentationExchange)
 async def send_proof_request(
     body: SendProofRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
     Send proof request.
@@ -120,7 +120,7 @@ async def send_proof_request(
 @router.post("/accept-request", response_model=PresentationExchange)
 async def accept_proof_request(
     body: AcceptProofRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
     Accept proof request.
@@ -177,7 +177,7 @@ async def accept_proof_request(
 @router.post("/reject-request", status_code=204)
 async def reject_proof_request(
     body: RejectProofRequest,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
     Reject proof request.
@@ -226,7 +226,7 @@ async def reject_proof_request(
 
 @router.get("/proofs", response_model=List[PresentationExchange])
 async def get_proof_records(
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
     connection_id: Optional[str] = None,
     role: Optional[Role] = None,
     state: Optional[State] = None,
@@ -284,7 +284,7 @@ async def get_proof_records(
 @router.get("/proofs/{proof_id}", response_model=PresentationExchange)
 async def get_proof_record(
     proof_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
     Get a specific proof record
@@ -324,7 +324,7 @@ async def get_proof_record(
 @router.delete("/proofs/{proof_id}", status_code=204)
 async def delete_proof(
     proof_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
     Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
@@ -357,7 +357,7 @@ async def delete_proof(
 @router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
 async def get_credentials_by_proof_id(
     proof_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[IndyCredPrecis]:
     """
     Get matching credentials for presentation exchange

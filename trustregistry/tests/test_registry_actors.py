@@ -49,15 +49,15 @@ async def test_register_actor_x(exception, status_code):
     "actor_id, actor",
     [
         ("1", Actor(id="1", name="Alice", roles=["role"], did="did:sov:1234")),
+        ("1", Actor(id="", name="Alice", roles=["role"], did="did:sov:1234")),
         ("2", Actor(id="1", name="Bob", roles=["role"], did="did:sov:5678")),
     ],
 )
-async def test_update_actor(actor_id, actor):
+async def test_update_actor(actor_id: str, actor: Actor):
     with patch("trustregistry.registry.registry_actors.crud.update_actor") as mock_crud:
-        actor = Actor(id="1", name="Alice", roles=["role"], did="did:sov:1234")
         mock_crud.return_value = actor
 
-        if actor_id != actor.id:
+        if actor.id and actor_id != actor.id:
             with pytest.raises(HTTPException) as ex:
                 await registry_actors.update_actor(actor_id, actor)
 

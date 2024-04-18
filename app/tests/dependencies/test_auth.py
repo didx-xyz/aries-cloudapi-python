@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import jwt
 import pytest
 from fastapi import HTTPException
 
@@ -17,6 +18,7 @@ from app.dependencies.auth import (
 )
 from app.dependencies.role import Role
 from shared.constants import (
+    ACAPY_MULTITENANT_JWT_SECRET,
     GOVERNANCE_AGENT_API_KEY,
     GOVERNANCE_LABEL,
     TENANT_AGENT_API_KEY,
@@ -106,12 +108,11 @@ def test_get_acapy_auth_verified_admin_bad_token():
 
 
 def test_get_acapy_auth_verified_valid_tenant():
-    valid_tenant_jwt = (
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ3YWxsZXRfaWQiOiIzNjZlMj"
-        "VkMy0zYzcxLTQ5MWQtYTMzOS00MDI5MTIwYzdiMmIiLCJpYXQiOjE3MTM0Mjg1ODV9."
-        "PZqQfjQg1JkWzc07dVG8_t9B5bcSkItGWvYZxr_l_VQ"
-    )  # from a create tenant request
     token_wallet_id = "366e25d3-3c71-491d-a339-4029120c7b2b"
+    valid_payload = {"wallet_id": token_wallet_id}
+    valid_tenant_jwt = jwt.encode(
+        valid_payload, ACAPY_MULTITENANT_JWT_SECRET, algorithm="HS256"
+    )
     auth = AcaPyAuth(role=Role.TENANT, token=valid_tenant_jwt)
     assert get_acapy_auth_verified(auth) == AcaPyAuthVerified(
         role=Role.TENANT, token=valid_tenant_jwt, wallet_id=token_wallet_id
@@ -127,11 +128,11 @@ def test_get_acapy_auth_verified_tenant_bad_token():
 
 
 def test_get_acapy_auth_verified_tenant_valid_token_no_wallet_id():
-    valid_jwt_without_encoded_wallet_id = (
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MTM0Mjg1ODV9."
-        "_mf4SeEbey9EsfgN4_mpd4V3HnXo4c5yiZR4E2J3fYU"
+    invalid_payload = {"bad_key": "123"}
+    bad_tenant_jwt = jwt.encode(
+        invalid_payload, ACAPY_MULTITENANT_JWT_SECRET, algorithm="HS256"
     )
-    auth = AcaPyAuth(role=Role.TENANT, token=valid_jwt_without_encoded_wallet_id)
+    auth = AcaPyAuth(role=Role.TENANT, token=bad_tenant_jwt)
 
     with pytest.raises(HTTPException) as exc:
         get_acapy_auth_verified(auth)

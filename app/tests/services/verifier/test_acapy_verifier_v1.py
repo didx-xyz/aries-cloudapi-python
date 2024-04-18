@@ -2,8 +2,10 @@ import pytest
 from aries_cloudcontroller import (
     AcaPyClient,
     ApiException,
+    DIFProofRequest,
     IndyCredPrecis,
     IndyPresSpec,
+    PresentationDefinition,
     V10PresentationExchangeList,
 )
 from mockito import when
@@ -404,6 +406,9 @@ async def test_create_proof_request_is_indy_only(mock_agent_controller: AcaPyCli
             create_proof_request=CreateProofRequest(
                 type=ProofRequestType.LD_PROOF,
                 protocol_version=PresentProofProtocolVersion.v1,
+                dif_proof_request=DIFProofRequest(
+                    presentation_definition=PresentationDefinition()
+                ),
             ),
         )
     assert exc.value.status_code == 400
@@ -419,6 +424,9 @@ async def test_send_proof_request_is_indy_only(mock_agent_controller: AcaPyClien
             send_proof_request=SendProofRequest(
                 type=ProofRequestType.LD_PROOF,
                 protocol_version=PresentProofProtocolVersion.v1,
+                dif_proof_request=DIFProofRequest(
+                    presentation_definition=PresentationDefinition()
+                ),
                 connection_id="abc",
             ),
         )

@@ -30,12 +30,9 @@ def get_acapy_auth(api_key: str) -> AcaPyAuth:
     if "." not in api_key:
         raise HTTPException(401, "Unauthorized")
 
-    try:
-        [role_str, token] = api_key.split(".", maxsplit=1)
+    [role_str, token] = api_key.split(".", maxsplit=1)
 
-        role = Role.from_str(role_str)
-    except Exception:
-        raise HTTPException(401, "Unauthorized")
+    role = Role.from_str(role_str)
 
     if not role:
         raise HTTPException(401, "Unauthorized")

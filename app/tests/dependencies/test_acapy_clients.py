@@ -6,7 +6,6 @@ from fastapi import HTTPException
 
 from app.dependencies.acapy_clients import (
     AcaPyAuthVerified,
-    AcaPyClient,
     client_from_auth,
     get_governance_controller,
     get_tenant_admin_controller,
@@ -46,18 +45,18 @@ async def test_tenant_admin_agent(tenant_admin_acapy_client):
 
 
 def test_get_governance_controller():
-    with patch("app.dependencies.acapy_clients.AcaPyClient") as MockAcaPyClient:
+    with patch("app.dependencies.acapy_clients.AcaPyClient") as mock_acapy_client:
         get_governance_controller()
-        MockAcaPyClient.assert_called_with(
+        mock_acapy_client.assert_called_with(
             base_url=Role.GOVERNANCE.agent_type.base_url,
             api_key=Role.GOVERNANCE.agent_type.x_api_key,
         )
 
 
 def test_get_tenant_admin_controller():
-    with patch("app.dependencies.acapy_clients.AcaPyClient") as MockAcaPyClient:
+    with patch("app.dependencies.acapy_clients.AcaPyClient") as mock_acapy_client:
         get_tenant_admin_controller()
-        MockAcaPyClient.assert_called_with(
+        mock_acapy_client.assert_called_with(
             base_url=Role.TENANT_ADMIN.agent_type.base_url,
             api_key=Role.TENANT_ADMIN.agent_type.x_api_key,
         )
@@ -65,9 +64,9 @@ def test_get_tenant_admin_controller():
 
 def test_get_tenant_controller():
     auth_token = "fake-jwt-token"
-    with patch("app.dependencies.acapy_clients.AcaPyClient") as MockAcaPyClient:
+    with patch("app.dependencies.acapy_clients.AcaPyClient") as mock_acapy_client:
         get_tenant_controller(auth_token)
-        MockAcaPyClient.assert_called_with(
+        mock_acapy_client.assert_called_with(
             base_url=Role.TENANT.agent_type.base_url,
             api_key=Role.TENANT.agent_type.x_api_key,
             tenant_jwt=auth_token,

@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
-from jwt import InvalidTokenError
 
 from app.dependencies.auth import (
     AcaPyAuth,

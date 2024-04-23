@@ -42,7 +42,7 @@ async def test_onboard_issuer_public_did_exists(
         InvitationRecord(invitation=InvitationMessage())
     )
     when(mock_agent_controller.out_of_band).receive_invitation(...).thenReturn(
-        ConnRecord()
+        ConnRecord(connection_id="abc")
     )
 
     when(acapy_wallet).get_public_did(controller=endorser_controller).thenReturn(

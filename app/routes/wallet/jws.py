@@ -51,7 +51,7 @@ async def sign_jws(
     async with client_from_auth(auth) as aries_controller:
         jws = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.wallet.wallet_jwt_sign_post,
+            acapy_call=aries_controller.wallet.sign_jwt,
             body=sign_request,
         )
 
@@ -90,7 +90,7 @@ async def verify_jws(
     async with client_from_auth(auth) as aries_controller:
         verify_result = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.wallet.wallet_jwt_verify_post,
+            acapy_call=aries_controller.wallet.verify_jwt,
             body=verify_request,
         )
 

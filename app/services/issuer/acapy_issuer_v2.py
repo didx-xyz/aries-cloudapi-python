@@ -119,7 +119,7 @@ class IssuerV2(Issuer):
         )
         record = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=controller.issue_credential_v2_0.issue_credential20_create_offer_post,
+            acapy_call=controller.issue_credential_v2_0.create_offer,
             body=request_body,
         )
 

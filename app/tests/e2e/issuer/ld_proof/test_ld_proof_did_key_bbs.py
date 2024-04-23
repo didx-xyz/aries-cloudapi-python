@@ -6,7 +6,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     Credential,
     LDProofVCDetail,
-    LDProofVCDetailOptions,
+    LDProofVCOptions,
 )
 from assertpy import assert_that
 from fastapi import HTTPException
@@ -45,7 +45,7 @@ credential_ = SendCredential(
             issuanceDate="2021-04-12",
             issuer="",
         ),
-        options=LDProofVCDetailOptions(proofType="BbsBlsSignature2020"),
+        options=LDProofVCOptions(proofType="BbsBlsSignature2020"),
     ),
 ).model_dump(by_alias=True, exclude_unset=True)
 

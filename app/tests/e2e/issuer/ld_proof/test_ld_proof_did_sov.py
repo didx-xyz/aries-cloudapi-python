@@ -6,7 +6,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     Credential,
     LDProofVCDetail,
-    LDProofVCDetailOptions,
+    LDProofVCOptions,
 )
 from assertpy import assert_that
 
@@ -43,7 +43,7 @@ credential_ = SendCredential(
             issuanceDate="2021-04-12",
             issuer="",
         ),
-        options=LDProofVCDetailOptions(proofType="Ed25519Signature2018"),
+        options=LDProofVCOptions(proofType="Ed25519Signature2018"),
     ),
 ).model_dump(by_alias=True, exclude_unset=True)
 

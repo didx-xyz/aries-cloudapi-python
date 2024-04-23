@@ -22,6 +22,9 @@ from shared.util.mock_agent_controller import get_mock_agent_controller
 did_object = DID(
     did="WgWxqztrNooG92RXvxSTWv",
     verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
+    posture="wallet_only",
+    key_type="ed25519",
+    method="sov",
 )
 
 

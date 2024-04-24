@@ -77,10 +77,7 @@ async def revoke_credential(
     Args:
         controller (AcaPyClient): aca-py client
         credential_exchange_id (str): The credential exchange ID.
-        credential_definition_id (str): The credential definition ID.
-        auto_publish_to_ledger (bool): Whether to directly publish the revocation to the ledger.
-            This should only be true when invoked by an endorser.
-            Default is False
+        auto_publish_to_ledger (bool): (True) publish revocation to ledger immediately, or (default, False) mark it pending
 
     Raises:
         Exception: When the credential could not be revoked

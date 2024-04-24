@@ -306,8 +306,10 @@ async def revoke_credential(
 
     Parameters:
     -----------
-        credential_exchange_id: str
-            The credential exchange id
+        body: RevokeCredential
+            - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.
+            - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or (default, False) mark it pending
+
 
     Returns:
     --------

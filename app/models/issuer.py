@@ -65,7 +65,6 @@ class CreateOffer(CredentialWithProtocol):
 
 class RevokeCredential(BaseModel):
     credential_exchange_id: str
-    credential_definition_id: Optional[str] = None
     auto_publish_on_ledger: Optional[bool] = False
 
 

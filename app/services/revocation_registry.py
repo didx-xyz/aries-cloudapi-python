@@ -69,7 +69,6 @@ async def get_active_revocation_registry_for_credential(
 async def revoke_credential(
     controller: AcaPyClient,
     credential_exchange_id: str,
-    credential_definition_id: str = None,
     auto_publish_to_ledger: bool = False,
 ) -> None:
     """
@@ -92,7 +91,6 @@ async def revoke_credential(
     bound_logger = logger.bind(
         body={
             "credential_exchange_id": credential_exchange_id,
-            "credential_definition_id": credential_definition_id,
             "auto_publish_to_ledger": auto_publish_to_ledger,
         }
     )

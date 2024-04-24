@@ -12,8 +12,13 @@ from aries_cloudcontroller import (
     RevRegResult,
 )
 
-from app.exceptions import CloudApiException, handle_acapy_call
+from app.exceptions import (
+    CloudApiException,
+    handle_acapy_call,
+    handle_model_with_validation,
+)
 from app.models.issuer import ClearPendingRevocationsResult
+from app.util.credentials import strip_protocol_prefix
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -93,8 +98,10 @@ async def revoke_credential(
     )
     bound_logger.info("Revoking an issued credential")
 
-    request_body = RevokeRequest(
-        cred_ex_id=credential_exchange_id,
+    request_body = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=RevokeRequest,
+        cred_ex_id=strip_protocol_prefix(credential_exchange_id),
         publish=auto_publish_to_ledger,
     )
     try:
@@ -230,7 +237,7 @@ async def get_credential_revocation_record(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.revocation.get_revocation_status,
-            cred_ex_id=credential_exchange_id,
+            cred_ex_id=strip_protocol_prefix(credential_exchange_id),
             cred_rev_id=credential_revocation_id,
             rev_reg_id=revocation_registry_id,
         )
@@ -269,11 +276,12 @@ async def get_credential_definition_id_from_exchange_id(
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("Fetching credential definition id from exchange id")
 
+    cred_ex_id = strip_protocol_prefix(credential_exchange_id)
     try:
         cred_ex_record = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.issue_credential_v1_0.get_record,
-            cred_ex_id=credential_exchange_id,
+            cred_ex_id=cred_ex_id,
         )
         credential_definition_id = cred_ex_record.credential_definition_id
     except CloudApiException as err1:
@@ -287,7 +295,7 @@ async def get_credential_definition_id_from_exchange_id(
             cred_ex_record = await handle_acapy_call(
                 logger=bound_logger,
                 acapy_call=controller.issue_credential_v2_0.get_record,
-                cred_ex_id=credential_exchange_id,
+                cred_ex_id=cred_ex_id,
             )
             rev_reg_id = cred_ex_record.indy.rev_reg_id
             rev_reg_parts = rev_reg_id.split(":")

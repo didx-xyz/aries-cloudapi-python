@@ -117,7 +117,7 @@ async def revoke_credential(
 
 async def publish_pending_revocations(
     controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
-) -> None:
+) -> str:
     """
         Publish pending revocations
 
@@ -130,7 +130,7 @@ async def publish_pending_revocations(
         Exception: When the pending revocations could not be published
 
     Returns:
-        result (None): Successful execution returns None.
+        result (str): Successful execution returns the endorser transaction id.
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
@@ -141,7 +141,7 @@ async def publish_pending_revocations(
     )
 
     try:
-        await handle_acapy_call(
+        result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.revocation.publish_revocations,
             body=PublishRevocations(rrid2crid=revocation_registry_credential_map),
@@ -151,7 +151,15 @@ async def publish_pending_revocations(
             f"Failed to publish pending revocations: {e.detail}.", e.status_code
         ) from e
 
-    bound_logger.info("Successfully published pending revocations.")
+    if not result.txn or not result.txn.transaction_id:
+        raise CloudApiException("Failed to publish pending revocations.", 500)
+
+    endorse_transaction_id = result.txn.transaction_id
+    bound_logger.info(
+        "Successfully published pending revocations. Endorser transaction id: {}.",
+        endorse_transaction_id,
+    )
+    return endorse_transaction_id
 
 
 async def clear_pending_revocations(

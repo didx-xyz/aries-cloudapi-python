@@ -345,7 +345,6 @@ async def revoke_credential(
     --------------------
 
         Revoke a credential by providing the credential exchange id and the credential definition id.
-        TODO: the version tag needs to be removed from the credential exchange id not sure how this will change in v0.12.0
 
         If an issuer is going to revoke more than one credential, it is recommended to set the 'auto_publish_on_ledger' field to False,
         and then batch publish the revocations using the 'publish-revocations' endpoint.
@@ -492,6 +491,9 @@ async def get_credential_revocation_record(
         The record is the payload of the event 'issuer_cred_rev' and contains information about the
         credential's revocation status.
 
+        The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
+        in this record if you have the credential exchange id.
+
     Parameters:
     -----------
         credential_exchange_id: str
@@ -557,8 +559,9 @@ async def request_credential(
 
         Send a credential request to the issuer by providing the credential exchange id.
 
+        The holder uses this endpoint to accept an offer from an issuer.
         A holder calls this endpoint with the credential exchange id from a credential exchange record,
-        that is in the offer-received state.
+        with a state 'offer-received'.
 
 
     Parameters:
@@ -614,7 +617,15 @@ async def store_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-        Store a credential.
+    Store a credential.
+    ------------------
+
+        Store a credential by providing the credential exchange id.
+        The credential exchange id is the id of the credential exchange record, not the credential itself.
+
+        The holder only needs to call this endpoint if the holder receives a credential out of band
+
+        The holder can store the credential in their wallet after receiving it from the issuer.
 
     Parameters:
     -----------

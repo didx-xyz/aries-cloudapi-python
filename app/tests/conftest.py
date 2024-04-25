@@ -1,6 +1,8 @@
 import mockito
 import pytest
 
+from app.tests.regression.fixtures import *
+
 # flake8: noqa
 # pylint: disable=unused-import
 from app.tests.util.ecosystem_connections import (

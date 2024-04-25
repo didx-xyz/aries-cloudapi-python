@@ -39,6 +39,9 @@ async def create_proof_request(
 ) -> PresentationExchange:
     """
     Create proof request.
+    ---------------------
+
+    TODO: Add stuff about no connection_id and OOB
 
     Parameters:
     -----------
@@ -79,6 +82,9 @@ async def send_proof_request(
 ) -> PresentationExchange:
     """
     Send proof request.
+    -------------------
+    Only a tenant with the verifier role can send a proof request.
+    TODO mention something about type of proof request (diff or indy)
 
     Parameters:
     -----------
@@ -124,6 +130,10 @@ async def accept_proof_request(
 ) -> PresentationExchange:
     """
     Accept proof request.
+    ---------------------
+
+    A tenant responds to a proof request with this endpoint.
+
 
     Parameters:
     -----------
@@ -181,6 +191,8 @@ async def reject_proof_request(
 ) -> None:
     """
     Reject proof request.
+    ---------------------
+    TODO mention something about rejecting
 
     Parameters:
     -----------
@@ -189,7 +201,8 @@ async def reject_proof_request(
 
     Returns:
     --------
-    None
+        None
+
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Reject proof request")
@@ -232,20 +245,27 @@ async def get_proof_records(
 ) -> List[PresentationExchange]:
     """
     Get all proof records
+    ----------------------
+    These records contains information about the proof request and the proof presentation.
+
+    If a proof is sent by a verifier with 'save_exchange_record' set to False the record
+    will be deleted after the exchange was completed.
+    The tenant can filter the results by connection_id, role, state, and thread_id.
 
     Parameters:
     ----------
-        connection_id: Optional[str]
-        role: Optional[Role]: "prover", "verifier"
-        state: Optional[State]: "abandoned", "done", "presentation-received",
-                                "presentation-sent", "proposal-received", "proposal-sent",
-                                "request-received", "request-sent"
-        thread_id: Optional[UUID]
+    connection_id: Optional[str]
+    role: Optional[Role]: "prover", "verifier"
+    state: Optional[State]: "abandoned", "done", "presentation-received",
+                            "presentation-sent", "proposal-received", "proposal-sent",
+                            "request-received", "request-sent"
+    thread_id: Optional[UUID]
 
     Returns:
     --------
     presentation_exchange_list: [PresentationExchange]
         The list of presentation exchange records
+
     """
     logger.info("GET request received: Get all proof records")
 
@@ -286,6 +306,12 @@ async def get_proof_record(
 ) -> PresentationExchange:
     """
     Get a specific proof record
+    ---------------------------
+    The tenant can get a specific proof record by providing the proof ID.
+
+    If the proof was sent with 'save_exchange_record' set to False the
+    record will not be available after the exchange was completed.
+    A holder's records will always be deleted after the exchange was completed.
 
     Parameters:
     ----------
@@ -325,7 +351,11 @@ async def delete_proof(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
+    Deletes a proof record
+    -----------------------
+
     Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
+
 
     Parameters:
     ----------
@@ -359,6 +389,12 @@ async def get_credentials_by_proof_id(
 ) -> List[IndyCredPrecis]:
     """
     Get matching credentials for presentation exchange
+    ---------------------------------------------------
+    Get matching credentials for a proof request by providing the proof ID.
+
+    Returns a list of credential that the holder needs to respond to the proof request.
+    The 'presentation_referents' field, for each object in this list, tells the holder which
+    of the fields in the proof request that credential satisfies.
 
     Parameters:
     ----------

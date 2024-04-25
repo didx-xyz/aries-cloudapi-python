@@ -40,18 +40,17 @@ async def create_proof_request(
     """
     Create proof request.
     ---------------------
-
-    TODO: Add stuff about no connection_id and OOB
+        TODO: Add stuff about no connection_id and OOB
 
     Parameters:
     -----------
-    body: CreateProofRequest
-        The proof request object
+        body: CreateProofRequest
+            The proof request object
 
     Returns:
     --------
-    presentation_exchange: PresentationExchange
-        The presentation exchange record
+        presentation_exchange: PresentationExchange
+            The presentation exchange record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create proof request")
@@ -83,18 +82,18 @@ async def send_proof_request(
     """
     Send proof request.
     -------------------
-    Only a tenant with the verifier role can send a proof request.
-    TODO mention something about type of proof request (diff or indy)
+        Only a tenant with the verifier role can send a proof request.
+        TODO mention something about type of proof request (diff or indy)
 
     Parameters:
     -----------
-    body: SendProofRequest
-        The proof request object
+        body: SendProofRequest
+            The proof request object
 
     Returns:
     --------
-    presentation_exchange: PresentationExchange
-        The presentation exchange record
+        presentation_exchange: PresentationExchange
+            The presentation exchange record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Send proof request")
@@ -131,19 +130,18 @@ async def accept_proof_request(
     """
     Accept proof request.
     ---------------------
-
-    A tenant responds to a proof request with this endpoint.
+        A tenant responds to a proof request with this endpoint.
 
 
     Parameters:
     -----------
-    body: AcceptProofRequest
-        The proof request object
+        body: AcceptProofRequest
+            The proof request object
 
     Returns:
     --------
-    presentation_exchange: PresentationExchange
-        The presentation exchange record
+        presentation_exchange: PresentationExchange
+            The presentation exchange record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept proof request")
@@ -192,12 +190,12 @@ async def reject_proof_request(
     """
     Reject proof request.
     ---------------------
-    TODO mention something about rejecting
+        TODO mention something about rejecting
 
     Parameters:
     -----------
-    body: RejectProofRequest
-        The proof request object
+        body: RejectProofRequest
+            The proof request object
 
     Returns:
     --------
@@ -246,25 +244,25 @@ async def get_proof_records(
     """
     Get all proof records
     ----------------------
-    These records contains information about the proof request and the proof presentation.
+        These records contains information about the proof request and the proof presentation.
 
-    If a proof is sent by a verifier with 'save_exchange_record' set to False the record
-    will be deleted after the exchange was completed.
-    The tenant can filter the results by connection_id, role, state, and thread_id.
+        If a proof is sent by a verifier with 'save_exchange_record' set to False the record
+        will be deleted after the exchange was completed.
+        The tenant can filter the results by connection_id, role, state, and thread_id.
 
     Parameters:
     ----------
-    connection_id: Optional[str]
-    role: Optional[Role]: "prover", "verifier"
-    state: Optional[State]: "abandoned", "done", "presentation-received",
-                            "presentation-sent", "proposal-received", "proposal-sent",
-                            "request-received", "request-sent"
-    thread_id: Optional[UUID]
+        connection_id: Optional[str]
+        role: Optional[Role]: "prover", "verifier"
+        state: Optional[State]: "abandoned", "done", "presentation-received",
+                                "presentation-sent", "proposal-received", "proposal-sent",
+                                "request-received", "request-sent"
+        thread_id: Optional[UUID]
 
     Returns:
     --------
-    presentation_exchange_list: [PresentationExchange]
-        The list of presentation exchange records
+        presentation_exchange_list: [PresentationExchange]
+            The list of presentation exchange records
 
     """
     logger.info("GET request received: Get all proof records")
@@ -307,21 +305,21 @@ async def get_proof_record(
     """
     Get a specific proof record
     ---------------------------
-    The tenant can get a specific proof record by providing the proof ID.
+        The tenant can get a specific proof record by providing the proof ID.
 
-    If the proof was sent with 'save_exchange_record' set to False the
-    record will not be available after the exchange was completed.
-    A holder's records will always be deleted after the exchange was completed.
+        If the proof was sent with 'save_exchange_record' set to False the
+        record will not be available after the exchange was completed.
+        A holder's records will always be deleted after the exchange was completed.
 
     Parameters:
     ----------
-    proof_id: str
-        The proof ID
+        proof_id: str
+            The proof ID
 
     Returns:
     --------
-    presentation_exchange_record: PresentationExchange
-        The of presentation exchange record for the proof ID
+        presentation_exchange_record: PresentationExchange
+            The of presentation exchange record for the proof ID
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get proof record by id")
@@ -353,18 +351,17 @@ async def delete_proof(
     """
     Deletes a proof record
     -----------------------
-
-    Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
+        Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
 
 
     Parameters:
     ----------
-    proof_id: str
-        The proof ID - starting with v1- or v2-
+        proof_id: str
+            The proof ID - starting with v1- or v2-
 
     Returns:
     --------
-    None
+        None
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("DELETE request received: Delete proof record by id")
@@ -390,21 +387,21 @@ async def get_credentials_by_proof_id(
     """
     Get matching credentials for presentation exchange
     ---------------------------------------------------
-    Get matching credentials for a proof request by providing the proof ID.
+        Get matching credentials for a proof request by providing the proof ID.
 
-    Returns a list of credential that the holder needs to respond to the proof request.
-    The 'presentation_referents' field, for each object in this list, tells the holder which
-    of the fields in the proof request that credential satisfies.
+        Returns a list of credential that the holder needs to respond to the proof request.
+        The 'presentation_referents' field, for each object in this list, tells the holder which
+        of the fields in the proof request that credential satisfies.
 
     Parameters:
     ----------
-    proof_id: str
-         The proof ID
+        proof_id: str
+            The proof ID
 
     Returns:
     --------
-    presentation_exchange_list: [IndyCredPrecis]
-        The list of Indy presentation credentials
+        presentation_exchange_list: [IndyCredPrecis]
+            The list of Indy presentation credentials
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get credentials for a proof request")

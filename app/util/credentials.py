@@ -12,6 +12,9 @@ def cred_id_no_version(credential_id: str) -> str:
 
 
 def strip_protocol_prefix(id: str):
+    if id is None:
+        return None
+
     if id.startswith("v1-") or id.startswith("v2-"):
         return id[3:]
     else:

@@ -3,7 +3,7 @@ FROM ghcr.io/hyperledger/aries-cloudagent-python:py3.9-0.12.1rc0
 USER root
 
 # Install wallet group id plugin
-RUN pip3 install git+https://github.com/didx-xyz/acapy-wallet-groups-plugin@9c3f889d7905691d7bf9e400926d866c7363b859
+RUN pip3 install --no-cache-dir acapy-wallet-groups-plugin==0.12.1rc0
 
 # install redis-events plugin
 RUN pip3 install git+https://github.com/didx-xyz/aries-acapy-plugins@v1-2024-04-23#subdirectory=redis_events

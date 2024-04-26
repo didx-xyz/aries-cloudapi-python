@@ -40,7 +40,13 @@ async def create_proof_request(
     """
     Create proof request.
     ---------------------
-        TODO: Add stuff about no connection_id and OOB
+        This create request endpoint is used to create a proof request that is not bound to a connection.
+        This is useful when the tenant wants to create a proof request that can be sent to multiple connections.
+
+        The proof request must be for a indy credential or ld_proof
+        Read more about the proof request here:
+            https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
+            https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
     Parameters:
     -----------
@@ -83,7 +89,12 @@ async def send_proof_request(
     Send proof request.
     -------------------
         Only a tenant with the verifier role can send a proof request.
-        TODO mention something about type of proof request (diff or indy)
+        The tenant can send a proof request to a specific connection by providing the connection ID.
+
+        The proof request must be for a indy credential or ld_proof
+        Read more about the proof request here:
+            https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
+            https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
     Parameters:
     -----------
@@ -131,7 +142,6 @@ async def accept_proof_request(
     Accept proof request.
     ---------------------
         A tenant responds to a proof request with this endpoint.
-
 
     Parameters:
     -----------
@@ -190,7 +200,11 @@ async def reject_proof_request(
     """
     Reject proof request.
     ---------------------
-        TODO mention something about rejecting
+        A prover uses this endpoint to reject a proof request.
+
+        The prover provides the proof ID of the proof request that they want to reject,
+        and the reason for the rejection.
+        The problem report string will end up in the proof record as the error message.
 
     Parameters:
     -----------

@@ -117,5 +117,5 @@ class RejectProofRequest(ProofId):
     @classmethod
     def validate_problem_report(cls, value):
         if value == "":
-            raise ValueError("problem_report cannot be None")
+            raise ValueError("problem_report cannot be empty string")
         return value

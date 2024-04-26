@@ -113,7 +113,7 @@ class RejectProofRequest(ProofId):
         description="Problem report to send with the rejection",
     )
     @field_validator("problem_report", mode="before")
-    def validate_my_field(cls, value):
+    def validate_problem_report(cls, value):
         if value is None:
             raise ValueError("problem_report cannot be None")
         return value

@@ -112,6 +112,7 @@ class RejectProofRequest(ProofId):
     problem_report: str = Field(
         description="Problem report to send with the rejection",
     )
+
     @field_validator("problem_report", mode="before")
     @classmethod
     def validate_problem_report(cls, value):

@@ -109,4 +109,4 @@ class AcceptProofRequest(ProofId):
 
 
 class RejectProofRequest(ProofId):
-    problem_report: Optional[str] = None
+    problem_report: str

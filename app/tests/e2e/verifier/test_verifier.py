@@ -500,7 +500,7 @@ async def test_reject_proof_request(
     assert alice_exchange["protocol_version"] == "v1"
 
     reject_proof_request_v1 = RejectProofRequest(
-        proof_id=alice_exchange["proof_id"], problem_report=None
+        proof_id=alice_exchange["proof_id"], problem_report="rejected"
     )
 
     response = await alice_member_client.post(

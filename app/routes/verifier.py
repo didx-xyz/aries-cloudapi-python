@@ -40,13 +40,13 @@ async def create_proof_request(
     """
     Create proof request.
     ---------------------
-        This create request endpoint is used to create a proof request that is not bound to a connection.
-        This is useful when the tenant wants to create a proof request that can be sent to multiple connections.
+    This create request endpoint is used to create a proof request that is not bound to a connection.
+    This is useful when the tenant wants to create a proof request that can be sent to multiple connections.
 
-        The proof request must be for a indy credential or ld_proof
-        Read more about the proof request here:
-            https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
-            https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
+    The proof request must be for a indy credential or ld_proof
+    Read more about the proof request here:
+        https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
+        https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
     Parameters:
     -----------
@@ -88,13 +88,13 @@ async def send_proof_request(
     """
     Send proof request.
     -------------------
-        Only a tenant with the verifier role can send a proof request.
-        The tenant can send a proof request to a specific connection by providing the connection ID.
+    Only a tenant with the verifier role can send a proof request.
+    The tenant can send a proof request to a specific connection by providing the connection ID.
 
-        The proof request must be for a indy credential or ld_proof
-        Read more about the proof request here:
-            https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
-            https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
+    The proof request must be for a indy credential or ld_proof
+    Read more about the proof request here:
+        https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
+        https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
     Parameters:
     -----------
@@ -141,7 +141,7 @@ async def accept_proof_request(
     """
     Accept proof request.
     ---------------------
-        A tenant responds to a proof request with this endpoint.
+    A tenant responds to a proof request with this endpoint.
 
     Parameters:
     -----------
@@ -200,11 +200,11 @@ async def reject_proof_request(
     """
     Reject proof request.
     ---------------------
-        A prover uses this endpoint to reject a proof request.
+    A prover uses this endpoint to reject a proof request.
 
-        The prover provides the proof ID of the proof request that they want to reject,
-        and the reason for the rejection.
-        The problem report string will end up in the proof record as the error message.
+    The prover provides the proof ID of the proof request that they want to reject,
+    and the reason for the rejection.
+    The problem report string will end up in the proof record as the error message.
 
     Parameters:
     -----------
@@ -258,11 +258,11 @@ async def get_proof_records(
     """
     Get all proof records
     ----------------------
-        These records contains information about the proof request and the proof presentation.
+    These records contains information about the proof request and the proof presentation.
 
-        If a proof is sent by a verifier with 'save_exchange_record' set to False the record
-        will be deleted after the exchange was completed.
-        The tenant can filter the results by connection_id, role, state, and thread_id.
+    If a proof is sent by a verifier with 'save_exchange_record' set to False the record
+    will be deleted after the exchange was completed.
+    The tenant can filter the results by connection_id, role, state, and thread_id.
 
     Parameters:
     ----------
@@ -319,11 +319,11 @@ async def get_proof_record(
     """
     Get a specific proof record
     ---------------------------
-        The tenant can get a specific proof record by providing the proof ID.
+    The tenant can get a specific proof record by providing the proof ID.
 
-        If the proof was sent with 'save_exchange_record' set to False the
-        record will not be available after the exchange was completed.
-        A holder's records will always be deleted after the exchange was completed.
+    If the proof was sent with 'save_exchange_record' set to False the
+    record will not be available after the exchange was completed.
+    A holder's records will always be deleted after the exchange was completed.
 
     Parameters:
     ----------
@@ -365,7 +365,7 @@ async def delete_proof(
     """
     Deletes a proof record
     -----------------------
-        Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
+    Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
 
 
     Parameters:
@@ -401,11 +401,11 @@ async def get_credentials_by_proof_id(
     """
     Get matching credentials for presentation exchange
     ---------------------------------------------------
-        Get matching credentials for a proof request by providing the proof ID.
+    Get matching credentials for a proof request by providing the proof ID.
 
-        Returns a list of credential that the holder needs to respond to the proof request.
-        The 'presentation_referents' field, for each object in this list, tells the holder which
-        of the fields in the proof request that credential satisfies.
+    Returns a list of credential that the holder needs to respond to the proof request.
+    The 'presentation_referents' field, for each object in this list, tells the holder which
+    of the fields in the proof request that credential satisfies.
 
     Parameters:
     ----------

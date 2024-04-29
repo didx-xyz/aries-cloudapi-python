@@ -8,7 +8,10 @@ from aries_cloudcontroller import (
 )
 from pydantic import BaseModel
 
+from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion
+
+logger = get_logger(__name__)
 
 State = Literal[
     "abandoned",
@@ -58,6 +61,7 @@ def presentation_record_to_model(
                 else None
             )
         except AttributeError:
+            logger.info("Presentation record has no indy presentation")
             presentation = None
 
         try:
@@ -65,6 +69,7 @@ def presentation_record_to_model(
                 **record.by_format.pres_request["indy"]
             )
         except AttributeError:
+            logger.info("Presentation record has no indy presentation request")
             presentation_request = None
 
         return PresentationExchange(
@@ -122,6 +127,7 @@ def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     }
 
     if not state or state not in translation_dict:
+        logger.warning("Presentation record has unknown state: {}", state)
         return None
 
     return translation_dict[state]

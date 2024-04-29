@@ -23,6 +23,7 @@ from app.routes.verifier import router as verifier_router
 from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.services.verifier.utils import indy_proof_request
 from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
+from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.string import base64_to_json
 from shared import RichAsyncClient
@@ -49,30 +50,28 @@ async def test_accept_proof_request(
     protocol_version: str,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    response = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
-            "protocol_version": protocol_version,
-            # Note: v2 doesn't support proof request without restrictions
-            # see: https://github.com/hyperledger/aries-cloudagent-python/issues/1755
-            "indy_proof_request": {
-                "name": "Proof Request",
-                "version": "1.0.0",
-                "requested_attributes": {
-                    "0_speed_uuid": {
-                        "name": "speed",
-                        "restrictions": [{"cred_def_id": credential_definition_id}],
-                    }
-                },
-                "requested_predicates": {},
+    request_body = {
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "protocol_version": protocol_version,
+        # Note: v2 doesn't support proof request without restrictions
+        # see: https://github.com/hyperledger/aries-cloudagent-python/issues/1755
+        "indy_proof_request": {
+            "name": "Proof Request",
+            "version": "1.0.0",
+            "requested_attributes": {
+                "0_speed_uuid": {
+                    "name": "speed",
+                    "restrictions": [{"cred_def_id": credential_definition_id}],
+                }
             },
+            "requested_predicates": {},
         },
-    )
-    acme_exchange = response.json()
-    assert acme_exchange["protocol_version"] == protocol_version
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
-    acme_proof_id = acme_exchange["proof_id"]
+    assert send_proof_response["protocol_version"] == protocol_version
+
+    acme_proof_id = send_proof_response["proof_id"]
 
     payload = await check_webhook_state(
         client=alice_member_client,
@@ -243,25 +242,21 @@ async def test_send_proof_request(
     alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
-    response = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
+    request_body = {
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
-    result = response.json()
+    assert "presentation" in send_proof_response
+    assert "presentation_request" in send_proof_response
+    assert "created_at" in send_proof_response
+    assert "proof_id" in send_proof_response
+    assert send_proof_response["role"] == "verifier"
+    assert send_proof_response["state"]
 
-    assert "presentation" in result
-    assert "presentation_request" in result
-    assert "created_at" in result
-    assert "proof_id" in result
-    assert result["role"] == "verifier"
-    assert result["state"]
-
-    thread_id = result["thread_id"]
+    thread_id = send_proof_response["thread_id"]
     assert thread_id
 
     alice_connection_event = await check_webhook_state(
@@ -285,16 +280,14 @@ async def test_reject_proof_request(
     protocol_version: str,
     delete_proof_record: bool,
 ):
-    response = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
+    request_body = {
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
-    thread_id = response.json()["thread_id"]
+    thread_id = send_proof_response["thread_id"]
     assert thread_id
 
     alice_exchange = await check_webhook_state(
@@ -364,19 +357,18 @@ async def test_get_proof_and_get_proofs(
 ):
     acme_connection_id = acme_and_alice_connection.acme_connection_id
 
-    acme_send_request_response = await acme_client.post(
-        f"{VERIFIER_BASE_PATH}/send-request",
-        json={
-            "save_exchange_record": True,
-            "connection_id": acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
+    request_body = {
+        "save_exchange_record": True,
+        "connection_id": acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
     # Assert that getting single proof record works
-    acme_proof_record = acme_send_request_response.json()
-    acme_proof_id = acme_proof_record["proof_id"]
+    acme_proof_id = send_proof_response["proof_id"]
+    thread_id = send_proof_response["thread_id"]
+
     response = await acme_client.get(
         f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_id}",
     )
@@ -451,17 +443,17 @@ async def test_get_proof_and_get_proofs(
             assert proof["state"] == "done"
 
     # Acme does proof request and alice does not respond
-    proof = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "save_exchange_record": True,
-            "connection_id": acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
-    acme_proof_record_2 = proof.json()
-    acme_proof_id_2 = acme_proof_record_2["proof_id"]
+    request_body = {
+        "save_exchange_record": True,
+        "connection_id": acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response_2 = await send_proof_request(acme_client, request_body)
+
+    acme_proof_id_2 = send_proof_response_2["proof_id"]
+    thread_id_2 = send_proof_response_2["thread_id"]
+
     proofs = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")
 
     # Make sure both proofs are in the list
@@ -497,12 +489,12 @@ async def test_get_proof_and_get_proofs(
     assert len(proofs.json()) == 1
 
     proofs = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={acme_proof_record['thread_id']}"
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={thread_id}"
     )
     assert len(proofs.json()) == 1
 
     proofs = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={acme_proof_record_2['thread_id']}"
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={thread_id_2}"
     )
     assert len(proofs.json()) == 1
 
@@ -521,17 +513,14 @@ async def test_delete_proof(
     acme_client: RichAsyncClient,
     protocol_version: str,
 ):
-    # V1
-    proof_req_res = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
+    request_body = {
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
-    proof_id = (proof_req_res.json())["proof_id"]
+    proof_id = send_proof_response["proof_id"]
 
     response = await acme_client.delete(
         VERIFIER_BASE_PATH + f"/proofs/{proof_id}",
@@ -548,16 +537,14 @@ async def test_get_credentials_for_request(
     alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
-    response = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
+    request_body = {
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
-    thread_id = response.json()["thread_id"]
+    thread_id = send_proof_response["thread_id"]
     assert thread_id
 
     alice_exchange = await check_webhook_state(
@@ -597,15 +584,14 @@ async def test_accept_proof_request_verifier_has_issuer_role(
     meld_co_and_alice_connection: MeldCoAliceConnect,
     protocol_version: str,
 ):
-    response = await meld_co_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
-    meld_co_proof_id = response.json()["proof_id"]
+    request_body = {
+        "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(meld_co_client, request_body)
+
+    meld_co_proof_id = send_proof_response["proof_id"]
 
     assert await check_webhook_state(
         client=alice_member_client,
@@ -682,25 +668,21 @@ async def test_send_proof_request_verifier_has_issuer_role(
     alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
-    response = await meld_co_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
+    request_body = {
+        "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+    }
+    send_proof_response = await send_proof_request(meld_co_client, request_body)
 
-    result = response.json()
+    assert "presentation" in send_proof_response
+    assert "presentation_request" in send_proof_response
+    assert "created_at" in send_proof_response
+    assert "proof_id" in send_proof_response
+    assert send_proof_response["role"] == "verifier"
+    assert send_proof_response["state"]
 
-    assert "presentation" in result.keys()
-    assert "presentation_request" in result.keys()
-    assert "created_at" in result.keys()
-    assert "proof_id" in result.keys()
-    assert result["role"] == "verifier"
-    assert result["state"]
-
-    thread_id = result["thread_id"]
+    thread_id = send_proof_response["thread_id"]
     assert thread_id
 
     alice_connection_event = await check_webhook_state(
@@ -727,17 +709,15 @@ async def test_saving_of_presentation_exchange_records(
     acme_save_exchange_record: bool,
     alice_save_exchange_record: bool,
 ):
-    response = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-            "save_exchange_record": acme_save_exchange_record,
-        },
-    )
-    acme_exchange = response.json()
-    acme_proof_id = acme_exchange["proof_id"]
+    request_body = {
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "protocol_version": protocol_version,
+        "indy_proof_request": indy_proof_request.to_dict(),
+        "save_exchange_record": acme_save_exchange_record,
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
+
+    acme_proof_id = send_proof_response["proof_id"]
 
     assert await check_webhook_state(
         client=alice_member_client,
@@ -865,33 +845,29 @@ async def test_accept_proof_request_verifier_no_public_did(
     verifier_holder_connection_id = payload["connection_id"]
 
     # Present proof from holder to verifier
-    response = await acme_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "protocol_version": protocol_version,
-            "connection_id": verifier_holder_connection_id,
-            "indy_proof_request": {
-                "name": "Age Check",
-                "version": "1.0",
-                "requested_attributes": {
-                    "name": {
-                        "name": "name",
-                        "restrictions": [{"cred_def_id": credential_definition_id}],
-                    }
-                },
-                "requested_predicates": {
-                    "age_over_21": {
-                        "name": "age",
-                        "p_type": ">=",
-                        "p_value": 21,
-                        "restrictions": [{"cred_def_id": credential_definition_id}],
-                    }
-                },
+    request_body = {
+        "protocol_version": protocol_version,
+        "connection_id": verifier_holder_connection_id,
+        "indy_proof_request": {
+            "name": "Age Check",
+            "version": "1.0",
+            "requested_attributes": {
+                "name": {
+                    "name": "name",
+                    "restrictions": [{"cred_def_id": credential_definition_id}],
+                }
+            },
+            "requested_predicates": {
+                "age_over_21": {
+                    "name": "age",
+                    "p_type": ">=",
+                    "p_value": 21,
+                    "restrictions": [{"cred_def_id": credential_definition_id}],
+                }
             },
         },
-    )
-
-    verifier_proof_exchange = response.json()
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
 
     payload = await check_webhook_state(
         client=alice_member_client,
@@ -902,7 +878,7 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
     )
 
-    verifier_proof_exchange_id = verifier_proof_exchange["proof_id"]
+    verifier_proof_exchange_id = send_proof_response["proof_id"]
     holder_proof_exchange_id = payload["proof_id"]
 
     available_credentials = (

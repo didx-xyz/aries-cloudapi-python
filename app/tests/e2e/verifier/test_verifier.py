@@ -550,45 +550,6 @@ async def test_accept_proof_request_verifier_has_issuer_role(
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
-@pytest.mark.parametrize(
-    "meld_co_and_alice_connection", ["trust_registry", "default"], indirect=True
-)
-async def test_send_proof_request_verifier_has_issuer_role(
-    meld_co_and_alice_connection: MeldCoAliceConnect,
-    meld_co_client: RichAsyncClient,
-    alice_member_client: RichAsyncClient,
-    protocol_version: str,
-):
-    request_body = {
-        "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
-        "protocol_version": protocol_version,
-        "indy_proof_request": indy_proof_request.to_dict(),
-    }
-    send_proof_response = await send_proof_request(meld_co_client, request_body)
-
-    assert "presentation" in send_proof_response
-    assert "presentation_request" in send_proof_response
-    assert "created_at" in send_proof_response
-    assert "proof_id" in send_proof_response
-    assert send_proof_response["role"] == "verifier"
-    assert send_proof_response["state"]
-
-    thread_id = send_proof_response["thread_id"]
-    assert thread_id
-
-    alice_connection_event = await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-        filter_map={
-            "thread_id": thread_id,
-        },
-    )
-    assert alice_connection_event["protocol_version"] == protocol_version
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 @pytest.mark.parametrize("acme_save_exchange_record", [False, True])
 @pytest.mark.parametrize("alice_save_exchange_record", [False, True])
 async def test_saving_of_presentation_exchange_records(

@@ -51,20 +51,20 @@ async def get_credentials(
     Get a list of credential exchange records.
     ------------------------------------------
 
-        These records contain information about the credentials issued to/by the tenant,
-        each record in the list is related to a single credential exchange flow.
+    These records contain information about the credentials issued to/by the tenant,
+    each record in the list is related to a single credential exchange flow.
 
-        It's important to remember that the 'credential_id' field in a record refers to
-        the ID of the credential exchange record, not the credential itself.
+    It's important to remember that the 'credential_id' field in a record refers to
+    the ID of the credential exchange record, not the credential itself.
 
-        The thread_id is the only field that can relate a record of the issuer to a
-        record of the holder or visa versa.
+    The thread_id is the only field that can relate a record of the issuer to a
+    record of the holder or visa versa.
 
-        An exchange record will be deleted after a flow completes if the 'save_exchange_record'
-        field, in the send credential endpoint,
-        is set to False (The default value).
+    An exchange record will be deleted after a flow completes if the 'save_exchange_record'
+    field, in the send credential endpoint,
+    is set to False (The default value).
 
-        These records can be filtered by connection_id, role, state and thread_id.
+    These records can be filtered by connection_id, role, state and thread_id.
 
     Parameters:
     ------------
@@ -119,14 +119,14 @@ async def get_credential(
     Get a credential exchange record by credential id.
     -------------------------------------------------
 
-        The record contains information about the credential issued to/by the tenant.
-        The credential exchange record is related to a single credential exchange flow.
+    The record contains information about the credential issued to/by the tenant.
+    The credential exchange record is related to a single credential exchange flow.
 
-        It's important to remember the 'credential_id' is not the ID of the credential itself,
-        but the id of the credential exchange record.
+    It's important to remember the 'credential_id' is not the ID of the credential itself,
+    but the id of the credential exchange record.
 
-        An exchange record will be deleted after a flow completes if the 'save_exchange_record'
-        field, in the send credential endpoint, is set to False (The default value).
+    An exchange record will be deleted after a flow completes if the 'save_exchange_record'
+    field, in the send credential endpoint, is set to False (The default value).
 
     Parameters:
     -----------
@@ -164,16 +164,16 @@ async def send_credential(
     """
     Create and send a credential. Automating the entire flow.
     ---------------------------------------------------------
-        Only a tenant with the issuer role can call this endpoint.
-        Keep in mind that a holder still needs to accept the offer they receive,
-        even tho this flow is automated.
+    Only a tenant with the issuer role can call this endpoint.
+    Keep in mind that a holder still needs to accept the offer they receive,
+    even tho this flow is automated.
 
-        When creating a credential, the credential type must be one of indy or ld_proof.
-        Read more at:
-            https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
+    When creating a credential, the credential type must be one of indy or ld_proof.
+    Read more at:
+        https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
 
-        Setting the 'save_exchange_record' field to True will save the exchange record after the flow completes.
-        This is useful if you want to keep track of the credential exchange record after the fact.
+    Setting the 'save_exchange_record' field to True will save the exchange record after the flow completes.
+    This is useful if you want to keep track of the credential exchange record after the fact.
 
     Parameters:
     ------------
@@ -245,12 +245,12 @@ async def create_offer(
     """
     Create a credential offer not bound to any connection.
     ------------------------------------------------------
-        The create offer endpoint is used to create a credential offer that is not bound to any connection.
-        This is useful if you want to create an offer that you can send to multiple connections.
+    The create offer endpoint is used to create a credential offer that is not bound to any connection.
+    This is useful if you want to create an offer that you can send to multiple connections.
 
-        The credential type must be one of indy or ld_proof.
-        Read more at:
-            https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
+    The credential type must be one of indy or ld_proof.
+    Read more at:
+        https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
 
     Parameters:
     ------------
@@ -315,7 +315,7 @@ async def remove_credential_exchange_record(
     """
     Remove a credential exchange record.
     ------------------------------------
-        This will remove the credential exchange record associated with the provided credential exchange id.
+    This will remove the credential exchange record associated with the provided credential exchange id.
 
     Parameters:
     -----------
@@ -351,14 +351,14 @@ async def revoke_credential(
     """
     Revoke a credential.
     --------------------
-        Revoke a credential by providing the credential exchange id and the credential definition id.
+    Revoke a credential by providing the credential exchange id and the credential definition id.
 
-        If an issuer is going to revoke more than one credential, it is recommended to set the
-        'auto_publish_on_ledger' field to False, and then batch publish the revocations using
-        the 'publish-revocations' endpoint.
+    If an issuer is going to revoke more than one credential, it is recommended to set the
+    'auto_publish_on_ledger' field to False, and then batch publish the revocations using
+    the 'publish-revocations' endpoint.
 
-        By batching the revocations, the issuer can save on transaction fees related to
-        publishing revocations to the ledger.
+    By batching the revocations, the issuer can save on transaction fees related to
+    publishing revocations to the ledger.
 
     Parameters:
     -----------
@@ -393,17 +393,17 @@ async def publish_revocations(
     """
     Write batch of pending revocations to ledger.
     ---------------------------------------------
-        If no revocation registry id is provided, all pending revocations
-        will be published.
+    If no revocation registry id is provided, all pending revocations
+    will be published.
 
-        If no credential revocation id is provided, all pending revocations
-        for the given revocation registry id will be published.
+    If no credential revocation id is provided, all pending revocations
+    for the given revocation registry id will be published.
 
-        Where to find the revocation registry id and credential revocation id:
-        When issuing a credential, against a credential definition that supports revocation,
-        the issuer will receive a event on the topic 'issuer_cred_rev'. This event will contain
-        the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
-        the revocation registry id (rev_reg_id).
+    Where to find the revocation registry id and credential revocation id:
+    When issuing a credential, against a credential definition that supports revocation,
+    the issuer will receive a event on the topic 'issuer_cred_rev'. This event will contain
+    the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
+    the revocation registry id (rev_reg_id).
 
 
     Parameters:
@@ -441,17 +441,17 @@ async def clear_pending_revocations(
     """
     Clear pending revocations.
     --------------------------
-        If no revocation registry id is provided, all pending revocations
-        will be cleared.
+    If no revocation registry id is provided, all pending revocations
+    will be cleared.
 
-        If no credential revocation id is provided, all pending revocations
-        for the given revocation registry id will be cleared.
+    If no credential revocation id is provided, all pending revocations
+    for the given revocation registry id will be cleared.
 
-        Where to find the revocation registry id and credential revocation id:
-        When issuing a credential, against a credential definition that supports revocation,
-        the issuer will receive a event on the topic 'issuer_cred_rev'. This event will contain
-        the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
-        the revocation registry id (rev_reg_id).
+    Where to find the revocation registry id and credential revocation id:
+    When issuing a credential, against a credential definition that supports revocation,
+    the issuer will receive a event on the topic 'issuer_cred_rev'. This event will contain
+    the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
+    the revocation registry id (rev_reg_id).
 
     Parameters:
     -----------
@@ -491,15 +491,15 @@ async def get_credential_revocation_record(
     """
     Get a credential revocation record.
     -----------------------------------
-        Fetch a credential revocation record by providing the credential exchange id.
-        If the credential exchange id is not provided, the credential revocation id and
-        revocation registry id must be provided.
+    Fetch a credential revocation record by providing the credential exchange id.
+    If the credential exchange id is not provided, the credential revocation id and
+    revocation registry id must be provided.
 
-        The record is the payload of the event 'issuer_cred_rev' and contains information about the
-        credential's revocation status.
+    The record is the payload of the event 'issuer_cred_rev' and contains information about the
+    credential's revocation status.
 
-        The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
-        in this record if you have the credential exchange id.
+    The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
+    in this record if you have the credential exchange id.
 
     Parameters:
     -----------
@@ -563,11 +563,11 @@ async def request_credential(
     """
     Send a credential request.
     --------------------------
-        Send a credential request to the issuer by providing the credential exchange id.
+    Send a credential request to the issuer by providing the credential exchange id.
 
-        The holder uses this endpoint to accept an offer from an issuer.
-        A holder calls this endpoint with the credential exchange id from
-        a credential exchange record, with a state 'offer-received'.
+    The holder uses this endpoint to accept an offer from an issuer.
+    A holder calls this endpoint with the credential exchange id from
+    a credential exchange record, with a state 'offer-received'.
 
     Parameters:
     -----------
@@ -624,12 +624,12 @@ async def store_credential(
     """
     Store a credential.
     ------------------
-        Store a credential by providing the credential exchange id.
-        The credential exchange id is the id of the credential exchange record, not the credential itself.
+    Store a credential by providing the credential exchange id.
+    The credential exchange id is the id of the credential exchange record, not the credential itself.
 
-        The holder only needs to call this endpoint if the holder receives a credential out of band
+    The holder only needs to call this endpoint if the holder receives a credential out of band
 
-        The holder can store the credential in their wallet after receiving it from the issuer.
+    The holder can store the credential in their wallet after receiving it from the issuer.
 
     Parameters:
     -----------

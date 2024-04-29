@@ -111,7 +111,7 @@ class AcceptProofRequest(ProofId):
 class RejectProofRequest(ProofId):
     problem_report: str = Field(
         default="Rejected",
-        description="Problem report to send with the rejection",
+        description="Message to send with the rejection",
     )
 
     @field_validator("problem_report", mode="before")

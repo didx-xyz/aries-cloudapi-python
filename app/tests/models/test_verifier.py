@@ -8,6 +8,7 @@ from app.models.verifier import (
     IndyProofRequest,
     ProofRequestBase,
     ProofRequestType,
+    RejectProofRequest,
 )
 from shared.exceptions.cloudapi_value_error import CloudApiValueError
 
@@ -88,3 +89,12 @@ def test_accept_proof_request_model():
     assert exc.value.detail == (
         "dif_presentation_spec must be populated if `ld_proof` type is selected"
     )
+
+
+def test_reject_proof_request_model():
+    RejectProofRequest(proof_id="abc", problem_report="valid message")
+
+    with pytest.raises(CloudApiValueError) as exc:
+        RejectProofRequest(proof_id="abc", problem_report="")
+
+    assert exc.value.detail == "problem_report cannot be an empty string"

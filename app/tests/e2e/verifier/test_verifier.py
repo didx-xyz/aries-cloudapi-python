@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 import pytest
@@ -386,6 +387,8 @@ async def test_get_proof_and_get_proofs(
     assert "presentation" in result
     assert "presentation_request" in result
     assert result["protocol_version"] == protocol_version
+
+    await asyncio.sleep(0.3)  # allow moment for alice records to update
 
     # Fetch proofs for alice
     alice_proofs_response = await alice_member_client.get(

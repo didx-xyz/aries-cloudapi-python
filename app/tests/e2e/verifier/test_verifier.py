@@ -857,36 +857,12 @@ async def test_saving_of_presentation_exchange_records(
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_accept_proof_request_verifier_no_public_did(
-    governance_client: RichAsyncClient,
+    credential_definition_id: str,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_client: RichAsyncClient,
-    faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
-    # Create connection between issuer and holder
-    invitation = (
-        await faber_client.post(CONNECTIONS_BASE_PATH + "/create-invitation")
-    ).json()
-
-    invitation_response = (
-        await alice_member_client.post(
-            CONNECTIONS_BASE_PATH + "/accept-invitation",
-            json={"invitation": invitation["invitation"]},
-        )
-    ).json()
-
-    issuer_holder_connection_id = invitation["connection_id"]
-    holder_issuer_connection_id = invitation_response["connection_id"]
-
-    await check_webhook_state(
-        client=faber_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": issuer_holder_connection_id,
-        },
-    )
-
     # Create connection between holder and verifier
     # We need to use the multi-use didcomm invitation from the trust registry
     acme_wallet_id = get_wallet_id_from_async_client(acme_client)
@@ -912,75 +888,6 @@ async def test_accept_proof_request_verifier_no_public_did(
     )
     holder_verifier_connection_id = invitation_response["connection_id"]
     verifier_holder_connection_id = payload["connection_id"]
-
-    # Create schema as governance
-    schema = (
-        await governance_client.post(
-            DEFINITIONS_BASE_PATH + "/schemas",
-            json={
-                "name": "e2e-flow",
-                "version": "1.0.0",
-                "attribute_names": ["name", "age"],
-            },
-        )
-    ).json()
-
-    schema_id = schema["id"]
-
-    # Create credential definition as issuer
-    credential_definition = await faber_client.post(
-        DEFINITIONS_BASE_PATH + "/credentials",
-        json={
-            "tag": random_string(5),
-            "schema_id": schema_id,
-        },
-    )
-
-    if credential_definition.is_client_error:
-        raise Exception(credential_definition.json()["detail"])
-
-    credential_definition_id = credential_definition.json()["id"]
-
-    # Issue credential from issuer to holder
-    issuer_credential_exchange = (
-        await faber_client.post(
-            f"{ISSUER_BASE_PATH}",
-            json={
-                "protocol_version": protocol_version,
-                "connection_id": issuer_holder_connection_id,
-                "indy_credential_detail": {
-                    "credential_definition_id": credential_definition_id,
-                    "attributes": {"name": "Alice", "age": "44"},
-                },
-            },
-        )
-    ).json()
-
-    payload = await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-        filter_map={
-            "connection_id": holder_issuer_connection_id,
-        },
-    )
-
-    issuer_credential_exchange_id = issuer_credential_exchange["credential_id"]
-    holder_credential_exchange_id = payload["credential_id"]
-
-    response = await alice_member_client.post(
-        f"{ISSUER_BASE_PATH}/{holder_credential_exchange_id}/request"
-    )
-
-    # Wait for credential exchange to finish
-    await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        state="done",
-        filter_map={
-            "credential_id": issuer_credential_exchange_id,
-        },
-    )
 
     # Present proof from holder to verifier
     response = await acme_client.post(

@@ -265,7 +265,6 @@ async def create_offer(
         "indy_credential_detail": {...}, <-- Required if type is indy
         "ld_credential_detail": {...}, <-- Required if type is ld_proof
         "save_exchange_record": false,
-        "connection_id": "string",
         "protocol_version": "v2" <-- v1 is supported but will be deprecated
     }
     ```

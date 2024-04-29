@@ -110,6 +110,7 @@ class AcceptProofRequest(ProofId):
 
 class RejectProofRequest(ProofId):
     problem_report: str = Field(
+        default="Rejected",
         description="Problem report to send with the rejection",
     )
 

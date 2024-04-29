@@ -152,24 +152,22 @@ class VerifierV1(Verifier):
         bound_logger.info("Request to reject v1 presentation exchange record")
         proof_id = pres_id_no_version(proof_id=reject_proof_request.proof_id)
 
-        # Report problem if desired
-        if reject_proof_request.problem_report:
-            request_body = V10PresentationProblemReportRequest(
-                description=reject_proof_request.problem_report
-            )
+        request_body = V10PresentationProblemReportRequest(
+            description=reject_proof_request.problem_report
+        )
 
-            try:
-                bound_logger.debug("Submitting v1 problem report")
-                await handle_acapy_call(
-                    logger=bound_logger,
-                    acapy_call=controller.present_proof_v1_0.report_problem,
-                    pres_ex_id=proof_id,
-                    body=request_body,
-                )
-            except CloudApiException as e:
-                raise CloudApiException(
-                    f"Failed to send problem report: {e.detail}.", e.status_code
-                ) from e
+        try:
+            bound_logger.debug("Submitting v1 problem report")
+            await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.present_proof_v1_0.report_problem,
+                pres_ex_id=proof_id,
+                body=request_body,
+            )
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to send problem report: {e.detail}.", e.status_code
+            ) from e
 
         try:
             bound_logger.debug("Deleting v1 presentation exchange record")

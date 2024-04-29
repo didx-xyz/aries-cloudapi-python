@@ -22,7 +22,9 @@ async def schema_definition(
     mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
     definition = CreateSchema(
-        name="test_schema", version=random_version(), attribute_names=["speed"]
+        name="test_schema",
+        version=random_version(),
+        attribute_names=["speed", "name", "age"],
     )
 
     schema_definition_result = await create_schema(definition, mock_governance_auth)

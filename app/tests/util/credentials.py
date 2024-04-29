@@ -24,7 +24,7 @@ async def issue_credential_to_alice(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 

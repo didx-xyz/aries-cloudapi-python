@@ -168,35 +168,34 @@ class VerifierV2(Verifier):
         bound_logger.info("Request to reject v2 presentation exchange record")
         pres_ex_id = pres_id_no_version(proof_id=reject_proof_request.proof_id)
 
-        # Report problem if desired
-        if reject_proof_request.problem_report:
-            request_body = V20PresProblemReportRequest(
-                description=reject_proof_request.problem_report
-            )
-            try:
-                bound_logger.debug("Submitting v2 problem report")
-                await handle_acapy_call(
-                    logger=bound_logger,
-                    acapy_call=controller.present_proof_v2_0.report_problem,
-                    pres_ex_id=pres_ex_id,
-                    body=request_body,
-                )
-            except CloudApiException as e:
-                raise CloudApiException(
-                    f"Failed to send problem report: {e.detail}.", e.status_code
-                ) from e
-
+        request_body = V20PresProblemReportRequest(
+            description=reject_proof_request.problem_report
+        )
         try:
-            bound_logger.debug("Deleting v2 presentation exchange record")
+            bound_logger.debug("Submitting v2 problem report")
             await handle_acapy_call(
                 logger=bound_logger,
-                acapy_call=controller.present_proof_v2_0.delete_record,
+                acapy_call=controller.present_proof_v2_0.report_problem,
                 pres_ex_id=pres_ex_id,
+                body=request_body,
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to delete record: {e.detail}.", e.status_code
+                f"Failed to send problem report: {e.detail}.", e.status_code
             ) from e
+
+        if reject_proof_request.delete_proof_record:
+            try:
+                bound_logger.debug("Deleting v2 presentation exchange record")
+                await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=controller.present_proof_v2_0.delete_record,
+                    pres_ex_id=pres_ex_id,
+                )
+            except CloudApiException as e:
+                raise CloudApiException(
+                    f"Failed to delete record: {e.detail}.", e.status_code
+                ) from e
 
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
 

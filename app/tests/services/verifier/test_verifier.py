@@ -254,7 +254,9 @@ async def test_reject_proof_request(
     mock_tenant_auth: AcaPyAuth,
     mocker: MockerFixture,
 ):
-    proof_request_v1 = test_module.RejectProofRequest(proof_id="v1-1234")
+    proof_request_v1 = test_module.RejectProofRequest(
+        proof_id="v1-1234", problem_report="rejected"
+    )
     # V1
 
     mocker.patch.object(
@@ -272,7 +274,9 @@ async def test_reject_proof_request(
     ).thenReturn(to_async(presentation_exchange_record_1))
 
     result = await test_module.reject_proof_request(
-        body=test_module.RejectProofRequest(proof_id="v1-1234"),
+        body=test_module.RejectProofRequest(
+            proof_id="v1-1234", problem_report="rejected"
+        ),
         auth=mock_tenant_auth,
     )
 
@@ -284,7 +288,9 @@ async def test_reject_proof_request(
         controller=mock_agent_controller, proof_id=proof_request_v1.proof_id
     )
 
-    proof_request_v2 = test_module.RejectProofRequest(proof_id="v2-1234")
+    proof_request_v2 = test_module.RejectProofRequest(
+        proof_id="v2-1234", problem_report="rejected"
+    )
 
     # V2
     when(VerifierV2).reject_proof_request(
@@ -296,7 +302,9 @@ async def test_reject_proof_request(
     ).thenReturn(to_async(presentation_exchange_record_2))
 
     result = await test_module.reject_proof_request(
-        body=test_module.RejectProofRequest(proof_id="v2-1234"),
+        body=test_module.RejectProofRequest(
+            proof_id="v2-1234", problem_report="rejected"
+        ),
         auth=mock_tenant_auth,
     )
 

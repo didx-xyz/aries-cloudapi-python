@@ -113,6 +113,13 @@ class RejectProofRequest(ProofId):
         default="Rejected",
         description="Message to send with the rejection",
     )
+    delete_proof_record: bool = Field(
+        default=False,
+        description=(
+            "(True) delete the proof exchange record after rejecting, or "
+            "(default, False) preserve the record after rejecting"
+        ),
+    )
 
     @field_validator("problem_report", mode="before")
     @classmethod

@@ -273,7 +273,7 @@ async def test_reject_proof_reject(mock_agent_controller: AcaPyClient):
     deleted_proof_request = await VerifierV2.reject_proof_request(
         controller=mock_agent_controller,
         reject_proof_request=RejectProofRequest(
-            proof_id="v2-abc", problem_report="some message"
+            proof_id="v2-abc", problem_report="some message", delete_proof_record=True
         ),
     )
 
@@ -324,7 +324,7 @@ async def test_reject_proof_reject_exception_delete(
         await VerifierV2.reject_proof_request(
             controller=mock_agent_controller,
             reject_proof_request=RejectProofRequest(
-                proof_id="v2-abc", problem_report="bad"
+                proof_id="v2-abc", problem_report="bad", delete_proof_record=True
             ),
         )
 

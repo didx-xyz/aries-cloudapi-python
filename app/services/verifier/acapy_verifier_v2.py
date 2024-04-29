@@ -184,17 +184,18 @@ class VerifierV2(Verifier):
                 f"Failed to send problem report: {e.detail}.", e.status_code
             ) from e
 
-        try:
-            bound_logger.debug("Deleting v2 presentation exchange record")
-            await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=controller.present_proof_v2_0.delete_record,
-                pres_ex_id=pres_ex_id,
-            )
-        except CloudApiException as e:
-            raise CloudApiException(
-                f"Failed to delete record: {e.detail}.", e.status_code
-            ) from e
+        if reject_proof_request.delete_proof_record:
+            try:
+                bound_logger.debug("Deleting v2 presentation exchange record")
+                await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=controller.present_proof_v2_0.delete_record,
+                    pres_ex_id=pres_ex_id,
+                )
+            except CloudApiException as e:
+                raise CloudApiException(
+                    f"Failed to delete record: {e.detail}.", e.status_code
+                ) from e
 
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
 

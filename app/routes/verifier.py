@@ -204,14 +204,12 @@ async def reject_proof_request(
             )
 
             if proof_record.state != "request-received":
-                bound_logger.info(
-                    "Proof record must be in state `request-received` to reject; had state: `{}`.",
-                    proof_record.state,
+                message = (
+                    "Proof record must be in state `request-received` to reject; "
+                    f"record has state: `{proof_record.state}`."
                 )
-                raise CloudApiException(
-                    "Record must be in state request-received to decline proof request.",
-                    400,
-                )
+                bound_logger.info(message)
+                raise CloudApiException(message, 400)
 
             bound_logger.debug("Rejecting proof request")
             await verifier.reject_proof_request(

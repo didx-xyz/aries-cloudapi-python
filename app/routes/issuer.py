@@ -169,6 +169,16 @@ async def send_credential(
     even tho this flow is automated.
 
     When creating a credential, the credential type must be one of indy or ld_proof.
+    ```json
+    {
+        "type": "indy" or "ld_proof",
+        "indy_credential_detail": {...}, <-- Required if type is indy
+        "ld_credential_detail": {...}, <-- Required if type is ld_proof
+        "save_exchange_record": false,
+        "connection_id": "string",
+        "protocol_version": "v2" <-- v1 is supported but will be deprecated
+    }
+    ```
     Read more at:
         https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
 
@@ -249,6 +259,16 @@ async def create_offer(
     This is useful if you want to create an offer that you can send to multiple connections.
 
     The credential type must be one of indy or ld_proof.
+    ```json
+    {
+        "type": "indy" or "ld_proof",
+        "indy_credential_detail": {...}, <-- Required if type is indy
+        "ld_credential_detail": {...}, <-- Required if type is ld_proof
+        "save_exchange_record": false,
+        "connection_id": "string",
+        "protocol_version": "v2" <-- v1 is supported but will be deprecated
+    }
+    ```
     Read more at:
         https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
 

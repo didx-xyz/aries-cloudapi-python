@@ -125,5 +125,5 @@ class RejectProofRequest(ProofId):
     @classmethod
     def validate_problem_report(cls, value):
         if value == "":
-            raise ValueError("problem_report cannot be empty string")
+            raise CloudApiValueError("problem_report cannot be an empty string")
         return value

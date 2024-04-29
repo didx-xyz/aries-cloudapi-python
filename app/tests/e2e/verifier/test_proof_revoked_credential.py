@@ -6,6 +6,7 @@ import pytest
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
 from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
@@ -29,30 +30,27 @@ async def test_proof_revoked_credential(
     unix_timestamp = int(time.time())
 
     # Do proof request
-    acme_proof_exchange_id = (
-        await acme_client.post(
-            f"{VERIFIER_BASE_PATH}/send-request",
-            json={
-                "protocol_version": protocol_version,
-                "comment": "Test proof of revocation",
-                "type": "indy",
-                "indy_proof_request": {
-                    "name": "Proof of SPEED",
-                    "version": "1.0",
-                    "non_revoked": {"to": unix_timestamp},
-                    "requested_attributes": {
-                        "THE_SPEED": {
-                            "name": "speed",
-                            "restrictions": [],
-                        }
-                    },
-                    "requested_predicates": {},
-                },
-                "save_exchange_record": True,
-                "connection_id": acme_and_alice_connection.acme_connection_id,
+    request_body = {
+        "protocol_version": protocol_version,
+        "comment": "Test proof of revocation",
+        "type": "indy",
+        "indy_proof_request": {
+            "name": "Proof of SPEED",
+            "version": "1.0",
+            "non_revoked": {"to": unix_timestamp},
+            "requested_attributes": {
+                "THE_SPEED": {
+                    "name": "speed",
+                    "restrictions": [],
+                }
             },
-        )
-    ).json()["proof_id"]
+            "requested_predicates": {},
+        },
+        "save_exchange_record": True,
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
+    acme_proof_exchange_id = send_proof_response["proof_id"]
 
     await check_webhook_state(
         client=alice_member_client,

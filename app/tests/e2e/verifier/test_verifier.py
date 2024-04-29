@@ -471,14 +471,14 @@ async def test_send_proof_request(
 
 
 @pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1"])
-@pytest.mark.parametrize("delete_proof_record", [True])
+@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.parametrize("delete_proof_record", [True, False])
 async def test_reject_proof_request(
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
-    delete_proof_record: bool,
     protocol_version: str,
+    delete_proof_record: bool,
 ):
     response = await acme_client.post(
         VERIFIER_BASE_PATH + "/send-request",
@@ -513,6 +513,28 @@ async def test_reject_proof_request(
         json=reject_proof_request.model_dump(),
     )
     assert response.status_code == 204
+
+    # assert that record has transitioned to "abandoned" state
+    alice_abandoned_webhook = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        state="abandoned",
+        filter_map={
+            "thread_id": thread_id,
+        },
+    )
+    assert alice_abandoned_webhook["error_msg"] == "created problem report: rejected"
+
+    # assert that record has transitioned to "abandoned" state
+    acme_abandoned_webhook = await check_webhook_state(
+        client=acme_client,
+        topic="proofs",
+        state="abandoned",
+        filter_map={
+            "thread_id": thread_id,
+        },
+    )
+    assert acme_abandoned_webhook["error_msg"] == "abandoned: rejected"
 
     # assert that alice has webhook for "deleted" state change
     if delete_proof_record:

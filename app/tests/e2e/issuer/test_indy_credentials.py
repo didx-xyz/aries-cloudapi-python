@@ -6,6 +6,7 @@ from assertpy import assert_that
 from app.routes.definitions import CredentialSchema
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
+from app.tests.util.credentials import sample_credential_attributes
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from app.util.credentials import cred_id_no_version
@@ -29,7 +30,7 @@ async def test_send_credential_oob(
         "protocol_version": protocol_version,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 
@@ -51,7 +52,7 @@ async def test_send_credential_oob(
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version(protocol_version)
-    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
     invitation_response = await faber_client.post(
@@ -104,7 +105,7 @@ async def test_send_credential(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 
@@ -126,7 +127,7 @@ async def test_send_credential(
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version(protocol_version)
-    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
     assert await check_webhook_state(
@@ -151,7 +152,7 @@ async def test_create_offer(
         "protocol_version": protocol_version,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 
@@ -164,7 +165,7 @@ async def test_create_offer(
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version(protocol_version)
-    assert_that(data).has_attributes({"speed": "10"})
+    assert_that(data).has_attributes(sample_credential_attributes)
     assert_that(data).has_schema_id(schema_definition.id)
 
     assert await check_webhook_state(
@@ -191,7 +192,7 @@ async def test_send_credential_request(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 
@@ -262,7 +263,7 @@ async def test_revoke_credential(
         "connection_id": faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id_revocable,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 

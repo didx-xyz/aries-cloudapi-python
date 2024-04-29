@@ -12,6 +12,9 @@ from shared.models.credential_exchange import CredentialExchange
 CREDENTIALS_BASE_PATH = router.prefix
 
 
+sample_credential_attributes = {"speed": "10", "name": "Alice", "age": "44"}
+
+
 @pytest.fixture(scope="function")
 async def issue_credential_to_alice(
     faber_client: RichAsyncClient,
@@ -24,7 +27,7 @@ async def issue_credential_to_alice(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 
@@ -74,7 +77,7 @@ async def meld_co_issue_credential_to_alice(
         "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": meld_co_credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
     }
 

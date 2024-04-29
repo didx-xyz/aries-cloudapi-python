@@ -6,6 +6,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.routes.issuer import router
+from app.tests.util.credentials import sample_credential_attributes
 from app.tests.util.ecosystem_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
@@ -30,7 +31,7 @@ async def test_issue_credential_with_save_exchange_record(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
         "save_exchange_record": save_exchange_record,
     }
@@ -100,7 +101,7 @@ async def test_get_cred_exchange_records(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
+            "attributes": sample_credential_attributes,
         },
         "save_exchange_record": True,
     }

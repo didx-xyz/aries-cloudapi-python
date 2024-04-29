@@ -359,21 +359,28 @@ async def test_reject_proof_request(
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 async def test_get_proof_and_get_proofs(
     acme_and_alice_connection: AcmeAliceConnect,
+    issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     acme_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
-    proof_req_res = await acme_client.post(
+    acme_connection_id = acme_and_alice_connection.acme_connection_id
+
+    acme_send_request_response = await acme_client.post(
         f"{VERIFIER_BASE_PATH}/send-request",
         json={
-            "connection_id": acme_and_alice_connection.acme_connection_id,
+            "save_exchange_record": True,
+            "connection_id": acme_connection_id,
             "protocol_version": protocol_version,
             "indy_proof_request": indy_proof_request.to_dict(),
         },
     )
 
-    proof_id = proof_req_res.json()["proof_id"]
+    # Assert that getting single proof record works
+    acme_proof_record = acme_send_request_response.json()
+    acme_proof_id = acme_proof_record["proof_id"]
     response = await acme_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs/{proof_id}",
+        f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_id}",
     )
     result = response.json()
     assert "connection_id" in result
@@ -383,17 +390,149 @@ async def test_get_proof_and_get_proofs(
     assert "presentation_request" in result
     assert result["protocol_version"] == protocol_version
 
-    proofs_response = await acme_client.get(
+    # Assert that getting multiple proof record works
+    acme_proofs_response = await acme_client.get(
         f"{VERIFIER_BASE_PATH}/proofs",
     )
 
-    result = proofs_response.json()[0]
+    result = acme_proofs_response.json()[0]
     assert "connection_id" in result
     assert "created_at" in result
     assert "updated_at" in result
     assert "presentation" in result
     assert "presentation_request" in result
     assert result["proof_id"][:3] == f"{protocol_version}-"
+
+    # Fetch proofs for alice
+    alice_proofs_response = await alice_member_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs",
+    )
+    alice_proof_id = alice_proofs_response.json()[0]["proof_id"]
+
+    # Get credential referent for alice to accept request
+    referent = (
+        await alice_member_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
+        )
+    ).json()[0]["cred_info"]["referent"]
+
+    indy_request_attrs = IndyRequestedCredsRequestedAttr(
+        cred_id=referent, revealed=True
+    )
+
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={"0_speed_uuid": indy_request_attrs},
+            requested_predicates={},
+            self_attested_attributes={},
+        ),
+    )
+
+    # Alice accepts
+    await alice_member_client.post(
+        VERIFIER_BASE_PATH + "/accept-request",
+        json=proof_accept.model_dump(),
+    )
+
+    await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        state="done",
+        filter_map={
+            "proof_id": alice_proof_id,
+        },
+        look_back=5,
+    )
+    await check_webhook_state(
+        client=acme_client,
+        topic="proofs",
+        state="done",
+        filter_map={
+            "proof_id": acme_proof_id,
+        },
+        look_back=5,
+    )
+
+    acme_proofs = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+    acme_proof_exchanges = acme_proofs.json()
+
+    # Make sure the proof is done
+    for proof in acme_proof_exchanges:
+        if proof["proof_id"] == acme_proof_id:
+            assert proof["state"] == "done"
+
+    # Acme does proof request and alice does not respond
+    proof = await acme_client.post(
+        VERIFIER_BASE_PATH + "/send-request",
+        json={
+            "save_exchange_record": True,
+            "connection_id": acme_connection_id,
+            "protocol_version": protocol_version,
+            "indy_proof_request": indy_proof_request.to_dict(),
+        },
+    )
+    acme_proof_record_2 = proof.json()
+    acme_proof_id_2 = acme_proof_record_2["proof_id"]
+    proofs = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs")
+
+    # Make sure both proofs are in the list
+    proof_ids = [acme_proof_id, acme_proof_id_2]
+    proof_count = sum(1 for proof in proofs.json() if proof["proof_id"] in proof_ids)
+    assert proof_count == 2
+
+    # Now test query params
+    proofs_sent = await acme_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?state=request-sent"
+    )
+    assert proofs.status_code == 200
+    for proof in proofs_sent.json():
+        assert proof["state"] == "request-sent"
+
+    proofs_done = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?state=done")
+    assert proofs.status_code == 200
+    for proof in proofs_done.json():
+        assert proof["state"] == "done"
+
+    proofs_role = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=verifier")
+    assert proofs.status_code == 200
+    for proof in proofs_role.json():
+        assert proof["role"] == "verifier"
+
+    proofs_prover = await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=prover")
+    assert proofs.status_code == 200
+    assert len(proofs_prover.json()) == 0
+
+    proofs = await acme_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&state=done"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    proofs = await acme_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&state=request-sent"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    proofs = await acme_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={acme_proof_record['thread_id']}"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    proofs = await acme_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs?connection_id={acme_connection_id}&thread_id={acme_proof_record_2['thread_id']}"
+    )
+    assert proofs.status_code == 200
+    assert len(proofs.json()) == 1
+
+    with pytest.raises(HTTPException) as exc:
+        await acme_client.get(
+            f"{VERIFIER_BASE_PATH}/proofs?connection_id=123&state=invalid&role=invalid&thread_id=invalid"
+        )
+    assert exc.value.status_code == 422
+    assert len(json.loads(exc.value.detail)["detail"]) == 3
 
 
 @pytest.mark.anyio
@@ -918,162 +1057,3 @@ async def test_accept_proof_request_verifier_no_public_did(
         },
     )
     assert event["verified"]
-
-
-@pytest.mark.anyio
-@pytest.mark.parametrize("protocol_version", ["v1", "v2"])
-async def test_get_proof_records(
-    meld_co_client: RichAsyncClient,
-    meld_co_and_alice_connection: MeldCoAliceConnect,
-    meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
-    alice_member_client: RichAsyncClient,
-    protocol_version: str,
-):
-    meld_connection_id = meld_co_and_alice_connection.meld_co_connection_id
-
-    # Meld_co does proof request and alice responds
-    proof = await meld_co_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "save_exchange_record": True,
-            "connection_id": meld_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
-
-    proof_1 = proof.json()
-    assert proof.status_code == 200
-    assert proof_1["state"] == "request-sent"
-
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-    )
-
-    proof_exc = await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    assert proof_exc.status_code == 200
-
-    proof_request = proof_exc.json()[0]
-
-    referent = (
-        await alice_member_client.get(
-            f"{VERIFIER_BASE_PATH}/proofs/{proof_request['proof_id']}/credentials"
-        )
-    ).json()[0]["cred_info"]["referent"]
-
-    indy_request_attrs = IndyRequestedCredsRequestedAttr(
-        cred_id=referent, revealed=True
-    )
-
-    proof_accept = AcceptProofRequest(
-        proof_id=proof_exc.json()[0]["proof_id"],
-        indy_presentation_spec=IndyPresSpec(
-            requested_attributes={"0_speed_uuid": indy_request_attrs},
-            requested_predicates={},
-            self_attested_attributes={},
-        ),
-    )
-
-    await alice_member_client.post(
-        VERIFIER_BASE_PATH + "/accept-request",
-        json=proof_accept.model_dump(),
-    )
-
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": proof_request["proof_id"],
-        },
-    )
-    await check_webhook_state(
-        client=meld_co_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": proof_1["proof_id"],
-        },
-    )
-
-    meld_proof = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    assert meld_proof.status_code == 200
-    meld_proof_exchange = meld_proof.json()
-
-    # Make sure the proof is done
-    for proof in meld_proof_exchange:
-        if proof["proof_id"] == proof_1["proof_id"]:
-            assert proof["state"] == "done"
-
-    # Meld_co does proof request and alice does not respond
-    proof = await meld_co_client.post(
-        VERIFIER_BASE_PATH + "/send-request",
-        json={
-            "save_exchange_record": True,
-            "connection_id": meld_connection_id,
-            "protocol_version": protocol_version,
-            "indy_proof_request": indy_proof_request.to_dict(),
-        },
-    )
-    proof_2 = proof.json()
-    proofs = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-
-    # Make sure both proofs are in the list
-    proof_ids = [proof_1["proof_id"], proof_2["proof_id"]]
-    proof_count = sum(1 for proof in proofs.json() if proof["proof_id"] in proof_ids)
-    assert proof_count == 2
-
-    # Now test query params
-    proofs_sent = await meld_co_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?state=request-sent"
-    )
-    assert proofs.status_code == 200
-    for proof in proofs_sent.json():
-        assert proof["state"] == "request-sent"
-
-    proofs_done = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs?state=done")
-    assert proofs.status_code == 200
-    for proof in proofs_done.json():
-        assert proof["state"] == "done"
-
-    proofs_role = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=verifier")
-    assert proofs.status_code == 200
-    for proof in proofs_role.json():
-        assert proof["role"] == "verifier"
-
-    proofs_prover = await meld_co_client.get(f"{VERIFIER_BASE_PATH}/proofs?role=prover")
-    assert proofs.status_code == 200
-    assert len(proofs_prover.json()) == 0
-
-    proofs = await meld_co_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&state=done"
-    )
-    assert proofs.status_code == 200
-    assert len(proofs.json()) == 1
-
-    proofs = await meld_co_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&state=request-sent"
-    )
-    assert proofs.status_code == 200
-    assert len(proofs.json()) == 1
-
-    proofs = await meld_co_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&thread_id={proof_1['thread_id']}"
-    )
-    assert proofs.status_code == 200
-    assert len(proofs.json()) == 1
-
-    proofs = await meld_co_client.get(
-        f"{VERIFIER_BASE_PATH}/proofs?connection_id={meld_connection_id}&thread_id={proof_2['thread_id']}"
-    )
-    assert proofs.status_code == 200
-    assert len(proofs.json()) == 1
-
-    with pytest.raises(HTTPException) as exc:
-        await meld_co_client.get(
-            f"{VERIFIER_BASE_PATH}/proofs?connection_id=123&state=invalid&role=invalid&thread_id=invalid"
-        )
-    assert exc.value.status_code == 422
-    assert len(json.loads(exc.value.detail)["detail"]) == 3

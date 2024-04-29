@@ -115,6 +115,7 @@ def presentation_record_to_model(
 def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "abandoned": "abandoned",
+        "deleted": "deleted",
         "done": "done",
         "presentation_acked": "done",
         "presentation_received": "presentation-received",
@@ -136,6 +137,7 @@ def v1_presentation_state_to_rfc_state(state: Optional[str]) -> Optional[str]:
 def back_to_v1_presentation_state(state: Optional[str]) -> Optional[str]:
     translation_dict = {
         "abandoned": "abandoned",
+        "deleted": "deleted",
         "done": "verified",
         "presentation-received": "presentation_received",
         "presentation-sent": "presentation_sent",

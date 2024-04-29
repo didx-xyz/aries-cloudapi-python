@@ -6,7 +6,6 @@ from aries_cloudcontroller import (
     IndyPresSpec,
     IndyRequestedCredsRequestedAttr,
 )
-from assertpy import assert_that
 from fastapi import HTTPException
 
 from app.routes.connections import router as conn_router
@@ -24,11 +23,10 @@ from app.services.trust_registry.actors import fetch_actor_by_id
 from app.tests.services.verifier.utils import indy_proof_request
 from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
-from app.util.string import base64_to_json, random_string
+from app.util.string import base64_to_json
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 from shared.models.presentation_exchange import PresentationExchange
-from shared.models.protocol import PresentProofProtocolVersion
 
 CONNECTIONS_BASE_PATH = conn_router.prefix
 DEFINITIONS_BASE_PATH = def_router.prefix

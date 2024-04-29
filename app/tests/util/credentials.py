@@ -74,7 +74,7 @@ async def meld_co_issue_credential_to_alice(
         "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": meld_co_credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 
@@ -128,7 +128,7 @@ async def issue_alice_creds_and_revoke_unpublished(
             "save_exchange_record": True,
             "indy_credential_detail": {
                 "credential_definition_id": credential_definition_id_revocable,
-                "attributes": {"speed": str(i)},
+                "attributes": {"speed": str(i), "name": "Alice", "age": "44"},
             },
         }
 

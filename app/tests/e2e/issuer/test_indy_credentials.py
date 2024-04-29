@@ -29,7 +29,7 @@ async def test_send_credential_oob(
         "protocol_version": protocol_version,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 
@@ -104,7 +104,7 @@ async def test_send_credential(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 
@@ -151,7 +151,7 @@ async def test_create_offer(
         "protocol_version": protocol_version,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 
@@ -191,7 +191,7 @@ async def test_send_credential_request(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 
@@ -262,7 +262,7 @@ async def test_revoke_credential(
         "connection_id": faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id_revocable,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
     }
 

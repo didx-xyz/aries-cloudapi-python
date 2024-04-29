@@ -30,7 +30,7 @@ async def test_issue_credential_with_save_exchange_record(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
         "save_exchange_record": save_exchange_record,
     }
@@ -100,7 +100,7 @@ async def test_get_cred_exchange_records(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "10"},
+            "attributes": {"speed": "10", "name": "Alice", "age": "44"},
         },
         "save_exchange_record": True,
     }
@@ -115,7 +115,7 @@ async def test_get_cred_exchange_records(
         "connection_id": faber_and_alice_connection.faber_connection_id,
         "indy_credential_detail": {
             "credential_definition_id": credential_definition_id,
-            "attributes": {"speed": "20"},
+            "attributes": {"speed": "20", "name": "Alice", "age": "44"},
         },
         "save_exchange_record": True,
     }

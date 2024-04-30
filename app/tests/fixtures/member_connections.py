@@ -155,5 +155,5 @@ async def meld_co_and_alice_connection(
 
         return MeldCoAliceConnect(
             alice_connection_id=bob_alice_connection.alice_connection_id,
-            meld_co_connection_id=bob_alice_connection.acme_connection_id,
+            meld_co_connection_id=bob_alice_connection.bob_connection_id,
         )

@@ -111,10 +111,10 @@ async def test_get_connections(
     alice_invitation_msg_id = alice_connections["invitation_msg_id"]
     alice_did = alice_connections["my_did"]
 
-    alice_alias = (await alice_member_client.get(f"{BASE_PATH}?alias=alice")).json()[0][
+    alice_connection_alias = (await alice_member_client.get(f"{BASE_PATH}?alias=AliceBobConnection")).json()[0][
         "alias"
     ]
-    assert alice_alias == "alice"
+    assert alice_connection_alias == "AliceBobConnection"
 
     alice_state = (
         await alice_member_client.get(f"{BASE_PATH}?state=completed")

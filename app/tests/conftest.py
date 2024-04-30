@@ -29,6 +29,7 @@ from app.tests.fixtures.member_connections import (
     bob_and_alice_connection,
     faber_and_alice_connection,
     meld_co_and_alice_connection,
+    test_mode,
 )
 from app.tests.fixtures.member_wallets import (
     acme_verifier,

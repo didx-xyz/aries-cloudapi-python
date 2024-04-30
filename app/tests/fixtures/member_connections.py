@@ -19,7 +19,7 @@ CONNECTIONS_BASE_PATH = conn_router.prefix
 
 # Fixture for passing test mode params. Assists with mixing direct and indirect request
 @pytest.fixture(scope="module", params=TestMode.fixture_params)
-async def test_mode(request):
+async def test_mode(request) -> str:
     return request.param
 
 
@@ -27,7 +27,7 @@ async def test_mode(request):
 async def bob_and_alice_connection(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    test_mode: str,
+    test_mode: str,  # pylint: disable=redefined-outer-name
 ) -> BobAliceConnect:
     return await create_connection_by_test_mode(
         test_mode=test_mode,
@@ -41,7 +41,7 @@ async def bob_and_alice_connection(
 async def faber_and_alice_connection(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
-    test_mode: str,
+    test_mode: str,  # pylint: disable=redefined-outer-name
 ) -> FaberAliceConnect:
     bob_alice_connection = await create_connection_by_test_mode(
         test_mode=test_mode,
@@ -63,7 +63,7 @@ async def acme_and_alice_connection(
     alice_tenant: CreateTenantResponse,
     acme_client: RichAsyncClient,
     acme_verifier: CreateTenantResponse,
-    test_mode: str,
+    test_mode: str,  # pylint: disable=redefined-outer-name
 ) -> AcmeAliceConnect:
     # Check if request param comes indirectly from higher fixture to establish trust registry connection instead
     if hasattr(request, "param") and request.param == "trust_registry":
@@ -114,7 +114,7 @@ async def meld_co_and_alice_connection(
     alice_member_client: RichAsyncClient,
     meld_co_client: RichAsyncClient,
     meld_co_issuer_verifier: CreateTenantResponse,
-    test_mode: str,
+    test_mode: str,  # pylint: disable=redefined-outer-name
 ) -> MeldCoAliceConnect:
     if hasattr(request, "param") and request.param == "trust_registry":
         connection_alias = "AliceMeldCoTrustRegistryConnection"

@@ -1,79 +1,59 @@
-from dataclasses import dataclass
-
 import pytest
 
 from app.models.tenants import CreateTenantResponse
-from app.routes.connections import CreateInvitation
 from app.routes.connections import router as conn_router
-from app.routes.oob import router as oob_router
-from app.services.trust_registry import actors
-from app.services.trust_registry.actors import fetch_actor_by_id
-from app.tests.util.webhooks import check_webhook_state
-from app.util.string import base64_to_json
+from app.tests.util.connections import (
+    AcmeAliceConnect,
+    BobAliceConnect,
+    FaberAliceConnect,
+    MeldCoAliceConnect,
+    connect_using_trust_registry_invite,
+    create_connection_by_test_mode,
+    fetch_or_create_trust_registry_connection,
+)
+from app.tests.util.regression_testing import RegressionTestConfig, TestMode
 from shared import RichAsyncClient
 
-OOB_BASE_PATH = oob_router.prefix
 CONNECTIONS_BASE_PATH = conn_router.prefix
 
 
-@dataclass
-class BobAliceConnect:
-    alice_connection_id: str
-    bob_connection_id: str
+# Fixture for passing test mode params. Assists with mixing direct and indirect request
+@pytest.fixture(scope="module", params=TestMode.fixture_params)
+async def test_mode(request):
+    return request.param
 
 
 @pytest.fixture(scope="function")
 async def bob_and_alice_connection(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
+    test_mode: str,
 ) -> BobAliceConnect:
-    # create invitation on bob side
-    json_request = CreateInvitation(
-        alias="bob",
-        multi_use=False,
-        use_public_did=False,
-    ).model_dump()
-    invitation = (
-        await bob_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/create-invitation", json=json_request
-        )
-    ).json()
-
-    # accept invitation on alice side
-    invitation_response = (
-        await alice_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-            json={"alias": "alice", "invitation": invitation["invitation"]},
-        )
-    ).json()
-
-    bob_connection_id = invitation["connection_id"]
-    alice_connection_id = invitation_response["connection_id"]
-
-    # fetch and validate
-    # both connections should be active - we have waited long enough for events to be exchanged
-    assert await check_webhook_state(
-        alice_member_client,
-        topic="connections",
-        state="completed",
-        look_back=5,
-    )
-    assert await check_webhook_state(
-        bob_member_client,
-        topic="connections",
-        state="completed",
-        look_back=5,
-    )
-
-    return BobAliceConnect(
-        alice_connection_id=alice_connection_id, bob_connection_id=bob_connection_id
+    return await create_connection_by_test_mode(
+        test_mode=test_mode,
+        alice_member_client=alice_member_client,
+        bob_member_client=bob_member_client,
+        alias="AliceBobConnection",
     )
 
 
-@dataclass
-class AcmeAliceConnect:
-    alice_connection_id: str
-    acme_connection_id: str
+@pytest.fixture(scope="function")
+async def faber_and_alice_connection(
+    alice_member_client: RichAsyncClient,
+    faber_client: RichAsyncClient,
+    test_mode: str,
+) -> FaberAliceConnect:
+    bob_alice_connection = await create_connection_by_test_mode(
+        test_mode=test_mode,
+        alice_member_client=alice_member_client,
+        bob_member_client=faber_client,
+        alias="AliceFaberConnection",
+    )
+
+    return FaberAliceConnect(
+        alice_connection_id=bob_alice_connection.alice_connection_id,
+        faber_connection_id=bob_alice_connection.bob_connection_id,
+    )
 
 
 @pytest.fixture(scope="function")
@@ -83,133 +63,47 @@ async def acme_and_alice_connection(
     alice_tenant: CreateTenantResponse,
     acme_client: RichAsyncClient,
     acme_verifier: CreateTenantResponse,
+    test_mode: str,
 ) -> AcmeAliceConnect:
+    # Check if request param comes indirectly from higher fixture to establish trust registry connection instead
     if hasattr(request, "param") and request.param == "trust_registry":
-        acme_actor = await fetch_actor_by_id(acme_verifier.wallet_id)
-        assert acme_actor["didcomm_invitation"]
+        connection_alias = "AliceAcmeTrustRegistryConnection"
 
-        invitation = acme_actor["didcomm_invitation"]
-        invitation_json = base64_to_json(invitation.split("?oob=")[1])
-
-        # accept invitation on alice side
-        invitation_response = (
-            await alice_member_client.post(
-                f"{OOB_BASE_PATH}/accept-invitation",
-                json={"invitation": invitation_json},
+        if test_mode == TestMode.clean_run:
+            acme_alice_connect = await connect_using_trust_registry_invite(
+                alice_member_client=alice_member_client,
+                alice_tenant=alice_tenant,
+                verifier_client=acme_client,
+                verifier=acme_verifier,
+                connection_alias=connection_alias,
             )
-        ).json()
+        elif test_mode == TestMode.regression_run:
+            connection_alias_prefix = RegressionTestConfig.reused_connection_alias
 
-        alice_label = alice_tenant.wallet_label
-        payload = await check_webhook_state(
-            client=acme_client,
-            topic="connections",
-            state="completed",
-            filter_map={
-                "their_label": alice_label,
-            },
-        )
+            acme_alice_connect = await fetch_or_create_trust_registry_connection(
+                alice_member_client=alice_member_client,
+                alice_tenant=alice_tenant,
+                verifier_client=acme_client,
+                verifier=acme_verifier,
+                connection_alias=f"{connection_alias_prefix}-{connection_alias}",
+            )
+        else:
+            assert False, f"unknown test mode: {test_mode}"
 
-        alice_connection_id = invitation_response["connection_id"]
-        acme_connection_id = payload["connection_id"]
+        return acme_alice_connect
     else:
-        # create invitation on acme side
-        invitation = (
-            await acme_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
-        ).json()
-
-        # accept invitation on alice side
-        invitation_response = (
-            await alice_member_client.post(
-                f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-                json={"invitation": invitation["invitation"]},
-            )
-        ).json()
-
-        alice_connection_id = invitation_response["connection_id"]
-        acme_connection_id = invitation["connection_id"]
-
-    # fetch and validate - both connections should be active before continuing
-    assert await check_webhook_state(
-        alice_member_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": alice_connection_id,
-        },
-        look_back=5,
-    )
-    assert await check_webhook_state(
-        acme_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": acme_connection_id,
-        },
-        look_back=5,
-    )
-
-    return AcmeAliceConnect(
-        alice_connection_id=alice_connection_id,
-        acme_connection_id=acme_connection_id,
-    )
-
-
-@dataclass
-class FaberAliceConnect:
-    alice_connection_id: str
-    faber_connection_id: str
-
-
-@pytest.fixture(scope="function")
-async def faber_and_alice_connection(
-    alice_member_client: RichAsyncClient, faber_client: RichAsyncClient
-) -> FaberAliceConnect:
-    # create invitation on faber side
-    invitation = (
-        await faber_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
-    ).json()
-
-    # accept invitation on alice side
-    invitation_response = (
-        await alice_member_client.post(
-            f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-            json={"invitation": invitation["invitation"]},
+        # No indirect request param for trust registry connection; establish normal connection:
+        bob_alice_connection = await create_connection_by_test_mode(
+            test_mode=test_mode,
+            alice_member_client=alice_member_client,
+            bob_member_client=acme_client,
+            alias="AliceAcmeConnection",
         )
-    ).json()
 
-    faber_connection_id = invitation["connection_id"]
-    alice_connection_id = invitation_response["connection_id"]
-
-    # fetch and validate
-    # both connections should be active - we have waited long enough for events to be exchanged
-    assert await check_webhook_state(
-        alice_member_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": alice_connection_id,
-        },
-        look_back=5,
-    )
-    assert await check_webhook_state(
-        faber_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": faber_connection_id,
-        },
-        look_back=5,
-    )
-
-    return FaberAliceConnect(
-        alice_connection_id=alice_connection_id, faber_connection_id=faber_connection_id
-    )
-
-
-@dataclass
-class MeldCoAliceConnect:
-    alice_connection_id: str
-    meld_co_connection_id: str
+        return AcmeAliceConnect(
+            alice_connection_id=bob_alice_connection.alice_connection_id,
+            acme_connection_id=bob_alice_connection.bob_connection_id,
+        )
 
 
 # Create fixture to handle parameters and return either meld_co-alice connection fixture
@@ -220,74 +114,46 @@ async def meld_co_and_alice_connection(
     alice_member_client: RichAsyncClient,
     meld_co_client: RichAsyncClient,
     meld_co_issuer_verifier: CreateTenantResponse,
+    test_mode: str,
 ) -> MeldCoAliceConnect:
     if hasattr(request, "param") and request.param == "trust_registry":
-        # get invitation as on trust registry
-        meld_co_label = meld_co_issuer_verifier.wallet_label
+        connection_alias = "AliceMeldCoTrustRegistryConnection"
 
-        actor_record = await actors.fetch_actor_by_name(meld_co_label)
-
-        invitation = actor_record["didcomm_invitation"]
-        invitation_json = base64_to_json(invitation.split("?oob=")[1])
-
-        # accept invitation on alice side
-        invitation_response = (
-            await alice_member_client.post(
-                f"{OOB_BASE_PATH}/accept-invitation",
-                json={"invitation": invitation_json},
+        if test_mode == TestMode.clean_run:
+            acme_alice_connect = await connect_using_trust_registry_invite(
+                alice_member_client=alice_member_client,
+                alice_tenant=alice_tenant,
+                verifier_client=meld_co_client,
+                verifier=meld_co_issuer_verifier,
+                connection_alias=connection_alias,
             )
-        ).json()
+        elif test_mode == TestMode.regression_run:
+            connection_alias_prefix = RegressionTestConfig.reused_connection_alias
 
-        alice_label = alice_tenant.wallet_label
-        payload = await check_webhook_state(
-            client=meld_co_client,
-            topic="connections",
-            state="completed",
-            filter_map={
-                "their_label": alice_label,
-            },
+            acme_alice_connect = await fetch_or_create_trust_registry_connection(
+                alice_member_client=alice_member_client,
+                alice_tenant=alice_tenant,
+                verifier_client=meld_co_client,
+                verifier=meld_co_issuer_verifier,
+                connection_alias=f"{connection_alias_prefix}-{connection_alias}",
+            )
+        else:
+            assert False, f"unknown test mode: {test_mode}"
+
+        return MeldCoAliceConnect(
+            alice_connection_id=acme_alice_connect.alice_connection_id,
+            meld_co_connection_id=acme_alice_connect.acme_connection_id,
+        )
+    else:
+        # No indirect request param for trust registry connection; establish normal connection:
+        bob_alice_connection = await create_connection_by_test_mode(
+            test_mode=test_mode,
+            alice_member_client=alice_member_client,
+            bob_member_client=meld_co_client,
+            alias="AliceMeldCoConnection",
         )
 
-        meld_co_connection_id = payload["connection_id"]
-        alice_connection_id = invitation_response["connection_id"]
-    else:
-        # create invitation on meld_co side
-        invitation = (
-            await meld_co_client.post(f"{CONNECTIONS_BASE_PATH}/create-invitation")
-        ).json()
-
-        # accept invitation on alice side
-        invitation_response = (
-            await alice_member_client.post(
-                f"{CONNECTIONS_BASE_PATH}/accept-invitation",
-                json={"invitation": invitation["invitation"]},
-            )
-        ).json()
-
-        meld_co_connection_id = invitation["connection_id"]
-        alice_connection_id = invitation_response["connection_id"]
-
-    # fetch and validate - both connections should be active before continuing
-    assert await check_webhook_state(
-        alice_member_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": alice_connection_id,
-        },
-        look_back=5,
-    )
-    assert await check_webhook_state(
-        meld_co_client,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": meld_co_connection_id,
-        },
-        look_back=5,
-    )
-
-    return MeldCoAliceConnect(
-        alice_connection_id=alice_connection_id,
-        meld_co_connection_id=meld_co_connection_id,
-    )
+        return MeldCoAliceConnect(
+            alice_connection_id=bob_alice_connection.alice_connection_id,
+            meld_co_connection_id=bob_alice_connection.acme_connection_id,
+        )

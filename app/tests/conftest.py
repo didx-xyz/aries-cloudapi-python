@@ -1,18 +1,6 @@
 import mockito
 import pytest
 
-from app.tests.regression.fixtures import *
-
-# flake8: noqa
-# pylint: disable=unused-import
-from app.tests.util.ecosystem_connections import (
-    acme_and_alice_connection,
-    alice_bob_connect_multi,
-    bob_and_alice_connection,
-    bob_and_alice_public_did,
-    faber_and_alice_connection,
-    meld_co_and_alice_connection,
-)
 from app.tests.util.member_acapy_clients import (
     acme_acapy_client,
     alice_acapy_client,
@@ -32,6 +20,17 @@ from app.tests.util.member_async_clients import (
     mock_async_client,
     tenant_admin_client,
     trust_registry_client,
+)
+
+# flake8: noqa
+# pylint: disable=unused-import
+from app.tests.util.member_connections import (
+    acme_and_alice_connection,
+    alice_bob_connect_multi,
+    bob_and_alice_connection,
+    bob_and_alice_public_did,
+    faber_and_alice_connection,
+    meld_co_and_alice_connection,
 )
 from app.tests.util.member_wallets import (
     acme_verifier,

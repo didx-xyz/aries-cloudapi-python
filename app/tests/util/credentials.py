@@ -4,7 +4,7 @@ from typing import List
 import pytest
 
 from app.routes.issuer import router
-from app.tests.util.ecosystem_connections import FaberAliceConnect, MeldCoAliceConnect
+from app.tests.util.member_connections import FaberAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange

@@ -7,7 +7,7 @@ from app.routes.definitions import CredentialSchema
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.credentials import sample_credential_attributes
-from app.tests.util.ecosystem_connections import FaberAliceConnect
+from app.tests.util.member_connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from app.util.credentials import cred_id_no_version
 from shared import RichAsyncClient

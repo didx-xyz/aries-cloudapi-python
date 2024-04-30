@@ -12,7 +12,7 @@ from app.routes.oob import router as oob_router
 from app.routes.verifier import AcceptProofRequest, RejectProofRequest
 from app.routes.verifier import router as verifier_router
 from app.tests.services.verifier.utils import indy_proof_request
-from app.tests.util.ecosystem_connections import AcmeAliceConnect, MeldCoAliceConnect
+from app.tests.util.member_connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient

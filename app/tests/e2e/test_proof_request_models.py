@@ -8,7 +8,7 @@ from aries_cloudcontroller import (
 from fastapi import HTTPException
 
 from app.routes.verifier import router as verifier_router
-from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.member_connections import AcmeAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared.models.credential_exchange import CredentialExchange
 from shared.util.rich_async_client import RichAsyncClient

@@ -122,7 +122,10 @@ async def fetch_existing_connection_by_alias(
             if connection["their_label"] == their_label  # filter by their label
         ]
 
-    assert len(list_connections) < 2, "Should have 1 or 0 connections with this alias"
+    num_connections = len(list_connections)
+    assert (
+        num_connections < 2
+    ), f"Should have 1 or 0 connections with this alias, got: {num_connections}"
 
     if list_connections:
         return Connection.model_validate(list_connections[0])

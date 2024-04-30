@@ -44,6 +44,18 @@ async def create_proof_request(
     This is useful when the tenant wants to create a proof request that can be sent to multiple connections.
 
     The proof request must be for a indy credential or ld_proof
+
+    ```json
+        {
+            "protocol_version": "v2",
+            "comment": "string",
+            "trace": true,
+            "type": "indy" or "ld_proof",
+            "indy_proof_request": {...}, <- Required if type is "indy"
+            "dif_proof_request": {...}, <- Required if type is "ld_proof"
+            "save_exchange_record": false
+        }
+    ```
     Read more about the proof request here:
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
@@ -92,6 +104,19 @@ async def send_proof_request(
     The tenant can send a proof request to a specific connection by providing the connection ID.
 
     The proof request must be for a indy credential or ld_proof
+
+    ```json
+        {
+            "protocol_version": "v2", <-- v1 is supported but will be deprecated
+            "comment": "string",
+            "trace": true,
+            "type": "indy" or "ld_proof",
+            "indy_proof_request": {...}, <- Required if type is "indy"
+            "dif_proof_request": {...}, <- Required if type is "ld_proof"
+            "save_exchange_record": false,
+            "connection_id": "string"
+        }
+    ```
     Read more about the proof request here:
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach

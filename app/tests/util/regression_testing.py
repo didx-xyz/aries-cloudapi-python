@@ -53,6 +53,13 @@ async def get_or_create_tenant(
     # Try to find the tenant by the specific role or name
     for tenant in list_tenants:
         if tenant.get("wallet_label") == name:
+            # get access token and append to tenant, as it's required for CreateTenantResponse model
+            access_token_response = await admin_client.get(
+                f"{TENANT_BASE_PATH}/{tenant["wallet_id"]}/access-token",
+                params={"group_id": group_id},
+            )
+            access_token = access_token_response.json()["access_token"]
+            tenant.update({"access_token": access_token})
             # Return existing tenant if found
             return CreateTenantResponse.model_validate(tenant)
 

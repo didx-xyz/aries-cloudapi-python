@@ -262,5 +262,5 @@ async def fetch_or_create_trust_registry_connection(
             alice_tenant=alice_tenant,
             verifier_client=verifier_client,
             verifier=verifier,
-            alias=connection_alias,
+            connection_alias=connection_alias,
         )

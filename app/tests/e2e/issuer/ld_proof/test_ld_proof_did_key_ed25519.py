@@ -11,7 +11,6 @@ from app.routes.connections import router as con_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.connections import FaberAliceConnect
-from app.tests.util.trust_registry import str
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
@@ -95,6 +94,7 @@ async def test_send_jsonld_key_ed25519(
     )
 
     data = response.json()
+    thread_id = data["thread_id"]
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
@@ -104,7 +104,7 @@ async def test_send_jsonld_key_ed25519(
         topic="credentials",
         state="offer-received",
         filter_map={
-            "connection_id": alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 
@@ -112,7 +112,7 @@ async def test_send_jsonld_key_ed25519(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     records = response.json()
@@ -208,7 +208,6 @@ async def test_send_jsonld_request(
     faber_and_alice_connection: FaberAliceConnect,
     register_issuer_key_ed25519: str,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     # Updating JSON-LD credential did:key with proofType ed25519
@@ -223,6 +222,7 @@ async def test_send_jsonld_request(
         json=credential,
     )
     credential_exchange = response.json()
+    thread_id = credential_exchange["thread_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
@@ -230,7 +230,7 @@ async def test_send_jsonld_request(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": credential_exchange["credential_id"],
+            "thread_id": thread_id,
         },
         look_back=5,
     )
@@ -245,7 +245,7 @@ async def test_send_jsonld_request(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]
@@ -278,7 +278,6 @@ async def test_issue_jsonld_ed(
     faber_and_alice_connection: FaberAliceConnect,
     register_issuer_key_ed25519: str,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     # Updating JSON-LD credential did:key with proofType ed25519
@@ -293,6 +292,7 @@ async def test_issue_jsonld_ed(
         json=credential,
     )
     credential_exchange = response.json()
+    thread_id = credential_exchange["thread_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
@@ -300,7 +300,7 @@ async def test_issue_jsonld_ed(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": credential_exchange["credential_id"],
+            "thread_id": thread_id,
         },
         look_back=5,
     )
@@ -315,7 +315,7 @@ async def test_issue_jsonld_ed(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]

@@ -12,13 +12,13 @@ from app.services.trust_registry.actors import (
     register_actor,
     remove_actor_by_id,
 )
-from app.tests.util.credentials import (
+from app.tests.fixtures.credentials import (
     issue_alice_creds_and_revoke_published,
     issue_alice_creds_and_revoke_unpublished,
     issue_credential_to_alice,
     meld_co_issue_credential_to_alice,
 )
-from app.tests.util.definitions import (
+from app.tests.fixtures.definitions import (
     credential_definition_id,
     credential_definition_id_revocable,
     meld_co_credential_definition_id,

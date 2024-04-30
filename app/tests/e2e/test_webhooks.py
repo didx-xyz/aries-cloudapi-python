@@ -2,7 +2,7 @@ import pytest
 from fastapi import HTTPException
 
 from app.routes.webhooks import router
-from app.tests.util.member_connections import BobAliceConnect
+from app.tests.util.connections import BobAliceConnect
 from shared import RichAsyncClient
 from shared.models.connection_record import Connection
 

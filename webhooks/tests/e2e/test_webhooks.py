@@ -1,6 +1,6 @@
 import pytest
 
-from app.tests.util.member_connections import BobAliceConnect
+from app.tests.util.connections import BobAliceConnect
 from app.tests.util.webhooks import get_wallet_id_from_async_client
 from shared import WEBHOOKS_URL, RichAsyncClient
 

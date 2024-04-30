@@ -1,5 +1,5 @@
 import os
-from typing import Any, AsyncGenerator
+from typing import AsyncGenerator
 
 from app.models.tenants import CreateTenantRequest, CreateTenantResponse
 from app.tests.util.tenants import TENANT_BASE_PATH, delete_tenant, post_tenant_request
@@ -69,7 +69,7 @@ async def get_or_create_tenant(
 
 async def get_or_create_tenant_with_delete_check(
     admin_client: RichAsyncClient, name: str, roles: list[str]
-) -> AsyncGenerator[CreateTenantResponse, Any, None]:
+) -> AsyncGenerator[CreateTenantResponse, None]:
     tenant = await get_or_create_tenant(
         admin_client=admin_client, name=name, roles=roles
     )

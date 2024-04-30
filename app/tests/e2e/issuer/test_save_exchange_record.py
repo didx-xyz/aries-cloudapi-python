@@ -6,8 +6,8 @@ import pytest
 from fastapi import HTTPException
 
 from app.routes.issuer import router
-from app.tests.util.credentials import sample_credential_attributes
-from app.tests.util.member_connections import FaberAliceConnect
+from app.tests.fixtures.credentials import sample_credential_attributes
+from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange

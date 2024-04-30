@@ -5,7 +5,7 @@ import pytest
 
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
-from app.tests.util.member_connections import AcmeAliceConnect
+from app.tests.util.connections import AcmeAliceConnect
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient

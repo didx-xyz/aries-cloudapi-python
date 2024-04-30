@@ -72,19 +72,3 @@ async def register_issuer_key(
         yield did
     finally:
         await remove_actor_by_id(test_id)
-
-
-@pytest.fixture(scope="function")
-async def register_issuer_key_ed25519(
-    faber_client: RichAsyncClient,
-) -> AsyncGenerator[DidKey, None]:
-    async with register_issuer_key(faber_client, "ed25519") as did:
-        yield did
-
-
-@pytest.fixture(scope="function")
-async def register_issuer_key_bbs(
-    faber_client: RichAsyncClient,
-) -> AsyncGenerator[DidKey, None]:
-    async with register_issuer_key(faber_client, "bls12381g2") as did:
-        yield did

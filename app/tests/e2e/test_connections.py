@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 from app.models.connections import AcceptInvitation, CreateInvitation
 from app.routes.connections import router
-from app.tests.util.member_connections import BobAliceConnect
+from app.tests.util.connections import BobAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 

@@ -110,7 +110,8 @@ async def fetch_existing_connection_by_alias(
     member_client: RichAsyncClient, alias: str, their_label: Optional[str] = None
 ) -> Optional[Connection]:
     list_connections_response = await member_client.get(
-        f"{CONNECTIONS_BASE_PATH}", params={"alias": alias}
+        f"{CONNECTIONS_BASE_PATH}",
+        params={"alias": alias, "state": "completed"},
     )
     list_connections = list_connections_response.json()
 

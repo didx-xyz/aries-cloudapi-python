@@ -11,7 +11,7 @@ from app.routes.connections import router as con_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.connections import FaberAliceConnect
-from app.tests.util.trust_registry import DidKey
+from app.tests.util.trust_registry import str
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
@@ -76,7 +76,7 @@ async def test_send_jsonld_key_ed25519(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
-    register_issuer_key_ed25519: DidKey,
+    register_issuer_key_ed25519: str,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -131,7 +131,7 @@ async def test_send_jsonld_key_ed25519(
 async def test_send_jsonld_oob(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    register_issuer_key_ed25519: DidKey,
+    register_issuer_key_ed25519: str,
 ):
     invitation_response = await faber_client.post(
         OOB_BASE_PATH + "/create-invitation",
@@ -206,7 +206,7 @@ async def test_send_jsonld_request(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
-    register_issuer_key_ed25519: DidKey,
+    register_issuer_key_ed25519: str,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -276,7 +276,7 @@ async def test_issue_jsonld_ed(
     alice_member_client: RichAsyncClient,
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
-    register_issuer_key_ed25519: DidKey,
+    register_issuer_key_ed25519: str,
 ):
     alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -348,7 +348,7 @@ async def test_issue_jsonld_ed(
 async def test_send_jsonld_mismatch_ed_bbs(
     faber_client: RichAsyncClient,
     faber_and_alice_connection: FaberAliceConnect,
-    register_issuer_key_ed25519: DidKey,
+    register_issuer_key_ed25519: str,
 ):
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 

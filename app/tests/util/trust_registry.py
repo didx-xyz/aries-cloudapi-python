@@ -1,9 +1,6 @@
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
 from random import random
 from typing import AsyncGenerator
-
-import pytest
 
 from app.models.trust_registry import Actor
 from app.routes.wallet.dids import router as wallet_router
@@ -39,15 +36,10 @@ async def register_issuer(issuer_client: RichAsyncClient, schema_id: str):
         )
 
 
-@dataclass
-class DidKey:
-    did: str
-
-
 @asynccontextmanager
 async def register_issuer_key(
     faber_client: RichAsyncClient, key_type: str
-) -> AsyncGenerator[DidKey, None]:
+) -> AsyncGenerator[str, None]:
     did_create_options = {"method": "key", "options": {"key_type": key_type}}
 
     wallet_response = (
@@ -63,7 +55,7 @@ async def register_issuer_key(
             id=test_id,
             name=f"Test Actor-{rand}",
             roles=["issuer"],
-            did=f"{did}",
+            did=did,
             didcomm_invitation=None,
         )
     )

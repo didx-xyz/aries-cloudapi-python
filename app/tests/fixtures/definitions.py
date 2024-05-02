@@ -11,40 +11,78 @@ from app.routes.definitions import (
     CredentialSchema,
     create_credential_definition,
     create_schema,
+    get_schemas,
+)
+from app.tests.util.regression_testing import (
+    TestMode,
+    assert_fail_on_recreating_fixtures,
 )
 from app.tests.util.trust_registry import register_issuer
 from app.util.string import random_version
 from shared import RichAsyncClient
 
 
-@pytest.fixture(scope="session")
+async def fetch_or_create_regression_test_schema_definition(
+    name, auth
+) -> CredentialSchema:
+    regression_test_schema_name = "Regression_" + name
+
+    schemas = await get_schemas(schema_name=regression_test_schema_name, auth=auth)
+    num_schemas = len(schemas)
+    assert (
+        num_schemas < 2
+    ), f"Should have 1 or 0 schemas with this name, got: {num_schemas}"
+
+    if schemas:
+        schema_definition_result = schemas[0]
+    else:
+        # Schema not created yet
+        assert_fail_on_recreating_fixtures()
+        definition = CreateSchema(
+            name=regression_test_schema_name,
+            version="1.0.0",
+            attribute_names=["speed", "name", "age"],
+        )
+
+        schema_definition_result = await create_schema(definition, auth)
+
+    return schema_definition_result
+
+
+async def get_clean_or_regression_test_schema(name, auth, test_mode):
+    if test_mode == TestMode.clean_run:
+        definition = CreateSchema(
+            name=name,
+            version=random_version(),
+            attribute_names=["speed", "name", "age"],
+        )
+
+        schema_definition_result = await create_schema(definition, auth)
+    elif test_mode == TestMode.regression_run:
+        schema_definition_result = (
+            await fetch_or_create_regression_test_schema_definition(name, auth)
+        )
+    return schema_definition_result
+
+
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def schema_definition(
+    request,
     mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
-    definition = CreateSchema(
-        name="test_schema",
-        version=random_version(),
-        attribute_names=["speed", "name", "age"],
+    return await get_clean_or_regression_test_schema(
+        name="test_schema", auth=mock_governance_auth, test_mode=request.param
     )
 
-    schema_definition_result = await create_schema(definition, mock_governance_auth)
 
-    return schema_definition_result
-
-
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def schema_definition_alt(
+    request,
     mock_governance_auth: AcaPyAuthVerified,
 ) -> CredentialSchema:
-    definition = CreateSchema(
-        name="test_schema_alt",
-        version=random_version(),
-        attribute_names=["speed", "name", "age"],
+    return await get_clean_or_regression_test_schema(
+        name="test_schema_alt", auth=mock_governance_auth, test_mode=request.param
     )
-
-    schema_definition_result = await create_schema(definition, mock_governance_auth)
-
-    return schema_definition_result
 
 
 @pytest.fixture(scope="module")

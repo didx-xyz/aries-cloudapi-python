@@ -22,7 +22,6 @@ async def test_send_credential_oob(
     faber_client: RichAsyncClient,
     schema_definition: CredentialSchema,
     credential_definition_id: str,
-    faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
@@ -33,15 +32,6 @@ async def test_send_credential_oob(
             "attributes": sample_credential_attributes,
         },
     }
-
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
 
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH + "/create-offer",
@@ -97,7 +87,6 @@ async def test_send_credential(
     schema_definition: CredentialSchema,
     credential_definition_id: str,
     faber_and_alice_connection: FaberAliceConnect,
-    alice_member_client: RichAsyncClient,
     protocol_version: str,
 ):
     credential = {
@@ -108,15 +97,6 @@ async def test_send_credential(
             "attributes": sample_credential_attributes,
         },
     }
-
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
 
     response = await faber_client.post(
         CREDENTIALS_BASE_PATH,
@@ -201,6 +181,7 @@ async def test_send_credential_request(
         json=credential,
     )
     credential_exchange = response.json()
+    thread_id = credential_exchange["thread_id"]
     assert credential_exchange["protocol_version"] == protocol_version
 
     assert await check_webhook_state(
@@ -208,7 +189,7 @@ async def test_send_credential_request(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": credential_exchange["credential_id"],
+            "thread_id": thread_id,
         },
     )
 
@@ -221,7 +202,7 @@ async def test_send_credential_request(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": faber_and_alice_connection.alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]
@@ -268,19 +249,20 @@ async def test_revoke_credential(
     }
 
     # create and send credential offer: issuer
-    faber_credential_id = (
+    faber_credential_response = (
         await faber_client.post(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
-    ).json()["credential_id"]
+    ).json()
+    thread_id = faber_credential_response["thread_id"]
 
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
         filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 
@@ -300,7 +282,7 @@ async def test_revoke_credential(
         },
     )
 
-    cred_id = cred_id_no_version(faber_credential_id)
+    cred_id = cred_id_no_version(faber_credential_response["credential_id"])
 
     response = await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/revoke",

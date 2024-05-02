@@ -122,8 +122,14 @@ async def issue_alice_creds_and_revoke_unpublished(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ) -> List[CredentialExchange]:
+    # Fetch existing records so we can filter to exclude them. Necessary to cater for long running / regression tests
+    existing_records = (
+        await alice_member_client.get(CREDENTIALS_BASE_PATH + "?state=offer-received")
+    ).json()
+
     faber_conn_id = faber_and_alice_connection.faber_connection_id
 
+    faber_cred_ex_ids = []
     for i in range(3):
         credential = {
             "protocol_version": "v1",
@@ -135,10 +141,12 @@ async def issue_alice_creds_and_revoke_unpublished(
             },
         }
 
-        await faber_client.post(
+        faber_send_response = await faber_client.post(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
+        cred_ex_id = faber_send_response.json()["credential_id"]
+        faber_cred_ex_ids += [cred_ex_id]
 
     num_tries = 0
     num_credentials_returned = 0
@@ -149,6 +157,11 @@ async def issue_alice_creds_and_revoke_unpublished(
                 f"{CREDENTIALS_BASE_PATH}?connection_id={faber_and_alice_connection.alice_connection_id}"
             )
         ).json()
+        alice_cred_ex_response = [
+            record
+            for record in alice_cred_ex_response
+            if record not in existing_records
+        ]
         num_credentials_returned = len(alice_cred_ex_response)
         num_tries += 1
 
@@ -176,6 +189,11 @@ async def issue_alice_creds_and_revoke_unpublished(
             CREDENTIALS_BASE_PATH + "?connection_id=" + faber_conn_id
         )
     ).json()
+    cred_ex_response = [
+        record
+        for record in cred_ex_response
+        if record["credential_id"] in faber_cred_ex_ids
+    ]
 
     assert len(cred_ex_response) == 3
 

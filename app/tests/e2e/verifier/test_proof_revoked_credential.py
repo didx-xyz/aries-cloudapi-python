@@ -21,6 +21,7 @@ async def test_proof_revoked_credential(
     issue_alice_creds_and_revoke_published: List[  # pylint: disable=unused-argument
         CredentialExchange
     ],
+    credential_definition_id_revocable: str,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
@@ -41,7 +42,9 @@ async def test_proof_revoked_credential(
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",
-                    "restrictions": [],
+                    "restrictions": [
+                        {"cred_def_id": credential_definition_id_revocable}
+                    ],
                 }
             },
             "requested_predicates": {},
@@ -56,6 +59,9 @@ async def test_proof_revoked_credential(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
+        filter_map={
+            "thread_id": send_proof_response["thread_id"],
+        },
         look_back=5,
     )
 

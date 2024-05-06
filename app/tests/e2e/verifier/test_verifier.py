@@ -100,13 +100,14 @@ async def test_accept_proof_request(
     assert send_proof_response["protocol_version"] == protocol_version
 
     acme_proof_id = send_proof_response["proof_id"]
+    thread_id = send_proof_response["thread_id"]
 
     alice_payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         filter_map={
-            "connection_id": acme_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 

@@ -31,18 +31,19 @@ async def issue_credential_to_alice(
         },
     }
 
-    # create and send credential offer- issuer
-    await faber_client.post(
+    # create and send credential offer
+    faber_send_response = await faber_client.post(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
+    thread_id = faber_send_response.json()["thread_id"]
 
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
         filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 
@@ -82,17 +83,18 @@ async def meld_co_issue_credential_to_alice(
     }
 
     # create and send credential offer- issuer
-    await meld_co_client.post(
+    meld_co_send_response = await meld_co_client.post(
         CREDENTIALS_BASE_PATH,
         json=credential,
     )
+    thread_id = meld_co_send_response.json()["thread_id"]
 
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
         filter_map={
-            "connection_id": meld_co_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 
@@ -202,7 +204,6 @@ async def issue_alice_creds_and_revoke_unpublished(
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/revoke",
             json={
-                "credential_definition_id": credential_definition_id_revocable,
                 "credential_exchange_id": cred["credential_id"][3:],
             },
         )

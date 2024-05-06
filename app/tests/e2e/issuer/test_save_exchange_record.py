@@ -37,18 +37,22 @@ async def test_issue_credential_with_save_exchange_record(
     }
 
     # create and send credential offer- issuer
-    faber_send_response = await faber_client.post(
-        CREDENTIALS_BASE_PATH,
-        json=credential,
-    )
-    faber_credential_id = faber_send_response.json()["credential_id"]
+    faber_send_response = (
+        await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+    ).json()
+
+    faber_credential_id = faber_send_response["credential_id"]
+    thread_id = faber_send_response["thread_id"]
 
     payload = await check_webhook_state(
         client=alice_member_client,
         topic="credentials",
         state="offer-received",
         filter_map={
-            "connection_id": faber_and_alice_connection.alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 

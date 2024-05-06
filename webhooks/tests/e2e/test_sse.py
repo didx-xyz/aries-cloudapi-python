@@ -4,10 +4,10 @@ import logging
 import pytest
 from httpx import ReadTimeout, Response, Timeout
 
+from app.routes.connections import router as connections_router
 from app.tests.util.connections import BobAliceConnect, create_bob_alice_connection
 from app.tests.util.webhooks import get_wallet_id_from_async_client
 from shared import WEBHOOKS_URL, RichAsyncClient
-from app.routes.connections import router as connections_router
 
 CONNECTIONS_BASE_PATH = connections_router.prefix
 

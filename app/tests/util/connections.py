@@ -107,25 +107,33 @@ async def create_bob_alice_connection(
 
 
 async def fetch_existing_connection_by_alias(
-    member_client: RichAsyncClient, alias: str, their_label: Optional[str] = None
+    member_client: RichAsyncClient,
+    alias: Optional[str] = None,
+    their_label: Optional[str] = None,
 ) -> Optional[Connection]:
+    params = {"state": "completed"}
+    if alias:
+        params.update({"alias": alias})
+
     list_connections_response = await member_client.get(
-        f"{CONNECTIONS_BASE_PATH}",
-        params={"alias": alias, "state": "completed"},
+        f"{CONNECTIONS_BASE_PATH}", params=params
     )
     list_connections = list_connections_response.json()
 
-    if their_label:  #  to handle Trust Registry invites, where alias in not unique
+    if their_label:  #  to handle Trust Registry invites, where alias is null
         list_connections = [
             connection
             for connection in list_connections
-            if connection["their_label"] == their_label  # filter by their label
+            if (
+                connection["their_label"] == their_label  # filter by their label
+                and connection["alias"] is None  # TR OOB invite has null alias
+            )
         ]
 
     num_connections = len(list_connections)
     assert (
         num_connections < 2
-    ), f"Should have 1 or 0 connections with this alias, got: {num_connections}"
+    ), f"{member_client._name} should have 1 or 0 connections, got: {num_connections}"
 
     if list_connections:
         return Connection.model_validate(list_connections[0])
@@ -239,13 +247,8 @@ async def fetch_or_create_trust_registry_connection(
         alice_member_client, alias=connection_alias
     )
 
-    # The Trust Registry OOB invite has alias defined as:
-    trust_registry_invite_alias = f"Trust Registry {verifier.wallet_label}"
-
-    # Need to filter by their_label, as above alias is not necessarily unique
-    alice_label = alice_tenant.wallet_label
     verifier_connection = await fetch_existing_connection_by_alias(
-        verifier_client, alias=trust_registry_invite_alias, their_label=alice_label
+        verifier_client, alias=None, their_label=alice_tenant.wallet_label
     )
 
     # Check if connections exist

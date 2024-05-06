@@ -6,7 +6,7 @@ from fastapi import HTTPException
 
 from app.models.connections import AcceptInvitation, CreateInvitation
 from app.routes.connections import router
-from app.tests.util.connections import BobAliceConnect
+from app.tests.util.connections import create_bob_alice_connection
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
@@ -100,21 +100,30 @@ async def test_accept_invitation(
 async def test_get_connections(
     bob_member_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,  # pylint: disable=unused-argument
 ):
-    alice_connections = (await alice_member_client.get(f"{BASE_PATH}")).json()[0]
-    bob_connections = (await bob_member_client.get(f"{BASE_PATH}")).json()[0]
+    connection_alias = "TempAliceBobConnection"
 
-    assert_that(len(alice_connections)).is_greater_than_or_equal_to(1)
-    assert_that(len(bob_connections)).is_greater_than_or_equal_to(1)
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias=connection_alias
+    )
 
-    alice_invitation_msg_id = alice_connections["invitation_msg_id"]
-    alice_did = alice_connections["my_did"]
+    alice_connection_id = bob_and_alice_connection.alice_connection_id
+    bob_connection_id = bob_and_alice_connection.bob_connection_id
+
+    alice_connection = (
+        await alice_member_client.get(f"{BASE_PATH}/{alice_connection_id}")
+    ).json()
+    bob_connection = (
+        await bob_member_client.get(f"{BASE_PATH}/{bob_connection_id}")
+    ).json()
+
+    alice_invitation_msg_id_value = alice_connection["invitation_msg_id"]
+    alice_did = alice_connection["my_did"]
 
     alice_connection_alias = (
-        await alice_member_client.get(f"{BASE_PATH}?alias=AliceBobConnection")
+        await alice_member_client.get(f"{BASE_PATH}?alias={connection_alias}")
     ).json()[0]["alias"]
-    assert alice_connection_alias == "AliceBobConnection"
+    assert alice_connection_alias == connection_alias
 
     alice_state = (
         await alice_member_client.get(f"{BASE_PATH}?state=completed")
@@ -123,17 +132,17 @@ async def test_get_connections(
 
     alice_key = (
         await alice_member_client.get(
-            f"{BASE_PATH}?invitation_key={bob_connections['invitation_key']}"
+            f"{BASE_PATH}?invitation_key={bob_connection['invitation_key']}"
         )
     ).json()[0]["invitation_key"]
-    assert alice_key == alice_connections["invitation_key"]
+    assert alice_key == alice_connection["invitation_key"]
 
     alice_invitation_msg_id = (
         await alice_member_client.get(
-            f"{BASE_PATH}?invitation_msg_id={alice_invitation_msg_id}"
+            f"{BASE_PATH}?invitation_msg_id={alice_invitation_msg_id_value}"
         )
     ).json()[0]["invitation_msg_id"]
-    assert alice_invitation_msg_id == alice_invitation_msg_id
+    assert alice_invitation_msg_id == alice_invitation_msg_id_value
 
     alice_my_did = (
         await alice_member_client.get(f"{BASE_PATH}?my_did={alice_did}")
@@ -142,14 +151,14 @@ async def test_get_connections(
 
     alice_their_did = (
         await alice_member_client.get(
-            f"{BASE_PATH}?their_did={bob_connections['my_did']}"
+            f"{BASE_PATH}?their_did={bob_connection['my_did']}"
         )
     ).json()[0]["their_did"]
-    assert alice_their_did == alice_connections["their_did"]
+    assert alice_their_did == alice_connection["their_did"]
 
     with pytest.raises(HTTPException) as exc:
         await alice_member_client.get(
-            f"{BASE_PATH}?their_public_did={bob_connections['their_public_did']}"
+            f"{BASE_PATH}?their_public_did={bob_connection['their_public_did']}"
         )
     assert exc.value.status_code == 422
 
@@ -157,6 +166,10 @@ async def test_get_connections(
         await alice_member_client.get(f"{BASE_PATH}?their_role=inviter")
     ).json()[0]["their_role"]
     assert alice_their_role == "inviter"
+
+    # clean up temp connection
+    await alice_member_client.delete(f"{BASE_PATH}/{alice_connection_id}")
+    await bob_member_client.delete(f"{BASE_PATH}/{bob_connection_id}")
 
 
 @pytest.mark.anyio

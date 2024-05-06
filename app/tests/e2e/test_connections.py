@@ -170,7 +170,7 @@ async def test_get_connection_by_id(
     connection_response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
     connection_record = connection_response.json()
 
-    assert_that(connection_response.status_code).is_equal_to(200)
+    assert connection_response.status_code == 200
     assert_that(connection_record).contains(
         "connection_id", "state", "created_at", "updated_at", "invitation_key"
     )
@@ -185,11 +185,11 @@ async def test_delete_connection(
     connection_id = invitation["connection_id"]
 
     response = await bob_member_client.delete(f"{BASE_PATH}/{connection_id}")
-    assert_that(response.status_code).is_equal_to(200)
+    assert response.status_code == 200
 
     with pytest.raises(HTTPException) as exc:
         response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")
-    assert_that(exc.value.status_code).is_equal_to(404)
+    assert exc.value.status_code == 404
 
 
 @pytest.mark.anyio

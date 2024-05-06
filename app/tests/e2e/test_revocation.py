@@ -1,7 +1,6 @@
 from typing import List
 
 import pytest
-from assertpy import assert_that
 from fastapi import HTTPException
 
 from app.routes.issuer import router
@@ -64,7 +63,7 @@ async def test_clear_pending_revokes(
             f"{CREDENTIALS_BASE_PATH}/clear-pending-revocations",
             json={"revocation_registry_credential_map": {rev_reg_id: ["1"]}},
         )
-    assert_that(exc.value.status_code).is_equal_to(404)
+    assert exc.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -103,7 +102,7 @@ async def test_clear_pending_revokes_bad_payload(
             json={"revocation_registry_credential_map": "bad"},
         )
 
-    assert_that(exc.value.status_code).is_equal_to(422)
+    assert exc.value.status_code == 422
 
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(
@@ -111,7 +110,7 @@ async def test_clear_pending_revokes_bad_payload(
             json={"revocation_registry_credential_map": {"bad": "bad"}},
         )
 
-    assert_that(exc.value.status_code).is_equal_to(422)
+    assert exc.value.status_code == 422
 
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(
@@ -123,7 +122,7 @@ async def test_clear_pending_revokes_bad_payload(
             },
         )
 
-    assert_that(exc.value.status_code).is_equal_to(404)
+    assert exc.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -223,7 +222,7 @@ async def test_publish_one_revocation(
             json={"revocation_registry_credential_map": {rev_reg_id: [cred_rev_id]}},
         )
 
-    assert_that(exc.value.status_code).is_equal_to(404)
+    assert exc.value.status_code == 404
 
 
 @pytest.mark.anyio
@@ -236,7 +235,7 @@ async def test_publish_revocations_bad_payload(
             json={"revocation_registry_credential_map": "bad"},
         )
 
-    assert_that(exc.value.status_code).is_equal_to(422)
+    assert exc.value.status_code == 422
 
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(
@@ -244,7 +243,7 @@ async def test_publish_revocations_bad_payload(
             json={"revocation_registry_credential_map": {"bad": "bad"}},
         )
 
-    assert_that(exc.value.status_code).is_equal_to(422)
+    assert exc.value.status_code == 422
 
     with pytest.raises(HTTPException) as exc:
         await faber_client.post(
@@ -256,4 +255,4 @@ async def test_publish_revocations_bad_payload(
             },
         )
 
-    assert_that(exc.value.status_code).is_equal_to(404)
+    assert exc.value.status_code == 404

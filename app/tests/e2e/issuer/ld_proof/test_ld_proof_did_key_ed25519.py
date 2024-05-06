@@ -142,8 +142,6 @@ async def test_send_jsonld_oob(
         },
     )
 
-    assert_that(invitation_response.status_code).is_equal_to(200)
-
     invitation = (invitation_response.json())["invitation"]
 
     accept_response = await alice_member_client.post(
@@ -162,8 +160,6 @@ async def test_send_jsonld_oob(
             "connection_id": alice_connection_id,
         },
     )
-
-    assert_that(accept_response.status_code).is_equal_to(200)
     assert_that(oob_record).contains("created_at", "oob_id", "invitation")
 
     faber_con = await faber_client.get(CONNECTIONS_BASE_PATH)
@@ -366,4 +362,4 @@ async def test_send_jsonld_mismatch_ed_bbs(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
-    assert_that(exc.value.status_code).is_equal_to(400)
+    assert exc.value.status_code == 400

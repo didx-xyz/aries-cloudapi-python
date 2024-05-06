@@ -52,17 +52,14 @@ async def test_proof_revoked_credential(
     send_proof_response = await send_proof_request(acme_client, request_body)
     acme_proof_exchange_id = send_proof_response["proof_id"]
 
-    await check_webhook_state(
+    alice_payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
         look_back=5,
     )
 
-    # Get proof exchange id
-    alice_proof_exchange_id = (
-        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    ).json()[0]["proof_id"]
+    alice_proof_exchange_id = alice_payload["proof_id"]
 
     # Get referent
     referent = (

@@ -29,7 +29,7 @@ async def test_get_and_delete_credential_record(
     assert credentials_response.status_code == 200
     credentials_response = credentials_response.json()["results"]
 
-    credential_id = credentials_response[-1]["referent"]
+    credential_id = credentials_response[0]["referent"]
     # While in the broader context of Aries and credentials, referent can refer to specific attributes,
     # when dealing with the wallet's stored credentials, the referent becomes synonymous with a credential_id
     # specific to the wallet. It's how the wallet references and retrieves that particular credential record.

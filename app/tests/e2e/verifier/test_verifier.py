@@ -116,7 +116,7 @@ async def test_accept_proof_request(
         f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
     )
 
-    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
@@ -459,12 +459,12 @@ async def test_get_credentials_for_request(
         f"{VERIFIER_BASE_PATH}/proofs/{proof_id}/credentials",
     )
 
-    result = response.json()[-1]
-    assert "cred_info" in result.keys()
+    result = response.json()[0]
+    assert "cred_info" in result
     assert [
         attr
         in ["attrs", "cred_def_info", "referent", "interval", "presentation_referents"]
-        for attr in result["cred_info"].keys()
+        for attr in result["cred_info"]
     ]
 
 
@@ -509,7 +509,7 @@ async def test_accept_proof_request_verifier_has_issuer_role(
         },
     )
 
-    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )
@@ -574,11 +574,15 @@ async def test_saving_of_presentation_exchange_records(
     send_proof_response = await send_proof_request(acme_client, request_body)
 
     acme_proof_id = send_proof_response["proof_id"]
+    thread_id = send_proof_response["thread_id"]
 
     alice_payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
+        filter_map={
+            "thread_id": thread_id,
+        },
     )
     alice_proof_id = alice_payload["proof_id"]
 
@@ -586,16 +590,7 @@ async def test_saving_of_presentation_exchange_records(
         f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
     )
 
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="request-received",
-        filter_map={
-            "proof_id": alice_proof_id,
-        },
-    )
-
-    referent = requested_credentials.json()[-1]["cred_info"]["referent"]
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
     indy_request_attrs = IndyRequestedCredsRequestedAttr(
         cred_id=referent, revealed=True
     )

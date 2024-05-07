@@ -1,17 +1,10 @@
+# flake8: noqa
+# pylint: disable=unused-import
 import mockito
 import pytest
 
-# flake8: noqa
-# pylint: disable=unused-import
-from app.tests.util.ecosystem_connections import (
-    acme_and_alice_connection,
-    alice_bob_connect_multi,
-    bob_and_alice_connection,
-    bob_and_alice_public_did,
-    faber_and_alice_connection,
-    meld_co_and_alice_connection,
-)
-from app.tests.util.member_acapy_clients import (
+from app.tests.fixtures.dids import register_issuer_key_bbs, register_issuer_key_ed25519
+from app.tests.fixtures.member_acapy_clients import (
     acme_acapy_client,
     alice_acapy_client,
     bob_acapy_client,
@@ -20,7 +13,7 @@ from app.tests.util.member_acapy_clients import (
     meld_co_acapy_client,
     tenant_admin_acapy_client,
 )
-from app.tests.util.member_async_clients import (
+from app.tests.fixtures.member_async_clients import (
     acme_client,
     alice_member_client,
     bob_member_client,
@@ -31,16 +24,19 @@ from app.tests.util.member_async_clients import (
     tenant_admin_client,
     trust_registry_client,
 )
-from app.tests.util.member_wallets import (
+from app.tests.fixtures.member_connections import (
+    acme_and_alice_connection,
+    bob_and_alice_connection,
+    faber_and_alice_connection,
+    meld_co_and_alice_connection,
+    test_mode,
+)
+from app.tests.fixtures.member_wallets import (
     acme_verifier,
     alice_tenant,
     bob_tenant,
     faber_issuer,
     meld_co_issuer_verifier,
-)
-from app.tests.util.trust_registry import (
-    register_issuer_key_bbs,
-    register_issuer_key_ed25519,
 )
 from shared.util.mock_agent_controller import (
     mock_admin_auth,

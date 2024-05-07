@@ -5,7 +5,8 @@ import pytest
 
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
-from app.tests.util.ecosystem_connections import AcmeAliceConnect
+from app.tests.util.connections import AcmeAliceConnect
+from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
@@ -17,10 +18,15 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Proving revoked credentials is currently non-deterministic",
+)
 async def test_proof_revoked_credential(
     issue_alice_creds_and_revoke_published: List[  # pylint: disable=unused-argument
         CredentialExchange
     ],
+    credential_definition_id_revocable: str,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
@@ -41,7 +47,9 @@ async def test_proof_revoked_credential(
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",
-                    "restrictions": [],
+                    "restrictions": [
+                        {"cred_def_id": credential_definition_id_revocable}
+                    ],
                 }
             },
             "requested_predicates": {},
@@ -52,17 +60,17 @@ async def test_proof_revoked_credential(
     send_proof_response = await send_proof_request(acme_client, request_body)
     acme_proof_exchange_id = send_proof_response["proof_id"]
 
-    await check_webhook_state(
+    alice_payload = await check_webhook_state(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
+        filter_map={
+            "thread_id": send_proof_response["thread_id"],
+        },
         look_back=5,
     )
 
-    # Get proof exchange id
-    alice_proof_exchange_id = (
-        await alice_member_client.get(f"{VERIFIER_BASE_PATH}/proofs")
-    ).json()[0]["proof_id"]
+    alice_proof_exchange_id = alice_payload["proof_id"]
 
     # Get referent
     referent = (

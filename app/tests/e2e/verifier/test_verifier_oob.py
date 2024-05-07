@@ -5,6 +5,7 @@ from aries_cloudcontroller import (
     IndyRequestedCredsRequestedAttr,
 )
 
+from app.routes.connections import router as connections_router
 from app.routes.oob import AcceptOobInvitation, CreateOobInvitation
 from app.routes.oob import router as oob_router
 from app.routes.verifier import AcceptProofRequest, CreateProofRequest
@@ -19,6 +20,7 @@ from shared.models.credential_exchange import CredentialExchange
 
 OOB_BASE_PATH = oob_router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
+CONNECTIONS_BASE_PATH = connections_router.prefix
 
 
 @pytest.mark.anyio
@@ -225,3 +227,9 @@ async def test_accept_proof_request_verifier_oob_connection(
         },
     )
     assert event["verified"]
+
+    # Clean up temp connection records
+    await alice_member_client.delete(
+        f"{CONNECTIONS_BASE_PATH}/{holder_verifier_connection_id}"
+    )
+    await acme_client.delete(f"{CONNECTIONS_BASE_PATH}/{verifier_holder_connection_id}")

@@ -25,7 +25,6 @@ from app.models.tenants import (
     Tenant,
     TenantAuth,
     UpdateTenantRequest,
-    UpdateWalletRequestWithGroupId,
 )
 from app.models.trust_registry import Actor
 from app.services.onboarding.tenants import handle_tenant_update, onboard_tenant

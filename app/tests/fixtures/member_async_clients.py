@@ -37,7 +37,9 @@ async def tenant_admin_client() -> AsyncGenerator[RichAsyncClient, Any]:
 async def alice_member_client(
     alice_tenant: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
-    async with get_tenant_client(token=alice_tenant.access_token) as alice_async_client:
+    async with get_tenant_client(
+        token=alice_tenant.access_token, name="Alice"
+    ) as alice_async_client:
         yield alice_async_client
 
 
@@ -45,7 +47,9 @@ async def alice_member_client(
 async def bob_member_client(
     bob_tenant: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
-    async with get_tenant_client(token=bob_tenant.access_token) as bob_async_client:
+    async with get_tenant_client(
+        token=bob_tenant.access_token, name="Bob"
+    ) as bob_async_client:
         yield bob_async_client
 
 
@@ -53,7 +57,9 @@ async def bob_member_client(
 async def faber_client(
     faber_issuer: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
-    async with get_tenant_client(token=faber_issuer.access_token) as faber_async_client:
+    async with get_tenant_client(
+        token=faber_issuer.access_token, name="Faber"
+    ) as faber_async_client:
         yield faber_async_client
 
 
@@ -61,7 +67,9 @@ async def faber_client(
 async def acme_client(
     acme_verifier: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
-    async with get_tenant_client(token=acme_verifier.access_token) as acme_async_client:
+    async with get_tenant_client(
+        token=acme_verifier.access_token, name="Acme"
+    ) as acme_async_client:
         yield acme_async_client
 
 
@@ -70,7 +78,7 @@ async def meld_co_client(
     meld_co_issuer_verifier: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
     async with get_tenant_client(
-        token=meld_co_issuer_verifier.access_token
+        token=meld_co_issuer_verifier.access_token, name="MeldCo"
     ) as meld_co_async_client:
         yield meld_co_async_client
 

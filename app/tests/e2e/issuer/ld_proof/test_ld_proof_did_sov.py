@@ -14,7 +14,7 @@ from app.models.issuer import SendCredential
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.routes.wallet.dids import router as wallet_router
-from app.tests.util.ecosystem_connections import FaberAliceConnect
+from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 
@@ -100,6 +100,7 @@ async def test_send_jsonld_credential_sov(
     )
 
     data = response.json()
+    thread_id = data["thread_id"]
     assert_that(data).contains("credential_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
@@ -109,7 +110,7 @@ async def test_send_jsonld_credential_sov(
         topic="credentials",
         state="offer-received",
         filter_map={
-            "connection_id": alice_connection_id,
+            "thread_id": thread_id,
         },
     )
 
@@ -117,7 +118,7 @@ async def test_send_jsonld_credential_sov(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     records = response.json()
@@ -139,17 +140,7 @@ async def test_send_jsonld_oob_sov(
     faber_and_alice_connection: FaberAliceConnect,
     alice_member_client: RichAsyncClient,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
-
-    response = await alice_member_client.get(
-        CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
-    )
-    records = response.json()
-
-    # nothing currently in alice's records
-    assert len(records) == 0
 
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
 
@@ -208,7 +199,6 @@ async def test_send_jsonld_request_sov(
     faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -224,6 +214,7 @@ async def test_send_jsonld_request_sov(
         json=credential,
     )
     credential_exchange = response.json()
+    thread_id = credential_exchange["thread_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
@@ -231,7 +222,7 @@ async def test_send_jsonld_request_sov(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": credential_exchange["credential_id"],
+            "thread_id": thread_id,
         },
     )
 
@@ -244,7 +235,7 @@ async def test_send_jsonld_request_sov(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]
@@ -277,7 +268,6 @@ async def test_issue_jsonld_sov(
     faber_acapy_client: AcaPyClient,
     faber_and_alice_connection: FaberAliceConnect,
 ):
-    alice_connection_id = faber_and_alice_connection.alice_connection_id
     faber_connection_id = faber_and_alice_connection.faber_connection_id
 
     faber_pub_did = (await faber_acapy_client.wallet.get_public_did()).result.did
@@ -293,6 +283,7 @@ async def test_issue_jsonld_sov(
         json=credential,
     )
     credential_exchange = response.json()
+    thread_id = credential_exchange["thread_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
     assert await check_webhook_state(
@@ -300,7 +291,7 @@ async def test_issue_jsonld_sov(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": credential_exchange["credential_id"],
+            "thread_id": thread_id,
         },
     )
 
@@ -313,7 +304,7 @@ async def test_issue_jsonld_sov(
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
         CREDENTIALS_BASE_PATH,
-        params={"connection_id": alice_connection_id},
+        params={"thread_id": thread_id},
     )
 
     credential_id = (response.json())[0]["credential_id"]

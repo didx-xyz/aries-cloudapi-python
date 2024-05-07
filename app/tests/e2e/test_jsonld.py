@@ -89,7 +89,8 @@ async def test_sign_jsonld(
     jsonld_sign_response = await faber_client.post(
         JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )
-    assert_that(jsonld_sign_response.status_code).is_equal_to(200)
+    assert jsonld_sign_response.status_code == 200
+
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
     assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
@@ -104,7 +105,7 @@ async def test_sign_jsonld(
         JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )
 
-    assert_that(jsonld_sign_response.status_code).is_equal_to(200)
+    assert jsonld_sign_response.status_code == 200
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
     assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
@@ -117,7 +118,7 @@ async def test_sign_jsonld(
         JSONLD_BASE_PATH + "/sign", json=json_ld_req.model_dump()
     )
 
-    assert_that(jsonld_sign_response.status_code).is_equal_to(200)
+    assert jsonld_sign_response.status_code == 200
     jsonld_sign_response = jsonld_sign_response.json()
     assert jsonld_sign_response["signed_doc"]
     assert all(item in jsonld_sign_response["signed_doc"] for item in jsonld_credential)
@@ -143,7 +144,7 @@ async def test_verify_jsonld(
     assert_that(exc.value.detail).contains(
         "Please provide either, but not both, public did of the verkey or the verkey for the document"
     )
-    assert_that(exc.value.status_code).is_equal_to(400)
+    assert exc.value.status_code == 400
 
     # # Error invalid
     jsonld_verify.verkey = None
@@ -155,7 +156,7 @@ async def test_verify_jsonld(
             JSONLD_BASE_PATH + "/verify", json=jsonld_verify.model_dump()
         )
 
-    assert_that(exc.value.status_code).is_equal_to(422)
+    assert exc.value.status_code == 422
     assert_that(exc.value.detail).contains("Failed to verify payload")
 
     # Success
@@ -165,4 +166,4 @@ async def test_verify_jsonld(
     response = await alice_member_client.post(
         JSONLD_BASE_PATH + "/verify", json=jsonld_verify.model_dump()
     )
-    assert_that(response.status_code).is_equal_to(204)
+    assert response.status_code == 204

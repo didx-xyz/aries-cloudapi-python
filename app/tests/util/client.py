@@ -53,9 +53,13 @@ def get_tenant_admin_acapy_client() -> AcaPyClient:
 
 
 # Tenant Clients
-def get_tenant_client(*, token: str, app: Optional[Any] = None) -> RichAsyncClient:
+def get_tenant_client(
+    *, token: str, app: Optional[Any] = None, name: str = ""
+) -> RichAsyncClient:
     settings = get_common_settings(token, app)
-    return RichAsyncClient(base_url=TENANT_FASTAPI_ENDPOINT, name="Tenant", **settings)
+    return RichAsyncClient(
+        base_url=TENANT_FASTAPI_ENDPOINT, name=f"Tenant {name}", **settings
+    )
 
 
 def get_tenant_acapy_client(*, token: str) -> AcaPyClient:

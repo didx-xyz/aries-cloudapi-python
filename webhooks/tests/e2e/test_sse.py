@@ -4,9 +4,12 @@ import logging
 import pytest
 from httpx import ReadTimeout, Response, Timeout
 
-from app.tests.util.ecosystem_connections import BobAliceConnect
+from app.routes.connections import router as connections_router
+from app.tests.util.connections import BobAliceConnect, create_bob_alice_connection
 from app.tests.util.webhooks import get_wallet_id_from_async_client
 from shared import WEBHOOKS_URL, RichAsyncClient
+
+CONNECTIONS_BASE_PATH = connections_router.prefix
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +17,12 @@ logger = logging.getLogger(__name__)
 @pytest.mark.anyio
 async def test_sse_subscribe_wallet_topic(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_member_client: RichAsyncClient,
 ):
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias="temp test connection"
+    )
+
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
@@ -34,12 +41,20 @@ async def test_sse_subscribe_wallet_topic(
         for line in json_lines
     )
 
+    await delete_connections(
+        alice_member_client, bob_member_client, bob_and_alice_connection
+    )
+
 
 @pytest.mark.anyio
 async def test_sse_subscribe_event_state(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_member_client: RichAsyncClient,
 ):
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias="temp test connection"
+    )
+
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
@@ -57,12 +72,20 @@ async def test_sse_subscribe_event_state(
         and sse_response["payload"]["connection_id"] == alice_connection_id
     )
 
+    await delete_connections(
+        alice_member_client, bob_member_client, bob_and_alice_connection
+    )
+
 
 @pytest.mark.anyio
 async def test_sse_subscribe_filtered_stream(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_member_client: RichAsyncClient,
 ):
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias="temp test connection"
+    )
+
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
@@ -83,12 +106,20 @@ async def test_sse_subscribe_filtered_stream(
         for line in json_lines
     )
 
+    await delete_connections(
+        alice_member_client, bob_member_client, bob_and_alice_connection
+    )
+
 
 @pytest.mark.anyio
 async def test_sse_subscribe_event(
     alice_member_client: RichAsyncClient,
-    bob_and_alice_connection: BobAliceConnect,
+    bob_member_client: RichAsyncClient,
 ):
+    bob_and_alice_connection = await create_bob_alice_connection(
+        alice_member_client, bob_member_client, alias="temp test connection"
+    )
+
     alice_wallet_id = get_wallet_id_from_async_client(alice_member_client)
     alice_connection_id = bob_and_alice_connection.alice_connection_id
 
@@ -105,6 +136,10 @@ async def test_sse_subscribe_event(
         and sse_response["wallet_id"] == alice_wallet_id
         and sse_response["payload"][field] == alice_connection_id
         and sse_response["payload"]["state"] == state
+    )
+
+    await delete_connections(
+        alice_member_client, bob_member_client, bob_and_alice_connection
     )
 
 
@@ -141,3 +176,16 @@ async def listen_for_event(url, duration=10):
                 if line.startswith("data: "):
                     data = line[6:]
                     return json.loads(data)
+
+
+async def delete_connections(
+    alice_member_client: RichAsyncClient,
+    bob_member_client: RichAsyncClient,
+    bob_and_alice_connection: BobAliceConnect,
+):
+    await alice_member_client.delete(
+        f"{CONNECTIONS_BASE_PATH}/{bob_and_alice_connection.alice_connection_id}"
+    )
+    await bob_member_client.delete(
+        f"{CONNECTIONS_BASE_PATH}/{bob_and_alice_connection.bob_connection_id}"
+    )

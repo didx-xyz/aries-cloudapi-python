@@ -28,6 +28,30 @@ async def create_invitation(
 ) -> InvitationResult:
     """
     Create connection invitation.
+    -----------------------------
+    This endpoint creates a new connection invitation.
+    The other party can use this invitation to establish a connection.
+
+    The multi_use parameter determines whether the invitation can be used multiple times.
+    If multi_use is set to true, the invitation can be used multiple times, but the connection id
+    will be different for each connection created using the invitation.
+
+    The use_public_did parameter determines whether to use a public did for the invitation.
+    If use_public_did is set to true, the tenant, that is creating the connection, needs a public did to create the invitation.
+
+    Parameters:
+    ------------
+        alias: Optional[str]
+            Alias for the connection invitation.
+        multi_use: bool
+            Whether the invitation can be used multiple times.
+        use_public_did: bool
+            Whether to use a public did for the invitation.
+
+    Returns:
+    ---------
+        InvitationResult
+            The invitation object.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create invitation")
@@ -55,11 +79,22 @@ async def accept_invitation(
 ) -> Connection:
     """
     Accept connection invitation.
+    -----------------------------
+    Tenants can use this endpoint to accept a connection invitation.
+    The invitation object is obtained from the create_invitation endpoint.
+
+    The invitation_url object in the invitation object can also be used to accept the invitation.
+    The base64 encoded string just needs to be decoded into the invitation object.
 
     Parameters:
     ------------
-    invitation: AcceptInvitation
-        the invitation object obtained from create_invitation.
+        invitation: AcceptInvitation
+            the invitation object obtained from create_invitation.
+    
+    Returns:
+    ---------
+        Connection
+            The connection record.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept invitation")
@@ -90,7 +125,10 @@ async def get_connections(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[Connection]:
     """
-    Retrieve list of connections.
+    Retrieve list of connections records.
+    --------------------------------------
+    This endpoint retrieves a list of connection records.
+    The connection records can be filtered by the parameters provided.
 
     Parameters:
     -----------
@@ -108,7 +146,7 @@ async def get_connections(
     Returns:
     ---------
         List[Connection]
-            A list of connection objects.
+            A list of connection records.
     """
     logger.info("GET request received: Get connections")
 
@@ -144,16 +182,18 @@ async def get_connection_by_id(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
-    Retrieve connection by id.
+    Retrieve connection record by id.
+    ----------------------------------
+    This endpoint retrieves a connection record by id.
 
     Parameters:
     -----------
-    connection_id: str
+        connection_id: str
 
     Returns:
     ---------
-    Connection.
-        A connection object.
+        Connection.
+            A connection object.
 
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
@@ -179,11 +219,13 @@ async def delete_connection_by_id(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
-    Delete connection by id.
+    Delete connection record by id.
+    -------------------------------
+    This endpoint deletes a connection record by id.
 
     Parameters:
     -----------
-    connection_id: str
+        connection_id: str
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("DELETE request received: Delete connection by ID")

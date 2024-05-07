@@ -81,8 +81,6 @@ async def test_accept_proof_request(
     request_body = {
         "connection_id": acme_and_alice_connection.acme_connection_id,
         "protocol_version": protocol_version,
-        # Note: v2 doesn't support proof request without restrictions
-        # see: https://github.com/hyperledger/aries-cloudagent-python/issues/1755
         "indy_proof_request": {
             "name": "Proof Request",
             "version": "1.0.0",

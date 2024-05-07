@@ -37,7 +37,8 @@ async def create_invitation(
     will be different for each connection created using the invitation.
 
     The use_public_did parameter determines whether to use a public did for the invitation.
-    If use_public_did is set to true, the tenant, that is creating the connection, needs a public did to create the invitation.
+    If use_public_did is set to true, the tenant, that is creating the connection,
+    needs a public did to create the invitation.
 
     Parameters:
     ------------

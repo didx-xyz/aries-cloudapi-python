@@ -90,7 +90,7 @@ async def accept_invitation(
     ------------
         invitation: AcceptInvitation
             the invitation object obtained from create_invitation.
-    
+
     Returns:
     ---------
         Connection

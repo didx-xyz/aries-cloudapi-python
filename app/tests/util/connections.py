@@ -133,7 +133,7 @@ async def fetch_existing_connection_by_alias(
     num_connections = len(list_connections)
     assert (
         num_connections < 2
-    ), f"{member_client._name} should have 1 or 0 connections, got: {num_connections}"
+    ), f"{member_client.name} should have 1 or 0 connections, got: {num_connections}"
 
     if list_connections:
         return Connection.model_validate(list_connections[0])

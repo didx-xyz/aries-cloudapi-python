@@ -21,7 +21,7 @@ class RichAsyncClient(AsyncClient):
         **kwargs,
     ) -> None:
         super().__init__(verify=verify, *args, **kwargs)
-        self._name = (
+        self.name = (
             name + " - HTTP" if name else "HTTP"
         )  # prepend to exception messages to add context
         self.raise_status_error = raise_status_error
@@ -34,7 +34,7 @@ class RichAsyncClient(AsyncClient):
         except HTTPStatusError as e:
             code = e.response.status_code
             message = e.response.text
-            log_message = f"{self._name} POST `{url}` failed. Status code: {code}. Response: `{message}`."
+            log_message = f"{self.name} POST `{url}` failed. Status code: {code}. Response: `{message}`."
             logger.error(log_message)
 
             raise HTTPException(status_code=code, detail=message) from e
@@ -48,7 +48,7 @@ class RichAsyncClient(AsyncClient):
         except HTTPStatusError as e:
             code = e.response.status_code
             message = e.response.text
-            log_message = f"{self._name} GET `{url}` failed. Status code: {code}. Response: `{message}`."
+            log_message = f"{self.name} GET `{url}` failed. Status code: {code}. Response: `{message}`."
             logger.error(log_message)
 
             raise HTTPException(status_code=code, detail=message) from e
@@ -62,7 +62,7 @@ class RichAsyncClient(AsyncClient):
         except HTTPStatusError as e:
             code = e.response.status_code
             message = e.response.text
-            log_message = f"{self._name} DELETE `{url}` failed. Status code: {code}. Response: `{message}`."
+            log_message = f"{self.name} DELETE `{url}` failed. Status code: {code}. Response: `{message}`."
             logger.error(log_message)
 
             raise HTTPException(status_code=code, detail=message) from e
@@ -76,7 +76,7 @@ class RichAsyncClient(AsyncClient):
         except HTTPStatusError as e:
             code = e.response.status_code
             message = e.response.text
-            log_message = f"{self._name} PUT `{url}` failed. Status code: {code}. Response: `{message}`."
+            log_message = f"{self.name} PUT `{url}` failed. Status code: {code}. Response: `{message}`."
             logger.error(log_message)
 
             raise HTTPException(status_code=code, detail=message) from e

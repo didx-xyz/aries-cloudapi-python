@@ -6,6 +6,7 @@ import pytest
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
 from app.tests.util.connections import AcmeAliceConnect
+from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
@@ -17,6 +18,10 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Proving revoked credentials is currently non-deterministic",
+)
 async def test_proof_revoked_credential(
     issue_alice_creds_and_revoke_published: List[  # pylint: disable=unused-argument
         CredentialExchange

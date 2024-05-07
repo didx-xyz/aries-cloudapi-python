@@ -5,6 +5,7 @@ from fastapi import HTTPException
 
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
+from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
@@ -13,6 +14,10 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Clear pending revocations does not work with regression fixtures",
+)
 async def test_clear_pending_revokes(
     faber_client: RichAsyncClient,
     issue_alice_creds_and_revoke_unpublished: List[CredentialExchange],

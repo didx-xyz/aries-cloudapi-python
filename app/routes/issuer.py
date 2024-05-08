@@ -526,6 +526,84 @@ async def revoke_credential(
     bound_logger.info("Successfully revoked credential.")
 
 
+@router.get(
+    "/revocation/record",
+    summary="Fetch a Revocation Record",
+    response_model=IssuerCredRevRecord,
+)
+async def get_credential_revocation_record(
+    credential_exchange_id: Optional[str] = None,
+    credential_revocation_id: Optional[str] = None,
+    revocation_registry_id: Optional[str] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> IssuerCredRevRecord:
+    """
+    Get a credential revocation record.
+    -----------------------------------
+    Fetch a credential revocation record by providing the credential exchange id.
+    If the credential exchange id is not provided, the credential revocation id and
+    revocation registry id must be provided.
+
+    The record is the payload of the event 'issuer_cred_rev' and contains information about the
+    credential's revocation status.
+
+    The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
+    in this record if you have the credential exchange id.
+
+    Parameters:
+    -----------
+        credential_exchange_id: str
+            The credential exchange id
+        credential_revocation_id: str
+            The credential revocation id
+        revocation_registry_id: str
+            The revocation registry id
+
+    Returns:
+    --------
+        payload: IssuerCredRevRecord
+            The credential revocation record
+
+    Raises:
+    -------
+        CloudApiException: 400
+            If credential_exchange_id is not provided BOTH the credential_revocation_id
+            and revocation_registry_id MUST be provided.
+    """
+    bound_logger = logger.bind(
+        body={
+            "credential_exchange_id": credential_exchange_id,
+            "credential_revocation_id": credential_revocation_id,
+            "revocation_registry_id": revocation_registry_id,
+        }
+    )
+    bound_logger.info("GET request received: Get credential revocation record by id")
+
+    if credential_exchange_id is None and (
+        credential_revocation_id is None or revocation_registry_id is None
+    ):
+        raise CloudApiException(
+            "If credential_exchange_id is not provided BOTH the credential_revocation_id and \
+                  revocation_registry_id MUST be provided.",
+            400,
+        )
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Getting credential revocation record")
+        revocation_record = await revocation_registry.get_credential_revocation_record(
+            controller=aries_controller,
+            credential_exchange_id=credential_exchange_id,
+            credential_revocation_id=credential_revocation_id,
+            revocation_registry_id=revocation_registry_id,
+        )
+
+    if revocation_record:
+        bound_logger.info("Successfully fetched credential revocation record.")
+    else:
+        bound_logger.info("No credential revocation record returned.")
+    return revocation_record
+
+
 @router.post(
     "/publish-revocations", summary="Publish Pending Revocations", status_code=204
 )
@@ -626,81 +704,3 @@ async def clear_pending_revocations(
 
     bound_logger.info("Successfully cleared pending revocations.")
     return response
-
-
-@router.get(
-    "/revocation/record",
-    summary="Fetch a Revocation Record",
-    response_model=IssuerCredRevRecord,
-)
-async def get_credential_revocation_record(
-    credential_exchange_id: Optional[str] = None,
-    credential_revocation_id: Optional[str] = None,
-    revocation_registry_id: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> IssuerCredRevRecord:
-    """
-    Get a credential revocation record.
-    -----------------------------------
-    Fetch a credential revocation record by providing the credential exchange id.
-    If the credential exchange id is not provided, the credential revocation id and
-    revocation registry id must be provided.
-
-    The record is the payload of the event 'issuer_cred_rev' and contains information about the
-    credential's revocation status.
-
-    The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
-    in this record if you have the credential exchange id.
-
-    Parameters:
-    -----------
-        credential_exchange_id: str
-            The credential exchange id
-        credential_revocation_id: str
-            The credential revocation id
-        revocation_registry_id: str
-            The revocation registry id
-
-    Returns:
-    --------
-        payload: IssuerCredRevRecord
-            The credential revocation record
-
-    Raises:
-    -------
-        CloudApiException: 400
-            If credential_exchange_id is not provided BOTH the credential_revocation_id
-            and revocation_registry_id MUST be provided.
-    """
-    bound_logger = logger.bind(
-        body={
-            "credential_exchange_id": credential_exchange_id,
-            "credential_revocation_id": credential_revocation_id,
-            "revocation_registry_id": revocation_registry_id,
-        }
-    )
-    bound_logger.info("GET request received: Get credential revocation record by id")
-
-    if credential_exchange_id is None and (
-        credential_revocation_id is None or revocation_registry_id is None
-    ):
-        raise CloudApiException(
-            "If credential_exchange_id is not provided BOTH the credential_revocation_id and \
-                  revocation_registry_id MUST be provided.",
-            400,
-        )
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Getting credential revocation record")
-        revocation_record = await revocation_registry.get_credential_revocation_record(
-            controller=aries_controller,
-            credential_exchange_id=credential_exchange_id,
-            credential_revocation_id=credential_revocation_id,
-            revocation_registry_id=revocation_registry_id,
-        )
-
-    if revocation_record:
-        bound_logger.info("Successfully fetched credential revocation record.")
-    else:
-        bound_logger.info("No credential revocation record returned.")
-    return revocation_record

@@ -2210,7 +2210,7 @@
             "additionalProperties": { "items": { "type": "string" }, "type": "array" },
             "type": "object",
             "title": "Revocation Registry Credential Map",
-            "description": "A map of revocation registry IDs to lists of credential revocation IDs for which pending revocationsshould be cleared. Providing an empty list for a registry ID clears all pending revocations for that ID. An empty dictionary signifies that the action should be applied to clear all pending revocations across all registry IDs.",
+            "description": "A map of revocation registry IDs to lists of credential revocation IDs for which pending revocations should be cleared. Providing an empty list for a registry ID clears all pending revocations for that ID. An empty dictionary signifies that the action should be applied to clear all pending revocations across all registry IDs.",
             "default": {}
           }
         },
@@ -4103,7 +4103,7 @@
             "additionalProperties": { "items": { "type": "string" }, "type": "array" },
             "type": "object",
             "title": "Revocation Registry Credential Map",
-            "description": "A map of revocation registry IDs to lists of credential revocation IDs that should be published.Providing an empty list for a registry ID publishes all pending revocations for that ID. An empty dictionary signifies that the action should be applied to all pending revocations across all registry IDs.",
+            "description": "A map of revocation registry IDs to lists of credential revocation IDs that should be published. Providing an empty list for a registry ID publishes all pending revocations for that ID. An empty dictionary signifies that the action should be applied to all pending revocations across all registry IDs.",
             "default": {}
           }
         },
@@ -4173,7 +4173,18 @@
       "RejectProofRequest": {
         "properties": {
           "proof_id": { "type": "string", "title": "Proof Id" },
-          "problem_report": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Problem Report" }
+          "problem_report": {
+            "type": "string",
+            "title": "Problem Report",
+            "description": "Message to send with the rejection",
+            "default": "Rejected"
+          },
+          "delete_proof_record": {
+            "type": "boolean",
+            "title": "Delete Proof Record",
+            "description": "(True) delete the proof exchange record after rejecting, or (default, False) preserve the record after rejecting",
+            "default": false
+          }
         },
         "type": "object",
         "required": ["proof_id"],

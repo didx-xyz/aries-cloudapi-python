@@ -59,7 +59,12 @@ async def get_credential_definitions(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialDefinition]:
     """
-        Get agent-created credential definitions
+    Get credential definitions created by the tenant.
+    ------------------------------------------------
+    This endpoint returns all credential definitions created by the tenant.
+    Remember only issuers can create credential definitions.
+
+    The results can be filtered by the parameters listed below.
 
     Parameters:
     ---
@@ -145,7 +150,9 @@ async def get_credential_definition_by_id(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialDefinition:
     """
-        Get credential definition by id.
+    Get credential definition by id.
+    ---------------------------------
+    This endpoint returns a credential definition by id.
 
     Parameters:
     -----------
@@ -198,7 +205,9 @@ async def create_credential_definition(
 ) -> CredentialDefinition:
     """
     Create a credential definition.
-
+    -------------------------------
+    Only issuers can create credential definitions.
+    
     If revocation is supported ("support_revocation": true), revocation registries will be created.
 
     **NB**: The creation of these revocation registries can take up to one minute.
@@ -208,8 +217,17 @@ async def create_credential_definition(
 
     Parameters:
     -----------
-        credential_definition: CreateCredentialDefinition
+        body: CreateCredentialDefinition
             Payload for creating a credential definition.
+
+            tag: str
+                The tag of the credential definition.
+            schema_id: str
+                The schema id of schema used to create credential definition against.
+            support_revocation: bool
+                Whether the credential definition should support revocation.
+            revocation_registry_size: int
+                The maximum number of revocations to be stored by the registry.
 
     Returns:
     --------
@@ -375,7 +393,11 @@ async def get_schemas(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialSchema]:
     """
-        Retrieve schemas that the current agent created.
+    Get schemas created by the tenant.
+    -----------------------------------
+    Remember only tenants with the governance role can create schemas.
+
+    Results can be filtered by the parameters listed below.
 
     Parameters:
     -----------
@@ -386,7 +408,7 @@ async def get_schemas(
 
     Returns:
     --------
-        son response with created schemas from ledger.
+        Credential Schemas: list
     """
     bound_logger = logger.bind(
         body={
@@ -451,12 +473,21 @@ async def get_schema(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialSchema:
     """
-        Retrieve schema by id.
+    Retrieve schema by id.
+    ----------------------
+    This endpoint returns a schema by id.
+
+    Any tenant can call this endpoint to retrieve a schema.
 
     Parameters:
     -----------
         schema_id: str
             schema id
+
+    Returns:
+    --------
+        Credential Schema
+
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("GET request received: Get schema by id")
@@ -484,16 +515,24 @@ async def create_schema(
     governance_auth: AcaPyAuthVerified = Depends(acapy_auth_governance),
 ) -> CredentialSchema:
     """
-        Create a new schema.
+    Create a new schema.
+    --------------------
+    This endpoint creates a new schema.
+    Only tenants with the governance role can create schemas.
 
     Parameters:
     ------------
-        schema: CreateSchema
-            Payload for creating a schema.
+        body: CreateSchema
+            name: str
+                The name of the schema.
+            version: str
+                The version of the schema.
+            attribute_names: List[str]
+                The attribute names of the schema.
 
     Returns:
     --------
-        The response object from creating a schema.
+        Credential Schema
     """
     bound_logger = logger.bind(body=schema)
     bound_logger.info("POST request received: Create schema (publish and register)")

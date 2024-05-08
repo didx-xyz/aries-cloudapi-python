@@ -39,7 +39,11 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 
 
-@router.get("", response_model=List[CredentialExchange])
+@router.get(
+    "",
+    summary="Fetch Credential Exchange Records",
+    response_model=List[CredentialExchange],
+)
 async def get_credentials(
     connection_id: Optional[str] = Query(None),
     role: Optional[Role] = Query(None),
@@ -110,7 +114,11 @@ async def get_credentials(
     return result
 
 
-@router.get("/{credential_id}", response_model=CredentialExchange)
+@router.get(
+    "/{credential_id}",
+    summary="Fetch a single Credential Exchange Record",
+    response_model=CredentialExchange,
+)
 async def get_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -156,7 +164,7 @@ async def get_credential(
     return result
 
 
-@router.post("", response_model=CredentialExchange)
+@router.post("", summary="Submit a Credential Offer", response_model=CredentialExchange)
 async def send_credential(
     credential: SendCredential,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -247,7 +255,11 @@ async def send_credential(
     return result
 
 
-@router.post("/create-offer", response_model=CredentialExchange)
+@router.post(
+    "/create-offer",
+    summary="Create a Credential Offer (not bound to a connection)",
+    response_model=CredentialExchange,
+)
 async def create_offer(
     credential: CreateOffer,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -326,7 +338,9 @@ async def create_offer(
     return result
 
 
-@router.delete("/{credential_exchange_id}", status_code=204)
+@router.delete(
+    "/{credential_exchange_id}", summary="Delete an Exchange Record", status_code=204
+)
 async def remove_credential_exchange_record(
     credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -362,7 +376,7 @@ async def remove_credential_exchange_record(
     bound_logger.info("Successfully deleted credential exchange record.")
 
 
-@router.post("/revoke", status_code=204)
+@router.post("/revoke", summary="Revoke a Credential (if revocable)", status_code=204)
 async def revoke_credential(
     body: RevokeCredential,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -404,7 +418,9 @@ async def revoke_credential(
     bound_logger.info("Successfully revoked credential.")
 
 
-@router.post("/publish-revocations", status_code=204)
+@router.post(
+    "/publish-revocations", summary="Publish Pending Revocations", status_code=204
+)
 async def publish_revocations(
     publish_request: PublishRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -452,7 +468,11 @@ async def publish_revocations(
     bound_logger.info("Successfully published revocations.")
 
 
-@router.post("/clear-pending-revocations", response_model=ClearPendingRevocationsResult)
+@router.post(
+    "/clear-pending-revocations",
+    summary="Clear Pending Revocations",
+    response_model=ClearPendingRevocationsResult,
+)
 async def clear_pending_revocations(
     clear_pending_request: ClearPendingRevocationsRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -500,7 +520,11 @@ async def clear_pending_revocations(
     return response
 
 
-@router.get("/revocation/record", response_model=IssuerCredRevRecord)
+@router.get(
+    "/revocation/record",
+    summary="Fetch a Revocation Record",
+    response_model=IssuerCredRevRecord,
+)
 async def get_credential_revocation_record(
     credential_exchange_id: Optional[str] = None,
     credential_revocation_id: Optional[str] = None,
@@ -574,7 +598,11 @@ async def get_credential_revocation_record(
     return revocation_record
 
 
-@router.post("/{credential_id}/request", response_model=CredentialExchange)
+@router.post(
+    "/{credential_id}/request",
+    summary="Accept a Credential Offer",
+    response_model=CredentialExchange,
+)
 async def request_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -635,7 +663,11 @@ async def request_credential(
     return result
 
 
-@router.post("/{credential_id}/store", response_model=CredentialExchange)
+@router.post(
+    "/{credential_id}/store",
+    summary="Store a Received Credential In Wallet",
+    response_model=CredentialExchange,
+)
 async def store_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),

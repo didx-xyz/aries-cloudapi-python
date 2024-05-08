@@ -207,7 +207,7 @@ async def create_credential_definition(
     Create a credential definition.
     -------------------------------
     Only issuers can create credential definitions.
-    
+
     If revocation is supported ("support_revocation": true), revocation registries will be created.
 
     **NB**: The creation of these revocation registries can take up to one minute.

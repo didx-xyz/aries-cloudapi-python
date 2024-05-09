@@ -40,14 +40,15 @@ async def create_invitation(
     If use_public_did is set to true, the tenant, that is creating the connection,
     needs a public did to create the invitation.
 
-    Parameters:
+    Request Body:
     ------------
-        alias: Optional[str]
-            Alias for the connection invitation.
-        multi_use: bool
-            Whether the invitation can be used multiple times.
-        use_public_did: bool
-            Whether to use a public did for the invitation.
+        body: CreateInvitation
+            alias: Optional[str]
+                Alias for the connection invitation.
+            multi_use: bool
+                Whether the invitation can be used multiple times.
+            use_public_did: bool
+                Whether to use a public did for the invitation.
 
     Returns:
     ---------
@@ -87,10 +88,16 @@ async def accept_invitation(
     The invitation_url object in the invitation object can also be used to accept the invitation.
     The base64 encoded string just needs to be decoded into the invitation object.
 
-    Parameters:
+    Request Body:
     ------------
-        invitation: AcceptInvitation
+        body: AcceptInvitation
             the invitation object obtained from create_invitation.
+
+            alias: Optional[str]
+                Alias for the connection invitation.
+            invitation: [dict]
+                The invitation object obtained from create_invitation,
+                or the invitation_url (decoded) from create_invitation.
 
     Returns:
     ---------

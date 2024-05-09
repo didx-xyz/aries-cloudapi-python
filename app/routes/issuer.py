@@ -68,7 +68,7 @@ async def send_credential(
     Setting the 'save_exchange_record' field to True will save the exchange record after the flow completes.
     This is useful if you want to keep track of the credential exchange record after the fact.
 
-    Parameters:
+    Request Body:
     ------------
         credential: Credential
             payload for sending a credential
@@ -158,7 +158,7 @@ async def create_offer(
     Read more at:
         https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
 
-    Parameters:
+    Request Body:
     ------------
         credential: Credential
             payload for sending a credential
@@ -231,7 +231,7 @@ async def request_credential(
     A holder calls this endpoint with the credential exchange id from
     a credential exchange record, with a state 'offer-received'.
 
-    Parameters:
+    Request Body:
     -----------
         credential_exchange_id: str
             the credential id
@@ -501,7 +501,7 @@ async def revoke_credential(
     By batching the revocations, the issuer can save on transaction fees related to
     publishing revocations to the ledger.
 
-    Parameters:
+    Request Body:
     -----------
         credential_exchange_id: str
             The credential exchange id
@@ -627,7 +627,7 @@ async def publish_revocations(
     the revocation registry id (rev_reg_id).
 
 
-    Parameters:
+    Request Body:
     -----------
         publish_request: PublishRevocationsRequest
             An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map
@@ -678,7 +678,7 @@ async def clear_pending_revocations(
     the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
     the revocation registry id (rev_reg_id).
 
-    Parameters:
+    Request Body:
     -----------
         clear_pending_request: ClearPendingRevocationsRequest
             An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map

@@ -17,6 +17,7 @@ from app.tests.fixtures.credentials import (
     issue_alice_creds_and_revoke_unpublished,
     issue_credential_to_alice,
     meld_co_issue_credential_to_alice,
+    get_or_issue_regression_cred_revoked
 )
 from app.tests.fixtures.definitions import (
     credential_definition_id,

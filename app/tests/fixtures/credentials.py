@@ -1,6 +1,7 @@
 import asyncio
 from typing import List
 from urllib.parse import quote
+
 import pytest
 
 from app.routes.issuer import router
@@ -241,26 +242,28 @@ async def get_or_issue_regression_cred_revoked(
 ) -> str:
     wql = quote('{"attr::name::value":"Alice-revoked"}')
 
-    results = (
-        await alice_member_client.get(
-            f"{WALLET}?wql={wql}"
-        )
-    ).json()["results"] #[0]["referent"]
-    print ("results", results)
+    results = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
+        "results"
+    ]  # [0]["referent"]
+    print("results", results)
     if results != []:
         return results[0]["referent"]
-    
+
     else:
         faber_connection_id = faber_and_alice_connection.faber_connection_id
         credential = {
-                "protocol_version": "v2",
-                "connection_id": faber_connection_id,
-                "save_exchange_record": True,
-                "indy_credential_detail": {
-                    "credential_definition_id": credential_definition_id_revocable,
-                    "attributes": {"speed": "speed-revoked", "name": "Alice-revoked", "age": "44-revoked"},
+            "protocol_version": "v2",
+            "connection_id": faber_connection_id,
+            "save_exchange_record": True,
+            "indy_credential_detail": {
+                "credential_definition_id": credential_definition_id_revocable,
+                "attributes": {
+                    "speed": "speed-revoked",
+                    "name": "Alice-revoked",
+                    "age": "44-revoked",
                 },
-            }
+            },
+        }
 
         faber_send_response = await faber_client.post(
             CREDENTIALS_BASE_PATH,
@@ -307,10 +310,8 @@ async def get_or_issue_regression_cred_revoked(
         )
 
         await asyncio.sleep(1)
-        referent = (
-            await alice_member_client.get(
-                f"{WALLET}?wql={wql}"
-            )
-        ).json()["results"][0]["referent"]
+        referent = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
+            "results"
+        ][0]["referent"]
 
         return referent

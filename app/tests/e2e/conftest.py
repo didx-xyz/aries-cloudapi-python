@@ -13,11 +13,11 @@ from app.services.trust_registry.actors import (
     remove_actor_by_id,
 )
 from app.tests.fixtures.credentials import (
+    get_or_issue_regression_cred_revoked,
     issue_alice_creds_and_revoke_published,
     issue_alice_creds_and_revoke_unpublished,
     issue_credential_to_alice,
     meld_co_issue_credential_to_alice,
-    get_or_issue_regression_cred_revoked
 )
 from app.tests.fixtures.definitions import (
     credential_definition_id,

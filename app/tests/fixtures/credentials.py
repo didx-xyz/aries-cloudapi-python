@@ -1,16 +1,17 @@
 import asyncio
 from typing import List
-
+from urllib.parse import quote
 import pytest
 
 from app.routes.issuer import router
+from app.routes.wallet.credentials import router as wallets_router
 from app.tests.util.connections import FaberAliceConnect, MeldCoAliceConnect
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
 CREDENTIALS_BASE_PATH = router.prefix
-
+WALLET = wallets_router.prefix
 
 sample_credential_attributes = {"speed": "10", "name": "Alice", "age": "44"}
 
@@ -229,3 +230,87 @@ async def issue_alice_creds_and_revoke_published(
     )
 
     return credential_exchange_records
+
+
+@pytest.fixture(scope="function")
+async def get_or_issue_regression_cred_revoked(
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    credential_definition_id_revocable: str,
+    faber_and_alice_connection: FaberAliceConnect,
+) -> str:
+    wql = quote('{"attr::name::value":"Alice-revoked"}')
+
+    results = (
+        await alice_member_client.get(
+            f"{WALLET}?wql={wql}"
+        )
+    ).json()["results"] #[0]["referent"]
+    print ("results", results)
+    if results != []:
+        return results[0]["referent"]
+    
+    else:
+        faber_connection_id = faber_and_alice_connection.faber_connection_id
+        credential = {
+                "protocol_version": "v2",
+                "connection_id": faber_connection_id,
+                "save_exchange_record": True,
+                "indy_credential_detail": {
+                    "credential_definition_id": credential_definition_id_revocable,
+                    "attributes": {"speed": "speed-revoked", "name": "Alice-revoked", "age": "44-revoked"},
+                },
+            }
+
+        faber_send_response = await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+
+        faber_ex_id = faber_send_response.json()["credential_id"]
+
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "thread_id": faber_send_response.json()["thread_id"],
+            },
+        )
+
+        alice_get_response = await alice_member_client.get(
+            f"{CREDENTIALS_BASE_PATH}?state=offer-received&connection_id={faber_and_alice_connection.alice_connection_id}"
+        )
+        print("alice_get_response", alice_get_response.json())
+        alice_cred_ex_id = alice_get_response.json()[0]["credential_id"]
+
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request"
+        )
+
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="done",
+            filter_map={
+                "credential_id": alice_cred_ex_id,
+            },
+        )
+
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/revoke",
+            json={
+                "credential_exchange_id": faber_ex_id,
+                "credential_definition_id": credential_definition_id_revocable,
+                "auto_publish_on_ledger": True,
+            },
+        )
+
+        await asyncio.sleep(1)
+        referent = (
+            await alice_member_client.get(
+                f"{WALLET}?wql={wql}"
+            )
+        ).json()["results"][0]["referent"]
+
+        return referent

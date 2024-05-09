@@ -60,7 +60,7 @@ async def create_proof_request(
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
-    Parameters:
+    Request Body:
     -----------
         body: CreateProofRequest
             The proof request object
@@ -121,7 +121,7 @@ async def send_proof_request(
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
-    Parameters:
+    Request Body:
     -----------
         body: SendProofRequest
             The proof request object
@@ -168,7 +168,7 @@ async def accept_proof_request(
     ---------------------
     A tenant responds to a proof request with this endpoint.
 
-    Parameters:
+    Request Body:
     -----------
         body: AcceptProofRequest
             The proof request object
@@ -231,7 +231,7 @@ async def reject_proof_request(
     and the reason for the rejection.
     The problem report string will end up in the proof record as the error message.
 
-    Parameters:
+    Request Body:
     -----------
         body: RejectProofRequest
             The proof request object

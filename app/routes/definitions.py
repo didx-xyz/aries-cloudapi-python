@@ -215,11 +215,11 @@ async def create_credential_definition(
     It is recommended to use the max (default) revocation registry size of 32767,
     as this will allow for minimal ledger writes (lower cost).
 
-    Parameters:
+    Request Body:
     -----------
         body: CreateCredentialDefinition
             Payload for creating a credential definition.
-
+        {
             tag: str
                 The tag of the credential definition.
             schema_id: str
@@ -228,7 +228,7 @@ async def create_credential_definition(
                 Whether the credential definition should support revocation.
             revocation_registry_size: int
                 The maximum number of revocations to be stored by the registry.
-
+        }
     Returns:
     --------
         Credential Definition
@@ -395,7 +395,8 @@ async def get_schemas(
     """
     Get schemas created by the tenant.
     -----------------------------------
-    Remember only tenants with the governance role can create schemas.
+    Remember only tenants with the governance role can create schemas,
+    i.e. only tenants with the governance role will get a non-empty response.
 
     Results can be filtered by the parameters listed below.
 
@@ -467,7 +468,9 @@ async def get_schemas(
     return schemas
 
 
-@router.get("/schemas/{schema_id}", response_model=CredentialSchema)
+@router.get(
+    "/schemas/{schema_id}", response_model=CredentialSchema, summary="Get Schema By Id"
+)
 async def get_schema(
     schema_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -478,6 +481,7 @@ async def get_schema(
     This endpoint returns a schema by id.
 
     Any tenant can call this endpoint to retrieve a schema.
+    This endpoint will list all the attributes of the schema.
 
     Parameters:
     -----------
@@ -520,7 +524,7 @@ async def create_schema(
     This endpoint creates a new schema.
     Only tenants with the governance role can create schemas.
 
-    Parameters:
+    Request Body:
     ------------
         body: CreateSchema
             name: str

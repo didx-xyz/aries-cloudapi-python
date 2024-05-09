@@ -35,7 +35,7 @@ from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.12.0")
+PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.12.1")
 ROLE = os.getenv("ROLE", "*")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 

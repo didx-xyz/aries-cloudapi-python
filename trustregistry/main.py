@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
+from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
 from trustregistry import crud, db
 from trustregistry.database import engine
@@ -14,7 +15,6 @@ from trustregistry.registry import registry_actors, registry_schemas
 logger = get_logger(__name__)
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Trust Registry")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.12.1")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 
 

@@ -5,6 +5,7 @@ import pytest
 
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
+from app.tests.fixtures.credentials import ReferentCredDef
 from app.tests.util.connections import AcmeAliceConnect
 from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
@@ -130,14 +131,15 @@ async def test_proof_revoked_credential(
     reason="Run only in regression mode",
 )
 async def test_regression_proof_revoked_credential(
-    get_or_issue_regression_cred_revoked: str,
-    credential_definition_id_revocable: str,
+    get_or_issue_regression_cred_revoked: ReferentCredDef,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     unix_timestamp = int(time.time())
-    referent = get_or_issue_regression_cred_revoked
+    referent = get_or_issue_regression_cred_revoked["referent"]
+    credential_definition_id_revocable = get_or_issue_regression_cred_revoked["cred_def_revocable"]
+
     # Do proof request
     request_body = {
         "protocol_version": "v2",

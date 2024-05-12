@@ -17,6 +17,7 @@ WALLET = wallets_router.prefix
 
 sample_credential_attributes = {"speed": "10", "name": "Alice", "age": "44"}
 
+
 class ReferentCredDef(BaseModel):
     referent: str
     cred_def_revocable: str
@@ -237,7 +238,7 @@ async def issue_alice_creds_and_revoke_published(
 
     return credential_exchange_records
 
-    
+
 @pytest.fixture(scope="function")
 async def get_or_issue_regression_cred_revoked(
     faber_client: RichAsyncClient,
@@ -245,17 +246,15 @@ async def get_or_issue_regression_cred_revoked(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ) -> ReferentCredDef:
-    
+
     wql = quote('{"attr::name::value":"Alice-revoked"}')
 
-    results = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
-        "results"
-    ]  
+    results = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()["results"]
 
     if len(results) == 1 and results[0]["attributes"]["name"] == "Alice-revoked":
         return ReferentCredDef(
-            referent= results[0]["referent"],
-            cred_def_revocable= results[0]["cred_def_id"],
+            referent=results[0]["referent"],
+            cred_def_revocable=results[0]["cred_def_id"],
         )
 
     else:
@@ -315,12 +314,12 @@ async def get_or_issue_regression_cred_revoked(
         )
 
         await asyncio.sleep(1)
-        
+
         results = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
             "results"
         ]
 
         return ReferentCredDef(
-            referent= results[0]["referent"],
-            cred_def_revocable= results[0]["cred_def_id"],
+            referent=results[0]["referent"],
+            cred_def_revocable=results[0]["cred_def_id"],
         )

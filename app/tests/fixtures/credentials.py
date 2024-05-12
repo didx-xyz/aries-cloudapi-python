@@ -1,9 +1,9 @@
 import asyncio
 from typing import List
 from urllib.parse import quote
-from pydantic import BaseModel
 
 import pytest
+from pydantic import BaseModel
 
 from app.routes.issuer import router
 from app.routes.wallet.credentials import router as wallets_router

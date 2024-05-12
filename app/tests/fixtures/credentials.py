@@ -1,6 +1,7 @@
 import asyncio
 from typing import List
 from urllib.parse import quote
+from pydantic import BaseModel
 
 import pytest
 
@@ -15,6 +16,10 @@ CREDENTIALS_BASE_PATH = router.prefix
 WALLET = wallets_router.prefix
 
 sample_credential_attributes = {"speed": "10", "name": "Alice", "age": "44"}
+
+class ReferentCredDef(BaseModel):
+    referent: str
+    cred_def_revocable: str
 
 
 @pytest.fixture(scope="function")
@@ -232,22 +237,26 @@ async def issue_alice_creds_and_revoke_published(
 
     return credential_exchange_records
 
-
+    
 @pytest.fixture(scope="function")
 async def get_or_issue_regression_cred_revoked(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
-) -> str:
+) -> ReferentCredDef:
+    
     wql = quote('{"attr::name::value":"Alice-revoked"}')
 
     results = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
         "results"
-    ]  # [0]["referent"]
-    print("results", results)
-    if results != []:
-        return results[0]["referent"]
+    ]  
+
+    if len(results) == 1 and results[0]["attributes"]["name"] == "Alice-revoked":
+        return ReferentCredDef(
+            referent= results[0]["referent"],
+            cred_def_revocable= results[0]["cred_def_id"],
+        )
 
     else:
         faber_connection_id = faber_and_alice_connection.faber_connection_id
@@ -272,7 +281,7 @@ async def get_or_issue_regression_cred_revoked(
 
         faber_ex_id = faber_send_response.json()["credential_id"]
 
-        await check_webhook_state(
+        cred_ex = await check_webhook_state(
             client=alice_member_client,
             topic="credentials",
             state="offer-received",
@@ -281,14 +290,10 @@ async def get_or_issue_regression_cred_revoked(
             },
         )
 
-        alice_get_response = await alice_member_client.get(
-            f"{CREDENTIALS_BASE_PATH}?state=offer-received&connection_id={faber_and_alice_connection.alice_connection_id}"
-        )
-        print("alice_get_response", alice_get_response.json())
-        alice_cred_ex_id = alice_get_response.json()[0]["credential_id"]
+        alice_cred_ex_id = cred_ex["credential_id"]
 
         await alice_member_client.post(
-            f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request"
+            f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request", json={}
         )
 
         await check_webhook_state(
@@ -310,8 +315,12 @@ async def get_or_issue_regression_cred_revoked(
         )
 
         await asyncio.sleep(1)
-        referent = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
+        
+        results = (await alice_member_client.get(f"{WALLET}?wql={wql}")).json()[
             "results"
-        ][0]["referent"]
+        ]
 
-        return referent
+        return ReferentCredDef(
+            referent= results[0]["referent"],
+            cred_def_revocable= results[0]["cred_def_id"],
+        )

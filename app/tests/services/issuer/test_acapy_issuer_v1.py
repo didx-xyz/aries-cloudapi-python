@@ -61,7 +61,7 @@ async def test_get_records(mock_agent_controller: AcaPyClient):
     records = await IssuerV1.get_records(mock_agent_controller)
 
     assert len(records) == len(v1_credential_exchange_records)
-    assert_that(map(lambda c: c.credential_id, records)).contains(
+    assert_that(map(lambda c: c.credential_exchange_id, records)).contains(
         f"v1-{v1_credential_exchange_records[0].credential_exchange_id}",
         f"v1-{v1_credential_exchange_records[1].credential_exchange_id}",
     )
@@ -87,7 +87,7 @@ async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient)
     )
 
     assert len(records) == 1
-    assert_that(map(lambda c: c.credential_id, records)).contains(
+    assert_that(map(lambda c: c.credential_exchange_id, records)).contains(
         f"v1-{record.credential_exchange_id}",
     )
 
@@ -182,7 +182,10 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
         mock_agent_controller, credential_exchange_id=v1_record.credential_exchange_id
     )
 
-    assert credential_exchange.credential_id == f"v1-{v1_record.credential_exchange_id}"
+    assert (
+        credential_exchange.credential_exchange_id
+        == f"v1-{v1_record.credential_exchange_id}"
+    )
 
 
 @pytest.mark.anyio
@@ -197,4 +200,7 @@ async def test_request_credential(mock_agent_controller: AcaPyClient):
         mock_agent_controller, credential_exchange_id=v1_record.credential_exchange_id
     )
 
-    assert credential_exchange.credential_id == f"v1-{v1_record.credential_exchange_id}"
+    assert (
+        credential_exchange.credential_exchange_id
+        == f"v1-{v1_record.credential_exchange_id}"
+    )

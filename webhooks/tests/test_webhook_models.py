@@ -344,7 +344,7 @@ def test_credential_model():
     # validate modified credential_exchange_id
     cred_ex_id = issue_credential_v1_0_event_payload["credential_exchange_id"]
     modified_cred_ex_id = f"v1-{cred_ex_id}"
-    assert result_v1.credential_id == modified_cred_ex_id
+    assert result_v1.credential_exchange_id == modified_cred_ex_id
 
     ### V2
     event_v2 = acapy_webhook.model_copy(
@@ -370,7 +370,7 @@ def test_credential_model():
     # validate modified credential_exchange_id
     cred_ex_id = issue_credential_v2_0_event_payload["cred_ex_id"]
     modified_cred_ex_id = f"v2-{cred_ex_id}"
-    assert result_v2.credential_id == modified_cred_ex_id
+    assert result_v2.credential_exchange_id == modified_cred_ex_id
 
 
 def test_credential_indy_model():

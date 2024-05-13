@@ -36,7 +36,7 @@ class CredentialExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str
     credential_definition_id: Optional[str] = None
-    credential_id: str = Field(..., deprecated=True, alias="credential_exchange_id")
+    credential_id: str = Field(..., deprecated=True)
     credential_exchange_id: str = Field(...)
     did: Optional[str] = None
     error_msg: Optional[str] = None

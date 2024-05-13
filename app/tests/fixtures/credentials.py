@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from app.routes.issuer import router
 from app.routes.wallet.credentials import router as wallets_router
 from app.tests.util.connections import FaberAliceConnect, MeldCoAliceConnect
+from app.tests.util.regression_testing import assert_fail_on_recreating_fixtures
 from app.tests.util.webhooks import check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
@@ -249,7 +250,7 @@ async def get_or_issue_regression_cred_revoked(
     revoked_attribute_name = "Alice-revoked"
 
     # Wallet Query to fetch credential with this attribute name
-    wql = quote(f'{"attr::name::value":"{revoked_attribute_name}"}')
+    wql = quote(f'{{"attr::name::value":"{revoked_attribute_name}"}}')
 
     results = (await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")).json()[
         "results"
@@ -261,10 +262,11 @@ async def get_or_issue_regression_cred_revoked(
     if results:
         revoked_credential = results[0]
         assert (
-            revoked_credential["attributes"]["name"] == revoked_attribute_name
+            revoked_credential["attrs"]["name"] == revoked_attribute_name
         ), f"WQL returned unexpected credential: {revoked_credential}"
 
     else:
+        assert_fail_on_recreating_fixtures()
         credential = {
             "protocol_version": "v2",
             "connection_id": faber_and_alice_connection.faber_connection_id,

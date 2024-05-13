@@ -137,10 +137,10 @@ async def test_regression_proof_revoked_credential(
     acme_and_alice_connection: AcmeAliceConnect,
 ):
     unix_timestamp = int(time.time())
-    referent = get_or_issue_regression_cred_revoked["referent"]
-    credential_definition_id_revocable = get_or_issue_regression_cred_revoked[
-        "cred_def_revocable"
-    ]
+    referent = get_or_issue_regression_cred_revoked.referent
+    credential_definition_id_revocable = (
+        get_or_issue_regression_cred_revoked.cred_def_revocable
+    )
 
     # Do proof request
     request_body = {

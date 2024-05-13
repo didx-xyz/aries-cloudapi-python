@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install \
             isort~=5.13.2 \
-            black~=24.4.0
+            black~=24.4.2
 
       - name: Check import style with isort
         run: isort . --check --profile black --diff

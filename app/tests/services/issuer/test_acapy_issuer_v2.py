@@ -152,14 +152,14 @@ async def test_get_record(mock_agent_controller: AcaPyClient):
 async def test_delete_credential_exchange(
     mock_agent_controller: AcaPyClient,
 ):
-    with_credential_id = v2_credential_exchange_records[1]
+    cred_ex_record = v2_credential_exchange_records[1]
 
     when(mock_agent_controller.issue_credential_v2_0).delete_record(
-        cred_ex_id=with_credential_id.cred_ex_record.cred_ex_id
+        cred_ex_id=cred_ex_record.cred_ex_record.cred_ex_id
     ).thenReturn(to_async())
     await IssuerV2.delete_credential_exchange_record(
         mock_agent_controller,
-        credential_exchange_id=with_credential_id.cred_ex_record.cred_ex_id,
+        credential_exchange_id=cred_ex_record.cred_ex_record.cred_ex_id,
     )
 
 
@@ -205,7 +205,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v2_0).store_credential(
         cred_ex_id=v2_record.cred_ex_record.cred_ex_id,
-        body=V20CredStoreRequest(credential_id=None),
+        body=V20CredStoreRequest(),
     ).thenReturn(to_async(v2_record))
 
     credential_exchange = await IssuerV2.store_credential(

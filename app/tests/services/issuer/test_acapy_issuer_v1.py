@@ -45,7 +45,6 @@ v1_credential_exchange_records = [
             )
         ),
         credential_exchange_id="dabc8f4e-164a-410f-bd10-471b090f65a5",
-        credential_id="16c83f10-c205-4305-aa6f-cefa2d7da160",
     ),
 ]
 
@@ -121,13 +120,13 @@ async def test_get_record(mock_agent_controller: AcaPyClient):
 async def test_delete_credential_exchange(
     mock_agent_controller: AcaPyClient,
 ):
-    with_credential_id = v1_credential_exchange_records[1]
+    cred_ex_record = v1_credential_exchange_records[1]
     when(mock_agent_controller.issue_credential_v1_0).delete_record(
-        cred_ex_id=with_credential_id.credential_exchange_id
+        cred_ex_id=cred_ex_record.credential_exchange_id
     ).thenReturn(to_async())
     await IssuerV1.delete_credential_exchange_record(
         mock_agent_controller,
-        credential_exchange_id=with_credential_id.credential_exchange_id,
+        credential_exchange_id=cred_ex_record.credential_exchange_id,
     )
 
 
@@ -175,7 +174,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v1_0).store_credential(
         cred_ex_id=v1_record.credential_exchange_id,
-        body=V10CredentialStoreRequest(credential_id=None),
+        body=V10CredentialStoreRequest(),
     ).thenReturn(to_async(v1_record))
 
     credential_exchange = await IssuerV1.store_credential(

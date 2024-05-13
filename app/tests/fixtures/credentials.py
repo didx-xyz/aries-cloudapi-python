@@ -219,7 +219,20 @@ async def issue_alice_creds_and_revoke_unpublished(
 
 
 @pytest.fixture(scope="function")
-async def issue_alice_creds_and_revoke_published(
+async def revoke_alice_creds(
+    faber_client: RichAsyncClient,
+    issue_alice_creds: List[CredentialExchange],
+) -> List[CredentialExchange]:
+
+    for cred in issue_alice_creds:
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/revoke",
+            json={
+                "credential_exchange_id": cred.credential_id[3:],
+            },
+        )
+
+    return issue_alice_creds
     faber_client: RichAsyncClient,
     issue_alice_creds_and_revoke_unpublished: List[  # pylint: disable=redefined-outer-name
         CredentialExchange

@@ -187,29 +187,13 @@ class IssuerV2(Issuer):
         bound_logger.debug("Get credential id without version")
         credential_exchange_id = cred_id_no_version(credential_exchange_id)
 
-        bound_logger.debug("Getting v2 credential record")
-        record = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=controller.issue_credential_v2_0.get_record,
-            cred_ex_id=credential_exchange_id,
-        )
-
         bound_logger.debug("Deleting v2 credential record")
         await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.issue_credential_v2_0.delete_record,
             cred_ex_id=credential_exchange_id,
         )
-
-        # also delete indy credential
-        if record.indy and record.indy.cred_id_stored:
-            bound_logger.debug("Deleting indy credential")
-            await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=controller.credentials.delete_record,
-                credential_id=record.indy.cred_id_stored,
-            )
-        bound_logger.debug("Successfully deleted credential.")
+        bound_logger.debug("Successfully deleted credential record.")
 
     @classmethod
     async def get_records(

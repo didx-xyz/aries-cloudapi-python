@@ -63,7 +63,7 @@ async def test_sign_jsonld(
         json_ld_req = JsonLdSignRequest(
             verkey="abcde",
             pub_did="abcde",
-            credential_id=issue_credential_to_alice["credential_id"][3:],
+            credential_id=issue_credential_to_alice["credential_exchange_id"][3:],
             signature_options=SignatureOptions(
                 proof_purpose="test", verification_method="ed25519"
             ).model_dump(),

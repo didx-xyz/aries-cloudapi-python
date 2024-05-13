@@ -44,7 +44,7 @@ async def test_issue_credential_with_save_exchange_record(
         )
     ).json()
 
-    faber_credential_id = faber_send_response["credential_id"]
+    faber_credential_exchange_id = faber_send_response["credential_exchange_id"]
     thread_id = faber_send_response["thread_id"]
 
     payload = await check_webhook_state(
@@ -56,11 +56,11 @@ async def test_issue_credential_with_save_exchange_record(
         },
     )
 
-    alice_credential_id = payload["credential_id"]
+    alice_credential_exchange_id = payload["credential_exchange_id"]
 
     # send credential request - holder
     await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request",
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request",
     )
 
     await check_webhook_state(
@@ -68,7 +68,7 @@ async def test_issue_credential_with_save_exchange_record(
         topic="credentials",
         state="done",
         filter_map={
-            "credential_id": alice_credential_id,
+            "credential_exchange_id": alice_credential_exchange_id,
         },
     )
 
@@ -77,24 +77,35 @@ async def test_issue_credential_with_save_exchange_record(
     # faber requesting auto_remove only removes their cred ex records
     # get exchange record from alice side -- should not exist after complete
     with pytest.raises(HTTPException) as exc:
-        await alice_member_client.get(f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}")
+        await alice_member_client.get(
+            f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}"
+        )
     assert exc.value.status_code == 404
 
     if save_exchange_record:
         # get exchange records from faber side:
         faber_cred_ex_record = (
-            await faber_client.get(f"{CREDENTIALS_BASE_PATH}/{faber_credential_id}")
+            await faber_client.get(
+                f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+            )
         ).json()
 
         # Save record True, should be 1 record
-        assert faber_cred_ex_record["credential_id"] == faber_credential_id
+        assert (
+            faber_cred_ex_record["credential_exchange_id"]
+            == faber_credential_exchange_id
+        )
 
         # Clean up
-        await faber_client.delete(f"{CREDENTIALS_BASE_PATH}/{faber_credential_id}")
+        await faber_client.delete(
+            f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+        )
     else:
         # If save_exchange_record was not set, credential should not exist
         with pytest.raises(HTTPException) as exc:
-            await faber_client.get(f"{CREDENTIALS_BASE_PATH}/{faber_credential_id}")
+            await faber_client.get(
+                f"{CREDENTIALS_BASE_PATH}/{faber_credential_exchange_id}"
+            )
         assert exc.value.status_code == 404
 
 
@@ -123,7 +134,7 @@ async def test_get_cred_exchange_records(
     faber_send_response_1 = await faber_client.post(
         CREDENTIALS_BASE_PATH, json=credential_v1
     )
-    faber_cred_ex_id_1 = faber_send_response_1.json()["credential_id"]
+    faber_cred_ex_id_1 = faber_send_response_1.json()["credential_exchange_id"]
 
     credential_v2 = {
         "protocol_version": "v2",
@@ -138,7 +149,7 @@ async def test_get_cred_exchange_records(
     faber_send_response_2 = await faber_client.post(
         CREDENTIALS_BASE_PATH, json=credential_v2
     )
-    faber_cred_ex_id_2 = faber_send_response_2.json()["credential_id"]
+    faber_cred_ex_id_2 = faber_send_response_2.json()["credential_exchange_id"]
 
     faber_cred_ids = [faber_cred_ex_id_1, faber_cred_ex_id_2]
 
@@ -168,9 +179,9 @@ async def test_get_cred_exchange_records(
         )
 
     for cred in alice_cred_ex_response:
-        cred_id = cred["credential_id"]
+        cred_ex_id = cred["credential_exchange_id"]
         await alice_member_client.post(
-            f"{CREDENTIALS_BASE_PATH}/{cred_id}/request", json={}
+            f"{CREDENTIALS_BASE_PATH}/{cred_ex_id}/request", json={}
         )
 
         # wait for credential state "done" for each credential
@@ -179,7 +190,7 @@ async def test_get_cred_exchange_records(
             topic="credentials",
             state="done",
             filter_map={
-                "credential_id": cred_id,
+                "credential_exchange_id": cred_ex_id,
             },
         )
 
@@ -191,7 +202,7 @@ async def test_get_cred_exchange_records(
     filtered_cred_ex_records = [
         record
         for record in faber_cred_ex_response
-        if record["credential_id"] in faber_cred_ids
+        if record["credential_exchange_id"] in faber_cred_ids
     ]
     assert len(filtered_cred_ex_records) == 2
 
@@ -201,7 +212,7 @@ async def test_get_cred_exchange_records(
     filtered_cred_ex_records = [
         record
         for record in faber_cred_ex_response
-        if record["credential_id"] in faber_cred_ids
+        if record["credential_exchange_id"] in faber_cred_ids
     ]
     assert len(filtered_cred_ex_records) == 2
 

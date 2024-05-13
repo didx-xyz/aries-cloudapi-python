@@ -122,7 +122,7 @@ async def meld_co_issue_credential_to_alice(
 
 
 @pytest.fixture(scope="function")
-async def issue_alice_creds_and_revoke_unpublished(
+async def issue_alice_creds(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     credential_definition_id_revocable: str,

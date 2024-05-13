@@ -53,13 +53,15 @@ class CredentialExchange(BaseModel):
 
 def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialExchange:
     attributes = attributes_from_record_v1(record)
+    credential_exchange_id = f"v1-{record.credential_exchange_id}"
 
     return CredentialExchange(
         attributes=attributes,
         connection_id=record.connection_id,
         created_at=record.created_at,
         credential_definition_id=record.credential_definition_id,
-        credential_id=f"v1-{record.credential_exchange_id}",
+        credential_id=credential_exchange_id,
+        credential_exchange_id=credential_exchange_id,
         error_msg=record.error_msg,
         protocol_version=IssueCredentialProtocolVersion.v1,
         role=record.role,
@@ -116,13 +118,15 @@ def back_to_v1_credential_state(state: Optional[str]) -> Optional[str]:
 def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange:
     attributes = attributes_from_record_v2(record)
     schema_id, credential_definition_id = schema_cred_def_from_record(record)
+    credential_exchange_id = f"v2-{record.cred_ex_id}"
 
     return CredentialExchange(
         attributes=attributes,
         connection_id=record.connection_id,
         created_at=record.created_at,
         credential_definition_id=credential_definition_id,
-        credential_id=f"v2-{record.cred_ex_id}",
+        credential_id=credential_exchange_id,
+        credential_exchange_id=credential_exchange_id,
         did=(
             record.by_format.cred_offer["ld_proof"]["credential"]["issuer"]
             if record.by_format and "ld_proof" in record.by_format.cred_offer

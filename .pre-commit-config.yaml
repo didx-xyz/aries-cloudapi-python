@@ -1,6 +1,6 @@
 repos:
     - repo: https://github.com/psf/black
-      rev: 24.4.0
+      rev: 24.4.2
       hooks:
           - id: black
             stages: [push]
@@ -11,7 +11,7 @@ repos:
       hooks:
           - id: blacken-docs
             stages: [push]
-            additional_dependencies: [black==24.4.0]
+            additional_dependencies: [black==24.4.2]
             language_version: python3
             files: '\.(rst|md|markdown|py|tex)$'
 

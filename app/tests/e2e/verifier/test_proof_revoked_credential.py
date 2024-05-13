@@ -5,6 +5,7 @@ import pytest
 
 from app.routes.issuer import router
 from app.routes.verifier import router as verifier_router
+from app.tests.fixtures.credentials import ReferentCredDef
 from app.tests.util.connections import AcmeAliceConnect
 from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
@@ -104,6 +105,93 @@ async def test_proof_revoked_credential(
             "proof_id": alice_proof_exchange_id,
         },
         look_back=5,
+    )
+
+    await check_webhook_state(
+        client=acme_client,
+        topic="proofs",
+        state="done",
+        filter_map={
+            "proof_id": acme_proof_exchange_id,
+        },
+        look_back=5,
+    )
+
+    # Check proof
+    proof = (
+        await acme_client.get(f"{VERIFIER_BASE_PATH}/proofs/{acme_proof_exchange_id}")
+    ).json()
+
+    assert proof["verified"] is False
+
+
+@pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.clean_run in TestMode.fixture_params,
+    reason="Run only in regression mode",
+)
+async def test_regression_proof_revoked_credential(
+    get_or_issue_regression_cred_revoked: ReferentCredDef,
+    acme_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    acme_and_alice_connection: AcmeAliceConnect,
+):
+    unix_timestamp = int(time.time())
+    referent = get_or_issue_regression_cred_revoked.referent
+    credential_definition_id_revocable = (
+        get_or_issue_regression_cred_revoked.cred_def_revocable
+    )
+
+    # Do proof request
+    request_body = {
+        "protocol_version": "v2",
+        "comment": "Test proof of revocation",
+        "type": "indy",
+        "indy_proof_request": {
+            "non_revoked": {"to": unix_timestamp},
+            "requested_attributes": {
+                "THE_SPEED": {
+                    "name": "speed",
+                    "restrictions": [
+                        {"cred_def_id": credential_definition_id_revocable}
+                    ],
+                }
+            },
+            "requested_predicates": {},
+        },
+        "save_exchange_record": True,
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+    }
+    send_proof_response = await send_proof_request(acme_client, request_body)
+    acme_proof_exchange_id = send_proof_response["proof_id"]
+
+    alice_payload = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        state="request-received",
+        filter_map={
+            "thread_id": send_proof_response["thread_id"],
+        },
+        look_back=5,
+    )
+
+    alice_proof_exchange_id = alice_payload["proof_id"]
+
+    # Send proof
+    await alice_member_client.post(
+        f"{VERIFIER_BASE_PATH}/accept-request",
+        json={
+            "proof_id": alice_proof_exchange_id,
+            "type": "indy",
+            "indy_presentation_spec": {
+                "requested_attributes": {
+                    "THE_SPEED": {"cred_id": referent, "revealed": True}
+                },
+                "requested_predicates": {},
+                "self_attested_attributes": {},
+            },
+            "dif_presentation_spec": {},
+        },
     )
 
     await check_webhook_state(

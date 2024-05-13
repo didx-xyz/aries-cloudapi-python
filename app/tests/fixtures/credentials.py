@@ -221,7 +221,7 @@ async def issue_alice_creds(
 @pytest.fixture(scope="function")
 async def revoke_alice_creds(
     faber_client: RichAsyncClient,
-    issue_alice_creds: List[CredentialExchange], # pylint: disable=unused-argument
+    issue_alice_creds: List[CredentialExchange],  # pylint: disable=unused-argument
 ) -> List[CredentialExchange]:
 
     for cred in issue_alice_creds:
@@ -239,7 +239,7 @@ async def revoke_alice_creds(
 async def revoke_alice_creds_and_publish(
     request,
     faber_client: RichAsyncClient,
-    issue_alice_creds: List[CredentialExchange], # pylint: disable=unused-argument
+    issue_alice_creds: List[CredentialExchange],  # pylint: disable=unused-argument
 ) -> List[CredentialExchange]:
 
     auto_publish = False

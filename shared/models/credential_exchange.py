@@ -1,7 +1,7 @@
 from typing import Dict, Literal, Optional, Tuple
 
 from aries_cloudcontroller import V10CredentialExchange, V20CredExRecord
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from shared.models.protocol import IssueCredentialProtocolVersion
 
@@ -36,7 +36,8 @@ class CredentialExchange(BaseModel):
     connection_id: Optional[str] = None
     created_at: str
     credential_definition_id: Optional[str] = None
-    credential_id: str
+    credential_id: str = Field(..., deprecated=True, alias="credential_exchange_id")
+    credential_exchange_id: str = Field(...)
     did: Optional[str] = None
     error_msg: Optional[str] = None
     protocol_version: IssueCredentialProtocolVersion

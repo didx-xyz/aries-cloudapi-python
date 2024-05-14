@@ -45,7 +45,7 @@ async def send_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-    Create and send a credential, automating the issuer-side flow.
+    Create and send a credential, automating the issuer-side flow
     ---
     NB: Only a tenant with the issuer role can send credentials.
 
@@ -57,7 +57,7 @@ async def send_credential(
         "ld_credential_detail": {...}, <-- Required if type is ld_proof
         "save_exchange_record": true, <-- Whether the credential exchange record should be saved on completion.
         "connection_id": "string", <-- The issuer's reference to the connection they want to submit the credential to.
-        "protocol_version": "v2" <-- v1 is supported, but will be deprecated.
+        "protocol_version": "v2" <-- v1 is supported, but deprecated.
     }
     ```
     Read more about the Aries credential issuing protocol at:
@@ -73,9 +73,8 @@ async def send_credential(
 
     Returns:
     ---
-        result: CredentialExchange
+        CredentialExchange
             A record of this credential exchange
-        status_code: 200
     """
     bound_logger = logger.bind(
         body={
@@ -138,12 +137,14 @@ async def create_offer(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-    Create a credential offer, not bound to any connection.
+    Create a credential offer, not bound to any connection
     ---
-    The create offer endpoint takes the same body as the send credential endpoint, but without a connection id. This
+    This endpoint takes the same body as the send credential endpoint, but without a connection id. This
     means the credential will not be sent, but it will do the initial step of creating a credential exchange record,
-    which the issuer can then use in the out of band (OOB) protocol. The OOB protocol allows credentials to be sent over
-    alternative channels, such as email or QR code, where a connection does not yet exist between holder and issuer.
+    which the issuer can then use in the out of band (OOB) protocol.
+
+    The OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a
+    connection does not yet exist between holder and issuer.
 
     The credential type must be one of indy or ld_proof.
     ```json
@@ -152,7 +153,7 @@ async def create_offer(
         "indy_credential_detail": {...}, <-- Required if type is indy
         "ld_credential_detail": {...}, <-- Required if type is ld_proof
         "save_exchange_record": true, <-- Whether the credential exchange record should be saved on completion.
-        "protocol_version": "v2" <-- v1 is supported, but will be deprecated.
+        "protocol_version": "v2" <-- v1 is supported, but deprecated.
     }
     ```
     Read more about the Aries credential issuing protocol at:
@@ -165,9 +166,8 @@ async def create_offer(
 
     Returns:
     ---
-        result: CredentialExchange
+        CredentialExchange
             A record of this credential exchange
-        status_code: 200
     """
     bound_logger = logger.bind(
         body={
@@ -225,11 +225,12 @@ async def request_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-    Sends a request to accept a credential offer.
+    Sends a request to accept a credential offer
     ---
-    The holder uses this endpoint to accept an offer from an issuer. In technical terms, when a holder has a credential
-    exchange record with a state 'offer-received', then they can use this endpoint to accept that credential offer, and
-    store the credential in their wallet.
+    The holder uses this endpoint to accept an offer from an issuer.
+
+    In technical terms, when a holder has a credential exchange record with a state 'offer-received', then they can use
+    this endpoint to accept that credential offer, and store the credential in their wallet.
 
     Parameters:
     ---
@@ -238,9 +239,8 @@ async def request_credential(
 
     Returns:
     ---
-        result: CredentialExchange
+        CredentialExchange
             An updated record of this credential exchange
-        status_code: 200
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("POST request received: Send credential request")
@@ -295,10 +295,10 @@ async def store_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-    NB: Deprecated because credentials are automatically stored in wallet after they are accepted.
+    NB: Deprecated because credentials are automatically stored in wallet after they are accepted
     ---
 
-    Store a credential.
+    Store a credential
     ---
     Store a credential by providing the credential exchange id.
     The credential exchange id is the id of the credential exchange record, not the credential itself.
@@ -310,13 +310,12 @@ async def store_credential(
     Parameters:
     ---
         credential_exchange_id: str
-            credential identifier
+            credential exchange record identifier
 
     Returns:
     ---
-        result: CredentialExchange
+        CredentialExchange
             An updated record of this credential exchange
-        status_code: 200
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("POST request received: Store credential")
@@ -349,7 +348,7 @@ async def get_credentials(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialExchange]:
     """
-    Get a list of credential exchange records.
+    Get a list of credential exchange records
     ---
     Both holders and issuers can call this endpoint, because they each have their own records of a credential exchange.
 
@@ -363,7 +362,7 @@ async def get_credentials(
     An exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),
     unless the `save_exchange_record` was set to true.
 
-    These records can be filtered by connection_id, role, state and thread_id.
+    The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
 
     Parameters:
     ---
@@ -371,14 +370,13 @@ async def get_credentials(
         role: Role (Optional): "issuer", "holder"
         state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
                                  "request-sent", "request-received", "credential-issued", "credential-received",
-                                 "credential-revoked","abandoned", "done"
+                                 "credential-revoked", "abandoned", "done"
         thread_id: UUID (Optional)
 
     Returns:
     ---
-        result: List[CredentialExchange]
+        List[CredentialExchange]
             A list of credential exchange records
-        status_code: 200
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get credentials")
@@ -420,28 +418,31 @@ async def get_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-    Get a credential exchange record by credential id.
+    Get a credential exchange record by credential id
     ---
+    Both holders and issuers can call this endpoint, because they each have their own records of a credential exchange.
 
-    The record contains information about the credential issued to/by the tenant.
-    The credential exchange record is related to a single credential exchange flow.
+    These records contain information about the credentials issued to a holder, such as the current state of the
+    exchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received
+    from (if a holder).
 
-    It's important to remember the 'credential_id' is not the ID of the credential itself,
-    but the id of the credential exchange record.
+    NB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.
+    The `thread_id` is the only record attribute that will be the same for the holder and the issuer.
 
-    An exchange record will be deleted after a flow completes if the 'save_exchange_record'
-    field, in the send credential endpoint, is set to False (The default value).
+    An exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),
+    unless the `save_exchange_record` was set to true.
+
+    The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
 
     Parameters:
     ---
         credential_exchange_id: str
-            credential identifier
+            The identifier of the credential exchange record that you want to fetch
 
     Returns:
     ---
-        result: CredentialExchange
+        CredentialExchange
             The credential exchange record
-        status_code: 200
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("GET request received: Get credentials by credential id")
@@ -469,14 +470,14 @@ async def remove_credential_exchange_record(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Remove a credential exchange record.
+    Delete a credential exchange record
     ---
-    This will remove the credential exchange record associated with the provided credential exchange id.
+    This will remove a specific credential exchange from your records.
 
     Parameters:
     ---
         credential_exchange_id: str
-            credential exchange record identifier
+            The identifier of the credential exchange record that you want to delete
 
     Returns:
     ---
@@ -504,12 +505,12 @@ async def revoke_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Revoke a credential.
+    Revoke a credential
     ---
-    Revoke a credential by providing the credential exchange id and the credential definition id.
+    Revoke a credential by providing the identifier of the exchange.
 
     If an issuer is going to revoke more than one credential, it is recommended to set the
-    'auto_publish_on_ledger' field to False, and then batch publish the revocations using
+    'auto_publish_on_ledger' field to False (default), and then batch publish the revocations using
     the 'publish-revocations' endpoint.
 
     By batching the revocations, the issuer can save on transaction fees related to
@@ -552,14 +553,13 @@ async def get_credential_revocation_record(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> IssuerCredRevRecord:
     """
-    Get a credential revocation record.
+    Get a credential revocation record
     ---
     Fetch a credential revocation record by providing the credential exchange id.
-    If the credential exchange id is not provided, the credential revocation id and
-    revocation registry id must be provided.
+    Records can also be fetched by providing the credential revocation id and revocation registry id.
 
-    The record is the payload of the event 'issuer_cred_rev' and contains information about the
-    credential's revocation status.
+    The record is the payload of the webhook event on topic 'issuer_cred_rev', and contains the credential's revocation
+    status and other metadata.
 
     The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
     in this record if you have the credential exchange id.
@@ -567,22 +567,18 @@ async def get_credential_revocation_record(
     Parameters:
     ---
         credential_exchange_id: str
-            The credential exchange id
         credential_revocation_id: str
-            The credential revocation id
         revocation_registry_id: str
-            The revocation registry id
 
     Returns:
     ---
-        result: IssuerCredRevRecord
+        IssuerCredRevRecord
             The credential revocation record
 
     Raises:
     ---
         CloudApiException: 400
-            If credential_exchange_id is not provided BOTH the credential_revocation_id
-            and revocation_registry_id MUST be provided.
+            If credential_exchange_id is not provided, BOTH credential_revocation_id and revocation_registry_id must be.
     """
     bound_logger = logger.bind(
         body={
@@ -626,17 +622,22 @@ async def publish_revocations(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Write batch of pending revocations to ledger.
+    Write pending revocations to the ledger
     ---
-    If no revocation registry id is provided, all pending revocations
-    will be published.
+    Revocations that are in a pending state can be published to the ledger.
 
-    If no credential revocation id is provided, all pending revocations
-    for the given revocation registry id will be published.
+    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary from
+    revocation registry IDs to credential revocation IDs, to allow publishing individual credentials.
+
+    If no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),
+    then all pending revocations will be published.
+
+    If no credential revocation id is provided under a given revocation registry id, then all pending revocations for
+    the given revocation registry id will be published.
 
     Where to find the revocation registry id and credential revocation id:
     When issuing a credential, against a credential definition that supports revocation,
-    the issuer will receive a event on the topic 'issuer_cred_rev'. This event will contain
+    the issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain
     the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
     the revocation registry id (rev_reg_id).
 
@@ -676,12 +677,18 @@ async def clear_pending_revocations(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> ClearPendingRevocationsResult:
     """
-    Clear pending revocations.
+    Clear pending revocations
     ---
-    If no revocation registry id is provided, all pending revocations will be cleared.
+    Revocations that are in a pending state can be cleared, such that they are no longer set to be revoked.
 
-    If no credential revocation id is provided, all pending revocations
-    for the given revocation registry id will be cleared.
+    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary from
+    revocation registry IDs to credential revocation IDs, to allow clearing individual credentials.
+
+    If no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),
+    then all pending revocations will be cleared.
+
+    If no credential revocation id is provided under a given revocation registry id, then all pending revocations for
+    the given revocation registry id will be cleared.
 
     Where to find the revocation registry id and credential revocation id:
     When issuing a credential, against a credential definition that supports revocation,
@@ -700,7 +707,7 @@ async def clear_pending_revocations(
 
     Returns:
     ---
-        result: ClearPendingRevocationsResult
+        ClearPendingRevocationsResult
             The revocations that are still pending after the clear request is performed
     """
     bound_logger = logger.bind(body=clear_pending_request)

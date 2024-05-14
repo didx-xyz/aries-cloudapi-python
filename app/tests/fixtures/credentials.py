@@ -122,7 +122,7 @@ async def meld_co_issue_credential_to_alice(
 
 
 @pytest.fixture(scope="function")
-async def issue_alice_creds_and_revoke_unpublished(
+async def issue_alice_creds(
     faber_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     credential_definition_id_revocable: str,
@@ -147,12 +147,13 @@ async def issue_alice_creds_and_revoke_unpublished(
             },
         }
 
-        faber_send_response = await faber_client.post(
-            CREDENTIALS_BASE_PATH,
-            json=credential,
-        )
-        cred_ex_id = faber_send_response.json()["credential_exchange_id"]
-        faber_cred_ex_ids += [cred_ex_id]
+        faber_cred_ex_id = (
+            await faber_client.post(
+                CREDENTIALS_BASE_PATH,
+                json=credential,
+            )
+        ).json()["credential_exchange_id"]
+        faber_cred_ex_ids += [faber_cred_ex_id]
 
     num_tries = 0
     num_credentials_returned = 0
@@ -203,36 +204,56 @@ async def issue_alice_creds_and_revoke_unpublished(
 
     assert len(cred_ex_response) == 3
 
-    # revoke all credentials in list
-    for cred in cred_ex_response:
-        await faber_client.post(
-            f"{CREDENTIALS_BASE_PATH}/revoke",
-            json={
-                "credential_exchange_id": cred["credential_exchange_id"],
-            },
-        )
-
-    credential_exchange_records = [
-        CredentialExchange(**cred) for cred in cred_ex_response
-    ]
-    return credential_exchange_records
+    return [CredentialExchange(**cred) for cred in cred_ex_response]
 
 
 @pytest.fixture(scope="function")
-async def issue_alice_creds_and_revoke_published(
+async def revoke_alice_creds(
     faber_client: RichAsyncClient,
-    issue_alice_creds_and_revoke_unpublished: List[  # pylint: disable=redefined-outer-name
-        CredentialExchange
-    ],
+    issue_alice_creds: List[CredentialExchange],  # pylint: disable=redefined-outer-name
 ) -> List[CredentialExchange]:
-    credential_exchange_records = issue_alice_creds_and_revoke_unpublished
-    # Publish revoked credentials
-    await faber_client.post(
-        f"{CREDENTIALS_BASE_PATH}/publish-revocations",
-        json={"revocation_registry_credential_map": {}},
-    )
 
-    return credential_exchange_records
+    for cred in issue_alice_creds:
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/revoke",
+            json={
+                "credential_exchange_id": cred.credential_id,
+            },
+        )
+
+    return issue_alice_creds
+
+
+@pytest.fixture(scope="function")
+async def revoke_alice_creds_and_publish(
+    request,
+    faber_client: RichAsyncClient,
+    issue_alice_creds: List[CredentialExchange],  # pylint: disable=redefined-outer-name
+) -> List[CredentialExchange]:
+
+    auto_publish = False
+    if hasattr(request, "param") and request.param == "auto_publish_true":
+        auto_publish = True
+
+    for cred in issue_alice_creds:
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/revoke",
+            json={
+                "credential_exchange_id": cred.credential_id,
+                "auto_publish_on_ledger": auto_publish,
+            },
+        )
+
+    if not auto_publish:
+        for cred in issue_alice_creds:
+            await faber_client.post(
+                f"{CREDENTIALS_BASE_PATH}/publish-revocations",
+                json={
+                    "revocation_registry_credential_map": {},
+                },
+            )
+
+    return issue_alice_creds
 
 
 class ReferentCredDef(BaseModel):

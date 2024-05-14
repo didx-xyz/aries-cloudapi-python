@@ -306,8 +306,11 @@ async def revoke_credential(
 
     Parameters:
     -----------
-        credential_exchange_id: str
-            The credential exchange id
+        body: RevokeCredential
+            - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.
+            - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or
+                (default, False) mark it pending
+
 
     Returns:
     --------
@@ -322,7 +325,6 @@ async def revoke_credential(
         await revocation_registry.revoke_credential(
             controller=aries_controller,
             credential_exchange_id=body.credential_exchange_id,
-            credential_definition_id=body.credential_definition_id,
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 

@@ -429,7 +429,6 @@ async def test_revoke_credential(
 
     revoke_credential = mock(RevokeCredential)
     revoke_credential.credential_exchange_id = "random_cred_ex_id"
-    revoke_credential.credential_definition_id = "some_random_cred_def_id"
     revoke_credential.auto_publish_on_ledger = True
     status_code = 204
 
@@ -438,7 +437,6 @@ async def test_revoke_credential(
 
     verify(revocation_registry).revoke_credential(
         controller=mock_agent_controller,
-        credential_definition_id=revoke_credential.credential_definition_id,
         credential_exchange_id=revoke_credential.credential_exchange_id,
         auto_publish_to_ledger=revoke_credential.auto_publish_on_ledger,
     )

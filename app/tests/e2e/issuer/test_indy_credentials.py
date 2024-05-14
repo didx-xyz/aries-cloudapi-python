@@ -9,7 +9,6 @@ from app.routes.oob import router as oob_router
 from app.tests.fixtures.credentials import sample_credential_attributes
 from app.tests.util.connections import FaberAliceConnect
 from app.tests.util.webhooks import check_webhook_state
-from app.util.credentials import cred_id_no_version
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
@@ -39,7 +38,7 @@ async def test_send_credential_oob(
     )
 
     data = response.json()
-    assert_that(data).contains("credential_id")
+    assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version(protocol_version)
     assert_that(data).has_attributes(sample_credential_attributes)
@@ -51,7 +50,7 @@ async def test_send_credential_oob(
             "create_connection": False,
             "use_public_did": False,
             "attachments": [
-                {"id": data["credential_id"][3:], "type": "credential-offer"}
+                {"id": data["credential_exchange_id"][3:], "type": "credential-offer"}
             ],
         },
     )
@@ -104,7 +103,7 @@ async def test_send_credential(
     )
 
     data = response.json()
-    assert_that(data).contains("credential_id")
+    assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version(protocol_version)
     assert_that(data).has_attributes(sample_credential_attributes)
@@ -115,7 +114,7 @@ async def test_send_credential(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": data["credential_id"],
+            "credential_exchange_id": data["credential_exchange_id"],
         },
     )
 
@@ -142,7 +141,7 @@ async def test_create_offer(
     )
 
     data = response.json()
-    assert_that(data).contains("credential_id")
+    assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version(protocol_version)
     assert_that(data).has_attributes(sample_credential_attributes)
@@ -153,7 +152,7 @@ async def test_create_offer(
         topic="credentials",
         state="offer-sent",
         filter_map={
-            "credential_id": data["credential_id"],
+            "credential_exchange_id": data["credential_exchange_id"],
         },
     )
 
@@ -205,10 +204,10 @@ async def test_send_credential_request(
         params={"thread_id": thread_id},
     )
 
-    credential_id = (response.json())[0]["credential_id"]
+    credential_exchange_id = (response.json())[0]["credential_exchange_id"]
 
     request_response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+        f"{CREDENTIALS_BASE_PATH}/{credential_exchange_id}/request",
     )
 
     assert request_response.status_code == 200
@@ -256,6 +255,7 @@ async def test_revoke_credential(
         )
     ).json()
     thread_id = faber_credential_response["thread_id"]
+    faber_credential_exchange_id = faber_credential_response["credential_exchange_id"]
 
     payload = await check_webhook_state(
         client=alice_member_client,
@@ -266,11 +266,11 @@ async def test_revoke_credential(
         },
     )
 
-    alice_credential_id = payload["credential_id"]
+    alice_credential_exchange_id = payload["credential_exchange_id"]
 
     # send credential request: holder
     response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request", json={}
     )
 
     await check_webhook_state(
@@ -278,17 +278,15 @@ async def test_revoke_credential(
         topic="credentials",
         state="done",
         filter_map={
-            "credential_id": alice_credential_id,
+            "credential_exchange_id": alice_credential_exchange_id,
         },
     )
-
-    cred_id = cred_id_no_version(faber_credential_response["credential_id"])
 
     response = await faber_client.post(
         f"{CREDENTIALS_BASE_PATH}/revoke",
         json={
             "credential_definition_id": credential_definition_id_revocable,
-            "credential_exchange_id": cred_id,
+            "credential_exchange_id": faber_credential_exchange_id,
         },
     )
 

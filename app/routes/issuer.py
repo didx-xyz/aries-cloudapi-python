@@ -232,12 +232,12 @@ async def request_credential(
     store the credential in their wallet.
 
     Parameters:
-    -----------
+    ---
         credential_exchange_id: str
             The holder's reference to the credential exchange that they want to accept
 
     Returns:
-    --------
+    ---
         result: CredentialExchange
             An updated record of this credential exchange
         status_code: 200
@@ -313,7 +313,7 @@ async def store_credential(
             credential identifier
 
     Returns:
-    --------
+    ---
         result: CredentialExchange
             An updated record of this credential exchange
         status_code: 200
@@ -517,8 +517,10 @@ async def revoke_credential(
 
     Request Body:
     ---
-        credential_exchange_id: str
-            The credential exchange id
+        body: RevokeCredential
+            - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.
+            - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or
+                (default, False) mark it pending
 
     Returns:
     ---
@@ -532,7 +534,6 @@ async def revoke_credential(
         await revocation_registry.revoke_credential(
             controller=aries_controller,
             credential_exchange_id=body.credential_exchange_id,
-            credential_definition_id=body.credential_definition_id,
             auto_publish_to_ledger=body.auto_publish_on_ledger,
         )
 
@@ -578,7 +579,7 @@ async def get_credential_revocation_record(
             The credential revocation record
 
     Raises:
-    -------
+    ---
         CloudApiException: 400
             If credential_exchange_id is not provided BOTH the credential_revocation_id
             and revocation_registry_id MUST be provided.

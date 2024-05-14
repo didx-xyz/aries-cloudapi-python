@@ -1,14 +1,16 @@
 from shared.exceptions import CloudApiValueError
 
 
-def cred_id_no_version(credential_id: str) -> str:
-    if credential_id.startswith("v2-") or credential_id.startswith("v1-"):
-        return credential_id[3:]
+def cred_ex_id_no_version(cred_ex_id: str) -> str:
+    if cred_ex_id.startswith("v2-") or cred_ex_id.startswith("v1-"):
+        return cred_ex_id[3:]
     # else check credential id has roughly the right format
-    elif len(credential_id.split("-")) == 5:
-        return credential_id
+    elif len(cred_ex_id.split("-")) == 5:
+        return cred_ex_id
     else:
-        raise CloudApiValueError("credential_id must start with prefix `v1-` or `v2-`.")
+        raise CloudApiValueError(
+            "credential_exchange_id must start with prefix `v1-` or `v2-`."
+        )
 
 
 def strip_protocol_prefix(id: str):

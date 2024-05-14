@@ -167,20 +167,26 @@ async def test_get_credential(
     v2_record = mock(CredentialExchange)
 
     with when(IssuerV1).get_record(...).thenReturn(to_async(v1_record)):
-        result = await test_module.get_credential("v1-credential_id", mock_tenant_auth)
+        result = await test_module.get_credential(
+            "v1-credential_exchange_id", mock_tenant_auth
+        )
 
         assert result is v1_record
 
         verify(IssuerV1).get_record(
-            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v1-credential_exchange_id",
         )
 
     with when(IssuerV2).get_record(...).thenReturn(to_async(v2_record)):
-        result = await test_module.get_credential("v2-credential_id", mock_tenant_auth)
+        result = await test_module.get_credential(
+            "v2-credential_exchange_id", mock_tenant_auth
+        )
 
         assert result is v2_record
         verify(IssuerV2).get_record(
-            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v2-credential_exchange_id",
         )
 
 
@@ -204,21 +210,23 @@ async def test_remove_credential_exchange_record(
         to_async(v1_record)
     ):
         await test_module.remove_credential_exchange_record(
-            "v1-credential_id", mock_tenant_auth
+            "v1-credential_exchange_id", mock_tenant_auth
         )
 
         verify(IssuerV1).delete_credential_exchange_record(
-            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v1-credential_exchange_id",
         )
     with when(IssuerV2).delete_credential_exchange_record(...).thenReturn(
         to_async(v2_record)
     ):
         await test_module.remove_credential_exchange_record(
-            "v2-credential_id", mock_tenant_auth
+            "v2-credential_exchange_id", mock_tenant_auth
         )
 
         verify(IssuerV2).delete_credential_exchange_record(
-            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v2-credential_exchange_id",
         )
 
 
@@ -257,10 +265,13 @@ async def test_request_credential(
     ).thenReturn(
         to_async(v1_record)
     ):
-        await test_module.request_credential("v1-credential_id", mock_tenant_auth)
+        await test_module.request_credential(
+            "v1-credential_exchange_id", mock_tenant_auth
+        )
 
         verify(IssuerV1).request_credential(
-            controller=mock_agent_controller, credential_exchange_id="v1-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v1-credential_exchange_id",
         )
         verify(test_module).assert_valid_issuer(did, "schema_id1")
 
@@ -273,10 +284,13 @@ async def test_request_credential(
     ).thenReturn(
         to_async(True)
     ):
-        await test_module.request_credential("v2-credential_id", mock_tenant_auth)
+        await test_module.request_credential(
+            "v2-credential_exchange_id", mock_tenant_auth
+        )
 
         verify(IssuerV2).request_credential(
-            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v2-credential_exchange_id",
         )
         verify(test_module).assert_valid_issuer(did, "schema_id2")
 
@@ -289,10 +303,13 @@ async def test_request_credential(
     ).thenReturn(
         to_async(True)
     ):
-        await test_module.request_credential("v2-credential_id", mock_tenant_auth)
+        await test_module.request_credential(
+            "v2-credential_exchange_id", mock_tenant_auth
+        )
 
         verify(IssuerV2).request_credential(
-            controller=mock_agent_controller, credential_exchange_id="v2-credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="v2-credential_exchange_id",
         )
         verify(test_module).assert_valid_issuer(did, None)
 
@@ -311,10 +328,13 @@ async def test_request_credential_x_no_schema_cred_def(
     with when(IssuerV1).get_record(...).thenReturn(to_async(v1_record)), pytest.raises(
         Exception, match="Record has no credential definition or schema associated."
     ):
-        await test_module.request_credential("v1-credential_id", mock_tenant_auth)
+        await test_module.request_credential(
+            "v1-credential_exchange_id", mock_tenant_auth
+        )
 
         verify(IssuerV1, times=0).request_credential(
-            controller=mock_agent_controller, credential_exchange_id="credential_id"
+            controller=mock_agent_controller,
+            credential_exchange_id="credential_exchange_id",
         )
         verify(test_module, times=0).assert_valid_issuer(did, "schema_id1")
 
@@ -338,14 +358,16 @@ async def test_store_credential(
     when(IssuerV1).store_credential(...).thenReturn(to_async(v1_record))
     when(IssuerV2).store_credential(...).thenReturn(to_async(v2_record))
 
-    await test_module.store_credential("v1-credential_id1", mock_tenant_auth)
-    await test_module.store_credential("v2-credential_id2", mock_tenant_auth)
+    await test_module.store_credential("v1-credential_exchange_id1", mock_tenant_auth)
+    await test_module.store_credential("v2-credential_exchange_id2", mock_tenant_auth)
 
     verify(IssuerV1).store_credential(
-        controller=mock_agent_controller, credential_exchange_id="v1-credential_id1"
+        controller=mock_agent_controller,
+        credential_exchange_id="v1-credential_exchange_id1",
     )
     verify(IssuerV2).store_credential(
-        controller=mock_agent_controller, credential_exchange_id="v2-credential_id2"
+        controller=mock_agent_controller,
+        credential_exchange_id="v2-credential_exchange_id2",
     )
 
 
@@ -407,7 +429,6 @@ async def test_revoke_credential(
 
     revoke_credential = mock(RevokeCredential)
     revoke_credential.credential_exchange_id = "random_cred_ex_id"
-    revoke_credential.credential_definition_id = "some_random_cred_def_id"
     revoke_credential.auto_publish_on_ledger = True
     status_code = 204
 
@@ -416,7 +437,6 @@ async def test_revoke_credential(
 
     verify(revocation_registry).revoke_credential(
         controller=mock_agent_controller,
-        credential_definition_id=revoke_credential.credential_definition_id,
         credential_exchange_id=revoke_credential.credential_exchange_id,
         auto_publish_to_ledger=revoke_credential.auto_publish_on_ledger,
     )

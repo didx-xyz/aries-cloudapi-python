@@ -91,7 +91,7 @@ async def test_get_records(mock_agent_controller: AcaPyClient):
     records = await IssuerV2.get_records(mock_agent_controller)
 
     assert len(records) == len(v2_credential_exchange_records)
-    assert_that(map(lambda c: c.credential_id, records)).contains(
+    assert_that(map(lambda c: c.credential_exchange_id, records)).contains(
         f"v2-{v2_credential_exchange_records[0].cred_ex_record.cred_ex_id}",
         f"v2-{v2_credential_exchange_records[1].cred_ex_record.cred_ex_id}",
     )
@@ -117,7 +117,7 @@ async def test_get_records_with_query_params(mock_agent_controller: AcaPyClient)
     )
 
     assert len(records) == 1
-    assert_that(map(lambda c: c.credential_id, records)).contains(
+    assert_that(map(lambda c: c.credential_exchange_id, records)).contains(
         f"v2-{v2_record.cred_ex_record.cred_ex_id}",
     )
 
@@ -149,40 +149,17 @@ async def test_get_record(mock_agent_controller: AcaPyClient):
 
 
 @pytest.mark.anyio
-async def test_delete_credential_exchange_with_credential(
+async def test_delete_credential_exchange(
     mock_agent_controller: AcaPyClient,
 ):
-    with_credential_id = v2_credential_exchange_records[1]
+    cred_ex_record = v2_credential_exchange_records[1]
 
-    when(mock_agent_controller.issue_credential_v2_0).get_record(
-        cred_ex_id=with_credential_id.cred_ex_record.cred_ex_id
-    ).thenReturn(to_async(with_credential_id))
     when(mock_agent_controller.issue_credential_v2_0).delete_record(
-        cred_ex_id=with_credential_id.cred_ex_record.cred_ex_id
-    ).thenReturn(to_async())
-    when(mock_agent_controller.credentials).delete_record(
-        credential_id=with_credential_id.indy.cred_id_stored
+        cred_ex_id=cred_ex_record.cred_ex_record.cred_ex_id
     ).thenReturn(to_async())
     await IssuerV2.delete_credential_exchange_record(
         mock_agent_controller,
-        credential_exchange_id=with_credential_id.cred_ex_record.cred_ex_id,
-    )
-
-
-@pytest.mark.anyio
-async def test_delete_credential_exchange_without_credential(
-    mock_agent_controller: AcaPyClient,
-):
-    without_credential_id = v2_credential_exchange_records[0]
-    when(mock_agent_controller.issue_credential_v2_0).get_record(
-        cred_ex_id=without_credential_id.cred_ex_record.cred_ex_id
-    ).thenReturn(to_async(without_credential_id))
-    when(mock_agent_controller.issue_credential_v2_0).delete_record(
-        cred_ex_id=without_credential_id.cred_ex_record.cred_ex_id
-    ).thenReturn(to_async())
-    await IssuerV2.delete_credential_exchange_record(
-        mock_agent_controller,
-        credential_exchange_id=without_credential_id.cred_ex_record.cred_ex_id,
+        credential_exchange_id=cred_ex_record.cred_ex_record.cred_ex_id,
     )
 
 
@@ -228,7 +205,7 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
 
     when(mock_agent_controller.issue_credential_v2_0).store_credential(
         cred_ex_id=v2_record.cred_ex_record.cred_ex_id,
-        body=V20CredStoreRequest(credential_id=None),
+        body=V20CredStoreRequest(),
     ).thenReturn(to_async(v2_record))
 
     credential_exchange = await IssuerV2.store_credential(
@@ -237,7 +214,8 @@ async def test_store_credential(mock_agent_controller: AcaPyClient):
     )
 
     assert (
-        credential_exchange.credential_id == f"v2-{v2_record.cred_ex_record.cred_ex_id}"
+        credential_exchange.credential_exchange_id
+        == f"v2-{v2_record.cred_ex_record.cred_ex_id}"
     )
 
 
@@ -256,5 +234,6 @@ async def test_request_credential(mock_agent_controller: AcaPyClient):
     )
 
     assert (
-        credential_exchange.credential_id == f"v2-{v2_record.cred_ex_record.cred_ex_id}"
+        credential_exchange.credential_exchange_id
+        == f"v2-{v2_record.cred_ex_record.cred_ex_id}"
     )

@@ -82,7 +82,6 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
 
     revoke_credential_result = await rg.revoke_credential(
         controller=mock_agent_controller,
-        credential_definition_id=cred_def_id,
         credential_exchange_id=cred_id,
         auto_publish_to_ledger=False,
     )
@@ -99,7 +98,6 @@ async def test_revoke_credential(mock_agent_controller: AcaPyClient):
         ).thenRaise(ApiException(reason=error_msg, status=500))
         await rg.revoke_credential(
             controller=mock_agent_controller,
-            credential_definition_id=cred_def_id,
             credential_exchange_id=cred_id,
             auto_publish_to_ledger=False,
         )

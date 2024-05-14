@@ -18,13 +18,16 @@ VERIFIER_BASE_PATH = verifier_router.prefix
 
 
 @pytest.mark.anyio
+@pytest.mark.parametrize(
+    "revoke_alice_creds_and_publish", ["auto_publish_true", "default"], indirect=True
+)
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 @pytest.mark.skipif(
     TestMode.regression_run in TestMode.fixture_params,
     reason="Proving revoked credentials is currently non-deterministic",
 )
 async def test_proof_revoked_credential(
-    issue_alice_creds_and_revoke_published: List[  # pylint: disable=unused-argument
+    revoke_alice_creds_and_publish: List[  # pylint: disable=unused-argument
         CredentialExchange
     ],
     credential_definition_id_revocable: str,

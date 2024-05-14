@@ -51,11 +51,11 @@ async def issue_credential_to_alice(
         },
     )
 
-    alice_credential_id = payload["credential_id"]
+    alice_credential_exchange_id = payload["credential_exchange_id"]
 
     # send credential request - holder
     response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request", json={}
     )
 
     await check_webhook_state(
@@ -63,7 +63,7 @@ async def issue_credential_to_alice(
         topic="credentials",
         state="done",
         filter_map={
-            "credential_id": alice_credential_id,
+            "credential_exchange_id": alice_credential_exchange_id,
         },
     )
 
@@ -102,11 +102,11 @@ async def meld_co_issue_credential_to_alice(
         },
     )
 
-    alice_credential_id = payload["credential_id"]
+    alice_credential_exchange_id = payload["credential_exchange_id"]
 
     # send credential request - holder
     response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{alice_credential_id}/request", json={}
+        f"{CREDENTIALS_BASE_PATH}/{alice_credential_exchange_id}/request", json={}
     )
 
     await check_webhook_state(
@@ -114,7 +114,7 @@ async def meld_co_issue_credential_to_alice(
         topic="credentials",
         state="done",
         filter_map={
-            "credential_id": alice_credential_id,
+            "credential_exchange_id": alice_credential_exchange_id,
         },
     )
 
@@ -151,7 +151,7 @@ async def issue_alice_creds_and_revoke_unpublished(
             CREDENTIALS_BASE_PATH,
             json=credential,
         )
-        cred_ex_id = faber_send_response.json()["credential_id"]
+        cred_ex_id = faber_send_response.json()["credential_exchange_id"]
         faber_cred_ex_ids += [cred_ex_id]
 
     num_tries = 0
@@ -178,7 +178,7 @@ async def issue_alice_creds_and_revoke_unpublished(
 
     for cred in alice_cred_ex_response:
         await alice_member_client.post(
-            f"{CREDENTIALS_BASE_PATH}/{cred['credential_id']}/request", json={}
+            f"{CREDENTIALS_BASE_PATH}/{cred['credential_exchange_id']}/request", json={}
         )
         # wait for credential state "done" for each credential
         await check_webhook_state(
@@ -186,7 +186,7 @@ async def issue_alice_creds_and_revoke_unpublished(
             topic="credentials",
             state="done",
             filter_map={
-                "credential_id": cred["credential_id"],
+                "credential_exchange_id": cred["credential_exchange_id"],
             },
         )
 
@@ -198,7 +198,7 @@ async def issue_alice_creds_and_revoke_unpublished(
     cred_ex_response = [
         record
         for record in cred_ex_response
-        if record["credential_id"] in faber_cred_ex_ids
+        if record["credential_exchange_id"] in faber_cred_ex_ids
     ]
 
     assert len(cred_ex_response) == 3
@@ -208,7 +208,7 @@ async def issue_alice_creds_and_revoke_unpublished(
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/revoke",
             json={
-                "credential_exchange_id": cred["credential_id"][3:],
+                "credential_exchange_id": cred["credential_exchange_id"],
             },
         )
 
@@ -287,7 +287,7 @@ async def get_or_issue_regression_cred_revoked(
             json=credential,
         )
 
-        faber_cred_ex_id = faber_send_response.json()["credential_id"]
+        faber_cred_ex_id = faber_send_response.json()["credential_exchange_id"]
 
         alice_payload = await check_webhook_state(
             client=alice_member_client,
@@ -297,7 +297,7 @@ async def get_or_issue_regression_cred_revoked(
                 "thread_id": faber_send_response.json()["thread_id"],
             },
         )
-        alice_cred_ex_id = alice_payload["credential_id"]
+        alice_cred_ex_id = alice_payload["credential_exchange_id"]
 
         # Alice accepts credential
         await alice_member_client.post(
@@ -309,7 +309,7 @@ async def get_or_issue_regression_cred_revoked(
             topic="credentials",
             state="done",
             filter_map={
-                "credential_id": alice_cred_ex_id,
+                "credential_exchange_id": alice_cred_ex_id,
             },
         )
 

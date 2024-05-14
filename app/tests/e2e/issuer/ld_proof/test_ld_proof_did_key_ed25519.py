@@ -95,7 +95,7 @@ async def test_send_jsonld_key_ed25519(
 
     data = response.json()
     thread_id = data["thread_id"]
-    assert_that(data).contains("credential_id")
+    assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
 
@@ -124,7 +124,7 @@ async def test_send_jsonld_key_ed25519(
     assert_that(received_credential).has_connection_id(alice_connection_id)
     assert_that(received_credential).has_state("offer-received")
     assert_that(received_credential).has_role("holder")
-    assert_that(received_credential["credential_id"]).starts_with("v2")
+    assert_that(received_credential["credential_exchange_id"]).starts_with("v2")
 
 
 @pytest.mark.anyio
@@ -183,7 +183,7 @@ async def test_send_jsonld_oob(
     )
 
     data = response.json()
-    assert_that(data).contains("credential_id")
+    assert_that(data).contains("credential_exchange_id")
     assert_that(data).has_state("offer-sent")
     assert_that(data).has_protocol_version("v2")
 
@@ -244,10 +244,10 @@ async def test_send_jsonld_request(
         params={"thread_id": thread_id},
     )
 
-    credential_id = (response.json())[0]["credential_id"]
+    credential_exchange_id = (response.json())[0]["credential_exchange_id"]
 
     request_response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+        f"{CREDENTIALS_BASE_PATH}/{credential_exchange_id}/request",
     )
 
     assert request_response.status_code == 200
@@ -314,10 +314,10 @@ async def test_issue_jsonld_ed(
         params={"thread_id": thread_id},
     )
 
-    credential_id = (response.json())[0]["credential_id"]
+    credential_exchange_id = (response.json())[0]["credential_exchange_id"]
 
     request_response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{credential_id}/request",
+        f"{CREDENTIALS_BASE_PATH}/{credential_exchange_id}/request",
     )
 
     assert request_response.status_code == 200

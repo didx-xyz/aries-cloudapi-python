@@ -93,9 +93,9 @@ async def get_credentials(
     return result
 
 
-@router.get("/{credential_id}", response_model=CredentialExchange)
+@router.get("/{credential_exchange_id}", response_model=CredentialExchange)
 async def get_credential(
-    credential_id: str,
+    credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
@@ -103,7 +103,7 @@ async def get_credential(
 
     Parameters:
     -----------
-        credential_id: str
+        credential_exchange_id: str
             credential identifier
 
     Returns:
@@ -111,15 +111,15 @@ async def get_credential(
         payload: CredentialExchange
             The credential exchange record
     """
-    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("GET request received: Get credentials by credential id")
 
-    issuer = issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_exchange_id)
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Getting credential record")
         result = await issuer.get_record(
-            controller=aries_controller, credential_exchange_id=credential_id
+            controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
     if result:
@@ -476,9 +476,9 @@ async def get_credential_revocation_record(
     return revocation_record
 
 
-@router.post("/{credential_id}/request", response_model=CredentialExchange)
+@router.post("/{credential_exchange_id}/request", response_model=CredentialExchange)
 async def request_credential(
-    credential_id: str,
+    credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
@@ -486,17 +486,17 @@ async def request_credential(
 
     Parameters:
     -----------
-        credential_id: str
+        credential_exchange_id: str
             the credential id
     """
-    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("POST request received: Send credential request")
 
-    issuer = issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_exchange_id)
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching records")
-        record = await issuer.get_record(aries_controller, credential_id)
+        record = await issuer.get_record(aries_controller, credential_exchange_id)
 
         schema_id = None
         if record.type == "indy":
@@ -521,7 +521,7 @@ async def request_credential(
 
         bound_logger.debug("Requesting credential")
         result = await issuer.request_credential(
-            controller=aries_controller, credential_exchange_id=credential_id
+            controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
     if result:
@@ -531,9 +531,9 @@ async def request_credential(
     return result
 
 
-@router.post("/{credential_id}/store", response_model=CredentialExchange)
+@router.post("/{credential_exchange_id}/store", response_model=CredentialExchange)
 async def store_credential(
-    credential_id: str,
+    credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
@@ -541,19 +541,19 @@ async def store_credential(
 
     Parameters:
     -----------
-        credential_id: str
+        credential_exchange_id: str
             credential identifier
 
     """
-    bound_logger = logger.bind(body={"credential_id": credential_id})
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("POST request received: Store credential")
 
-    issuer = issuer_from_id(credential_id)
+    issuer = issuer_from_id(credential_exchange_id)
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Storing credential")
         result = await issuer.store_credential(
-            controller=aries_controller, credential_exchange_id=credential_id
+            controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
     if result:

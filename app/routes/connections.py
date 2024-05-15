@@ -101,6 +101,9 @@ async def accept_invitation(
     The `invitation_url` in the InvitationResult can also be used to obtain an invitation; there is a base64 encoded
     string after the "?oob=" parameter in the url, and this can be decoded to obtain the invitation object.
 
+    A webhook event will be emitted for the other party, on topic `connections`.
+    Their record for the connection will now be in state `completed`.
+
     Request Body:
     ---
         body: AcceptInvitation
@@ -112,7 +115,7 @@ async def accept_invitation(
     Returns:
     ---
         Connection
-            The connection record
+            The record of your new connection
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept invitation")
@@ -150,7 +153,7 @@ async def get_connections(
 
     The following query parameters can be used to filter the connection records to fetch.
 
-    Parameters:
+    Parameters (Optional):
     ---
         alias: str
         connection_protocol: Protocol: "connections/1.0", "didexchange/1.0"

@@ -139,6 +139,8 @@ async def create_offer(
     """
     Create a credential offer, not bound to any connection
     ---
+    NB: Only a tenant with the issuer role can create credential offers.
+
     This endpoint takes the same body as the send credential endpoint, but without a connection id. This
     means the credential will not be sent, but it will do the initial step of creating a credential exchange record,
     which the issuer can then use in the out of band (OOB) protocol.

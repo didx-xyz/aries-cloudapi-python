@@ -62,27 +62,20 @@ async def create_credential_definition(
     ---
     Only issuers can create credential definitions.
 
-    If revocation is supported ("support_revocation": true), revocation registries will be created.
+    If revocation is requested ("support_revocation": true), revocation registries will be created.
 
     **NB**: The creation of these revocation registries can take up to one minute.
-
-    It is recommended to use the max (default) revocation registry size of 32767,
-    as this will allow for minimal ledger writes (lower cost).
 
     Request Body:
     ---
         body: CreateCredentialDefinition
-            Payload for creating a credential definition.
-        {
-            tag: str
-                The tag of the credential definition.
             schema_id: str
-                The schema id of schema used to create credential definition against.
+                The id of the schema to use for this credential definition.
+            tag: str
+                The label to use for the credential definition.
             support_revocation: bool
-                Whether the credential definition should support revocation.
-            revocation_registry_size: int
-                The maximum number of revocations to be stored by the registry.
-        }
+                Whether you want credentials using this definition to be revocable or not
+
     Returns:
     ---
         CredentialDefinition
@@ -90,18 +83,14 @@ async def create_credential_definition(
     """
     bound_logger = logger.bind(
         body={
-            "tag": credential_definition.tag,
             "schema_id": credential_definition.schema_id,
+            "tag": credential_definition.tag,
             "support_revocation": credential_definition.support_revocation,
-            "revocation_registry_size": credential_definition.revocation_registry_size,
         }
     )
     bound_logger.info("POST request received: Create credential definition")
 
     support_revocation = credential_definition.support_revocation
-    rev_reg_size = (
-        credential_definition.revocation_registry_size if support_revocation else None
-    )
 
     async with client_from_auth(auth) as aries_controller:
         # Assert the agent has a public did
@@ -157,7 +146,7 @@ async def create_credential_definition(
             schema_id=credential_definition.schema_id,
             support_revocation=support_revocation,
             tag=credential_definition.tag,
-            revocation_registry_size=rev_reg_size,
+            revocation_registry_size=32767,
         )
         try:
             result = await handle_acapy_call(

@@ -48,167 +48,6 @@ router = APIRouter(
 )
 
 
-@router.get(
-    "/credentials",
-    summary="Get Created Credential Definitions",
-    response_model=List[CredentialDefinition],
-)
-async def get_credential_definitions(
-    issuer_did: Optional[str] = None,
-    credential_definition_id: Optional[str] = None,
-    schema_id: Optional[str] = None,
-    schema_issuer_did: Optional[str] = None,
-    schema_name: Optional[str] = None,
-    schema_version: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> List[CredentialDefinition]:
-    """
-    Get credential definitions created by the tenant
-    ---
-    This endpoint returns all credential definitions created by the tenant.
-    Remember only issuers can create credential definitions.
-
-    The results can be filtered by the parameters listed below.
-
-    Parameters (Optional):
-    ---
-        issuer_did: str
-        credential_definition_id: str
-        schema_id: str
-        schema_issuer_id: str
-        schema_version: str
-
-    Returns:
-    ---
-        List[CredentialDefinition]
-            A list of created credential definitions
-    """
-    bound_logger = logger.bind(
-        body={
-            "issuer_did": issuer_did,
-            "credential_definition_id": credential_definition_id,
-            "schema_id": schema_id,
-            "schema_issuer_did": schema_issuer_did,
-            "schema_name": schema_name,
-            "schema_version": schema_version,
-        }
-    )
-    bound_logger.info(
-        "GET request received: Get credential definitions created by agent"
-    )
-
-    # Get all created credential definition ids that match the filter
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Getting created credential definitions")
-        response = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=aries_controller.credential_definition.get_created_cred_defs,
-            issuer_did=issuer_did,
-            cred_def_id=credential_definition_id,
-            schema_id=schema_id,
-            schema_issuer_did=schema_issuer_did,
-            schema_name=schema_name,
-            schema_version=schema_version,
-        )
-
-        # Initiate retrieving all credential definitions
-        credential_definition_ids = response.credential_definition_ids or []
-        get_credential_definition_futures = [
-            handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=aries_controller.credential_definition.get_cred_def,
-                cred_def_id=credential_definition_id,
-            )
-            for credential_definition_id in credential_definition_ids
-        ]
-
-        # Wait for completion of retrieval and transform all credential definitions
-        # into response model (if a credential definition was returned)
-        if get_credential_definition_futures:
-            bound_logger.debug("Getting definitions from fetched credential ids")
-            credential_definition_results = await asyncio.gather(
-                *get_credential_definition_futures
-            )
-        else:
-            bound_logger.debug("No definition ids returned")
-            credential_definition_results = []
-
-    credential_definitions = [
-        credential_definition_from_acapy(credential_definition.credential_definition)
-        for credential_definition in credential_definition_results
-        if credential_definition.credential_definition
-    ]
-
-    if credential_definitions:
-        bound_logger.info("Successfully fetched credential definitions.")
-    else:
-        bound_logger.info("No credential definitions matching request.")
-
-    return credential_definitions
-
-
-@router.get(
-    "/credentials/{credential_definition_id}",
-    summary="Get a Credential Definition",
-    response_model=CredentialDefinition,
-)
-async def get_credential_definition_by_id(
-    credential_definition_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> CredentialDefinition:
-    """
-    Get credential definition by id
-    ---
-    This endpoint returns a credential definition by id.
-
-    Parameters:
-    ---
-        credential_definition_id: str
-            credential definition id
-
-    Returns:
-    ---
-        CredentialDefinition
-            The credential definition
-    """
-    bound_logger = logger.bind(
-        body={"credential_definition_id": credential_definition_id}
-    )
-    bound_logger.info("GET request received: Get credential definition by id")
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Getting credential definition")
-        credential_definition = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=aries_controller.credential_definition.get_cred_def,
-            cred_def_id=credential_definition_id,
-        )
-
-        if not credential_definition.credential_definition:
-            bound_logger.info("Bad request: credential definition id not found.")
-            raise HTTPException(
-                404,
-                f"Credential Definition with id {credential_definition_id} not found.",
-            )
-
-        bound_logger.debug("Cast credential definition response to model")
-        cloudapi_credential_definition = credential_definition_from_acapy(
-            credential_definition.credential_definition
-        )
-
-        # We need to update the schema_id on the returned credential definition as
-        # ACA-Py returns the schema_id as the seq_no
-        bound_logger.debug("Fetching schema associated with definition's schema id")
-        schema = await get_schema(
-            schema_id=cloudapi_credential_definition.schema_id,
-            auth=auth,
-        )
-        cloudapi_credential_definition.schema_id = schema.id
-
-    bound_logger.info("Successfully fetched credential definition.")
-    return cloudapi_credential_definition
-
-
 @router.post(
     "/credentials",
     summary="Create a new Credential Definition",
@@ -401,141 +240,167 @@ async def create_credential_definition(
 
 
 @router.get(
-    "/schemas",
-    summary="Get Created Schemas",
-    response_model=List[CredentialSchema],
+    "/credentials",
+    summary="Get Created Credential Definitions",
+    response_model=List[CredentialDefinition],
 )
-async def get_schemas(
+async def get_credential_definitions(
+    issuer_did: Optional[str] = None,
+    credential_definition_id: Optional[str] = None,
     schema_id: Optional[str] = None,
     schema_issuer_did: Optional[str] = None,
     schema_name: Optional[str] = None,
     schema_version: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> List[CredentialSchema]:
+) -> List[CredentialDefinition]:
     """
-    Get schemas created by the tenant
+    Get credential definitions created by the tenant
     ---
-    Remember only tenants with the governance role can create schemas,
-    i.e. only tenants with the governance role will get a non-empty response.
+    This endpoint returns all credential definitions created by the tenant.
+    Remember only issuers can create credential definitions.
 
-    Results can be filtered by the parameters listed below.
+    The results can be filtered by the parameters listed below.
 
     Parameters (Optional):
     ---
+        issuer_did: str
+        credential_definition_id: str
         schema_id: str
-        schema_issuer_did: str
-        schema_name: str
+        schema_issuer_id: str
         schema_version: str
 
     Returns:
     ---
-        List[CredentialSchema]
-            A list of created schemas
+        List[CredentialDefinition]
+            A list of created credential definitions
     """
     bound_logger = logger.bind(
         body={
+            "issuer_did": issuer_did,
+            "credential_definition_id": credential_definition_id,
             "schema_id": schema_id,
             "schema_issuer_did": schema_issuer_did,
             "schema_name": schema_name,
             "schema_version": schema_version,
         }
     )
-    bound_logger.info("GET request received: Get schemas created by client")
+    bound_logger.info(
+        "GET request received: Get credential definitions created by agent"
+    )
 
-    # Get all created schema ids that match the filter
+    # Get all created credential definition ids that match the filter
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Fetching created schemas")
+        bound_logger.debug("Getting created credential definitions")
         response = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.schema.get_created_schemas,
+            acapy_call=aries_controller.credential_definition.get_created_cred_defs,
+            issuer_did=issuer_did,
+            cred_def_id=credential_definition_id,
             schema_id=schema_id,
             schema_issuer_did=schema_issuer_did,
             schema_name=schema_name,
             schema_version=schema_version,
         )
 
-        # Initiate retrieving all schemas
-        schema_ids = response.schema_ids or []
-        get_schema_futures = [
+        # Initiate retrieving all credential definitions
+        credential_definition_ids = response.credential_definition_ids or []
+        get_credential_definition_futures = [
             handle_acapy_call(
                 logger=bound_logger,
-                acapy_call=aries_controller.schema.get_schema,
-                schema_id=schema_id,
+                acapy_call=aries_controller.credential_definition.get_cred_def,
+                cred_def_id=credential_definition_id,
             )
-            for schema_id in schema_ids
+            for credential_definition_id in credential_definition_ids
         ]
 
-        # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
-        if get_schema_futures:
-            bound_logger.debug("Fetching each of the created schemas")
-            schema_results: List[SchemaGetResult] = await asyncio.gather(
-                *get_schema_futures
+        # Wait for completion of retrieval and transform all credential definitions
+        # into response model (if a credential definition was returned)
+        if get_credential_definition_futures:
+            bound_logger.debug("Getting definitions from fetched credential ids")
+            credential_definition_results = await asyncio.gather(
+                *get_credential_definition_futures
             )
         else:
-            bound_logger.debug("No created schema ids returned")
-            schema_results = []
+            bound_logger.debug("No definition ids returned")
+            credential_definition_results = []
 
-    schemas = [
-        credential_schema_from_acapy(schema.var_schema)
-        for schema in schema_results
-        if schema.var_schema
+    credential_definitions = [
+        credential_definition_from_acapy(credential_definition.credential_definition)
+        for credential_definition in credential_definition_results
+        if credential_definition.credential_definition
     ]
 
-    if schemas:
-        bound_logger.info("Successfully fetched schemas.")
+    if credential_definitions:
+        bound_logger.info("Successfully fetched credential definitions.")
     else:
-        bound_logger.info("No schemas matching request.")
+        bound_logger.info("No credential definitions matching request.")
 
-    return schemas
+    return credential_definitions
 
 
 @router.get(
-    "/schemas/{schema_id}",
-    summary="Get Schema By Id",
-    response_model=CredentialSchema,
+    "/credentials/{credential_definition_id}",
+    summary="Get a Credential Definition",
+    response_model=CredentialDefinition,
 )
-async def get_schema(
-    schema_id: str,
+async def get_credential_definition_by_id(
+    credential_definition_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> CredentialSchema:
+) -> CredentialDefinition:
     """
-    Retrieve schema by id
+    Get credential definition by id
     ---
-    This endpoint returns a schema by id.
-
-    Any tenant can call this endpoint to retrieve a schema.
-    This endpoint will list all the attributes of the schema.
+    This endpoint returns a credential definition by id.
 
     Parameters:
     ---
-        schema_id: str
-            schema id
+        credential_definition_id: str
+            credential definition id
 
     Returns:
     ---
-        CredentialSchema
-            The schema object
+        CredentialDefinition
+            The credential definition
     """
-    bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("GET request received: Get schema by id")
+    bound_logger = logger.bind(
+        body={"credential_definition_id": credential_definition_id}
+    )
+    bound_logger.info("GET request received: Get credential definition by id")
 
     async with client_from_auth(auth) as aries_controller:
-        schema = await handle_acapy_call(
+        bound_logger.debug("Getting credential definition")
+        credential_definition = await handle_acapy_call(
             logger=bound_logger,
-            acapy_call=aries_controller.schema.get_schema,
-            schema_id=schema_id,
+            acapy_call=aries_controller.credential_definition.get_cred_def,
+            cred_def_id=credential_definition_id,
         )
 
-    if not schema.var_schema:
-        bound_logger.info("Bad request: schema id not found.")
-        raise HTTPException(404, f"Schema with id {schema_id} not found.")
+        if not credential_definition.credential_definition:
+            bound_logger.info("Bad request: credential definition id not found.")
+            raise HTTPException(
+                404,
+                f"Credential Definition with id {credential_definition_id} not found.",
+            )
 
-    result = credential_schema_from_acapy(schema.var_schema)
-    bound_logger.info("Successfully fetched schema by id.")
-    return result
+        bound_logger.debug("Cast credential definition response to model")
+        cloudapi_credential_definition = credential_definition_from_acapy(
+            credential_definition.credential_definition
+        )
+
+        # We need to update the schema_id on the returned credential definition as
+        # ACA-Py returns the schema_id as the seq_no
+        bound_logger.debug("Fetching schema associated with definition's schema id")
+        schema = await get_schema(
+            schema_id=cloudapi_credential_definition.schema_id,
+            auth=auth,
+        )
+        cloudapi_credential_definition.schema_id = schema.id
+
+    bound_logger.info("Successfully fetched credential definition.")
+    return cloudapi_credential_definition
 
 
-@router.post("/schemas", response_model=CredentialSchema)
+@router.post("/schemas", summary="Create a new Schema", response_model=CredentialSchema)
 async def create_schema(
     schema: CreateSchema,
     # Only governance can create schemas
@@ -694,4 +559,139 @@ async def create_schema(
 
     result = credential_schema_from_acapy(result.sent.var_schema)
     bound_logger.info("Successfully published and registered schema.")
+    return result
+
+
+@router.get(
+    "/schemas",
+    summary="Get Created Schemas",
+    response_model=List[CredentialSchema],
+)
+async def get_schemas(
+    schema_id: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_version: Optional[str] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> List[CredentialSchema]:
+    """
+    Get schemas created by the tenant
+    ---
+    Remember only tenants with the governance role can create schemas,
+    i.e. only tenants with the governance role will get a non-empty response.
+
+    Results can be filtered by the parameters listed below.
+
+    Parameters (Optional):
+    ---
+        schema_id: str
+        schema_issuer_did: str
+        schema_name: str
+        schema_version: str
+
+    Returns:
+    ---
+        List[CredentialSchema]
+            A list of created schemas
+    """
+    bound_logger = logger.bind(
+        body={
+            "schema_id": schema_id,
+            "schema_issuer_did": schema_issuer_did,
+            "schema_name": schema_name,
+            "schema_version": schema_version,
+        }
+    )
+    bound_logger.info("GET request received: Get schemas created by client")
+
+    # Get all created schema ids that match the filter
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Fetching created schemas")
+        response = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.schema.get_created_schemas,
+            schema_id=schema_id,
+            schema_issuer_did=schema_issuer_did,
+            schema_name=schema_name,
+            schema_version=schema_version,
+        )
+
+        # Initiate retrieving all schemas
+        schema_ids = response.schema_ids or []
+        get_schema_futures = [
+            handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.get_schema,
+                schema_id=schema_id,
+            )
+            for schema_id in schema_ids
+        ]
+
+        # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
+        if get_schema_futures:
+            bound_logger.debug("Fetching each of the created schemas")
+            schema_results: List[SchemaGetResult] = await asyncio.gather(
+                *get_schema_futures
+            )
+        else:
+            bound_logger.debug("No created schema ids returned")
+            schema_results = []
+
+    schemas = [
+        credential_schema_from_acapy(schema.var_schema)
+        for schema in schema_results
+        if schema.var_schema
+    ]
+
+    if schemas:
+        bound_logger.info("Successfully fetched schemas.")
+    else:
+        bound_logger.info("No schemas matching request.")
+
+    return schemas
+
+
+@router.get(
+    "/schemas/{schema_id}",
+    summary="Get a Schema",
+    response_model=CredentialSchema,
+)
+async def get_schema(
+    schema_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> CredentialSchema:
+    """
+    Retrieve schema by id
+    ---
+    This endpoint returns a schema by id.
+
+    Any tenant can call this endpoint to retrieve a schema.
+    This endpoint will list all the attributes of the schema.
+
+    Parameters:
+    ---
+        schema_id: str
+            schema id
+
+    Returns:
+    ---
+        CredentialSchema
+            The schema object
+    """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("GET request received: Get schema by id")
+
+    async with client_from_auth(auth) as aries_controller:
+        schema = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.schema.get_schema,
+            schema_id=schema_id,
+        )
+
+    if not schema.var_schema:
+        bound_logger.info("Bad request: schema id not found.")
+        raise HTTPException(404, f"Schema with id {schema_id} not found.")
+
+    result = credential_schema_from_acapy(schema.var_schema)
+    bound_logger.info("Successfully fetched schema by id.")
     return result

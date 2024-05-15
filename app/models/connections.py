@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 class CreateInvitation(BaseModel):
     alias: Optional[str] = None
-    multi_use: Optional[bool] = None
-    use_public_did: Optional[bool] = None
+    multi_use: bool = False
+    use_public_did: bool = False
 
 
 class AcceptInvitation(BaseModel):

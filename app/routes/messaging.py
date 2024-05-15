@@ -19,15 +19,21 @@ async def send_messages(
 ):
     """
     Send basic message.
+    -------------------
 
-    Parameters:
+    Send a message to a connection.
+
+    The payload contains the connection id and the message content.
+
+    Request body:
     -----------
-    message: Message
-        payload for sending a message
+        message: Message
+            connection_id: str
+            content: str
 
     Returns:
     ---------
-    The response object obtained when sending a message.
+        Status code 204.
     """
     logger.info("POST request received: Send message")
     request_body = SendMessage(content=message.content)
@@ -48,15 +54,24 @@ async def send_trust_ping(
 ):
     """
     Trust ping
+    ----------
+    Send a trust ping to a connection.
+
+    The payload contains the connection id and an optional comment.
 
     Parameters:
     -----------
-    trustping_msg : TrustPingMsg
-        payload for sending a trust ping
+        TrustPingMsg : 
+            connection_id: str
+                Connection ID of the connection to send the trust ping to.
+            comment: str
+                Optional comment to include in the trust ping.
 
     Returns:
     --------
-    The response object obtained when sending a trust ping.
+        PingRequestResponse
+            thread_id: str
+                Thread ID of the ping message
     """
     logger.info("POST request received: Send trust ping")
     request_body = PingRequest(comment=trustping_msg.comment)

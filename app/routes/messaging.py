@@ -61,7 +61,7 @@ async def send_trust_ping(
 
     Parameters:
     -----------
-        TrustPingMsg : 
+        TrustPingMsg :
             connection_id: str
                 Connection ID of the connection to send the trust ping to.
             comment: str

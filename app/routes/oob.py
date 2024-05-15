@@ -32,7 +32,7 @@ async def create_oob_invitation(
     The multi_use field is used to determine if the invitation can be used multiple times by different tenants.
     The use_public_did field is used to determine if the invitation should use the public DID to create a connection.
 
-    
+
     Request body:
     -------------
         body:CreateOobInvitation
@@ -42,7 +42,7 @@ async def create_oob_invitation(
             attachments: Optional[List[Attachment]]
             handshake_protocols: Optional[List[str]]
             create_connection: Optional[bool]
-        
+
     Returns:
     --------
         InvitationRecord
@@ -104,7 +104,7 @@ async def accept_oob_invitation(
     As with the connection endpoint, the invitation object from the create-invitation endpoint
     is passed to this endpoint. The base64 encoded invitation url (from create-invitation) can also
     be decoded and passed as the invitation object.
-    
+
     Request body:
     -------------
         body: AcceptOobInvitation

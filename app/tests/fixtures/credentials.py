@@ -353,3 +353,84 @@ async def get_or_issue_regression_cred_revoked(
         referent=revoked_credential["referent"],
         cred_def_revocable=revoked_credential["cred_def_id"],
     )
+
+
+@pytest.fixture(scope="function")
+async def get_or_issue_regression_cred_valid(
+    faber_client: RichAsyncClient,
+    alice_member_client: RichAsyncClient,
+    credential_definition_id_revocable: str,
+    faber_and_alice_connection: FaberAliceConnect,
+):
+    valid_attribute_name = "Alice-valid"
+
+    # Wallet Query to fetch credential with this attribute name
+    wql = quote(f'{{"attr::name::value":"{valid_attribute_name}"}}')
+
+    results = (await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")).json()[
+        "results"
+    ]
+    assert (
+        len(results) < 2
+    ), f"Should have 1 or 0 credentials with this attr name, got: {results}"
+
+    if results:
+        valid_credential = results[0]
+        assert (
+            valid_credential["attrs"]["name"] == valid_attribute_name
+        ), f"WQL returned unexpected credential: {valid_credential}"
+
+    else:
+        assert_fail_on_recreating_fixtures()
+        credential = {
+            "protocol_version": "v2",
+            "connection_id": faber_and_alice_connection.faber_connection_id,
+            "save_exchange_record": True,
+            "indy_credential_detail": {
+                "credential_definition_id": credential_definition_id_revocable,
+                "attributes": {
+                    "speed": "10",
+                    "name": valid_attribute_name,
+                    "age": "44",
+                },
+            },
+        }
+
+        # Faber sends credential
+        faber_send_response = await faber_client.post(
+            CREDENTIALS_BASE_PATH,
+            json=credential,
+        )
+
+        alice_payload = await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+            filter_map={
+                "thread_id": faber_send_response.json()["thread_id"],
+            },
+        )
+        alice_cred_ex_id = alice_payload["credential_exchange_id"]
+
+        # Alice accepts credential
+        await alice_member_client.post(
+            f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request", json={}
+        )
+
+        await check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="done",
+            filter_map={
+                "credential_exchange_id": alice_cred_ex_id,
+            },
+        )
+
+        # Alice fetches the valid credential
+        wallet_credentials = await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")
+        valid_credential = wallet_credentials.json()["results"][0]
+
+    return ReferentCredDef(
+        referent=valid_credential["referent"],
+        cred_def_revocable=valid_credential["cred_def_id"],
+    )

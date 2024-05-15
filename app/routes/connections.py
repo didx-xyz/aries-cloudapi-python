@@ -21,13 +21,47 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/connections", tags=["connections"])
 
 
-@router.post("/create-invitation", response_model=InvitationResult)
+@router.post(
+    "/create-invitation",
+    summary="Create a Connection Invitation",
+    response_model=InvitationResult,
+)
 async def create_invitation(
     body: Optional[CreateInvitation] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> InvitationResult:
     """
-    Create connection invitation.
+    Create connection invitation
+    ---
+    This endpoint creates an invitation object for establishing a connection with another tenant.
+
+    For every invitation that is created, there will be a corresponding connection record with a state
+    `invitation-sent`. Once this invitation is accepted, the connection record will transition to a state `completed`.
+
+    If `multi_use` is set to true, the invitation can be re-used and accepted by multiple tenants.
+
+    Creating a multi-use invitation will create a connection record with `invitation_mode: "multi"`
+    (instead of `"once"`), and this connection record will remain in a state `invitation-sent`, until it is deleted.
+    Every time a multi-use invitation is accepted, a new connection record will be created with state `completed`.
+
+    The `use_public_did` parameter determines whether to create an invitation using your public DID.
+    This of course requires that you have a public DID in your wallet, which by default is only true for issuers.
+    If `use_public_did` is set to False (default behaviour), then a random DID will be generated for this invite.
+
+    Request Body:
+    ---
+        body: CreateInvitation
+            alias: str (Optional)
+                An alias for the connection invitation, which will appear as the alias in the connection record.
+            multi_use: bool (default: False)
+                Whether the invitation can be used multiple times.
+            use_public_did: bool (default: False)
+                Whether to use a public did for the invitation.
+
+    Returns:
+    ---
+        InvitationResult
+            Contains an invitation object, an invitation url, and a connection id for this invite.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create invitation")
@@ -48,18 +82,40 @@ async def create_invitation(
     return invitation
 
 
-@router.post("/accept-invitation", response_model=Connection)
+@router.post(
+    "/accept-invitation",
+    summary="Accept a Connection Invitation",
+    response_model=Connection,
+)
 async def accept_invitation(
     body: AcceptInvitation,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
-    Accept connection invitation.
+    Accept connection invitation
+    ---
+    Tenants can use this endpoint to accept a connection invitation.
 
-    Parameters:
-    ------------
-    invitation: AcceptInvitation
-        the invitation object obtained from create_invitation.
+    The invitation object is obtained from an InvitationResult (the response from creating a connection invitation).
+
+    The `invitation_url` in the InvitationResult can also be used to obtain an invitation; there is a base64 encoded
+    string after the "?oob=" parameter in the url, and this can be decoded to obtain the invitation object.
+
+    A webhook event will be emitted for the other party, on topic `connections`.
+    Their record for the connection will now be in state `completed`.
+
+    Request Body:
+    ---
+        body: AcceptInvitation
+            alias: str (Optional)
+                Alias for the connection invitation.
+            invitation: ConnectionInvitation
+                The invitation object obtained from an InvitationResult, or decoded from an invitation_url.
+
+    Returns:
+    ---
+        Connection
+            The record of your new connection
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept invitation")
@@ -76,7 +132,7 @@ async def accept_invitation(
     return result
 
 
-@router.get("", response_model=List[Connection])
+@router.get("", summary="Fetch Connection Records", response_model=List[Connection])
 async def get_connections(
     alias: Optional[str] = None,
     connection_protocol: Optional[Protocol] = None,
@@ -90,25 +146,29 @@ async def get_connections(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[Connection]:
     """
-    Retrieve list of connections.
+    Fetch a list of connection records
+    ---
+    The records contain information about connections with other tenants, such as the state of the connection,
+    the alias of the connection, the label and the did of the other party, and other metadata.
 
-    Parameters:
-    -----------
-        alias: Optional[str]
-        connection_protocol: Optional[Protocol]: "connections/1.0", "didexchange/1.0"
-        invitation_key: Optional[str]
-        invitation_msg_id: Optional[str]
-        my_did: Optional[str]
-        state: Optional[State]: "active", "response", "request", "start",
-                                "completed", "init", "error", "invitation", "abandoned"
-        their_did: Optional[str]
-        their_public_did: Optional[str]
-        their_role: Optional[Role]: "invitee", "requester", "inviter", "responder"
+    The following query parameters can be used to filter the connection records to fetch.
+
+    Parameters (Optional):
+    ---
+        alias: str
+        connection_protocol: Protocol: "connections/1.0", "didexchange/1.0"
+        invitation_key: str
+        invitation_msg_id: str
+        my_did: str
+        state: State: "active", "response", "request", "start", "completed", "init", "error", "invitation", "abandoned"
+        their_did: str
+        their_public_did: str
+        their_role: Role: "invitee", "requester", "inviter", "responder"
 
     Returns:
-    ---------
+    ---
         List[Connection]
-            A list of connection objects.
+            A list of connection records
     """
     logger.info("GET request received: Get connections")
 
@@ -138,23 +198,28 @@ async def get_connections(
     return []
 
 
-@router.get("/{connection_id}", response_model=Connection)
+@router.get(
+    "/{connection_id}", summary="Fetch a Connection Record", response_model=Connection
+)
 async def get_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
-    Retrieve connection by id.
+    Fetch a connection record by id
+    ---
+    A connection record contains information about a connection with other tenants, such as the state of the connection,
+    the alias of the connection, the label and the did of the other party, and other metadata.
 
     Parameters:
-    -----------
-    connection_id: str
+    ---
+        connection_id: str
+            The identifier of the connection record that you want to fetch
 
     Returns:
-    ---------
-    Connection.
-        A connection object.
-
+    ---
+        Connection
+            The connection record
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("GET request received: Get connection by ID")
@@ -173,17 +238,28 @@ async def get_connection_by_id(
     return result
 
 
-@router.delete("/{connection_id}", status_code=200)
+@router.delete(
+    "/{connection_id}", summary="Delete a Connection Record", status_code=204
+)
 async def delete_connection_by_id(
     connection_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-):
+) -> None:
     """
-    Delete connection by id.
+    Delete connection record by id
+    ---
+    This endpoint deletes a connection record by id.
+
+    The other party will still have their record of the connection, but it will become unusable.
 
     Parameters:
-    -----------
-    connection_id: str
+    ---
+        connection_id: str
+            The identifier of the connection record that you want to delete
+
+    Returns:
+    ---
+        status_code: 204
     """
     bound_logger = logger.bind(body={"connection_id": connection_id})
     bound_logger.info("DELETE request received: Delete connection by ID")
@@ -196,4 +272,3 @@ async def delete_connection_by_id(
         )
 
     bound_logger.info("Successfully deleted connection by ID.")
-    return {}  # todo change to 204 in next breaking release

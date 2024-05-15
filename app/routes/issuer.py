@@ -628,7 +628,7 @@ async def publish_revocations(
     ---
     Revocations that are in a pending state can be published to the ledger.
 
-    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary from
+    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of
     revocation registry IDs to credential revocation IDs, to allow publishing individual credentials.
 
     If no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),
@@ -683,7 +683,7 @@ async def clear_pending_revocations(
     ---
     Revocations that are in a pending state can be cleared, such that they are no longer set to be revoked.
 
-    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary from
+    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of
     revocation registry IDs to credential revocation IDs, to allow clearing individual credentials.
 
     If no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),

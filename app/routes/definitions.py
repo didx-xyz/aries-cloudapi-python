@@ -48,7 +48,11 @@ router = APIRouter(
 )
 
 
-@router.get("/credentials", response_model=List[CredentialDefinition])
+@router.get(
+    "/credentials",
+    summary="Get Created Credential Definitions",
+    response_model=List[CredentialDefinition],
+)
 async def get_credential_definitions(
     issuer_did: Optional[str] = None,
     credential_definition_id: Optional[str] = None,
@@ -144,7 +148,9 @@ async def get_credential_definitions(
 
 
 @router.get(
-    "/credentials/{credential_definition_id}", response_model=CredentialDefinition
+    "/credentials/{credential_definition_id}",
+    summary="Get a Credential Definition",
+    response_model=CredentialDefinition,
 )
 async def get_credential_definition_by_id(
     credential_definition_id: str,
@@ -203,7 +209,11 @@ async def get_credential_definition_by_id(
     return cloudapi_credential_definition
 
 
-@router.post("/credentials", response_model=CredentialDefinition)
+@router.post(
+    "/credentials",
+    summary="Create a new Credential Definition",
+    response_model=CredentialDefinition,
+)
 async def create_credential_definition(
     credential_definition: CreateCredentialDefinition,
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
@@ -390,7 +400,11 @@ async def create_credential_definition(
     return result
 
 
-@router.get("/schemas", response_model=List[CredentialSchema])
+@router.get(
+    "/schemas",
+    summary="Get Created Schemas",
+    response_model=List[CredentialSchema],
+)
 async def get_schemas(
     schema_id: Optional[str] = None,
     schema_issuer_did: Optional[str] = None,
@@ -476,7 +490,9 @@ async def get_schemas(
 
 
 @router.get(
-    "/schemas/{schema_id}", response_model=CredentialSchema, summary="Get Schema By Id"
+    "/schemas/{schema_id}",
+    summary="Get Schema By Id",
+    response_model=CredentialSchema,
 )
 async def get_schema(
     schema_id: str,

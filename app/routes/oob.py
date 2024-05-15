@@ -22,7 +22,31 @@ async def create_oob_invitation(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> InvitationRecord:
     """
-    Create connection invitation out-of-band.
+    Create an out-of-band invitation.
+    ------------------------------
+
+    The attachment field is used to include a credential offer or a proof request in the invitation.
+    The attachment ID is the credential ID or proof request ID without the protocol prefix.
+    The attachment type is either "credential-offer" or "present-proof".
+
+    The multi_use field is used to determine if the invitation can be used multiple times by different tenants.
+    The use_public_did field is used to determine if the invitation should use the public DID to create a connection.
+
+    
+    Request body:
+    -------------
+        body:CreateOobInvitation
+            alias: Optional[str]
+            multi_use: Optional[bool]
+            use_public_did: Optional[bool]
+            attachments: Optional[List[Attachment]]
+            handshake_protocols: Optional[List[str]]
+            create_connection: Optional[bool]
+        
+    Returns:
+    --------
+        InvitationRecord
+            The invitation record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create OOB invitation")
@@ -74,7 +98,25 @@ async def accept_oob_invitation(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> OobRecord:
     """
-    Receive out-of-band invitation.
+    Accept out-of-band invitation.
+    ------------------------------
+
+    As with the connection endpoint, the invitation object from the create-invitation endpoint
+    is passed to this endpoint. The base64 encoded invitation url (from create-invitation) can also
+    be decoded and passed as the invitation object.
+    
+    Request body:
+    -------------
+        body: AcceptOobInvitation
+            alias: Optional[str]
+            use_existing_connection: Optional[bool]
+            invitation: InvitationMessage
+
+
+    Returns:
+    --------
+        OobRecord
+            The out-of-band record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept OOB invitation")
@@ -99,19 +141,19 @@ async def connect_to_public_did(
 ) -> Connection:
     """
     Connect using public DID as implicit invitation.
+    -----------------------------------------------
 
-    Parameters:
-    ---
-    their_public_did: str
-        Public DID of target entity
+    Connection will automatically be established with the tenant of public DID.
 
-    body: Optional[CreateConnFromDIDRequest]
-        Additional request info
+    Request body:
+    -------------
+        body: ConnectToPublicDid
+            public_did: str
 
     Returns:
     ---
-    Connection
-        The connection record
+        Connection
+            The connection exchange record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Connect to public DID")

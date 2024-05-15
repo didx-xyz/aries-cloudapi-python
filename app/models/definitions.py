@@ -4,16 +4,9 @@ from pydantic import BaseModel, Field
 
 
 class CreateCredentialDefinition(BaseModel):
-    tag: str = Field(..., examples=["default"])
     schema_id: str = Field(..., examples=["CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3"])
+    tag: str = Field(..., examples=["default"])
     support_revocation: bool = Field(default=False)
-    revocation_registry_size: int = Field(
-        default=32767,
-        description=(
-            "If revocation support is requested, this specifies the maximum number of "
-            "revocations to be stored by the registry. Default value is equal to the maximum: 32767."
-        ),
-    )
 
 
 class CredentialDefinition(BaseModel):

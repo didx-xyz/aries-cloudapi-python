@@ -39,114 +39,42 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/issuer/credentials", tags=["issuer"])
 
 
-@router.get("", response_model=List[CredentialExchange])
-async def get_credentials(
-    connection_id: Optional[str] = Query(None),
-    role: Optional[Role] = Query(None),
-    state: Optional[State] = Query(None),
-    thread_id: Optional[UUID] = Query(None),
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> List[CredentialExchange]:
-    """
-        Get a list of credential records.
-
-    Parameters:
-    ------------
-        connection_id: str (Optional)
-        role: Role (Optional): "issuer", "holder"
-        state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
-                                 "request-sent", "request-received", "credential-issued", "credential-received",
-                                 "credential-revoked","abandoned", "done"
-        thread_id: UUID (Optional)
-    Returns:
-    --------
-        payload: List[CredentialExchange]
-            A list of credential exchange records
-    """
-    bound_logger = logger.bind(body={"connection_id": connection_id})
-    bound_logger.info("GET request received: Get credentials")
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Fetching v1 records")
-        v1_records = await IssueCredentialFacades.v1.value.get_records(
-            controller=aries_controller,
-            connection_id=connection_id,
-            role=role,
-            state=back_to_v1_credential_state(state) if state else None,
-            thread_id=str(thread_id) if thread_id else None,
-        )
-
-        bound_logger.debug("Fetching v2 records")
-        v2_records = await IssueCredentialFacades.v2.value.get_records(
-            controller=aries_controller,
-            connection_id=connection_id,
-            role=role,
-            state=state,
-            thread_id=str(thread_id) if thread_id else None,
-        )
-
-    result = v1_records + v2_records
-    if result:
-        bound_logger.info("Successfully fetched v1 and v2 records.")
-    else:
-        bound_logger.info("No v1 or v2 records returned.")
-    return result
-
-
-@router.get("/{credential_exchange_id}", response_model=CredentialExchange)
-async def get_credential(
-    credential_exchange_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> CredentialExchange:
-    """
-        Get a credential by credential id.
-
-    Parameters:
-    -----------
-        credential_exchange_id: str
-            credential identifier
-
-    Returns:
-    --------
-        payload: CredentialExchange
-            The credential exchange record
-    """
-    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info("GET request received: Get credentials by credential id")
-
-    issuer = issuer_from_id(credential_exchange_id)
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Getting credential record")
-        result = await issuer.get_record(
-            controller=aries_controller, credential_exchange_id=credential_exchange_id
-        )
-
-    if result:
-        bound_logger.info("Successfully fetched credential.")
-    else:
-        bound_logger.info("No credential returned.")
-    return result
-
-
-@router.post("", response_model=CredentialExchange)
+@router.post("", summary="Send Holder a Credential", response_model=CredentialExchange)
 async def send_credential(
     credential: SendCredential,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-        Create and send a credential. Automating the entire flow.
+    Create and send a credential, automating the issuer-side flow
+    ---
+    NB: Only a tenant with the issuer role can send credentials.
 
-    Parameters:
-    ------------
-        credential: Credential
-            payload for sending a credential
+    When creating a credential, the credential type must be one of `indy` or `ld_proof`.
+    ```json
+    {
+        "type": "indy" or "ld_proof",
+        "indy_credential_detail": {...}, <-- Required if type is indy
+        "ld_credential_detail": {...}, <-- Required if type is ld_proof
+        "save_exchange_record": true, <-- Whether the credential exchange record should be saved on completion.
+        "connection_id": "string", <-- The issuer's reference to the connection they want to submit the credential to.
+        "protocol_version": "v2" <-- v1 is supported, but deprecated.
+    }
+    ```
+    Read more about the Aries credential issuing protocol at:
+        https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
+
+    Setting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.
+    The default behaviour is to only save exchange records while they are in pending state.
+
+    Request Body:
+    ---
+        credential: SendCredential
+            The payload for sending a credential
 
     Returns:
-    --------
-        payload: CredentialExchange
-            The response object from sending a credential
-        status_code: 200
+    ---
+        CredentialExchange
+            A record of this credential exchange
     """
     bound_logger = logger.bind(
         body={
@@ -199,22 +127,49 @@ async def send_credential(
     return result
 
 
-@router.post("/create-offer", response_model=CredentialExchange)
+@router.post(
+    "/create-offer",
+    summary="Create a Credential Offer (not bound to a connection)",
+    response_model=CredentialExchange,
+)
 async def create_offer(
     credential: CreateOffer,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-        Create a credential offer not bound to any connection.
+    Create a credential offer, not bound to any connection
+    ---
+    NB: Only a tenant with the issuer role can create credential offers.
 
-    Parameters:
-    ------------
-        credential: Credential
-            payload for sending a credential
+    This endpoint takes the same body as the send credential endpoint, but without a connection id. This
+    means the credential will not be sent, but it will do the initial step of creating a credential exchange record,
+    which the issuer can then use in the out of band (OOB) protocol.
+
+    The OOB protocol allows credentials to be sent over alternative channels, such as email or QR code, where a
+    connection does not yet exist between holder and issuer.
+
+    The credential type must be one of indy or ld_proof.
+    ```json
+    {
+        "type": "indy" or "ld_proof",
+        "indy_credential_detail": {...}, <-- Required if type is indy
+        "ld_credential_detail": {...}, <-- Required if type is ld_proof
+        "save_exchange_record": true, <-- Whether the credential exchange record should be saved on completion.
+        "protocol_version": "v2" <-- v1 is supported, but deprecated.
+    }
+    ```
+    Read more about the Aries credential issuing protocol at:
+        https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
+
+    Request Body:
+    ---
+        credential: CreateOffer
+            The payload for creating a credential offer
 
     Returns:
-    --------
-        The response object from sending a credential
+    ---
+        CredentialExchange
+            A record of this credential exchange
     """
     bound_logger = logger.bind(
         body={
@@ -262,234 +217,32 @@ async def create_offer(
     return result
 
 
-@router.delete("/{credential_exchange_id}", status_code=204)
-async def remove_credential_exchange_record(
-    credential_exchange_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
-    """
-        Remove a credential exchange record.
-
-    Parameters:
-    -----------
-        credential_exchange_id: str
-            credential exchange record identifier
-
-    Returns:
-    --------
-        payload: None
-        status_code: 204
-    """
-    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
-    bound_logger.info(
-        "DELETE request received: Remove credential exchange record by id"
-    )
-
-    issuer = issuer_from_id(credential_exchange_id)
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Deleting credential")
-        await issuer.delete_credential_exchange_record(
-            controller=aries_controller, credential_exchange_id=credential_exchange_id
-        )
-
-    bound_logger.info("Successfully deleted credential exchange record.")
-
-
-@router.post("/revoke", status_code=204)
-async def revoke_credential(
-    body: RevokeCredential,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
-    """
-        Revoke a credential.
-
-    Parameters:
-    -----------
-        body: RevokeCredential
-            - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.
-            - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or
-                (default, False) mark it pending
-
-
-    Returns:
-    --------
-        payload: None
-        status_code: 204
-    """
-    bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Revoke credential")
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Revoking credential")
-        await revocation_registry.revoke_credential(
-            controller=aries_controller,
-            credential_exchange_id=body.credential_exchange_id,
-            auto_publish_to_ledger=body.auto_publish_on_ledger,
-        )
-
-    bound_logger.info("Successfully revoked credential.")
-
-
-@router.post("/publish-revocations", status_code=204)
-async def publish_revocations(
-    publish_request: PublishRevocationsRequest,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> None:
-    """
-        Write batch of pending revocations to ledger.
-
-        If no revocation registry id is provided, all pending revocations
-        will be published.
-
-        If no credential revocation id is provided, all pending revocations
-        for the given revocation registry id will be published.
-
-    Parameters:
-    -----------
-        publish_request: PublishRevocationsRequest
-            An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map
-            is a dictionary where each key is a revocation registry ID and its value is a list of credential
-            revocation IDs to be published. Providing an empty list for a registry ID instructs the system to
-            publish all pending revocations for that ID. An empty dictionary signifies that all pending
-            revocations across all registry IDs should be published.
-
-    Returns:
-    --------
-        payload: None
-        status_code: 204
-    """
-    bound_logger = logger.bind(body=publish_request)
-    bound_logger.info("POST request received: Publish revocations")
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Publishing revocations")
-        await revocation_registry.publish_pending_revocations(
-            controller=aries_controller,
-            revocation_registry_credential_map=publish_request.revocation_registry_credential_map,
-        )
-
-    bound_logger.info("Successfully published revocations.")
-
-
-@router.post("/clear-pending-revocations", response_model=ClearPendingRevocationsResult)
-async def clear_pending_revocations(
-    clear_pending_request: ClearPendingRevocationsRequest,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> ClearPendingRevocationsResult:
-    """
-        Clear pending revocations.
-
-        If no revocation registry id is provided, all pending revocations
-        will be cleared.
-
-        If no credential revocation id is provided, all pending revocations
-        for the given revocation registry id will be cleared.
-
-    Parameters:
-    -----------
-        clear_pending_request: ClearPendingRevocationsRequest
-            An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map
-            is a dictionary where each key is a revocation registry ID and its value is a list of credential
-            revocation IDs to be cleared. Providing an empty list for a registry ID instructs the system to
-            clear all pending revocations for that ID. An empty dictionary signifies that all pending
-            revocations across all registry IDs should be cleared.
-
-    Returns:
-    --------
-        payload: ClearPendingRevocationsResult
-            The revocations that are still pending after the clear request is performed
-    """
-    bound_logger = logger.bind(body=clear_pending_request)
-    bound_logger.info("POST request received: Clear pending revocations")
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Clearing pending revocations")
-        response = await revocation_registry.clear_pending_revocations(
-            controller=aries_controller,
-            revocation_registry_credential_map=clear_pending_request.revocation_registry_credential_map,
-        )
-
-    bound_logger.info("Successfully cleared pending revocations.")
-    return response
-
-
-@router.get("/revocation/record", response_model=IssuerCredRevRecord)
-async def get_credential_revocation_record(
-    credential_exchange_id: Optional[str] = None,
-    credential_revocation_id: Optional[str] = None,
-    revocation_registry_id: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> IssuerCredRevRecord:
-    """
-        Get a credential revocation record.
-
-    Parameters:
-    -----------
-        credential_exchange_id: str
-            The credential exchange id
-        credential_revocation_id: str
-            The credential revocation id
-        revocation_registry_id: str
-            The revocation registry id
-
-    Returns:
-    --------
-        payload: IssuerCredRevRecord
-            The credential revocation record
-
-    Raises:
-    -------
-        CloudApiException: 400
-            If credential_exchange_id is not provided BOTH the credential_revocation_id
-            and revocation_registry_id MUST be provided.
-    """
-    bound_logger = logger.bind(
-        body={
-            "credential_exchange_id": credential_exchange_id,
-            "credential_revocation_id": credential_revocation_id,
-            "revocation_registry_id": revocation_registry_id,
-        }
-    )
-    bound_logger.info("GET request received: Get credential revocation record by id")
-
-    if credential_exchange_id is None and (
-        credential_revocation_id is None or revocation_registry_id is None
-    ):
-        raise CloudApiException(
-            "If credential_exchange_id is not provided BOTH the credential_revocation_id and \
-                  revocation_registry_id MUST be provided.",
-            400,
-        )
-
-    async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Getting credential revocation record")
-        revocation_record = await revocation_registry.get_credential_revocation_record(
-            controller=aries_controller,
-            credential_exchange_id=credential_exchange_id,
-            credential_revocation_id=credential_revocation_id,
-            revocation_registry_id=revocation_registry_id,
-        )
-
-    if revocation_record:
-        bound_logger.info("Successfully fetched credential revocation record.")
-    else:
-        bound_logger.info("No credential revocation record returned.")
-    return revocation_record
-
-
-@router.post("/{credential_exchange_id}/request", response_model=CredentialExchange)
+@router.post(
+    "/{credential_exchange_id}/request",
+    summary="Accept a Credential Offer",
+    response_model=CredentialExchange,
+)
 async def request_credential(
     credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-        Send a credential request.
+    Sends a request to accept a credential offer
+    ---
+    The holder uses this endpoint to accept an offer from an issuer.
+
+    In technical terms, when a holder has a credential exchange record with a state 'offer-received', then they can use
+    this endpoint to accept that credential offer, and store the credential in their wallet.
 
     Parameters:
-    -----------
+    ---
         credential_exchange_id: str
-            the credential id
+            The holder's reference to the credential exchange that they want to accept
+
+    Returns:
+    ---
+        CredentialExchange
+            An updated record of this credential exchange
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("POST request received: Send credential request")
@@ -533,19 +286,38 @@ async def request_credential(
     return result
 
 
-@router.post("/{credential_exchange_id}/store", response_model=CredentialExchange)
+@router.post(
+    "/{credential_exchange_id}/store",
+    summary="Store a Received Credential in Wallet",
+    response_model=CredentialExchange,
+    deprecated=True,
+)
 async def store_credential(
     credential_exchange_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialExchange:
     """
-        Store a credential.
+    NB: Deprecated because credentials are automatically stored in wallet after they are accepted
+    ---
+
+    Store a credential
+    ---
+    Store a credential by providing the credential exchange id.
+    The credential exchange id is the id of the credential exchange record, not the credential itself.
+
+    The holder only needs to call this endpoint if the holder receives a credential out of band
+
+    The holder can store the credential in their wallet after receiving it from the issuer.
 
     Parameters:
-    -----------
+    ---
         credential_exchange_id: str
-            credential identifier
+            credential exchange record identifier
 
+    Returns:
+    ---
+        CredentialExchange
+            An updated record of this credential exchange
     """
     bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
     bound_logger.info("POST request received: Store credential")
@@ -563,3 +335,392 @@ async def store_credential(
     else:
         bound_logger.warning("No result from storing credential.")
     return result
+
+
+@router.get(
+    "",
+    summary="Fetch Credential Exchange Records",
+    response_model=List[CredentialExchange],
+)
+async def get_credentials(
+    connection_id: Optional[str] = Query(None),
+    role: Optional[Role] = Query(None),
+    state: Optional[State] = Query(None),
+    thread_id: Optional[UUID] = Query(None),
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> List[CredentialExchange]:
+    """
+    Get a list of credential exchange records
+    ---
+    Both holders and issuers can call this endpoint, because they each have their own records of a credential exchange.
+
+    These records contain information about the credentials issued to a holder, such as the current state of the
+    exchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received
+    from (if a holder). Each record in the list is related to a single credential exchange flow.
+
+    NB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.
+    The `thread_id` is the only record attribute that will be the same for the holder and the issuer.
+
+    An exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),
+    unless the `save_exchange_record` was set to true.
+
+    The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
+
+    Parameters:
+    ---
+        connection_id: str (Optional)
+        role: Role (Optional): "issuer", "holder"
+        state: State (Optional): "proposal-sent", "proposal-received", "offer-sent", "offer-received",
+                                 "request-sent", "request-received", "credential-issued", "credential-received",
+                                 "credential-revoked", "abandoned", "done"
+        thread_id: UUID (Optional)
+
+    Returns:
+    ---
+        List[CredentialExchange]
+            A list of credential exchange records
+    """
+    bound_logger = logger.bind(body={"connection_id": connection_id})
+    bound_logger.info("GET request received: Get credentials")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Fetching v1 records")
+        v1_records = await IssueCredentialFacades.v1.value.get_records(
+            controller=aries_controller,
+            connection_id=connection_id,
+            role=role,
+            state=back_to_v1_credential_state(state) if state else None,
+            thread_id=str(thread_id) if thread_id else None,
+        )
+
+        bound_logger.debug("Fetching v2 records")
+        v2_records = await IssueCredentialFacades.v2.value.get_records(
+            controller=aries_controller,
+            connection_id=connection_id,
+            role=role,
+            state=state,
+            thread_id=str(thread_id) if thread_id else None,
+        )
+
+    result = v1_records + v2_records
+    if result:
+        bound_logger.info("Successfully fetched v1 and v2 records.")
+    else:
+        bound_logger.info("No v1 or v2 records returned.")
+    return result
+
+
+@router.get(
+    "/{credential_exchange_id}",
+    summary="Fetch a single Credential Exchange Record",
+    response_model=CredentialExchange,
+)
+async def get_credential(
+    credential_exchange_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> CredentialExchange:
+    """
+    Get a credential exchange record by credential id
+    ---
+    Both holders and issuers can call this endpoint, because they each have their own records of a credential exchange.
+
+    These records contain information about the credentials issued to a holder, such as the current state of the
+    exchange, and other metadata such as the `connection_id` that a credential was submit to (if an issuer) or received
+    from (if a holder).
+
+    NB: An issuer and a holder will have distinct credential exchange ids, despite referring to the same exchange.
+    The `thread_id` is the only record attribute that will be the same for the holder and the issuer.
+
+    An exchange record will automatically be deleted after a flow completes (i.e. when state is 'done'),
+    unless the `save_exchange_record` was set to true.
+
+    The following parameters can be set to filter the fetched exchange records: connection_id, role, state, thread_id.
+
+    Parameters:
+    ---
+        credential_exchange_id: str
+            The identifier of the credential exchange record that you want to fetch
+
+    Returns:
+    ---
+        CredentialExchange
+            The credential exchange record
+    """
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
+    bound_logger.info("GET request received: Get credentials by credential id")
+
+    issuer = issuer_from_id(credential_exchange_id)
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Getting credential record")
+        result = await issuer.get_record(
+            controller=aries_controller, credential_exchange_id=credential_exchange_id
+        )
+
+    if result:
+        bound_logger.info("Successfully fetched credential.")
+    else:
+        bound_logger.info("No credential returned.")
+    return result
+
+
+@router.delete(
+    "/{credential_exchange_id}", summary="Delete an Exchange Record", status_code=204
+)
+async def remove_credential_exchange_record(
+    credential_exchange_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> None:
+    """
+    Delete a credential exchange record
+    ---
+    This will remove a specific credential exchange from your records.
+
+    Parameters:
+    ---
+        credential_exchange_id: str
+            The identifier of the credential exchange record that you want to delete
+
+    Returns:
+    ---
+        status_code: 204
+    """
+    bound_logger = logger.bind(body={"credential_exchange_id": credential_exchange_id})
+    bound_logger.info(
+        "DELETE request received: Remove credential exchange record by id"
+    )
+
+    issuer = issuer_from_id(credential_exchange_id)
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Deleting credential")
+        await issuer.delete_credential_exchange_record(
+            controller=aries_controller, credential_exchange_id=credential_exchange_id
+        )
+
+    bound_logger.info("Successfully deleted credential exchange record.")
+
+
+@router.post("/revoke", summary="Revoke a Credential (if revocable)", status_code=204)
+async def revoke_credential(
+    body: RevokeCredential,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> None:
+    """
+    Revoke a credential
+    ---
+    Revoke a credential by providing the identifier of the exchange.
+
+    If an issuer is going to revoke more than one credential, it is recommended to set the
+    'auto_publish_on_ledger' field to False (default), and then batch publish the revocations using
+    the 'publish-revocations' endpoint.
+
+    By batching the revocations, the issuer can save on transaction fees related to
+    publishing revocations to the ledger.
+
+    Request Body:
+    ---
+        body: RevokeCredential
+            - credential_exchange_id (str): The ID associated with the credential exchange that should be revoked.
+            - auto_publish_on_ledger (bool): (True) publish revocation to ledger immediately, or
+                (default, False) mark it pending
+
+    Returns:
+    ---
+        status_code: 204
+    """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Revoke credential")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Revoking credential")
+        await revocation_registry.revoke_credential(
+            controller=aries_controller,
+            credential_exchange_id=body.credential_exchange_id,
+            auto_publish_to_ledger=body.auto_publish_on_ledger,
+        )
+
+    bound_logger.info("Successfully revoked credential.")
+
+
+@router.get(
+    "/revocation/record",
+    summary="Fetch a Revocation Record",
+    response_model=IssuerCredRevRecord,
+)
+async def get_credential_revocation_record(
+    credential_exchange_id: Optional[str] = None,
+    credential_revocation_id: Optional[str] = None,
+    revocation_registry_id: Optional[str] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> IssuerCredRevRecord:
+    """
+    Get a credential revocation record
+    ---
+    Fetch a credential revocation record by providing the credential exchange id.
+    Records can also be fetched by providing the credential revocation id and revocation registry id.
+
+    The record is the payload of the webhook event on topic 'issuer_cred_rev', and contains the credential's revocation
+    status and other metadata.
+
+    The revocation registry id (rev_reg_id) and credential revocation id (cred_rev_id) can be found
+    in this record if you have the credential exchange id.
+
+    Parameters:
+    ---
+        credential_exchange_id: str
+        credential_revocation_id: str
+        revocation_registry_id: str
+
+    Returns:
+    ---
+        IssuerCredRevRecord
+            The credential revocation record
+
+    Raises:
+    ---
+        CloudApiException: 400
+            If credential_exchange_id is not provided, BOTH credential_revocation_id and revocation_registry_id must be.
+    """
+    bound_logger = logger.bind(
+        body={
+            "credential_exchange_id": credential_exchange_id,
+            "credential_revocation_id": credential_revocation_id,
+            "revocation_registry_id": revocation_registry_id,
+        }
+    )
+    bound_logger.info("GET request received: Get credential revocation record by id")
+
+    if credential_exchange_id is None and (
+        credential_revocation_id is None or revocation_registry_id is None
+    ):
+        raise CloudApiException(
+            "If credential_exchange_id is not provided BOTH the credential_revocation_id and \
+                  revocation_registry_id MUST be provided.",
+            400,
+        )
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Getting credential revocation record")
+        revocation_record = await revocation_registry.get_credential_revocation_record(
+            controller=aries_controller,
+            credential_exchange_id=credential_exchange_id,
+            credential_revocation_id=credential_revocation_id,
+            revocation_registry_id=revocation_registry_id,
+        )
+
+    if revocation_record:
+        bound_logger.info("Successfully fetched credential revocation record.")
+    else:
+        bound_logger.info("No credential revocation record returned.")
+    return revocation_record
+
+
+@router.post(
+    "/publish-revocations", summary="Publish Pending Revocations", status_code=204
+)
+async def publish_revocations(
+    publish_request: PublishRevocationsRequest,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> None:
+    """
+    Write pending revocations to the ledger
+    ---
+    Revocations that are in a pending state can be published to the ledger.
+
+    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of
+    revocation registry IDs to credential revocation IDs, to allow publishing individual credentials.
+
+    If no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),
+    then all pending revocations will be published.
+
+    If no credential revocation id is provided under a given revocation registry id, then all pending revocations for
+    the given revocation registry id will be published.
+
+    Where to find the revocation registry id and credential revocation id:
+    When issuing a credential, against a credential definition that supports revocation,
+    the issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain
+    the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
+    the revocation registry id (rev_reg_id).
+
+    Request Body:
+    ---
+        publish_request: PublishRevocationsRequest
+            An instance of `PublishRevocationsRequest` containing a `revocation_registry_credential_map`. This map
+            is a dictionary where each key is a revocation registry ID and its value is a list of credential
+            revocation IDs to be published. Providing an empty list for a registry ID instructs the system to
+            publish all pending revocations for that ID. An empty dictionary signifies that all pending
+            revocations across all registry IDs should be published.
+
+    Returns:
+    ---
+        status_code: 204
+    """
+    bound_logger = logger.bind(body=publish_request)
+    bound_logger.info("POST request received: Publish revocations")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Publishing revocations")
+        await revocation_registry.publish_pending_revocations(
+            controller=aries_controller,
+            revocation_registry_credential_map=publish_request.revocation_registry_credential_map,
+        )
+
+    bound_logger.info("Successfully published revocations.")
+
+
+@router.post(
+    "/clear-pending-revocations",
+    summary="Clear Pending Revocations",
+    response_model=ClearPendingRevocationsResult,
+)
+async def clear_pending_revocations(
+    clear_pending_request: ClearPendingRevocationsRequest,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> ClearPendingRevocationsResult:
+    """
+    Clear pending revocations
+    ---
+    Revocations that are in a pending state can be cleared, such that they are no longer set to be revoked.
+
+    The endpoint accepts a `revocation_registry_credential_map`, which provides a dictionary of
+    revocation registry IDs to credential revocation IDs, to allow clearing individual credentials.
+
+    If no revocation registry id is provided (i.e. an empty map `revocation_registry_credential_map: {}`),
+    then all pending revocations will be cleared.
+
+    If no credential revocation id is provided under a given revocation registry id, then all pending revocations for
+    the given revocation registry id will be cleared.
+
+    Where to find the revocation registry id and credential revocation id:
+    When issuing a credential, against a credential definition that supports revocation,
+    the issuer will receive a webhook event on the topic 'issuer_cred_rev'. This event will contain
+    the credential exchange id (cred_ex_id), the credential revocation id (cred_rev_id) and
+    the revocation registry id (rev_reg_id).
+
+    Request Body:
+    ---
+        clear_pending_request: ClearPendingRevocationsRequest
+            An instance of `ClearPendingRevocationsRequest` containing a `revocation_registry_credential_map`. This map
+            is a dictionary where each key is a revocation registry ID and its value is a list of credential
+            revocation IDs to be cleared. Providing an empty list for a registry ID instructs the system to
+            clear all pending revocations for that ID. An empty dictionary signifies that all pending
+            revocations across all registry IDs should be cleared.
+
+    Returns:
+    ---
+        ClearPendingRevocationsResult
+            The revocations that are still pending after the clear request is performed
+    """
+    bound_logger = logger.bind(body=clear_pending_request)
+    bound_logger.info("POST request received: Clear pending revocations")
+
+    async with client_from_auth(auth) as aries_controller:
+        bound_logger.debug("Clearing pending revocations")
+        response = await revocation_registry.clear_pending_revocations(
+            controller=aries_controller,
+            revocation_registry_credential_map=clear_pending_request.revocation_registry_credential_map,
+        )
+
+    bound_logger.info("Successfully cleared pending revocations.")
+    return response

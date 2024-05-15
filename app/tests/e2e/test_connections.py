@@ -198,7 +198,7 @@ async def test_delete_connection(
     connection_id = invitation["connection_id"]
 
     response = await bob_member_client.delete(f"{BASE_PATH}/{connection_id}")
-    assert response.status_code == 200
+    assert response.status_code == 204
 
     with pytest.raises(HTTPException) as exc:
         response = await bob_member_client.get(f"{BASE_PATH}/{connection_id}")

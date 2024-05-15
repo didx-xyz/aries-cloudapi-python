@@ -66,17 +66,18 @@ async def get_credential_definitions(
 
     The results can be filtered by the parameters listed below.
 
-    Parameters:
+    Parameters (Optional):
     ---
-        issuer_did: Optional[str]
-        credential_definition_id: Optional[str]
-        schema_id: Optional[str]
-        schema_issuer_id: Optional[str]
-        schema_version: Optional[str]
+        issuer_did: str
+        credential_definition_id: str
+        schema_id: str
+        schema_issuer_id: str
+        schema_version: str
 
     Returns:
     ---
-        Created credential definitions
+        List[CredentialDefinition]
+            A list of created credential definitions
     """
     bound_logger = logger.bind(
         body={
@@ -159,6 +160,10 @@ async def get_credential_definition_by_id(
         credential_definition_id: str
             credential definition id
 
+    Returns:
+    ---
+        CredentialDefinition
+            The credential definition
     """
     bound_logger = logger.bind(
         body={"credential_definition_id": credential_definition_id}
@@ -231,7 +236,8 @@ async def create_credential_definition(
         }
     Returns:
     ---
-        Credential Definition
+        CredentialDefinition
+            The created credential definition
     """
     bound_logger = logger.bind(
         body={
@@ -400,16 +406,17 @@ async def get_schemas(
 
     Results can be filtered by the parameters listed below.
 
-    Parameters:
+    Parameters (Optional):
     ---
-        schema_id: str (Optional)
-        schema_issuer_did: str (Optional)
-        schema_name: str (Optional)
-        schema_version: str (Optional)
+        schema_id: str
+        schema_issuer_did: str
+        schema_name: str
+        schema_version: str
 
     Returns:
     ---
-        Credential Schemas: list
+        List[CredentialSchema]
+            A list of created schemas
     """
     bound_logger = logger.bind(
         body={
@@ -490,8 +497,8 @@ async def get_schema(
 
     Returns:
     ---
-        Credential Schema
-
+        CredentialSchema
+            The schema object
     """
     bound_logger = logger.bind(body={"schema_id": schema_id})
     bound_logger.info("GET request received: Get schema by id")
@@ -537,6 +544,7 @@ async def create_schema(
     Returns:
     ---
         CredentialSchema
+            The created schema object
     """
     bound_logger = logger.bind(body=schema)
     bound_logger.info("POST request received: Create schema (publish and register)")

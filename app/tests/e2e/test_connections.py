@@ -17,7 +17,7 @@ BASE_PATH = router.prefix
 @pytest.mark.parametrize(
     "alias,multi_use,use_public_did",
     [
-        (None, None, None),
+        (None, False, False),
         ("alias", False, False),
         ("alias", True, False),
         ("alias", False, True),
@@ -27,8 +27,8 @@ BASE_PATH = router.prefix
 async def test_create_invitation_no_public_did(
     bob_member_client: RichAsyncClient,  # bob has no public did
     alias: Optional[str],
-    multi_use: Optional[bool],
-    use_public_did: Optional[bool],
+    multi_use: bool,
+    use_public_did: bool,
 ):
     invite_json = CreateInvitation(
         alias=alias, multi_use=multi_use, use_public_did=use_public_did

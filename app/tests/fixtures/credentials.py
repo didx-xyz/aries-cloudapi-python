@@ -427,7 +427,9 @@ async def get_or_issue_regression_cred_valid(
         )
 
         # Alice fetches the valid credential
-        wallet_credentials = await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")
+        wallet_credentials = await alice_member_client.get(
+            f"{WALLET_BASE_PATH}?wql={wql}"
+        )
         valid_credential = wallet_credentials.json()["results"][0]
 
     return ReferentCredDef(

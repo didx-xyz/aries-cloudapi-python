@@ -25,11 +25,11 @@ class CredentialDefinition(BaseModel):
 class CreateSchema(BaseModel):
     name: str = Field(..., examples=["test_schema"])
     version: str = Field(..., examples=["0.3.0"])
-    attribute_names: List[str] = Field(..., examples=[["speed"]])
+    attribute_names: List[str] = Field(..., examples=[["name", "age"]])
 
 
 class CredentialSchema(BaseModel):
     id: str = Field(..., examples=["CXQseFxV34pcb8vf32XhEa:2:test_schema:0.3"])
     name: str = Field(..., examples=["test_schema"])
     version: str = Field(..., examples=["0.3.0"])
-    attribute_names: List[str] = Field(..., examples=[["speed"]])
+    attribute_names: List[str] = Field(..., examples=[["name", "age"]])

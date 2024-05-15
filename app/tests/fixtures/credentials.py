@@ -217,7 +217,7 @@ async def revoke_alice_creds(
         await faber_client.post(
             f"{CREDENTIALS_BASE_PATH}/revoke",
             json={
-                "credential_exchange_id": cred.credential_id,
+                "credential_exchange_id": cred.credential_exchange_id,
             },
         )
 

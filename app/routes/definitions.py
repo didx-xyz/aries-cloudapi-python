@@ -60,7 +60,7 @@ async def get_credential_definitions(
 ) -> List[CredentialDefinition]:
     """
     Get credential definitions created by the tenant.
-    ------------------------------------------------
+    ---
     This endpoint returns all credential definitions created by the tenant.
     Remember only issuers can create credential definitions.
 
@@ -151,11 +151,11 @@ async def get_credential_definition_by_id(
 ) -> CredentialDefinition:
     """
     Get credential definition by id.
-    ---------------------------------
+    ---
     This endpoint returns a credential definition by id.
 
     Parameters:
-    -----------
+    ---
         credential_definition_id: str
             credential definition id
 
@@ -205,7 +205,7 @@ async def create_credential_definition(
 ) -> CredentialDefinition:
     """
     Create a credential definition.
-    -------------------------------
+    ---
     Only issuers can create credential definitions.
 
     If revocation is supported ("support_revocation": true), revocation registries will be created.
@@ -216,7 +216,7 @@ async def create_credential_definition(
     as this will allow for minimal ledger writes (lower cost).
 
     Request Body:
-    -----------
+    ---
         body: CreateCredentialDefinition
             Payload for creating a credential definition.
         {
@@ -230,7 +230,7 @@ async def create_credential_definition(
                 The maximum number of revocations to be stored by the registry.
         }
     Returns:
-    --------
+    ---
         Credential Definition
     """
     bound_logger = logger.bind(
@@ -394,21 +394,21 @@ async def get_schemas(
 ) -> List[CredentialSchema]:
     """
     Get schemas created by the tenant.
-    -----------------------------------
+    ---
     Remember only tenants with the governance role can create schemas,
     i.e. only tenants with the governance role will get a non-empty response.
 
     Results can be filtered by the parameters listed below.
 
     Parameters:
-    -----------
+    ---
         schema_id: str (Optional)
         schema_issuer_did: str (Optional)
         schema_name: str (Optional)
         schema_version: str (Optional)
 
     Returns:
-    --------
+    ---
         Credential Schemas: list
     """
     bound_logger = logger.bind(
@@ -477,19 +477,19 @@ async def get_schema(
 ) -> CredentialSchema:
     """
     Retrieve schema by id.
-    ----------------------
+    ---
     This endpoint returns a schema by id.
 
     Any tenant can call this endpoint to retrieve a schema.
     This endpoint will list all the attributes of the schema.
 
     Parameters:
-    -----------
+    ---
         schema_id: str
             schema id
 
     Returns:
-    --------
+    ---
         Credential Schema
 
     """
@@ -520,12 +520,12 @@ async def create_schema(
 ) -> CredentialSchema:
     """
     Create a new schema.
-    --------------------
+    ---
     This endpoint creates a new schema.
     Only tenants with the governance role can create schemas.
 
     Request Body:
-    ------------
+    ---
         body: CreateSchema
             name: str
                 The name of the schema.
@@ -535,8 +535,8 @@ async def create_schema(
                 The attribute names of the schema.
 
     Returns:
-    --------
-        Credential Schema
+    ---
+        CredentialSchema
     """
     bound_logger = logger.bind(body=schema)
     bound_logger.info("POST request received: Create schema (publish and register)")

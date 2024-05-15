@@ -59,7 +59,7 @@ async def get_credential_definitions(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialDefinition]:
     """
-    Get credential definitions created by the tenant.
+    Get credential definitions created by the tenant
     ---
     This endpoint returns all credential definitions created by the tenant.
     Remember only issuers can create credential definitions.
@@ -151,7 +151,7 @@ async def get_credential_definition_by_id(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialDefinition:
     """
-    Get credential definition by id.
+    Get credential definition by id
     ---
     This endpoint returns a credential definition by id.
 
@@ -209,7 +209,7 @@ async def create_credential_definition(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> CredentialDefinition:
     """
-    Create a credential definition.
+    Create a credential definition
     ---
     Only issuers can create credential definitions.
 
@@ -399,7 +399,7 @@ async def get_schemas(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialSchema]:
     """
-    Get schemas created by the tenant.
+    Get schemas created by the tenant
     ---
     Remember only tenants with the governance role can create schemas,
     i.e. only tenants with the governance role will get a non-empty response.
@@ -483,7 +483,7 @@ async def get_schema(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredentialSchema:
     """
-    Retrieve schema by id.
+    Retrieve schema by id
     ---
     This endpoint returns a schema by id.
 
@@ -526,7 +526,7 @@ async def create_schema(
     governance_auth: AcaPyAuthVerified = Depends(acapy_auth_governance),
 ) -> CredentialSchema:
     """
-    Create a new schema.
+    Create a new schema
     ---
     This endpoint creates a new schema.
     Only tenants with the governance role can create schemas.

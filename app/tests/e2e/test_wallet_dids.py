@@ -16,6 +16,7 @@ from app.routes.wallet.dids import (
     set_did_endpoint,
 )
 from app.tests.util.ledger import create_public_did, post_to_ledger
+from app.tests.util.regression_testing import TestMode
 from shared import RichAsyncClient
 
 WALLET_BASE_PATH = router.prefix
@@ -81,11 +82,11 @@ async def test_get_did_endpoint(governance_client: RichAsyncClient):
     assert response["did"] == did
 
 
+@pytest.mark.anyio
 @pytest.mark.skipif(
-    skip_set_public_did,
+    skip_set_public_did or TestMode.regression_run in TestMode.fixture_params,
     reason="Avoid creating additional did for governance from different seed",
 )
-@pytest.mark.anyio
 async def test_set_public_did(
     governance_client: RichAsyncClient, governance_acapy_client: AcaPyClient
 ):
@@ -108,6 +109,10 @@ async def test_set_public_did(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Skip posting to ledger in regression mode",
+)
 async def test_set_did_endpoint(
     governance_acapy_client: AcaPyClient, mock_governance_auth: AcaPyAuthVerified
 ):

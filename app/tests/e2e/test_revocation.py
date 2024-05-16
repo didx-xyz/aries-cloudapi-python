@@ -12,11 +12,13 @@ from shared.models.credential_exchange import CredentialExchange
 CREDENTIALS_BASE_PATH = router.prefix
 VERIFIER_BASE_PATH = verifier_router.prefix
 
+skip_regression_test_reason = "Skip publish-revocations in regression mode"
+
 
 @pytest.mark.anyio
 @pytest.mark.skipif(
     TestMode.regression_run in TestMode.fixture_params,
-    reason="Clear pending revocations does not work with regression fixtures",
+    reason=skip_regression_test_reason,
 )
 async def test_clear_pending_revokes(
     faber_client: RichAsyncClient,
@@ -73,6 +75,10 @@ async def test_clear_pending_revokes(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_clear_pending_revokes_no_map(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -99,6 +105,10 @@ async def test_clear_pending_revokes_no_map(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_clear_pending_revokes_bad_payload(
     faber_client: RichAsyncClient,
 ):
@@ -132,6 +142,10 @@ async def test_clear_pending_revokes_bad_payload(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_publish_all_revocations_for_rev_reg_id(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -165,6 +179,10 @@ async def test_publish_all_revocations_for_rev_reg_id(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_publish_all_revocations_no_payload(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -187,6 +205,10 @@ async def test_publish_all_revocations_no_payload(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_publish_one_revocation(
     faber_client: RichAsyncClient,
     revoke_alice_creds: List[CredentialExchange],
@@ -232,6 +254,10 @@ async def test_publish_one_revocation(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_publish_revocations_bad_payload(
     faber_client: RichAsyncClient,
 ):

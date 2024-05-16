@@ -62,7 +62,6 @@ class ProofRequestBase(BaseModel):
 class ProofRequestMetadata(BaseModel):
     protocol_version: PresentProofProtocolVersion = PresentProofProtocolVersion.V2
     comment: Optional[str] = None
-    trace: Optional[bool] = None
 
 
 class CreateProofRequest(ProofRequestBase, ProofRequestMetadata):

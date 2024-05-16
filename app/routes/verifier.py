@@ -49,7 +49,6 @@ async def create_proof_request(
         {
             "protocol_version": "v2",
             "comment": "string",
-            "trace": true,
             "type": "indy" or "ld_proof",
             "indy_proof_request": {...}, <- Required if type is "indy"
             "dif_proof_request": {...}, <- Required if type is "ld_proof"
@@ -109,7 +108,6 @@ async def send_proof_request(
         {
             "protocol_version": "v2", <-- v1 is supported but will be deprecated
             "comment": "string",
-            "trace": true,
             "type": "indy" or "ld_proof",
             "indy_proof_request": {...}, <- Required if type is "indy"
             "dif_proof_request": {...}, <- Required if type is "ld_proof"

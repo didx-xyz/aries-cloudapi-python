@@ -49,7 +49,6 @@ class VerifierV1(Verifier):
             proof_request=create_proof_request.indy_proof_request,
             auto_verify=True,
             comment=create_proof_request.comment,
-            trace=create_proof_request.trace,
         )
 
         try:
@@ -86,7 +85,6 @@ class VerifierV1(Verifier):
             proof_request=send_proof_request.indy_proof_request,
             auto_verify=True,
             comment=send_proof_request.comment,
-            trace=send_proof_request.trace,
         )
 
         try:
@@ -125,7 +123,6 @@ class VerifierV1(Verifier):
             requested_attributes=indy_pres_spec.requested_attributes,
             requested_predicates=indy_pres_spec.requested_predicates,
             self_attested_attributes=indy_pres_spec.self_attested_attributes,
-            trace=indy_pres_spec.trace,
         )
 
         try:

@@ -21,8 +21,8 @@ class RegressionTestConfig:
 
 
 class TestMode:
-    clean_run = "clean_run"
-    regression_run = "regression_run"
+    clean_run = "clean"
+    regression_run = "reuse"
 
     fixture_params = (
         [regression_run] if RegressionTestConfig.run_regression_tests else [clean_run]

@@ -32,32 +32,39 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/verifier", tags=["verifier"])
 
 
-@router.post("/create-request", response_model=PresentationExchange)
+@router.post(
+    "/create-request",
+    summary="Create a Proof Request (not bound to a connection)",
+    response_model=PresentationExchange,
+)
 async def create_proof_request(
     body: CreateProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
-    Create proof request
+    Creates a presentation request that is not bound to any specific proposal or connection
     ---
-    This create request endpoint is used to create a proof request that is not bound to a connection.
-    This is useful when the tenant wants to create a proof request that can be sent to multiple connections.
+    This endpoint is used to create a proof request that is not bound to a connection. This means the proof request is
+    not sent directly, but it will do the initial step of creating a proof exchange record,
+    which the verifier can then use in the out of band (OOB) protocol.
 
-    The proof request must be for a indy credential or ld_proof
+    The OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a
+    connection does not yet exist between holder and verifier.
 
+    The proof request type must be one of indy or ld_proof.
     ```json
         {
-            "protocol_version": "v2",
-            "comment": "string",
             "type": "indy" or "ld_proof",
-            "indy_proof_request": {...}, <- Required if type is "indy"
-            "dif_proof_request": {...}, <- Required if type is "ld_proof"
-            "save_exchange_record": false
+            "indy_proof_request": {...}, <-- Required if type is "indy"
+            "dif_proof_request": {...}, <-- Required if type is "ld_proof"
+            "save_exchange_record": true <-- Whether the proof exchange record should be preserved after completion.
+            "comment": "string", <-- This comment will appear in the proof record for the recipient as well
+            "protocol_version": "v2", <-- "v1" is supported, but deprecated
         }
     ```
-    Read more about the proof request here:
-        https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
-        https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
+    For a detailed technical specification and informative diagrams related to the present proof process, refer to the
+    [v1 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof) and/or the
+    [v2 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2).
 
     Request Body:
     ---

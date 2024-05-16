@@ -689,7 +689,7 @@ async def test_regression_proof_valid_credential(
     # Do proof request
     request_body = {
         "protocol_version": "v2",
-        "comment": "Test proof of revocation",
+        "comment": "Test cred is not revoked",
         "type": "indy",
         "indy_proof_request": {
             "non_revoked": {"to": unix_timestamp},

@@ -362,10 +362,10 @@ async def get_or_issue_regression_cred_valid(
     credential_definition_id_revocable: str,
     faber_and_alice_connection: FaberAliceConnect,
 ):
-    valid_attribute_name = "Alice-valid"
+    valid_credential_attribute_name = "Alice-valid"
 
     # Wallet Query to fetch credential with this attribute name
-    wql = quote(f'{{"attr::name::value":"{valid_attribute_name}"}}')
+    wql = quote(f'{{"attr::name::value":"{valid_credential_attribute_name}"}}')
 
     results = (await alice_member_client.get(f"{WALLET_BASE_PATH}?wql={wql}")).json()[
         "results"
@@ -377,11 +377,13 @@ async def get_or_issue_regression_cred_valid(
     if results:
         valid_credential = results[0]
         assert (
-            valid_credential["attrs"]["name"] == valid_attribute_name
+            valid_credential["attrs"]["name"] == valid_credential_attribute_name
         ), f"WQL returned unexpected credential: {valid_credential}"
 
     else:
+        # Cred doesn't yet exist; issue credential for regression testing
         assert_fail_on_recreating_fixtures()
+
         credential = {
             "protocol_version": "v2",
             "connection_id": faber_and_alice_connection.faber_connection_id,
@@ -390,7 +392,7 @@ async def get_or_issue_regression_cred_valid(
                 "credential_definition_id": credential_definition_id_revocable,
                 "attributes": {
                     "speed": "10",
-                    "name": valid_attribute_name,
+                    "name": valid_credential_attribute_name,
                     "age": "44",
                 },
             },

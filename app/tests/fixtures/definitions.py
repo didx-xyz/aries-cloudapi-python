@@ -91,7 +91,7 @@ async def schema_definition_alt(
 async def fetch_or_create_regression_test_cred_def(
     auth: AcaPyAuthVerified, schema: CredentialSchema, support_revocation: bool
 ):
-    regression_test_cred_def_tag = "RegressionTag"
+    regression_test_cred_def_tag = "RegressionTestTag"
     schema_id = schema.id
 
     cred_defs = await get_credential_definitions(schema_id=schema_id, auth=auth)

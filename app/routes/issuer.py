@@ -60,11 +60,11 @@ async def send_credential(
         "protocol_version": "v2" <-- v1 is supported, but deprecated.
     }
     ```
-    Read more about the Aries credential issuing protocol at:
-        https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
-
     Setting the `save_exchange_record` field to True will save the exchange record after the credential is accepted.
     The default behaviour is to only save exchange records while they are in pending state.
+
+    For a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2
+    RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).
 
     Request Body:
     ---
@@ -158,8 +158,8 @@ async def create_offer(
         "protocol_version": "v2" <-- v1 is supported, but deprecated.
     }
     ```
-    Read more about the Aries credential issuing protocol at:
-        https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md
+    For a detailed technical specification of the credential issuing process, refer to the [Aries Issue Credential v2
+    RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0453-issue-credential-v2/README.md).
 
     Request Body:
     ---

@@ -62,9 +62,10 @@ async def create_proof_request(
             "protocol_version": "v2", <-- "v1" is supported, but deprecated
         }
     ```
-    For a detailed technical specification and informative diagrams related to the present proof process, refer to the
-    [v1 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0037-present-proof) and/or the
-    [v2 Present Proof RFC](https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2).
+    For a detailed technical specification and informative diagrams
+    related to the present proof process, refer to the [Aries Present Proof v2
+    RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof
+    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md)
 
     Request Body:
     ---
@@ -122,9 +123,10 @@ async def send_proof_request(
             "connection_id": "string"
         }
     ```
-    Read more about the proof request here:
-        https://github.com/hyperledger/aries-rfcs/tree/main/features/0454-present-proof-v2
-        https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
+    For a detailed technical specification and informative diagrams
+    related to the present proof process, refer to the [Aries Present Proof v2
+    RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof
+    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md)
 
     Request Body:
     ---

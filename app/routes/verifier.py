@@ -74,8 +74,8 @@ async def create_proof_request(
 
     Returns:
     ---
-        presentation_exchange: PresentationExchange
-            The presentation exchange record
+        PresentationExchange
+            The presentation exchange record for this request
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create proof request")
@@ -135,8 +135,8 @@ async def send_proof_request(
 
     Returns:
     ---
-        presentation_exchange: PresentationExchange
-            The presentation exchange record
+        PresentationExchange
+            The presentation exchange record for this request
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Send proof request")
@@ -182,8 +182,8 @@ async def accept_proof_request(
 
     Returns:
     ---
-        presentation_exchange: PresentationExchange
-            The presentation exchange record
+        PresentationExchange
+            The updated presentation exchange record after accepting the request.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept proof request")
@@ -245,8 +245,7 @@ async def reject_proof_request(
 
     Returns:
     ---
-        None
-
+        status_code: 204
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Reject proof request")
@@ -307,7 +306,7 @@ async def get_proof_records(
 
     Returns:
     ---
-        presentation_exchange_list: [PresentationExchange]
+        List[PresentationExchange]
             The list of presentation exchange records
 
     """
@@ -364,7 +363,7 @@ async def get_proof_record(
 
     Returns:
     ---
-        presentation_exchange_record: PresentationExchange
+        PresentationExchange
             The of presentation exchange record for the proof ID
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
@@ -399,15 +398,14 @@ async def delete_proof(
     ---
     Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
 
-
     Parameters:
     ---
         proof_id: str
-            The proof ID - starting with v1- or v2-
+            The id of the proof exchange to be deleted
 
     Returns:
     ---
-        None
+        status_code: 204
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("DELETE request received: Delete proof record by id")
@@ -442,12 +440,12 @@ async def get_credentials_by_proof_id(
     Parameters:
     ---
         proof_id: str
-            The proof ID
+            The relevant proof exchange ID for the holder
 
     Returns:
     ---
-        presentation_exchange_list: [IndyCredPrecis]
-            The list of Indy presentation credentials
+        List[IndyCredPrecis]
+            A list of applicable Indy credentials
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get credentials for a proof request")

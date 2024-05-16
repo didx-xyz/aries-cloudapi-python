@@ -22,6 +22,10 @@ from shared import RichAsyncClient
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Don't create new schemas in regression mode",
+)
 async def test_create_credential_definition(
     governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
 ):
@@ -53,6 +57,10 @@ async def test_create_credential_definition(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Don't create new schemas in regression mode",
+)
 async def test_create_schema(
     governance_public_did: str, mock_governance_auth: AcaPyAuthVerified
 ):
@@ -73,6 +81,10 @@ async def test_create_schema(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Don't create new schemas in regression mode",
+)
 async def test_get_schema(
     governance_public_did: str, mock_governance_auth: AcaPyAuthVerified
 ):
@@ -95,6 +107,10 @@ async def test_get_schema(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason="Don't create new schemas in regression mode",
+)
 async def test_get_credential_definition(
     governance_client: RichAsyncClient, mock_governance_auth: AcaPyAuthVerified
 ):

@@ -9,13 +9,20 @@ import app.services.trust_registry.actors as trust_registry
 from app.dependencies.acapy_clients import get_tenant_controller
 from app.routes.admin.tenants import router
 from app.services import acapy_wallet
+from app.tests.util.regression_testing import TestMode
 from app.util.did import ed25519_verkey_to_did_key
 from shared import RichAsyncClient
 
 TENANTS_BASE_PATH = router.prefix
 
+skip_regression_test_reason = "Don't need to cover tenant tests in regression mode"
+
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
     group_id = "TestGroup"
     response = await tenant_admin_client.post(
@@ -57,6 +64,10 @@ async def test_get_wallet_auth_token(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_create_tenant_member_wo_wallet_name(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -90,6 +101,10 @@ async def test_create_tenant_member_wo_wallet_name(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_create_tenant_member_w_wallet_name(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -141,6 +156,10 @@ async def test_create_tenant_member_w_wallet_name(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_create_tenant_issuer(
     tenant_admin_client: RichAsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -213,6 +232,10 @@ async def test_create_tenant_issuer(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_create_tenant_verifier(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -264,6 +287,10 @@ async def test_create_tenant_verifier(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_update_tenant_verifier_to_issuer(
     tenant_admin_client: RichAsyncClient,
     tenant_admin_acapy_client: AcaPyClient,
@@ -393,6 +420,10 @@ async def test_update_tenant_verifier_to_issuer(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_get_tenants(tenant_admin_client: RichAsyncClient):
     response = await tenant_admin_client.post(
         TENANTS_BASE_PATH,
@@ -436,6 +467,10 @@ async def test_get_tenants(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
     wallet_label = uuid4().hex
     group_id = "group"
@@ -469,6 +504,10 @@ async def test_get_tenants_by_group(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
     wallet_name = uuid4().hex
     group_id = "group"
@@ -515,6 +554,10 @@ async def test_get_tenants_by_wallet_name(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_get_tenant(tenant_admin_client: RichAsyncClient):
     wallet_name = uuid4().hex
     wallet_label = "abc"
@@ -563,6 +606,10 @@ async def test_get_tenant(tenant_admin_client: RichAsyncClient):
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_delete_tenant(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -613,6 +660,10 @@ async def test_delete_tenant(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_extra_settings(
     tenant_admin_client: RichAsyncClient, tenant_admin_acapy_client: AcaPyClient
 ):
@@ -666,6 +717,10 @@ async def test_extra_settings(
 
 
 @pytest.mark.anyio
+@pytest.mark.skipif(
+    TestMode.regression_run in TestMode.fixture_params,
+    reason=skip_regression_test_reason,
+)
 async def test_create_tenant_validation(tenant_admin_client: RichAsyncClient):
     # Assert that 422 is raised when unacceptable special chars are used in wallet label or name
     # The following chars are either reserved or unsafe to use in URIs without encoding

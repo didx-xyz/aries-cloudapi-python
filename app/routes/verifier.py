@@ -99,7 +99,11 @@ async def create_proof_request(
     return result
 
 
-@router.post("/send-request", response_model=PresentationExchange)
+@router.post(
+    "/send-request",
+    summary="Send a Proof Request to a connection",
+    response_model=PresentationExchange,
+)
 async def send_proof_request(
     body: SendProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -165,7 +169,11 @@ async def send_proof_request(
     return result
 
 
-@router.post("/accept-request", response_model=PresentationExchange)
+@router.post(
+    "/accept-request",
+    summary="Accept a Proof Request",
+    response_model=PresentationExchange,
+)
 async def accept_proof_request(
     body: AcceptProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -224,7 +232,7 @@ async def accept_proof_request(
     return result
 
 
-@router.post("/reject-request", status_code=204)
+@router.post("/reject-request", summary="Reject a Proof Request", status_code=204)
 async def reject_proof_request(
     body: RejectProofRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -278,7 +286,11 @@ async def reject_proof_request(
     bound_logger.info("Successfully rejected proof request.")
 
 
-@router.get("/proofs", response_model=List[PresentationExchange])
+@router.get(
+    "/proofs",
+    summary="Get Proof Exchange Records",
+    response_model=List[PresentationExchange],
+)
 async def get_proof_records(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
     connection_id: Optional[str] = None,
@@ -342,7 +354,11 @@ async def get_proof_records(
     return result
 
 
-@router.get("/proofs/{proof_id}", response_model=PresentationExchange)
+@router.get(
+    "/proofs/{proof_id}",
+    summary="Get a Proof Exchange Record",
+    response_model=PresentationExchange,
+)
 async def get_proof_record(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -388,7 +404,11 @@ async def get_proof_record(
     return result
 
 
-@router.delete("/proofs/{proof_id}", status_code=204)
+@router.delete(
+    "/proofs/{proof_id}",
+    summary="Delete a Proof Exchange Record",
+    status_code=204,
+)
 async def delete_proof(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -423,7 +443,11 @@ async def delete_proof(
     bound_logger.info("Successfully deleted proof record.")
 
 
-@router.get("/proofs/{proof_id}/credentials", response_model=List[IndyCredPrecis])
+@router.get(
+    "/proofs/{proof_id}/credentials",
+    summary="Get Matching Credentials for a Proof",
+    response_model=List[IndyCredPrecis],
+)
 async def get_credentials_by_proof_id(
     proof_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),

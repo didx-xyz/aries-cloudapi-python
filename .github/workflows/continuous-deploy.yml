@@ -13,6 +13,11 @@ on:
         required: false
         default: true
         type: boolean
+      run-regression-tests:
+        description: "Run regression tests step"
+        required: false
+        default: true
+        type: boolean
 
   push:
     branches:
@@ -338,18 +343,26 @@ jobs:
       - name: Authenticate GitHub CLI
         run: echo "${{ secrets.PAT }}" | gh auth login --with-token
 
+      - name: Set branch name
+        id: set_branch_name
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "BRANCH_NAME=${{ github.head_ref }}" >> $GITHUB_ENV
+          else
+            echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | cut -d/ -f2-)" >> $GITHUB_ENV
+          fi
+
       - name: Check if branch exists
         id: check_branch
-        env:
-          BRANCH_NAME: ${{ github.head_ref }}
-          DEFAULT_BRANCH: master
         run: |
+          DEFAULT_BRANCH=master
+
           if gh api repos/didx-xyz/charts/git/ref/heads/$BRANCH_NAME; then
-            echo "branch_exists=true" >> $GITHUB_OUTPUT
-            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "branch_exists=true" >> $GITHUB_ENV
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_ENV
           else
-            echo "branch_exists=false" >> $GITHUB_OUTPUT
-            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_OUTPUT
+            echo "branch_exists=false" >> $GITHUB_ENV
+            echo "branch_name=$DEFAULT_BRANCH" >> $GITHUB_ENV
           fi
 
       - name: Checkout Charts
@@ -358,7 +371,7 @@ jobs:
           repository: didx-xyz/charts
           token: ${{ secrets.PAT }}
           path: charts
-          ref: ${{ steps.check_branch.outputs.branch_name }}
+          ref: ${{ env.branch_name }}
 
       - name: Install dependencies
         run: sudo apt-get install -y postgresql-client redis-tools
@@ -381,23 +394,23 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: ${{ env.TAILSCALE_VERSION }}
 
-      - name: Helmfile Diff
-        if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.1
-        with:
-          helmfile-args: |
-            diff \
-              --environment ${{ vars.ENVIRONMENT }} \
-              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-              --set image.tag=${{ env.IMAGE_TAG }} \
-              --set image.registry=ghcr.io/${{ github.repository_owner }}
-          helm-plugins: |
-            https://github.com/databus23/helm-diff,
-            https://github.com/jkroepke/helm-secrets
-          helmfile-version: ${{ env.HELMFILE_VERSION }}
-          helm-version: ${{ env.HELM_VERSION }}
-        env:
-          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+      # - name: Helmfile Diff
+      #   if: github.event.inputs.run-reset-deployments == 'true'
+      #   uses: helmfile/helmfile-action@v1.9.1
+      #   with:
+      #     helmfile-args: |
+      #       diff \
+      #         --environment ${{ vars.ENVIRONMENT }} \
+      #         -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+      #         --set image.tag=${{ env.IMAGE_TAG }} \
+      #         --set image.registry=ghcr.io/${{ github.repository_owner }}
+      #     helm-plugins: |
+      #       https://github.com/databus23/helm-diff,
+      #       https://github.com/jkroepke/helm-secrets
+      #     helmfile-version: ${{ env.HELMFILE_VERSION }}
+      #     helm-version: ${{ env.HELM_VERSION }}
+      #   env:
+      #     IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile Destroy
         id: destroy_deployments
@@ -460,71 +473,72 @@ jobs:
             $REDIS_HOST:$REDIS_PORT \
             FLUSHALL
 
-      # - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
-      #   if: github.event.inputs.run-reset-deployments == 'true'
-      #   uses: helmfile/helmfile-action@v1.9.1
-      #   with:
-      #     helmfile-args: |
-      #       apply \
-      #         --environment ${{ vars.ENVIRONMENT }} \
-      #         -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-      #         --state-values-set image.tag=${{ env.IMAGE_TAG }} \
-      #         --state-values-set image.registry=ghcr.io/${{ github.repository_owner }}
-      #     helm-plugins: |
-      #       https://github.com/databus23/helm-diff,
-      #       https://github.com/jkroepke/helm-secrets
-      #     helmfile-version: ${{ env.HELMFILE_VERSION }}
-      #     helm-version: ${{ env.HELM_VERSION }}
-      #   env:
-      #     IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+      - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
+        if: github.event.inputs.run-reset-deployments == 'true'
+        uses: helmfile/helmfile-action@v1.9.1
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --state-values-set image.tag=${{ env.IMAGE_TAG }} \
+              --state-values-set image.registry=ghcr.io/${{ github.repository_owner }}
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
-      # - name: Helmfile Apply (Exclude Agents) # Always exclude agents and apply (zero diff if resetting deployments)
-      #   uses: helmfile/helmfile-action@v1.9.1
-      #   with:
-      #     helmfile-args: |
-      #       apply \
-      #         --environment ${{ vars.ENVIRONMENT }} \
-      #         -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-      #         --state-values-set image.tag=${{ env.IMAGE_TAG }} \
-      #         --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
-      #         --selector app!=governance-ga-agent,app!=governance-multitenant-agent
-      #     helm-plugins: |
-      #       https://github.com/databus23/helm-diff,
-      #       https://github.com/jkroepke/helm-secrets
-      #     helmfile-version: ${{ env.HELMFILE_VERSION }}
-      #     helm-version: ${{ env.HELM_VERSION }}
-      #   env:
-      #     IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+      - name: Helmfile Apply (Exclude Agents) # Always exclude agents and apply (zero diff if resetting deployments)
+        if: github.event.inputs.run-reset-deployments != 'true'
+        uses: helmfile/helmfile-action@v1.9.1
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --state-values-set image.tag=${{ env.IMAGE_TAG }} \
+              --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --selector app!=governance-ga-agent,app!=governance-multitenant-agent
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
-      # - name: Create values file
-      #   run: |
-      #     echo 'env:' > ./charts/helmfiles/acapy-wallet-storage-config.yaml
-      #     echo '  ACAPY_WALLET_STORAGE_CONFIG: |-' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
-      #     echo '    ${{ secrets.ACAPY_WALLET_STORAGE_CONFIG }}' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
-      #     pwd
-      #     ls -la
+      - name: Create values file
+        run: |
+          echo 'env:' > ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          echo '  ACAPY_WALLET_STORAGE_CONFIG: |-' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          echo '    ${{ secrets.ACAPY_WALLET_STORAGE_CONFIG }}' >> ./charts/helmfiles/acapy-wallet-storage-config.yaml
+          pwd
+          ls -la
 
-      # - name: Helmfile Patch Proxy # Always patch agents with proxy.
-      #   id: patch_proxy
-      #   uses: helmfile/helmfile-action@v1.9.1
-      #   with:
-      #     helmfile-args: |
-      #       apply \
-      #         --environment ${{ vars.ENVIRONMENT }} \
-      #         -f ./charts/helmfiles/aries-cloudapi-python.yaml \
-      #         --state-values-set image.tag=${{ env.IMAGE_TAG }} \
-      #         --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
-      #         --selector app=governance-ga-agent \
-      #         --selector app=governance-multitenant-agent \
-      #         --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
-      #         --values acapy-wallet-storage-config.yaml
-      #     helm-plugins: |
-      #       https://github.com/databus23/helm-diff,
-      #       https://github.com/jkroepke/helm-secrets
-      #     helmfile-version: ${{ env.HELMFILE_VERSION }}
-      #     helm-version: ${{ env.HELM_VERSION }}
-      #   env:
-      #     IMAGE_TAG: ${{ needs.build.outputs.image_version }}
+      - name: Helmfile Patch Proxy # Always patch agents with proxy.
+        id: patch_proxy
+        uses: helmfile/helmfile-action@v1.9.1
+        with:
+          helmfile-args: |
+            apply \
+              --environment ${{ vars.ENVIRONMENT }} \
+              -f ./charts/helmfiles/aries-cloudapi-python.yaml \
+              --state-values-set image.tag=${{ env.IMAGE_TAG }} \
+              --state-values-set image.registry=ghcr.io/${{ github.repository_owner }} \
+              --selector app=governance-ga-agent \
+              --selector app=governance-multitenant-agent \
+              --set env.WALLET_DB_HOST=${{ secrets.DB_PROXY_HOST }} \
+              --values acapy-wallet-storage-config.yaml
+          helm-plugins: |
+            https://github.com/databus23/helm-diff,
+            https://github.com/jkroepke/helm-secrets
+          helmfile-version: ${{ env.HELMFILE_VERSION }}
+          helm-version: ${{ env.HELM_VERSION }}
+        env:
+          IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile run pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false') }}
@@ -549,7 +563,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile init regression pytest
-        if: github.event.inputs.run-reset-deployments == 'true'
+        if: github.event.inputs.run-reset-deployments == 'true' && github.event.inputs.run-regression-tests == 'true'
         id: pytest-init-regression
         uses: helmfile/helmfile-action@v1.9.1
         with:
@@ -561,7 +575,8 @@ jobs:
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
               --set completions=${{ env.PYTEST_COMPLETIONS }} \
               --state-values-set release=cloudapi-pytest-regression \
-              --set fullnameOverride=cloudapi-pytest-regression
+              --set fullnameOverride=cloudapi-pytest-regression \
+              --set env.RUN_REGRESSION_TESTS="true"
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -569,10 +584,9 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-          RUN_REGRESSION_TESTS: true
 
       - name: Helmfile run regression pytest
-        if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false' && github.event.inputs.run-reset-deployments == 'false') }}
+        if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-reset-deployments == 'false' && github.event.inputs.run-regression-tests == 'true') }}
         id: pytest-run-regression
         uses: helmfile/helmfile-action@v1.9.1
         with:
@@ -584,7 +598,9 @@ jobs:
               --set image.registry=ghcr.io/${{ github.repository_owner }} \
               --set completions=${{ env.PYTEST_COMPLETIONS }} \
               --state-values-set release=cloudapi-pytest-regression \
-              --set fullnameOverride=cloudapi-pytest-regression
+              --set fullnameOverride=cloudapi-pytest-regression \
+              --set env.RUN_REGRESSION_TESTS="true" \
+              --set env.FAIL_ON_RECREATING_FIXTURES="true"
           helm-plugins: |
             https://github.com/databus23/helm-diff,
             https://github.com/jkroepke/helm-secrets
@@ -592,8 +608,6 @@ jobs:
           helm-version: ${{ env.HELM_VERSION }}
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
-          RUN_REGRESSION_TESTS: true
-          FAIL_ON_RECREATING_FIXTURES: true
 
       - name: Wait for pytest and print logs
         if: steps.pytest.outcome == 'success'
@@ -771,18 +785,27 @@ jobs:
           detailed_summary: true
           require_passed_tests: true
 
-      # - name: Pytest coverage comment
-      #   if: (
-      #     github.event_name == 'pull_request' ||
-      #     (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false')
-      #     )
-      #   uses: MishaKav/pytest-coverage-comment@v1.1.51
-      #   with:
-      #     pytest-coverage-path: ./test_coverage.txt
-      #     junitxml-path: ./test_output.xml
-      #     create-new-comment: true
-      #     # Resolves `Warning: Your comment is too long (maximum is 65536 characters), coverage report will not be added.`
-      #     hide-report: ${{ github.event_name != 'pull_request' }}
+      - name: Pytest coverage comment
+        if: steps.pytest.outcome == 'success'
+        uses: MishaKav/pytest-coverage-comment@v1.1.51
+        with:
+          pytest-coverage-path: ./test_coverage.txt
+          junitxml-path: ./pytest/test_output.xml
+          create-new-comment: true
+          title: "K8s Test Coverage"
+          # Resolves `Warning: Your comment is too long (maximum is 65536 characters), coverage report will not be added.`
+          # hide-report: ${{ github.event_name != 'pull_request' }}
+
+      - name: Pytest coverage comment
+        if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
+        uses: MishaKav/pytest-coverage-comment@v1.1.51
+        with:
+          pytest-coverage-path: ./test_coverage.txt
+          junitxml-path: ./pytest-regression/test_output.xml
+          create-new-comment: true
+          title: "K8s Regression Test Coverage"
+          # Resolves `Warning: Your comment is too long (maximum is 65536 characters), coverage report will not be added.`
+          # hide-report: ${{ github.event_name != 'pull_request' }}
 
       - name: Helmfile destroy pytest
         uses: helmfile/helmfile-action@v1.9.1
@@ -792,8 +815,7 @@ jobs:
             destroy \
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-capi-test.yaml \
-              --state-values-set release=cloudapi-pytest \
-              --set fullnameOverride=cloudapi-pytest
+              --state-values-set release=cloudapi-pytest
           helm-plugins: |
             https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}
@@ -809,8 +831,7 @@ jobs:
             destroy \
               --environment ${{ vars.ENVIRONMENT }} \
               -f ./charts/helmfiles/aries-capi-test.yaml \
-              --state-values-set release=cloudapi-pytest-regression \
-              --set fullnameOverride=cloudapi-pytest-regression
+              --state-values-set release=cloudapi-pytest-regression
           helm-plugins: |
             https://github.com/databus23/helm-diff
           helmfile-version: ${{ env.HELMFILE_VERSION }}

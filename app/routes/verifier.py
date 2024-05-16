@@ -114,13 +114,13 @@ async def send_proof_request(
 
     ```json
         {
-            "protocol_version": "v2", <-- v1 is supported but will be deprecated
-            "comment": "string",
             "type": "indy" or "ld_proof",
-            "indy_proof_request": {...}, <- Required if type is "indy"
-            "dif_proof_request": {...}, <- Required if type is "ld_proof"
-            "save_exchange_record": false,
-            "connection_id": "string"
+            "indy_proof_request": {...}, <-- Required if type is "indy"
+            "dif_proof_request": {...}, <-- Required if type is "ld_proof"
+            "save_exchange_record": true <-- Whether the proof exchange record should be preserved after completion.
+            "comment": "string", <-- This comment will appear in the proof record for the recipient as well
+            "protocol_version": "v2", <-- "v1" is supported, but deprecated
+            "connection_id": "string", <-- The verifier's reference to the connection to send this proof request to
         }
     ```
     For a detailed technical specification and informative diagrams

@@ -38,8 +38,8 @@ async def create_proof_request(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
-    Create proof request.
-    ---------------------
+    Create proof request
+    ---
     This create request endpoint is used to create a proof request that is not bound to a connection.
     This is useful when the tenant wants to create a proof request that can be sent to multiple connections.
 
@@ -61,12 +61,12 @@ async def create_proof_request(
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
     Request Body:
-    -----------
+    ---
         body: CreateProofRequest
             The proof request object
 
     Returns:
-    --------
+    ---
         presentation_exchange: PresentationExchange
             The presentation exchange record
     """
@@ -98,8 +98,8 @@ async def send_proof_request(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
-    Send proof request.
-    -------------------
+    Send proof request
+    ---
     Only a tenant with the verifier role can send a proof request.
     The tenant can send a proof request to a specific connection by providing the connection ID.
 
@@ -122,12 +122,12 @@ async def send_proof_request(
         https://github.com/hyperledger/aries-rfcs/tree/main/features/0510-dif-pres-exch-attach
 
     Request Body:
-    -----------
+    ---
         body: SendProofRequest
             The proof request object
 
     Returns:
-    --------
+    ---
         presentation_exchange: PresentationExchange
             The presentation exchange record
     """
@@ -164,17 +164,17 @@ async def accept_proof_request(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
-    Accept proof request.
-    ---------------------
+    Accept proof request
+    ---
     A tenant responds to a proof request with this endpoint.
 
     Request Body:
-    -----------
+    ---
         body: AcceptProofRequest
             The proof request object
 
     Returns:
-    --------
+    ---
         presentation_exchange: PresentationExchange
             The presentation exchange record
     """
@@ -223,8 +223,8 @@ async def reject_proof_request(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Reject proof request.
-    ---------------------
+    Reject proof request
+    ---
     A prover uses this endpoint to reject a proof request.
 
     The prover provides the proof ID of the proof request that they want to reject,
@@ -232,12 +232,12 @@ async def reject_proof_request(
     The problem report string will end up in the proof record as the error message.
 
     Request Body:
-    -----------
+    ---
         body: RejectProofRequest
             The proof request object
 
     Returns:
-    --------
+    ---
         None
 
     """
@@ -282,7 +282,7 @@ async def get_proof_records(
 ) -> List[PresentationExchange]:
     """
     Get all proof records
-    ----------------------
+    ---
     These records contains information about the proof request and the proof presentation.
 
     If a proof is sent by a verifier with 'save_exchange_record' set to False the record
@@ -290,7 +290,7 @@ async def get_proof_records(
     The tenant can filter the results by connection_id, role, state, and thread_id.
 
     Parameters:
-    ----------
+    ---
         connection_id: Optional[str]
         role: Optional[Role]: "prover", "verifier"
         state: Optional[State]: "abandoned", "done", "presentation-received",
@@ -299,7 +299,7 @@ async def get_proof_records(
         thread_id: Optional[UUID]
 
     Returns:
-    --------
+    ---
         presentation_exchange_list: [PresentationExchange]
             The list of presentation exchange records
 
@@ -343,7 +343,7 @@ async def get_proof_record(
 ) -> PresentationExchange:
     """
     Get a specific proof record
-    ---------------------------
+    ---
     The tenant can get a specific proof record by providing the proof ID.
 
     If the proof was sent with 'save_exchange_record' set to False the
@@ -351,12 +351,12 @@ async def get_proof_record(
     A holder's records will always be deleted after the exchange was completed.
 
     Parameters:
-    ----------
+    ---
         proof_id: str
             The proof ID
 
     Returns:
-    --------
+    ---
         presentation_exchange_record: PresentationExchange
             The of presentation exchange record for the proof ID
     """
@@ -389,17 +389,17 @@ async def delete_proof(
 ) -> None:
     """
     Deletes a proof record
-    -----------------------
+    ---
     Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
 
 
     Parameters:
-    ----------
+    ---
         proof_id: str
             The proof ID - starting with v1- or v2-
 
     Returns:
-    --------
+    ---
         None
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
@@ -425,7 +425,7 @@ async def get_credentials_by_proof_id(
 ) -> List[IndyCredPrecis]:
     """
     Get matching credentials for presentation exchange
-    ---------------------------------------------------
+    ---
     Get matching credentials for a proof request by providing the proof ID.
 
     Returns a list of credential that the holder needs to respond to the proof request.
@@ -433,12 +433,12 @@ async def get_credentials_by_proof_id(
     of the fields in the proof request that credential satisfies.
 
     Parameters:
-    ----------
+    ---
         proof_id: str
             The proof ID
 
     Returns:
-    --------
+    ---
         presentation_exchange_list: [IndyCredPrecis]
             The list of Indy presentation credentials
     """

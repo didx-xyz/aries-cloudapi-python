@@ -12,27 +12,21 @@ class RegressionTestConfig:
     reused_connection_alias = "RegressionTestConnection"
 
     run_regression_tests = os.getenv("RUN_REGRESSION_TESTS", "false").upper() == "TRUE"
-    skip_clean_tests = os.getenv("SKIP_CLEAN_TESTS", "false").upper() == "TRUE"
-    delete_fixtures_after_run = (
-        os.getenv("DELETE_REGRESSION_FIXTURES", "false").upper() == "TRUE"
-    )
     fail_on_recreating_fixtures = (
         os.getenv("FAIL_ON_RECREATING_FIXTURES", "false").upper() == "TRUE"
+    )
+    delete_fixtures_after_run = (
+        os.getenv("DELETE_REGRESSION_FIXTURES", "false").upper() == "TRUE"
     )
 
 
 class TestMode:
-    clean_run = "clean_run"
-    regression_run = "regression_run"
+    clean_run = "clean"
+    regression_run = "reuse"
 
-    clean_run_param = (
-        [clean_run] if RegressionTestConfig.skip_clean_tests is False else []
+    fixture_params = (
+        [regression_run] if RegressionTestConfig.run_regression_tests else [clean_run]
     )
-    regression_run_param = (
-        [regression_run] if RegressionTestConfig.run_regression_tests else []
-    )
-
-    fixture_params = clean_run_param + regression_run_param
 
 
 def assert_fail_on_recreating_fixtures():

@@ -35,10 +35,10 @@ async def assert_valid_issuer(did: str, schema_id: Optional[str] = None) -> None
         bound_logger.info("DID not registered in the trust registry.")
         raise TrustRegistryException(f"DID {did} not registered in the trust registry.")
 
-    if "issuer" not in actor["roles"]:
+    if "issuer" not in actor.roles:
         bound_logger.info("Actor associated with DID does not have `issuer` role.")
         raise TrustRegistryException(
-            f"Actor {actor['id']} does not have required role 'issuer'."
+            f"Actor {actor.id} does not have required role 'issuer'."
         )
     bound_logger.info("Issuer DID is valid")
 

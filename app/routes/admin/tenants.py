@@ -26,7 +26,6 @@ from app.models.tenants import (
     TenantAuth,
     UpdateTenantRequest,
 )
-from app.models.trust_registry import Actor
 from app.services.onboarding.tenants import handle_tenant_update, onboard_tenant
 from app.services.trust_registry.actors import (
     fetch_actor_by_id,
@@ -39,6 +38,7 @@ from app.util.tenants import (
     tenant_from_wallet_record,
 )
 from shared.log_config import get_logger
+from shared.models.trustregistry import Actor
 
 logger = get_logger(__name__)
 

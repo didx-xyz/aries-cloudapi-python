@@ -1,9 +1,9 @@
 from typing import List, Optional
 
 from app.exceptions import TrustRegistryException
-from app.models.trust_registry import Schema
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
+from shared.models.trustregistry import Schema
 from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
@@ -62,7 +62,7 @@ async def fetch_schemas() -> List[Schema]:
             f"Unable to fetch schemas: `{schemas_res.text}`.", schemas_res.status_code
         )
 
-    result = schemas_res.json()
+    result = [Schema.model_validate(schema) for schema in schemas_res.json()]
     logger.info("Successfully fetched schemas from trust registry.")
     return result
 
@@ -98,7 +98,7 @@ async def get_schema_by_id(schema_id: str) -> Optional[Schema]:
             schema_response.status_code,
         )
 
-    result = schema_response.json()
+    result = Schema.model_validate(schema_response.json())
     logger.info("Successfully fetched schema from trust registry.")
     return result
 

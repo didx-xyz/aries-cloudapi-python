@@ -46,7 +46,7 @@ async def test_assert_valid_issuer(
 
     # Mock the actor_by_did and registry_has_schema calls
     mocked_client_get_did = Mock()
-    response_actor_by_did = Response(200, json=actor.model_dump_json())
+    response_actor_by_did = Response(200, json=actor.model_dump())
     mocked_client_get_did.get = AsyncMock(return_value=response_actor_by_did)
     patch_client_actors.return_value.__aenter__.return_value = mocked_client_get_did
 
@@ -92,24 +92,24 @@ async def test_actor_has_role(
     verifier = Actor(id=actor_id, name="abc", roles=["verifier"], did="did:xxx")
     issuer = Actor(id=actor_id, name="abc", roles=["issuer"], did="did:xxx")
     mock_async_client.get = AsyncMock(
-        return_value=Response(200, json=verifier.model_dump_json())
+        return_value=Response(200, json=verifier.model_dump())
     )
     assert await actor_has_role(actor_id, "issuer") is False
 
     mock_async_client.get = AsyncMock(
-        return_value=Response(428, json=verifier.model_dump_json())
+        return_value=Response(428, json=verifier.model_dump())
     )
     with pytest.raises(TrustRegistryException):
         await actor_has_role(actor_id, "issuer")
 
     mock_async_client.get = AsyncMock(
-        return_value=Response(428, json=issuer.model_dump_json())
+        return_value=Response(428, json=issuer.model_dump())
     )
     with pytest.raises(TrustRegistryException):
         await actor_has_role(actor_id, "issuer")
 
     mock_async_client.get = AsyncMock(
-        return_value=Response(200, json=issuer.model_dump_json())
+        return_value=Response(200, json=issuer.model_dump())
     )
     assert await actor_has_role(actor_id, "issuer") is True
 
@@ -129,7 +129,7 @@ async def test_actor_by_did(
     )
 
     mock_async_client.get = AsyncMock(
-        return_value=Response(200, json=actor.model_dump_json())
+        return_value=Response(200, json=actor.model_dump())
     )
     fetched_actor = await fetch_actor_by_did("did:test")
     mock_async_client.get.assert_called_once_with(
@@ -138,7 +138,7 @@ async def test_actor_by_did(
     assert fetched_actor == actor
 
     mock_async_client.get = AsyncMock(
-        return_value=Response(500, json=actor.model_dump_json())
+        return_value=Response(500, json=actor.model_dump())
     )
     with pytest.raises(TrustRegistryException):
         fetched_actor = await fetch_actor_by_did("did:test")
@@ -149,7 +149,7 @@ async def test_actor_by_did(
 
 
 def dump_json(input_list: List[Actor]):
-    return [item.model_dump_json() for item in input_list]
+    return [item.model_dump() for item in input_list]
 
 
 @pytest.mark.anyio
@@ -343,7 +343,7 @@ async def test_update_actor(
     )
 
     mock_async_client.put = AsyncMock(
-        return_value=Response(200, json=actor.model_dump_json())
+        return_value=Response(200, json=actor.model_dump())
     )
     await update_actor(actor=actor)
     mock_async_client.put.assert_called_once_with(
@@ -379,7 +379,7 @@ async def test_assert_actor_name(
         didcomm_invitation="actor-didcomm-invitation",
     )
     mock_async_client.get = AsyncMock(
-        return_value=Response(status_code=200, json=actor.model_dump_json())
+        return_value=Response(status_code=200, json=actor.model_dump())
     )
 
     assert await assert_actor_name(name) is True
@@ -478,7 +478,7 @@ async def test_get_actor(
         roles=["issuer"],
         did=actor_did,
         didcomm_invitation="http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
-    ).model_dump_json()
+    ).model_dump()
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=[actor]))
 
@@ -532,7 +532,7 @@ async def test_get_issuers(
             roles=["issuer"],
             did="did:sov:2kzVyyTsHmt4WrJLXXRqQU",
             didcomm_invitation="http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
-        ).model_dump_json()
+        ).model_dump()
     ]
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=actors))
@@ -557,7 +557,7 @@ async def test_get_verifiers(
             roles=["verifier"],
             did="did:sov:2kzVyyTsHmt4WrJLXXRqQU",
             didcomm_invitation="http://governance-multitenant-agent:3020?oob=eyJAdHlwZ",
-        ).model_dump_json()
+        ).model_dump()
     ]
 
     mock_async_client.get = AsyncMock(return_value=Response(200, json=actors))

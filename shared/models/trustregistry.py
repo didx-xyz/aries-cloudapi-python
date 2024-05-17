@@ -1,14 +1,16 @@
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from shared.exceptions import CloudApiValueError
 
+TrustRegistryRole = Literal["issuer", "verifier"]
+
 
 class Actor(BaseModel):
     id: str
     name: str
-    roles: List[str]
+    roles: List[TrustRegistryRole]
     did: str
     didcomm_invitation: Optional[str] = None
 

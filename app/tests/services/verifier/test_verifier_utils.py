@@ -174,7 +174,7 @@ async def test_is_verifier():
 async def test_get_actor(mock_async_client: Mock):
     # gets actor
     mock_async_client.get = AsyncMock(
-        return_value=Response(200, json=sample_actor.model_dump_json())
+        return_value=Response(200, json=sample_actor.model_dump())
     )
 
     assert await get_actor(did=sample_actor.did) == sample_actor

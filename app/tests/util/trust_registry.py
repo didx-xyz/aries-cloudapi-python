@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from random import random
 from typing import AsyncGenerator
 
-from app.models.trust_registry import Actor
 from app.routes.wallet.dids import router as wallet_router
 from app.services.trust_registry.actors import (
     fetch_actor_by_did,
@@ -12,6 +11,7 @@ from app.services.trust_registry.actors import (
 from app.services.trust_registry.schemas import register_schema
 from app.services.trust_registry.util.schema import registry_has_schema
 from shared import RichAsyncClient
+from shared.models.trustregistry import Actor
 
 WALLET_BASE_PATH = wallet_router.prefix
 

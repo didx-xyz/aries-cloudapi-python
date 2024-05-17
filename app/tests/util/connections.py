@@ -199,9 +199,9 @@ async def connect_using_trust_registry_invite(
     connection_alias: str,
 ) -> AcmeAliceConnect:
     acme_actor = await fetch_actor_by_id(verifier.wallet_id)
-    assert acme_actor["didcomm_invitation"]
+    assert acme_actor.didcomm_invitation
 
-    invitation = acme_actor["didcomm_invitation"]
+    invitation = acme_actor.didcomm_invitation
     invitation_json = base64_to_json(invitation.split("?oob=")[1])
 
     # accept invitation on alice side -- she uses here connection alias

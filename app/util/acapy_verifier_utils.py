@@ -4,7 +4,6 @@ from typing import List, Optional, Set, Union
 from aries_cloudcontroller import AcaPyClient, IndyPresSpec
 
 from app.exceptions import CloudApiException, handle_acapy_call
-from app.models.trust_registry import Actor
 from app.models.verifier import AcceptProofRequest, ProofRequestType, SendProofRequest
 from app.services.acapy_wallet import assert_public_did
 from app.services.trust_registry.actors import fetch_actor_by_did, fetch_actor_by_name
@@ -17,6 +16,7 @@ from app.util.tenants import get_wallet_label_from_controller
 from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
 from shared.models.protocol import PresentProofProtocolVersion
+from shared.models.trustregistry import Actor
 
 logger = get_logger(__name__)
 
@@ -194,7 +194,7 @@ async def assert_valid_verifier(
     # 2. Check actor has role verifier, raise exception otherwise
     if not is_verifier(actor=actor):
         raise CloudApiException(
-            f"{actor['name']} is not a valid verifier in the trust registry.", 403
+            f"{actor.name} is not a valid verifier in the trust registry.", 403
         )
     bound_logger.debug("Verifier is valid.")
 
@@ -204,14 +204,14 @@ async def are_valid_schemas(schema_ids: List[str]) -> bool:
         return False
 
     schemas_from_tr = await fetch_schemas()
-    schemas_ids_from_tr = [schema["id"] for schema in schemas_from_tr]
+    schemas_ids_from_tr = [schema.id for schema in schemas_from_tr]
     schemas_valid_list = [id in schemas_ids_from_tr for id in schema_ids]
 
     return all(schemas_valid_list)
 
 
 def is_verifier(actor: Actor) -> bool:
-    return "verifier" in actor["roles"]
+    return "verifier" in actor.roles
 
 
 async def get_actor(did: str) -> Actor:

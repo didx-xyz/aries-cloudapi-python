@@ -136,10 +136,10 @@ async def test_accept_proof_request_verifier_oob_connection(
     verifier_actor = await fetch_actor_by_id(acme_wallet_id)
 
     assert verifier_actor
-    assert verifier_actor["didcomm_invitation"]
+    assert verifier_actor.didcomm_invitation
 
     invitation_json = base64_to_json(
-        verifier_actor["didcomm_invitation"].split("?oob=")[1]
+        verifier_actor.didcomm_invitation.split("?oob=")[1]
     )
     invitation_response = (
         await alice_member_client.post(

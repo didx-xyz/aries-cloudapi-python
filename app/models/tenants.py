@@ -4,8 +4,8 @@ from typing import Dict, List, Literal, Optional
 from aries_cloudcontroller import CreateWalletRequest, UpdateWalletRequest
 from pydantic import BaseModel, Field, field_validator
 
-from app.models.trust_registry import TrustRegistryRole
 from shared.exceptions import CloudApiValueError
+from shared.models.trustregistry import TrustRegistryRole
 
 # Deduplicate some descriptions and field definitions
 allowable_special_chars = ".!@$*()~_-"  # the dash character must be at the end, otherwise it defines a regex range

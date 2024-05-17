@@ -14,7 +14,6 @@ from httpx import Response
 from mockito import mock, when
 
 from app.exceptions import CloudApiException, CloudApiValueError
-from app.models.trust_registry import Actor
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
 from app.services.verifier.acapy_verifier import Verifier
 from app.tests.services.verifier.utils import indy_pres_spec, indy_proof_request
@@ -31,6 +30,7 @@ from app.util.acapy_verifier_utils import (
     is_verifier,
 )
 from shared.models.presentation_exchange import PresentationExchange
+from shared.models.trustregistry import Actor
 
 sample_actor = Actor(
     id="abcde",
@@ -159,12 +159,11 @@ async def test_ed25519_verkey_to_did_key():
 @pytest.mark.anyio
 async def test_is_verifier():
     # False
-    actor = sample_actor.copy()
-    actor.update({"roles": ["issuer"]})
+    actor = sample_actor.model_copy(update={"roles": ["issuer"]})
     assert is_verifier(actor=actor) is False
 
     # True
-    actor["roles"].append("verifier")
+    actor = sample_actor.model_copy(update={"roles": ["issuer", "verifier"]})
     assert is_verifier(actor=actor) is True
 
 
@@ -174,17 +173,19 @@ async def test_is_verifier():
 )
 async def test_get_actor(mock_async_client: Mock):
     # gets actor
-    mock_async_client.get = AsyncMock(return_value=Response(200, json=sample_actor))
+    mock_async_client.get = AsyncMock(
+        return_value=Response(200, json=sample_actor.model_dump())
+    )
 
-    assert await get_actor(did=sample_actor["did"]) == sample_actor
+    assert await get_actor(did=sample_actor.did) == sample_actor
 
     # no actor
-    mock_async_client.get = AsyncMock(return_value=Response(200, json={}))
+    mock_async_client.get = AsyncMock(return_value=Response(404, json={}))
 
     with pytest.raises(
-        CloudApiException, match=f"404: No verifier with DID `{sample_actor['did']}`"
+        CloudApiException, match=f"404: No verifier with DID `{sample_actor.did}`"
     ):
-        await get_actor(did=sample_actor["did"])
+        await get_actor(did=sample_actor.did)
 
 
 @pytest.mark.anyio
@@ -341,8 +342,7 @@ async def test_assert_valid_prover_x_no_public_did_no_invitation_key(
 async def test_assert_valid_prover_x_actor_invalid_role(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
-    actor = sample_actor.copy()
-    actor.update({"roles": ["issuer"]})
+    actor = sample_actor.model_copy(update={"roles": ["issuer"]})
 
     test_pres_exchange = pres_exchange.model_copy(
         update={"protocol_version": protocol_version}
@@ -730,8 +730,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
 async def test_assert_valid_verifier_x_not_verifier(
     mock_agent_controller: AcaPyClient, protocol_version: str
 ):
-    actor = sample_actor.copy()
-    actor.update({"roles": ["issuer"]})
+    actor = sample_actor.model_copy(update={"roles": ["issuer"]})
 
     conn = ConnRecord(
         connection_id="a-connection-id",

@@ -1,8 +1,8 @@
 from app.exceptions import TrustRegistryException
-from app.models.trust_registry import TrustRegistryRole
 from app.services.trust_registry.actors import fetch_actor_by_id
 from shared.constants import TRUST_REGISTRY_URL
 from shared.log_config import get_logger
+from shared.models.trustregistry import TrustRegistryRole
 from shared.util.rich_async_client import RichAsyncClient
 
 logger = get_logger(__name__)
@@ -26,7 +26,7 @@ async def actor_has_role(actor_id: str, role: TrustRegistryRole) -> bool:
         bound_logger.info("Actor not registered in trust registry.")
         raise TrustRegistryException(f"Actor with id {actor_id} not found.", 404)
 
-    result = bool(role in actor["roles"])
+    result = role in actor.roles
     if result:
         bound_logger.info("Actor has requested role.")
     else:

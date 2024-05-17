@@ -13,11 +13,11 @@ from app.exceptions import (
     handle_model_with_validation,
 )
 from app.models.tenants import OnboardResult, UpdateTenantRequest
-from app.models.trust_registry import TrustRegistryRole
 from app.services.onboarding.issuer import onboard_issuer
 from app.services.onboarding.verifier import onboard_verifier
 from app.services.trust_registry.actors import fetch_actor_by_id, update_actor
 from shared.log_config import get_logger
+from shared.models.trustregistry import TrustRegistryRole
 
 logger = get_logger(__name__)
 
@@ -47,14 +47,13 @@ async def handle_tenant_update(
         )
 
     if actor:
-        existing_roles = actor["roles"]
+        existing_roles = actor.roles
         added_roles = list(set(new_roles) - set(existing_roles))
 
         if new_label or added_roles:  # Only update actor if
-            updated_actor = actor.copy()
-
+            update_dict = {}
             if new_label:
-                updated_actor["name"] = new_label
+                update_dict["name"] = new_label
 
             if added_roles:
                 bound_logger.info("Updating tenant roles")
@@ -73,9 +72,11 @@ async def handle_tenant_update(
                 )
 
                 # Remove duplicates from the role list
-                updated_actor["roles"] = list(set(new_roles + existing_roles))
-                updated_actor["did"] = onboard_result.did
-                updated_actor["didcomm_invitation"] = onboard_result.didcomm_invitation
+                update_dict["roles"] = list(set(new_roles + existing_roles))
+                update_dict["did"] = onboard_result.did
+                update_dict["didcomm_invitation"] = onboard_result.didcomm_invitation
+
+            updated_actor = actor.model_copy(update=update_dict)
 
         await update_actor(updated_actor)
 

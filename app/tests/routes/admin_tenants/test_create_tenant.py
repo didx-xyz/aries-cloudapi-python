@@ -13,8 +13,8 @@ from app.models.tenants import (
     CreateWalletRequestWithGroups,
     OnboardResult,
 )
-from app.models.trust_registry import Actor
 from app.routes.admin.tenants import create_tenant
+from shared.models.trustregistry import Actor
 
 wallet_id = "some_wallet_id"
 wallet_name = "some_wallet_name"

@@ -102,7 +102,7 @@ async def fetch_all_actors() -> List[Actor]:
             actors_response.status_code,
         )
 
-    actors = [Actor.model_validate_json(actor) for actor in actors_response.json()]
+    actors = [Actor.model_validate(actor) for actor in actors_response.json()]
 
     if actors:
         logger.info("Successfully got all actors.")
@@ -146,7 +146,7 @@ async def fetch_actor_by_did(did: str) -> Optional[Actor]:
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
-    return Actor.model_validate_json(actor_response.json())
+    return Actor.model_validate(actor_response.json())
 
 
 async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
@@ -183,7 +183,7 @@ async def fetch_actor_by_id(actor_id: str) -> Optional[Actor]:
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
-    return Actor.model_validate_json(actor_response.json())
+    return Actor.model_validate(actor_response.json())
 
 
 async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
@@ -220,7 +220,7 @@ async def fetch_actor_by_name(actor_name: str) -> Optional[Actor]:
         )
 
     bound_logger.info("Successfully fetched actor from trust registry.")
-    return Actor.model_validate_json(actor_response.json())
+    return Actor.model_validate(actor_response.json())
 
 
 async def fetch_actors_with_role(role: TrustRegistryRole) -> List[Actor]:
@@ -251,7 +251,7 @@ async def fetch_actors_with_role(role: TrustRegistryRole) -> List[Actor]:
             actors_response.status_code,
         )
 
-    actors = [Actor.model_validate_json(actor) for actor in actors_response.json()]
+    actors = [Actor.model_validate(actor) for actor in actors_response.json()]
     actors_with_role_list = [actor for actor in actors if role in actor.roles]
 
     if actors_with_role_list:

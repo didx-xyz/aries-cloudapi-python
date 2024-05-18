@@ -85,7 +85,7 @@ async def handle_websocket(
         bound_logger.info("WebSocket connection closed.")
         if uuid:
             await WebsocketManager.unsubscribe(uuid)
-    except Exception:
+    except Exception:  # pylint: disable=W0718
         bound_logger.exception("Exception caught while handling websocket.")
         if uuid:
             await WebsocketManager.unsubscribe(uuid)

@@ -22,21 +22,21 @@ logger = get_logger(__name__)
 
 
 class VerifierFacade(Enum):
-    v1 = VerifierV1
-    v2 = VerifierV2
+    V1 = VerifierV1
+    V2 = VerifierV2
 
 
 def get_verifier_by_version(
     version_candidate: Union[str, PresentProofProtocolVersion]
 ) -> Verifier:
-    if version_candidate == PresentProofProtocolVersion.v1 or (
+    if version_candidate == PresentProofProtocolVersion.V1 or (
         isinstance(version_candidate, str) and version_candidate.startswith("v1-")
     ):
-        return VerifierFacade.v1.value
-    elif version_candidate == PresentProofProtocolVersion.v2 or (
+        return VerifierFacade.V1.value
+    elif version_candidate == PresentProofProtocolVersion.V2 or (
         isinstance(version_candidate, str) and version_candidate.startswith("v2-")
     ):
-        return VerifierFacade.v2.value
+        return VerifierFacade.V2.value
     else:
         raise CloudApiValueError(
             f"Unknown protocol version: `{version_candidate}`. Expecting `v1` or `v2`."
@@ -147,7 +147,7 @@ async def assert_valid_verifier(
     try:
         bound_logger.debug("Asserting public did")
         public_did = await assert_public_did(aries_controller=aries_controller)
-    except Exception:
+    except CloudApiException:
         # CASE: Agent has NO public DID
         # check via connection -> invitation key
         bound_logger.debug(
@@ -163,31 +163,34 @@ async def assert_valid_verifier(
         invitation_key = connection_record.invitation_key
 
         if not invitation_key:
-            raise CloudApiException("Connection has no invitation key.", 400)
+            raise CloudApiException(  # pylint: disable=W0707
+                "Connection has no invitation key.", 400
+            )
         public_did = ed25519_verkey_to_did_key(invitation_key)
 
     # Try get actor from TR
     try:
         bound_logger.debug("Getting actor by DID")
         actor = await get_actor(did=public_did)
-    except CloudApiException as e:
-        if e.status_code == 404:
+    except CloudApiException as exc:
+        if exc.status_code == 404:
             # DID is not found on Trust Registry. May arise if verifier has no public did, and
             # connection is made without using OOB invite from Trust Registry
             try:
                 wallet_label = await get_wallet_label_from_controller(aries_controller)
-            except (IndexError, KeyError):
+            except (IndexError, KeyError) as exc_2:
                 logger.error("Could not read wallet_label from client's controller")
-                raise e
+                raise exc from exc_2
             actor = await get_actor_by_name(name=wallet_label)
-        elif e.status_code == 500:
+        elif exc.status_code == 500:
             raise CloudApiException(
                 "An error occurred while asserting valid verifier. Please try again.",
                 500,
-            ) from e
+            ) from exc
         else:
             logger.warning(
-                "An unexpected exception occurred while asserting valid verifier: {}", e
+                "An unexpected exception occurred while asserting valid verifier: {}",
+                exc,
             )
             raise
 

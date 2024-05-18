@@ -137,10 +137,12 @@ async def assert_endorser_role_set(
     num_tries=1,
     delay=DEFAULT_DELAY,
 ):
-    check_fn = (
-        lambda metadata: metadata.get("transaction_jobs", {}).get("transaction_my_job")
-        == "TRANSACTION_ENDORSER"
-    )
+    def check_fn(metadata: dict):
+        return (
+            metadata.get("transaction_jobs", {}).get("transaction_my_job")
+            == "TRANSACTION_ENDORSER"
+        )
+
     try:
         await assert_metadata_set(
             controller, conn_id, check_fn, logger, num_tries, delay
@@ -158,12 +160,14 @@ async def assert_author_role_set(
     num_tries=1,
     delay=DEFAULT_DELAY,
 ):
-    check_fn = (
-        lambda metadata: metadata.get("transaction_jobs", {}).get("transaction_my_job")
-        == "TRANSACTION_AUTHOR"
-        and metadata.get("transaction_jobs", {}).get("transaction_their_job")
-        == "TRANSACTION_ENDORSER"
-    )
+    def check_fn(metadata: dict):
+        return (
+            metadata.get("transaction_jobs", {}).get("transaction_my_job")
+            == "TRANSACTION_AUTHOR"
+            and metadata.get("transaction_jobs", {}).get("transaction_their_job")
+            == "TRANSACTION_ENDORSER"
+        )
+
     try:
         await assert_metadata_set(
             controller, conn_id, check_fn, logger, num_tries, delay
@@ -182,13 +186,15 @@ async def assert_endorser_info_set(
     num_tries=1,
     delay=DEFAULT_DELAY,
 ):
-    check_fn = (
-        lambda metadata: metadata.get("transaction_jobs", {}).get("transaction_my_job")
-        == "TRANSACTION_AUTHOR"
-        and metadata.get("transaction_jobs", {}).get("transaction_their_job")
-        == "TRANSACTION_ENDORSER"
-        and metadata.get("endorser_info", {}).get("endorser_did") == endorser_did
-    )
+    def check_fn(metadata: dict):
+        return (
+            metadata.get("transaction_jobs", {}).get("transaction_my_job")
+            == "TRANSACTION_AUTHOR"
+            and metadata.get("transaction_jobs", {}).get("transaction_their_job")
+            == "TRANSACTION_ENDORSER"
+            and metadata.get("endorser_info", {}).get("endorser_did") == endorser_did
+        )
+
     try:
         await assert_metadata_set(
             controller, conn_id, check_fn, logger, num_tries, delay

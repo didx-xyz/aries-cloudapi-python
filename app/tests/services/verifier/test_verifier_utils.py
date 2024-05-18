@@ -55,11 +55,11 @@ pres_exchange = PresentationExchange(
 
 
 def test_get_verifier_by_version_v1():
-    assert get_verifier_by_version("v1") is VerifierFacade.v1.value
+    assert get_verifier_by_version("v1") is VerifierFacade.V1.value
 
 
 def test_get_verifier_by_version_v2():
-    assert get_verifier_by_version("v2") is VerifierFacade.v2.value
+    assert get_verifier_by_version("v2") is VerifierFacade.V2.value
 
 
 def test_get_verifier_by_version_exception():
@@ -664,7 +664,7 @@ async def test_assert_valid_verifier_invitation_key(
     # valid
     with patch(
         "app.util.acapy_verifier_utils.assert_public_did",
-        side_effect=Exception("Error"),
+        side_effect=CloudApiException("Error"),
     ), patch("app.util.acapy_verifier_utils.get_actor", return_value=sample_actor):
         await assert_valid_verifier(
             aries_controller=mock_agent_controller,
@@ -712,7 +712,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
     # valid
     with patch(
         "app.util.acapy_verifier_utils.assert_public_did",
-        side_effect=Exception("Error"),
+        side_effect=CloudApiException("Error"),
     ), patch("app.util.acapy_verifier_utils.get_actor", return_value=sample_actor):
         with pytest.raises(CloudApiException, match="Connection has no invitation key"):
             await assert_valid_verifier(
@@ -744,7 +744,7 @@ async def test_assert_valid_verifier_x_not_verifier(
     # valid
     with patch(
         "app.util.acapy_verifier_utils.assert_public_did",
-        side_effect=Exception("Error"),
+        side_effect=CloudApiException("Error"),
     ), patch("app.util.acapy_verifier_utils.get_actor", return_value=actor):
         with pytest.raises(
             CloudApiException,

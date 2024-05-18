@@ -173,7 +173,7 @@ async def issue_alice_creds(
         num_tries += 1
 
     if num_credentials_returned != 3:
-        raise Exception(
+        raise Exception(  # pylint: disable=W0719
             f"Expected 3 credentials to be issued; only got {num_credentials_returned}"
         )
 

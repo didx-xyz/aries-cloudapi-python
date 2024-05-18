@@ -2,7 +2,7 @@ from sqlalchemy import TypeDecorator
 from sqlalchemy.sql.sqltypes import String
 
 
-class StringList(TypeDecorator):
+class StringList(TypeDecorator):  # pylint: disable=W0223
     impl = String
 
     cache_ok = False  # Resolves warning: https://sqlalche.me/e/20/cprf

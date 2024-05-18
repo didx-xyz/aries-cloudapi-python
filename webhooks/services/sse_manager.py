@@ -151,7 +151,7 @@ class SseManager:
                         await asyncio.sleep(sleep_duration)  # Prevent a busy loop
             except ConnectionError as e:
                 logger.error("ConnectionError detected: {}.", e)
-            except Exception:  # General exception catch
+            except Exception:  # pylint: disable=W0718
                 logger.exception("Unexpected error.")
 
             retry_count += 1
@@ -212,7 +212,7 @@ class SseManager:
 
         except (KeyError, ValueError) as e:
             logger.error("Could not unpack redis pubsub message: {}", e)
-        except Exception:
+        except Exception:  # pylint: disable=W0718
             logger.exception("Exception caught while processing redis event")
 
     async def _backfill_events(self) -> None:
@@ -242,7 +242,7 @@ class SseManager:
                     total_events_backfilled += 1
 
             logger.info("Backfilled a total of {} events.", total_events_backfilled)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             logger.exception("Exception caught during backfilling events: {}", e)
 
     async def _process_incoming_events(self) -> NoReturn:

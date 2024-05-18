@@ -68,10 +68,10 @@ async def create_tenant(
     bound_logger.info("Assert that requested label is not used in trust registry")
     try:
         actor_name_exists = await assert_actor_name(wallet_label)
-    except TrustRegistryException:
+    except TrustRegistryException as e:
         raise CloudApiException(
             "An error occurred when trying to register actor. Please try again"
-        )
+        ) from e
 
     if actor_name_exists:
         bound_logger.info("Actor name already exists; can't create wallet")
@@ -113,7 +113,7 @@ async def create_tenant(
                     409,
                     f"A wallet with name `{wallet_name}` already exists. "
                     "The wallet name must be unique.",
-                )
+                ) from e
             raise
 
         bound_logger.debug("Wallet creation successful")

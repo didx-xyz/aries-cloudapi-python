@@ -67,7 +67,7 @@ async def onboard_verifier(*, verifier_controller: AcaPyClient, verifier_label: 
                         did = did.split("#")[0]
                     onboarding_result["did"] = did
                 else:
-                    raise KeyError(
+                    raise KeyError(  # pylint: disable=W0707
                         f"RecipientKeys not present in the invitation service: `{service}`."
                     )
                 onboarding_result["didcomm_invitation"] = invitation.invitation_url
@@ -84,7 +84,7 @@ async def onboard_verifier(*, verifier_controller: AcaPyClient, verifier_label: 
                 "Created invitation does not have necessary attributes. Got: `{}`.",
                 invitation,
             )
-            raise CloudApiException(
+            raise CloudApiException(  # pylint: disable=W0707
                 "Error onboarding verifier: No public DID found. "
                 "Tried and failed to create invitation on their behalf."
             )

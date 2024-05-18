@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
 from app.dependencies.auth import AcaPyAuth
+from app.exceptions.cloudapi_exception import CloudApiException
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, indy_proof_request
@@ -22,7 +23,7 @@ presentation_exchange_record_1 = PresentationExchange(
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
     proof_id="abcde",
-    protocol_version=PresentProofProtocolVersion.v1.value,
+    protocol_version=PresentProofProtocolVersion.V1.value,
     presentation={},
     role="prover",
     state="presentation-sent",
@@ -34,7 +35,7 @@ presentation_exchange_record_2 = PresentationExchange(
     created_at="2021-11-22 11:37:45.179595Z",
     updated_at="2021-11-22 11:37:45.179595Z",
     proof_id="abcde",
-    protocol_version=PresentProofProtocolVersion.v2.value,
+    protocol_version=PresentProofProtocolVersion.V2.value,
     presentation={},
     role="prover",
     state="presentation-sent",
@@ -68,6 +69,10 @@ async def test_send_proof_request_v1(
 
     when(mock_agent_controller.connection).get_connection(conn_id="abcde").thenReturn(
         to_async(conn_record)
+    )
+
+    when(mock_agent_controller.wallet).get_public_did().thenRaise(
+        CloudApiException("No did")
     )
 
     when(acapy_verifier_utils).get_actor(
@@ -111,6 +116,10 @@ async def test_send_proof_request_v2(
 
     when(mock_agent_controller.connection).get_connection(conn_id="abcde").thenReturn(
         to_async(conn_record)
+    )
+
+    when(mock_agent_controller.wallet).get_public_did().thenRaise(
+        CloudApiException("No did")
     )
 
     when(acapy_verifier_utils).get_actor(

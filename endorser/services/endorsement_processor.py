@@ -163,7 +163,7 @@ class EndorsementProcessor:
                     else:
                         await asyncio.sleep(sleep_duration)  # prevent a busy loop
                 exception_count = 0  # reset exception count after successful loop
-            except Exception:
+            except Exception:  # pylint: disable=W0718
                 exception_count += 1
                 logger.exception(
                     "Something went wrong while processing endorsement events. Continuing..."
@@ -211,7 +211,7 @@ class EndorsementProcessor:
                     logger.warning(
                         "Couldn't delete processed endorsement event: {}", event_key
                     )
-            except Exception as e:
+            except Exception as e:  # pylint: disable=W0718
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
                 logger.error("Processing {} raised an exception: {}", event_key, e)
                 self._handle_unprocessable_endorse_event(event_key, event_json, e)

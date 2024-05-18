@@ -196,7 +196,7 @@ class RedisService:
                 )
             else:
                 self.logger.trace("No keys found matching pattern in this batch.")
-        except Exception:
+        except Exception:  # pylint: disable=W0718
             self.logger.exception(
                 "An exception occurred when scanning for keys from redis. Continuing..."
             )

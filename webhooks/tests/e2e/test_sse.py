@@ -150,12 +150,12 @@ async def get_sse_stream_response(url, duration=2) -> Response:
             async with client.stream("GET", url) as response:
                 response_text = ""
                 async for line in response.aiter_lines():
-                    response_text += line
+                    response_text += line  # pylint: disable=R1713
     except (TimeoutError, ReadTimeout):
         # Closing connection gracefully, return the response text read so far
         pass
-    finally:
-        return response_text
+
+    return response_text
 
 
 def response_to_json(response_text):

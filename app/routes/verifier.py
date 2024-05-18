@@ -252,7 +252,7 @@ async def get_proof_records(
     try:
         async with client_from_auth(auth) as aries_controller:
             logger.debug("Fetching v1 proof records")
-            v1_records = await VerifierFacade.v1.value.get_proof_records(
+            v1_records = await VerifierFacade.V1.value.get_proof_records(
                 controller=aries_controller,
                 connection_id=connection_id,
                 role=role,
@@ -260,7 +260,7 @@ async def get_proof_records(
                 thread_id=str(thread_id) if thread_id else None,
             )
             logger.debug("Fetching v2 proof records")
-            v2_records = await VerifierFacade.v2.value.get_proof_records(
+            v2_records = await VerifierFacade.V2.value.get_proof_records(
                 controller=aries_controller,
                 connection_id=connection_id,
                 role=role,

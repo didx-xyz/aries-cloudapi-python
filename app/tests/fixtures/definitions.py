@@ -65,7 +65,7 @@ async def get_clean_or_regression_test_schema(
         schema_definition_result = (
             await fetch_or_create_regression_test_schema_definition(name, auth)
         )
-    return schema_definition_result
+    return schema_definition_result  # pylint: disable=possibly-used-before-assignment
 
 
 @pytest.fixture(scope="session", params=TestMode.fixture_params)
@@ -144,7 +144,7 @@ async def get_clean_or_regression_test_cred_def(
         result = await fetch_or_create_regression_test_cred_def(
             auth=auth, schema=schema, support_revocation=support_revocation
         )
-    return result
+    return result  # pylint: disable=possibly-used-before-assignment
 
 
 @pytest.fixture(scope="module", params=TestMode.fixture_params)

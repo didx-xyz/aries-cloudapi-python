@@ -17,7 +17,7 @@ async def coroutine_with_retry(
         try:
             result = await coroutine_func(*args)
             break
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:
                 logger.error("Maximum number of retries exceeded. Failing.")
                 raise e  # Re-raise the exception if max attempts exceeded
@@ -93,7 +93,7 @@ async def coroutine_with_retry_until_value(
                 )
                 raise asyncio.TimeoutError
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:
                 logger.error(
                     "Maximum number of retries exceeded with exception. Failing."

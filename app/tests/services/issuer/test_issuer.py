@@ -43,7 +43,7 @@ async def test_send_credential(
     when(test_module).assert_public_did(...).thenReturn(to_async(did))
 
     credential = test_module.SendCredential(
-        protocol_version=IssueCredentialProtocolVersion.v1,
+        protocol_version=IssueCredentialProtocolVersion.V1,
         connection_id="conn_id",
         indy_credential_detail=IndyCredential(
             credential_definition_id=cred_def_id,
@@ -386,8 +386,8 @@ async def test_create_offer(
     v1_credential = mock(CredentialWithProtocol)
     v2_credential = mock(CredentialWithProtocol)
 
-    v1_credential.protocol_version = IssueCredentialProtocolVersion.v1
-    v2_credential.protocol_version = IssueCredentialProtocolVersion.v2
+    v1_credential.protocol_version = IssueCredentialProtocolVersion.V1
+    v2_credential.protocol_version = IssueCredentialProtocolVersion.V2
 
     v1_credential.type = "Indy"
     v2_credential.type = "Indy"

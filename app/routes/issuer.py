@@ -385,7 +385,7 @@ async def get_credentials(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Fetching v1 records")
-        v1_records = await IssueCredentialFacades.v1.value.get_records(
+        v1_records = await IssueCredentialFacades.V1.value.get_records(
             controller=aries_controller,
             connection_id=connection_id,
             role=role,
@@ -394,7 +394,7 @@ async def get_credentials(
         )
 
         bound_logger.debug("Fetching v2 records")
-        v2_records = await IssueCredentialFacades.v2.value.get_records(
+        v2_records = await IssueCredentialFacades.V2.value.get_records(
             controller=aries_controller,
             connection_id=connection_id,
             role=role,

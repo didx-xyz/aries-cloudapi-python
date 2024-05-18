@@ -97,4 +97,6 @@ async def check_webhook_state(
     if event:
         return event
     else:
-        raise Exception(f"Could not satisfy webhook filter: `{filter_map}`.")
+        raise Exception(  # pylint: disable=W0719
+            f"Could not satisfy webhook filter: `{filter_map}`."
+        )

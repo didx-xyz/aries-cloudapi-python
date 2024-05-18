@@ -4,6 +4,7 @@ from aries_cloudcontroller import DID, AcaPyClient
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
+from app.exceptions.cloudapi_exception import CloudApiException
 from app.services import acapy_wallet
 from app.services.acapy_ledger import accept_taa_if_required
 from shared import LEDGER_REGISTRATION_URL, LEDGER_TYPE
@@ -62,7 +63,7 @@ async def has_public_did(aries_controller: AcaPyClient) -> bool:
     try:
         await acapy_wallet.get_public_did(aries_controller)
         return True
-    except Exception:
+    except CloudApiException:
         return False
 
 
@@ -73,7 +74,7 @@ async def create_public_did(
     did_object = await acapy_wallet.create_did(aries_controller)
 
     if not did_object.did or not did_object.verkey:
-        raise Exception("Cannot register did without did and/or verkey")
+        raise CloudApiException("Cannot register did without did and/or verkey")
 
     await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
     await accept_taa_if_required(aries_controller)

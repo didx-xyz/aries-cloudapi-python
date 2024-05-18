@@ -68,7 +68,9 @@ async def get_did_and_schema_id_from_cred_def_attachment(
     schema = await client.schema.get_schema(schema_id=str(schema_seq_id))
 
     if not schema.var_schema or not schema.var_schema.id:
-        raise Exception("Could not extract schema id from schema response.")
+        raise Exception(  # pylint: disable=W0719
+            "Could not extract schema id from schema response."
+        )
 
     schema_id = schema.var_schema.id
 

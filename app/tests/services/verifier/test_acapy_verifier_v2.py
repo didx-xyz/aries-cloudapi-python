@@ -51,7 +51,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient, proof_ty
                 dif_proof_request if proof_type.value == "ld_proof" else None
             ),
             type=proof_type,
-            protocol_version=PresentProofProtocolVersion.v2,
+            protocol_version=PresentProofProtocolVersion.V2,
         )
 
         created_proof_request = await VerifierV2.create_proof_request(
@@ -69,7 +69,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient, proof_ty
                 create_proof_request=CreateProofRequest(
                     indy_proof_request=indy_proof_request,
                     type=proof_type,
-                    protocol_version=PresentProofProtocolVersion.v2,
+                    protocol_version=PresentProofProtocolVersion.V2,
                 ),
             )
         assert exc.value.status_code == 501
@@ -93,7 +93,7 @@ async def test_create_proof_request_exception(
             controller=mock_agent_controller,
             create_proof_request=CreateProofRequest(
                 indy_proof_request=indy_proof_request,
-                protocol_version=PresentProofProtocolVersion.v2,
+                protocol_version=PresentProofProtocolVersion.V2,
             ),
         )
 
@@ -120,7 +120,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient, proof_type
                 dif_proof_request if proof_type.value == "ld_proof" else None
             ),
             connection_id="abcde",
-            protocol_version=PresentProofProtocolVersion.v2,
+            protocol_version=PresentProofProtocolVersion.V2,
         )
 
         created_proof_send_proposal = await VerifierV2.send_proof_request(
@@ -140,7 +140,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient, proof_type
                     type=proof_type,
                     connection_id="abcde",
                     indy_proof_request=indy_proof_request,
-                    protocol_version=PresentProofProtocolVersion.v2,
+                    protocol_version=PresentProofProtocolVersion.V2,
                 ),
             )
         assert exc.value.status_code == 501
@@ -170,7 +170,7 @@ async def test_send_proof_request_exception(
             controller=mock_agent_controller,
             send_proof_request=SendProofRequest(
                 indy_proof_request=indy_proof_request,
-                protocol_version=PresentProofProtocolVersion.v2,
+                protocol_version=PresentProofProtocolVersion.V2,
                 connection_id="abc",
             ),
         )

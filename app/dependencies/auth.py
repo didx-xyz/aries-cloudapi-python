@@ -59,7 +59,7 @@ def get_acapy_auth_verified(auth: AcaPyAuth) -> AcaPyAuthVerified:
                 auth.token, ACAPY_MULTITENANT_JWT_SECRET, algorithms=["HS256"], leeway=1
             )
         except jwt.InvalidTokenError:
-            raise HTTPException(403, "Unauthorized")
+            raise HTTPException(403, "Unauthorized")  # pylint: disable=W0707
 
         wallet_id = token_body.get("wallet_id")
 

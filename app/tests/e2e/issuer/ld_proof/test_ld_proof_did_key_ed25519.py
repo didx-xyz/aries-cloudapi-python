@@ -171,7 +171,9 @@ async def test_send_jsonld_oob(
 
     # Updating JSON-LD credential did:key with proofType ed25519
     credential = deepcopy(credential_)
-    credential["connection_id"] = faber_connection_id  # pylint: disable=E0606
+    credential["connection_id"] = (
+        faber_connection_id  # pylint: disable=possibly-used-before-assignment
+    )
     credential["ld_credential_detail"]["credential"][
         "issuer"
     ] = register_issuer_key_ed25519

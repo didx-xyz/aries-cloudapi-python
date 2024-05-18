@@ -259,7 +259,7 @@ async def test_get_all_cloudapi_wallet_ids_no_wallets():
 
     wallet_ids = redis_service.get_all_cloudapi_wallet_ids()
 
-    assert wallet_ids == []
+    assert not wallet_ids
     assert redis_client.scan.call_count == 2
 
 

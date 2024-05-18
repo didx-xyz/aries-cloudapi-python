@@ -7,6 +7,7 @@ from pytest_mock import MockerFixture
 
 import app.routes.verifier as test_module
 from app.dependencies.auth import AcaPyAuth
+from app.exceptions.cloudapi_exception import CloudApiException
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import indy_pres_spec, indy_proof_request
@@ -70,6 +71,10 @@ async def test_send_proof_request_v1(
         to_async(conn_record)
     )
 
+    when(mock_agent_controller.wallet).get_public_did().thenRaise(
+        CloudApiException("No did")
+    )
+
     when(acapy_verifier_utils).get_actor(
         did="did:key:z6MkvVT4kkAmhTb9srDHScsL1q7pVKt9cpUJUah2pKuYh4As"
     ).thenReturn(to_async(actor))
@@ -111,6 +116,10 @@ async def test_send_proof_request_v2(
 
     when(mock_agent_controller.connection).get_connection(conn_id="abcde").thenReturn(
         to_async(conn_record)
+    )
+
+    when(mock_agent_controller.wallet).get_public_did().thenRaise(
+        CloudApiException("No did")
     )
 
     when(acapy_verifier_utils).get_actor(

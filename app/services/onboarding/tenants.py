@@ -78,7 +78,7 @@ async def handle_tenant_update(
 
             updated_actor = actor.model_copy(update=update_dict)
 
-        await update_actor(updated_actor)
+            await update_actor(updated_actor)
 
     bound_logger.debug("Updating wallet")
     request_body = handle_model_with_validation(

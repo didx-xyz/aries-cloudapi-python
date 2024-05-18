@@ -27,11 +27,11 @@ from shared.exceptions.cloudapi_value_error import CloudApiValueError
 def test_create_app():
     with patch("os.getenv") as mock_getenv:
         mock_getenv.return_value = "False"  # Mock the 'prod' environment variable
-        app = create_app()
-        assert app.title == "OpenAPI"
+        created_app = create_app()
+        assert created_app.title == "OpenAPI"
 
         # Verifying that all routes are included
-        routes = [route.path for route in app.routes]
+        routes = [route.path for route in created_app.routes]
         expected_routes = ["/openapi.json", "/v1/tenants"]
         for route in expected_routes:
             assert route in routes

@@ -172,24 +172,25 @@ async def assert_valid_verifier(
     try:
         bound_logger.debug("Getting actor by DID")
         actor = await get_actor(did=public_did)
-    except CloudApiException as e:
-        if e.status_code == 404:
+    except CloudApiException as exc:
+        if exc.status_code == 404:
             # DID is not found on Trust Registry. May arise if verifier has no public did, and
             # connection is made without using OOB invite from Trust Registry
             try:
                 wallet_label = await get_wallet_label_from_controller(aries_controller)
-            except (IndexError, KeyError):
+            except (IndexError, KeyError) as exc_2:
                 logger.error("Could not read wallet_label from client's controller")
-                raise e
+                raise exc from exc_2
             actor = await get_actor_by_name(name=wallet_label)
-        elif e.status_code == 500:
+        elif exc.status_code == 500:
             raise CloudApiException(
                 "An error occurred while asserting valid verifier. Please try again.",
                 500,
-            ) from e
+            ) from exc
         else:
             logger.warning(
-                "An unexpected exception occurred while asserting valid verifier: {}", e
+                "An unexpected exception occurred while asserting valid verifier: {}",
+                exc,
             )
             raise
 

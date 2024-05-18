@@ -147,7 +147,7 @@ async def assert_valid_verifier(
     try:
         bound_logger.debug("Asserting public did")
         public_did = await assert_public_did(aries_controller=aries_controller)
-    except Exception:
+    except CloudApiException:
         # CASE: Agent has NO public DID
         # check via connection -> invitation key
         bound_logger.debug(

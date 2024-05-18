@@ -34,12 +34,12 @@ async def app_lifespan(_: FastAPI):
 
 
 def create_app() -> FastAPI:
-    OPENAPI_NAME = os.getenv("OPENAPI_NAME", "Aries Cloud API: Endorser Service")
-    PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
+    openapi_name = os.getenv("OPENAPI_NAME", "Aries Cloud API: Endorser Service")
+    project_version = os.getenv("PROJECT_VERSION", "0.11.0")
 
     application = FastAPI(
-        title=OPENAPI_NAME,
-        version=PROJECT_VERSION,
+        title=openapi_name,
+        version=project_version,
         lifespan=app_lifespan,
     )
 

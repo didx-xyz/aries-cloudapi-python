@@ -95,14 +95,14 @@ loggers = {}
 
 def get_log_file_path(main_module_name) -> str:
     # The absolute path of this file's directory
-    CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
+    config_dir = os.path.dirname(os.path.abspath(__file__))
 
     # Move up one level to get to the project root directory
-    BASE_DIR = os.path.dirname(CONFIG_DIR)
+    base_dir = os.path.dirname(config_dir)
 
     # Define the logging dir with
-    LOG_DIR = os.path.join(BASE_DIR, f"logs/{main_module_name}")
-    return os.path.join(LOG_DIR, "{time:YYYY-MM-DD}.log")
+    log_dir = os.path.join(base_dir, f"logs/{main_module_name}")
+    return os.path.join(log_dir, "{time:YYYY-MM-DD}.log")
 
 
 # Export this logger

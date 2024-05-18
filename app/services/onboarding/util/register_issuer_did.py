@@ -211,7 +211,7 @@ async def wait_endorser_connection_completed(
                 if conn_record.rfc23_state == "completed":
                     return conn_record
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:
                 logger.error(
                     "Maximum number of retries exceeded with exception. Failing."
@@ -259,7 +259,7 @@ async def wait_issuer_did_transaction_endorsed(
                 ):
                     return
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=W0718
             if attempt + 1 == max_attempts:
                 logger.error(
                     "Maximum number of retries exceeded with exception. Failing."

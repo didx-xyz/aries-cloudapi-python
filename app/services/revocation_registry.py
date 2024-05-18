@@ -311,7 +311,7 @@ async def get_credential_definition_id_from_exchange_id(
                 err2.detail,
             )
             return
-        except Exception:
+        except Exception:  # pylint: disable=W0718
             bound_logger.exception(
                 "Exception caught while constructing cred def id from record."
             )

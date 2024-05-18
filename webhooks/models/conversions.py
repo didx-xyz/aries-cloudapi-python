@@ -80,7 +80,9 @@ def to_credential_model(event: AcaPyWebhookEvent) -> CredentialExchange:
         cred_exchange = V20CredExRecord(**event.payload)
         cred_model = credential_record_to_model_v2(cred_exchange)
     else:
-        raise Exception(f"Unsupported credential acapy topic: `{event.acapy_topic}`.")
+        raise Exception(  # pylint: disable=W0719
+            f"Unsupported credential acapy topic: `{event.acapy_topic}`."
+        )
 
     return cred_model
 
@@ -107,7 +109,9 @@ def to_proof_model(event: AcaPyWebhookEvent) -> PresentationExchange:
         presentation_exchange = V20PresExRecord(**event.payload)
         presentation_exchange = presentation_record_to_model(presentation_exchange)
     else:
-        raise Exception(f"Unsupported proof acapy topic: `{event.acapy_topic}`.")
+        raise Exception(  # pylint: disable=W0719
+            f"Unsupported proof acapy topic: `{event.acapy_topic}`."
+        )
 
     return presentation_exchange
 

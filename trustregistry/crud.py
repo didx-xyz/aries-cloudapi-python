@@ -102,7 +102,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
             raise ActorAlreadyExistsException(
                 f"Bad request: An actor with ID: `{actor.id}` already exists in database."
-            )
+            ) from e
 
         elif "ix_actors_name" in constraint_violation:
             bound_logger.info(
@@ -110,7 +110,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
             raise ActorAlreadyExistsException(
                 f"Bad request: An actor with name: `{actor.name}` already exists in database."
-            )
+            ) from e
 
         elif "ix_actors_didcomm_invitation" in constraint_violation:
             bound_logger.info(
@@ -118,7 +118,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
             raise ActorAlreadyExistsException(
                 "Bad request: An actor with DIDComm invitation already exists in database."
-            )
+            ) from e
 
         elif "ix_actors_did" in constraint_violation:
             bound_logger.info(
@@ -126,7 +126,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
             raise ActorAlreadyExistsException(
                 f"Bad request: An actor with DID: `{actor.did}` already exists in database."
-            )
+            ) from e
 
         else:
             bound_logger.error(
@@ -134,7 +134,7 @@ def create_actor(db_session: Session, actor: Actor) -> db.Actor:
             )
             raise ActorAlreadyExistsException(
                 f"Bad request: Unique constraint violated - {constraint_violation}"
-            )
+            ) from e
 
     except Exception as e:
         bound_logger.exception("Something went wrong during actor creation.")

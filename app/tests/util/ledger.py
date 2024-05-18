@@ -74,7 +74,7 @@ async def create_public_did(
     did_object = await acapy_wallet.create_did(aries_controller)
 
     if not did_object.did or not did_object.verkey:
-        raise Exception("Cannot register did without did and/or verkey")
+        raise CloudApiException("Cannot register did without did and/or verkey")
 
     await post_to_ledger(did=did_object.did, verkey=did_object.verkey)
     await accept_taa_if_required(aries_controller)

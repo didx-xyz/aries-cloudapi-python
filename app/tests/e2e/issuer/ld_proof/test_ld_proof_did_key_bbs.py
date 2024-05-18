@@ -176,7 +176,7 @@ async def test_send_jsonld_bbs_oob(
 
     # Updating JSON-LD credential did:key (bbs)
     credential = deepcopy(credential_)
-    credential["connection_id"] = faber_connection_id
+    credential["connection_id"] = faber_connection_id  # pylint: disable=E0606
     credential["ld_credential_detail"]["credential"]["issuer"] = register_issuer_key_bbs
 
     # Send credential

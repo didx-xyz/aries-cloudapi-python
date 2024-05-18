@@ -22,21 +22,21 @@ logger = get_logger(__name__)
 
 
 class VerifierFacade(Enum):
-    v1 = VerifierV1
-    v2 = VerifierV2
+    V1 = VerifierV1
+    V2 = VerifierV2
 
 
 def get_verifier_by_version(
     version_candidate: Union[str, PresentProofProtocolVersion]
 ) -> Verifier:
-    if version_candidate == PresentProofProtocolVersion.v1 or (
+    if version_candidate == PresentProofProtocolVersion.V1 or (
         isinstance(version_candidate, str) and version_candidate.startswith("v1-")
     ):
-        return VerifierFacade.v1.value
-    elif version_candidate == PresentProofProtocolVersion.v2 or (
+        return VerifierFacade.V1.value
+    elif version_candidate == PresentProofProtocolVersion.V2 or (
         isinstance(version_candidate, str) and version_candidate.startswith("v2-")
     ):
-        return VerifierFacade.v2.value
+        return VerifierFacade.V2.value
     else:
         raise CloudApiValueError(
             f"Unknown protocol version: `{version_candidate}`. Expecting `v1` or `v2`."

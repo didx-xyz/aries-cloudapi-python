@@ -8,16 +8,16 @@ from shared.models.protocol import IssueCredentialProtocolVersion
 
 
 class IssueCredentialFacades(Enum):
-    v1 = IssuerV1
-    v2 = IssuerV2
+    V1 = IssuerV1
+    V2 = IssuerV2
 
 
 def issuer_from_id(id: str) -> Issuer:
     if id.startswith("v1-"):
-        return IssueCredentialFacades.v1.value
+        return IssueCredentialFacades.V1.value
 
     elif id.startswith("v2-"):
-        return IssueCredentialFacades.v2.value
+        return IssueCredentialFacades.V2.value
 
     raise CloudApiException(
         "Unknown version. ID is expected to contain protocol version.", 400

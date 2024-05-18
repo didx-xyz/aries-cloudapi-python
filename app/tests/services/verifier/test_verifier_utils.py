@@ -55,11 +55,11 @@ pres_exchange = PresentationExchange(
 
 
 def test_get_verifier_by_version_v1():
-    assert get_verifier_by_version("v1") is VerifierFacade.v1.value
+    assert get_verifier_by_version("v1") is VerifierFacade.V1.value
 
 
 def test_get_verifier_by_version_v2():
-    assert get_verifier_by_version("v2") is VerifierFacade.v2.value
+    assert get_verifier_by_version("v2") is VerifierFacade.V2.value
 
 
 def test_get_verifier_by_version_exception():

@@ -60,7 +60,7 @@ class ProofRequestBase(BaseModel):
 
 
 class ProofRequestMetadata(BaseModel):
-    protocol_version: PresentProofProtocolVersion = PresentProofProtocolVersion.v2
+    protocol_version: PresentProofProtocolVersion = PresentProofProtocolVersion.V2
     comment: Optional[str] = None
     trace: Optional[bool] = None
 

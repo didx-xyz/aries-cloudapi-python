@@ -63,7 +63,7 @@ def credential_record_to_model_v1(record: V10CredentialExchange) -> CredentialEx
         credential_id=credential_exchange_id,
         credential_exchange_id=credential_exchange_id,
         error_msg=record.error_msg,
-        protocol_version=IssueCredentialProtocolVersion.v1,
+        protocol_version=IssueCredentialProtocolVersion.V1,
         role=record.role,
         schema_id=record.schema_id,
         state=v1_credential_state_to_rfc_state(record.state),
@@ -133,7 +133,7 @@ def credential_record_to_model_v2(record: V20CredExRecord) -> CredentialExchange
             else None
         ),
         error_msg=record.error_msg,
-        protocol_version=IssueCredentialProtocolVersion.v2,
+        protocol_version=IssueCredentialProtocolVersion.V2,
         role=record.role,
         schema_id=schema_id,
         state=record.state,

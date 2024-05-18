@@ -41,7 +41,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller,
         create_proof_request=CreateProofRequest(
             indy_proof_request=indy_proof_request,
-            protocol_version=PresentProofProtocolVersion.v1,
+            protocol_version=PresentProofProtocolVersion.V1,
         ),
     )
 
@@ -66,7 +66,7 @@ async def test_create_proof_request_exception(
             controller=mock_agent_controller,
             create_proof_request=CreateProofRequest(
                 indy_proof_request=indy_proof_request,
-                protocol_version=PresentProofProtocolVersion.v1,
+                protocol_version=PresentProofProtocolVersion.V1,
             ),
         )
 
@@ -96,7 +96,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         send_proof_request=SendProofRequest(
             connection_id="abcde",
             indy_proof_request=indy_proof_request,
-            protocol_version=PresentProofProtocolVersion.v1,
+            protocol_version=PresentProofProtocolVersion.V1,
         ),
     )
 
@@ -121,7 +121,7 @@ async def test_send_proof_request_exception(
             controller=mock_agent_controller,
             send_proof_request=SendProofRequest(
                 indy_proof_request=indy_proof_request,
-                protocol_version=PresentProofProtocolVersion.v1,
+                protocol_version=PresentProofProtocolVersion.V1,
                 connection_id="abc",
             ),
         )
@@ -405,7 +405,7 @@ async def test_create_proof_request_is_indy_only(mock_agent_controller: AcaPyCli
             controller=mock_agent_controller,
             create_proof_request=CreateProofRequest(
                 type=ProofRequestType.LD_PROOF,
-                protocol_version=PresentProofProtocolVersion.v1,
+                protocol_version=PresentProofProtocolVersion.V1,
                 dif_proof_request=DIFProofRequest(
                     presentation_definition=PresentationDefinition()
                 ),
@@ -423,7 +423,7 @@ async def test_send_proof_request_is_indy_only(mock_agent_controller: AcaPyClien
             controller=mock_agent_controller,
             send_proof_request=SendProofRequest(
                 type=ProofRequestType.LD_PROOF,
-                protocol_version=PresentProofProtocolVersion.v1,
+                protocol_version=PresentProofProtocolVersion.V1,
                 dif_proof_request=DIFProofRequest(
                     presentation_definition=PresentationDefinition()
                 ),

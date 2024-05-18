@@ -4,13 +4,13 @@ from shared.exceptions.cloudapi_value_error import CloudApiValueError
 
 
 class PresentProofProtocolVersion(str, Enum):
-    v1: str = "v1"
-    v2: str = "v2"
+    V1: str = "v1"
+    V2: str = "v2"
 
 
 class IssueCredentialProtocolVersion(str, Enum):
-    v1: str = "v1"
-    v2: str = "v2"
+    V1: str = "v1"
+    V2: str = "v2"
 
 
 def pres_id_no_version(proof_id: str) -> str:

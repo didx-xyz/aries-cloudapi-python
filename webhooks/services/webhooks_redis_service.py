@@ -303,7 +303,7 @@ class WebhooksRedisService(RedisService):
                     self.logger.info("Completed SCAN for wallet IDs.")
                     break  # Exit the loop
                 cursor += 1
-        except Exception:
+        except Exception:  # pylint: disable=W0718
             self.logger.exception(
                 "An exception occurred when fetching wallet_ids from redis. Continuing..."
             )

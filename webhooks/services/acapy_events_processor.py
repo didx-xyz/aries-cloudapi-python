@@ -172,7 +172,7 @@ class AcaPyEventsProcessor:
                     else:
                         await asyncio.sleep(sleep_duration)  # prevent a busy loop
                 exception_count = 0  # reset exception count after successful loop
-            except Exception:
+            except Exception:  # pylint: disable=W0718
                 exception_count += 1
                 logger.exception(
                     "Something went wrong while processing incoming events. Continuing..."
@@ -203,7 +203,7 @@ class AcaPyEventsProcessor:
                 )
 
                 self._process_list_events(list_key)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=W0718
                 # if this particular event is unprocessable, we should remove it from the inputs, to avoid deadlocking
                 logger.error("Processing {} raised an exception: {}", list_key, e)
                 self._handle_unprocessable_event(list_key, e)

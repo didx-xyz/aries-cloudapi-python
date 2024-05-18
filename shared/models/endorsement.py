@@ -61,7 +61,7 @@ def extract_operation_type_from_endorsement_payload(
         logger.warning(
             "Couldn't extract json payload from {}. {}. Continuing...", json_payload, e
         )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=W0718
         logger.warning(
             "Exception while extracting operation type from endorsement payload. {}. Continuing...",
             e,

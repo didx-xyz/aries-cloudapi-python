@@ -130,7 +130,7 @@ class BillingManager:
                         await asyncio.sleep(sleep_duration)
             except ConnectionError as e:
                 logger.error("ConnectionError detected: {}.", e)
-            except Exception:  # General exception catch
+            except Exception:  # pylint: disable=W0718
                 logger.exception("Unexpected error.")
 
             retry_count += 1

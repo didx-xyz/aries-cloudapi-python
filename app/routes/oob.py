@@ -26,12 +26,15 @@ async def create_oob_invitation(
     ------------------------------
 
     The attachment field is used to include a credential offer or a proof request in the invitation.
-    The attachment ID is the credential ID or proof request ID without the protocol prefix.
-    The attachment type is either "credential-offer" or "present-proof".
+    The attachment ID is the credential exchange ID or proof request ID.
+    The attachment type is either ```"credential-offer"``` or ```"present-proof"```.
 
     The multi_use field is used to determine if the invitation can be used multiple times by different tenants.
-    The use_public_did field is used to determine if the invitation should use the public DID to create a connection.
+    The ```use_public_did``` field should only be set true, if a tenant with a public DID is creating a connection invitation,
+    then the invitation will use the tenants public did to create the connection invitation i.e. the tenant using the invitation will connect via public did
 
+    ```multi_use``` can't be set to `true` if an ```attachment``` is provided, 
+    as a proof request or credential offer should be sent to one tenant. 
 
     Request body:
     -------------
@@ -102,8 +105,10 @@ async def accept_oob_invitation(
     ------------------------------
 
     As with the connection endpoint, the invitation object from the create-invitation endpoint
-    is passed to this endpoint. The base64 encoded invitation url (from create-invitation) can also
-    be decoded and passed as the invitation object.
+    is passed to this endpoint. 
+
+    The `invitation_url` in the InvitationRecord can also be used to obtain an invitation; there is a base64 encoded
+    string after the "?oob=" parameter in the url, and this can be decoded to obtain the invitation object.
 
     Request body:
     -------------

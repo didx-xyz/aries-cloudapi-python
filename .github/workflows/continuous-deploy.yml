@@ -383,7 +383,7 @@ jobs:
 
       - name: Helmfile Diff
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         with:
           helmfile-args: |
             diff \
@@ -402,7 +402,7 @@ jobs:
       - name: Helmfile Destroy
         id: destroy_deployments
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         with:
           helmfile-args: |
             destroy \
@@ -462,7 +462,7 @@ jobs:
 
       - name: Helmfile Apply # Apply default helmfile (without RDS proxy) when resetting deployments.
         if: github.event.inputs.run-reset-deployments == 'true'
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         with:
           helmfile-args: |
             apply \
@@ -479,7 +479,7 @@ jobs:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
 
       - name: Helmfile Apply (Exclude Agents) # Always exclude agents and apply (zero diff if resetting deployments)
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         with:
           helmfile-args: |
             apply \
@@ -506,7 +506,7 @@ jobs:
 
       - name: Helmfile Patch Proxy # Always patch agents with proxy.
         id: patch_proxy
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         with:
           helmfile-args: |
             apply \
@@ -529,7 +529,7 @@ jobs:
       - name: Helmfile apply pytest
         if: ${{ github.event_name != 'workflow_dispatch' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run-tests != 'false') }}
         id: pytest
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         with:
           helmfile-args: |
             apply \
@@ -646,7 +646,7 @@ jobs:
           hide-report: ${{ github.event_name != 'pull_request' }}
 
       - name: Helmfile destroy pytest
-        uses: helmfile/helmfile-action@v1.9.0
+        uses: helmfile/helmfile-action@v1.9.1
         if: always()
         with:
           helmfile-args: |

@@ -16,6 +16,7 @@ from app.dependencies.auth import (
     acapy_auth_governance,
     acapy_auth_verified,
 )
+from app.dependencies.role import Role
 from app.exceptions import (
     CloudApiException,
     TrustRegistryException,
@@ -35,6 +36,10 @@ from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
+)
+from app.routes.trust_registry import get_schemas as get_trust_registry_schemas
+from app.routes.trust_registry import (
+    get_schema_by_id as get_trust_registry_schema_by_id,
 )
 from app.util.retry_method import coroutine_with_retry, coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
@@ -599,30 +604,50 @@ async def get_schemas(
         List[CredentialSchema]
             A list of created schemas
     """
+    is_governance = auth.role == Role.GOVERNANCE
     bound_logger = logger.bind(
         body={
+            "is_governance": is_governance,
             "schema_id": schema_id,
             "schema_issuer_did": schema_issuer_did,
             "schema_name": schema_name,
             "schema_version": schema_version,
         }
     )
-    bound_logger.info("GET request received: Get schemas created by client")
 
-    # Get all created schema ids that match the filter
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Fetching created schemas")
-        response = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=aries_controller.schema.get_created_schemas,
-            schema_id=schema_id,
-            schema_issuer_did=schema_issuer_did,
-            schema_name=schema_name,
-            schema_version=schema_version,
-        )
+        if not is_governance:  # regular tenant is calling endpoint
+            bound_logger.info("GET request received: Get created schemas")
 
-        # Initiate retrieving all schemas
-        schema_ids = response.schema_ids or []
+            if not schema_id:  # client is not filtering by schema_id, fetch all
+                trust_registry_schemas = await get_trust_registry_schemas()
+            else:  # fetch specific id
+                trust_registry_schemas = [
+                    await get_trust_registry_schema_by_id(schema_id)
+                ]
+
+            schema_ids = [schema.id for schema in trust_registry_schemas]
+
+        else:  # Governance is calling the endpoint
+            bound_logger.info(
+                "GET request received: Get schemas created by governance client"
+            )
+            # Get all created schema ids that match the filter
+            bound_logger.debug("Fetching created schemas")
+            response = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.get_created_schemas,
+                schema_id=schema_id,
+                schema_issuer_did=schema_issuer_did,
+                schema_name=schema_name,
+                schema_version=schema_version,
+            )
+
+            # Initiate retrieving all schemas
+            schema_ids = response.schema_ids or []
+
+        # We now have schema_ids; the following logic is the same whether called by governance or tenant.
+        # Now fetch relevant schemas from ledger:
         get_schema_futures = [
             handle_acapy_call(
                 logger=bound_logger,
@@ -642,11 +667,26 @@ async def get_schemas(
             bound_logger.debug("No created schema ids returned")
             schema_results = []
 
+    # Stepping out of the aries_controller context, we can now translate the ACA-Py schema response to our custom model
     schemas = [
         credential_schema_from_acapy(schema.var_schema)
         for schema in schema_results
         if schema.var_schema
     ]
+
+    if not is_governance:
+        # Apply post-filtering that could otherwise only be done in governance aca-py call
+        # todo: our fetch from trust registry method should be able to pre-filter these values
+        if schema_issuer_did:
+            schemas = [
+                schema
+                for schema in schemas
+                if schema.id.split(":")[0] == schema_issuer_did
+            ]
+        if schema_name:
+            schemas = [schema for schema in schemas if schema.name == schema_name]
+        if schema_version:
+            schemas = [schema for schema in schemas if schema.version == schema_version]
 
     if schemas:
         bound_logger.info("Successfully fetched schemas.")

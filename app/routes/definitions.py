@@ -62,9 +62,11 @@ async def create_credential_definition(
     ---
     Only issuers can create credential definitions.
 
-    If revocation is requested ("support_revocation": true), revocation registries will be created.
+    A credential definition essentially builds off a schema, which defines the attributes that can belong to a
+    credential, and it just specifies whether credentials using this definition are revocable or not.
 
-    **NB**: The creation of these revocation registries can take up to one minute.
+    **NB**: If revocation is requested (`"support_revocation": true`), then revocation registries will be created.
+    The creation of these revocation registries can take up to one minute.
 
     Request Body:
     ---
@@ -245,8 +247,8 @@ async def get_credential_definitions(
     """
     Get credential definitions created by the tenant
     ---
-    This endpoint returns all credential definitions created by the tenant.
-    Remember only issuers can create credential definitions.
+    This endpoint returns all credential definitions created by the tenant. Only issuers can create
+    credential definitions, and so only issuers will get results from this endpoint.
 
     The results can be filtered by the parameters listed below.
 
@@ -339,7 +341,10 @@ async def get_credential_definition_by_id(
     """
     Get credential definition by id
     ---
-    This endpoint returns a credential definition by id.
+    This endpoint returns information for a credential definition.
+
+    Anyone can call this, whether they created the requested credential definition or not.
+    Practically it will just reveal the schema that was used for the credential definition.
 
     Parameters:
     ---
@@ -398,7 +403,7 @@ async def create_schema(
     """
     Create a new schema
     ---
-    This endpoint creates a new schema.
+    This endpoint creates and publishes a new schema to the ledger.
     Only tenants with the governance role can create schemas.
 
     Request Body:

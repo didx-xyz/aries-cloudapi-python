@@ -63,7 +63,7 @@ async def create_credential_definition(
     Only issuers can create credential definitions.
 
     A credential definition essentially builds off a schema, which defines the attributes that can belong to a
-    credential, and it just specifies whether credentials using this definition are revocable or not.
+    credential, and it specifies whether credentials using this definition are revocable or not.
 
     **NB**: If revocation is requested (`"support_revocation": true`), then revocation registries will be created.
     The creation of these revocation registries can take up to one minute.
@@ -401,10 +401,15 @@ async def create_schema(
     governance_auth: AcaPyAuthVerified = Depends(acapy_auth_governance),
 ) -> CredentialSchema:
     """
-    Create a new schema
+    Create and publish a new schema to the ledger
     ---
-    This endpoint creates and publishes a new schema to the ledger.
-    Only tenants with the governance role can create schemas.
+    **NB**: Only governance can create schemas.
+
+    A schema is used to create credential definitions, which is used for issuing credentials.
+    The schema defines the attributes that can exist in that credential.
+
+    When a schema is created, it is published to the ledger and written to our public trust registry,
+    so that everyone in the ecosystem can view schemas that are valid and available.
 
     Request Body:
     ---
@@ -569,10 +574,16 @@ async def get_schemas(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[CredentialSchema]:
     """
-    Get schemas created by the tenant
+    Get created schemas
     ---
-    Remember only tenants with the governance role can create schemas,
-    i.e. only tenants with the governance role will get a non-empty response.
+    All tenants can call this endpoint to view available schemas.
+
+    If governance calls this endpoint, it will return all the schemas created by governance
+    (whether the schemas are on the trust registry or not).
+
+    If tenants call this endpoint, it will return all schemas on the trust registry.
+    The difference between this endpoint and the public trust registry endpoint, is that this response includes
+    the attribute information of the schemas.
 
     Results can be filtered by the parameters listed below.
 
@@ -657,7 +668,7 @@ async def get_schema(
     """
     Retrieve schema by id
     ---
-    This endpoint returns a schema by id.
+    This endpoint fetches a schema from the ledger, using the schema_id.
 
     Any tenant can call this endpoint to retrieve a schema.
     This endpoint will list all the attributes of the schema.

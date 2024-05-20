@@ -29,6 +29,10 @@ from app.models.definitions import (
     CredentialDefinition,
     CredentialSchema,
 )
+from app.routes.trust_registry import (
+    get_schema_by_id as get_trust_registry_schema_by_id,
+)
+from app.routes.trust_registry import get_schemas as get_trust_registry_schemas
 from app.services import acapy_wallet
 from app.services.revocation_registry import wait_for_active_registry
 from app.services.trust_registry.schemas import register_schema
@@ -36,10 +40,6 @@ from app.services.trust_registry.util.issuer import assert_valid_issuer
 from app.util.definitions import (
     credential_definition_from_acapy,
     credential_schema_from_acapy,
-)
-from app.routes.trust_registry import get_schemas as get_trust_registry_schemas
-from app.routes.trust_registry import (
-    get_schema_by_id as get_trust_registry_schema_by_id,
 )
 from app.util.retry_method import coroutine_with_retry, coroutine_with_retry_until_value
 from shared import ACAPY_ENDORSER_ALIAS, REGISTRY_CREATION_TIMEOUT
@@ -51,6 +51,349 @@ router = APIRouter(
     prefix="/v1/definitions",
     tags=["definitions"],
 )
+
+
+@router.post("/schemas", summary="Create a new Schema", response_model=CredentialSchema)
+async def create_schema(
+    schema: CreateSchema,
+    # Only governance can create schemas
+    governance_auth: AcaPyAuthVerified = Depends(acapy_auth_governance),
+) -> CredentialSchema:
+    """
+    Create and publish a new schema to the ledger
+    ---
+    **NB**: Only governance can create schemas.
+
+    A schema is used to create credential definitions, which is used for issuing credentials.
+    The schema defines the attributes that can exist in that credential.
+
+    When a schema is created, it is published to the ledger and written to our public trust registry,
+    so that everyone in the ecosystem can view schemas that are valid and available.
+
+    Request Body:
+    ---
+        body: CreateSchema
+            name: str
+                The name of the schema.
+            version: str
+                The version of the schema.
+            attribute_names: List[str]
+                The attribute names of the schema.
+
+    Returns:
+    ---
+        CredentialSchema
+            The created schema object
+    """
+    bound_logger = logger.bind(body=schema)
+    bound_logger.info("POST request received: Create schema (publish and register)")
+
+    schema_send_request = handle_model_with_validation(
+        logger=bound_logger,
+        model_class=SchemaSendRequest,
+        attributes=schema.attribute_names,
+        schema_name=schema.name,
+        schema_version=schema.version,
+    )
+    async with get_governance_controller(governance_auth) as aries_controller:
+        try:
+            bound_logger.info("Publishing schema as governance")
+            result = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.publish_schema,
+                body=schema_send_request,
+                create_transaction_for_endorser=False,
+            )
+        except CloudApiException as e:
+            bound_logger.info(
+                "An Exception was caught while trying to publish schema: `{}`",
+                e.detail,
+            )
+            if e.status_code == 400 and "already exist" in e.detail:
+                bound_logger.info("Handling case of schema already existing on ledger")
+                bound_logger.debug("Fetching public DID for governance controller")
+                pub_did = await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=aries_controller.wallet.get_public_did,
+                )
+
+                _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
+                bound_logger.debug(
+                    "Fetching schema id `{}` which is associated with request",
+                    _schema_id,
+                )
+                _schema: SchemaGetResult = await handle_acapy_call(
+                    logger=bound_logger,
+                    acapy_call=aries_controller.schema.get_schema,
+                    schema_id=_schema_id,
+                )
+                # Edge case where the governance agent has changed its public did
+                # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
+                # will not be correct due to different public did.
+                if _schema.var_schema is None:
+                    bound_logger.debug(
+                        "Schema not found. Governance agent may have changed public DID. "
+                        "Fetching schemas created by governance agent with request name and version"
+                    )
+                    schemas_created_ids = await handle_acapy_call(
+                        logger=bound_logger,
+                        acapy_call=aries_controller.schema.get_created_schemas,
+                        schema_name=schema.name,
+                        schema_version=schema.version,
+                    )
+                    bound_logger.debug("Getting schemas associated with fetched ids")
+                    schemas: List[SchemaGetResult] = [
+                        await handle_acapy_call(
+                            logger=bound_logger,
+                            acapy_call=aries_controller.schema.get_schema,
+                            schema_id=schema_id,
+                        )
+                        for schema_id in schemas_created_ids.schema_ids
+                        if schema_id
+                    ]
+                    if schemas:
+                        if len(schemas) > 1:
+                            raise CloudApiException(  # pylint: disable=W0707
+                                f"Multiple schemas with name {schema.name} and version {schema.version} exist."
+                                + f"These are: `{str(schemas_created_ids.schema_ids)}`.",
+                                409,
+                            )
+
+                        bound_logger.debug("Using updated schema id with new DID")
+                        _schema: SchemaGetResult = schemas[0]
+                    else:
+                        # if schema already exists, we should at least fetch 1, so this should never happen
+                        raise CloudApiException(
+                            "Could not publish schema.", 500
+                        )  # pylint: disable=W0707
+                # Schema exists with different attributes
+                if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
+                    raise CloudApiException(
+                        "Error creating schema: Schema already exists with different attribute names."
+                        + f"Given: `{str(set(_schema.var_schema.attr_names))}`. "
+                        f"Found: `{str(set(schema.attribute_names))}`.",
+                        409,
+                    )  # pylint: disable=W0707
+
+                result = credential_schema_from_acapy(_schema.var_schema)
+                bound_logger.info(
+                    "Schema already exists on ledger. Returning schema definition: `{}`.",
+                    result,
+                )
+                return result
+            else:
+                bound_logger.warning(
+                    "An unhandled Exception was caught while publishing schema. The error message is: '{}'.",
+                    e.detail,
+                )
+                raise CloudApiException("Error while creating schema.") from e
+
+    # Register the schema in the trust registry
+    try:
+        if result.sent and result.sent.schema_id:
+            bound_logger.debug("Registering schema after successful publish to ledger")
+            await register_schema(schema_id=result.sent.schema_id)
+        else:
+            bound_logger.error("No SchemaSendResult in `publish_schema` response.")
+            raise CloudApiException(
+                "An unexpected error occurred: could not publish schema."
+            )
+    except TrustRegistryException as error:
+        # If status_code is 405 it means the schema already exists in the trust registry
+        # That's okay, because we've achieved our intended result:
+        #   make sure the schema is registered in the trust registry
+        bound_logger.info(
+            "Caught TrustRegistryException when registering schema. "
+            "Got status code {} with message `{}`",
+            error.status_code,
+            error.detail,
+        )
+        if error.status_code == 405:
+            bound_logger.info(
+                "Status code 405 indicates schema is already registered, so we can continue"
+            )
+        else:
+            raise error
+
+    result = credential_schema_from_acapy(result.sent.var_schema)
+    bound_logger.info("Successfully published and registered schema.")
+    return result
+
+
+@router.get(
+    "/schemas",
+    summary="Get Created Schemas",
+    response_model=List[CredentialSchema],
+)
+async def get_schemas(
+    schema_id: Optional[str] = None,
+    schema_issuer_did: Optional[str] = None,
+    schema_name: Optional[str] = None,
+    schema_version: Optional[str] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> List[CredentialSchema]:
+    """
+    Get created schemas
+    ---
+    All tenants can call this endpoint to view available schemas.
+
+    If governance calls this endpoint, it will return all the schemas created by governance
+    (whether the schemas are on the trust registry or not).
+
+    If tenants call this endpoint, it will return all schemas on the trust registry.
+    The difference between this endpoint and the public trust registry endpoint, is that this response includes
+    the attribute information of the schemas.
+
+    Results can be filtered by the parameters listed below.
+
+    Parameters (Optional):
+    ---
+        schema_id: str
+        schema_issuer_did: str
+        schema_name: str
+        schema_version: str
+
+    Returns:
+    ---
+        List[CredentialSchema]
+            A list of created schemas
+    """
+    is_governance = auth.role == Role.GOVERNANCE
+    bound_logger = logger.bind(
+        body={
+            "is_governance": is_governance,
+            "schema_id": schema_id,
+            "schema_issuer_did": schema_issuer_did,
+            "schema_name": schema_name,
+            "schema_version": schema_version,
+        }
+    )
+
+    async with client_from_auth(auth) as aries_controller:
+        if not is_governance:  # regular tenant is calling endpoint
+            bound_logger.info("GET request received: Get created schemas")
+
+            if not schema_id:  # client is not filtering by schema_id, fetch all
+                trust_registry_schemas = await get_trust_registry_schemas()
+            else:  # fetch specific id
+                trust_registry_schemas = [
+                    await get_trust_registry_schema_by_id(schema_id)
+                ]
+
+            schema_ids = [schema.id for schema in trust_registry_schemas]
+
+        else:  # Governance is calling the endpoint
+            bound_logger.info(
+                "GET request received: Get schemas created by governance client"
+            )
+            # Get all created schema ids that match the filter
+            bound_logger.debug("Fetching created schemas")
+            response = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.get_created_schemas,
+                schema_id=schema_id,
+                schema_issuer_did=schema_issuer_did,
+                schema_name=schema_name,
+                schema_version=schema_version,
+            )
+
+            # Initiate retrieving all schemas
+            schema_ids = response.schema_ids or []
+
+        # We now have schema_ids; the following logic is the same whether called by governance or tenant.
+        # Now fetch relevant schemas from ledger:
+        get_schema_futures = [
+            handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=aries_controller.schema.get_schema,
+                schema_id=schema_id,
+            )
+            for schema_id in schema_ids
+        ]
+
+        # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
+        if get_schema_futures:
+            bound_logger.debug("Fetching each of the created schemas")
+            schema_results: List[SchemaGetResult] = await asyncio.gather(
+                *get_schema_futures
+            )
+        else:
+            bound_logger.debug("No created schema ids returned")
+            schema_results = []
+
+    # Stepping out of the aries_controller context, we can now translate the ACA-Py schema response to our custom model
+    schemas = [
+        credential_schema_from_acapy(schema.var_schema)
+        for schema in schema_results
+        if schema.var_schema
+    ]
+
+    if not is_governance:
+        # Apply post-filtering that could otherwise only be done in governance aca-py call
+        # todo: our fetch from trust registry method should be able to pre-filter these values
+        if schema_issuer_did:
+            schemas = [
+                schema
+                for schema in schemas
+                if schema.id.split(":")[0] == schema_issuer_did
+            ]
+        if schema_name:
+            schemas = [schema for schema in schemas if schema.name == schema_name]
+        if schema_version:
+            schemas = [schema for schema in schemas if schema.version == schema_version]
+
+    if schemas:
+        bound_logger.info("Successfully fetched schemas.")
+    else:
+        bound_logger.info("No schemas matching request.")
+
+    return schemas
+
+
+@router.get(
+    "/schemas/{schema_id}",
+    summary="Get a Schema",
+    response_model=CredentialSchema,
+)
+async def get_schema(
+    schema_id: str,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> CredentialSchema:
+    """
+    Retrieve schema by id
+    ---
+    This endpoint fetches a schema from the ledger, using the schema_id.
+
+    Any tenant can call this endpoint to retrieve a schema.
+    This endpoint will list all the attributes of the schema.
+
+    Parameters:
+    ---
+        schema_id: str
+            schema id
+
+    Returns:
+    ---
+        CredentialSchema
+            The schema object
+    """
+    bound_logger = logger.bind(body={"schema_id": schema_id})
+    bound_logger.info("GET request received: Get schema by id")
+
+    async with client_from_auth(auth) as aries_controller:
+        schema = await handle_acapy_call(
+            logger=bound_logger,
+            acapy_call=aries_controller.schema.get_schema,
+            schema_id=schema_id,
+        )
+
+    if not schema.var_schema:
+        bound_logger.info("Bad request: schema id not found.")
+        raise HTTPException(404, f"Schema with id {schema_id} not found.")
+
+    result = credential_schema_from_acapy(schema.var_schema)
+    bound_logger.info("Successfully fetched schema by id.")
+    return result
 
 
 @router.post(
@@ -397,346 +740,3 @@ async def get_credential_definition_by_id(
 
     bound_logger.info("Successfully fetched credential definition.")
     return cloudapi_credential_definition
-
-
-@router.post("/schemas", summary="Create a new Schema", response_model=CredentialSchema)
-async def create_schema(
-    schema: CreateSchema,
-    # Only governance can create schemas
-    governance_auth: AcaPyAuthVerified = Depends(acapy_auth_governance),
-) -> CredentialSchema:
-    """
-    Create and publish a new schema to the ledger
-    ---
-    **NB**: Only governance can create schemas.
-
-    A schema is used to create credential definitions, which is used for issuing credentials.
-    The schema defines the attributes that can exist in that credential.
-
-    When a schema is created, it is published to the ledger and written to our public trust registry,
-    so that everyone in the ecosystem can view schemas that are valid and available.
-
-    Request Body:
-    ---
-        body: CreateSchema
-            name: str
-                The name of the schema.
-            version: str
-                The version of the schema.
-            attribute_names: List[str]
-                The attribute names of the schema.
-
-    Returns:
-    ---
-        CredentialSchema
-            The created schema object
-    """
-    bound_logger = logger.bind(body=schema)
-    bound_logger.info("POST request received: Create schema (publish and register)")
-
-    schema_send_request = handle_model_with_validation(
-        logger=bound_logger,
-        model_class=SchemaSendRequest,
-        attributes=schema.attribute_names,
-        schema_name=schema.name,
-        schema_version=schema.version,
-    )
-    async with get_governance_controller(governance_auth) as aries_controller:
-        try:
-            bound_logger.info("Publishing schema as governance")
-            result = await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=aries_controller.schema.publish_schema,
-                body=schema_send_request,
-                create_transaction_for_endorser=False,
-            )
-        except CloudApiException as e:
-            bound_logger.info(
-                "An Exception was caught while trying to publish schema: `{}`",
-                e.detail,
-            )
-            if e.status_code == 400 and "already exist" in e.detail:
-                bound_logger.info("Handling case of schema already existing on ledger")
-                bound_logger.debug("Fetching public DID for governance controller")
-                pub_did = await handle_acapy_call(
-                    logger=bound_logger,
-                    acapy_call=aries_controller.wallet.get_public_did,
-                )
-
-                _schema_id = f"{pub_did.result.did}:2:{schema.name}:{schema.version}"
-                bound_logger.debug(
-                    "Fetching schema id `{}` which is associated with request",
-                    _schema_id,
-                )
-                _schema: SchemaGetResult = await handle_acapy_call(
-                    logger=bound_logger,
-                    acapy_call=aries_controller.schema.get_schema,
-                    schema_id=_schema_id,
-                )
-                # Edge case where the governance agent has changed its public did
-                # Then we need to retrieve the schema in a different way as constructing the schema ID the way above
-                # will not be correct due to different public did.
-                if _schema.var_schema is None:
-                    bound_logger.debug(
-                        "Schema not found. Governance agent may have changed public DID. "
-                        "Fetching schemas created by governance agent with request name and version"
-                    )
-                    schemas_created_ids = await handle_acapy_call(
-                        logger=bound_logger,
-                        acapy_call=aries_controller.schema.get_created_schemas,
-                        schema_name=schema.name,
-                        schema_version=schema.version,
-                    )
-                    bound_logger.debug("Getting schemas associated with fetched ids")
-                    schemas: List[SchemaGetResult] = [
-                        await handle_acapy_call(
-                            logger=bound_logger,
-                            acapy_call=aries_controller.schema.get_schema,
-                            schema_id=schema_id,
-                        )
-                        for schema_id in schemas_created_ids.schema_ids
-                        if schema_id
-                    ]
-                    if schemas:
-                        if len(schemas) > 1:
-                            raise CloudApiException(  # pylint: disable=W0707
-                                f"Multiple schemas with name {schema.name} and version {schema.version} exist."
-                                + f"These are: `{str(schemas_created_ids.schema_ids)}`.",
-                                409,
-                            )
-
-                        bound_logger.debug("Using updated schema id with new DID")
-                        _schema: SchemaGetResult = schemas[0]
-                    else:
-                        # if schema already exists, we should at least fetch 1, so this should never happen
-                        raise CloudApiException(
-                            "Could not publish schema.", 500
-                        )  # pylint: disable=W0707
-                # Schema exists with different attributes
-                if set(_schema.var_schema.attr_names) != set(schema.attribute_names):
-                    raise CloudApiException(
-                        "Error creating schema: Schema already exists with different attribute names."
-                        + f"Given: `{str(set(_schema.var_schema.attr_names))}`. "
-                        f"Found: `{str(set(schema.attribute_names))}`.",
-                        409,
-                    )  # pylint: disable=W0707
-
-                result = credential_schema_from_acapy(_schema.var_schema)
-                bound_logger.info(
-                    "Schema already exists on ledger. Returning schema definition: `{}`.",
-                    result,
-                )
-                return result
-            else:
-                bound_logger.warning(
-                    "An unhandled Exception was caught while publishing schema. The error message is: '{}'.",
-                    e.detail,
-                )
-                raise CloudApiException("Error while creating schema.") from e
-
-    # Register the schema in the trust registry
-    try:
-        if result.sent and result.sent.schema_id:
-            bound_logger.debug("Registering schema after successful publish to ledger")
-            await register_schema(schema_id=result.sent.schema_id)
-        else:
-            bound_logger.error("No SchemaSendResult in `publish_schema` response.")
-            raise CloudApiException(
-                "An unexpected error occurred: could not publish schema."
-            )
-    except TrustRegistryException as error:
-        # If status_code is 405 it means the schema already exists in the trust registry
-        # That's okay, because we've achieved our intended result:
-        #   make sure the schema is registered in the trust registry
-        bound_logger.info(
-            "Caught TrustRegistryException when registering schema. "
-            "Got status code {} with message `{}`",
-            error.status_code,
-            error.detail,
-        )
-        if error.status_code == 405:
-            bound_logger.info(
-                "Status code 405 indicates schema is already registered, so we can continue"
-            )
-        else:
-            raise error
-
-    result = credential_schema_from_acapy(result.sent.var_schema)
-    bound_logger.info("Successfully published and registered schema.")
-    return result
-
-
-@router.get(
-    "/schemas",
-    summary="Get Created Schemas",
-    response_model=List[CredentialSchema],
-)
-async def get_schemas(
-    schema_id: Optional[str] = None,
-    schema_issuer_did: Optional[str] = None,
-    schema_name: Optional[str] = None,
-    schema_version: Optional[str] = None,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> List[CredentialSchema]:
-    """
-    Get created schemas
-    ---
-    All tenants can call this endpoint to view available schemas.
-
-    If governance calls this endpoint, it will return all the schemas created by governance
-    (whether the schemas are on the trust registry or not).
-
-    If tenants call this endpoint, it will return all schemas on the trust registry.
-    The difference between this endpoint and the public trust registry endpoint, is that this response includes
-    the attribute information of the schemas.
-
-    Results can be filtered by the parameters listed below.
-
-    Parameters (Optional):
-    ---
-        schema_id: str
-        schema_issuer_did: str
-        schema_name: str
-        schema_version: str
-
-    Returns:
-    ---
-        List[CredentialSchema]
-            A list of created schemas
-    """
-    is_governance = auth.role == Role.GOVERNANCE
-    bound_logger = logger.bind(
-        body={
-            "is_governance": is_governance,
-            "schema_id": schema_id,
-            "schema_issuer_did": schema_issuer_did,
-            "schema_name": schema_name,
-            "schema_version": schema_version,
-        }
-    )
-
-    async with client_from_auth(auth) as aries_controller:
-        if not is_governance:  # regular tenant is calling endpoint
-            bound_logger.info("GET request received: Get created schemas")
-
-            if not schema_id:  # client is not filtering by schema_id, fetch all
-                trust_registry_schemas = await get_trust_registry_schemas()
-            else:  # fetch specific id
-                trust_registry_schemas = [
-                    await get_trust_registry_schema_by_id(schema_id)
-                ]
-
-            schema_ids = [schema.id for schema in trust_registry_schemas]
-
-        else:  # Governance is calling the endpoint
-            bound_logger.info(
-                "GET request received: Get schemas created by governance client"
-            )
-            # Get all created schema ids that match the filter
-            bound_logger.debug("Fetching created schemas")
-            response = await handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=aries_controller.schema.get_created_schemas,
-                schema_id=schema_id,
-                schema_issuer_did=schema_issuer_did,
-                schema_name=schema_name,
-                schema_version=schema_version,
-            )
-
-            # Initiate retrieving all schemas
-            schema_ids = response.schema_ids or []
-
-        # We now have schema_ids; the following logic is the same whether called by governance or tenant.
-        # Now fetch relevant schemas from ledger:
-        get_schema_futures = [
-            handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=aries_controller.schema.get_schema,
-                schema_id=schema_id,
-            )
-            for schema_id in schema_ids
-        ]
-
-        # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
-        if get_schema_futures:
-            bound_logger.debug("Fetching each of the created schemas")
-            schema_results: List[SchemaGetResult] = await asyncio.gather(
-                *get_schema_futures
-            )
-        else:
-            bound_logger.debug("No created schema ids returned")
-            schema_results = []
-
-    # Stepping out of the aries_controller context, we can now translate the ACA-Py schema response to our custom model
-    schemas = [
-        credential_schema_from_acapy(schema.var_schema)
-        for schema in schema_results
-        if schema.var_schema
-    ]
-
-    if not is_governance:
-        # Apply post-filtering that could otherwise only be done in governance aca-py call
-        # todo: our fetch from trust registry method should be able to pre-filter these values
-        if schema_issuer_did:
-            schemas = [
-                schema
-                for schema in schemas
-                if schema.id.split(":")[0] == schema_issuer_did
-            ]
-        if schema_name:
-            schemas = [schema for schema in schemas if schema.name == schema_name]
-        if schema_version:
-            schemas = [schema for schema in schemas if schema.version == schema_version]
-
-    if schemas:
-        bound_logger.info("Successfully fetched schemas.")
-    else:
-        bound_logger.info("No schemas matching request.")
-
-    return schemas
-
-
-@router.get(
-    "/schemas/{schema_id}",
-    summary="Get a Schema",
-    response_model=CredentialSchema,
-)
-async def get_schema(
-    schema_id: str,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> CredentialSchema:
-    """
-    Retrieve schema by id
-    ---
-    This endpoint fetches a schema from the ledger, using the schema_id.
-
-    Any tenant can call this endpoint to retrieve a schema.
-    This endpoint will list all the attributes of the schema.
-
-    Parameters:
-    ---
-        schema_id: str
-            schema id
-
-    Returns:
-    ---
-        CredentialSchema
-            The schema object
-    """
-    bound_logger = logger.bind(body={"schema_id": schema_id})
-    bound_logger.info("GET request received: Get schema by id")
-
-    async with client_from_auth(auth) as aries_controller:
-        schema = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=aries_controller.schema.get_schema,
-            schema_id=schema_id,
-        )
-
-    if not schema.var_schema:
-        bound_logger.info("Bad request: schema id not found.")
-        raise HTTPException(404, f"Schema with id {schema_id} not found.")
-
-    result = credential_schema_from_acapy(schema.var_schema)
-    bound_logger.info("Successfully fetched schema by id.")
-    return result

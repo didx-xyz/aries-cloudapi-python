@@ -97,7 +97,7 @@ jobs:
             context: .
             file: dockerfiles/endorser/Dockerfile
           - image: tails-server
-            context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
+            context: https://github.com/ff137/indy-tails-server.git#0e121a75c78f423c0d3332bde6a4a912926492cf
             file: docker/Dockerfile.tails-server
           - image: pytest
             context: .

@@ -484,7 +484,7 @@ services:
     image: ${REGISTRY:-local}/tails-server:${IMAGE_TAG:-latest}
     container_name: tails-server
     build:
-      context: https://github.com/bcgov/indy-tails-server.git#v1.1.0
+      context: https://github.com/ff137/indy-tails-server.git#0e121a75c78f423c0d3332bde6a4a912926492cf
       dockerfile: docker/Dockerfile.tails-server
     ports:
       - 0.0.0.0:6543:6543

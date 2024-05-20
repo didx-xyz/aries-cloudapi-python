@@ -33,8 +33,8 @@ async def create_oob_invitation(
     The ```use_public_did``` field should only be set true, if a tenant with a public DID is creating a connection invitation,
     then the invitation will use the tenants public did to create the connection invitation i.e. the tenant using the invitation will connect via public did
 
-    ```multi_use``` can't be set to `true` if an ```attachment``` is provided, 
-    as a proof request or credential offer should be sent to one tenant. 
+    ```multi_use``` can't be set to `true` if an ```attachment``` is provided,
+    as a proof request or credential offer should be sent to one tenant.
 
     Request body:
     -------------
@@ -105,7 +105,7 @@ async def accept_oob_invitation(
     ------------------------------
 
     As with the connection endpoint, the invitation object from the create-invitation endpoint
-    is passed to this endpoint. 
+    is passed to this endpoint.
 
     The `invitation_url` in the InvitationRecord can also be used to obtain an invitation; there is a base64 encoded
     string after the "?oob=" parameter in the url, and this can be decoded to obtain the invitation object.

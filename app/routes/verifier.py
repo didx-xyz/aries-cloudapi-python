@@ -341,9 +341,8 @@ async def get_proof_records(
     ---
         connection_id: str
         role: Role: "prover", "verifier"
-        state: State: "abandoned", "done", "presentation-received",
-                        "presentation-sent", "proposal-received", "proposal-sent",
-                        "request-received", "request-sent"
+        state: State: "presentation-received", "presentation-sent", "proposal-received", "proposal-sent",
+                        "request-received", "request-sent", "abandoned", "done"
         thread_id: UUID
 
     Returns:

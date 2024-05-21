@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Optional
 from uuid import UUID
 
@@ -26,6 +27,7 @@ from app.util.acapy_issuer_utils import (
     issuer_from_protocol_version,
 )
 from app.util.did import did_from_credential_definition_id, qualified_did_sov
+from app.util.retry_method import coroutine_with_retry_until_value
 from shared.log_config import get_logger
 from shared.models.credential_exchange import (
     CredentialExchange,
@@ -661,10 +663,30 @@ async def publish_revocations(
 
     async with client_from_auth(auth) as aries_controller:
         bound_logger.debug("Publishing revocations")
-        await revocation_registry.publish_pending_revocations(
+        endorser_transaction_id = await revocation_registry.publish_pending_revocations(
             controller=aries_controller,
             revocation_registry_credential_map=publish_request.revocation_registry_credential_map,
         )
+
+        bound_logger.debug(
+            "Wait for publish complete on transaction id: {}", endorser_transaction_id
+        )
+        try:
+            # Wait for transaction to be acknowledged and written to the ledger
+            await coroutine_with_retry_until_value(
+                coroutine_func=aries_controller.endorse_transaction.get_transaction,
+                args=(endorser_transaction_id,),
+                field_name="state",
+                expected_value="transaction_acked",
+                logger=bound_logger,
+                max_attempts=10,
+                retry_delay=2,
+            )
+        except asyncio.TimeoutError as e:
+            raise CloudApiException(
+                "Timeout waiting for endorser to accept the revocations request.",
+                504,
+            ) from e
 
     bound_logger.info("Successfully published revocations.")
 

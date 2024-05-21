@@ -244,6 +244,7 @@ async def test_reject_proof_request(
 async def test_get_proof_and_get_proofs(
     acme_and_alice_connection: AcmeAliceConnect,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
+    credential_definition_id: str,
     acme_client: RichAsyncClient,
     alice_member_client: RichAsyncClient,
     protocol_version: str,
@@ -254,7 +255,9 @@ async def test_get_proof_and_get_proofs(
         "save_exchange_record": True,
         "connection_id": acme_connection_id,
         "protocol_version": protocol_version,
-        "indy_proof_request": sample_indy_proof_request().to_dict(),
+        "indy_proof_request": sample_indy_proof_request(
+            restrictions=[{"cred_def_id": credential_definition_id}]
+        ).to_dict(),
     }
     send_proof_response = await send_proof_request(acme_client, request_body)
 
@@ -477,6 +480,7 @@ async def test_get_credentials_for_request(
 )
 async def test_accept_proof_request_verifier_has_issuer_role(
     meld_co_issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
+    meld_co_credential_definition_id: str,
     alice_member_client: RichAsyncClient,
     meld_co_client: RichAsyncClient,
     meld_co_and_alice_connection: MeldCoAliceConnect,
@@ -485,7 +489,9 @@ async def test_accept_proof_request_verifier_has_issuer_role(
     request_body = {
         "connection_id": meld_co_and_alice_connection.meld_co_connection_id,
         "protocol_version": protocol_version,
-        "indy_proof_request": sample_indy_proof_request().to_dict(),
+        "indy_proof_request": sample_indy_proof_request(
+            restrictions=[{"cred_def_id": meld_co_credential_definition_id}]
+        ).to_dict(),
     }
     send_proof_response = await send_proof_request(meld_co_client, request_body)
 
@@ -560,6 +566,7 @@ async def test_accept_proof_request_verifier_has_issuer_role(
 @pytest.mark.parametrize("alice_save_exchange_record", [False, True])
 async def test_saving_of_presentation_exchange_records(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
+    credential_definition_id: str,
     alice_member_client: RichAsyncClient,
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
@@ -570,7 +577,9 @@ async def test_saving_of_presentation_exchange_records(
     request_body = {
         "connection_id": acme_and_alice_connection.acme_connection_id,
         "protocol_version": protocol_version,
-        "indy_proof_request": sample_indy_proof_request().to_dict(),
+        "indy_proof_request": sample_indy_proof_request(
+            restrictions=[{"cred_def_id": credential_definition_id}]
+        ).to_dict(),
         "save_exchange_record": acme_save_exchange_record,
     }
     send_proof_response = await send_proof_request(acme_client, request_body)

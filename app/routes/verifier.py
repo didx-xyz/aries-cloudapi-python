@@ -111,11 +111,11 @@ async def send_proof_request(
     """
     Send proof request
     ---
-    Only a tenant with the verifier role can send a proof request.
-    The tenant can send a proof request to a specific connection by providing the connection ID.
+    NB: Only a tenant with the verifier role can send a proof request.
 
-    The proof request must be for a indy credential or ld_proof
+    The verifier uses this endpoint to send a proof request to a specific connection, by providing the connection ID.
 
+    The proof request type must be one of indy or ld_proof.
     ```json
         {
             "type": "indy" or "ld_proof",
@@ -181,7 +181,35 @@ async def accept_proof_request(
     """
     Accept proof request
     ---
-    A tenant responds to a proof request with this endpoint.
+    A prover uses this endpoint to respond to a proof request, by sending a presentation to the verifier.
+
+    An Indy presentation contains a mapping of the requested attributes to the wallet credential id of the prover.
+
+    Example:
+    ```json
+    {
+        "indy_presentation_spec": {
+            "requested_attributes": {
+                "surname": {
+                    "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+                    "revealed": true
+                },
+                "name": {
+                    "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+                    "revealed": true
+                },
+                "age": {
+                    "cred_id": "10e6b03f-2b60-431a-9634-731594423120",
+                    "revealed": true
+                }
+            }
+        }
+    }
+    ```
+
+    In the context of the holder's wallet, the `cred_id` is called the `referent`.
+
+    The `revealed` parameter indicates whether the holder wants to reveal the attribute value to the verifier or not.
 
     Request Body:
     ---
@@ -191,7 +219,7 @@ async def accept_proof_request(
     Returns:
     ---
         PresentationExchange
-            The updated presentation exchange record after accepting the request.
+            The prover's updated presentation exchange record after responding to the proof request.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept proof request")
@@ -240,16 +268,20 @@ async def reject_proof_request(
     """
     Reject proof request
     ---
-    A prover uses this endpoint to reject a proof request.
+    A prover uses this endpoint to notify the verifier that they cannot or refuse to respond to a proof request.
 
-    The prover provides the proof ID of the proof request that they want to reject,
-    and the reason for the rejection.
-    The problem report string will end up in the proof record as the error message.
+    The prover provides the proof ID of the request that they want to reject, and a message (`problem_report`) that
+    will display in the verifier's presentation exchange record as the rejection message.
 
     Request Body:
     ---
         body: RejectProofRequest
-            The proof request object
+            proof_id: str
+                The proof id of the presentation request that is being rejected
+            problem_report: str
+                A message to inform the verifier why their proof request is rejected
+            delete_proof_record: bool (default: False)
+                Can be set to true if the prover wishes to delete their record of the rejected presentation exchange.
 
     Returns:
     ---
@@ -288,7 +320,7 @@ async def reject_proof_request(
 
 @router.get(
     "/proofs",
-    summary="Get Proof Exchange Records",
+    summary="Get Presentation Exchange Records",
     response_model=List[PresentationExchange],
 )
 async def get_proof_records(
@@ -299,22 +331,20 @@ async def get_proof_records(
     thread_id: Optional[UUID] = None,
 ) -> List[PresentationExchange]:
     """
-    Get all proof records
+    Get all presentation exchange records for this tenant
     ---
-    These records contains information about the proof request and the proof presentation.
+    These records contains information about proof requests and presentations.
 
-    If a proof is sent by a verifier with 'save_exchange_record' set to False the record
-    will be deleted after the exchange was completed.
-    The tenant can filter the results by connection_id, role, state, and thread_id.
+    The results can be filtered by connection_id, role, state, and thread_id.
 
-    Parameters:
+    Parameters (Optional):
     ---
-        connection_id: Optional[str]
-        role: Optional[Role]: "prover", "verifier"
-        state: Optional[State]: "abandoned", "done", "presentation-received",
-                                "presentation-sent", "proposal-received", "proposal-sent",
-                                "request-received", "request-sent"
-        thread_id: Optional[UUID]
+        connection_id: str
+        role: Role: "prover", "verifier"
+        state: State: "abandoned", "done", "presentation-received",
+                        "presentation-sent", "proposal-received", "proposal-sent",
+                        "request-received", "request-sent"
+        thread_id: UUID
 
     Returns:
     ---
@@ -356,7 +386,7 @@ async def get_proof_records(
 
 @router.get(
     "/proofs/{proof_id}",
-    summary="Get a Proof Exchange Record",
+    summary="Get a Presentation Exchange Record",
     response_model=PresentationExchange,
 )
 async def get_proof_record(
@@ -364,23 +394,19 @@ async def get_proof_record(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PresentationExchange:
     """
-    Get a specific proof record
+    Get a specific presentation exchange record
     ---
-    The tenant can get a specific proof record by providing the proof ID.
-
-    If the proof was sent with 'save_exchange_record' set to False the
-    record will not be available after the exchange was completed.
-    A holder's records will always be deleted after the exchange was completed.
+    This fetches a specific presentation exchange record by providing the proof ID.
 
     Parameters:
     ---
         proof_id: str
-            The proof ID
+            The proof ID for the presentation request of interest
 
     Returns:
     ---
         PresentationExchange
-            The of presentation exchange record for the proof ID
+            The presentation exchange record for the proof ID
     """
     bound_logger = logger.bind(body={"proof_id": proof_id})
     bound_logger.info("GET request received: Get proof record by id")
@@ -406,7 +432,7 @@ async def get_proof_record(
 
 @router.delete(
     "/proofs/{proof_id}",
-    summary="Delete a Proof Exchange Record",
+    summary="Delete a Presentation Exchange Record",
     status_code=204,
 )
 async def delete_proof(
@@ -414,14 +440,14 @@ async def delete_proof(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Deletes a proof record
+    Delete a presentation exchange record
     ---
-    Delete proofs record for proof_id (pres_ex_id including prepending version hint 'v1-' or 'v2-')
+    This will remove a specific presentation exchange from your records.
 
     Parameters:
     ---
         proof_id: str
-            The id of the proof exchange to be deleted
+            The identifier of the presentation exchange record that you want to delete
 
     Returns:
     ---
@@ -453,18 +479,16 @@ async def get_credentials_by_proof_id(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[IndyCredPrecis]:
     """
-    Get matching credentials for presentation exchange
+    Get matching credentials for a presentation exchange
     ---
-    Get matching credentials for a proof request by providing the proof ID.
+    This endpoint returns a list of possible credentials that the prover can use to respond to a given proof request.
 
-    Returns a list of credential that the holder needs to respond to the proof request.
-    The 'presentation_referents' field, for each object in this list, tells the holder which
-    of the fields in the proof request that credential satisfies.
+    The `presentation_referents` field indicates which of the fields in the proof request that credential satisfies.
 
     Parameters:
     ---
         proof_id: str
-            The relevant proof exchange ID for the holder
+            The relevant proof exchange ID for the prover
 
     Returns:
     ---

@@ -55,19 +55,22 @@ v10_presentation_exchange_records = [
     ),
 ]
 
-indy_proof_request = IndyProofRequest(
-    name="string",
-    non_revoked=IndyProofRequestNonRevoked(var_from=0, to=20),
-    nonce="12345",
-    requested_attributes={
-        "0_speed_uuid": IndyProofReqAttrSpec(
-            name="speed",
-            restrictions=None,
-        )
-    },
-    requested_predicates={},
-    version="1.0",
-)
+
+def sample_indy_proof_request(restrictions=None) -> IndyProofRequest:
+    return IndyProofRequest(
+        name="string",
+        non_revoked=IndyProofRequestNonRevoked(var_from=0, to=20),
+        nonce="12345",
+        requested_attributes={
+            "0_speed_uuid": IndyProofReqAttrSpec(
+                name="speed",
+                restrictions=restrictions,
+            )
+        },
+        requested_predicates={},
+        version="1.0",
+    )
+
 
 dif_proof_request = DIFProofRequest(
     options=None, presentation_definition=PresentationDefinition()
@@ -79,7 +82,7 @@ v20_presentation_exchange_records = [
         by_format=V20PresExRecordByFormat(
             pres={"indy": {"hello": "world"}},
             pres_proposal={"indy": {"hello": "world"}},
-            pres_request={"indy": indy_proof_request.to_dict()},
+            pres_request={"indy": sample_indy_proof_request().to_dict()},
         ),
         connection_id="abc",
         created_at="2021-09-15 13:49:47Z",

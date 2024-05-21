@@ -30,9 +30,9 @@ async def create_oob_invitation(
     The attachment type is either ```"credential-offer"``` or ```"present-proof"```.
 
     The multi_use field is used to determine if the invitation can be used multiple times by different tenants.
-    The ```use_public_did``` field should only be set true, if a tenant with a public DID is creating a connection invitation,
-    then the invitation will use the tenants public did to create the connection invitation i.e. the tenant accepting the
-    invitation will connect via public did of tenant that created invitation
+    The ```use_public_did``` field should only be set true, if a tenant with a public DID is creating
+    a connection invitation, then the invitation will use the tenants public did to create the connection invitation 
+    i.e. the tenant accepting the invitation will connect via public did of tenant that created invitation
 
     ```multi_use``` can't be set to `true` if an ```attachment``` is provided,
     as a proof request or credential offer should be sent to one tenant.

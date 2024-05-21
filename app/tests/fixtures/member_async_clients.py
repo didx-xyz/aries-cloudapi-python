@@ -53,7 +53,7 @@ async def bob_member_client(
         yield bob_async_client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def faber_client(
     faber_issuer: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
@@ -63,7 +63,7 @@ async def faber_client(
         yield faber_async_client
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="module")
 async def acme_client(
     acme_verifier: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:
@@ -73,7 +73,7 @@ async def acme_client(
         yield acme_async_client
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def meld_co_client(
     meld_co_issuer_verifier: CreateTenantResponse,
 ) -> AsyncGenerator[RichAsyncClient, Any]:

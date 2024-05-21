@@ -83,7 +83,7 @@ async def set_public_did(
         DID: the did
     """
     logger.info("Setting public DID")
-    result = await handle_acapy_call(
+    did_response = await handle_acapy_call(
         logger=logger,
         acapy_call=controller.wallet.set_public_did,
         did=did,
@@ -91,11 +91,12 @@ async def set_public_did(
         create_transaction_for_endorser=create_transaction_for_endorser,
     )
 
-    if not result.result and not create_transaction_for_endorser:
+    result = did_response.result
+    if not result and not create_transaction_for_endorser:
         raise CloudApiException(f"Error setting public did to `{did}`.", 400)
 
     logger.info("Successfully set public DID.")
-    return result.to_dict()
+    return result
 
 
 async def get_public_did(controller: AcaPyClient) -> DID:

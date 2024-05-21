@@ -147,7 +147,7 @@ async def get_clean_or_regression_test_cred_def(
     return result  # pylint: disable=possibly-used-before-assignment
 
 
-@pytest.fixture(scope="module", params=TestMode.fixture_params)
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def credential_definition_id(
     request,
     schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name
@@ -165,7 +165,7 @@ async def credential_definition_id(
     return result.id
 
 
-@pytest.fixture(scope="module", params=TestMode.fixture_params)
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def credential_definition_id_revocable(
     request,
     schema_definition_alt: CredentialSchema,  # pylint: disable=redefined-outer-name
@@ -183,7 +183,7 @@ async def credential_definition_id_revocable(
     return result.id
 
 
-@pytest.fixture(scope="module", params=TestMode.fixture_params)
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def meld_co_credential_definition_id(
     request,
     schema_definition: CredentialSchema,  # pylint: disable=redefined-outer-name

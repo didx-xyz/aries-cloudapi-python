@@ -33,73 +33,6 @@ router = APIRouter(prefix="/v1/verifier", tags=["verifier"])
 
 
 @router.post(
-    "/create-request",
-    summary="Create a Proof Request (not bound to a connection)",
-    response_model=PresentationExchange,
-)
-async def create_proof_request(
-    body: CreateProofRequest,
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> PresentationExchange:
-    """
-    Creates a presentation request that is not bound to any specific proposal or connection
-    ---
-    This endpoint is used to create a proof request that is not bound to a connection. This means the proof request is
-    not sent directly, but it will do the initial step of creating a proof exchange record,
-    which the verifier can then use in the out of band (OOB) protocol.
-
-    The OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a
-    connection does not yet exist between holder and verifier.
-
-    The proof request type must be one of indy or ld_proof.
-    ```json
-        {
-            "type": "indy" or "ld_proof",
-            "indy_proof_request": {...}, <-- Required if type is "indy"
-            "dif_proof_request": {...}, <-- Required if type is "ld_proof"
-            "save_exchange_record": true <-- Whether the proof exchange record should be preserved after completion.
-            "comment": "string", <-- This comment will appear in the proof record for the recipient as well
-            "protocol_version": "v2", <-- "v1" is supported, but deprecated
-        }
-    ```
-    For a detailed technical specification and informative diagrams
-    related to the present proof process, refer to the [Aries Present Proof v2
-    RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof
-    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md)
-
-    Request Body:
-    ---
-        body: CreateProofRequest
-            The proof request object
-
-    Returns:
-    ---
-        PresentationExchange
-            The presentation exchange record for this request
-    """
-    bound_logger = logger.bind(body=body)
-    bound_logger.info("POST request received: Create proof request")
-
-    try:
-        verifier = get_verifier_by_version(body.protocol_version)
-
-        async with client_from_auth(auth) as aries_controller:
-            bound_logger.debug("Creating proof request")
-            result = await verifier.create_proof_request(
-                controller=aries_controller, create_proof_request=body
-            )
-    except Exception as e:
-        bound_logger.info("Could not create presentation record: {}.", e)
-        raise
-
-    if result:
-        bound_logger.info("Successfully created proof request.")
-    else:
-        bound_logger.warning("No result obtained from creating proof request.")
-    return result
-
-
-@router.post(
     "/send-request",
     summary="Send a Proof Request to a connection",
     response_model=PresentationExchange,
@@ -166,6 +99,73 @@ async def send_proof_request(
         bound_logger.info("Successfully sent proof request.")
     else:
         bound_logger.warning("No result obtained from sending proof request.")
+    return result
+
+
+@router.post(
+    "/create-request",
+    summary="Create a Proof Request (not bound to a connection)",
+    response_model=PresentationExchange,
+)
+async def create_proof_request(
+    body: CreateProofRequest,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+) -> PresentationExchange:
+    """
+    Creates a presentation request that is not bound to any specific proposal or connection
+    ---
+    This endpoint is used to create a proof request that is not bound to a connection. This means the proof request is
+    not sent directly, but it will do the initial step of creating a proof exchange record,
+    which the verifier can then use in the out of band (OOB) protocol.
+
+    The OOB protocol allows proof requests to be sent over alternative channels, such as email or QR code, where a
+    connection does not yet exist between holder and verifier.
+
+    The proof request type must be one of indy or ld_proof.
+    ```json
+        {
+            "type": "indy" or "ld_proof",
+            "indy_proof_request": {...}, <-- Required if type is "indy"
+            "dif_proof_request": {...}, <-- Required if type is "ld_proof"
+            "save_exchange_record": true <-- Whether the proof exchange record should be preserved after completion.
+            "comment": "string", <-- This comment will appear in the proof record for the recipient as well
+            "protocol_version": "v2", <-- "v1" is supported, but deprecated
+        }
+    ```
+    For a detailed technical specification and informative diagrams
+    related to the present proof process, refer to the [Aries Present Proof v2
+    RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof
+    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md)
+
+    Request Body:
+    ---
+        body: CreateProofRequest
+            The proof request object
+
+    Returns:
+    ---
+        PresentationExchange
+            The presentation exchange record for this request
+    """
+    bound_logger = logger.bind(body=body)
+    bound_logger.info("POST request received: Create proof request")
+
+    try:
+        verifier = get_verifier_by_version(body.protocol_version)
+
+        async with client_from_auth(auth) as aries_controller:
+            bound_logger.debug("Creating proof request")
+            result = await verifier.create_proof_request(
+                controller=aries_controller, create_proof_request=body
+            )
+    except Exception as e:
+        bound_logger.info("Could not create presentation record: {}.", e)
+        raise
+
+    if result:
+        bound_logger.info("Successfully created proof request.")
+    else:
+        bound_logger.warning("No result obtained from creating proof request.")
     return result
 
 

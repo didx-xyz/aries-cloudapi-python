@@ -248,9 +248,6 @@ async def get_credential_revocation_status(
     summary="Fetch a list of W3C credentials from the wallet",
 )
 async def list_w3c_credentials(
-    count: Optional[str] = None,
-    start: Optional[str] = None,
-    wql: Optional[str] = None,
     body: Optional[W3CCredentialsListRequest] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
@@ -281,9 +278,6 @@ async def list_w3c_credentials(
         results = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.credentials.get_w3c_credentials,
-            count=count,
-            start=start,
-            wql=wql,
             body=body,
         )
 

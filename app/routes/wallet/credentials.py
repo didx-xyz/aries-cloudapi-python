@@ -242,7 +242,7 @@ async def get_credential_revocation_status(
     return result
 
 
-@router.get(
+@router.post(
     "/w3c",
     response_model=VCRecordList,
     summary="Fetch a list of W3C credentials from the wallet",

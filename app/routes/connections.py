@@ -187,15 +187,13 @@ async def get_connections(
             their_role=their_role,
         )
 
-    if connections.results:
-        result = [
-            conn_record_to_connection(connection) for connection in connections.results
-        ]
-        logger.info("Successfully returned connections.")
-        return result
-
-    logger.info("No connections returned.")
-    return []
+    result = (
+        [conn_record_to_connection(connection) for connection in connections.results]
+        if connections.results
+        else []
+    )
+    logger.info("Successfully returned connections.")
+    return result
 
 
 @router.get(
@@ -231,10 +229,7 @@ async def get_connection_by_id(
         )
 
     result = conn_record_to_connection(connection)
-    if result.connection_id:
-        bound_logger.info("Successfully got connection by ID.")
-    else:
-        bound_logger.info("Could not get connection by ID.")
+    bound_logger.info("Successfully got connection by ID.")
     return result
 
 

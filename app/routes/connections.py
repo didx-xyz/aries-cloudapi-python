@@ -78,7 +78,7 @@ async def create_invitation(
             public=body.use_public_did,
             body=CreateInvitationRequest(),
         )
-    bound_logger.info("Successfully created invitation.")
+    bound_logger.debug("Successfully created invitation.")
     return invitation
 
 
@@ -128,7 +128,7 @@ async def accept_invitation(
             alias=body.alias,
         )
     result = conn_record_to_connection(connection_record)
-    bound_logger.info("Successfully accepted invitation.")
+    bound_logger.debug("Successfully accepted invitation.")
     return result
 
 
@@ -187,15 +187,13 @@ async def get_connections(
             their_role=their_role,
         )
 
-    if connections.results:
-        result = [
-            conn_record_to_connection(connection) for connection in connections.results
-        ]
-        logger.info("Successfully returned connections.")
-        return result
-
-    logger.info("No connections returned.")
-    return []
+    result = (
+        [conn_record_to_connection(connection) for connection in connections.results]
+        if connections.results
+        else []
+    )
+    logger.debug("Successfully returned connections.")
+    return result
 
 
 @router.get(
@@ -231,10 +229,7 @@ async def get_connection_by_id(
         )
 
     result = conn_record_to_connection(connection)
-    if result.connection_id:
-        bound_logger.info("Successfully got connection by ID.")
-    else:
-        bound_logger.info("Could not get connection by ID.")
+    bound_logger.debug("Successfully got connection by ID.")
     return result
 
 
@@ -271,4 +266,4 @@ async def delete_connection_by_id(
             conn_id=connection_id,
         )
 
-    bound_logger.info("Successfully deleted connection by ID.")
+    bound_logger.debug("Successfully deleted connection by ID.")

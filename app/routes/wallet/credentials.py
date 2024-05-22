@@ -255,16 +255,22 @@ async def list_w3c_credentials(
     Fetch a list of W3C credentials from the wallet.
     ---
 
-    Parameters:
+    The W3C credentials list request body can be used to filter credentials returned from the wallet.
+    All the fields in the request body are optional. If no fields are provided, all credentials will be returned.
+
+    Request body:
     ---
-        count: Optional[str]
-            The number of records to return.
-        start: Optional[str]
-            The number of records to skip before starting to return records.
-        wql: Optional[str]
-            A WQL query to filter records.
-        body: Optional[W3CCredentialsListRequest]  <-- TODO what is this?
+        body: Optional[W3CCredentialsListRequest]
             A request body to filter records.
+                contexts: List[str]
+                types: List[str]
+                schema_ids: List[str]
+                issuer_id: str
+                subject_ids: List[str]
+                given_id: str
+                proof_types: List[str]
+                tag_query: str
+                max_results: int
 
     Returns:
     ---

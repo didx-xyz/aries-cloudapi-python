@@ -286,10 +286,10 @@ async def list_w3c_credentials(
 
 
 @router.get(
-    "/w3c/{referent}", response_model=VCRecord, summary="Fetch a W3C credential by ID"
+    "/w3c/{record_id}", response_model=VCRecord, summary="Fetch a W3C credential by ID"
 )
 async def get_w3c_credential(
-    referent: str,
+    record_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecord:
     """
@@ -298,7 +298,7 @@ async def get_w3c_credential(
 
     Parameters:
     ---
-        referent: str
+        record_id: str
             The ID of the W3C credential to fetch.
 
     Returns:
@@ -307,7 +307,7 @@ async def get_w3c_credential(
             The W3C credential.
 
     """
-    bound_logger = logger.bind(credential_id=credential_id)
+    bound_logger = logger.bind(record_id=record_id)
     bound_logger.debug("GET request received: Fetch specific W3C credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
@@ -315,16 +315,16 @@ async def get_w3c_credential(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.get_w3c_credential,
-            credential_id=referent,
+            credential_id=record_id,
         )
 
     bound_logger.debug("Successfully fetched W3C credential.")
     return result
 
 
-@router.delete("/w3c/{referent}", status_code=204, summary="Delete W3C credential")
+@router.delete("/w3c/{record_id}", status_code=204, summary="Delete W3C credential")
 async def delete_w3c_credential(
-    referent: str,
+    record_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
@@ -333,14 +333,14 @@ async def delete_w3c_credential(
 
     Parameters:
     ---
-        referent: str
+        record_id: str
             The ID of the W3C credential to delete.
 
     Returns:
     ---
         status_code: 204
     """
-    bound_logger = logger.bind(credential_id=credential_id)
+    bound_logger = logger.bind(record_id=record_id)
     bound_logger.debug("DELETE request received: Remove specific W3C credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
@@ -348,7 +348,7 @@ async def delete_w3c_credential(
         await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.delete_w3c_credential,
-            credential_id=referent,
+            credential_id=record_id,
         )
 
     bound_logger.debug("Successfully deleted W3C credential.")

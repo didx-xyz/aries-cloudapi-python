@@ -140,19 +140,44 @@ async def publish_pending_revocations(
         revocation_registry_credential_map=revocation_registry_credential_map,
     )
 
-    try:
-        result = await handle_acapy_call(
-            logger=bound_logger,
-            acapy_call=controller.revocation.publish_revocations,
-            body=PublishRevocations(rrid2crid=revocation_registry_credential_map),
-        )
-    except CloudApiException as e:
-        raise CloudApiException(
-            f"Failed to publish pending revocations: {e.detail}.", e.status_code
-        ) from e
+    num_tries = 0
+    max_tries = 3
+    retry = True
+    retry_delay = 1  # second
+    while num_tries < max_tries and retry:
+        try:
+            result = await handle_acapy_call(
+                logger=bound_logger,
+                acapy_call=controller.revocation.publish_revocations,
+                body=PublishRevocations(rrid2crid=revocation_registry_credential_map),
+            )
+        except CloudApiException as e:
+            raise CloudApiException(
+                f"Failed to publish pending revocations: {e.detail}.", e.status_code
+            ) from e
 
-    if not result.txn or not result.txn.transaction_id:
-        raise CloudApiException("Failed to publish pending revocations.", 500)
+        num_tries += 1
+        if not result.txn or not result.txn.transaction_id:
+            # cannot proceed without txn info
+            retry = True
+            if num_tries >= max_tries:
+                records = await controller.revocation.get_created_registries()
+                cred_defs = (
+                    await controller.credential_definition.get_created_cred_defs()
+                )
+
+                active = []
+                for cred_def_id in cred_defs.credential_definition_ids:
+                    active += [
+                        await get_active_revocation_registry_for_credential(
+                            controller, cred_def_id
+                        )
+                    ]
+
+                raise CloudApiException(f"No pending revocations found. {active=}", 400)
+            await asyncio.sleep(retry_delay)
+        else:
+            retry = False
 
     endorse_transaction_id = result.txn.transaction_id
     bound_logger.info(
@@ -181,7 +206,6 @@ async def clear_pending_revocations(
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
-    bound_logger.info("Validating revocation registry ids")
     await validate_rev_reg_ids(
         controller=controller,
         revocation_registry_credential_map=revocation_registry_credential_map,
@@ -347,11 +371,12 @@ async def validate_rev_reg_ids(
 
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
-    bound_logger.info("Validating revocation registry ids")
     rev_reg_id_list = list(revocation_registry_credential_map.keys())
 
     if not rev_reg_id_list:
         return
+
+    bound_logger.info("Validating revocation registry ids")
 
     for rev_reg_id in rev_reg_id_list:
         try:

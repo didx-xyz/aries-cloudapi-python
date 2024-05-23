@@ -36,9 +36,6 @@ async def test_proof_revoked_credential(
     acme_and_alice_connection: AcmeAliceConnect,
     protocol_version: str,
 ):
-    # Get current time
-    unix_timestamp = int(time.time())
-
     # Do proof request
     request_body = {
         "protocol_version": protocol_version,
@@ -47,7 +44,7 @@ async def test_proof_revoked_credential(
         "indy_proof_request": {
             "name": "Proof of SPEED",
             "version": "1.0",
-            "non_revoked": {"to": unix_timestamp},
+            "non_revoked": {},  # Empty means it must be non_revoked at time of proof
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",

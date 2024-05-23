@@ -1,19 +1,23 @@
-from typing import Optional
+from typing import List, Optional
 
-from aries_cloudcontroller import (
+from aries_cloudcontroller import (  # CredInfoList,; VCRecordList,
     AttributeMimeTypesResult,
-    CredInfoList,
     CredRevokedResult,
     IndyCredInfo,
     VCRecord,
-    VCRecordList,
     W3CCredentialsListRequest,
 )
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call
+from app.models.wallet import (
+    CredInfoList,
+    ExtendedIndyCredInfo,
+    ExtendedVCRecord,
+    VCRecordList,
+)
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -77,12 +81,14 @@ async def list_credentials(
 
 
 @router.get(
-    "/{referent}", response_model=IndyCredInfo, summary="Fetch a credential by ID"
+    "/{credential_id}",
+    response_model=ExtendedIndyCredInfo,
+    summary="Fetch a credential by ID",
 )
 async def get_credential_record(
     referent: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> IndyCredInfo:
+) -> ExtendedIndyCredInfo:
     """
     Fetch a specific credential by referent.
     ---
@@ -114,20 +120,20 @@ async def get_credential_record(
     return result
 
 
-@router.delete("/{referent}", status_code=204, summary="Delete a credential by ID")
+@router.delete("/{credential_id}", status_code=204, summary="Delete a credential by ID")
 async def delete_credential(
-    referent: str,
+    credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
     Remove a specific credential from the wallet by ID.
     ---
 
-    The referent is the ID of the credential to delete.
+    The credential_id is the ID of the credential to delete.
 
     Parameters:
     ---
-        referent: str
+        credential_id: str
             The ID of the credential to delete.
 
     Returns:
@@ -135,7 +141,7 @@ async def delete_credential(
         status_code: 204
 
     """
-    bound_logger = logger.bind(referent=referent)
+    bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug("DELETE request received: Remove specific credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
@@ -143,19 +149,19 @@ async def delete_credential(
         await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.delete_record,
-            credential_id=referent,
+            credential_id=credential_id,
         )
 
     bound_logger.debug("Successfully deleted credential.")
 
 
 @router.get(
-    "/{referent}/mime-types",
+    "/{credential_id}/mime-types",
     response_model=AttributeMimeTypesResult,
     summary="Retrieve attribute MIME types of a credential",
 )
 async def get_credential_mime_types(
-    referent: str,
+    credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> AttributeMimeTypesResult:
     """
@@ -164,7 +170,7 @@ async def get_credential_mime_types(
 
     Parameters:
     ---
-        referent: str
+        credential_id: str
             The ID of the credential to fetch attribute MIME types for.
 
     Returns:
@@ -173,7 +179,7 @@ async def get_credential_mime_types(
             The attribute MIME types of the credential.
 
     """
-    bound_logger = logger.bind(referent=referent)
+    bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug(
         "GET request received: Retrieve attribute MIME types for a specific credential"
     )
@@ -183,7 +189,7 @@ async def get_credential_mime_types(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.get_credential_mime_types,
-            credential_id=referent,
+            credential_id=credential_id,
         )
 
     bound_logger.debug("Successfully fetched attribute MIME types.")
@@ -191,12 +197,12 @@ async def get_credential_mime_types(
 
 
 @router.get(
-    "/{referent}/revocation-status",
+    "/{credential_id}/revocation-status",
     response_model=CredRevokedResult,
     summary="Get revocation status of a credential",
 )
 async def get_credential_revocation_status(
-    referent: str,
+    credential_id: str,
     from_: Optional[str] = None,
     to: Optional[str] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -210,7 +216,7 @@ async def get_credential_revocation_status(
 
     Parameters:
     ---
-        referent: str
+        credential_id: str
             The ID of the credential to query revocation status for.
         from_: Optional[str]
             The timestamp to start the query from.
@@ -223,7 +229,7 @@ async def get_credential_revocation_status(
             The revocation status of the credential.
 
     """
-    bound_logger = logger.bind(referent=referent)
+    bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug(
         "GET request received: Query revocation status for a specific credential"
     )
@@ -233,7 +239,7 @@ async def get_credential_revocation_status(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.get_revocation_status,
-            credential_id=referent,
+            credential_id=credential_id,
             var_from=from_,
             to=to,
         )
@@ -242,35 +248,40 @@ async def get_credential_revocation_status(
     return result
 
 
-@router.post(
-    "/w3c",
+@router.get(
+    "/w3c/stuff",
     response_model=VCRecordList,
     summary="Fetch a list of W3C credentials from the wallet",
 )
 async def list_w3c_credentials(
-    body: Optional[W3CCredentialsListRequest] = None,
+    contexts: Optional[List[str]] = Query(None),
+    types: Optional[List[str]] = Query(None),
+    schema_ids: Optional[List[str]] = Query(None),
+    subject_ids: Optional[List[str]] = Query(None),
+    proof_types: Optional[List[str]] = Query(None),
+    issuer_id: Optional[str] = Query(None),
+    given_id: Optional[str] = Query(None),
+    tag_query: Optional[str] = Query(None),
+    max_results: Optional[int] = Query(None),
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
     """
     Fetch a list of W3C credentials from the wallet.
     ---
 
-    The W3C credentials list request body can be used to filter credentials returned from the wallet.
-    All the fields in the request body are optional. If no fields are provided, all credentials will be returned.
+    The W3C credentials can be filtered by the parameters provided.
 
-    Request body:
+    Parameters:
     ---
-        body: Optional[W3CCredentialsListRequest]
-            A request body to filter records.
-                contexts: List[str]
-                types: List[str]
-                schema_ids: List[str]
-                issuer_id: str
-                subject_ids: List[str]
-                given_id: str
-                proof_types: List[str]
-                tag_query: str
-                max_results: int
+        contexts: Optional[List[str]]
+        types: Optional[List[str]]
+        schema_ids: Optional[List[str]]
+        issuer_id: Optional[str]
+        subject_ids: Optional[List[str]]
+        given_id: Optional[str]
+        proof_types: Optional[List[str]]
+        tag_query: Optional[str]
+        max_results: Optional[int]
 
     Returns:
     ---
@@ -278,6 +289,18 @@ async def list_w3c_credentials(
             A list of W3C credential records.
     """
     logger.debug("GET request received: List W3C credentials")
+
+    body = W3CCredentialsListRequest(
+        contexts=contexts,
+        types=types,
+        schema_ids=schema_ids,
+        issuer_id=issuer_id,
+        subject_ids=subject_ids,
+        given_id=given_id,
+        proof_types=proof_types,
+        tag_query=tag_query,
+        max_results=max_results,
+    )
 
     async with client_from_auth(auth) as aries_controller:
         logger.debug("Fetching W3C credentials")
@@ -292,19 +315,21 @@ async def list_w3c_credentials(
 
 
 @router.get(
-    "/w3c/{record_id}", response_model=VCRecord, summary="Fetch a W3C credential by ID"
+    "/w3c/{credential_id}",
+    response_model=ExtendedVCRecord,
+    summary="Fetch a W3C credential by ID",
 )
 async def get_w3c_credential(
-    record_id: str,
+    credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> VCRecord:
+) -> ExtendedVCRecord:
     """
     Fetch a specific W3C credential by ID.
     ---
 
     Parameters:
     ---
-        record_id: str
+        credential_id: str
             The ID of the W3C credential to fetch.
 
     Returns:
@@ -313,7 +338,7 @@ async def get_w3c_credential(
             The W3C credential.
 
     """
-    bound_logger = logger.bind(record_id=record_id)
+    bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug("GET request received: Fetch specific W3C credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
@@ -321,16 +346,16 @@ async def get_w3c_credential(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.get_w3c_credential,
-            credential_id=record_id,
+            credential_id=credential_id,
         )
 
     bound_logger.debug("Successfully fetched W3C credential.")
     return result
 
 
-@router.delete("/w3c/{record_id}", status_code=204, summary="Delete W3C credential")
+@router.delete("/w3c/{credential_id}", status_code=204, summary="Delete W3C credential")
 async def delete_w3c_credential(
-    record_id: str,
+    credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
@@ -339,14 +364,14 @@ async def delete_w3c_credential(
 
     Parameters:
     ---
-        record_id: str
+        credential_id: str
             The ID of the W3C credential to delete.
 
     Returns:
     ---
         status_code: 204
     """
-    bound_logger = logger.bind(record_id=record_id)
+    bound_logger = logger.bind(credential_id=credential_id)
     bound_logger.debug("DELETE request received: Remove specific W3C credential by ID")
 
     async with client_from_auth(auth) as aries_controller:
@@ -354,7 +379,7 @@ async def delete_w3c_credential(
         await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.delete_w3c_credential,
-            credential_id=record_id,
+            credential_id=credential_id,
         )
 
     bound_logger.debug("Successfully deleted W3C credential.")

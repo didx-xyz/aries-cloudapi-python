@@ -19,6 +19,7 @@ from app.exceptions import (
 )
 from app.models.issuer import ClearPendingRevocationsResult
 from app.util.credentials import strip_protocol_prefix
+from app.util.retry_method import coroutine_with_retry
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -111,6 +112,37 @@ async def revoke_credential(
         raise CloudApiException(
             f"Failed to revoke credential: {e.detail}.", e.status_code
         ) from e
+
+    if auto_publish_to_ledger:
+        bound_logger.debug("Wait for publish complete")
+
+        revoked = False
+        max_tries = 5
+        retry_delay = 1
+        n_try = 0
+        while not revoked and n_try < max_tries:
+            n_try += 1
+            # Safely fetch revocation record and check if change reflected
+            record = await coroutine_with_retry(
+                coroutine_func=controller.revocation.get_revocation_status,
+                args=(strip_protocol_prefix(credential_exchange_id),),
+                logger=bound_logger,
+                max_attempts=5,
+                retry_delay=0.5,
+            )
+            # Todo: this record state can be "revoked" before it's been endorsed
+            if record.result:
+                revoked = record.result.state == "revoked"
+
+            if not revoked and n_try < max_tries:
+                bound_logger.debug("Not yet revoked, waiting ...")
+                await asyncio.sleep(retry_delay)
+
+        if not revoked:
+            raise CloudApiException(
+                "Could not assert that revocation was published within timeout. "
+                "Please check the revocation record state and retry if not revoked."
+            )
 
     bound_logger.info("Successfully revoked credential.")
 

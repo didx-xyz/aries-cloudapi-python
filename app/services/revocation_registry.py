@@ -117,7 +117,7 @@ async def revoke_credential(
 
 async def publish_pending_revocations(
     controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
-) -> str:
+) -> Optional[str]:
     """
         Publish pending revocations
 
@@ -150,7 +150,11 @@ async def publish_pending_revocations(
         ) from e
 
     if not result.txn or not result.txn.transaction_id:
-        raise CloudApiException("Failed to publish pending revocations.", 500)
+        bound_logger.warning(
+            "Published pending revocations but received no endorser transaction id. Got result: {}",
+            result,
+        )
+        return
 
     endorse_transaction_id = result.txn.transaction_id
     bound_logger.info(

@@ -134,12 +134,10 @@ async def publish_pending_revocations(
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
-    bound_logger.info("Validating revocation registry ids")
     await validate_rev_reg_ids(
         controller=controller,
         revocation_registry_credential_map=revocation_registry_credential_map,
     )
-
     try:
         result = await handle_acapy_call(
             logger=bound_logger,
@@ -347,11 +345,12 @@ async def validate_rev_reg_ids(
 
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
-    bound_logger.info("Validating revocation registry ids")
     rev_reg_id_list = list(revocation_registry_credential_map.keys())
 
     if not rev_reg_id_list:
         return
+
+    bound_logger.info("Validating revocation registry ids")
 
     for rev_reg_id in rev_reg_id_list:
         try:

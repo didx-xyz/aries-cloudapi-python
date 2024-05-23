@@ -148,7 +148,7 @@ async def test_regression_proof_revoked_credential(
         "comment": "Test proof of revocation",
         "type": "indy",
         "indy_proof_request": {
-            "non_revoked": {"to": unix_timestamp},
+            "non_revoked": {},  # Empty means it must be non_revoked at time of proof
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",

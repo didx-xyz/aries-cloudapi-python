@@ -57,7 +57,7 @@ v10_presentation_exchange_records = [
 
 indy_proof_request = IndyProofRequest(
     name="string",
-    non_revoked=IndyProofRequestNonRevoked(var_from=0, to=20),
+    non_revoked=IndyProofRequestNonRevoked(),
     nonce="12345",
     requested_attributes={
         "0_speed_uuid": IndyProofReqAttrSpec(

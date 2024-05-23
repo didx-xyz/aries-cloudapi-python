@@ -680,7 +680,6 @@ async def test_regression_proof_valid_credential(
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    unix_timestamp = int(time.time())
     referent = get_or_issue_regression_cred_valid.referent
     credential_definition_id_revocable = (
         get_or_issue_regression_cred_valid.cred_def_revocable
@@ -692,7 +691,7 @@ async def test_regression_proof_valid_credential(
         "comment": "Test cred is not revoked",
         "type": "indy",
         "indy_proof_request": {
-            "non_revoked": {"to": unix_timestamp},
+            "non_revoked": {},  # Empty means it must be non_revoked at time of proof
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",

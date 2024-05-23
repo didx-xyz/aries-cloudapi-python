@@ -2,12 +2,12 @@
 
 This document will guide you through some common steps and interactions. Please read it carefully, and feel free to open an issue if further questions arise or if you spot a mistake.
 
->**Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at:
+> **Note:** It is always helpful to inspect the CloudAPI Swagger UI to understand the available endpoints, their expected inputs, and the corresponding outputs. If requests fail, check the Swagger UI to ensure you've called the correct endpoint with the correct data. The Swagger UI is accessible at:
 >
-> * CloudAPI-Multitenant-Admin -> [http://localhost:8100/docs](http://localhost:8100/docs)
-> * CloudAPI-Governance -> [http://localhost:8200/docs](http://localhost:8200/docs)
-> * CloudAPI-Tenant -> [http://localhost:8300/docs](http://localhost:8300/docs)
-> * CloudAPI-Public (trust registry) -> [http://localhost:8400/docs](http://localhost:8400/docs)
+> - CloudAPI-Multitenant-Admin -> [http://localhost:8100/docs](http://localhost:8100/docs)
+> - CloudAPI-Governance -> [http://localhost:8200/docs](http://localhost:8200/docs)
+> - CloudAPI-Tenant -> [http://localhost:8300/docs](http://localhost:8300/docs)
+> - CloudAPI-Public (trust registry) -> [http://localhost:8400/docs](http://localhost:8400/docs)
 >
 > under a vanilla setup. If you find any model to be unclear from the document below, try finding it in Swagger UI before opening an issue. This document describes only some basic steps; more detailed workflows can be found [here](./Example%20Flows.md).
 
@@ -22,13 +22,11 @@ The admin "wallet" is already configured as it is not a subwallet on a multi-ten
 
    ```json
    {
-    "wallet_label": "Demo Issuer",
-    "wallet_name": "Faber",
-    "roles": [
-      "issuer"
-    ],
-    "group_id": "API demo",
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
+     "wallet_label": "Demo Issuer",
+     "wallet_name": "Faber",
+     "roles": ["issuer"],
+     "group_id": "API demo",
+     "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
    }
    ```
 
@@ -119,10 +117,7 @@ To create schemas and effectively write them to the ledger as well as registerin
          "additionalProp1": {
            "name": "string",
            "names": ["string"],
-           "non_revoked": {
-             "from": 0,
-             "to": 0
-           },
+           "non_revoked": {},
            "restrictions": []
          }
        },
@@ -131,10 +126,7 @@ To create schemas and effectively write them to the ledger as well as registerin
            "name": "string",
            "p_type": "<",
            "p_value": 0,
-           "non_revoked": {
-             "from": 0,
-             "to": 0
-           },
+           "non_revoked": {},
            "restrictions": []
          },
          "name": "string",

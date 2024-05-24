@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import (  
+from aries_cloudcontroller import (
     AttributeMimeTypesResult,
     CredRevokedResult,
     W3CCredentialsListRequest,

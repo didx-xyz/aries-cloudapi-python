@@ -56,7 +56,7 @@ async def sign_sd_jws(
             payload: dict: The payload of the SD-JWS.
             verification_method: str: The verification method (did with key to use) to use.
             non_sd_list: list: List of non-selective disclosure attributes.
-    
+
     Returns:
     ---
         SDJWSCreateResponse: The signed SD-JWS.

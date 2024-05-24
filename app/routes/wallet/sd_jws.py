@@ -23,16 +23,44 @@ router = APIRouter(prefix="/v1/wallet/sd-jws", tags=["wallet"])
     "/sign",
     response_model=SDJWSCreateResponse,
     summary="Sign SD-JWS",
-    description="""
-Sign Select Disclosure for JWS (SD-JWS)
-
-See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
-""",
 )
 async def sign_sd_jws(
     body: SDJWSCreateRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSCreateResponse:
+    """
+    Sign Select Disclosure for JWS (SD-JWS)
+    ---
+
+    The difference between the did and verification_method fields is
+    that if the `did` field is used, acapy will make an educated guess
+    about which key associated with the did to use to sign the jwt.
+
+    While with the `verification_method` field, the user is explicitly
+    specifying which key to use to sign the jwt.
+
+    The `non_sd_list` field is a list of non-selective disclosure attributes.
+    These are attributes that are not included in the selective disclosure i.e.
+    they are always disclosed.
+
+    The endpoint will return the signed SD-JWS with some extra keys needed to reveal the
+    selective disclosure attributes.
+
+    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
+
+    Request body:
+    ---
+        SDJWSCreateRequest: The SD-JWS to sign.
+            did: str: The DID to sign the SD-JWS with.
+            header: dict: The header of the SD-JWS.
+            payload: dict: The payload of the SD-JWS.
+            verification_method: str: The verification method (did with key to use) to use.
+            non_sd_list: list: List of non-selective disclosure attributes.
+    
+    Returns:
+    ---
+        SDJWSCreateResponse: The signed SD-JWS.
+    """
     bound_logger = logger.bind(
         # Do not log payload:
         body=body.model_dump(exclude="payload")
@@ -65,16 +93,29 @@ async def sign_sd_jws(
     "/verify",
     response_model=SDJWSVerifyResponse,
     summary="Verify SD-JWS",
-    description="""
-Verify Select Disclosure for JWS (SD-JWS)
-
-See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
-""",
 )
 async def verify_sd_jws(
     body: SDJWSVerifyRequest,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSVerifyResponse:
+    """
+    Verify Select Disclosure for JWS (SD-JWS)
+    ---
+
+    There are some extra keys needed to reveal the selective disclosure attributes.
+    These keys are included in the signed SD-JWS endpoint.
+
+    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
+
+    Request body:
+    ---
+        SDJWSVerifyRequest: The SD-JWS to verify.
+            sd_jws: str: The SD-JWS to verify.
+
+    Returns:
+    ---
+        SDJWSVerifyResponse: The verified SD-JWS.
+    """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Verify SD-JWS")
 

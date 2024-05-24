@@ -1,10 +1,8 @@
 from typing import List, Optional
 
-from aries_cloudcontroller import (  # CredInfoList,; VCRecordList,
+from aries_cloudcontroller import (  
     AttributeMimeTypesResult,
     CredRevokedResult,
-    IndyCredInfo,
-    VCRecord,
     W3CCredentialsListRequest,
 )
 from fastapi import APIRouter, Depends, Query

@@ -45,7 +45,8 @@ async def list_credentials(
 
         {"attr::age::value": "21"}
 
-    See more on WQL queries [here](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/011-wallet-query-language/README.html).
+    See more on WQL queries
+    [here](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/011-wallet-query-language/README.html).
 
     Parameters:
     ---
@@ -84,18 +85,18 @@ async def list_credentials(
     summary="Fetch a credential by ID",
 )
 async def get_credential_record(
-    referent: str,
+    credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> ExtendedIndyCredInfo:
     """
-    Fetch a specific credential by referent.
+    Fetch a specific credential by credential ID.
     ---
 
-    The referent is the ID of the credential to fetch.
+    The referent and credential_id are the duplicates of each other.
 
     Parameters:
     ---
-        referent: str
+        credential_id: str
             The ID of the credential to fetch.
 
     Returns:
@@ -111,7 +112,7 @@ async def get_credential_record(
         result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=aries_controller.credentials.get_record,
-            credential_id=referent,
+            credential_id=credential_id,
         )
 
     bound_logger.debug("Successfully fetched credential.")
@@ -124,10 +125,8 @@ async def delete_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Remove a specific credential from the wallet by ID.
+    Remove a specific indy credential from the wallet by ID.
     ---
-
-    The credential_id is the ID of the credential to delete.
 
     Parameters:
     ---
@@ -210,7 +209,8 @@ async def get_credential_revocation_status(
     ---
 
     The status can be check on a specific time range by providing the `from_` and `to` parameters.
-    Pass the seconds, since Unix epoch, to the `from_` and `to` parameters to query the revocation status for a specific time range.
+    Pass the seconds, since Unix epoch, to the `from_` and `to` parameters to query the revocation
+    status for a specific time range.
 
     Parameters:
     ---
@@ -266,7 +266,7 @@ async def list_w3c_credentials(
     """
     Fetch a list of W3C credentials from the wallet.
     ---
-
+    Credential_id and record_id are duplicates of each other.
     The W3C credentials can be filtered by the parameters provided.
 
     Parameters:

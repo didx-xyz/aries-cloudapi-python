@@ -56,9 +56,17 @@ async def get_sse_subscribe_wallet(
 ) -> StreamingResponse:
     """
     Subscribe to server-side events for a specific wallet ID.
+    ---
+
+    ***This endpoint can't be called on the swagger UI, as it requires a stream response.***
+
+    User calling this endpoint must have access to the wallet ID,
+    as well as have the appropriate permissions to subscribe to events.
+
+    All events for the wallet will be streamed to the client.
 
     Parameters:
-    -----------
+    ---
         wallet_id: The ID of the wallet subscribing to the events.
         look_back: Specifies the look back window in seconds, to include events before connection established.
     """
@@ -98,9 +106,16 @@ async def get_sse_subscribe_wallet_topic(
 ) -> StreamingResponse:
     """
     Subscribe to server-side events for a specific wallet ID and topic.
+    ---
+    ***This endpoint can't be called on the swagger UI, as it requires a stream response.***
+
+    User calling this endpoint must have access to the wallet ID,
+    as well as have the appropriate permissions to subscribe to events.
+
+    All events with the specified topic for the wallet will be streamed to the client.
 
     Parameters:
-    -----------
+    ---
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         look_back: Specifies the look back window in seconds, to include events before connection established.
@@ -143,8 +158,15 @@ async def get_sse_subscribe_event_with_state(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
+    Subscribe to SSE events wait for a desired state.
+    ---
+
+    ***This endpoint can't be called on the swagger UI, as it requires a stream response.***
+
     Subscribe to server-side events for a specific wallet ID and topic,
     and wait for an event that matches the desired state.
+
+    example: `/{wallet_id}/connection/completed` will wait for a connection event to be completed.
 
     Parameters:
     -----------
@@ -196,8 +218,20 @@ async def get_sse_subscribe_stream_with_fields(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
+    Subscribe to SSE filtered by a field and field ID.
+    ---
+
+    ***This endpoint can't be called on the swagger UI, as it requires a stream response.***
+
     Subscribe to server-side events for a specific wallet ID and topic, and
     filter the events for payloads containing a specific field and field ID pair.
+
+    example: `/{wallet_id}/credentials/connection_id/some-uuid` will filter for credential exchange events
+    with the field, value pair `connection_id:some-uuid`
+
+    The field and field ID pair must be present in the payload (other than state) for the event to be streamed.
+
+    The stream will be closed after the first event is streamed.
 
     Parameters:
     -----------
@@ -250,8 +284,17 @@ async def get_sse_subscribe_event_with_field_and_state(
     auth: AcaPyAuthVerified = Depends(acapy_auth_verified),
 ) -> StreamingResponse:
     """
+    Subscribe to SSE events wait for a desired state with a field filter.
+    ---
+    ***This endpoint can't be called on the swagger UI, as it requires a stream response.***
+
     Wait for a desired state to be reached for some event for this wallet and topic,
     filtering for payloads that contain `field:field_id`.
+
+    example: `/{wallet_id}/credentials/connection_id/some-uuid/done` will wait for a credential exchange event on a
+    specific connection to be done.
+
+    The field and field ID pair must be present in the payload (other than state) for the event to be streamed.
 
     Parameters:
     -----------

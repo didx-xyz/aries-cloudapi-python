@@ -46,7 +46,8 @@ async def sign_sd_jws(
     The endpoint will return the signed SD-JWS with some extra keys needed to reveal the
     selective disclosure attributes.
 
-    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
+    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
+    for the SD-JWT / SD-JWS spec.
 
     Request body:
     ---
@@ -105,7 +106,8 @@ async def verify_sd_jws(
     There are some extra keys needed to reveal the selective disclosure attributes.
     These keys are included in the signed SD-JWS endpoint.
 
-    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html for the SD-JWT / SD-JWS spec.
+    See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
+    for the SD-JWT / SD-JWS spec.
 
     Request body:
     ---

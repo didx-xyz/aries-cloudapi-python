@@ -169,7 +169,7 @@ async def get_sse_subscribe_event_with_state(
     example: `/{wallet_id}/connection/completed` will wait for a connection event to be completed.
 
     Parameters:
-    -----------
+    ---
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         desired_state: The desired state to be reached.
@@ -234,7 +234,7 @@ async def get_sse_subscribe_stream_with_fields(
     The stream will be closed after the first event is streamed.
 
     Parameters:
-    -----------
+    ---
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         field: The field to which the wallet is subscribing.
@@ -297,7 +297,7 @@ async def get_sse_subscribe_event_with_field_and_state(
     The field and field ID pair must be present in the payload (other than state) for the event to be streamed.
 
     Parameters:
-    -----------
+    ---
         wallet_id: The ID of the wallet subscribing to the events.
         topic: The topic to which the wallet is subscribing.
         field: The field to which the wallet is subscribing.

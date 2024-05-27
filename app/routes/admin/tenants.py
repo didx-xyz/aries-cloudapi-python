@@ -58,12 +58,51 @@ group_id_query: Optional[str] = Query(
 )
 
 
-@router.post("", response_model=CreateTenantResponse)
+@router.post("", response_model=CreateTenantResponse, summary="Create a new Tenant")
 async def create_tenant(
     body: CreateTenantRequest,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> CreateTenantResponse:
-    """Create a new tenant."""
+    """
+    Create a new tenant.
+    ---
+
+    Use this endpoint to create a new tenant. The tenant will be created with a wallet and
+    optionally onboarded with roles.
+
+    The roles can be `issuer` or `verifier`. If no roles are provided, the tenant will be created
+    without any roles and be considered a `holder`.
+
+    `extra_settings` is an optional field that allows you to configure the wallet behaviour for advanced users.
+
+    Request body:
+    ---
+        body: CreateTenantRequest
+            wallet_label: str
+                A required alias for the tenant, publicized to other tenants when forming a connection.
+            wallet_name: Optional[str]
+                An optional wallet name. Useful with `get_tenants` to fetch wallets by wallet name.
+            roles: Optional[List[str]]
+                A list of roles to assign to the tenant.
+            image_url: Optional[str]
+                An optional image URL for the tenant.
+            group_id: Optional[str]
+                An optional group identifier.
+            extra_settings: Optional[Dict[str, Union[bool, str]]]
+                Optional per-tenant settings to configure wallet behaviour for advanced users.
+
+    Response body:
+    ---
+        CreateTenantResponse
+            wallet_id: str
+            wallet_label: str
+            wallet_name: str
+            created_at: str
+            image_url: Optional[str]
+            updated_at: str
+            access_token: str
+            group_id: Optional[str]
+    """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Starting tenant creation")
 
@@ -187,13 +226,28 @@ async def create_tenant(
     return response
 
 
-@router.delete("/{wallet_id}")
+@router.delete("/{wallet_id}", summary="Delete a Tenant by wallet ID")
 async def delete_tenant_by_id(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
-    """Delete tenant by id."""
+    """
+    Delete tenant by ID.
+    ---
+    
+    Use this endpoint to delete a tenant by its wallet ID. This will remove the tenant's wallet and any associated
+    credentials, connections, etc.
+
+    Request parameters:
+    ---
+        wallet_id: str
+            The wallet ID of the tenant to delete.
+    
+    Response body:
+    ---
+        None
+    """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.debug("DELETE request received: Deleting tenant by id")
 
@@ -226,12 +280,28 @@ async def delete_tenant_by_id(
         bound_logger.debug("Successfully deleted tenant.")
 
 
-@router.get("/{wallet_id}/access-token", response_model=TenantAuth)
+@router.get("/{wallet_id}/access-token", response_model=TenantAuth, summary="Update auth token by wallet ID")
 async def get_wallet_auth_token(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
+    """
+    Get wallet access token by id.
+    ---
+    Calling this endpoint will invalidate the previous access token for the wallet.
+
+    Request parameters:
+    ---
+        wallet_id: str
+            The wallet ID of the tenant to get the access token for.
+
+    Response body:
+    ---
+        TenantAuth
+            access_token: str
+                The new access token for the wallet.
+    """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.debug("GET request received: Access token for tenant")
 
@@ -256,14 +326,46 @@ async def get_wallet_auth_token(
     return response
 
 
-@router.put("/{wallet_id}", response_model=Tenant)
+@router.put("/{wallet_id}", response_model=Tenant, summary="Update Tenant by wallet ID")
 async def update_tenant(
     wallet_id: str,
     body: UpdateTenantRequest,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
-    """Update tenant by id."""
+    """
+    Update tenant by id.
+    ---
+
+    Use this endpoint to update a tenant by its wallet ID.
+
+    A Holder can't have their roles updated. Only Issuers and Verifiers can have their roles updated.
+
+
+    Request body:
+    ---
+        body: UpdateTenantRequest
+            wallet_label: Optional[str]
+                An optional alias for the tenant, publicized to other tenants when forming a connection.
+            roles: Optional[List[str]]
+                A list of roles to assign to the tenant.
+            image_url: Optional[str]
+                An optional image URL for the tenant.
+            extra_settings: Optional[Dict[str, Union[bool, str]]]
+                Optional per-tenant settings to configure wallet behaviour for advanced users.
+
+    Response body:
+    ---
+        Tenant
+            wallet_id: str
+            wallet_label: str
+            wallet_name: str
+            created_at: str
+            updated_at: Optional[str]
+            image_url: Optional[str]
+            group_id: Optional[str]
+    
+    """
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "body": body})
     bound_logger.debug("PUT request received: Update tenant")
 
@@ -284,13 +386,34 @@ async def update_tenant(
     return response
 
 
-@router.get("/{wallet_id}", response_model=Tenant)
+@router.get("/{wallet_id}", response_model=Tenant, summary="Get Tenant by wallet ID")
 async def get_tenant(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
-    """Get tenant by id."""
+    """
+    Get tenant by id.
+    ---
+
+    Use this endpoint to fetch a tenant by its wallet ID.
+
+    Request parameters:
+    ---
+        wallet_id: str
+            The wallet ID of the tenant to fetch.
+
+    Response body:
+    ---
+        Tenant
+            wallet_id: str
+            wallet_label: str
+            wallet_name: str
+            created_at: str
+            updated_at: Optional[str]
+            image_url: Optional[str]
+            group_id: Optional[str]
+    """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.debug("GET request received: Fetch tenant by id")
 
@@ -307,7 +430,7 @@ async def get_tenant(
     return response
 
 
-@router.get("", response_model=List[Tenant])
+@router.get("", response_model=List[Tenant], summary="Get all Tenants")
 async def get_tenants(
     wallet_name: Optional[str] = None,
     group_id: Optional[str] = group_id_query,
@@ -317,7 +440,31 @@ async def get_tenants(
     descending: bool = descending_query_parameter,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
-    """Get all tenants, or fetch by wallet name."""
+    """
+    Get all tenants, or fetch by wallet name.
+    ---
+
+    Use this endpoint to fetch all tenants, or filter by wallet name and/or group ID.
+
+    Request parameters:
+    ---
+        wallet_name: Optional[str]
+            Filter by wallet name.
+        group_id: Optional[str]
+            Filter by group ID.
+
+    Response body:
+    ---
+        List[Tenant]
+            wallet_id: str
+            wallet_label: str
+            wallet_name: str
+            created_at: str
+            updated_at: Optional[str]
+            image_url: Optional[str]
+            group_id: Optional[str]
+    
+    """
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
     bound_logger.debug(
         "GET request received: Fetch tenants by wallet name and/or group id"

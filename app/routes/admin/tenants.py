@@ -228,7 +228,7 @@ async def delete_tenant_by_id(
     """
     Delete tenant by ID.
     ---
-    
+
     Use this endpoint to delete a tenant by its wallet ID. This will remove the tenant's wallet and any associated
     credentials, connections, etc.
 
@@ -236,7 +236,7 @@ async def delete_tenant_by_id(
     ---
         wallet_id: str
             The wallet ID of the tenant to delete.
-    
+
     Response body:
     ---
         None
@@ -273,7 +273,11 @@ async def delete_tenant_by_id(
         bound_logger.info("Successfully deleted tenant.")
 
 
-@router.get("/{wallet_id}/access-token", response_model=TenantAuth, summary="Update auth token by wallet ID")
+@router.get(
+    "/{wallet_id}/access-token",
+    response_model=TenantAuth,
+    summary="Update auth token by wallet ID",
+)
 async def get_wallet_auth_token(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
@@ -357,7 +361,7 @@ async def update_tenant(
             updated_at: Optional[str]
             image_url: Optional[str]
             group_id: Optional[str]
-    
+
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id, "body": body})
     bound_logger.info("PUT request received: Update tenant")
@@ -452,7 +456,7 @@ async def get_tenants(
             updated_at: Optional[str]
             image_url: Optional[str]
             group_id: Optional[str]
-    
+
     """
     bound_logger = logger.bind(body={"wallet_name": wallet_name, "group_id": group_id})
     bound_logger.info(

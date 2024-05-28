@@ -304,6 +304,8 @@ async def get_tenant(
 async def get_tenants(
     wallet_name: Optional[str] = None,
     group_id: Optional[str] = group_id_query,
+    limit: Optional[int] = Query(100, description="Number of results to return"),
+    offset: Optional[int] = Query(0, description="Offset for pagination"),
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """Get all tenants, or fetch by wallet name."""
@@ -316,6 +318,8 @@ async def get_tenants(
         wallets = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=admin_controller.multitenancy.get_wallets,
+            limit=limit,
+            offset=offset,
             wallet_name=wallet_name,
             group_id=group_id,
         )

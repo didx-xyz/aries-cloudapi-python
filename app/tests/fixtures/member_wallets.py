@@ -54,7 +54,7 @@ async def bob_tenant(request) -> AsyncGenerator[CreateTenantResponse, Any]:
             yield tenant
 
 
-@pytest.fixture(scope="function", params=TestMode.fixture_params)
+@pytest.fixture(scope="module", params=TestMode.fixture_params)
 async def acme_verifier(request) -> AsyncGenerator[CreateTenantResponse, Any]:
     test_mode = request.param
 
@@ -74,7 +74,7 @@ async def acme_verifier(request) -> AsyncGenerator[CreateTenantResponse, Any]:
             yield verifier_tenant
 
 
-@pytest.fixture(scope="module", params=TestMode.fixture_params)
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def faber_issuer(request) -> AsyncGenerator[CreateTenantResponse, Any]:
     test_mode = request.param
 
@@ -94,7 +94,7 @@ async def faber_issuer(request) -> AsyncGenerator[CreateTenantResponse, Any]:
             yield issuer_tenant
 
 
-@pytest.fixture(scope="module", params=TestMode.fixture_params)
+@pytest.fixture(scope="session", params=TestMode.fixture_params)
 async def meld_co_issuer_verifier(request) -> AsyncGenerator[CreateTenantResponse, Any]:
     test_mode = request.param
 

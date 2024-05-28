@@ -437,7 +437,7 @@ async def wait_for_active_registry(
     active_registries = []
     sleep_duration = 0  # First sleep should be 0
 
-    while len(active_registries) < 2:
+    while len(active_registries) < 1:  # We need one of the two registries to be ready
         await asyncio.sleep(sleep_duration)
         active_registries = await get_created_active_registries(controller, cred_def_id)
         sleep_duration = 0.5  # Following sleeps should wait 0.5s before retry

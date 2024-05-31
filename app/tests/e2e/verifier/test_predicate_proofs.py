@@ -24,3 +24,30 @@ async def test_predicate_proofs(
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
     predicate: str,
 ):
+    request_body = {
+        "type": "indy",
+        "protocol_version": protocol_version,
+        "indy_proof_request": {
+            "requested_attributes": {},
+            "requested_predicates": {
+                "over_18": {
+                    "name": "age",
+                    "p_type": predicate,
+                    "p_value": 18,
+                }
+            },
+        },
+        "connection_id": acme_and_alice_connection.acme_connection_id,
+        "save_exchange_record": True,
+    }
+
+    send_proof_response = await send_proof_request(acme_client, request_body)
+
+    thread_id = send_proof_response["thread_id"]
+
+    alice_event = await check_webhook_state(
+        client=alice_member_client,
+        topic="proofs",
+        filter_map={"thread_id": thread_id},
+        state="request-received",
+    )

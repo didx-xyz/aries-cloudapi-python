@@ -92,3 +92,14 @@ async def test_predicate_proofs(
             look_back=5,
         )
         assert acme_proof_event["verified"] is True
+
+    else:
+        with pytest.raises(HTTPException) as exc:
+            await alice_member_client.post(
+                f"{VERIFIER_BASE_PATH}/accept-request",
+                json=proof_accept.model_dump(),
+            )
+        assert exc.value.status_code == 400
+        assert exc.value.detail.startswith(
+            '{"detail":"Failed to send proof presentation: Error creating presentation. Invalid state: Predicate is not satisfied.."}'
+        )

@@ -51,3 +51,44 @@ async def test_predicate_proofs(
         filter_map={"thread_id": thread_id},
         state="request-received",
     )
+
+    alice_proof_id = alice_event["proof_id"]
+
+    requested_credentials = await alice_member_client.get(
+        f"{VERIFIER_BASE_PATH}/proofs/{alice_proof_id}/credentials"
+    )
+
+    referent = requested_credentials.json()[0]["cred_info"]["referent"]
+
+    proof_accept = AcceptProofRequest(
+        proof_id=alice_proof_id,
+        indy_presentation_spec=IndyPresSpec(
+            requested_attributes={},
+            requested_predicates={
+                "over_18": {
+                    "cred_id": referent,
+                }
+            },
+            self_attested_attributes={},
+        ),
+    )
+
+    if predicate in [">", ">="]:
+        response = await alice_member_client.post(
+            f"{VERIFIER_BASE_PATH}/accept-request",
+            json=proof_accept.model_dump(),
+        )
+
+        result = response.json()
+
+        pres_exchange_result = PresentationExchange(**result)
+        assert isinstance(pres_exchange_result, PresentationExchange)
+
+        acme_proof_event = await check_webhook_state(
+            client=acme_client,
+            topic="proofs",
+            state="done",
+            filter_map={"thread_id": thread_id},
+            look_back=5,
+        )
+        assert acme_proof_event["verified"] is True

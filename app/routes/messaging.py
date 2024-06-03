@@ -18,22 +18,25 @@ async def send_messages(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
-    Send basic message.
-    -------------------
+    Send basic message
+    ---
 
-    Send a message to a connection.
+    Send a message to a tenant via a connection. The other tenant will receive
+    the message on topic `basic-message` on their events.
 
-    The payload contains the connection id and the message content.
+    See Hyperledger Rfc
+    [0095-basic-message](https://github.com/hyperledger/aries-rfcs/blob/main/features/0095-basic-message/README.md)
+    for more information.
 
     Request body:
-    -----------
+    ---
         message: Message
             connection_id: str
             content: str
 
     Returns:
-    ---------
-        Status code 204.
+    ---
+        Status code 204
     """
     logger.info("POST request received: Send message")
     request_body = SendMessage(content=message.content)
@@ -54,13 +57,15 @@ async def send_trust_ping(
 ):
     """
     Trust ping
-    ----------
-    Send a trust ping to a connection.
+    ---
+    Send a trust ping to a connection to ensure that the connection is active and ready.
 
-    The payload contains the connection id and an optional comment.
-
-    Parameters:
-    -----------
+    See Hyperledger Rfc 
+    [0048-trust-ping](https://github.com/hyperledger/aries-rfcs/blob/main/features/0048-trust-ping/README.md)
+    for more information.
+    
+    Request body:
+    ---
         TrustPingMsg :
             connection_id: str
                 Connection ID of the connection to send the trust ping to.
@@ -68,7 +73,7 @@ async def send_trust_ping(
                 Optional comment to include in the trust ping.
 
     Returns:
-    --------
+    ---
         PingRequestResponse
             thread_id: str
                 Thread ID of the ping message

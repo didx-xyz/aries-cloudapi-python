@@ -22,33 +22,32 @@ async def create_oob_invitation(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> InvitationRecord:
     """
-    Create an out-of-band invitation.
-    ------------------------------
+    Create an out-of-band invitation
+    ---
 
     The attachment field is used to include a credential offer or a proof request in the invitation.
     The attachment ID is the credential exchange ID or proof request ID.
-    The attachment type is either ```"credential-offer"``` or ```"present-proof"```.
+    The attachment type is either `"credential-offer"` or `"present-proof"`.
 
     The multi_use field is used to determine if the invitation can be used multiple times by different tenants.
-    The ```use_public_did``` field should only be set true, if a tenant with a public DID is creating
+    The `use_public_did` field should only be set true, if a tenant with a public DID is creating
     a connection invitation, then the invitation will use the tenants public did to create the connection invitation
     i.e. the tenant accepting the invitation will connect via public did of tenant that created invitation
 
-    ```multi_use``` can't be set to `true` if an ```attachment``` is provided,
+    `multi_use` can't be set to `true` if an `attachment` is provided,
     as a proof request or credential offer should be sent to one tenant.
 
     Request body:
-    -------------
+    ---
         body:CreateOobInvitation
             alias: Optional[str]
-            multi_use: Optional[bool]
-            use_public_did: Optional[bool]
+            multi_use: bool (default false)
+            use_public_did: bool (default false)
             attachments: Optional[List[Attachment]]
-            handshake_protocols: Optional[List[str]]
             create_connection: Optional[bool]
 
     Returns:
-    --------
+    ---
         InvitationRecord
             The invitation record
     """
@@ -102,17 +101,17 @@ async def accept_oob_invitation(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> OobRecord:
     """
-    Accept out-of-band invitation.
-    ------------------------------
+    Accept out-of-band invitation
+    ---
 
-    As with the connection endpoint, the invitation object from the create-invitation endpoint
+    As with the accept connection invitation endpoint, the invitation object from the create-invitation endpoint
     is passed to this endpoint.
 
     The `invitation_url` in the InvitationRecord can also be used to obtain an invitation; there is a base64 encoded
     string after the "?oob=" parameter in the url, and this can be decoded to obtain the invitation object.
 
     Request body:
-    -------------
+    ---
         body: AcceptOobInvitation
             alias: Optional[str]
             use_existing_connection: Optional[bool]
@@ -120,7 +119,7 @@ async def accept_oob_invitation(
 
 
     Returns:
-    --------
+    ---
         OobRecord
             The out-of-band record
     """
@@ -146,20 +145,20 @@ async def connect_to_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
-    Connect using public DID as implicit invitation.
-    -----------------------------------------------
+    Connect using public DID as implicit invitation
+    ---
 
     Connection will automatically be established with the tenant of public DID.
 
     Request body:
-    -------------
+    ---
         body: ConnectToPublicDid
             public_did: str
 
     Returns:
     ---
         Connection
-            The connection exchange record
+            The connection record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Connect to public DID")

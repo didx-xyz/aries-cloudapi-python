@@ -35,7 +35,7 @@ async def list_credentials(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredInfoList:
     """
-    Fetch a list of credentials from the wallet.
+    Fetch a list of credentials from the wallet
     ---
 
     The WQL or wallet query language parameter can be used to filter credentials returned from the wallet.
@@ -46,7 +46,7 @@ async def list_credentials(
         {"attr::age::value": "21"}
 
     See more on WQL queries
-    [here](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/011-wallet-query-language/README.html).
+    [here](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/011-wallet-query-language/README.html)
 
     Parameters:
     ---
@@ -89,7 +89,7 @@ async def get_credential_record(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> ExtendedIndyCredInfo:
     """
-    Fetch a specific credential by credential ID.
+    Fetch a specific credential by credential ID
     ---
 
     The referent and credential_id are the duplicates of each other.
@@ -125,7 +125,7 @@ async def delete_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Remove a specific indy credential from the wallet by ID.
+    Remove a specific indy credential from the wallet by ID
     ---
 
     Parameters:
@@ -162,7 +162,7 @@ async def get_credential_mime_types(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> AttributeMimeTypesResult:
     """
-    Retrieve attribute MIME types of a specific credential by ID.
+    Retrieve attribute MIME types of a specific credential by ID
     ---
 
     Parameters:
@@ -205,7 +205,7 @@ async def get_credential_revocation_status(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> CredRevokedResult:
     """
-    Query the revocation status of a specific credential by ID.
+    Query the revocation status of a specific credential by ID
     ---
 
     The status can be check on a specific time range by providing the `from_` and `to` parameters.
@@ -264,7 +264,7 @@ async def list_w3c_credentials(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> VCRecordList:
     """
-    Fetch a list of W3C credentials from the wallet.
+    Fetch a list of W3C credentials from the wallet
     ---
     Credential_id and record_id are duplicates of each other.
     The W3C credentials can be filtered by the parameters provided.
@@ -322,7 +322,7 @@ async def get_w3c_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> ExtendedVCRecord:
     """
-    Fetch a specific W3C credential by ID.
+    Fetch a specific W3C credential by ID
     ---
 
     Parameters:
@@ -357,7 +357,7 @@ async def delete_w3c_credential(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Remove a specific W3C credential from the wallet by ID.
+    Remove a specific W3C credential from the wallet by ID
     ---
 
     Parameters:

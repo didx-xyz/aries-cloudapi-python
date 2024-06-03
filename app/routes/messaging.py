@@ -60,10 +60,10 @@ async def send_trust_ping(
     ---
     Send a trust ping to a connection to ensure that the connection is active and ready.
 
-    See Hyperledger Rfc 
+    See Hyperledger Rfc
     [0048-trust-ping](https://github.com/hyperledger/aries-rfcs/blob/main/features/0048-trust-ping/README.md)
     for more information.
-    
+
     Request body:
     ---
         TrustPingMsg :

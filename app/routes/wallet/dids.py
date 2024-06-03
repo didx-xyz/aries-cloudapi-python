@@ -25,7 +25,7 @@ async def create_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ):
     """
-    Create Local DID.
+    Create Local DID
     ---
 
     This endpoint allows you to create a new DID in the wallet.
@@ -60,7 +60,7 @@ async def list_dids(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[DID]:
     """
-    Retrieve list of DIDs.
+    Retrieve list of DIDs
     ---
 
     This endpoint allows you to retrieve a list of DIDs in the wallet.
@@ -90,7 +90,7 @@ async def get_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """
-    Fetch the current public DID.
+    Fetch the current public DID
     ---
 
     This endpoint allows you to fetch the current public DID.
@@ -121,7 +121,7 @@ async def set_public_did(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DID:
     """
-    Set the current public DID.
+    Set the current public DID
     ---
 
     This endpoint allows you to set the current public DID.
@@ -152,7 +152,7 @@ async def rotate_keypair(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Rotate key pair for DID.
+    Rotate key pair for DID
     ---
 
     This endpoint allows you to rotate the key pair for a DID.
@@ -183,7 +183,7 @@ async def get_did_endpoint(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> DIDEndpoint:
     """
-    Get DID endpoint.
+    Get DID endpoint
     ---
 
     This endpoint allows you to fetch the endpoint for a DID.
@@ -216,7 +216,7 @@ async def set_did_endpoint(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> None:
     """
-    Update Endpoint in wallet and on ledger if posted to it.
+    Update Endpoint in wallet and on ledger if posted to it
     ---
 
     This endpoint allows you to update the endpoint for a DID.

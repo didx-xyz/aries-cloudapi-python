@@ -64,7 +64,7 @@ async def create_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> CreateTenantResponse:
     """
-    Create a new tenant.
+    Create a new tenant
     ---
 
     Use this endpoint to create a new tenant. The tenant will be created with a wallet and
@@ -233,7 +233,7 @@ async def delete_tenant_by_id(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ):
     """
-    Delete tenant by ID.
+    Delete tenant by ID
     ---
 
     Use this endpoint to delete a tenant by its wallet ID. This will remove the tenant's wallet and any associated
@@ -291,7 +291,7 @@ async def get_wallet_auth_token(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> TenantAuth:
     """
-    Get wallet access token by id.
+    Get wallet access token by id
     ---
     Calling this endpoint will invalidate the previous access token for the wallet.
 
@@ -338,7 +338,7 @@ async def update_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """
-    Update tenant by id.
+    Update tenant by id
     ---
 
     Use this endpoint to update a tenant by its wallet ID.
@@ -397,7 +397,7 @@ async def get_tenant(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> Tenant:
     """
-    Get tenant by id.
+    Get tenant by id
     ---
 
     Use this endpoint to fetch a tenant by its wallet ID.
@@ -445,7 +445,7 @@ async def get_tenants(
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
 ) -> List[Tenant]:
     """
-    Get all tenants, or fetch by wallet name.
+    Get all tenants, or fetch by wallet name
     ---
 
     Use this endpoint to fetch all tenants, or filter by wallet name and/or group ID.

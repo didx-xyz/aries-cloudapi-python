@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/messaging", tags=["messaging"])
 
 
-@router.post("/send-message")
+@router.post("/send-message", summary="Send a Message")
 async def send_messages(
     message: Message,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -50,7 +50,9 @@ async def send_messages(
     logger.info("Successfully sent message.")
 
 
-@router.post("/trust-ping", response_model=PingRequestResponse)
+@router.post(
+    "/trust-ping", summary="Send Trust Ping", response_model=PingRequestResponse
+)
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),

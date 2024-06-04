@@ -789,7 +789,7 @@ jobs:
         if: steps.pytest.outcome == 'success'
         uses: MishaKav/pytest-coverage-comment@v1.1.51
         with:
-          pytest-coverage-path: ./test_coverage.txt
+          pytest-coverage-path: ./pytest/test_coverage.txt
           junitxml-path: ./pytest/test_output.xml
           create-new-comment: true
           title: "K8s Test Coverage"
@@ -800,7 +800,7 @@ jobs:
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
         uses: MishaKav/pytest-coverage-comment@v1.1.51
         with:
-          pytest-coverage-path: ./test_coverage.txt
+          pytest-coverage-path: ./pytest-regression/test_coverage.txt
           junitxml-path: ./pytest-regression/test_output.xml
           create-new-comment: true
           title: "K8s Regression Test Coverage"

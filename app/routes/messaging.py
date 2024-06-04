@@ -16,7 +16,7 @@ router = APIRouter(prefix="/v1/messaging", tags=["messaging"])
 async def send_messages(
     message: Message,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-):
+) -> None:
     """
     Send basic message
     ---
@@ -56,7 +56,7 @@ async def send_messages(
 async def send_trust_ping(
     trustping_msg: TrustPingMsg,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-):
+) -> PingRequestResponse:
     """
     Trust ping
     ---

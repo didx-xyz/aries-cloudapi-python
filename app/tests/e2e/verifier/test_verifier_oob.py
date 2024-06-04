@@ -11,7 +11,7 @@ from app.routes.oob import router as oob_router
 from app.routes.verifier import AcceptProofRequest, CreateProofRequest
 from app.routes.verifier import router as verifier_router
 from app.services.trust_registry.actors import fetch_actor_by_id
-from app.tests.services.verifier.utils import indy_proof_request
+from app.tests.services.verifier.utils import sample_indy_proof_request
 from app.tests.util.verifier import send_proof_request
 from app.tests.util.webhooks import check_webhook_state, get_wallet_id_from_async_client
 from app.util.string import base64_to_json
@@ -33,7 +33,7 @@ async def test_accept_proof_request_oob(
 ):
     # Create the proof request against aca-py
     create_proof_request = CreateProofRequest(
-        indy_proof_request=indy_proof_request,
+        indy_proof_request=sample_indy_proof_request(),
         comment="some comment",
         protocol_version=protocol_version,
     )

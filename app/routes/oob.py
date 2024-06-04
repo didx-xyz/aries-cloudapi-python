@@ -16,7 +16,11 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/oob", tags=["out-of-band"])
 
 
-@router.post("/create-invitation", response_model=InvitationRecord)
+@router.post(
+    "/create-invitation",
+    summary="Create OOB Invitation",
+    response_model=InvitationRecord,
+)
 async def create_oob_invitation(
     body: Optional[CreateOobInvitation] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -95,7 +99,9 @@ async def create_oob_invitation(
     return invitation
 
 
-@router.post("/accept-invitation", response_model=OobRecord)
+@router.post(
+    "/accept-invitation", summary="Accept OOB Invitation", response_model=OobRecord
+)
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
@@ -139,7 +145,9 @@ async def accept_oob_invitation(
     return oob_record
 
 
-@router.post("/connect-public-did", response_model=Connection)
+@router.post(
+    "/connect-public-did", summary="Connect with Public DID", response_model=Connection
+)
 async def connect_to_public_did(
     body: ConnectToPublicDid,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),

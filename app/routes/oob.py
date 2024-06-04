@@ -123,7 +123,6 @@ async def accept_oob_invitation(
             use_existing_connection: Optional[bool]
             invitation: InvitationMessage
 
-
     Returns:
     ---
         OobRecord
@@ -156,7 +155,7 @@ async def connect_to_public_did(
     Connect using public DID as implicit invitation
     ---
 
-    Connection will automatically be established with the tenant of public DID.
+    A connection will automatically be established with the public DID.
 
     Request body:
     ---

@@ -22,17 +22,19 @@ async def send_messages(
     ---
 
     Send a message to a tenant via a connection. The other tenant will receive
-    the message on topic `basic-message` on their events.
+    the message on topic `basic-message` for their webhook events.
 
-    See Hyperledger Rfc
-    [0095-basic-message](https://github.com/hyperledger/aries-rfcs/blob/main/features/0095-basic-message/README.md)
+    See the Aries
+    [Basic Message Protocol](https://github.com/hyperledger/aries-rfcs/blob/main/features/0095-basic-message/README.md)
     for more information.
 
     Request body:
     ---
         message: Message
             connection_id: str
+                Connection ID of the connection to send the message to.
             content: str
+                The message to send.
 
     Returns:
     ---
@@ -58,12 +60,12 @@ async def send_trust_ping(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> PingRequestResponse:
     """
-    Trust ping
+    Send trust ping
     ---
     Send a trust ping to a connection to ensure that the connection is active and ready.
 
-    See Hyperledger Rfc
-    [0048-trust-ping](https://github.com/hyperledger/aries-rfcs/blob/main/features/0048-trust-ping/README.md)
+    See the Aries
+    [Trust Ping Protocol](https://github.com/hyperledger/aries-rfcs/blob/main/features/0048-trust-ping/README.md)
     for more information.
 
     Request body:
@@ -72,7 +74,7 @@ async def send_trust_ping(
             connection_id: str
                 Connection ID of the connection to send the trust ping to.
             comment: str
-                Optional comment to include in the trust ping.
+                Comment to include in the trust ping.
 
     Returns:
     ---

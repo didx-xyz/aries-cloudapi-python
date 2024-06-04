@@ -16,13 +16,44 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/v1/oob", tags=["out-of-band"])
 
 
-@router.post("/create-invitation", response_model=InvitationRecord)
+@router.post(
+    "/create-invitation",
+    summary="Create OOB Invitation",
+    response_model=InvitationRecord,
+)
 async def create_oob_invitation(
     body: Optional[CreateOobInvitation] = None,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> InvitationRecord:
     """
-    Create connection invitation out-of-band.
+    Create an out-of-band invitation
+    ---
+
+    The attachment field is used to include a credential offer or a proof request in the invitation.
+    The attachment ID is the credential exchange ID or proof request ID.
+    The attachment type is either `"credential-offer"` or `"present-proof"`.
+
+    The multi_use field is used to determine if the invitation can be used multiple times by different tenants.
+    The `use_public_did` field should only be set true, if a tenant with a public DID is creating
+    a connection invitation, then the invitation will use the tenants public did to create the connection invitation
+    i.e. the tenant accepting the invitation will connect via public did of tenant that created invitation
+
+    `multi_use` can't be set to `true` if an `attachment` is provided,
+    as a proof request or credential offer should be sent to one tenant.
+
+    Request body:
+    ---
+        body:CreateOobInvitation
+            alias: Optional[str]
+            multi_use: bool (default false)
+            use_public_did: bool (default false)
+            attachments: Optional[List[Attachment]]
+            create_connection: Optional[bool]
+
+    Returns:
+    ---
+        InvitationRecord
+            The invitation record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Create OOB invitation")
@@ -68,13 +99,34 @@ async def create_oob_invitation(
     return invitation
 
 
-@router.post("/accept-invitation", response_model=OobRecord)
+@router.post(
+    "/accept-invitation", summary="Accept OOB Invitation", response_model=OobRecord
+)
 async def accept_oob_invitation(
     body: AcceptOobInvitation,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> OobRecord:
     """
-    Receive out-of-band invitation.
+    Accept out-of-band invitation
+    ---
+
+    As with the accept connection invitation endpoint, the invitation object from the create-invitation endpoint
+    is passed to this endpoint.
+
+    The `invitation_url` in the InvitationRecord can also be used to obtain an invitation; there is a base64 encoded
+    string after the "?oob=" parameter in the url, and this can be decoded to obtain the invitation object.
+
+    Request body:
+    ---
+        body: AcceptOobInvitation
+            alias: Optional[str]
+            use_existing_connection: Optional[bool]
+            invitation: InvitationMessage
+
+    Returns:
+    ---
+        OobRecord
+            The out-of-band record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Accept OOB invitation")
@@ -92,26 +144,28 @@ async def accept_oob_invitation(
     return oob_record
 
 
-@router.post("/connect-public-did", response_model=Connection)
+@router.post(
+    "/connect-public-did", summary="Connect with Public DID", response_model=Connection
+)
 async def connect_to_public_did(
     body: ConnectToPublicDid,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> Connection:
     """
-    Connect using public DID as implicit invitation.
-
-    Parameters:
+    Connect using public DID as implicit invitation
     ---
-    their_public_did: str
-        Public DID of target entity
 
-    body: Optional[CreateConnFromDIDRequest]
-        Additional request info
+    A connection will automatically be established with the public DID.
+
+    Request body:
+    ---
+        body: ConnectToPublicDid
+            public_did: str
 
     Returns:
     ---
-    Connection
-        The connection record
+        Connection
+            The connection record
     """
     bound_logger = logger.bind(body=body)
     bound_logger.info("POST request received: Connect to public DID")

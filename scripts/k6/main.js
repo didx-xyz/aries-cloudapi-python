@@ -114,7 +114,7 @@ let issuers = [];
 export function setup() {
   const bearerToken = getBearerToken();
   for (let i = 0; i < numIssuers; i++) {
-    const walletName = `xk6issuer_${i}`;
+    const walletName = `k6issuer_${i}`;
     const createIssuerTenantResponse = createIssuerTenant(bearerToken, walletName);
     check(createIssuerTenantResponse, {
       "Issuer tenant created successfully": (r) => r.status === 200
@@ -163,11 +163,6 @@ export default function(data) {
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
-  // const walletIndex = ((__VU - 1) * (options.iterations/options.vus)) + __ITER;
-  // const wallet = wallets[walletIndex];
-  // VU10, ITER50: ((10-1) * (100/10)) + 50 = 50
-  // VU1. ITER50: ((1-1) * (100/10)) + 50 = 50
-
   const walletIndex = getWalletIndex(__VU, __ITER);
   const wallet = wallets[walletIndex];
 
@@ -181,13 +176,7 @@ export default function(data) {
     }
   });
 
-  // Extract and set variables from the response
-  const responseData = JSON.parse(createTenantResponse.body);
-  const walletId = responseData.wallet_id;
-  const holderAccessToken = responseData.access_token;
-
-  // const tempAccessToken = getAccessTokenByWalletId(bearerToken, walletId);
-  // console.log(`Access token for wallet ${walletId}: ${tempAccessToken}`);
+  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(createTenantResponse.body);
   console.log(`Access token for wallet ${walletId}: ${holderAccessToken}`);
 
   const issuerIndex = __ITER % numIssuers;
@@ -203,9 +192,7 @@ export default function(data) {
     }
   });
 
-  const invitationResponseData = JSON.parse(createInvitationResponse.body);
-  const invitationObj = invitationResponseData.invitation;
-  const issuerConnectionId = invitationResponseData.connection_id;
+  const { invitation: invitationObj, connection_id: issuerConnectionId } = JSON.parse(createInvitationResponse.body);
 
   const acceptInvitationResponse = acceptInvitation(holderAccessToken, invitationObj);
   check(acceptInvitationResponse, {
@@ -217,8 +204,7 @@ export default function(data) {
     }
   });
 
-  const acceptInvitationResponseData = JSON.parse(acceptInvitationResponse.body);
-  const holderInvitationConnectionId = acceptInvitationResponseData.connection_id;
+  const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
 
   const waitForSSEEventConnectionResponse = waitForSSEEventConnection(holderAccessToken, walletId, holderInvitationConnectionId);
   check(waitForSSEEventConnectionResponse, {
@@ -240,8 +226,7 @@ export default function(data) {
     }
   });
 
-  const createCredentialResponseData = JSON.parse(createCredentialResponse.body);
-  const threadId = createCredentialResponseData.thread_id;
+  const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
 
   const waitForSSEEventResponse = waitForSSEEvent(holderAccessToken, walletId, threadId);
   check(waitForSSEEventResponse, {
@@ -269,7 +254,7 @@ export default function(data) {
 
   const end = Date.now();
   const duration = end - start;
-  console.log(`Duration for iteration ${__ITER}: ${duration} ms`); // Log duration
+  console.log(`Duration for iteration ${__ITER}: ${duration} ms`);
   mainIterationDuration.add(duration);
 }
 

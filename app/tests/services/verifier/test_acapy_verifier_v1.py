@@ -21,7 +21,7 @@ from app.routes.verifier import (
 )
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.tests.services.verifier.utils import (
-    indy_proof_request,
+    sample_indy_proof_request,
     v10_presentation_exchange_records,
 )
 from app.tests.util.mock import to_async
@@ -41,7 +41,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient):
     created_proof_request = await VerifierV1.create_proof_request(
         controller=mock_agent_controller,
         create_proof_request=CreateProofRequest(
-            indy_proof_request=indy_proof_request,
+            indy_proof_request=sample_indy_proof_request(),
             protocol_version=PresentProofProtocolVersion.V1,
         ),
     )
@@ -66,7 +66,7 @@ async def test_create_proof_request_exception(
         await VerifierV1.create_proof_request(
             controller=mock_agent_controller,
             create_proof_request=CreateProofRequest(
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
                 protocol_version=PresentProofProtocolVersion.V1,
             ),
         )
@@ -96,7 +96,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient):
         controller=mock_agent_controller,
         send_proof_request=SendProofRequest(
             connection_id="abcde",
-            indy_proof_request=indy_proof_request,
+            indy_proof_request=sample_indy_proof_request(),
             protocol_version=PresentProofProtocolVersion.V1,
         ),
     )
@@ -121,7 +121,7 @@ async def test_send_proof_request_exception(
         await VerifierV1.send_proof_request(
             controller=mock_agent_controller,
             send_proof_request=SendProofRequest(
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
                 protocol_version=PresentProofProtocolVersion.V1,
                 connection_id="abc",
             ),

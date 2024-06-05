@@ -10,7 +10,7 @@ from app.dependencies.auth import AcaPyAuth
 from app.exceptions.cloudapi_exception import CloudApiException
 from app.services.verifier.acapy_verifier_v1 import VerifierV1
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
-from app.tests.services.verifier.utils import indy_pres_spec, indy_proof_request
+from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request
 from app.tests.util.mock import to_async
 from app.util import acapy_verifier_utils
 from shared.models.presentation_exchange import PresentationExchange
@@ -81,7 +81,7 @@ async def test_send_proof_request_v1(
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
-        indy_proof_request=indy_proof_request,
+        indy_proof_request=sample_indy_proof_request(),
         protocol_version="v1",
     )
 
@@ -128,7 +128,7 @@ async def test_send_proof_request_v2(
 
     send_proof_request = test_module.SendProofRequest(
         connection_id="abcde",
-        indy_proof_request=indy_proof_request,
+        indy_proof_request=sample_indy_proof_request(),
         protocol_version="v2",
     )
 
@@ -158,7 +158,7 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
     result = await test_module.create_proof_request(
         body=test_module.CreateProofRequest(
             protocol_version="v1",
-            indy_proof_request=indy_proof_request,
+            indy_proof_request=sample_indy_proof_request(),
             connection_id="abcde",
         ),
         auth=mock_tenant_auth,
@@ -172,7 +172,7 @@ async def test_create_proof_request(mock_tenant_auth: AcaPyAuth):
     result = await test_module.create_proof_request(
         body=test_module.CreateProofRequest(
             protocol_version="v2",
-            indy_proof_request=indy_proof_request,
+            indy_proof_request=sample_indy_proof_request(),
             connection_id="abcde",
         ),
         auth=mock_tenant_auth,

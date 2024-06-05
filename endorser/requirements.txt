@@ -6,4 +6,4 @@ loguru~=0.7.2
 orjson~=3.10.0
 pydantic~=2.7.0
 redis~=5.1.0b5
-uvicorn[standard]~=0.29.0
+uvicorn[standard]~=0.30.0

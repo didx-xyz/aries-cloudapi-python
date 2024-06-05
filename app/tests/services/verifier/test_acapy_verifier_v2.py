@@ -22,7 +22,7 @@ from app.routes.verifier import (
 from app.services.verifier.acapy_verifier_v2 import VerifierV2
 from app.tests.services.verifier.utils import (
     dif_proof_request,
-    indy_proof_request,
+    sample_indy_proof_request,
     v20_presentation_exchange_records,
 )
 from app.tests.util.mock import to_async
@@ -46,7 +46,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient, proof_ty
 
         create_proof_request = CreateProofRequest(
             indy_proof_request=(
-                indy_proof_request if proof_type.value == "indy" else None
+                sample_indy_proof_request() if proof_type.value == "indy" else None
             ),
             dif_proof_request=(
                 dif_proof_request if proof_type.value == "ld_proof" else None
@@ -68,7 +68,7 @@ async def test_create_proof_request(mock_agent_controller: AcaPyClient, proof_ty
             created_proof_request = await VerifierV2.create_proof_request(
                 controller=mock_agent_controller,
                 create_proof_request=CreateProofRequest(
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                     type=proof_type,
                     protocol_version=PresentProofProtocolVersion.V2,
                 ),
@@ -93,7 +93,7 @@ async def test_create_proof_request_exception(
         await VerifierV2.create_proof_request(
             controller=mock_agent_controller,
             create_proof_request=CreateProofRequest(
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
                 protocol_version=PresentProofProtocolVersion.V2,
             ),
         )
@@ -115,7 +115,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient, proof_type
         send_proof_request = SendProofRequest(
             type=proof_type,
             indy_proof_request=(
-                indy_proof_request if proof_type.value == "indy" else None
+                sample_indy_proof_request() if proof_type.value == "indy" else None
             ),
             dif_proof_request=(
                 dif_proof_request if proof_type.value == "ld_proof" else None
@@ -140,7 +140,7 @@ async def test_send_proof_request(mock_agent_controller: AcaPyClient, proof_type
                 send_proof_request=SendProofRequest(
                     type=proof_type,
                     connection_id="abcde",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                     protocol_version=PresentProofProtocolVersion.V2,
                 ),
             )
@@ -170,7 +170,7 @@ async def test_send_proof_request_exception(
         await VerifierV2.send_proof_request(
             controller=mock_agent_controller,
             send_proof_request=SendProofRequest(
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
                 protocol_version=PresentProofProtocolVersion.V2,
                 connection_id="abc",
             ),

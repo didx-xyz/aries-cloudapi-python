@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 import pytest
@@ -43,7 +44,7 @@ async def test_proof_revoked_credential(
         "indy_proof_request": {
             "name": "Proof of SPEED",
             "version": "1.0",
-            "non_revoked": {},  # Empty means it must be non_revoked at time of proof
+            "non_revoked": {"to": int(time.time())},
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",
@@ -146,7 +147,7 @@ async def test_regression_proof_revoked_credential(
         "comment": "Test proof of revocation",
         "type": "indy",
         "indy_proof_request": {
-            "non_revoked": {},  # Empty means it must be non_revoked at time of proof
+            "non_revoked": {"to": int(time.time())},
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",

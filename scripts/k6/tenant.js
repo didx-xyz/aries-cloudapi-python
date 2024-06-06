@@ -2,41 +2,13 @@ import http from 'k6/http';
 import sse from "k6/x/sse"
 import { check } from 'k6';
 
-// export function checkTenantExists(bearerToken, wallet) {
-//   const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants?wallet_name=${wallet}`;
-//   const params = {
-//     headers: {
-//       'Authorization': `Bearer ${bearerToken}`,
-//       'Content-Type': 'application/json'
-//     }
-//   };
-
-//   try {
-//     let response = http.get(url, params);
-
-//     if (response.status >= 200 && response.status < 300) {
-//       // Request was successful
-//       const responseData = JSON.parse(response.body)[0]; // Take the first item of the array
-//       const walletId = responseData?.wallet_id; // Use optional chaining
-
-//       if (walletId !== undefined) {
-//         console.log('wallet_id is already defined - skipping Issuer creation...');
-//       } else {
-//         console.log('wallet_id is undefined');
-//       }
-//       return walletId;
-//     } else {
-//       // Request failed
-//       console.error(`Request failed with status ${response.status}`);
-//       console.error(`Response body: ${response.body}`);
-//       return null;
-//     }
-//   } catch (error) {
-//     // Handle any errors that occurred during the request
-//     console.error(`Error checking if tenant exists: ${error.message}`);
-//     throw error;
-//   }
-// }
+function logError(response, requestBody) {
+  console.error(`Response status: ${response.status}`);
+  console.error(`Response body: ${response.body}`);
+  if (requestBody) {
+    console.error(`Request body: ${requestBody}`);
+  }
+}
 
 export function createTenant(bearerToken, wallet) {
   const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants`;
@@ -46,7 +18,6 @@ export function createTenant(bearerToken, wallet) {
     group_id: "Some Group Id",
     image_url: "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png"
   });
-
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
@@ -54,39 +25,33 @@ export function createTenant(bearerToken, wallet) {
     }
   };
 
-  try {
-    let response = http.post(url, payload, params);
-
-    if (response.status >= 200 && response.status < 300) {
-      // Request was successful
-      const responseData = JSON.parse(response.body);
-      const walletId = responseData.wallet_id;
-      const accessToken = responseData.access_token;
-
-      // Store walletId and accessToken for the current VU and iteration
-      const vuKey = `vu_${__VU}`;
-      const iterKey = `iter_${__ITER}`;
-
-      if (!global[vuKey]) {
-        global[vuKey] = {};
-      }
-
-      global[vuKey][iterKey] = {
-        walletId: walletId,
-        accessToken: accessToken
-      };
-
-      return response;
-    } else {
-      // Request failed
-      console.error(`Request failed with status ${response.status}`);
-      console.error(`Response body: ${response.body}`);
-      throw new Error(`Failed to create tenant: ${response.status}`);
+  let response = http.post(url, payload, params);
+  if (response.status >= 200 && response.status < 300) {
+    // Request was successful
+    const { wallet_id: walletId, access_token: accessToken } = JSON.parse(response.body);
+    // Store walletId and accessToken for the current VU and iteration
+    const vuKey = `vu_${__VU}`;
+    const iterKey = `iter_${__ITER}`;
+    if (!global[vuKey]) {
+      global[vuKey] = {};
     }
-  } catch (error) {
-    // Handle any errors that occurred during the request
-    console.error(`Error creating tenant: ${error.message}`);
-    throw error;
+    global[vuKey][iterKey] = {
+      walletId: walletId,
+      accessToken: accessToken
+    };
+    return response;
+  } else {
+    // Request failed
+    logError(response, payload);
+    throw new Error(`Failed to create tenant`);
+  }
+}
+
+function logError(response, requestBody) {
+  console.error(`Response status: ${response.status}`);
+  console.error(`Response body: ${response.body}`);
+  if (requestBody) {
+    console.error(`Request body: ${requestBody}`);
   }
 }
 

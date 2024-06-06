@@ -47,57 +47,34 @@ export function createTenant(bearerToken, wallet) {
   }
 }
 
-function logError(response, requestBody) {
-  console.error(`Response status: ${response.status}`);
-  console.error(`Response body: ${response.body}`);
-  if (requestBody) {
-    console.error(`Request body: ${requestBody}`);
-  }
-}
-
 export function getWalletIdByWalletName(bearerToken, walletName) {
   const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants?wallet_name=${walletName}`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
-    },
+      'Content-Type': 'application/json'
+    }
   };
 
-  try {
-    let response = http.get(url, params);
-
-    if (response.status >= 200 && response.status < 300) {
-      // Request was successful
-      const responseData = JSON.parse(response.body);
-
-      // Check if the response is an array and take the first item
-      if (Array.isArray(responseData) && responseData.length > 0) {
-        const firstItem = responseData[0];
-        let walletId;
-
-        // Safely access wallet_id without optional chaining
-        if (firstItem && firstItem.hasOwnProperty('wallet_id')) {
-          walletId = firstItem.wallet_id;
-        }
-
-        if (walletId) {
-          return walletId;
-        } else {
-          console.warn(`No wallet_id found in the response for wallet_name ${walletName}`);
-        }
-      } else {
-        console.warn(`Unexpected response format for wallet_name ${walletName}: ${response.body}`);
+  let response = http.get(url, params);
+  if (response.status >= 200 && response.status < 300) {
+    // Request was successful
+    const responseData = JSON.parse(response.body);
+    // Check if the response is an array and take the first item
+    if (Array.isArray(responseData) && responseData.length > 0) {
+      const firstItem = responseData[0];
+      // Safely access wallet_id without optional chaining
+      if (firstItem && firstItem.hasOwnProperty('wallet_id')) {
+        return firstItem.wallet_id;
       }
-    } else {
-      // Request failed
-      console.error(`Request failed with status ${response.status}`);
-      console.error(`Response body: ${response.body}`);
-      throw new Error(`Failed to get access token: ${response.status}`);
     }
-  } catch (error) {
-    // Handle any errors that occurred during the request
-    console.error(`Error getting access token: ${error.message}`);
-    throw error;
+    console.warn(`Wallet not found for wallet_name ${walletName}`);
+    return null;
+  } else {
+    // Request failed
+    logError(response);
+    console.warn(`Request failed for wallet_name ${walletName}`);
+    return null;
   }
 }
 
@@ -177,7 +154,13 @@ export function createIssuerTenant(bearerToken, walletName) {
 
   try {
     let response = http.post(url, payload, params);
-    return response;
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    } else {
+      logError(response);
+      console.warn(`Request failed for wallet_name ${walletName}`);
+      return null;
+    }
   } catch (error) {
     console.error(`Error creating issuer tenant: ${error.message}`);
     throw error;
@@ -287,7 +270,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
   }
 }
 
-export function createCredentialDefinition(bearerToken, issuerAccessToken) {
+export function createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag) {
   const url = `https://${__ENV.cloudapi_url}/tenant/v1/definitions/credentials`;
   const params = {
     headers: {
@@ -299,13 +282,14 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken) {
   try {
     // Construct the request body including the invitation object
     const requestBody = JSON.stringify({
-      "tag": "k6",
+      "tag": credDefTag,
       "schema_id": "Bo9W24g9VmLCnWopu5LJJm:2:ritalin:0.1.0",
       "support_revocation": true,
       "revocation_registry_size": 100
     });
 
     let response = http.post(url, requestBody, params);
+    console.log(`Response body: ${response.body}`);
     return response;
   } catch (error) {
     console.error(`Error creating credential definition: ${error.message}`);
@@ -434,4 +418,32 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
   }
 
   return eventReceived;
+}
+
+export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag) {
+  const url = `https://${__ENV.cloudapi_url}/tenant/v1/definitions/credentials?schema_version=0.1.0`;
+  const params = {
+    headers: {
+      'Authorization': `Bearer ${bearerToken}`,
+      'x-api-key': issuerAccessToken
+    }
+  };
+
+  let response = http.get(url, params);
+  if (response.status >= 200 && response.status < 300) {
+    const responseData = JSON.parse(response.body);
+    const matchingItem = responseData.find(item => item.tag === credDefTag);
+
+    if (matchingItem) {
+      console.log(`Credential definition found for tag ${credDefTag}: ${matchingItem.id}`);
+      return matchingItem.id;
+    } else {
+      console.warn(`Credential definition not found for tag ${credDefTag}`);
+      // logError(response);
+      return false;
+    }
+  } else {
+    logError(response);
+    throw new Error(`Failed to check credential definition existence`);
+  }
 }

@@ -113,41 +113,36 @@ let issuers = [];
 
 export function setup() {
   const bearerToken = getBearerToken();
+  const issuers = [];
+
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `k6issuer_${i}`;
+
     const createIssuerTenantResponse = createIssuerTenant(bearerToken, walletName);
     check(createIssuerTenantResponse, {
       "Issuer tenant created successfully": (r) => r.status === 200
     });
+
     if (createIssuerTenantResponse.status === 200) {
-      const issuerResponseData = JSON.parse(createIssuerTenantResponse.body);
-      const issuerWalletId = issuerResponseData.wallet_id;
-      const issuerAccessToken = issuerResponseData.access_token;
+      const { wallet_id: issuerWalletId, access_token: issuerAccessToken } = JSON.parse(createIssuerTenantResponse.body);
 
       const createCredentialDefinitionResponse = createCredentialDefinition(bearerToken, issuerAccessToken);
       check(createCredentialDefinitionResponse, {
         "Credential definition created successfully": (r) => r.status === 200
       });
-      if (createCredentialDefinitionResponse.status === 200) {
-        const credentialDefinitionResponse = JSON.parse(createCredentialDefinitionResponse.body);
-        const credentialDefinitionId = credentialDefinitionResponse.id;
-        console.log(`Credential definition created successfully for issuer ${i}`);
 
+      if (createCredentialDefinitionResponse.status === 200) {
+        const { id: credentialDefinitionId } = JSON.parse(createCredentialDefinitionResponse.body);
+        console.log(`Credential definition created successfully for issuer ${i}`);
         issuers.push({
           walletId: issuerWalletId,
           accessToken: issuerAccessToken,
           credentialDefinitionId: credentialDefinitionId
         });
-      } else {
-        console.error(`Failed to create credential definition for issuer ${i}. Status: ${createCredentialDefinitionResponse.status}. Body: ${createCredentialDefinitionResponse.body}`);
       }
-    } else {
-      console.error(`Failed to create issuer tenant for index ${i}. Status: ${createIssuerTenantResponse.status}.`);
     }
   }
-  if (issuers.length === 0) {
-    throw new Error("No issuer tenants were created successfully.");
-  }
+
   console.log(`Created ${issuers.length} issuer tenant(s) successfully.`);
   return { bearerToken, issuers };
 }

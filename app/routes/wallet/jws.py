@@ -32,12 +32,21 @@ async def sign_jws(
     Sign JSON Web Signature (JWS)
     ---
 
+    This endpoint allows the user to sign a jason payload into a Jason Web Signature (JWS)
+    using a DID or a verification method.
+
+    When populating the the body of the request, the user must populate either the `did`
+    or the `verification_method` field.
+
     The difference between the did and verification_method fields is
-    that if the `did` field is used, acapy will make an educated guess
+    that if the `did` field is used, the Aries agent will make an educated guess
     about which key associated with the did to use to sign the jwt.
 
     While with the `verification_method` field, the user is explicitly
     specifying which key to use to sign the jwt.
+
+    The `header` field is optional and can be used to specify the header of the JWS.
+    The `typ`, `alg`, and `kid` fields are automatically populated by the Aries agent.
 
     See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
 
@@ -51,7 +60,8 @@ async def sign_jws(
 
     Returns:
     ---
-        JWSCreateResponse: The signed JWS.
+        JWSCreateResponse:
+          The signed JWS string.
     """
     bound_logger = logger.bind(
         # Do not log payload:
@@ -94,6 +104,11 @@ async def verify_jws(
     Verify JSON Web Signature (JWS)
     ---
 
+    This endpoint allows the user to verify and decode the JWS string gotten from the sign endpoint.
+    Passing the JWS string to this endpoint will return the payload and headers of the JWS.
+    
+    It will also return the validity of the JWS.
+
     See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
 
     Request body:
@@ -104,11 +119,16 @@ async def verify_jws(
     Returns:
     ---
         JWSVerifyResponse
-            payload: dict: The payload of the JWS.
-            headers: dict: The headers of the JWS.
-            kid: str: The key id of the signer.
-            valid: bool: Whether the JWS is valid.
-            error: str: Error text.
+            payload: dict:
+              The payload of the JWS.
+            headers: dict:
+              The headers of the JWS.
+            kid: str:
+              The key id of the signer.
+            valid: bool:
+              Whether the JWS is valid.
+            error: str:
+              Error text.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Verify JWS")

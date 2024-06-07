@@ -10,7 +10,7 @@ class JWSCreateRequest(BaseModel):
         None, examples=["did:key:z6MkjCjxuTXxVPWS9JYj2ZiKtKvSS1srC6kBRes4WCB2mSWq"]
     )
     headers: Dict = Field(default={})
-    payload: Dict = Field(default={})
+    payload: Dict = Field(description="Payload to sign")
     verification_method: Optional[str] = Field(
         None,
         description="Information used for proof verification",
@@ -26,8 +26,20 @@ class JWSCreateRequest(BaseModel):
         did, verification_method = values.get("did"), values.get("verification_method")
         if not did and not verification_method:
             raise CloudApiValueError(
-                "At least one of `did` or `verification_method` must be populated."
+                "One of `did` or `verification_method` must be populated."
             )
+        if did and verification_method:
+            raise CloudApiValueError(
+                "Only one of `did` or `verification_method` can be populated."
+            )
+        return values
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_payload_is_populated(cls, values):
+        payload = values.get("payload")
+        if not payload:
+            raise CloudApiValueError("`payload` must be populated.")
         return values
 
 

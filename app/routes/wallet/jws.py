@@ -106,7 +106,7 @@ async def verify_jws(
 
     This endpoint allows the user to verify and decode the JWS string gotten from the sign endpoint.
     Passing the JWS string to this endpoint will return the payload and headers of the JWS.
-    
+
     It will also return the validity of the JWS.
 
     See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.

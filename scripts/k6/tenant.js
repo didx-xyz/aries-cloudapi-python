@@ -15,7 +15,7 @@ function logError(response, requestBody) {
 }
 
 export function createTenant(bearerToken, wallet) {
-  const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants`;
   const payload = JSON.stringify({
     wallet_label: wallet.wallet_label,
     wallet_name: wallet.wallet_name,
@@ -52,7 +52,7 @@ export function createTenant(bearerToken, wallet) {
 }
 
 export function getWalletIdByWalletName(bearerToken, walletName) {
-  const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants?wallet_name=${walletName}`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants?wallet_name=${walletName}`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
@@ -85,7 +85,7 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
 
 export function getAccessTokenByWalletId(bearerToken, walletId) {
   let start = new Date();
-  const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants/${walletId}/access-token`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants/${walletId}/access-token`;
 
   const params = {
     headers: {
@@ -114,7 +114,7 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
 }
 
 export function deleteTenant(bearerToken, walletId) {
-  const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants/${walletId}`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants/${walletId}`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
@@ -147,7 +147,7 @@ export function deleteTenant(bearerToken, walletId) {
 }
 
 export function createIssuerTenant(bearerToken, walletName) {
-  const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant-admin/v1/tenants`;
   const payload = JSON.stringify({
     wallet_label: walletName,
     wallet_name: walletName,
@@ -178,7 +178,7 @@ export function createIssuerTenant(bearerToken, walletName) {
 }
 
 export function createInvitation(bearerToken, issuerAccessToken) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/connections/create-invitation`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/connections/create-invitation`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
@@ -196,7 +196,7 @@ export function createInvitation(bearerToken, issuerAccessToken) {
 }
 
 export function acceptInvitation(holderAccessToken, invitationObj) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/connections/accept-invitation`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/connections/accept-invitation`;
   const params = {
     headers: {
       'x-api-key': holderAccessToken,
@@ -220,7 +220,7 @@ export function acceptInvitation(holderAccessToken, invitationObj) {
 }
 
 export function createCredential(bearerToken, issuerAccessToken, credentialDefinitionId, issuerConnectionId) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/issuer/credentials`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
@@ -263,7 +263,7 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
 }
 
 export function acceptCredential(holderAccessToken, credentialId) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/issuer/credentials/${credentialId}/request`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials/${credentialId}/request`;
   const params = {
     headers: {
       'x-api-key': holderAccessToken,
@@ -281,7 +281,7 @@ export function acceptCredential(holderAccessToken, credentialId) {
 }
 
 export function createCredentialDefinition(bearerToken, issuerAccessToken, credDefTag) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/definitions/credentials`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,
@@ -308,7 +308,7 @@ export function createCredentialDefinition(bearerToken, issuerAccessToken, credD
 }
 
 export function getCredentialIdByThreadId(holderAccessToken, threadId) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/issuer/credentials`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/issuer/credentials`;
   const params = {
     headers: {
       'x-api-key': holderAccessToken,
@@ -339,7 +339,7 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
 }
 
 export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
-  const sseUrl = `https://${__ENV.cloudapi_url}/tenant/v1/sse/${holderWalletId}/credentials/thread_id/${threadId}/offer-received`;
+  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/credentials/thread_id/${threadId}/offer-received`;
   const headers = {
     'x-api-key': holderAccessToken,
   };
@@ -385,7 +385,7 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
 }
 
 export function waitForSSEEventConnection(holderAccessToken, holderWalletId, invitationConnectionId) {
-  const sseUrl = `https://${__ENV.cloudapi_url}/tenant/v1/sse/${holderWalletId}/connections/connection_id/${invitationConnectionId}/completed`;
+  const sseUrl = `${__ENV.CLOUDAPI_URL}/tenant/v1/sse/${holderWalletId}/connections/connection_id/${invitationConnectionId}/completed`;
   const headers = {
     'x-api-key': holderAccessToken,
   };
@@ -431,7 +431,7 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
 }
 
 export function getCredentialDefinitionId(bearerToken, issuerAccessToken, credDefTag) {
-  const url = `https://${__ENV.cloudapi_url}/tenant/v1/definitions/credentials?schema_version=0.1.0`;
+  const url = `${__ENV.CLOUDAPI_URL}/tenant/v1/definitions/credentials?schema_version=0.1.0`;
   const params = {
     headers: {
       'Authorization': `Bearer ${bearerToken}`,

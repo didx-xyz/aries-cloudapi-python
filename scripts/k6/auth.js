@@ -1,9 +1,9 @@
 import http from 'k6/http';
 
 export function getBearerToken() {
-  const url = `https://${__ENV.cloudapi_url}/${__ENV.oauth_endpoint}`;
-  const clientId = __ENV.client_id;
-  const clientSecret = __ENV.client_secret;
+  const url = `https://${__ENV.CLOUDAPI_URL}/${__ENV.OAUTH_ENDPOINT}`;
+  const clientId = __ENV.CLIENT_ID;
+  const clientSecret = __ENV.CLIENT_SECRET;
   const requestBody = `grant_type=client_credentials&client_id=${clientId}&client_secret=${clientSecret}`;
 
   let response = http.post(url, requestBody, {

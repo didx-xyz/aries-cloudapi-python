@@ -903,5 +903,6 @@ jobs:
             -e CLIENT_ID=${{ secrets.CLIENT_ID }} \
             -e CLIENT_SECRET=${{ secrets.CLIENT_SECRET }} \
             -e OAUTH_ENDPOINT=${{ secrets.OAUTH_ENDPOINT }} \
+            -e SKIP_DELETE_ISSUERS=true \
             ghcr.io/${{ github.repository_owner }}/xk6:${{ steps.meta.outputs.version }} \
             run /scripts/main.js

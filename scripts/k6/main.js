@@ -20,8 +20,8 @@ import {
 } from './tenant.js';
 
 export let options = {
-  vus: 5, // number of VUs to run
-  iterations: 50, // total number of iterations (global)
+  vus: 2, // number of VUs to run
+  iterations: 2, // total number of iterations (global)
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     'http_req_duration{scenario:default}': [`max>=0`],
@@ -40,8 +40,8 @@ const wallets = new SharedArray('wallets', function() {
   const walletsArray = [];
   for (let i = 0; i < options.iterations; i++) {
     walletsArray.push({
-      wallet_label: `k6 holder ${i}`,
-      wallet_name: `k6_wallet_${i}`
+      wallet_label: `xk6 holder ${i}`,
+      wallet_name: `xk6_wallet_${i}`
     });
   }
   return walletsArray;

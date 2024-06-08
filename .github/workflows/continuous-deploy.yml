@@ -840,33 +840,56 @@ jobs:
         env:
           IMAGE_TAG: ${{ needs.build.outputs.image_version }}
   load-test:
-    name: Load Test
+    if: ${{ github.event.pull_request.draft }}
+    name: k6
+    permissions:
+      id-token: write
+      packages: write
     runs-on: ubuntu-latest
 
+    concurrency:
+      group: cicd-build-xk6-${{ github.ref }}
+      cancel-in-progress: false
+
+    outputs:
+      image_version: ${{ steps.meta.outputs.version }}
+
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
         with:
-          go-version: '1.22'  # Specify your required Go version
-          check-latest: true
-          cache-dependency-path: '**/go.sum'  # Glob pattern for go.sum files
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
 
-      - name: Install xk6
-        run: |
-          go install go.k6.io/xk6/cmd/xk6@latest
-          xk6 build --output ./xk6 \
-            --with github.com/avitalique/xk6-file@latest \
-            --with github.com/phymbert/xk6-sse
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/xk6
+          tags: |
+            type=raw,value=latest,enable=${{ github.event.repository.default_branch == github.ref_name }}
+            type=sha,prefix=pr-${{ github.event.pull_request.number }}-,priority=601,enable=${{ github.event_name == 'pull_request' }}
+            type=sha,prefix={{branch}}-,priority=601,enable=${{ github.event_name == 'push' && github.ref_type == 'branch' }}
+            type=ref,event=branch,priority=600
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
-      - name: Run xk6
-        run: |
-          ./xk6 -v
-
-      # - name: Upload xk6 binary
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: xk6
-      #     path: ./xk6
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v5
+        with:
+          context: .  # Context is the root of the repository
+          file: ./scripts/k6/Dockerfile  # Dockerfile name
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            type=gha,scope=build-xk6
+            type=registry,ref=ghcr.io/${{ github.repository_owner }}/xk6:latest
+          cache-to: type=gha,mode=max,scope=build-xk6

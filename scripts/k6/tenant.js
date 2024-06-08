@@ -1,6 +1,10 @@
 import http from 'k6/http';
 import sse from "k6/x/sse"
 import { check } from 'k6';
+import { Trend, Counter } from 'k6/metrics';
+import { sleep } from 'k6';
+
+let customDuration = new Trend('custom_duration', true);
 
 function logError(response, requestBody) {
   console.error(`Response status: ${response.status}`);
@@ -69,6 +73,7 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
       }
     }
     console.warn(`Wallet not found for wallet_name ${walletName}`);
+    console.warn(`Response body: ${response.body}`);
     return null;
   } else {
     // Request failed
@@ -79,6 +84,7 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
 }
 
 export function getAccessTokenByWalletId(bearerToken, walletId) {
+  let start = new Date();
   const url = `https://${__ENV.cloudapi_url}/tenant-admin/v1/tenants/${walletId}/access-token`;
 
   const params = {
@@ -93,13 +99,17 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
     // Request was successful
     const responseData = JSON.parse(response.body);
     const accessToken = responseData.access_token;
+    let end = new Date();
+    customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
     return accessToken;
   } else {
     // Request failed
     console.error(`Request failed with status ${response.status}`);
     console.error(`Response body: ${response.body}`);
     // throw new Error(`Failed to get access token: ${response.body}`);
-    return response.body;
+    let end = new Date();
+    customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
+    return null;
   }
 }
 

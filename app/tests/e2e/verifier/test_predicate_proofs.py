@@ -17,11 +17,11 @@ VERIFIER_BASE_PATH = router.prefix
 @pytest.mark.parametrize("protocol_version", ["v1", "v2"])
 @pytest.mark.parametrize("predicate", ["<", ">", "<=", ">="])
 async def test_predicate_proofs(
-    protocol_version: str,
     acme_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
     alice_member_client: RichAsyncClient,
     issue_credential_to_alice: CredentialExchange,  # pylint: disable=unused-argument
+    protocol_version: str,
     predicate: str,
 ):
     request_body = {
@@ -96,10 +96,11 @@ async def test_predicate_proofs(
     else:
         with pytest.raises(HTTPException) as exc:
             await alice_member_client.post(
-                f"{VERIFIER_BASE_PATH}/accept-request",
-                json=proof_accept.model_dump(),
+                f"{VERIFIER_BASE_PATH}/accept-request", json=proof_accept.model_dump()
             )
+
         assert exc.value.status_code == 400
         assert exc.value.detail.startswith(
-            '{"detail":"Failed to send proof presentation: Error creating presentation. Invalid state: Predicate is not satisfied.."}'
+            '{"detail":"Failed to send proof presentation: '
+            'Error creating presentation. Invalid state: Predicate is not satisfied.."}'
         )

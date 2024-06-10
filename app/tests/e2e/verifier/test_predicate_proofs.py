@@ -102,5 +102,5 @@ async def test_predicate_proofs(
         assert exc.value.status_code == 400
         assert exc.value.detail.startswith(
             '{"detail":"Failed to send proof presentation: '
-            'Error creating presentation. Invalid state: Predicate is not satisfied.."}'
+            'Error creating presentation. Invalid state: Predicate is not satisfied."}'
         )

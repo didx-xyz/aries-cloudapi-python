@@ -208,7 +208,7 @@ async def test_clear_pending_revocations_failure(mock_agent_controller: AcaPyCli
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to clear pending revocations: {error_message}.",
+        match=f"Failed to clear pending revocations: {error_message}",
     ) as exc:
         await rg.clear_pending_revocations(
             controller=mock_agent_controller,
@@ -263,7 +263,7 @@ async def test_get_credential_revocation_record_api_exception(
     ).thenRaise(ApiException(reason=error_message, status=status_code))
 
     with pytest.raises(
-        CloudApiException, match=f"Failed to get revocation status: {error_message}."
+        CloudApiException, match=f"Failed to get revocation status: {error_message}"
     ) as exc_info:
         await rg.get_credential_revocation_record(
             controller=mock_agent_controller,

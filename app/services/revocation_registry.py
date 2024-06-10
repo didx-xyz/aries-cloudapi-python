@@ -109,7 +109,7 @@ async def revoke_credential(
         )
     except CloudApiException as e:
         raise CloudApiException(
-            f"Failed to revoke credential: {e.detail}.", e.status_code
+            f"Failed to revoke credential: {e.detail}", e.status_code
         ) from e
 
     bound_logger.info("Successfully revoked credential.")
@@ -148,7 +148,7 @@ async def publish_pending_revocations(
         )
     except CloudApiException as e:
         raise CloudApiException(
-            f"Failed to publish pending revocations: {e.detail}.", e.status_code
+            f"Failed to publish pending revocations: {e.detail}", e.status_code
         ) from e
 
     bound_logger.info("Successfully published pending revocations.")
@@ -190,7 +190,7 @@ async def clear_pending_revocations(
         )
     except CloudApiException as e:
         raise CloudApiException(
-            f"Failed to clear pending revocations: {e.detail}.", e.status_code
+            f"Failed to clear pending revocations: {e.detail}", e.status_code
         ) from e
 
     result = ClearPendingRevocationsResult(
@@ -240,7 +240,7 @@ async def get_credential_revocation_record(
         )
     except CloudApiException as e:
         raise CloudApiException(
-            f"Failed to get revocation status: {e.detail}.", e.status_code
+            f"Failed to get revocation status: {e.detail}", e.status_code
         ) from e
 
     if not isinstance(result, CredRevRecordResult):

@@ -67,7 +67,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to create presentation request: {e.detail}.", e.status_code
+                f"Failed to create presentation request: {e.detail}", e.status_code
             ) from e
 
         result = record_to_model(presentation_exchange)
@@ -112,7 +112,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to send presentation request: {e.detail}.", e.status_code
+                f"Failed to send presentation request: {e.detail}", e.status_code
             ) from e
 
         result = record_to_model(presentation_exchange)
@@ -153,7 +153,7 @@ class VerifierV2(Verifier):
 
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to send proof presentation: {e.detail}.", e.status_code
+                f"Failed to send proof presentation: {e.detail}", e.status_code
             ) from e
 
         result = record_to_model(presentation_exchange)
@@ -181,7 +181,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to send problem report: {e.detail}.", e.status_code
+                f"Failed to send problem report: {e.detail}", e.status_code
             ) from e
 
         if reject_proof_request.delete_proof_record:
@@ -194,7 +194,7 @@ class VerifierV2(Verifier):
                 )
             except CloudApiException as e:
                 raise CloudApiException(
-                    f"Failed to delete record: {e.detail}.", e.status_code
+                    f"Failed to delete record: {e.detail}", e.status_code
                 ) from e
 
         bound_logger.info("Successfully rejected v2 presentation exchange record.")
@@ -220,7 +220,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to get proof records: {e.detail}.", e.status_code
+                f"Failed to get proof records: {e.detail}", e.status_code
             ) from e
 
         result = [record_to_model(rec) for rec in presentation_exchange.results or []]
@@ -243,7 +243,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to get proof record with proof id `{proof_id}`: {e.detail}.",
+                f"Failed to get proof record with proof id `{proof_id}`: {e.detail}",
                 e.status_code,
             ) from e
 
@@ -265,7 +265,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to delete record with proof id `{proof_id}`: {e.detail}.",
+                f"Failed to delete record with proof id `{proof_id}`: {e.detail}",
                 e.status_code,
             ) from e
 
@@ -287,7 +287,7 @@ class VerifierV2(Verifier):
             )
         except CloudApiException as e:
             raise CloudApiException(
-                f"Failed to get credentials with proof id `{proof_id}`: {e.detail}.",
+                f"Failed to get credentials with proof id `{proof_id}`: {e.detail}",
                 e.status_code,
             ) from e
 

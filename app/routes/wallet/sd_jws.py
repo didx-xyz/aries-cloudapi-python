@@ -78,7 +78,7 @@ async def sign_sd_jws(
         SDJWSCreateRequest: The SD-JWS to sign.
             did: str:
               The DID to sign the SD-JWS with.
-            header: dict:
+            headers: dict:
               The header of the SD-JWS.
             payload: dict:
               The payload of the SD-JWS.

@@ -39,7 +39,7 @@ async def sign_jws(
     or the `verification_method` field.
 
     If an issuer sings a JWS with a did:sov DID, the did should be public.
-    
+
     The difference between the did and verification_method fields is
     that if the `did` field is used, the Aries agent will make an educated guess
     about which key associated with the did to use to sign the jwt, i.e. the did with the key to use.

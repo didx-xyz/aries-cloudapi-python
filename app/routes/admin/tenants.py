@@ -233,12 +233,12 @@ async def create_tenant(
     return response
 
 
-@router.delete("/{wallet_id}", summary="Delete a Tenant by wallet ID")
+@router.delete("/{wallet_id}", summary="Delete a Tenant by wallet ID", status_code=204)
 async def delete_tenant_by_id(
     wallet_id: str,
     group_id: Optional[str] = group_id_query,
     admin_auth: AcaPyAuthVerified = Depends(acapy_auth_tenant_admin),
-):
+) -> None:
     """
     Delete tenant by ID
     ---
@@ -253,7 +253,7 @@ async def delete_tenant_by_id(
 
     Response body:
     ---
-        None
+        status_code: 204 No Content
     """
     bound_logger = logger.bind(body={"wallet_id": wallet_id})
     bound_logger.debug("DELETE request received: Deleting tenant by id")

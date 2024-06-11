@@ -38,9 +38,11 @@ async def sign_jws(
     When populating the the body of the request, the user must populate either the `did`
     or the `verification_method` field.
 
+    If an issuer sings a JWS with a did:sov DID, the did should be public.
+    
     The difference between the did and verification_method fields is
     that if the `did` field is used, the Aries agent will make an educated guess
-    about which key associated with the did to use to sign the jwt.
+    about which key associated with the did to use to sign the jwt, i.e. the did with the key to use.
 
     While with the `verification_method` field, the user is explicitly
     specifying which key to use to sign the jwt.
@@ -52,16 +54,20 @@ async def sign_jws(
 
     Request body:
     ---
-        JWSCreateRequest: The JWS to sign.
-            did: str: The DID to sign the JWS with.
-            header: dict: The header of the JWS.
-            payload: dict: The payload of the JWS.
-            verification_method: str: The verification (did with key to use) method to use.
+        JWSCreateRequest:
+            did: str:
+              The DID to sign the JWS with.
+            header: Optional(dict):
+              The header of the JWS.
+            payload: dict:
+              The payload of the JWS.
+            verification_method: str:
+              The verification (did with key) method to use.
 
     Returns:
     ---
         JWSCreateResponse:
-          The signed JWS string.
+          The signed JWS string representing the signed JSON Web Signature.
     """
     bound_logger = logger.bind(
         # Do not log payload:
@@ -128,7 +134,7 @@ async def verify_jws(
             valid: bool:
               Whether the JWS is valid.
             error: str:
-              Error text.
+              The error message if the JWS is invalid.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Verify JWS")

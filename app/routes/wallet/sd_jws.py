@@ -29,19 +29,27 @@ async def sign_sd_jws(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSCreateResponse:
     """
-    Sign Select Disclosure for JWS (SD-JWS)
+    Sign Selective Disclosure for JWS (SD-JWS)
     ---
 
     This endpoint allows the user to sign a Selective Disclosure for JWS (SD-JWS).
-    This allows the user to selectively disclose attributes in the JWS, i.e.
-    it allows a holder to reveal only the attributes they want to reveal.
+    This allows the user to create a SD-JWS that can be used to selectively disclose
+    attributes to a verifier.
+
+    When populating the the body of the request, the user must populate either the `did`
+    or the `verification_method` field.
+
+    If an issuer sings a JWS with a did:sov DID, the did should be public.
 
     The difference between the did and verification_method fields is
-    that if the `did` field is used, acapy will make an educated guess
+    that if the `did` field is used, the Aries agent will make an educated guess
     about which key associated with the did to use to sign the jwt.
 
     While with the `verification_method` field, the user is explicitly
-    specifying which key to use to sign the jwt.
+    specifying which key to use to sign the jwt, i.e. the did with the key to use.
+
+    The `header` field is optional and can be used to specify the header of the JWS.
+    The `typ`, `alg`, and `kid` fields are automatically populated by the Aries agent.
 
     The `non_sd_list` field is a list of non-selective disclosure attributes.
     These are attributes that are not included in the selective disclosure i.e.
@@ -55,7 +63,7 @@ async def sign_sd_jws(
     the range of the list to the `non_sd_list` in the format:
         `"<attribute_name>[<start>:<end>]"`
     where `<start>` is the start of the range and `<end>` is the end of the range
-    (where the <end> is exclusive).
+    (where <end> is exclusive).
 
     The values in a dictionary can be added to the `non_sd_list` by adding the dictionary name
     dot the attribute name to the `non_sd_list` in the format:
@@ -67,8 +75,9 @@ async def sign_sd_jws(
     attributes.
         `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>~`
 
-    Its up to the holder to identify which disclosures match which attributes in the SD-JWS.
-    As the holder will need to pass on the SD-JWS with the correct disclosures to the verifier.
+    Its up to the holder to identify which disclosure matches with which attributes in the SD-JWS.
+    As the holder will need to pass on the SD-JWS with the correct disclosures to the verifier when
+    requested.
 
     See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
     for the SD-JWT / SD-JWS spec.
@@ -84,12 +93,13 @@ async def sign_sd_jws(
               The payload of the SD-JWS.
             verification_method:
               str: The verification method (did with key to use) to use.
-            non_sd_list: list:
+            non_sd_list: Optional(list):
               List of non-selective disclosure attributes.
 
     Returns:
     ---
-        SDJWSCreateResponse: The signed SD-JWS.
+        SDJWSCreateResponse:
+          The signed SD-JWS followed by the disclosures.
     """
     bound_logger = logger.bind(
         # Do not log payload:
@@ -129,12 +139,13 @@ async def verify_sd_jws(
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> SDJWSVerifyResponse:
     """
-    Verify Select Disclosure for JWS (SD-JWS)
+    Verify Selective Disclosure JWS (SD-JWS)
     ---
 
-    This endpoint allows the user to verify a Selective Disclosure for JWS (SD-JWS).
+    This endpoint allows the user to verify a Selective Disclosure JWS (SD-JWS).
+    The validity of the SD-JWS is checked and the disclosures are returned.
 
-    The SD_JWS followed passed to this endpoint should be in the format:
+    The SD-JWS followed by the disclosures are passed to this endpoint and should be in the format:
         `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>~`
     Where each disclosure will reveal its associated attribute.
     The holder only needs to reveal the disclosures that the verifier requests,
@@ -147,12 +158,12 @@ async def verify_sd_jws(
     ---
         SDJWSVerifyRequest:
             sd_jws: str:
-              The SD-JWS to verify.
+              The SD-JWS and disclosures to verify and reveal.
 
     Returns:
     ---
         SDJWSVerifyResponse:
-          The verified SD-JWS.
+          The validity of the SD-JWS and the selectively disclosed attributes.
     """
     bound_logger = logger.bind(body=body)
     bound_logger.debug("POST request received: Verify SD-JWS")

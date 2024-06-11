@@ -1,6 +1,8 @@
 from typing import List, Optional
 
-from aries_cloudcontroller.models.indy_cred_info import IndyCredInfo as IndyCredInfoAcaPy
+from aries_cloudcontroller.models.indy_cred_info import (
+    IndyCredInfo as IndyCredInfoAcaPy,
+)
 from aries_cloudcontroller.models.vc_record import VCRecord as VCRecordAcaPy
 from pydantic import BaseModel, Field
 

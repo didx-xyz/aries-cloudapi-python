@@ -36,6 +36,9 @@ async def test_proof_revoked_credential(
     acme_and_alice_connection: AcmeAliceConnect,
     protocol_version: str,
 ):
+    time.sleep(7)  # moment for revocation registry to update
+    # todo: remove sleep when issue resolved: https://github.com/hyperledger/aries-cloudagent-python/issues/3018
+
     # Do proof request
     request_body = {
         "protocol_version": protocol_version,
@@ -136,6 +139,9 @@ async def test_regression_proof_revoked_credential(
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
+    time.sleep(7)  # moment for revocation registry to update
+    # todo: remove sleep when issue resolved: https://github.com/hyperledger/aries-cloudagent-python/issues/3018
+
     referent = get_or_issue_regression_cred_revoked.referent
     credential_definition_id_revocable = (
         get_or_issue_regression_cred_revoked.cred_def_revocable

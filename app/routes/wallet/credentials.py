@@ -12,8 +12,8 @@ from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call
 from app.models.wallet import (
     CredInfoList,
-    ExtendedIndyCredInfo,
-    ExtendedVCRecord,
+    IndyCredInfo,
+    VCRecord,
     VCRecordList,
 )
 from shared.log_config import get_logger
@@ -81,13 +81,13 @@ async def list_credentials(
 
 @router.get(
     "/{credential_id}",
-    response_model=ExtendedIndyCredInfo,
+    response_model=IndyCredInfo,
     summary="Fetch a credential by ID",
 )
 async def get_credential_record(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> ExtendedIndyCredInfo:
+) -> IndyCredInfo:
     """
     Fetch a specific credential by credential ID
     ---
@@ -314,13 +314,13 @@ async def list_w3c_credentials(
 
 @router.get(
     "/w3c/{credential_id}",
-    response_model=ExtendedVCRecord,
+    response_model=VCRecord,
     summary="Fetch a W3C credential by ID",
 )
 async def get_w3c_credential(
     credential_id: str,
     auth: AcaPyAuth = Depends(acapy_auth_from_header),
-) -> ExtendedVCRecord:
+) -> VCRecord:
     """
     Fetch a specific W3C credential by ID
     ---

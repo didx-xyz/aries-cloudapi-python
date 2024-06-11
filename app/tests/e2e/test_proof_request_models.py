@@ -92,7 +92,6 @@ async def test_proof_model_failures(
         client=alice_member_client,
         topic="proofs",
         state="request-received",
-        look_back=5,
     )
 
     # Get proof exchange id

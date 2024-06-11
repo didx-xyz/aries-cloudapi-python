@@ -148,7 +148,6 @@ async def test_accept_proof_request(
         filter_map={
             "proof_id": alice_proof_id,
         },
-        look_back=5,
     )
 
     acme_proof_event = await check_webhook_state(
@@ -286,7 +285,6 @@ async def test_get_proof_and_get_proofs(
         filter_map={
             "thread_id": thread_id,
         },
-        look_back=5,
     )
     alice_proof_id = alice_payload["proof_id"]
 
@@ -693,7 +691,6 @@ async def test_regression_proof_valid_credential(
         filter_map={
             "thread_id": send_proof_response["thread_id"],
         },
-        look_back=5,
     )
 
     alice_proof_exchange_id = alice_payload["proof_id"]

@@ -67,8 +67,15 @@ async def create_tenant(
     Create a new tenant
     ---
 
-    Use this endpoint to create a new tenant. The tenant will be created with a wallet and
-    optionally onboarded with roles.
+    Use this endpoint to create a new tenant.
+    This will create a new wallet (the tenant) and onboard it with the requested roles.
+
+    The `wallet_name` is an optional field that allows you to assign a name to the wallet,
+    useful with `get_tenants` to fetch wallets by wallet name.
+
+    `image_url` is an optional field that allows tenant-admin to assign an image to the wallet.
+
+    `group_id` is an optional field that allows the tenant-admin to assign the wallet to a group.
 
     The roles can be `issuer` or `verifier`. If no roles are provided, the tenant will be created
     without any roles and be considered a `holder`.

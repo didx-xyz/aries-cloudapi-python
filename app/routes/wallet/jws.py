@@ -32,7 +32,7 @@ async def sign_jws(
     Sign JSON Web Signature (JWS)
     ---
 
-    This endpoint allows the user to sign a jason payload into a Jason Web Signature (JWS)
+    This endpoint allows the user to sign a json payload into a Json Web Signature (JWS)
     using a DID or a verification method.
 
     When populating the the body of the request, the user must populate either the `did`

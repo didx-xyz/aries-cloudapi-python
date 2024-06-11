@@ -10,12 +10,7 @@ from fastapi import APIRouter, Depends, Query
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
 from app.exceptions import handle_acapy_call
-from app.models.wallet import (
-    CredInfoList,
-    IndyCredInfo,
-    VCRecord,
-    VCRecordList,
-)
+from app.models.wallet import CredInfoList, IndyCredInfo, VCRecord, VCRecordList
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)

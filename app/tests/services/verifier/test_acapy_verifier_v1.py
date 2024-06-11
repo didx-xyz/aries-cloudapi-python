@@ -61,7 +61,7 @@ async def test_create_proof_request_exception(
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to create presentation request: {error_detail}.",
+        match=f"Failed to create presentation request: {error_detail}",
     ) as exc:
         await VerifierV1.create_proof_request(
             controller=mock_agent_controller,
@@ -116,7 +116,7 @@ async def test_send_proof_request_exception(
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to send presentation request: {error_detail}.",
+        match=f"Failed to send presentation request: {error_detail}",
     ) as exc:
         await VerifierV1.send_proof_request(
             controller=mock_agent_controller,
@@ -163,7 +163,7 @@ async def test_accept_proof_request_exception(
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to send proof presentation: {error_detail}.",
+        match=f"Failed to send proof presentation: {error_detail}",
     ) as exc:
         await VerifierV1.accept_proof_request(
             controller=mock_agent_controller,
@@ -214,7 +214,7 @@ async def test_reject_proof_reject_exception_report(
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to send problem report: {error_detail}.",
+        match=f"Failed to send problem report: {error_detail}",
     ) as exc:
         await VerifierV1.reject_proof_request(
             controller=mock_agent_controller,
@@ -241,7 +241,7 @@ async def test_reject_proof_reject_exception_delete(
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to delete record: {error_detail}.",
+        match=f"Failed to delete record: {error_detail}",
     ) as exc:
         await VerifierV1.reject_proof_request(
             controller=mock_agent_controller,
@@ -281,7 +281,7 @@ async def test_get_proof_records_exception(
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to get proof records: {error_detail}.",
+        match=f"Failed to get proof records: {error_detail}",
     ) as exc:
         await VerifierV1.get_proof_records(
             controller=mock_agent_controller,
@@ -316,7 +316,7 @@ async def test_get_proof_record_exception(
     proof_id = "v1-abc"
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to get proof record with proof id `{proof_id}`: {error_detail}.",
+        match=f"Failed to get proof record with proof id `{proof_id}`: {error_detail}",
     ) as exc:
         await VerifierV1.get_proof_record(
             controller=mock_agent_controller, proof_id=proof_id
@@ -348,7 +348,7 @@ async def test_delete_proof_exception(
     proof_id = "v1-abc"
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to delete record with proof id `{proof_id}`: {error_detail}.",
+        match=f"Failed to delete record with proof id `{proof_id}`: {error_detail}",
     ) as exc:
         await VerifierV1.delete_proof(
             controller=mock_agent_controller, proof_id=proof_id
@@ -390,7 +390,7 @@ async def test_get_credentials_by_proof_id_exception(
     proof_id = "v1-abc"
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to get credentials with proof id `{proof_id}`: {error_detail}.",
+        match=f"Failed to get credentials with proof id `{proof_id}`: {error_detail}",
     ) as exc:
         await VerifierV1.get_credentials_by_proof_id(
             controller=mock_agent_controller, proof_id=proof_id
@@ -402,7 +402,7 @@ async def test_get_credentials_by_proof_id_exception(
 @pytest.mark.anyio
 async def test_create_proof_request_is_indy_only(mock_agent_controller: AcaPyClient):
     with pytest.raises(
-        CloudApiException, match="Only Indy credential types are supported in v1."
+        CloudApiException, match="Only Indy credential types are supported in v1"
     ) as exc:
         await VerifierV1.create_proof_request(
             controller=mock_agent_controller,
@@ -420,7 +420,7 @@ async def test_create_proof_request_is_indy_only(mock_agent_controller: AcaPyCli
 @pytest.mark.anyio
 async def test_send_proof_request_is_indy_only(mock_agent_controller: AcaPyClient):
     with pytest.raises(
-        CloudApiException, match="Only Indy credential types are supported in v1."
+        CloudApiException, match="Only Indy credential types are supported in v1"
     ) as exc:
         await VerifierV1.send_proof_request(
             controller=mock_agent_controller,
@@ -439,7 +439,7 @@ async def test_send_proof_request_is_indy_only(mock_agent_controller: AcaPyClien
 @pytest.mark.anyio
 async def test_accept_proof_request_is_indy_only(mock_agent_controller: AcaPyClient):
     with pytest.raises(
-        CloudApiException, match="Only Indy credential types are supported in v1."
+        CloudApiException, match="Only Indy credential types are supported in v1"
     ) as exc:
         await VerifierV1.accept_proof_request(
             controller=mock_agent_controller,

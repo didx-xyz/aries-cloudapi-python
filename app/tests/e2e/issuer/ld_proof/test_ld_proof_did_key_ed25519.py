@@ -224,8 +224,8 @@ async def test_send_jsonld_request(
     faber_cred_ex_id = credential_exchange["credential_exchange_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
-    result = asyncio.gather(
-        await check_webhook_state(
+    result = await asyncio.gather(
+        check_webhook_state(
             client=faber_client,
             topic="credentials",
             state="offer-sent",
@@ -233,7 +233,7 @@ async def test_send_jsonld_request(
                 "thread_id": thread_id,
             },
         ),
-        await check_webhook_state(
+        check_webhook_state(
             client=alice_member_client,
             topic="credentials",
             state="offer-received",
@@ -290,8 +290,8 @@ async def test_issue_jsonld_ed(
     faber_cred_ex_id = credential_exchange["credential_exchange_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
-    result = asyncio.gather(
-        await check_webhook_state(
+    result = await asyncio.gather(
+        check_webhook_state(
             client=faber_client,
             topic="credentials",
             state="offer-sent",
@@ -299,7 +299,7 @@ async def test_issue_jsonld_ed(
                 "thread_id": thread_id,
             },
         ),
-        await check_webhook_state(
+        check_webhook_state(
             client=alice_member_client,
             topic="credentials",
             state="offer-received",

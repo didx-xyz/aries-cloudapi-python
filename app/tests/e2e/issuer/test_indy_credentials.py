@@ -212,13 +212,13 @@ async def test_send_credential_request(
 
     assert request_response.status_code == 200
 
-    result = asyncio.gather(
-        await check_webhook_state(
+    result = await asyncio.gather(
+        check_webhook_state(
             client=alice_member_client,
             topic="credentials",
             state="request-sent",
         ),
-        await check_webhook_state(
+        check_webhook_state(
             client=faber_client,
             topic="credentials",
             state="request-received",

@@ -49,7 +49,7 @@ async def assert_both_connections_ready(
     member_client_2: RichAsyncClient,
     connection_id_1: str,
     connection_id_2: str,
-):
+) -> None:
     await assert_both_webhooks_received(
         member_client_1,
         member_client_2,
@@ -57,7 +57,7 @@ async def assert_both_connections_ready(
         state="completed",
         field_id_1=connection_id_1,
         field_id_2=connection_id_2,
-    ), "A connection completed webhook was not received"
+    )
 
 
 async def create_bob_alice_connection(

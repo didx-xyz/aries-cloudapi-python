@@ -117,7 +117,7 @@ async def assert_both_webhooks_received(
     state: str,
     field_id_1: str,
     field_id_2: str,
-):
+) -> None:
     # Lookup the field name for the given topic
     field_name = TOPIC_FIELD_MAP.get(topic)
     if not field_name:

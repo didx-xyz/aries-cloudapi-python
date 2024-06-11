@@ -72,7 +72,7 @@ async def sign_jws(
             "name":"Alice",
             "surname":"Demo"
         },
-        "verification_method": "did:key:z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3#z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3"
+        "verification_method": "did:key:z6Mkprf81ujG1n48n5LMD...M6S3#z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3"
     }
     ```
 

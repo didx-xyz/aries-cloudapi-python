@@ -38,8 +38,9 @@ async def list_credentials(
     Fetch a list of credentials from the wallet
     ---
 
-    The WQL or wallet query language parameter can be used to filter credentials returned from the wallet.
-    The WQL query is a string that can be used to filter records based on the attributes name and value of the record.
+    The WQL (or, wallet query language) parameter can be used to filter credentials returned from the wallet.
+    The `wql` query parameter is a string that can be used to filter records based
+    on the attributes name and value of the record.
 
     The following string will look for the credential with the attribute `age` with value `21`:
 
@@ -269,17 +270,17 @@ async def list_w3c_credentials(
     Credential_id and record_id are duplicates of each other.
     The W3C credentials can be filtered by the parameters provided.
 
-    Parameters:
+    Optional Parameters:
     ---
-        contexts: Optional[List[str]]
-        types: Optional[List[str]]
-        schema_ids: Optional[List[str]]
-        issuer_id: Optional[str]
-        subject_ids: Optional[List[str]]
-        given_id: Optional[str]
-        proof_types: Optional[List[str]]
-        tag_query: Optional[str]
-        max_results: Optional[int]
+        contexts: List[str]
+        types: List[str]
+        schema_ids: List[str]
+        issuer_id: str
+        subject_ids: List[str]
+        given_id: str
+        proof_types: List[str]
+        tag_query: str
+        max_results: int
 
     Returns:
     ---

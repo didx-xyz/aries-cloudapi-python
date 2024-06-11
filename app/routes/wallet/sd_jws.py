@@ -33,13 +33,13 @@ async def sign_sd_jws(
     ---
 
     This endpoint allows the user to sign a Selective Disclosure for JWS (SD-JWS).
-    This allows the user to create a SD-JWS that can be used to selectively disclose
+    The endpoint returns the SD-JWS that can be used to selectively disclose
     attributes to a verifier.
 
     When populating the the body of the request, the user must populate either the `did`
     or the `verification_method` field.
 
-    If an issuer sings a JWS with a did:sov DID, the did should be public.
+    If an issuer sings a JWS with a `did:sov` DID, the did should be public.
 
     The difference between the did and verification_method fields is
     that if the `did` field is used, the Aries agent will make an educated guess
@@ -72,7 +72,7 @@ async def sign_sd_jws(
     attribute name in the dictionary.
 
     The endpoint will return the signed SD-JWS with disclosures needed to reveal the
-    attributes.
+    attributes in the SD-JWS.
         `<Issuer-signed JWS>~<Disclosure 1>~<Disclosure 2>~...~<Disclosure N>~`
 
     Its up to the holder to identify which disclosure matches with which attributes in the SD-JWS.
@@ -81,6 +81,36 @@ async def sign_sd_jws(
 
     See https://www.ietf.org/archive/id/draft-ietf-oauth-selective-disclosure-jwt-07.html
     for the SD-JWT / SD-JWS spec.
+
+    Example request body:
+    ---
+    ```
+        {
+          "did": "did:sov:39TXHazGAYif5FUFCjQhYX",  < --- Public did of issuer
+          "payload": {
+           ""credential_subject": "reference_to_holder",
+           "given_name": "John",
+           "family_name": "Doe",
+           "email": "johndoe@example.com",
+           "phone_number": "+1-202-555-0101",
+           "nationalities": ["a","b","c","d"],
+           "address": {
+             "street_address": "123 Main St",
+             "locality": "Anytown",
+             "region": "Anystate",
+             "country": "US"
+           },
+           "birthdate": "1940-01-01"
+          },
+          "non_sd_list": [
+            "given_name",
+            "address",
+            "address.street_address",
+            "nationalities",
+            "nationalities[1:3]"
+          ]
+        }
+    ```
 
     Request body:
     ---

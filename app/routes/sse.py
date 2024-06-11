@@ -67,8 +67,10 @@ async def get_sse_subscribe_wallet(
 
     Parameters:
     ---
-        wallet_id: The ID of the wallet subscribing to the events.
-        look_back: Specifies the look back window in seconds, to include events before connection established.
+        wallet_id:
+          The ID of the wallet subscribing to the events.
+        look_back:
+          Specifies the look back window in seconds, to include events before connection established.
     """
     logger.bind(
         body={
@@ -116,9 +118,12 @@ async def get_sse_subscribe_wallet_topic(
 
     Parameters:
     ---
-        wallet_id: The ID of the wallet subscribing to the events.
-        topic: The topic to which the wallet is subscribing.
-        look_back: Specifies the look back window in seconds, to include events before connection established.
+        wallet_id:
+          The ID of the wallet subscribing to the events.
+        topic:
+          The topic to which the wallet is subscribing.
+        look_back:
+          Specifies the look back window in seconds, to include events before connection established.
     """
     logger.bind(
         body={
@@ -166,14 +171,18 @@ async def get_sse_subscribe_event_with_state(
     Subscribe to server-side events for a specific wallet ID and topic,
     and wait for an event that matches the desired state.
 
-    example: `/{wallet_id}/connection/completed` will wait for a connection event to be completed.
+    example: `/{wallet_id}/connection/completed` will stream connection events with state: completed.
 
     Parameters:
     ---
-        wallet_id: The ID of the wallet subscribing to the events.
-        topic: The topic to which the wallet is subscribing.
-        desired_state: The desired state to be reached.
-        look_back: Specifies the look back window in seconds, to include events before connection established.
+        wallet_id:
+          The ID of the wallet subscribing to the events.
+        topic:
+          The topic to which the wallet is subscribing.
+        desired_state:
+          The desired state to be reached.
+        look_back:
+          Specifies the look back window in seconds, to include events before connection established.
     """
     logger.bind(
         body={
@@ -226,20 +235,23 @@ async def get_sse_subscribe_stream_with_fields(
     Subscribe to server-side events for a specific wallet ID and topic, and
     filter the events for payloads containing a specific field and field ID pair.
 
-    example: `/{wallet_id}/credentials/connection_id/some-uuid` will filter for credential exchange events
+    example: `/{wallet_id}/credentials/connection_id/some-uuid` will stream events on topic credential exchange events
     with the field, value pair `connection_id:some-uuid`
 
     The field and field ID pair must be present in the payload (other than state) for the event to be streamed.
 
-    The stream will be closed after the first event is streamed.
-
     Parameters:
     ---
-        wallet_id: The ID of the wallet subscribing to the events.
-        topic: The topic to which the wallet is subscribing.
-        field: The field to which the wallet is subscribing.
-        field_id: The ID of the field subscribing to the events.
-        look_back: Specifies the look back window in seconds, to include events before connection established.
+        wallet_id:
+          The ID of the wallet subscribing to the events.
+        topic:
+          The topic to which the wallet is subscribing.
+        field:
+          The field to which the wallet is subscribing.
+        field_id:
+          The ID of the field subscribing to the events.
+        look_back:
+          Specifies the look back window in seconds, to include events before connection established.
     """
     logger.bind(
         body={
@@ -291,19 +303,27 @@ async def get_sse_subscribe_event_with_field_and_state(
     Wait for a desired state to be reached for some event for this wallet and topic,
     filtering for payloads that contain `field:field_id`.
 
-    example: `/{wallet_id}/credentials/connection_id/some-uuid/done` will wait for a credential exchange event on a
-    specific connection to be done.
+    example: `/{wallet_id}/credentials/connection_id/some-uuid/done` will stream a credential exchange event on a
+    specific connection with state done.
 
     The field and field ID pair must be present in the payload (other than state) for the event to be streamed.
 
+    The stream will be closed after the first event is streamed.
+
     Parameters:
     ---
-        wallet_id: The ID of the wallet subscribing to the events.
-        topic: The topic to which the wallet is subscribing.
-        field: The field to which the wallet is subscribing.
-        field_id: The ID of the field subscribing to the events.
-        desired_state: The desired state to be reached.
-        look_back: Specifies the look back window in seconds, to include events before connection established.
+        wallet_id:
+          The ID of the wallet subscribing to the events.
+        topic:
+          The topic to which the wallet is subscribing.
+        field:
+          The field to which the wallet is subscribing.
+        field_id:
+          The ID of the field subscribing to the events.
+        desired_state:
+          The desired state to be reached.
+        look_back:
+          Specifies the look back window in seconds, to include events before connection established.
     """
     logger.bind(
         body={

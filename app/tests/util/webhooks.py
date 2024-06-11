@@ -100,3 +100,37 @@ async def check_webhook_state(
         raise Exception(  # pylint: disable=W0719
             f"Could not satisfy webhook filter: `{filter_map}`."
         )
+
+
+# mapping of topics to their relevant field names
+TOPIC_FIELD_MAP = {
+    "connections": "connection_id",
+    "proofs": "proof_id",
+    "credentials": "credential_exchange_id",
+}
+
+
+async def assert_both_webhooks_received(
+    member_client_1: RichAsyncClient,
+    member_client_2: RichAsyncClient,
+    topic: str,
+    state: str,
+    field_id_1: str,
+    field_id_2: str,
+):
+    # Lookup the field name for the given topic
+    field_name = TOPIC_FIELD_MAP.get(topic)
+    if not field_name:
+        raise ValueError(f"Unsupported topic: {topic}")
+
+    async def check_webhook(client, field_id):
+        return await check_webhook_state(
+            client, topic=topic, state=state, filter_map={field_name: field_id}
+        )
+
+    results = await asyncio.gather(
+        check_webhook(member_client_1, field_id_1),
+        check_webhook(member_client_2, field_id_2),
+    )
+
+    assert all(results), "Not all webhooks received the expected state"

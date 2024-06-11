@@ -9,7 +9,7 @@ from app.tests.fixtures.credentials import ReferentCredDef
 from app.tests.util.connections import AcmeAliceConnect
 from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
@@ -100,24 +100,13 @@ async def test_proof_revoked_credential(
         },
     )
 
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": alice_proof_exchange_id,
-        },
-        look_back=5,
-    )
-
-    await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_exchange_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_exchange_id,
+        acme_proof_exchange_id,
     )
 
     # Check proof
@@ -199,14 +188,13 @@ async def test_regression_proof_revoked_credential(
         },
     )
 
-    await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_exchange_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_exchange_id,
+        acme_proof_exchange_id,
     )
 
     # Check proof

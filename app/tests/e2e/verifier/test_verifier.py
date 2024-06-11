@@ -17,7 +17,7 @@ from app.tests.services.verifier.utils import sample_indy_proof_request
 from app.tests.util.connections import AcmeAliceConnect, MeldCoAliceConnect
 from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 from shared.models.presentation_exchange import PresentationExchange
@@ -316,23 +316,13 @@ async def test_get_proof_and_get_proofs(
         json=proof_accept.model_dump(),
     )
 
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": alice_proof_id,
-        },
-        look_back=5,
-    )
-    await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_id,
+        acme_proof_id,
     )
 
     acme_proof_exchange = (
@@ -536,24 +526,13 @@ async def test_accept_proof_request_verifier_has_issuer_role(
         json=proof_accept.model_dump(),
     )
 
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": alice_proof_id,
-        },
-        look_back=5,
-    )
-
-    assert await check_webhook_state(
-        client=meld_co_client,
-        state="done",
-        filter_map={
-            "proof_id": meld_co_proof_id,
-        },
-        topic="proofs",
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        meld_co_client,
+        "proofs",
+        "done",
+        alice_proof_id,
+        meld_co_proof_id,
     )
 
     pres_exchange_result = PresentationExchange(**response.json())
@@ -621,24 +600,13 @@ async def test_saving_of_presentation_exchange_records(
         json=proof_accept.model_dump(),
     )
 
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": alice_proof_id,
-        },
-        look_back=5,
-    )
-
-    assert await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_id,
+        acme_proof_id,
     )
 
     result = response.json()
@@ -747,14 +715,13 @@ async def test_regression_proof_valid_credential(
         },
     )
 
-    await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_exchange_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_exchange_id,
+        acme_proof_exchange_id,
     )
 
     # Check proof

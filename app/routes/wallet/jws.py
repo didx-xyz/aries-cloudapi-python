@@ -38,7 +38,7 @@ async def sign_jws(
     When populating the the body of the request, the user must populate either the `did`
     or the `verification_method` field.
 
-    If an issuer sings a JWS with a did:sov DID, the did should be public.
+    If an issuer sings a JWS with a `did:sov` DID, the did should be public.
 
     The difference between the did and verification_method fields is
     that if the `did` field is used, the Aries agent will make an educated guess
@@ -50,13 +50,15 @@ async def sign_jws(
     The `header` field is optional and can be used to specify the header of the JWS.
     The `typ`, `alg`, and `kid` fields are automatically populated by the Aries agent.
 
+    See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
+
     Example request body:
     ---
     ```
     {
         "did": "did:sov:WWMjrBJkUzz9suEtwKxmiY", <-- Public did of issuer
-        "payload": {    
-            "subject":"reference_to_holder",
+        "payload": {
+            "credential_subject":"reference_to_holder",
             "name":"Alice",
             "surname":"Demo"
         }
@@ -65,7 +67,7 @@ async def sign_jws(
     OR
     ```
     {
-        "payload": {    
+        "payload": {
             "subject":"reference_to_holder",
             "name":"Alice",
             "surname":"Demo"
@@ -73,7 +75,7 @@ async def sign_jws(
         "verification_method": "did:key:z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3#z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3"
     }
     ```
-    See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
+
 
     Request body:
     ---

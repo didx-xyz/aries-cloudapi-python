@@ -50,6 +50,29 @@ async def sign_jws(
     The `header` field is optional and can be used to specify the header of the JWS.
     The `typ`, `alg`, and `kid` fields are automatically populated by the Aries agent.
 
+    Example request body:
+    ---
+    ```
+    {
+        "did": "did:sov:WWMjrBJkUzz9suEtwKxmiY", <-- Public did of issuer
+        "payload": {    
+            "subject":"reference_to_holder",
+            "name":"Alice",
+            "surname":"Demo"
+        }
+    }
+    ```
+    OR
+    ```
+    {
+        "payload": {    
+            "subject":"reference_to_holder",
+            "name":"Alice",
+            "surname":"Demo"
+        },
+        "verification_method": "did:key:z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3#z6Mkprf81ujG1n48n5LMDaxyCLLFrnqCRBPhkTWsPfA8M6S3"
+    }
+    ```
     See https://www.rfc-editor.org/rfc/rfc7515.html for the JWS spec.
 
     Request body:
@@ -57,7 +80,7 @@ async def sign_jws(
         JWSCreateRequest:
             did: str:
               The DID to sign the JWS with.
-            header: Optional(dict):
+            headers: Optional(dict):
               The header of the JWS.
             payload: dict:
               The payload of the JWS.

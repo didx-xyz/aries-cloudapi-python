@@ -33,9 +33,7 @@ async def list_credentials(
     Fetch a list of credentials from the wallet
     ---
 
-    The WQL (or, wallet query language) parameter can be used to filter credentials returned from the wallet.
-    The `wql` query parameter is a string that can be used to filter records based
-    on the attributes name and value of the record.
+    The `wql` (Wallet Query Language) parameter can be used to filter credentials returned from the wallet.
 
     The following string will look for the credential with the attribute `age` with value `21`:
 
@@ -44,13 +42,13 @@ async def list_credentials(
     See more on WQL queries
     [here](https://hyperledger-indy.readthedocs.io/projects/sdk/en/latest/docs/design/011-wallet-query-language/README.html)
 
-    Parameters:
+    Optional Parameters:
     ---
-        count: Optional[str]
+        count: str
             The number of records to return.
-        start: Optional[str]
+        start: str
             The number of records to skip before starting to return records.
-        wql: Optional[str]
+        wql: str
             A WQL query to filter records.
 
     Returns:
@@ -87,8 +85,6 @@ async def get_credential_record(
     """
     Fetch a specific credential by credential ID
     ---
-
-    The referent and credential_id are the duplicates of each other.
 
     Parameters:
     ---
@@ -204,9 +200,9 @@ async def get_credential_revocation_status(
     Query the revocation status of a specific credential by ID
     ---
 
-    The status can be check on a specific time range by providing the `from_` and `to` parameters.
-    Pass the seconds, since Unix epoch, to the `from_` and `to` parameters to query the revocation
-    status for a specific time range.
+    The revocation status of a credential can be queried over a specific time range
+    by passing unix timestamps to the `from_` and `to` parameters.
+    Leaving these parameters blank will return the current revocation status.
 
     Parameters:
     ---
@@ -262,7 +258,7 @@ async def list_w3c_credentials(
     """
     Fetch a list of W3C credentials from the wallet
     ---
-    Credential_id and record_id are duplicates of each other.
+
     The W3C credentials can be filtered by the parameters provided.
 
     Optional Parameters:

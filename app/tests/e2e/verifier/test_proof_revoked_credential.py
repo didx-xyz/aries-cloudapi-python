@@ -9,7 +9,7 @@ from app.tests.fixtures.credentials import ReferentCredDef
 from app.tests.util.connections import AcmeAliceConnect
 from app.tests.util.regression_testing import TestMode
 from app.tests.util.verifier import send_proof_request
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from shared import RichAsyncClient
 from shared.models.credential_exchange import CredentialExchange
 
@@ -36,8 +36,8 @@ async def test_proof_revoked_credential(
     acme_and_alice_connection: AcmeAliceConnect,
     protocol_version: str,
 ):
-    # Get current time
-    unix_timestamp = int(time.time())
+    time.sleep(7)  # moment for revocation registry to update
+    # todo: remove sleep when issue resolved: https://github.com/hyperledger/aries-cloudagent-python/issues/3018
 
     # Do proof request
     request_body = {
@@ -47,7 +47,7 @@ async def test_proof_revoked_credential(
         "indy_proof_request": {
             "name": "Proof of SPEED",
             "version": "1.0",
-            "non_revoked": {"to": unix_timestamp},
+            "non_revoked": {"to": int(time.time())},
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",
@@ -71,7 +71,6 @@ async def test_proof_revoked_credential(
         filter_map={
             "thread_id": send_proof_response["thread_id"],
         },
-        look_back=5,
     )
 
     alice_proof_exchange_id = alice_payload["proof_id"]
@@ -100,24 +99,13 @@ async def test_proof_revoked_credential(
         },
     )
 
-    await check_webhook_state(
-        client=alice_member_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": alice_proof_exchange_id,
-        },
-        look_back=5,
-    )
-
-    await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_exchange_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_exchange_id,
+        acme_proof_exchange_id,
     )
 
     # Check proof
@@ -139,7 +127,9 @@ async def test_regression_proof_revoked_credential(
     alice_member_client: RichAsyncClient,
     acme_and_alice_connection: AcmeAliceConnect,
 ):
-    unix_timestamp = int(time.time())
+    time.sleep(7)  # moment for revocation registry to update
+    # todo: remove sleep when issue resolved: https://github.com/hyperledger/aries-cloudagent-python/issues/3018
+
     referent = get_or_issue_regression_cred_revoked.referent
     credential_definition_id_revocable = (
         get_or_issue_regression_cred_revoked.cred_def_revocable
@@ -151,7 +141,7 @@ async def test_regression_proof_revoked_credential(
         "comment": "Test proof of revocation",
         "type": "indy",
         "indy_proof_request": {
-            "non_revoked": {"to": unix_timestamp},
+            "non_revoked": {"to": int(time.time())},
             "requested_attributes": {
                 "THE_SPEED": {
                     "name": "speed",
@@ -175,7 +165,6 @@ async def test_regression_proof_revoked_credential(
         filter_map={
             "thread_id": send_proof_response["thread_id"],
         },
-        look_back=5,
     )
 
     alice_proof_exchange_id = alice_payload["proof_id"]
@@ -197,14 +186,13 @@ async def test_regression_proof_revoked_credential(
         },
     )
 
-    await check_webhook_state(
-        client=acme_client,
-        topic="proofs",
-        state="done",
-        filter_map={
-            "proof_id": acme_proof_exchange_id,
-        },
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        acme_client,
+        "proofs",
+        "done",
+        alice_proof_exchange_id,
+        acme_proof_exchange_id,
     )
 
     # Check proof

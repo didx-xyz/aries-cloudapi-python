@@ -11,6 +11,8 @@ from aries_cloudcontroller import (
     PublishRevocations,
     RevokeRequest,
     RevRegResult,
+    TransactionRecord,
+    TxnOrPublishRevocationsResult,
     V10CredentialExchange,
     V20CredExRecordDetail,
     V20CredExRecordIndy,
@@ -115,7 +117,15 @@ async def test_publish_pending_revocations_success(mock_agent_controller: AcaPyC
     # Simulate successful publish revocations call
     when(mock_agent_controller.revocation).publish_revocations(
         body=PublishRevocations(rrid2crid=revocation_registry_credential_map)
-    ).thenReturn(to_async())
+    ).thenReturn(
+        to_async(
+            TxnOrPublishRevocationsResult(
+                txn=TransactionRecord(
+                    transaction_id="97a46fab-5499-42b3-a2a1-7eb9faad31c0"
+                )
+            )
+        )
+    )
 
     await rg.publish_pending_revocations(
         controller=mock_agent_controller,

@@ -89,7 +89,6 @@ async def test_predicate_proofs(
             topic="proofs",
             state="done",
             filter_map={"thread_id": thread_id},
-            look_back=5,
         )
         assert acme_proof_event["verified"] is True
 

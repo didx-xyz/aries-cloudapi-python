@@ -31,11 +31,11 @@ from app.routes.wallet import jws as wallet_jws
 from app.routes.wallet import sd_jws as wallet_sd_jws
 from app.services.event_handling.websocket_manager import WebsocketManager
 from app.util.extract_validation_error import extract_validation_error_msg
+from shared.constants import PROJECT_VERSION
 from shared.exceptions import CloudApiValueError
 from shared.log_config import get_logger
 
 OPENAPI_NAME = os.getenv("OPENAPI_NAME", "OpenAPI")
-PROJECT_VERSION = os.getenv("PROJECT_VERSION", "0.11.0")
 ROLE = os.getenv("ROLE", "*")
 ROOT_PATH = os.getenv("ROOT_PATH", "")
 

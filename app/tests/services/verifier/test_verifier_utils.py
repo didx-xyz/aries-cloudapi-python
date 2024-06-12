@@ -634,7 +634,7 @@ async def test_assert_valid_prover_x_no_connection_id2(
 
     when(mock_agent_controller.connection).get_connection(
         conn_id="a-connection-id"
-    ).thenReturn(to_async(ConnRecord(connection_id=None)))
+    ).thenReturn(to_async(ConnRecord(connection_id="")))
 
     with pytest.raises(CloudApiException, match="Cannot proceed. No connection id."):
         assert await assert_valid_prover(

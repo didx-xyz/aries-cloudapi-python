@@ -3,6 +3,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     ApiException,
     DIFProofRequest,
+    IndyCredInfo,
     IndyCredPrecis,
     IndyPresSpec,
     PresentationDefinition,
@@ -363,7 +364,9 @@ async def test_get_credentials_by_proof_id(
 ):
     when(mock_agent_controller.present_proof_v1_0).get_matching_credentials(
         ...
-    ).thenReturn(to_async([] if empty_result else [IndyCredPrecis()]))
+    ).thenReturn(
+        to_async([] if empty_result else [IndyCredPrecis(cred_info=IndyCredInfo())])
+    )
 
     creds = await VerifierV1.get_credentials_by_proof_id(
         controller=mock_agent_controller, proof_id="v1-abc"

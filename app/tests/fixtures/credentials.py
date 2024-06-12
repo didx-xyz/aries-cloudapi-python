@@ -245,13 +245,12 @@ async def revoke_alice_creds_and_publish(
         )
 
     if not auto_publish:
-        for cred in issue_alice_creds:
-            await faber_client.post(
-                f"{CREDENTIALS_BASE_PATH}/publish-revocations",
-                json={
-                    "revocation_registry_credential_map": {},
-                },
-            )
+        await faber_client.post(
+            f"{CREDENTIALS_BASE_PATH}/publish-revocations",
+            json={
+                "revocation_registry_credential_map": {},
+            },
+        )
 
     return issue_alice_creds
 

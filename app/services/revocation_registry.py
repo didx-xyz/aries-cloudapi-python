@@ -19,6 +19,7 @@ from app.exceptions import (
 )
 from app.models.issuer import ClearPendingRevocationsResult
 from app.util.credentials import strip_protocol_prefix
+from app.util.retry_method import coroutine_with_retry
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -112,12 +113,43 @@ async def revoke_credential(
             f"Failed to revoke credential: {e.detail}", e.status_code
         ) from e
 
+    if auto_publish_to_ledger:
+        bound_logger.debug("Wait for publish complete")
+
+        revoked = False
+        max_tries = 5
+        retry_delay = 1
+        n_try = 0
+        while not revoked and n_try < max_tries:
+            n_try += 1
+            # Safely fetch revocation record and check if change reflected
+            record = await coroutine_with_retry(
+                coroutine_func=controller.revocation.get_revocation_status,
+                args=(strip_protocol_prefix(credential_exchange_id),),
+                logger=bound_logger,
+                max_attempts=5,
+                retry_delay=0.5,
+            )
+            # Todo: this record state can be "revoked" before it's been endorsed
+            if record.result:
+                revoked = record.result.state == "revoked"
+
+            if not revoked and n_try < max_tries:
+                bound_logger.debug("Not yet revoked, waiting ...")
+                await asyncio.sleep(retry_delay)
+
+        if not revoked:
+            raise CloudApiException(
+                "Could not assert that revocation was published within timeout. "
+                "Please check the revocation record state and retry if not revoked."
+            )
+
     bound_logger.info("Successfully revoked credential.")
 
 
 async def publish_pending_revocations(
     controller: AcaPyClient, revocation_registry_credential_map: Dict[str, List[str]]
-) -> None:
+) -> Optional[str]:
     """
         Publish pending revocations
 
@@ -130,18 +162,16 @@ async def publish_pending_revocations(
         Exception: When the pending revocations could not be published
 
     Returns:
-        result (None): Successful execution returns None.
+        result (str): Successful execution returns the endorser transaction id.
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
 
-    bound_logger.info("Validating revocation registry ids")
     await validate_rev_reg_ids(
         controller=controller,
         revocation_registry_credential_map=revocation_registry_credential_map,
     )
-
     try:
-        await handle_acapy_call(
+        result = await handle_acapy_call(
             logger=bound_logger,
             acapy_call=controller.revocation.publish_revocations,
             body=PublishRevocations(rrid2crid=revocation_registry_credential_map),
@@ -151,7 +181,19 @@ async def publish_pending_revocations(
             f"Failed to publish pending revocations: {e.detail}", e.status_code
         ) from e
 
-    bound_logger.info("Successfully published pending revocations.")
+    if not result.txn or not result.txn.transaction_id:
+        bound_logger.warning(
+            "Published pending revocations but received no endorser transaction id. Got result: {}",
+            result,
+        )
+        return
+
+    endorse_transaction_id = result.txn.transaction_id
+    bound_logger.info(
+        "Successfully published pending revocations. Endorser transaction id: {}.",
+        endorse_transaction_id,
+    )
+    return endorse_transaction_id
 
 
 async def clear_pending_revocations(
@@ -339,11 +381,12 @@ async def validate_rev_reg_ids(
 
     """
     bound_logger = logger.bind(body=revocation_registry_credential_map)
-    bound_logger.info("Validating revocation registry ids")
     rev_reg_id_list = list(revocation_registry_credential_map.keys())
 
     if not rev_reg_id_list:
         return
+
+    bound_logger.info("Validating revocation registry ids")
 
     for rev_reg_id in rev_reg_id_list:
         try:
@@ -437,7 +480,8 @@ async def wait_for_active_registry(
     active_registries = []
     sleep_duration = 0  # First sleep should be 0
 
-    while len(active_registries) < 1:  # We need one of the two registries to be ready
+    # we want both active registries ready before trying to publish revocations to it
+    while len(active_registries) < 2:
         await asyncio.sleep(sleep_duration)
         active_registries = await get_created_active_registries(controller, cred_def_id)
         sleep_duration = 0.5  # Following sleeps should wait 0.5s before retry

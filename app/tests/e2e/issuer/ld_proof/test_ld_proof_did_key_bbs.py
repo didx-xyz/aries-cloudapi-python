@@ -6,7 +6,7 @@ from aries_cloudcontroller import (
     AcaPyClient,
     Credential,
     LDProofVCDetail,
-    LDProofVCDetailOptions,
+    LDProofVCOptions,
 )
 from assertpy import assert_that
 from fastapi import HTTPException
@@ -16,7 +16,7 @@ from app.routes.connections import router as con_router
 from app.routes.issuer import router as issuer_router
 from app.routes.oob import router as oob_router
 from app.tests.util.connections import FaberAliceConnect
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from shared import RichAsyncClient
 
 CREDENTIALS_BASE_PATH = issuer_router.prefix
@@ -45,7 +45,7 @@ credential_ = SendCredential(
             issuanceDate="2021-04-12",
             issuer="",
         ),
-        options=LDProofVCDetailOptions(proofType="BbsBlsSignature2020"),
+        options=LDProofVCOptions(proofType="BbsBlsSignature2020"),
     ),
 ).model_dump(by_alias=True, exclude_unset=True)
 
@@ -224,22 +224,22 @@ async def test_send_jsonld_request(
     thread_id = credential_exchange["thread_id"]
     assert credential_exchange["protocol_version"] == "v2"
 
-    assert await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        state="offer-sent",
-        filter_map={
-            "thread_id": thread_id,
-        },
-        look_back=5,
+    result = await asyncio.gather(
+        check_webhook_state(
+            client=faber_client,
+            topic="credentials",
+            state="offer-sent",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        ),
+        check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+        ),
     )
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-        look_back=5,
-    )
+    assert all(result), "An expected webhook event was not returned"
 
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
@@ -255,19 +255,19 @@ async def test_send_jsonld_request(
 
     assert request_response.status_code == 200
 
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="request-sent",
-        look_back=5,
+    result = await asyncio.gather(
+        check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="request-sent",
+        ),
+        check_webhook_state(
+            client=faber_client,
+            topic="credentials",
+            state="request-received",
+        ),
     )
-
-    assert await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        state="request-received",
-        look_back=5,
-    )
+    assert all(result), "An expected webhook event was not returned"
 
 
 @pytest.mark.anyio
@@ -290,23 +290,24 @@ async def test_issue_jsonld_bbs(
     credential_exchange = response.json()
     assert credential_exchange["protocol_version"] == "v2"
     thread_id = credential_exchange["thread_id"]
+    faber_cred_ex_id = credential_exchange["credential_exchange_id"]
 
-    assert await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        state="offer-sent",
-        filter_map={
-            "thread_id": thread_id,
-        },
-        look_back=5,
+    result = await asyncio.gather(
+        check_webhook_state(
+            client=faber_client,
+            topic="credentials",
+            state="offer-sent",
+            filter_map={
+                "thread_id": thread_id,
+            },
+        ),
+        check_webhook_state(
+            client=alice_member_client,
+            topic="credentials",
+            state="offer-received",
+        ),
     )
-
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="offer-received",
-        look_back=5,
-    )
+    assert all(result), "An expected webhook event was not returned"
 
     await asyncio.sleep(0.2)  # credential may take moment to reflect after webhook
     response = await alice_member_client.get(
@@ -314,26 +315,21 @@ async def test_issue_jsonld_bbs(
         params={"thread_id": thread_id},
     )
 
-    credential_exchange_id = (response.json())[0]["credential_exchange_id"]
+    alice_cred_ex_id = (response.json())[0]["credential_exchange_id"]
 
     request_response = await alice_member_client.post(
-        f"{CREDENTIALS_BASE_PATH}/{credential_exchange_id}/request",
+        f"{CREDENTIALS_BASE_PATH}/{alice_cred_ex_id}/request",
     )
 
     assert request_response.status_code == 200
 
-    assert await check_webhook_state(
-        client=alice_member_client,
-        topic="credentials",
-        state="done",
-        look_back=5,
-    )
-
-    assert await check_webhook_state(
-        client=faber_client,
-        topic="credentials",
-        state="done",
-        look_back=5,
+    await assert_both_webhooks_received(
+        alice_member_client,
+        faber_client,
+        "credentials",
+        "done",
+        alice_cred_ex_id,
+        faber_cred_ex_id,
     )
 
 

@@ -4,7 +4,7 @@ import { check } from 'k6';
 import { Trend, Counter } from 'k6/metrics';
 import { sleep } from 'k6';
 
-let customDuration = new Trend('custom_duration', true);
+// let customDuration = new Trend('custom_duration', true);
 
 function logError(response, requestBody) {
   console.error(`Response status: ${response.status}`);
@@ -46,6 +46,7 @@ export function createTenant(bearerToken, wallet) {
     return response;
   } else {
     // Request failed
+    console.warn(`Request failed for VU: ${__VU}, ITER: ${__ITER}`);
     logError(response, payload);
     throw new Error(`Failed to create tenant`);
   }
@@ -76,7 +77,6 @@ export function getWalletIdByWalletName(bearerToken, walletName) {
     console.warn(`Response body: ${response.body}`);
     return null;
   } else {
-    // Request failed
     logError(response);
     console.warn(`Request failed for wallet_name ${walletName}`);
     return null;
@@ -100,7 +100,7 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
     const responseData = JSON.parse(response.body);
     const accessToken = responseData.access_token;
     let end = new Date();
-    customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
+    // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
     return accessToken;
   } else {
     // Request failed
@@ -108,7 +108,7 @@ export function getAccessTokenByWalletId(bearerToken, walletId) {
     console.error(`Response body: ${response.body}`);
     // throw new Error(`Failed to get access token: ${response.body}`);
     let end = new Date();
-    customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
+    // customDuration.add(end - start, { step: 'getAccessTokenByWalletId' });
     return null;
   }
 }
@@ -243,9 +243,8 @@ export function createCredential(bearerToken, issuerAccessToken, credentialDefin
       "protocol_version": "v2"
     });
 
-    console.log(`credentialDefinitionId: ${credentialDefinitionId}`)
-    console.log(`issuerConnectionId: ${issuerConnectionId}`)
-    console.log(`Request body: ${requestBody}`);
+    // console.log(`credentialDefinitionId: ${credentialDefinitionId}`)
+    // console.log(`issuerConnectionId: ${issuerConnectionId}`)
 
     let response = http.post(url, requestBody, params);
     if (response.status >= 200 && response.status < 300) {
@@ -315,10 +314,10 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
       'Content-Type': 'application/json'
     }
   };
-  console.log(`holderAccessToken: ${holderAccessToken}`);
+  // console.log(`holderAccessToken: ${holderAccessToken}`);
   try {
     let response = http.get(url, params);
-    console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
+    // console.log(`Request headers: ${JSON.stringify(response.request.headers)}`);
     // Parse the response body
     let responseData = JSON.parse(response.body);
     // Iterate over the responseData array
@@ -330,7 +329,7 @@ export function getCredentialIdByThreadId(holderAccessToken, threadId) {
         return obj.credential_id;
       }
     }
-    // Throw an error if no match is found, including the response body
+    // Throw an error if no match is found
     throw new Error(`No match found for threadId: ${threadId}\nResponse body: ${JSON.stringify(responseData, null, 2)}`);
   } catch (error) {
     console.error("Error in getCredentialIdByThreadId:", error);
@@ -351,7 +350,7 @@ export function waitForSSEEvent(holderAccessToken, holderWalletId, threadId) {
     tags: { 'k6_sse_tag': 'credential_offer_received' },
   }, function (client) {
     client.on('event', function (event) {
-      console.log(`event data=${event.data}`);
+      // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
       if (eventData.topic === 'credentials' && eventData.payload.state === 'offer-received') {
         check(eventData, {
@@ -397,7 +396,7 @@ export function waitForSSEEventConnection(holderAccessToken, holderWalletId, inv
     tags: { 'k6_sse_tag': 'connection_ready' },
   }, function (client) {
     client.on('event', function (event) {
-      console.log(`event data=${event.data}`);
+      // console.log(`event data=${event.data}`);
       const eventData = JSON.parse(event.data);
       if (eventData.topic === 'connections' && eventData.payload.state === 'completed') {
         check(eventData, {

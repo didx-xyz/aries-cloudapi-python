@@ -2,6 +2,8 @@ import { check } from 'k6';
 import { SharedArray } from 'k6/data';
 import { getBearerToken } from './auth.js';
 import { Trend, Counter } from 'k6/metrics';
+import file from 'k6/x/file';
+// import exec from 'k6/execution';
 import {
   createTenant,
   getWalletIdByWalletName,
@@ -19,9 +21,20 @@ import {
   getCredentialDefinitionId
 } from './tenant.js';
 
+const vus = parseInt(__ENV.VUS);
+const iterations = parseInt(__ENV.ITERATIONS);
+
 export let options = {
-  vus: 2, // number of VUs to run
-  iterations: 2, // total number of iterations (global)
+  scenarios: {
+    default: {
+      executor: 'per-vu-iterations',
+      vus: vus,
+      iterations: iterations,
+      maxDuration: '120s',
+    },
+  },
+  setupTimeout: '120s', // Increase the setup timeout to 120 seconds
+  teardownTimeout: '120s', // Increase the teardown timeout to 120 seconds
   maxRedirects: 4,
   thresholds: { //https://community.grafana.com/t/ignore-http-calls-made-in-setup-or-teardown-in-results/97260/2
     'http_req_duration{scenario:default}': [`max>=0`],
@@ -29,26 +42,28 @@ export let options = {
     'iteration_duration{scenario:default}': ['max>=0'],
     'specific_function_reqs{my_custom_tag:specific_function}': ['count>=0'],
     'specific_function_reqs{scenario:default}': ['count>=0'],
-  },
-  tags: {
-    test_run_id: 'sequential-issuance',
+    // 'custom_duration{step:getAccessTokenByWalletId}': ['avg>=0'],
   },
 };
 
 const specificFunctionReqs = new Counter('specific_function_reqs');
 const mainIterationDuration = new Trend('main_iteration_duration');
 
-// Seed data: Generating a list of options.iterations unique wallet names
-const wallets = new SharedArray('wallets', function() {
-  const walletsArray = [];
-  for (let i = 0; i < options.iterations; i++) {
-    walletsArray.push({
-      wallet_label: `xk6 holder ${i}`,
-      wallet_name: `xk6_wallet_${i}`
-    });
-  }
-  return walletsArray;
-});
+const inputFilepath = 'output/create-holders.json';
+const data = open(inputFilepath, 'r');
+const outputFilepath = 'output/create-invitation.json';
+
+// // Seed data: Generating a list of options.iterations unique wallet names
+// const wallets = new SharedArray('wallets', function() {
+//   const walletsArray = [];
+//   for (let i = 0; i < options.iterations; i++) {
+//     walletsArray.push({
+//       wallet_label: `xxkk6 holder ${i}`,
+//       wallet_name: `xxkk6_wallet_${i}`
+//     });
+//   }
+//   return walletsArray;
+// });
 
 const numIssuers = 1;
 let issuers = [];
@@ -56,6 +71,16 @@ let issuers = [];
 export function setup() {
   const bearerToken = getBearerToken();
   const issuers = [];
+
+  const holders = data.trim().split('\n').map(JSON.parse);
+
+  // Example usage of the loaded data
+  holders.forEach((holderData) => {
+    console.log(`Processing wallet ID: ${holderData.wallet_id}`);
+    // Your test logic here, e.g., make HTTP requests using the holderData
+  });
+
+  file.writeString(outputFilepath, '');
 
   for (let i = 0; i < numIssuers; i++) {
     const walletName = `k6issuer_${i}`;
@@ -70,7 +95,7 @@ export function setup() {
       issuerAccessToken = getAccessTokenByWalletId(bearerToken, issuerWalletId);
       if (typeof issuerAccessToken === 'string') {
         // Access token retrieved successfully
-        console.log(`Access token retrieved via wallet ID for ${issuerWalletId}`);
+        console.log(`Access token retrieved for wallet ID ${issuerWalletId}`);
       } else {
         console.error(`Failed to retrieve access token for wallet ID ${issuerWalletId}`);
         console.error(`Response body: ${issuerAccessToken}`);
@@ -123,36 +148,38 @@ export function setup() {
     }
   }
 
-  return { bearerToken, issuers };
+  return { bearerToken, issuers, holders };
 }
 
+const iterationsPerVU = options.scenarios.default.iterations;
 // Helper function to calculate the wallet index based on VU and iteration
 function getWalletIndex(vu, iter) {
-  const iterationsPerVU = Math.floor(options.iterations / options.vus);
-  const startIndex = (vu - 1) * iterationsPerVU;
-  return startIndex + (iter % iterationsPerVU);
+  const walletIndex = (vu - 1) * iterationsPerVU + (iter - 1);
+  return walletIndex;
 }
 
 export default function(data) {
   const start = Date.now();
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
-  const walletIndex = getWalletIndex(__VU, __ITER);
-  const wallet = wallets[walletIndex];
+  const walletIndex = getWalletIndex(__VU, __ITER + 1); // __ITER starts from 0, adding 1 to align with the logic
+
+  const holders = data.holders;
+  const wallet = holders[walletIndex];
+
+
   const issuerIndex = __ITER % numIssuers;
   const issuer = issuers[issuerIndex];
 
-  const createTenantResponse = createTenant(bearerToken, wallet);
-  check(createTenantResponse, {
-    "Create Tenant Response status code is 200": (r) => {
-      if (r.status !== 200) {
-        throw new Error(`Unexpected response status: ${r.status}`);
-      }
-      return true;
-    }
-  });
-  const { wallet_id: walletId, access_token: holderAccessToken } = JSON.parse(createTenantResponse.body);
+  // const holderWalletId = getWalletIdByWalletName(bearerToken, wallet.wallet_name);
+  // check(holderWalletId, {
+  //   "Holder wallet ID is not null": (r) => r !== null
+  // });
 
+  // const holderAccessToken = getAccessTokenByWalletId(bearerToken, holderWalletId);
+  // check(holderAccessToken, {
+  //   "Holder access token is not null": (r) => r !== null
+  // });
 
   const createInvitationResponse = createInvitation(bearerToken, issuer.accessToken);
   check(createInvitationResponse, {
@@ -165,7 +192,7 @@ export default function(data) {
   });
   const { invitation: invitationObj, connection_id: issuerConnectionId } = JSON.parse(createInvitationResponse.body);
 
-  const acceptInvitationResponse = acceptInvitation(holderAccessToken, invitationObj);
+  const acceptInvitationResponse = acceptInvitation(wallet.access_token, invitationObj);
   check(acceptInvitationResponse, {
     "Invitation accepted successfully": (r) => {
       if (r.status !== 200) {
@@ -177,7 +204,7 @@ export default function(data) {
 
   const { connection_id: holderInvitationConnectionId } = JSON.parse(acceptInvitationResponse.body);
 
-  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(holderAccessToken, walletId, holderInvitationConnectionId);
+  const waitForSSEEventConnectionResponse = waitForSSEEventConnection(wallet.access_token, wallet.wallet_id, holderInvitationConnectionId);
   check(waitForSSEEventConnectionResponse, {
     'SSE Event received successfully: connection-ready': (r) => {
       if (!r) {
@@ -187,41 +214,34 @@ export default function(data) {
     },
   });
 
-  const createCredentialResponse = createCredential(bearerToken, issuer.accessToken, issuer.credentialDefinitionId, issuerConnectionId);
-  check(createCredentialResponse, {
-    "Credential created successfully": (r) => {
-      if (r.status !== 200) {
-        throw new Error(`Unexpected response while creating credential: ${r.response}`);
-      }
-      return true;
-    }
-  });
-
-  const { thread_id: threadId } = JSON.parse(createCredentialResponse.body);
-
-  const waitForSSEEventResponse = waitForSSEEvent(holderAccessToken, walletId, threadId);
-  check(waitForSSEEventResponse, {
-    'SSE Event received successfully: offer-received': (r) => {
-      if (!r) {
-        throw new Error('SSE event was not received successfully');
-      }
-      return true;
-    },
-  });
-
-  const credentialId = getCredentialIdByThreadId(holderAccessToken, threadId);
-
-  const acceptCredentialResponse = acceptCredential(holderAccessToken, credentialId);
-  check(acceptCredentialResponse, {
-    "Credential accepted successfully": (r) => {
-      if (r.status !== 200) {
-        throw new Error(`Unexpected response while accepting credential: ${r.response}`);
-      }
-      return true;
-    }
-  });
-
   specificFunctionReqs.add(1, { my_custom_tag: 'specific_function' });
+
+  // holders.push({
+  //   wallet_label: wallet.wallet_label,
+  //   wallet_name: wallet.wallet_name,
+  //   wallet_id: wallet.wallet_id,
+  //   access_token: wallet.access_token,
+  //   connection_id: holderInvitationConnectionId,
+  //   issuer_connection_id: issuerConnectionId,
+  // });
+  // console.log('Holder added to array:', holders[holders.length - 1]);
+
+  // // Write holders array to file
+  // const filepath = 'holders.json';
+  // const output = JSON.stringify(holders);
+  // file.writeString(filepath, output);
+
+  // console.log('Writing xxxxxxxxxxxx:', output);
+  // Store the holder data in exec.vu.tags as a JSON string
+  const holderData = JSON.stringify({
+    wallet_label: wallet.wallet_label,
+    wallet_name: wallet.wallet_name,
+    wallet_id: wallet.wallet_id,
+    access_token: wallet.access_token,
+    connection_id: holderInvitationConnectionId,
+    issuer_connection_id: issuerConnectionId,
+  });
+  file.appendString(outputFilepath, holderData + '\n');
 
   const end = Date.now();
   const duration = end - start;
@@ -232,6 +252,22 @@ export default function(data) {
 export function teardown(data) {
   const bearerToken = data.bearerToken;
   const issuers = data.issuers;
+  const holders = data.holders;
+
+  // console.log('I CAN STILL READ:', holders[holders.length - 1]);
+
+  // const filepath = 'holders.json';
+
+  // // Convert the holders array to a JSON string
+  // const output = JSON.stringify(holders);
+
+  // Write the JSON string to the file
+  // try {
+  //   file.writeString(filepath, output);
+  //   console.log('Holders array written to file:', filepath);
+  // } catch (error) {
+  //   console.error('Error writing holders array to file:', error);
+  // }
 
   if (__ENV.SKIP_DELETE_ISSUERS !== 'true') {
     for (const issuer of issuers) {
@@ -252,19 +288,23 @@ export function teardown(data) {
     console.log('Skipping deletion of issuer tenants.');
   }
   // // Delete holder tenants
-  for (const wallet of wallets) {
-    const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
-    const deleteHolderResponse = deleteTenant(bearerToken, walletId);
-    check (deleteHolderResponse, {
-      "Delete Holder Tenant Response status code is 200": (r) => {
-        if (r.status !== 200) {
-          console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
-          return false;
-        } else {
-          console.log(`Deleted holder tenant ${walletId} successfully.`);
-          return true;
+  if (__ENV.SKIP_DELETE_HOLDERS !== 'true') {
+    for (const wallet of holders) {
+      const walletId =  getWalletIdByWalletName(bearerToken, wallet.wallet_name);
+      const deleteHolderResponse = deleteTenant(bearerToken, walletId);
+      check (deleteHolderResponse, {
+        "Delete Holder Tenant Response status code is 200": (r) => {
+          if (r.status !== 200) {
+            console.error(`Unexpected response status while deleting holder tenant ${walletId}: ${r.status}`);
+            return false;
+          } else {
+            console.log(`Deleted holder tenant ${walletId} successfully.`);
+            return true;
+          }
         }
-      }
-    });
+      });
+    }
+  } else {
+    console.log('Skipping deletion of holder tenants.');
   }
 }

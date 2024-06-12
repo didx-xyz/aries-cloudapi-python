@@ -15,7 +15,6 @@ export function getBearerToken() {
   if (response.status === 200) {
     let responseData = JSON.parse(response.body);
     let bearerToken = responseData.access_token;
-    console.log("Extracted bearer token:", bearerToken);
     return bearerToken;
   } else {
     console.error("Error:", response.status_text);

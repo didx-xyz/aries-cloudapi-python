@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from aries_cloudcontroller import CreateInvitationRequest, InvitationResult
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
@@ -134,6 +134,8 @@ async def accept_invitation(
 
 @router.get("", summary="Fetch Connection Records", response_model=List[Connection])
 async def get_connections(
+    limit: Optional[int] = Query(100, description="Number of results to return"),
+    offset: Optional[int] = Query(0, description="Offset for pagination"),
     alias: Optional[str] = None,
     connection_protocol: Optional[Protocol] = None,
     invitation_key: Optional[str] = None,
@@ -176,6 +178,8 @@ async def get_connections(
         connections = await handle_acapy_call(
             logger=logger,
             acapy_call=aries_controller.connection.get_connections,
+            limit=limit,
+            offset=offset,
             alias=alias,
             connection_protocol=connection_protocol,
             invitation_key=invitation_key,

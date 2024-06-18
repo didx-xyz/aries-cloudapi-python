@@ -2,7 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from aries_cloudcontroller import IndyCredPrecis
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.dependencies.acapy_clients import client_from_auth
 from app.dependencies.auth import AcaPyAuth, acapy_auth_from_header
@@ -324,11 +324,13 @@ async def reject_proof_request(
     response_model=List[PresentationExchange],
 )
 async def get_proof_records(
-    auth: AcaPyAuth = Depends(acapy_auth_from_header),
+    limit: Optional[int] = Query(100, description="Number of results to return"),
+    offset: Optional[int] = Query(0, description="Offset for pagination"),
     connection_id: Optional[str] = None,
     role: Optional[Role] = None,
     state: Optional[State] = None,
     thread_id: Optional[UUID] = None,
+    auth: AcaPyAuth = Depends(acapy_auth_from_header),
 ) -> List[PresentationExchange]:
     """
     Get all presentation exchange records for this tenant
@@ -358,6 +360,8 @@ async def get_proof_records(
             logger.debug("Fetching v1 proof records")
             v1_records = await VerifierFacade.V1.value.get_proof_records(
                 controller=aries_controller,
+                limit=limit,
+                offset=offset,
                 connection_id=connection_id,
                 role=role,
                 state=back_to_v1_presentation_state(state) if state else None,
@@ -366,6 +370,8 @@ async def get_proof_records(
             logger.debug("Fetching v2 proof records")
             v2_records = await VerifierFacade.V2.value.get_proof_records(
                 controller=aries_controller,
+                limit=limit,
+                offset=offset,
                 connection_id=connection_id,
                 role=role,
                 state=state,

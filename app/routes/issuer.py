@@ -333,6 +333,8 @@ async def store_credential(
     response_model=List[CredentialExchange],
 )
 async def get_credentials(
+    limit: Optional[int] = Query(100, description="Number of results to return"),
+    offset: Optional[int] = Query(0, description="Offset for pagination"),
     connection_id: Optional[str] = Query(None),
     role: Optional[Role] = Query(None),
     state: Optional[State] = Query(None),
@@ -377,6 +379,8 @@ async def get_credentials(
         bound_logger.debug("Fetching v1 records")
         v1_records = await IssueCredentialFacades.V1.value.get_records(
             controller=aries_controller,
+            limit=limit,
+            offset=offset,
             connection_id=connection_id,
             role=role,
             state=back_to_v1_credential_state(state) if state else None,
@@ -386,6 +390,8 @@ async def get_credentials(
         bound_logger.debug("Fetching v2 records")
         v2_records = await IssueCredentialFacades.V2.value.get_records(
             controller=aries_controller,
+            limit=limit,
+            offset=offset,
             connection_id=connection_id,
             role=role,
             state=state,

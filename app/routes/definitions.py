@@ -144,76 +144,24 @@ async def get_schemas(
 
     async with client_from_auth(auth) as aries_controller:
         if not is_governance:  # regular tenant is calling endpoint
-            bound_logger.info("GET request received: Get created schemas")
-
-            if not schema_id:  # client is not filtering by schema_id, fetch all
-                trust_registry_schemas = await get_trust_registry_schemas()
-            else:  # fetch specific id
-                trust_registry_schemas = [
-                    await get_trust_registry_schema_by_id(schema_id)
-                ]
-
-            schema_ids = [schema.id for schema in trust_registry_schemas]
-
-        else:  # Governance is calling the endpoint
-            bound_logger.info(
-                "GET request received: Get schemas created by governance client"
-            )
-            # Get all created schema ids that match the filter
-            bound_logger.debug("Fetching created schemas")
-            response = await handle_acapy_call(
+            schemas = await get_schemas_tenant(
                 logger=bound_logger,
-                acapy_call=aries_controller.schema.get_created_schemas,
+                aries_controller=aries_controller,
                 schema_id=schema_id,
                 schema_issuer_did=schema_issuer_did,
                 schema_name=schema_name,
                 schema_version=schema_version,
             )
 
-            # Initiate retrieving all schemas
-            schema_ids = response.schema_ids or []
-
-        # We now have schema_ids; the following logic is the same whether called by governance or tenant.
-        # Now fetch relevant schemas from ledger:
-        get_schema_futures = [
-            handle_acapy_call(
+        else:  # Governance is calling the endpoint
+            schemas = await get_schemas_governance(
                 logger=bound_logger,
-                acapy_call=aries_controller.schema.get_schema,
+                aries_controller=aries_controller,
                 schema_id=schema_id,
+                schema_issuer_did=schema_issuer_did,
+                schema_name=schema_name,
+                schema_version=schema_version,
             )
-            for schema_id in schema_ids
-        ]
-
-        # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
-        if get_schema_futures:
-            bound_logger.debug("Fetching each of the created schemas")
-            schema_results: List[SchemaGetResult] = await asyncio.gather(
-                *get_schema_futures
-            )
-        else:
-            bound_logger.debug("No created schema ids returned")
-            schema_results = []
-
-    # Stepping out of the aries_controller context, we can now translate the ACA-Py schema response to our custom model
-    schemas = [
-        credential_schema_from_acapy(schema.var_schema)
-        for schema in schema_results
-        if schema.var_schema
-    ]
-
-    if not is_governance:
-        # Apply post-filtering that could otherwise only be done in governance aca-py call
-        # todo: our fetch from trust registry method should be able to pre-filter these values
-        if schema_issuer_did:
-            schemas = [
-                schema
-                for schema in schemas
-                if schema.id.split(":")[0] == schema_issuer_did
-            ]
-        if schema_name:
-            schemas = [schema for schema in schemas if schema.name == schema_name]
-        if schema_version:
-            schemas = [schema for schema in schemas if schema.version == schema_version]
 
     if schemas:
         bound_logger.info("Successfully fetched schemas.")

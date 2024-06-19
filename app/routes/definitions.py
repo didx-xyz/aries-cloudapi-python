@@ -338,45 +338,16 @@ async def get_credential_definitions(
 
     # Get all created credential definition ids that match the filter
     async with client_from_auth(auth) as aries_controller:
-        bound_logger.debug("Getting created credential definitions")
-        response = await handle_acapy_call(
+        credential_definitions = await get_cred_defs(
             logger=bound_logger,
-            acapy_call=aries_controller.credential_definition.get_created_cred_defs,
+            aries_controller=aries_controller,
             issuer_did=issuer_did,
-            cred_def_id=credential_definition_id,
+            credential_definition_id=credential_definition_id,
             schema_id=schema_id,
             schema_issuer_did=schema_issuer_did,
             schema_name=schema_name,
             schema_version=schema_version,
         )
-
-        # Initiate retrieving all credential definitions
-        credential_definition_ids = response.credential_definition_ids or []
-        get_credential_definition_futures = [
-            handle_acapy_call(
-                logger=bound_logger,
-                acapy_call=aries_controller.credential_definition.get_cred_def,
-                cred_def_id=credential_definition_id,
-            )
-            for credential_definition_id in credential_definition_ids
-        ]
-
-        # Wait for completion of retrieval and transform all credential definitions
-        # into response model (if a credential definition was returned)
-        if get_credential_definition_futures:
-            bound_logger.debug("Getting definitions from fetched credential ids")
-            credential_definition_results = await asyncio.gather(
-                *get_credential_definition_futures
-            )
-        else:
-            bound_logger.debug("No definition ids returned")
-            credential_definition_results = []
-
-    credential_definitions = [
-        credential_definition_from_acapy(credential_definition.credential_definition)
-        for credential_definition in credential_definition_results
-        if credential_definition.credential_definition
-    ]
 
     if credential_definitions:
         bound_logger.info("Successfully fetched credential definitions.")

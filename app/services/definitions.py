@@ -175,3 +175,37 @@ async def create_schema_service(
     logger.info("Successfully published and registered schema.")
 
     return result
+
+
+async def get_schemas_tenant(
+    logger: Logger,
+    aries_controller: AcaPyClient,
+    schema_id: Optional[str],
+    schema_issuer_did: Optional[str],
+    schema_name: Optional[str],
+    schema_version: Optional[str],
+) -> List[CredentialSchema]:
+    """
+    Allows tenants to get all schemas created
+    """
+    logger.info("GET request received: Get created schemas")
+
+    if not schema_id:  # client is not filtering by schema_id, fetch all
+        trust_registry_schemas = await get_trust_registry_schemas()
+    else:  # fetch specific id
+        trust_registry_schemas = [await get_trust_registry_schema_by_id(schema_id)]
+
+    schema_ids = [schema.id for schema in trust_registry_schemas]
+
+    schemas = await schema_futures(logger, schema_ids, aries_controller)
+
+    if schema_issuer_did:
+        schemas = [
+            schema for schema in schemas if schema.id.split(":")[0] == schema_issuer_did
+        ]
+    if schema_name:
+        schemas = [schema for schema in schemas if schema.name == schema_name]
+    if schema_version:
+        schemas = [schema for schema in schemas if schema.version == schema_version]
+
+    return schemas

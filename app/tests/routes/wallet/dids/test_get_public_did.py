@@ -12,7 +12,7 @@ from fastapi import HTTPException
 from app.routes.wallet.dids import get_public_did
 
 sample_did = DID(
-    did="did:sov:2cpBmR3FqGKWi5EyUbpRY8",
+    did="2cpBmR3FqGKWi5EyUbpRY8",
     key_type="ed25519",
     method="sov",
     posture="posted",

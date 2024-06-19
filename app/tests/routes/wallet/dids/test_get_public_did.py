@@ -15,7 +15,7 @@ sample_did = DID(
     did="did:sov:2cpBmR3FqGKWi5EyUbpRY8",
     key_type="ed25519",
     method="sov",
-    posture="wallet_only",
+    posture="posted",
     verkey="WgWxqztrNooG92RXvxSTWvWgWxqztrNooG92RXvxSTWv",
 )
 

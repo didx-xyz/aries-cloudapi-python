@@ -404,3 +404,60 @@ async def create_cred_def(
             ) from e
 
     return credential_definition_id
+
+
+async def get_cred_defs(
+    logger: Logger,
+    aries_controller: AcaPyClient,
+    issuer_did: Optional[str],
+    credential_definition_id: Optional[str],
+    schema_id: Optional[str],
+    schema_issuer_did: Optional[str],
+    schema_name: Optional[str],
+    schema_version: Optional[str],
+) -> List[CredentialDefinition]:
+    """
+    Get credential definitions
+    """
+
+    logger.debug("Getting created credential definitions")
+    response = await handle_acapy_call(
+        logger=logger,
+        acapy_call=aries_controller.credential_definition.get_created_cred_defs,
+        issuer_did=issuer_did,
+        cred_def_id=credential_definition_id,
+        schema_id=schema_id,
+        schema_issuer_did=schema_issuer_did,
+        schema_name=schema_name,
+        schema_version=schema_version,
+    )
+
+    # Initiate retrieving all credential definitions
+    credential_definition_ids = response.credential_definition_ids or []
+    get_credential_definition_futures = [
+        handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.credential_definition.get_cred_def,
+            cred_def_id=credential_definition_id,
+        )
+        for credential_definition_id in credential_definition_ids
+    ]
+
+    # Wait for completion of retrieval and transform all credential definitions
+    # into response model (if a credential definition was returned)
+    if get_credential_definition_futures:
+        logger.debug("Getting definitions from fetched credential ids")
+        credential_definition_results = await asyncio.gather(
+            *get_credential_definition_futures
+        )
+    else:
+        logger.debug("No definition ids returned")
+        credential_definition_results = []
+
+    credential_definitions = [
+        credential_definition_from_acapy(credential_definition.credential_definition)
+        for credential_definition in credential_definition_results
+        if credential_definition.credential_definition
+    ]
+
+    return credential_definitions

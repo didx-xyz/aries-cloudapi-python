@@ -209,3 +209,34 @@ async def get_schemas_tenant(
         schemas = [schema for schema in schemas if schema.version == schema_version]
 
     return schemas
+
+
+async def get_schemas_governance(
+    logger: Logger,
+    aries_controller: AcaPyClient,
+    schema_id: Optional[str],
+    schema_issuer_did: Optional[str],
+    schema_name: Optional[str],
+    schema_version: Optional[str],
+) -> List[CredentialSchema]:
+    """
+    Governance agents gets all schemas created by itself
+    """
+    logger.info("GET request received: Get schemas created by governance client")
+    # Get all created schema ids that match the filter
+    logger.debug("Fetching created schemas")
+    response = await handle_acapy_call(
+        logger=logger,
+        acapy_call=aries_controller.schema.get_created_schemas,
+        schema_id=schema_id,
+        schema_issuer_did=schema_issuer_did,
+        schema_name=schema_name,
+        schema_version=schema_version,
+    )
+
+    # Initiate retrieving all schemas
+    schema_ids = response.schema_ids or []
+
+    schemas = await schema_futures(logger, schema_ids, aries_controller)
+
+    return schemas

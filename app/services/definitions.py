@@ -240,3 +240,39 @@ async def get_schemas_governance(
     schemas = await schema_futures(logger, schema_ids, aries_controller)
 
     return schemas
+
+
+async def schema_futures(
+    logger: Logger, schema_ids: List[str], aries_controller: AcaPyClient
+) -> List[CredentialSchema]:
+    """
+    Get schemas with attributes from schema ids
+    """
+    # We now have schema_ids; the following logic is the same whether called by governance or tenant.
+    # Now fetch relevant schemas from ledger:
+    get_schema_futures = [
+        handle_acapy_call(
+            logger=logger,
+            acapy_call=aries_controller.schema.get_schema,
+            schema_id=schema_id,
+        )
+        for schema_id in schema_ids
+    ]
+
+    # Wait for completion of retrieval and transform all schemas into response model (if a schema was returned)
+    if get_schema_futures:
+        logger.debug("Fetching each of the created schemas")
+        schema_results: List[SchemaGetResult] = await asyncio.gather(
+            *get_schema_futures
+        )
+    else:
+        logger.debug("No created schema ids returned")
+        schema_results = []
+
+    schemas = [
+        credential_schema_from_acapy(schema.var_schema)
+        for schema in schema_results
+        if schema.var_schema
+    ]
+
+    return schemas

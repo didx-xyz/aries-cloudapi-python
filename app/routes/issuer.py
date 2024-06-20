@@ -122,10 +122,7 @@ async def send_credential(
                 f"Failed to send credential: {e.detail}", e.status_code
             ) from e
 
-    if result:
-        bound_logger.info("Successfully sent credential.")
-    else:
-        bound_logger.warning("No result from sending credential.")
+    bound_logger.info("Successfully sent credential.")
     return result
 
 
@@ -212,10 +209,7 @@ async def create_offer(
             credential=credential,
         )
 
-    if result:
-        bound_logger.info("Successfully created credential offer.")
-    else:
-        bound_logger.warning("No result from creating credential offer.")
+    bound_logger.info("Successfully created credential offer.")
     return result
 
 
@@ -281,10 +275,7 @@ async def request_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    if result:
-        bound_logger.info("Successfully sent credential request.")
-    else:
-        bound_logger.warning("No result from sending credential request.")
+    bound_logger.info("Successfully sent credential request.")
     return result
 
 
@@ -332,10 +323,7 @@ async def store_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    if result:
-        bound_logger.info("Successfully stored credential.")
-    else:
-        bound_logger.warning("No result from storing credential.")
+    bound_logger.info("Successfully stored credential.")
     return result
 
 
@@ -459,10 +447,7 @@ async def get_credential(
             controller=aries_controller, credential_exchange_id=credential_exchange_id
         )
 
-    if result:
-        bound_logger.info("Successfully fetched credential.")
-    else:
-        bound_logger.info("No credential returned.")
+    bound_logger.info("Successfully fetched credential.")
     return result
 
 
@@ -611,10 +596,7 @@ async def get_credential_revocation_record(
             revocation_registry_id=revocation_registry_id,
         )
 
-    if revocation_record:
-        bound_logger.info("Successfully fetched credential revocation record.")
-    else:
-        bound_logger.info("No credential revocation record returned.")
+    bound_logger.info("Successfully fetched credential revocation record.")
     return revocation_record
 
 

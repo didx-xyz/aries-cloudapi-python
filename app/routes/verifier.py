@@ -63,7 +63,7 @@ async def send_proof_request(
     For a detailed technical specification and informative diagrams
     related to the present proof process, refer to the [Aries Present Proof v2
     RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof
-    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md)
+    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).
 
     Request Body:
     ---
@@ -135,7 +135,7 @@ async def create_proof_request(
     For a detailed technical specification and informative diagrams
     related to the present proof process, refer to the [Aries Present Proof v2
     RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0454-present-proof-v2/README.md) and the [LD Proof
-    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md)
+    Attachment RFC](https://github.com/hyperledger/aries-rfcs/blob/main/features/0510-dif-pres-exch-attach/README.md).
 
     Request Body:
     ---
@@ -441,7 +441,7 @@ async def delete_proof(
     """
     Delete a presentation exchange record
     ---
-    This will remove a specific presentation exchange from your records.
+    This will remove a specific presentation exchange from your storage records.
 
     Parameters:
     ---

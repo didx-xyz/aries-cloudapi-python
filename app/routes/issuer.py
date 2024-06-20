@@ -476,7 +476,7 @@ async def remove_credential_exchange_record(
     """
     Delete a credential exchange record
     ---
-    This will remove a specific credential exchange from your records.
+    This will remove a specific credential exchange from your storage records.
 
     Parameters:
     ---

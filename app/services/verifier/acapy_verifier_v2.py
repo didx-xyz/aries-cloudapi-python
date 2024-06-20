@@ -57,7 +57,6 @@ class VerifierV2(Verifier):
             presentation_request=presentation_request,
             auto_verify=True,
             comment=create_proof_request.comment,
-            trace=create_proof_request.trace,
         )
         try:
             presentation_exchange = await handle_acapy_call(
@@ -101,7 +100,6 @@ class VerifierV2(Verifier):
             presentation_request=presentation_request,
             auto_verify=True,
             comment=send_proof_request.comment,
-            trace=send_proof_request.trace,
         )
         try:
             bound_logger.debug("Send free v2 presentation request")

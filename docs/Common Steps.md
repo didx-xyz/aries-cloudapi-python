@@ -166,8 +166,7 @@ To create schemas and effectively write them to the ledger as well as registerin
          "additionalProp1": "string",
          "additionalProp2": "string",
          "additionalProp3": "string"
-       },
-       "trace": false
+       }
      }
    }
    ```

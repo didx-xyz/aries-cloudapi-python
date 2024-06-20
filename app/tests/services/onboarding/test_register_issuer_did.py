@@ -15,7 +15,7 @@ async def test_wait_endorser_connection_completed_happy_path():
     # Mocks
     logger = MagicMock()
     endorser_controller = MagicMock()
-    conn_record = ConnRecord(rfc23_state="completed")
+    conn_record = ConnRecord(connection_id="abc", rfc23_state="completed")
 
     # Configure the mock to return a successful connection state
     endorser_controller.connection.get_connections = AsyncMock(
@@ -42,7 +42,7 @@ async def test_wait_endorser_connection_completed_happy_path():
 async def test_wait_endorser_connection_completed_retry_logic():
     logger = MagicMock()
     endorser_controller = MagicMock()
-    conn_record = ConnRecord(rfc23_state="completed")
+    conn_record = ConnRecord(connection_id="abc", rfc23_state="completed")
 
     # First call raises an exception, second call returns the expected state
     endorser_controller.connection.get_connections = AsyncMock(
@@ -94,7 +94,7 @@ async def test_wait_endorser_connection_completed_max_retries_no_completion():
     endorser_controller = MagicMock()
 
     # Always return a non-completed state
-    conn_record = ConnRecord(rfc23_state="not-completed")
+    conn_record = ConnRecord(connection_id="abc", rfc23_state="not-completed")
     endorser_controller.connection.get_connections = AsyncMock(
         return_value=MagicMock(results=[conn_record])
     )

@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException
 
 from endorser.services.dependency_injection.container import Container
 from endorser.services.endorsement_processor import EndorsementProcessor
+from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
 
 logger = get_logger(__name__)
@@ -35,11 +36,10 @@ async def app_lifespan(_: FastAPI):
 
 def create_app() -> FastAPI:
     openapi_name = os.getenv("OPENAPI_NAME", "Aries Cloud API: Endorser Service")
-    project_version = os.getenv("PROJECT_VERSION", "0.11.0")
 
     application = FastAPI(
         title=openapi_name,
-        version=project_version,
+        version=PROJECT_VERSION,
         lifespan=app_lifespan,
     )
 

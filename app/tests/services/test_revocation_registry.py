@@ -11,6 +11,8 @@ from aries_cloudcontroller import (
     PublishRevocations,
     RevokeRequest,
     RevRegResult,
+    TransactionRecord,
+    TxnOrPublishRevocationsResult,
     V10CredentialExchange,
     V20CredExRecordDetail,
     V20CredExRecordIndy,
@@ -115,7 +117,15 @@ async def test_publish_pending_revocations_success(mock_agent_controller: AcaPyC
     # Simulate successful publish revocations call
     when(mock_agent_controller.revocation).publish_revocations(
         body=PublishRevocations(rrid2crid=revocation_registry_credential_map)
-    ).thenReturn(to_async())
+    ).thenReturn(
+        to_async(
+            TxnOrPublishRevocationsResult(
+                txn=TransactionRecord(
+                    transaction_id="97a46fab-5499-42b3-a2a1-7eb9faad31c0"
+                )
+            )
+        )
+    )
 
     await rg.publish_pending_revocations(
         controller=mock_agent_controller,
@@ -208,7 +218,7 @@ async def test_clear_pending_revocations_failure(mock_agent_controller: AcaPyCli
 
     with pytest.raises(
         CloudApiException,
-        match=f"Failed to clear pending revocations: {error_message}.",
+        match=f"Failed to clear pending revocations: {error_message}",
     ) as exc:
         await rg.clear_pending_revocations(
             controller=mock_agent_controller,
@@ -263,7 +273,7 @@ async def test_get_credential_revocation_record_api_exception(
     ).thenRaise(ApiException(reason=error_message, status=status_code))
 
     with pytest.raises(
-        CloudApiException, match=f"Failed to get revocation status: {error_message}."
+        CloudApiException, match=f"Failed to get revocation status: {error_message}"
     ) as exc_info:
         await rg.get_credential_revocation_record(
             controller=mock_agent_controller,

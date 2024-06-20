@@ -1,5 +1,5 @@
 import pytest
-from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCDetailOptions
+from aries_cloudcontroller import Credential, LDProofVCDetail, LDProofVCOptions
 
 from app.models.issuer import CredentialBase, CredentialType, IndyCredential
 from shared.exceptions.cloudapi_value_error import CloudApiValueError
@@ -23,7 +23,7 @@ def test_credential_base_model():
                 issuer="abc",
                 type=[],
             ),
-            options=LDProofVCDetailOptions(proofType="Ed25519Signature2018"),
+            options=LDProofVCOptions(proofType="Ed25519Signature2018"),
         ),
     )
 

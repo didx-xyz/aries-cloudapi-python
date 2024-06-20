@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from dependency_injector.wiring import Provide, inject
 from fastapi import Depends, FastAPI, HTTPException
 
+from shared.constants import PROJECT_VERSION
 from shared.log_config import get_logger
 from webhooks.services.acapy_events_processor import AcaPyEventsProcessor
 from webhooks.services.billing_manager import BillingManager
@@ -46,7 +47,6 @@ def create_app() -> FastAPI:
     openapi_name = os.getenv(
         "OPENAPI_NAME", "Aries Cloud API: Webhooks and Server-Sent Events"
     )
-    project_version = os.getenv("PROJECT_VERSION", "0.11.0")
 
     application = FastAPI(
         title=openapi_name,
@@ -56,7 +56,7 @@ def create_app() -> FastAPI:
         It supports filtering and forwarding events to subscribers based on topic and wallet ID,
         as well as handling Server-Sent Events (SSE) for real-time communication with clients.
         """,
-        version=project_version,
+        version=PROJECT_VERSION,
         lifespan=app_lifespan,
     )
 

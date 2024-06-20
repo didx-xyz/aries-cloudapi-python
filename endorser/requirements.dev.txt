@@ -1,2 +1,0 @@
-pytest-mock~=3.14.0
-watchfiles~=0.21.0

@@ -16,7 +16,7 @@ from mockito import mock, when
 from app.exceptions import CloudApiException, CloudApiValueError
 from app.routes.verifier import AcceptProofRequest, SendProofRequest
 from app.services.verifier.acapy_verifier import Verifier
-from app.tests.services.verifier.utils import indy_pres_spec, indy_proof_request
+from app.tests.services.verifier.utils import indy_pres_spec, sample_indy_proof_request
 from app.tests.util.mock import to_async
 from app.util.acapy_verifier_utils import (
     VerifierFacade,
@@ -45,7 +45,7 @@ pres_exchange = PresentationExchange(
     created_at="2021-09-15 13:49:47Z",
     proof_id="v1-abcd",
     presentation=None,
-    presentation_request=indy_proof_request,
+    presentation_request=sample_indy_proof_request(),
     role="prover",
     state="proposal-sent",
     protocol_version="v1",
@@ -634,7 +634,7 @@ async def test_assert_valid_prover_x_no_connection_id2(
 
     when(mock_agent_controller.connection).get_connection(
         conn_id="a-connection-id"
-    ).thenReturn(to_async(ConnRecord(connection_id=None)))
+    ).thenReturn(to_async(ConnRecord(connection_id="")))
 
     with pytest.raises(CloudApiException, match="Cannot proceed. No connection id."):
         assert await assert_valid_prover(
@@ -671,7 +671,7 @@ async def test_assert_valid_verifier_invitation_key(
             proof_request=SendProofRequest(
                 protocol_version=protocol_version,
                 connection_id="a-connection-id",
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
             ),
         )
 
@@ -691,7 +691,7 @@ async def test_assert_valid_verifier_public_did(
             proof_request=SendProofRequest(
                 protocol_version=protocol_version,
                 connection_id="abcde",
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
             ),
         )
 
@@ -720,7 +720,7 @@ async def test_assert_valid_verifier_x_no_public_did_no_invitation_key(
                 proof_request=SendProofRequest(
                     protocol_version=protocol_version,
                     connection_id="a-connection-id",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                 ),
             )
 
@@ -755,7 +755,7 @@ async def test_assert_valid_verifier_x_not_verifier(
                 proof_request=SendProofRequest(
                     protocol_version=protocol_version,
                     connection_id="a-connection-id",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                 ),
             )
 
@@ -784,7 +784,7 @@ async def test_assert_valid_verifier_could_not_fetch_actor_recover_label(
             proof_request=SendProofRequest(
                 protocol_version=protocol_version,
                 connection_id="a-connection-id",
-                indy_proof_request=indy_proof_request,
+                indy_proof_request=sample_indy_proof_request(),
             ),
         )
 
@@ -817,7 +817,7 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc(
                 proof_request=SendProofRequest(
                     protocol_version=protocol_version,
                     connection_id="a-connection-id",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                 ),
             )
 
@@ -847,7 +847,7 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc2(
                 proof_request=SendProofRequest(
                     protocol_version=protocol_version,
                     connection_id="a-connection-id",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                 ),
             )
 
@@ -874,7 +874,7 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc3(
                 proof_request=SendProofRequest(
                     protocol_version=protocol_version,
                     connection_id="a-connection-id",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                 ),
             )
 
@@ -898,6 +898,6 @@ async def test_assert_valid_verifier_x_could_not_fetch_actor_exc4(
                 proof_request=SendProofRequest(
                     protocol_version=protocol_version,
                     connection_id="a-connection-id",
-                    indy_proof_request=indy_proof_request,
+                    indy_proof_request=sample_indy_proof_request(),
                 ),
             )

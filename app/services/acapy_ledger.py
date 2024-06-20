@@ -138,7 +138,7 @@ async def register_nym_on_ledger(
         return response
     except CloudApiException as e:
         raise CloudApiException(
-            f"Error registering NYM on ledger: {e.detail}.", e.status_code
+            f"Error registering NYM on ledger: {e.detail}", e.status_code
         ) from e
 
 

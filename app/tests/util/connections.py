@@ -11,7 +11,7 @@ from app.tests.util.regression_testing import (
     TestMode,
     assert_fail_on_recreating_fixtures,
 )
-from app.tests.util.webhooks import check_webhook_state
+from app.tests.util.webhooks import assert_both_webhooks_received, check_webhook_state
 from app.util.string import base64_to_json
 from shared import RichAsyncClient
 from shared.models.connection_record import Connection
@@ -49,24 +49,14 @@ async def assert_both_connections_ready(
     member_client_2: RichAsyncClient,
     connection_id_1: str,
     connection_id_2: str,
-):
-    assert await check_webhook_state(
+) -> None:
+    await assert_both_webhooks_received(
         member_client_1,
-        topic="connections",
-        state="completed",
-        filter_map={
-            "connection_id": connection_id_1,
-        },
-        look_back=5,
-    )
-    assert await check_webhook_state(
         member_client_2,
         topic="connections",
         state="completed",
-        filter_map={
-            "connection_id": connection_id_2,
-        },
-        look_back=5,
+        field_id_1=connection_id_1,
+        field_id_2=connection_id_2,
     )
 
 

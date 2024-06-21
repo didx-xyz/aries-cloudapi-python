@@ -795,6 +795,7 @@ jobs:
           title: "K8s Test Coverage"
           # Resolves `Warning: Your comment is too long (maximum is 65536 characters), coverage report will not be added.`
           hide-report: ${{ github.event_name != 'pull_request' }}
+          hide-comment: ${{ github.event_name != 'pull_request' }}
 
       - name: Pytest coverage comment
         if: steps.pytest-init-regression.outcome == 'success' || steps.pytest-run-regression.outcome == 'success'
@@ -806,6 +807,7 @@ jobs:
           title: "K8s Regression Test Coverage"
           # Resolves `Warning: Your comment is too long (maximum is 65536 characters), coverage report will not be added.`
           hide-report: ${{ github.event_name != 'pull_request' }}
+          hide-comment: ${{ github.event_name != 'pull_request' }}
 
       - name: Helmfile destroy pytest
         uses: helmfile/helmfile-action@v1.9.1
